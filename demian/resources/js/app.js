@@ -1,6 +1,7 @@
 import '../css/app.css';
 import DemianStudio from './game/DemianStudio';
 import CharacterManagerUI from './ui/CharacterManagerUI';
+import SidebarController from './ui/SidebarController';
 
 document.addEventListener('DOMContentLoaded', async () => {
     const sceneContainer = document.querySelector('[data-demian-scene]');
@@ -10,6 +11,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
     }
 
+    const sidebar = new SidebarController({ root: managerRoot });
+
     const studio = new DemianStudio(sceneContainer, {
         apiBase: managerRoot.dataset.apiBase,
         csrfToken: document
@@ -17,15 +20,22 @@ document.addEventListener('DOMContentLoaded', async () => {
             ?.getAttribute('content'),
     });
 
+    managerRoot.addEventListener('sidebar:changed', () => {
+        studio.handleLayoutChange();
+    });
+
+    sidebar.boot();
+
     const ui = new CharacterManagerUI({
         root: managerRoot,
         manager: studio.characterManager,
         eventBus: studio.eventBus,
     });
 
+    ui.boot();
+
     try {
         await studio.boot();
-        ui.boot();
     } catch (error) {
         console.error('Demian Studio could not start:', error);
 
@@ -34,6 +44,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <div class="arcade-error">
                     <strong>موتور بازی اجرا نشد</strong>
                     <span>${error.message ?? 'خطای ناشناخته'}</span>
+                    <small>فایل‌های public/assets/characters/tiam را بررسی کن.</small>
                 </div>
             </div>
         `;

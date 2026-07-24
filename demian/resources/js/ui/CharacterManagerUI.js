@@ -35,6 +35,10 @@ export default class CharacterManagerUI {
             }
         });
 
+        this.eventBus.on('character:warning', ({ message }) => {
+            this.showToast(message, false);
+        });
+
         this.renderList(this.manager.characters);
     }
 

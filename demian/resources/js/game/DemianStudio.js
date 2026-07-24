@@ -58,11 +58,12 @@ export default class DemianStudio {
 
         window.addEventListener('resize', this.onResize);
         this.bindCameraButtons();
+        this.bindCharacterEvents();
     }
 
     async boot() {
         await this.characterManager.boot();
-        this.cameraController.reset(this.characterManager.position());
+        this.focusCharacter({ close: true });
         this.resize();
         this.animationFrame = requestAnimationFrame(this.animate);
     }
@@ -92,7 +93,7 @@ export default class DemianStudio {
 
     initCamera() {
         this.camera = new THREE.PerspectiveCamera(
-            48,
+            44,
             Math.max(this.container.clientWidth, 1) /
                 Math.max(this.container.clientHeight, 1),
             0.1,
@@ -132,7 +133,7 @@ export default class DemianStudio {
 
         document.querySelector('[data-camera-reset]')?.addEventListener(
             'click',
-            () => this.cameraController.reset(this.characterManager.position())
+            () => this.focusCharacter({ close: true })
         );
 
         window.addEventListener('keydown', (event) => {
@@ -143,17 +144,40 @@ export default class DemianStudio {
             }
 
             if (key === 'r') {
-                this.cameraController.reset(this.characterManager.position());
+                this.focusCharacter({ close: true });
             }
+        });
+    }
+
+    bindCharacterEvents() {
+        this.eventBus.on('character:selected', () => {
+            requestAnimationFrame(() => this.focusCharacter({ close: true }));
         });
     }
 
     toggleCamera() {
         const mode = this.cameraController.toggle(
-            this.characterManager.position()
+            this.characterManager.focusPoint()
         );
 
         this.eventBus.emit('camera:mode', mode);
+    }
+
+    focusCharacter({ close = true } = {}) {
+        this.cameraController.focus(
+            this.characterManager.focusPoint(),
+            { close }
+        );
+    }
+
+    handleLayoutChange() {
+        this.resize();
+        this.focusCharacter({ close: false });
+
+        window.setTimeout(() => {
+            this.resize();
+            this.focusCharacter({ close: false });
+        }, 360);
     }
 
     animate() {
@@ -164,7 +188,7 @@ export default class DemianStudio {
         this.characterManager.update(deltaTime, input, basis);
         this.world.update(deltaTime);
         this.cameraController.update(
-            this.characterManager.position(),
+            this.characterManager.focusPoint(),
             deltaTime
         );
 

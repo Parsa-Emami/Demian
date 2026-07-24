@@ -2,8 +2,6 @@ import * as THREE from 'three';
 import SpriteAnimator from './SpriteAnimator';
 
 export default class SpriteCharacter {
-    static textureCache = new Map();
-
     constructor({ character, texture, atlas }) {
         this.character = character;
         this.atlas = atlas;
@@ -17,15 +15,7 @@ export default class SpriteCharacter {
         this.jumpVelocity = 0;
         this.grounded = true;
         this.facing = 1;
-
-        this.animationTime = 0;
-        this.attackPulse = 0;
-        this.winPulse = 0;
-        this.jumpSquashPulse = 0;
-        this.landPulse = 0;
-        this.lastWinBurst = 0;
-
-        this.particles = [];
+        this.presentationTime = 0;
 
         const settings = character.settings ?? {};
         this.walkSpeed = Number(settings.walk_speed ?? 3.2);
@@ -50,31 +40,60 @@ export default class SpriteCharacter {
         const display = atlas.display ?? {};
         this.baseWidth = Number(display.worldWidth ?? 3.4) * this.scaleFactor;
         this.baseHeight = Number(display.worldHeight ?? 3.4) * this.scaleFactor;
-
         this.sprite.scale.set(this.baseWidth, this.baseHeight, 1);
         this.sprite.position.y = this.baseHeight * 0.5;
 
         this.shadowMaterial = new THREE.MeshBasicMaterial({
             color: 0x000000,
             transparent: true,
-            opacity: 0.32,
+            opacity: 0.34,
             depthWrite: false,
         });
 
         this.shadow = new THREE.Mesh(
-            new THREE.CircleGeometry(0.72 * this.scaleFactor, 32),
+            new THREE.CircleGeometry(0.76 * this.scaleFactor, 32),
             this.shadowMaterial
         );
 
         this.shadow.rotation.x = -Math.PI / 2;
         this.shadow.position.y = 0.02;
 
-        this.visualRoot = new THREE.Group();
-        this.visualRoot.add(this.sprite);
+        this.ringMaterial = new THREE.MeshBasicMaterial({
+            color: 0xff72dc,
+            transparent: true,
+            opacity: 0.82,
+            depthWrite: false,
+            toneMapped: false,
+        });
 
-        this.fxRoot = new THREE.Group();
+        this.selectionRing = new THREE.Mesh(
+            new THREE.TorusGeometry(0.92 * this.scaleFactor, 0.045, 8, 48),
+            this.ringMaterial
+        );
+        this.selectionRing.rotation.x = Math.PI / 2;
+        this.selectionRing.position.y = 0.055;
 
-        this.group.add(this.shadow, this.visualRoot, this.fxRoot);
+        this.locatorMaterial = new THREE.MeshBasicMaterial({
+            color: 0x7cf8ff,
+            transparent: true,
+            opacity: 0.95,
+            depthWrite: false,
+            toneMapped: false,
+        });
+
+        this.locator = new THREE.Mesh(
+            new THREE.OctahedronGeometry(0.18 * this.scaleFactor, 0),
+            this.locatorMaterial
+        );
+        this.locator.position.y = this.baseHeight + 0.5;
+        this.locator.rotation.z = Math.PI / 4;
+
+        this.group.add(
+            this.shadow,
+            this.selectionRing,
+            this.sprite,
+            this.locator
+        );
 
         this.animator = new SpriteAnimator(this.texture, atlas);
         this.animator.play('idle');
@@ -82,7 +101,7 @@ export default class SpriteCharacter {
 
     update(deltaTime, input, movementBasis) {
         this.stateLock = Math.max(0, this.stateLock - deltaTime);
-        this.animationTime += deltaTime;
+        this.presentationTime += deltaTime;
 
         const rawDirection = new THREE.Vector3(input.x, 0, input.z);
         const hasMovement = rawDirection.lengthSq() > 0;
@@ -115,40 +134,15 @@ export default class SpriteCharacter {
         if (input.jump && this.grounded && this.stateLock <= 0) {
             this.grounded = false;
             this.jumpVelocity = this.jumpForce;
-            this.jumpSquashPulse = 1;
-            this.playLocked('jump', 0.38);
-            this.emitParticles('dust', 5, {
-                speed: 0.9,
-                spread: 0.55,
-                size: 0.35,
-            });
+            this.playLocked('jump');
         }
 
         if (input.attack && this.grounded && this.stateLock <= 0) {
-            this.attackPulse = 1;
-            this.playLocked(
-                'attack',
-                Math.max(0.36, this.animator.duration('attack'))
-            );
-            this.emitParticles('star', 6, {
-                speed: 1.4,
-                spread: 0.35,
-                size: 0.26,
-            });
+            this.playLocked('attack');
         }
 
         if (input.win && this.grounded && this.stateLock <= 0) {
-            this.winPulse = 1.25;
-            this.lastWinBurst = 0;
-            this.playLocked(
-                'win',
-                Math.max(1.05, this.animator.duration('win'))
-            );
-            this.emitParticles('heart', 8, {
-                speed: 1.2,
-                spread: 0.45,
-                size: 0.28,
-            });
+            this.playLocked('win', 1.2);
         }
 
         this.group.position.addScaledVector(this.velocity, deltaTime);
@@ -164,12 +158,6 @@ export default class SpriteCharacter {
                 this.jumpVelocity = 0;
                 this.grounded = true;
                 this.stateLock = 0;
-                this.landPulse = 1;
-                this.emitParticles('dust', 6, {
-                    speed: 1.1,
-                    spread: 0.65,
-                    size: 0.38,
-                });
             }
         }
 
@@ -188,8 +176,7 @@ export default class SpriteCharacter {
         }
 
         this.animator.update(deltaTime);
-        this.updatePresentation(deltaTime);
-        this.updateParticles(deltaTime);
+        this.updatePresentation();
     }
 
     playLocked(animationName, minimumDuration = 0) {
@@ -213,264 +200,80 @@ export default class SpriteCharacter {
         this.facing = direction;
     }
 
-    updatePresentation(deltaTime) {
-        this.attackPulse = Math.max(0, this.attackPulse - deltaTime * 3.2);
-        this.winPulse = Math.max(0, this.winPulse - deltaTime * 0.9);
-        this.jumpSquashPulse = Math.max(0, this.jumpSquashPulse - deltaTime * 5);
-        this.landPulse = Math.max(0, this.landPulse - deltaTime * 4.2);
-
-        const time = this.animationTime;
-        const planarSpeed = Math.hypot(this.velocity.x, this.velocity.z);
+    updatePresentation() {
+        const time = this.presentationTime;
         const jumpHeight = Math.max(this.group.position.y, 0);
-        const jumpRatio = THREE.MathUtils.clamp(jumpHeight / 2.8, 0, 1);
+        const jumpRatio = THREE.MathUtils.clamp(jumpHeight / 3.2, 0, 1);
+        const movementSpeed = this.speed();
 
-        let scaleX = 1;
-        let scaleY = 1;
+        let widthScale = 1;
+        let heightScale = 1;
         let bob = 0;
         let tilt = 0;
-        let offsetX = 0;
 
         if (this.state === 'idle') {
-            const pulse = Math.sin(time * 3.2);
-            bob = pulse * 0.08;
-            scaleX += pulse * 0.025;
-            scaleY -= pulse * 0.025;
-            tilt = Math.sin(time * 1.8) * 0.03;
-        }
-
-        if (this.state === 'walk') {
-            const walkCycle = time * 8.4;
-            const pulse = Math.sin(walkCycle);
-            bob = Math.abs(pulse) * 0.12;
-            scaleX += Math.cos(walkCycle) * 0.04;
-            scaleY -= Math.cos(walkCycle) * 0.04;
-            tilt = pulse * 0.05;
-        }
-
-        if (this.state === 'run') {
-            const runCycle = time * 12.5;
-            const pulse = Math.sin(runCycle);
-            bob = Math.abs(pulse) * 0.2;
-            scaleX += Math.cos(runCycle) * 0.07;
-            scaleY -= Math.cos(runCycle) * 0.07;
-            tilt = pulse * 0.09;
+            const breath = Math.sin(time * 3.1);
+            bob = breath * 0.045;
+            widthScale += breath * 0.018;
+            heightScale -= breath * 0.018;
+            tilt = Math.sin(time * 1.7) * 0.02;
+        } else if (this.state === 'walk') {
+            const cycle = time * 8.2;
+            bob = Math.abs(Math.sin(cycle)) * 0.08;
+            tilt = Math.sin(cycle) * 0.035;
+        } else if (this.state === 'run') {
+            const cycle = time * 12.4;
+            bob = Math.abs(Math.sin(cycle)) * 0.14;
+            widthScale += Math.cos(cycle) * 0.035;
+            heightScale -= Math.cos(cycle) * 0.035;
+            tilt = Math.sin(cycle) * 0.065;
         }
 
         if (!this.grounded) {
-            const rise = THREE.MathUtils.clamp(this.jumpVelocity / this.jumpForce, -1, 1);
-            scaleX += rise > 0 ? -0.08 : 0.08;
-            scaleY += rise > 0 ? 0.08 : -0.08;
-            tilt += -rise * 0.06 * this.facing;
-            bob += 0.05;
+            const verticalRatio = THREE.MathUtils.clamp(
+                this.jumpVelocity / this.jumpForce,
+                -1,
+                1
+            );
+            widthScale += verticalRatio > 0 ? -0.05 : 0.06;
+            heightScale += verticalRatio > 0 ? 0.07 : -0.05;
         }
-
-        if (this.attackPulse > 0) {
-            const attackEase = 1 - Math.pow(1 - this.attackPulse, 2);
-            offsetX += this.facing * 0.18 * attackEase;
-            scaleX += 0.08 * attackEase;
-            scaleY -= 0.08 * attackEase;
-            tilt += -0.12 * this.facing * attackEase;
-        }
-
-        if (this.winPulse > 0 && this.state === 'win') {
-            const cheer = Math.abs(Math.sin(time * 10));
-            bob += cheer * 0.22;
-            scaleX += cheer * 0.08;
-            scaleY -= cheer * 0.08;
-            tilt += Math.sin(time * 5) * 0.1;
-
-            this.lastWinBurst += deltaTime;
-            if (this.lastWinBurst >= 0.22) {
-                this.lastWinBurst = 0;
-                this.emitParticles('heart', 2, {
-                    speed: 0.9,
-                    spread: 0.25,
-                    size: 0.22,
-                });
-            }
-        }
-
-        if (this.jumpSquashPulse > 0) {
-            scaleX += this.jumpSquashPulse * 0.08;
-            scaleY -= this.jumpSquashPulse * 0.08;
-        }
-
-        if (this.landPulse > 0) {
-            scaleX += this.landPulse * 0.12;
-            scaleY -= this.landPulse * 0.12;
-            bob -= this.landPulse * 0.05;
-        }
-
-        const directionalLean =
-            this.grounded && planarSpeed > 0.15
-                ? THREE.MathUtils.clamp(planarSpeed / this.runSpeed, 0, 1) * 0.02
-                : 0;
 
         this.sprite.scale.set(
-            this.baseWidth * scaleX * this.facing,
-            this.baseHeight * scaleY,
+            this.baseWidth * widthScale * this.facing,
+            this.baseHeight * heightScale,
             1
         );
+        this.sprite.position.y = this.baseHeight * 0.5 + bob;
+        this.sprite.rotation.z = tilt;
 
-        this.sprite.position.set(
-            offsetX,
-            this.baseHeight * 0.5 + bob,
-            0
+        this.shadow.scale.setScalar(1 - jumpRatio * 0.35);
+        this.shadowMaterial.opacity = 0.34 - jumpRatio * 0.2;
+
+        const locatorPulse = 1 + Math.sin(time * 4.4) * 0.16;
+        this.locator.scale.setScalar(locatorPulse);
+        this.locator.position.y =
+            this.baseHeight + 0.5 + Math.sin(time * 3.2) * 0.08;
+        this.locator.rotation.y += 0.025;
+        this.locatorMaterial.opacity = 0.72 + Math.sin(time * 4.4) * 0.2;
+
+        const ringPulse = 1 + Math.sin(time * 3.4) * 0.08;
+        this.selectionRing.scale.setScalar(ringPulse);
+        this.ringMaterial.opacity =
+            0.58 + Math.sin(time * 3.4) * 0.18 +
+            THREE.MathUtils.clamp(movementSpeed / this.runSpeed, 0, 1) * 0.08;
+    }
+
+    focusPoint() {
+        return new THREE.Vector3(
+            this.group.position.x,
+            this.group.position.y + this.baseHeight * 0.52,
+            this.group.position.z
         );
-
-        this.sprite.rotation.z = tilt + directionalLean * this.facing;
-
-        this.shadow.scale.setScalar(
-            1 - jumpRatio * 0.35 + this.landPulse * 0.1
-        );
-
-        this.shadowMaterial.opacity = 0.32 - jumpRatio * 0.18;
     }
 
-    emitParticles(kind, count, options = {}) {
-        const speed = Number(options.speed ?? 1);
-        const spread = Number(options.spread ?? 0.4);
-        const size = Number(options.size ?? 0.25);
-
-        for (let i = 0; i < count; i++) {
-            const texture = this.getParticleTexture(kind);
-
-            const material = new THREE.SpriteMaterial({
-                map: texture,
-                transparent: true,
-                depthWrite: false,
-                toneMapped: false,
-            });
-
-            const sprite = new THREE.Sprite(material);
-
-            const baseSize = size * (0.85 + Math.random() * 0.35);
-            sprite.scale.set(baseSize, baseSize, 1);
-            sprite.position.set(
-                (Math.random() - 0.5) * spread,
-                0.15 + Math.random() * 0.45,
-                (Math.random() - 0.5) * spread
-            );
-
-            const velocity = new THREE.Vector3(
-                (Math.random() - 0.5) * speed,
-                kind === 'dust'
-                    ? 0.25 + Math.random() * 0.18
-                    : 0.55 + Math.random() * 0.55,
-                (Math.random() - 0.5) * speed * 0.35
-            );
-
-            const particle = {
-                kind,
-                sprite,
-                material,
-                velocity,
-                life: kind === 'dust' ? 0.38 : 0.8,
-                maxLife: kind === 'dust' ? 0.38 : 0.8,
-                baseSize,
-                drift: (Math.random() - 0.5) * 0.8,
-            };
-
-            this.fxRoot.add(sprite);
-            this.particles.push(particle);
-        }
-    }
-
-    updateParticles(deltaTime) {
-        for (let index = this.particles.length - 1; index >= 0; index -= 1) {
-            const particle = this.particles[index];
-
-            particle.life -= deltaTime;
-
-            if (particle.life <= 0) {
-                this.fxRoot.remove(particle.sprite);
-                particle.material.dispose();
-                this.particles.splice(index, 1);
-                continue;
-            }
-
-            const alpha = particle.life / particle.maxLife;
-
-            particle.sprite.position.addScaledVector(particle.velocity, deltaTime);
-            particle.sprite.position.x += particle.drift * deltaTime * 0.1;
-
-            if (particle.kind !== 'dust') {
-                particle.velocity.y += 0.12 * deltaTime;
-            }
-
-            particle.material.opacity = alpha;
-
-            const scale =
-                particle.baseSize *
-                (particle.kind === 'dust'
-                    ? 0.9 + (1 - alpha) * 0.45
-                    : 0.8 + alpha * 0.4);
-
-            particle.sprite.scale.set(scale, scale, 1);
-        }
-    }
-
-    getParticleTexture(kind) {
-        if (SpriteCharacter.textureCache.has(kind)) {
-            return SpriteCharacter.textureCache.get(kind);
-        }
-
-        const size = 64;
-        const canvas = document.createElement('canvas');
-        canvas.width = size;
-        canvas.height = size;
-        const ctx = canvas.getContext('2d');
-
-        ctx.clearRect(0, 0, size, size);
-
-        if (kind === 'heart') {
-            ctx.fillStyle = '#ff7bd8';
-            ctx.beginPath();
-            ctx.moveTo(32, 52);
-            ctx.bezierCurveTo(10, 34, 8, 16, 22, 16);
-            ctx.bezierCurveTo(28, 16, 32, 21, 32, 21);
-            ctx.bezierCurveTo(32, 21, 36, 16, 42, 16);
-            ctx.bezierCurveTo(56, 16, 54, 34, 32, 52);
-            ctx.fill();
-        } else if (kind === 'star') {
-            ctx.fillStyle = '#ffd65a';
-            ctx.beginPath();
-
-            const cx = 32;
-            const cy = 32;
-            const spikes = 5;
-            const outer = 18;
-            const inner = 8;
-
-            for (let i = 0; i < spikes * 2; i++) {
-                const radius = i % 2 === 0 ? outer : inner;
-                const angle = (Math.PI / spikes) * i - Math.PI / 2;
-                const x = cx + Math.cos(angle) * radius;
-                const y = cy + Math.sin(angle) * radius;
-
-                if (i === 0) {
-                    ctx.moveTo(x, y);
-                } else {
-                    ctx.lineTo(x, y);
-                }
-            }
-
-            ctx.closePath();
-            ctx.fill();
-        } else {
-            ctx.fillStyle = 'rgba(255,255,255,0.85)';
-            ctx.beginPath();
-            ctx.arc(32, 32, 13, 0, Math.PI * 2);
-            ctx.fill();
-        }
-
-        const texture = new THREE.CanvasTexture(canvas);
-        texture.colorSpace = THREE.SRGBColorSpace;
-        texture.needsUpdate = true;
-
-        SpriteCharacter.textureCache.set(kind, texture);
-
-        return texture;
+    visualHeight() {
+        return this.baseHeight;
     }
 
     speed() {
@@ -482,11 +285,9 @@ export default class SpriteCharacter {
         this.material.dispose();
         this.shadow.geometry.dispose();
         this.shadowMaterial.dispose();
-
-        for (const particle of this.particles) {
-            particle.material.dispose();
-        }
-
-        this.particles = [];
+        this.selectionRing.geometry.dispose();
+        this.ringMaterial.dispose();
+        this.locator.geometry.dispose();
+        this.locatorMaterial.dispose();
     }
 }

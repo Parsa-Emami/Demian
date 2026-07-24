@@ -5,40 +5,42 @@ export default class CameraController {
     constructor(camera, domElement) {
         this.camera = camera;
         this.mode = 'FOLLOW';
-        this.followHeight = 1.75;
-        this.defaultOffset = new THREE.Vector3(8, 6.5, 10);
-        this.target = new THREE.Vector3();
+        this.defaultOffset = new THREE.Vector3(5.8, 4.4, 7.8);
+        this.target = new THREE.Vector3(0, 1.65, 0);
+        this.followPoint = this.target.clone();
 
         this.controls = new OrbitControls(camera, domElement);
+        this.controls.enabled = true;
         this.controls.enableDamping = true;
-        this.controls.dampingFactor = 0.08;
+        this.controls.dampingFactor = 0.075;
         this.controls.enablePan = false;
-        this.controls.minDistance = 4.5;
-        this.controls.maxDistance = 28;
-        this.controls.minPolarAngle = 0.28;
-        this.controls.maxPolarAngle = Math.PI / 2.05;
-        this.controls.rotateSpeed = 0.75;
-        this.controls.zoomSpeed = 0.9;
+        this.controls.screenSpacePanning = false;
+        this.controls.minDistance = 3.2;
+        this.controls.maxDistance = 22;
+        this.controls.minPolarAngle = 0.24;
+        this.controls.maxPolarAngle = Math.PI / 2.04;
+        this.controls.rotateSpeed = 0.72;
+        this.controls.zoomSpeed = 0.95;
+        this.controls.zoomToCursor = true;
 
-        this.reset(new THREE.Vector3());
+        this.reset(this.target);
     }
 
-    update(characterPosition, deltaTime) {
-        if (this.mode === 'FOLLOW') {
-            this.target.set(
-                characterPosition.x,
-                characterPosition.y + this.followHeight,
-                characterPosition.z
-            );
+    update(focusPoint, deltaTime) {
+        this.followPoint.copy(focusPoint);
 
+        if (this.mode === 'FOLLOW') {
             const currentOffset = this.camera.position
                 .clone()
                 .sub(this.controls.target);
 
-            const nextCameraPosition = this.target.clone().add(currentOffset);
-            const alpha = 1 - Math.exp(-5 * deltaTime);
+            const nextCameraPosition = this.followPoint
+                .clone()
+                .add(currentOffset);
 
-            this.controls.target.lerp(this.target, alpha);
+            const alpha = 1 - Math.exp(-5.5 * deltaTime);
+
+            this.controls.target.lerp(this.followPoint, alpha);
             this.camera.position.lerp(nextCameraPosition, alpha);
         }
 
@@ -63,26 +65,42 @@ export default class CameraController {
         return { forward, right };
     }
 
-    toggle(characterPosition) {
+    toggle(focusPoint) {
         this.mode = this.mode === 'FOLLOW' ? 'FREE' : 'FOLLOW';
         this.controls.enablePan = this.mode === 'FREE';
 
         if (this.mode === 'FOLLOW') {
-            this.reset(characterPosition);
+            this.reset(focusPoint);
         }
 
+        this.controls.update();
         return this.mode;
     }
 
-    reset(characterPosition) {
-        const target = new THREE.Vector3(
-            characterPosition.x,
-            characterPosition.y + this.followHeight,
-            characterPosition.z
-        );
+    reset(focusPoint = new THREE.Vector3(0, 1.65, 0)) {
+        this.target.copy(focusPoint);
+        this.followPoint.copy(focusPoint);
+        this.controls.target.copy(focusPoint);
+        this.camera.position.copy(focusPoint).add(this.defaultOffset);
+        this.camera.near = 0.1;
+        this.camera.far = 200;
+        this.camera.updateProjectionMatrix();
+        this.controls.update();
+    }
 
-        this.controls.target.copy(target);
-        this.camera.position.copy(target).add(this.defaultOffset);
+    focus(focusPoint, { close = true } = {}) {
+        const offset = close
+            ? this.defaultOffset.clone()
+            : this.camera.position.clone().sub(this.controls.target);
+
+        if (offset.lengthSq() < 1) {
+            offset.copy(this.defaultOffset);
+        }
+
+        this.target.copy(focusPoint);
+        this.followPoint.copy(focusPoint);
+        this.controls.target.copy(focusPoint);
+        this.camera.position.copy(focusPoint).add(offset);
         this.controls.update();
     }
 
