@@ -8,12 +8,13 @@
 :root {
     color-scheme: dark;
     --arcade-bg: #050610;
-    --arcade-panel: rgba(7, 8, 21, 0.86);
-    --arcade-border: rgba(217, 70, 239, 0.28);
+    --arcade-panel: rgba(7, 8, 21, 0.84);
+    --arcade-border: rgba(217, 70, 239, 0.24);
     --arcade-pink: #ff4fd8;
     --arcade-purple: #8b5cf6;
     --arcade-cyan: #22d3ee;
     --arcade-yellow: #fbbf24;
+    --arcade-soft: #fdf2f8;
 }
 
 html,
@@ -22,7 +23,10 @@ body {
     min-height: 100%;
     margin: 0;
     overflow: hidden;
-    background: var(--arcade-bg);
+    background:
+        radial-gradient(circle at top right, rgba(124, 58, 237, 0.12), transparent 30%),
+        radial-gradient(circle at bottom left, rgba(34, 211, 238, 0.08), transparent 25%),
+        var(--arcade-bg);
 }
 
 body {
@@ -52,13 +56,49 @@ canvas,
     image-rendering: crisp-edges;
 }
 
+.manager-shell {
+    display: grid;
+    min-height: 100vh;
+    grid-template-columns: 1fr;
+}
+
+@media (min-width: 1024px) {
+    .manager-shell {
+        grid-template-columns: 390px minmax(0, 1fr);
+    }
+}
+
+.manager-sidebar {
+    position: relative;
+    z-index: 30;
+    overflow-y: auto;
+    padding: 18px;
+    border-inline-end: 1px solid rgba(217, 70, 239, 0.14);
+    background:
+        linear-gradient(180deg, rgba(18, 8, 37, 0.36), rgba(7, 8, 21, 0.95)),
+        #070815;
+}
+
+.manager-stage {
+    position: relative;
+    min-height: 68vh;
+    overflow: hidden;
+}
+
+@media (min-width: 1024px) {
+    .manager-stage {
+        min-height: 100vh;
+    }
+}
+
 .arcade-panel {
     border: 1px solid var(--arcade-border);
     background:
-        linear-gradient(180deg, rgba(27, 15, 53, 0.26), transparent 40%),
+        linear-gradient(180deg, rgba(27, 15, 53, 0.26), transparent 38%),
+        linear-gradient(135deg, rgba(34, 211, 238, 0.03), transparent 35%),
         var(--arcade-panel);
     box-shadow:
-        0 0 0 1px rgba(34, 211, 238, 0.05) inset,
+        0 0 0 1px rgba(34, 211, 238, 0.04) inset,
         0 20px 60px rgba(0, 0, 0, 0.42),
         0 0 36px rgba(139, 92, 246, 0.12);
     backdrop-filter: blur(18px);
@@ -80,28 +120,74 @@ canvas,
     text-transform: uppercase;
 }
 
+.manager-brand__chip-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+}
+
+.manager-chip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 1.85rem;
+    border-radius: 999px;
+    padding: 0.35rem 0.7rem;
+    font-size: 0.62rem;
+    font-weight: 900;
+    letter-spacing: 0.05em;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: white;
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.manager-chip--pink {
+    border-color: rgba(255, 79, 216, 0.3);
+    background: rgba(255, 79, 216, 0.09);
+    color: #fbcfe8;
+}
+
+.manager-chip--cyan {
+    border-color: rgba(34, 211, 238, 0.3);
+    background: rgba(34, 211, 238, 0.08);
+    color: #a5f3fc;
+}
+
+.manager-chip--yellow {
+    border-color: rgba(251, 191, 36, 0.28);
+    background: rgba(251, 191, 36, 0.08);
+    color: #fde68a;
+}
+
 .arcade-button {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     min-height: 2.55rem;
     border: 1px solid rgba(255, 79, 216, 0.34);
-    border-radius: 0.75rem;
-    padding: 0.65rem 0.9rem;
-    background: rgba(255, 79, 216, 0.1);
+    border-radius: 0.85rem;
+    padding: 0.65rem 0.95rem;
+    background:
+        linear-gradient(180deg, rgba(255, 79, 216, 0.15), rgba(255, 79, 216, 0.08));
     color: #fce7f3;
     font-size: 0.74rem;
     font-weight: 900;
     transition:
         transform 140ms ease,
         background 140ms ease,
-        box-shadow 140ms ease;
+        box-shadow 140ms ease,
+        border-color 140ms ease;
 }
 
 .arcade-button:hover {
-    transform: translateY(-1px);
-    background: rgba(255, 79, 216, 0.18);
+    transform: translateY(-1px) scale(1.01);
+    background:
+        linear-gradient(180deg, rgba(255, 79, 216, 0.22), rgba(255, 79, 216, 0.12));
     box-shadow: 0 0 22px rgba(255, 79, 216, 0.2);
+}
+
+.arcade-button:active {
+    transform: translateY(0) scale(0.99);
 }
 
 .arcade-button:disabled {
@@ -110,9 +196,9 @@ canvas,
 }
 
 .arcade-button--small {
-    min-height: 1.9rem;
-    border-radius: 0.55rem;
-    padding: 0.35rem 0.55rem;
+    min-height: 1.95rem;
+    border-radius: 0.7rem;
+    padding: 0.38rem 0.7rem;
     font-size: 0.64rem;
 }
 
@@ -120,6 +206,11 @@ canvas,
     border-color: rgba(34, 211, 238, 0.34);
     background: rgba(34, 211, 238, 0.09);
     color: #cffafe;
+}
+
+.arcade-button--cyan:hover {
+    background: rgba(34, 211, 238, 0.16);
+    box-shadow: 0 0 22px rgba(34, 211, 238, 0.16);
 }
 
 .arcade-button--danger {
@@ -131,42 +222,62 @@ canvas,
 .arcade-input {
     width: 100%;
     border: 1px solid rgba(255, 255, 255, 0.11);
-    border-radius: 0.75rem;
+    border-radius: 0.95rem;
     background: rgba(255, 255, 255, 0.045);
-    padding: 0.72rem 0.8rem;
+    padding: 0.78rem 0.85rem;
     color: #fff;
     outline: none;
+    transition:
+        border-color 150ms ease,
+        box-shadow 150ms ease,
+        background 150ms ease;
 }
 
 .arcade-input:focus {
     border-color: rgba(34, 211, 238, 0.58);
+    background: rgba(255, 255, 255, 0.06);
     box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.08);
 }
 
 .character-card {
     display: flex;
-    gap: 0.75rem;
+    align-items: stretch;
+    gap: 0.9rem;
     border: 1px solid rgba(255, 255, 255, 0.075);
-    border-radius: 1rem;
-    padding: 0.75rem;
-    background: rgba(255, 255, 255, 0.025);
+    border-radius: 1.35rem;
+    padding: 0.8rem;
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.03), transparent),
+        rgba(255, 255, 255, 0.02);
+    transition:
+        transform 150ms ease,
+        border-color 150ms ease,
+        box-shadow 150ms ease;
+}
+
+.character-card:hover {
+    transform: translateY(-2px);
+    border-color: rgba(255, 79, 216, 0.22);
+    box-shadow: 0 0 20px rgba(255, 79, 216, 0.08);
 }
 
 .character-card.is-active {
     border-color: rgba(34, 211, 238, 0.38);
-    background: rgba(34, 211, 238, 0.055);
+    background:
+        linear-gradient(180deg, rgba(34, 211, 238, 0.08), transparent),
+        rgba(34, 211, 238, 0.045);
     box-shadow: 0 0 22px rgba(34, 211, 238, 0.08);
 }
 
 .character-card__preview {
     display: grid;
-    width: 4.2rem;
-    min-width: 4.2rem;
-    height: 4.2rem;
+    width: 5.1rem;
+    min-width: 5.1rem;
+    height: 5.1rem;
     place-items: center;
     overflow: hidden;
     border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 0.8rem;
+    border-radius: 1rem;
     background:
         linear-gradient(45deg, #111827 25%, transparent 25%),
         linear-gradient(-45deg, #111827 25%, transparent 25%),
@@ -179,6 +290,7 @@ canvas,
         6px -6px,
         -6px 0;
     background-size: 12px 12px;
+    box-shadow: inset 0 0 18px rgba(0, 0, 0, 0.35);
 }
 
 .character-card__preview img {
@@ -192,7 +304,7 @@ canvas,
 .arcade-badge {
     border: 1px solid rgba(34, 211, 238, 0.32);
     border-radius: 999px;
-    padding: 0.2rem 0.42rem;
+    padding: 0.22rem 0.5rem;
     background: rgba(34, 211, 238, 0.09);
     color: #a5f3fc;
     font-size: 0.56rem;
@@ -201,15 +313,22 @@ canvas,
 
 .arcade-drop-zone {
     display: grid;
-    min-height: 8.5rem;
+    min-height: 8.8rem;
     place-items: center;
     overflow: hidden;
     border: 1px dashed rgba(255, 79, 216, 0.35);
-    border-radius: 1rem;
-    background: rgba(255, 79, 216, 0.035);
+    border-radius: 1.15rem;
+    background:
+        linear-gradient(180deg, rgba(255, 79, 216, 0.04), transparent),
+        rgba(255, 79, 216, 0.025);
     transition:
         border-color 150ms ease,
-        background 150ms ease;
+        background 150ms ease,
+        transform 150ms ease;
+}
+
+.arcade-drop-zone:hover {
+    transform: translateY(-1px);
 }
 
 .arcade-drop-zone.is-dragging {
@@ -229,8 +348,8 @@ canvas,
     max-width: min(24rem, calc(100vw - 2rem));
     transform: translateY(1rem);
     border: 1px solid rgba(34, 211, 238, 0.36);
-    border-radius: 0.8rem;
-    padding: 0.8rem 1rem;
+    border-radius: 0.95rem;
+    padding: 0.85rem 1rem;
     background: rgba(5, 6, 16, 0.94);
     color: #cffafe;
     opacity: 0;
@@ -262,9 +381,23 @@ canvas,
     text-align: center;
 }
 
+.hud-panel,
+.help-panel {
+    min-width: 180px;
+}
+
 @media (max-width: 1023px) {
     html,
     body {
         overflow: auto;
+    }
+
+    .manager-sidebar {
+        border-inline-end: none;
+        border-bottom: 1px solid rgba(217, 70, 239, 0.14);
+    }
+
+    .manager-stage {
+        min-height: 70vh;
     }
 }
