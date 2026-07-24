@@ -198,9 +198,11 @@ jobs:
             --output _site/characters.json
 
           python3 <<'PYTHON'
+          import json
           import os
           import re
           from pathlib import Path
+          from urllib.parse import urlparse
 
           site = Path('_site')
           index_path = site / 'index.html'
@@ -209,16 +211,62 @@ jobs:
           pages_url = os.environ['PAGES_URL'].rstrip('/')
           pages_base_path = os.environ['PAGES_BASE_PATH'].rstrip('/')
 
-          # The live Laravel route cannot run on GitHub Pages. Point the list
-          # request to the JSON snapshot exported above instead.
-          html = html.replace(
-              f'{pages_url}/characters',
-              f'{pages_url}/characters.json',
-          )
-
-          # Remove any accidental development-server references.
+          # Remove accidental development-server references first. The HTML
+          # rendered through `artisan serve` may use the request host instead
+          # of APP_URL for route() output.
           html = html.replace('http://127.0.0.1:8000', pages_url)
           html = html.replace('http://localhost:8000', pages_url)
+
+          # GitHub Pages cannot execute the Laravel /characters endpoint.
+          # Rewrite the exact data attribute used by CharacterRepository to
+          # the exported JSON snapshot. This is intentionally attribute-based
+          # so it works regardless of the host Laravel rendered into the URL.
+          static_characters_url = f'{pages_base_path}/characters.json'
+          html, replacements = re.subn(
+              r'data-api-base="[^"]*"',
+              f'data-api-base="{static_characters_url}"',
+              html,
+              count=1,
+              flags=re.IGNORECASE,
+          )
+
+          if replacements != 1:
+              raise SystemExit(
+                  'ERROR: Could not rewrite data-api-base for GitHub Pages.'
+              )
+
+          # Normalize URLs inside the exported Character Manager JSON as well.
+          # This prevents localhost or repository-root paths from breaking the
+          # sprite sheet and atlas on project Pages.
+          characters_path = site / 'characters.json'
+          payload = json.loads(characters_path.read_text(encoding='utf-8'))
+
+          for character in payload.get('data', []):
+              for field in ('sprite_url', 'atlas_url'):
+                  value = character.get(field)
+
+                  if not value:
+                      continue
+
+                  path = urlparse(value).path
+                  asset_marker = '/assets/'
+                  storage_marker = '/storage/'
+
+                  if asset_marker in path:
+                      relative = path.split(asset_marker, 1)[1]
+                      character[field] = (
+                          f'{pages_base_path}/assets/{relative}'
+                      )
+                  elif storage_marker in path:
+                      relative = path.split(storage_marker, 1)[1]
+                      character[field] = (
+                          f'{pages_base_path}/storage/{relative}'
+                      )
+
+          characters_path.write_text(
+              json.dumps(payload, ensure_ascii=False, indent=2),
+              encoding='utf-8',
+          )
 
           # Mark this deployment as a read-only showcase and prevent upload
           # attempts from producing confusing network errors.
