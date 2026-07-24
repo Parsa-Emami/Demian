@@ -163,20 +163,27 @@ export default class DemianStudio {
         this.eventBus.emit('camera:mode', mode);
     }
 
-    focusCharacter({ close = true } = {}) {
-        this.cameraController.focus(
+    focusCharacter({ close = true, follow = true } = {}) {
+        const mode = this.cameraController.focus(
             this.characterManager.focusPoint(),
-            { close }
+            { close, follow }
         );
+
+        this.eventBus.emit('camera:mode', mode);
     }
 
     handleLayoutChange() {
         this.resize();
-        this.focusCharacter({ close: false });
+        if (this.cameraController.mode === 'FOLLOW') {
+            this.focusCharacter({ close: false, follow: true });
+        }
 
         window.setTimeout(() => {
             this.resize();
-            this.focusCharacter({ close: false });
+
+            if (this.cameraController.mode === 'FOLLOW') {
+                this.focusCharacter({ close: false, follow: true });
+            }
         }, 360);
     }
 
