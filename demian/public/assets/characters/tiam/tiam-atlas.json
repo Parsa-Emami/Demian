@@ -1,0 +1,148 @@
+{
+  "meta": {
+    "name": "TIAM",
+    "version": 1,
+    "image": "tiam-spritesheet.png",
+    "size": {
+      "w": 1024,
+      "h": 768
+    },
+    "frameSize": {
+      "w": 256,
+      "h": 256
+    },
+    "pixelArt": true
+  },
+  "frames": {
+    "idle_0": {
+      "x": 0,
+      "y": 0,
+      "w": 256,
+      "h": 256
+    },
+    "idle_1": {
+      "x": 256,
+      "y": 0,
+      "w": 256,
+      "h": 256
+    },
+    "walk_0": {
+      "x": 512,
+      "y": 0,
+      "w": 256,
+      "h": 256
+    },
+    "walk_1": {
+      "x": 768,
+      "y": 0,
+      "w": 256,
+      "h": 256
+    },
+    "run_0": {
+      "x": 0,
+      "y": 256,
+      "w": 256,
+      "h": 256
+    },
+    "run_1": {
+      "x": 256,
+      "y": 256,
+      "w": 256,
+      "h": 256
+    },
+    "jump_0": {
+      "x": 512,
+      "y": 256,
+      "w": 256,
+      "h": 256
+    },
+    "jump_1": {
+      "x": 768,
+      "y": 256,
+      "w": 256,
+      "h": 256
+    },
+    "attack_0": {
+      "x": 0,
+      "y": 512,
+      "w": 256,
+      "h": 256
+    },
+    "attack_1": {
+      "x": 256,
+      "y": 512,
+      "w": 256,
+      "h": 256
+    },
+    "win_0": {
+      "x": 512,
+      "y": 512,
+      "w": 256,
+      "h": 256
+    },
+    "win_1": {
+      "x": 768,
+      "y": 512,
+      "w": 256,
+      "h": 256
+    }
+  },
+  "animations": {
+    "idle": {
+      "frames": [
+        "idle_0",
+        "idle_1"
+      ],
+      "fps": 2,
+      "loop": true
+    },
+    "walk": {
+      "frames": [
+        "walk_0",
+        "walk_1"
+      ],
+      "fps": 7,
+      "loop": true
+    },
+    "run": {
+      "frames": [
+        "run_0",
+        "run_1"
+      ],
+      "fps": 10,
+      "loop": true
+    },
+    "jump": {
+      "frames": [
+        "jump_0",
+        "jump_1"
+      ],
+      "fps": 5,
+      "loop": false
+    },
+    "attack": {
+      "frames": [
+        "attack_0",
+        "attack_1"
+      ],
+      "fps": 8,
+      "loop": false
+    },
+    "win": {
+      "frames": [
+        "win_0",
+        "win_1"
+      ],
+      "fps": 3,
+      "loop": true
+    }
+  },
+  "pivot": {
+    "x": 0.5,
+    "y": 0.96
+  },
+  "display": {
+    "worldWidth": 3.4,
+    "worldHeight": 3.4
+  }
+}

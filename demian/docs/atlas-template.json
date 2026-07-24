@@ -1,0 +1,22 @@
+{
+    "meta": {
+        "name": "CHARACTER_NAME",
+        "version": 1,
+        "image": "spritesheet.png",
+        "size": { "w": 1024, "h": 768 },
+        "frameSize": { "w": 256, "h": 256 },
+        "pixelArt": true
+    },
+    "frames": {
+        "idle_0": { "x": 0, "y": 0, "w": 256, "h": 256 }
+    },
+    "animations": {
+        "idle": {
+            "frames": ["idle_0"],
+            "fps": 1,
+            "loop": true
+        }
+    },
+    "pivot": { "x": 0.5, "y": 0.96 },
+    "display": { "worldWidth": 3.4, "worldHeight": 3.4 }
+}

@@ -1,0 +1,333 @@
+export default class CharacterManagerUI {
+    constructor({ root, manager, eventBus }) {
+        this.root = root;
+        this.manager = manager;
+        this.eventBus = eventBus;
+
+        this.listElement = root.querySelector('[data-character-list]');
+        this.form = root.querySelector('[data-character-form]');
+        this.dropZone = root.querySelector('[data-drop-zone]');
+        this.preview = root.querySelector('[data-sheet-preview]');
+        this.submitButton = root.querySelector('[data-character-submit]');
+        this.formError = root.querySelector('[data-form-error]');
+
+        this.stateLabel = document.querySelector('[data-state-label]');
+        this.speedLabel = document.querySelector('[data-speed-label]');
+        this.positionLabel = document.querySelector('[data-position-label]');
+        this.cameraLabel = document.querySelector('[data-camera-label]');
+    }
+
+    boot() {
+        this.bindForm();
+        this.bindDropZone();
+
+        this.eventBus.on('characters:changed', (characters) => {
+            this.renderList(characters);
+        });
+
+        this.eventBus.on('studio:frame', (frame) => {
+            this.renderHud(frame);
+        });
+
+        this.eventBus.on('camera:mode', (mode) => {
+            if (this.cameraLabel) {
+                this.cameraLabel.textContent = mode;
+            }
+        });
+
+        this.renderList(this.manager.characters);
+    }
+
+    renderList(characters) {
+        if (!this.listElement) {
+            return;
+        }
+
+        this.listElement.innerHTML = '';
+
+        characters.forEach((character) => {
+            const card = document.createElement('article');
+            card.className = [
+                'character-card',
+                character.is_active ? 'is-active' : '',
+            ].join(' ');
+
+            card.innerHTML = `
+                <div class="character-card__preview">
+                    <img
+                        src="${this.escape(character.sprite_url)}"
+                        alt="${this.escape(character.name)}"
+                        loading="lazy"
+                    >
+                </div>
+
+                <div class="min-w-0 flex-1">
+                    <div class="flex items-start justify-between gap-2">
+                        <div class="min-w-0">
+                            <h3 class="truncate text-sm font-black text-white">
+                                ${this.escape(character.name)}
+                            </h3>
+                            <p class="mt-1 truncate font-mono text-[11px] text-zinc-500">
+                                ${this.escape(character.slug)}
+                            </p>
+                        </div>
+
+                        ${
+                            character.is_active
+                                ? '<span class="arcade-badge">ACTIVE</span>'
+                                : ''
+                        }
+                    </div>
+
+                    <div class="mt-3 flex flex-wrap gap-2">
+                        <button
+                            type="button"
+                            class="arcade-button arcade-button--small"
+                            data-select-character="${character.id}"
+                        >
+                            نمایش
+                        </button>
+
+                        ${
+                            character.is_active
+                                ? ''
+                                : `
+                                    <button
+                                        type="button"
+                                        class="arcade-button arcade-button--small arcade-button--cyan"
+                                        data-activate-character="${character.id}"
+                                    >
+                                        فعال‌سازی
+                                    </button>
+                                `
+                        }
+
+                        ${
+                            character.is_builtin
+                                ? '<span class="self-center text-[10px] text-fuchsia-300">BUILT-IN</span>'
+                                : `
+                                    <button
+                                        type="button"
+                                        class="arcade-button arcade-button--small arcade-button--danger"
+                                        data-delete-character="${character.id}"
+                                    >
+                                        حذف
+                                    </button>
+                                `
+                        }
+                    </div>
+                </div>
+            `;
+
+            this.listElement.appendChild(card);
+        });
+
+        this.listElement
+            .querySelectorAll('[data-select-character]')
+            .forEach((button) => {
+                button.addEventListener('click', async () => {
+                    await this.guard(() =>
+                        this.manager.select(button.dataset.selectCharacter)
+                    );
+                });
+            });
+
+        this.listElement
+            .querySelectorAll('[data-activate-character]')
+            .forEach((button) => {
+                button.addEventListener('click', async () => {
+                    await this.guard(() =>
+                        this.manager.activate(button.dataset.activateCharacter)
+                    );
+                });
+            });
+
+        this.listElement
+            .querySelectorAll('[data-delete-character]')
+            .forEach((button) => {
+                button.addEventListener('click', async () => {
+                    const accepted = window.confirm(
+                        'این کاراکتر و فایل‌هایش حذف شوند؟'
+                    );
+
+                    if (!accepted) {
+                        return;
+                    }
+
+                    await this.guard(() =>
+                        this.manager.remove(button.dataset.deleteCharacter)
+                    );
+                });
+            });
+    }
+
+    bindForm() {
+        this.form?.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            this.clearFormError();
+
+            const formData = new FormData(this.form);
+            const name = String(formData.get('name') ?? '').trim();
+            const slugField = this.form.querySelector('[name="slug"]');
+
+            if (slugField && !String(slugField.value).trim()) {
+                slugField.value = this.slugify(name);
+                formData.set('slug', slugField.value);
+            }
+
+            this.setSubmitting(true);
+
+            try {
+                const character = await this.manager.create(formData);
+                this.form.reset();
+                this.preview?.removeAttribute('src');
+                this.showToast(`${character.name} ساخته شد.`);
+            } catch (error) {
+                this.showFormError(error);
+            } finally {
+                this.setSubmitting(false);
+            }
+        });
+    }
+
+    bindDropZone() {
+        const input = this.form?.querySelector('[name="sprite_sheet"]');
+
+        if (!this.dropZone || !input) {
+            return;
+        }
+
+        ['dragenter', 'dragover'].forEach((eventName) => {
+            this.dropZone.addEventListener(eventName, (event) => {
+                event.preventDefault();
+                this.dropZone.classList.add('is-dragging');
+            });
+        });
+
+        ['dragleave', 'drop'].forEach((eventName) => {
+            this.dropZone.addEventListener(eventName, (event) => {
+                event.preventDefault();
+                this.dropZone.classList.remove('is-dragging');
+            });
+        });
+
+        this.dropZone.addEventListener('drop', (event) => {
+            const file = event.dataTransfer?.files?.[0];
+
+            if (!file) {
+                return;
+            }
+
+            const transfer = new DataTransfer();
+            transfer.items.add(file);
+            input.files = transfer.files;
+            this.previewFile(file);
+        });
+
+        input.addEventListener('change', () => {
+            const file = input.files?.[0];
+
+            if (file) {
+                this.previewFile(file);
+            }
+        });
+    }
+
+    previewFile(file) {
+        if (!this.preview) {
+            return;
+        }
+
+        const url = URL.createObjectURL(file);
+        this.preview.src = url;
+        this.preview.onload = () => URL.revokeObjectURL(url);
+    }
+
+    renderHud({ state, speed, position, cameraMode }) {
+        if (this.stateLabel) {
+            this.stateLabel.textContent = state.toUpperCase();
+        }
+
+        if (this.speedLabel) {
+            this.speedLabel.textContent = speed.toFixed(2);
+        }
+
+        if (this.positionLabel) {
+            this.positionLabel.textContent =
+                `${position.x.toFixed(1)} / ${position.z.toFixed(1)}`;
+        }
+
+        if (this.cameraLabel) {
+            this.cameraLabel.textContent = cameraMode;
+        }
+    }
+
+    async guard(callback) {
+        try {
+            await callback();
+        } catch (error) {
+            this.showToast(error.message ?? 'عملیات ناموفق بود.', true);
+            console.error(error);
+        }
+    }
+
+    setSubmitting(submitting) {
+        if (!this.submitButton) {
+            return;
+        }
+
+        this.submitButton.disabled = submitting;
+        this.submitButton.textContent = submitting
+            ? 'در حال ساخت...'
+            : 'افزودن کاراکتر';
+    }
+
+    showFormError(error) {
+        if (!this.formError) {
+            return;
+        }
+
+        const messages = Object.values(error.errors ?? {})
+            .flat()
+            .filter(Boolean);
+
+        this.formError.textContent =
+            messages[0] ?? error.message ?? 'فرم معتبر نیست.';
+        this.formError.hidden = false;
+    }
+
+    clearFormError() {
+        if (this.formError) {
+            this.formError.hidden = true;
+            this.formError.textContent = '';
+        }
+    }
+
+    showToast(message, danger = false) {
+        const toast = document.createElement('div');
+        toast.className = danger ? 'arcade-toast is-danger' : 'arcade-toast';
+        toast.textContent = message;
+        document.body.appendChild(toast);
+
+        requestAnimationFrame(() => toast.classList.add('is-visible'));
+
+        window.setTimeout(() => {
+            toast.classList.remove('is-visible');
+            window.setTimeout(() => toast.remove(), 250);
+        }, 2500);
+    }
+
+    slugify(value) {
+        return value
+            .toLowerCase()
+            .trim()
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/^-+|-+$/g, '') || `character-${Date.now()}`;
+    }
+
+    escape(value) {
+        const element = document.createElement('div');
+        element.textContent = String(value ?? '');
+        return element.innerHTML;
+    }
+}
