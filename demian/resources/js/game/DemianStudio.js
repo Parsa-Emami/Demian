@@ -16,16 +16,14 @@ export default class DemianStudio {
         this.container = container;
         this.options = options;
         this.eventBus = new EventBus();
-        this.input = new InputController();
+        this.input = new InputController(document);
         this.clock = new THREE.Clock();
 
         this.scene = new THREE.Scene();
-        this.scene.background = new THREE.Color(0x050610);
-        this.scene.fog = new THREE.FogExp2(0x050610, 0.026);
+        this.scene.background = new THREE.Color(0x050714);
 
         this.initRenderer();
         this.initCamera();
-        this.initLights();
 
         this.cameraController = new CameraController(
             this.camera,
@@ -63,66 +61,34 @@ export default class DemianStudio {
 
     async boot() {
         await this.characterManager.boot();
-        this.focusCharacter({ close: true });
         this.resize();
+        this.cameraController.overview({ immediate: true });
+        this.updateCameraButtons('OVERVIEW');
+        this.eventBus.emit('camera:mode', 'OVERVIEW');
         this.animationFrame = requestAnimationFrame(this.animate);
     }
 
     initRenderer() {
         this.renderer = new THREE.WebGLRenderer({
-            antialias: true,
+            antialias: false,
             alpha: false,
             powerPreference: 'high-performance',
         });
 
-        this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.75));
         this.renderer.setSize(
             Math.max(this.container.clientWidth, 1),
             Math.max(this.container.clientHeight, 1),
             false
         );
-
         this.renderer.outputColorSpace = THREE.SRGBColorSpace;
-        this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
-        this.renderer.toneMappingExposure = 1.05;
-        this.renderer.shadowMap.enabled = true;
-        this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-
+        this.renderer.toneMapping = THREE.NoToneMapping;
+        this.renderer.sortObjects = true;
         this.container.appendChild(this.renderer.domElement);
     }
 
     initCamera() {
-        this.camera = new THREE.PerspectiveCamera(
-            44,
-            Math.max(this.container.clientWidth, 1) /
-                Math.max(this.container.clientHeight, 1),
-            0.1,
-            200
-        );
-    }
-
-    initLights() {
-        this.scene.add(new THREE.HemisphereLight(0xbdd6ff, 0x190b2b, 1.35));
-
-        const key = new THREE.DirectionalLight(0xffffff, 2.6);
-        key.position.set(8, 14, 7);
-        key.castShadow = true;
-        key.shadow.mapSize.set(2048, 2048);
-        key.shadow.camera.left = -22;
-        key.shadow.camera.right = 22;
-        key.shadow.camera.top = 22;
-        key.shadow.camera.bottom = -22;
-        key.shadow.camera.near = 0.5;
-        key.shadow.camera.far = 55;
-        this.scene.add(key);
-
-        const pink = new THREE.PointLight(0xff4fd8, 26, 30, 2);
-        pink.position.set(-8, 5, -8);
-        this.scene.add(pink);
-
-        const cyan = new THREE.PointLight(0x22d3ee, 22, 28, 2);
-        cyan.position.set(8, 5, 8);
-        this.scene.add(cyan);
+        this.camera = new THREE.OrthographicCamera(-10, 10, 10, -10, 0.1, 120);
     }
 
     bindCameraButtons() {
@@ -137,6 +103,17 @@ export default class DemianStudio {
         );
 
         window.addEventListener('keydown', (event) => {
+            const target = event.target;
+            const isTyping =
+                target instanceof HTMLInputElement ||
+                target instanceof HTMLTextAreaElement ||
+                target instanceof HTMLSelectElement ||
+                target?.isContentEditable;
+
+            if (isTyping || event.repeat) {
+                return;
+            }
+
             const key = event.key.toLowerCase();
 
             if (key === 'f') {
@@ -151,7 +128,11 @@ export default class DemianStudio {
 
     bindCharacterEvents() {
         this.eventBus.on('character:selected', () => {
-            requestAnimationFrame(() => this.focusCharacter({ close: true }));
+            requestAnimationFrame(() => {
+                if (this.cameraController.mode === 'FOLLOW') {
+                    this.focusCharacter({ close: true });
+                }
+            });
         });
     }
 
@@ -159,7 +140,7 @@ export default class DemianStudio {
         const mode = this.cameraController.toggle(
             this.characterManager.focusPoint()
         );
-
+        this.updateCameraButtons(mode);
         this.eventBus.emit('camera:mode', mode);
     }
 
@@ -168,23 +149,22 @@ export default class DemianStudio {
             this.characterManager.focusPoint(),
             { close, follow }
         );
-
+        this.updateCameraButtons(mode);
         this.eventBus.emit('camera:mode', mode);
+    }
+
+    updateCameraButtons(mode) {
+        const button = document.querySelector('[data-camera-toggle]');
+
+        if (button) {
+            button.textContent =
+                mode === 'FOLLOW' ? 'نمای کامل · F' : 'دنبال‌کردن تیام · F';
+        }
     }
 
     handleLayoutChange() {
         this.resize();
-        if (this.cameraController.mode === 'FOLLOW') {
-            this.focusCharacter({ close: false, follow: true });
-        }
-
-        window.setTimeout(() => {
-            this.resize();
-
-            if (this.cameraController.mode === 'FOLLOW') {
-                this.focusCharacter({ close: false, follow: true });
-            }
-        }, 360);
+        window.setTimeout(() => this.resize(), 360);
     }
 
     animate() {
@@ -214,11 +194,9 @@ export default class DemianStudio {
         const width = Math.max(this.container.clientWidth, 1);
         const height = Math.max(this.container.clientHeight, 1);
 
-        this.camera.aspect = width / height;
-        this.camera.updateProjectionMatrix();
-
-        this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.75));
         this.renderer.setSize(width, height, false);
+        this.cameraController.resize(width, height);
         this.pipeline.resize(width, height);
     }
 
@@ -228,6 +206,7 @@ export default class DemianStudio {
         this.input.dispose();
         this.cameraController.dispose();
         this.characterManager.dispose();
+        this.world.dispose();
         this.pipeline.dispose();
         this.renderer.dispose();
         this.eventBus.clear();

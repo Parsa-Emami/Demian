@@ -116,6 +116,7 @@ export default class CharacterManager {
         ]);
 
         const entity = new SpriteCharacter({
+            scene: this.scene,
             character: record,
             texture,
             atlas,

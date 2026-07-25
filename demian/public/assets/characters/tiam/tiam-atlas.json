@@ -1,148 +1,65 @@
 {
   "meta": {
     "name": "TIAM",
-    "version": 1,
+    "version": 3,
     "image": "tiam-spritesheet.png",
-    "size": {
-      "w": 1024,
-      "h": 768
-    },
-    "frameSize": {
-      "w": 256,
-      "h": 256
-    },
-    "pixelArt": true
+    "size": { "w": 1024, "h": 768 },
+    "frameSize": { "w": 256, "h": 256 },
+    "pixelArt": true,
+    "stableFacing": true,
+    "note": "Action animations intentionally use one coherent facing pose. Cute motion is generated procedurally so the character never flickers left/right between frames."
   },
   "frames": {
-    "idle_0": {
-      "x": 0,
-      "y": 0,
-      "w": 256,
-      "h": 256
-    },
-    "idle_1": {
-      "x": 256,
-      "y": 0,
-      "w": 256,
-      "h": 256
-    },
-    "walk_0": {
-      "x": 512,
-      "y": 0,
-      "w": 256,
-      "h": 256
-    },
-    "walk_1": {
-      "x": 768,
-      "y": 0,
-      "w": 256,
-      "h": 256
-    },
-    "run_0": {
-      "x": 0,
-      "y": 256,
-      "w": 256,
-      "h": 256
-    },
-    "run_1": {
-      "x": 256,
-      "y": 256,
-      "w": 256,
-      "h": 256
-    },
-    "jump_0": {
-      "x": 512,
-      "y": 256,
-      "w": 256,
-      "h": 256
-    },
-    "jump_1": {
-      "x": 768,
-      "y": 256,
-      "w": 256,
-      "h": 256
-    },
-    "attack_0": {
-      "x": 0,
-      "y": 512,
-      "w": 256,
-      "h": 256
-    },
-    "attack_1": {
-      "x": 256,
-      "y": 512,
-      "w": 256,
-      "h": 256
-    },
-    "win_0": {
-      "x": 512,
-      "y": 512,
-      "w": 256,
-      "h": 256
-    },
-    "win_1": {
-      "x": 768,
-      "y": 512,
-      "w": 256,
-      "h": 256
-    }
+    "idle_0": { "x": 0, "y": 0, "w": 256, "h": 256 },
+    "idle_1": { "x": 256, "y": 0, "w": 256, "h": 256 },
+    "walk_0": { "x": 512, "y": 0, "w": 256, "h": 256 },
+    "walk_1": { "x": 768, "y": 0, "w": 256, "h": 256 },
+    "run_0": { "x": 0, "y": 256, "w": 256, "h": 256 },
+    "run_1": { "x": 256, "y": 256, "w": 256, "h": 256 },
+    "jump_0": { "x": 512, "y": 256, "w": 256, "h": 256 },
+    "jump_1": { "x": 768, "y": 256, "w": 256, "h": 256 },
+    "attack_0": { "x": 0, "y": 512, "w": 256, "h": 256 },
+    "attack_1": { "x": 256, "y": 512, "w": 256, "h": 256 },
+    "win_0": { "x": 512, "y": 512, "w": 256, "h": 256 },
+    "win_1": { "x": 768, "y": 512, "w": 256, "h": 256 }
   },
   "animations": {
     "idle": {
-      "frames": [
-        "idle_0",
-        "idle_1"
-      ],
+      "frames": ["idle_0", "idle_1"],
       "fps": 2,
       "loop": true
     },
     "walk": {
-      "frames": [
-        "walk_0",
-        "walk_1"
-      ],
-      "fps": 7,
-      "loop": true
+      "frames": ["walk_0"],
+      "fps": 8,
+      "loop": true,
+      "procedural": "cute-step"
     },
     "run": {
-      "frames": [
-        "run_0",
-        "run_1"
-      ],
+      "frames": ["run_0"],
       "fps": 10,
-      "loop": true
+      "loop": true,
+      "procedural": "cute-run"
     },
     "jump": {
-      "frames": [
-        "jump_0",
-        "jump_1"
-      ],
+      "frames": ["jump_0"],
       "fps": 5,
-      "loop": false
+      "loop": false,
+      "procedural": "stretch-squash"
     },
     "attack": {
-      "frames": [
-        "attack_0",
-        "attack_1"
-      ],
+      "frames": ["attack_0"],
       "fps": 8,
-      "loop": false
+      "loop": false,
+      "procedural": "arcade-slash"
     },
     "win": {
-      "frames": [
-        "win_0",
-        "win_1"
-      ],
+      "frames": ["win_0"],
       "fps": 3,
-      "loop": true
+      "loop": true,
+      "procedural": "victory-bounce"
     }
   },
-  "pivot": {
-    "x": 0.5,
-    "y": 0.96
-  },
-  "display": {
-    "worldWidth": 3.4,
-    "worldHeight": 3.4
-  }
+  "pivot": { "x": 0.5, "y": 0.96 },
+  "display": { "worldWidth": 3.75, "worldHeight": 3.75 }
 }

@@ -8,7 +8,7 @@
     >
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>Demian Arcade Character Manager</title>
+    <title>Demian 2D Arcade · TIAM</title>
 
     @vite([
         'resources/js/app.js',
@@ -46,7 +46,7 @@
                 <div class="sidebar-compact" aria-hidden="true">
                     <div class="sidebar-compact__logo">D</div>
                     <span class="sidebar-compact__active-dot"></span>
-                    <span class="sidebar-compact__name">TIAM</span>
+                    <span class="sidebar-compact__name">TIAM · 2D</span>
                     <span class="sidebar-compact__hint">M</span>
                 </div>
 
@@ -54,22 +54,22 @@
                     <section class="arcade-panel manager-brand rounded-[28px] p-4">
                         <div class="flex items-start justify-between gap-3">
                             <div>
-                                <p class="arcade-label">Demian arcade engine</p>
+                                <p class="arcade-label">Demian 2D arcade engine</p>
                                 <h1 class="arcade-title mt-2 text-3xl font-black">
                                     تیام / TIAM
                                 </h1>
                                 <p class="mt-1 text-xs text-zinc-400">
-                                    Cute Sprite Sheet Character System
+                                    Stable Sprite · Cute Procedural Motion
                                 </p>
                             </div>
 
-                            <span class="arcade-badge">V2</span>
+                            <span class="arcade-badge">V3</span>
                         </div>
 
                         <div class="mt-4 manager-brand__chip-row">
-                            <span class="manager-chip manager-chip--pink">Cute Motion</span>
-                            <span class="manager-chip manager-chip--cyan">Orbit Camera</span>
-                            <span class="manager-chip manager-chip--yellow">Sprite Manager</span>
+                            <span class="manager-chip manager-chip--pink">Stable Facing</span>
+                            <span class="manager-chip manager-chip--cyan">2D Arcade</span>
+                            <span class="manager-chip manager-chip--yellow">Cute FX</span>
                         </div>
                     </section>
 
@@ -80,7 +80,7 @@
                                 <h2 class="mt-1 text-lg font-black">مدیریت کاراکترها</h2>
                             </div>
 
-                            <span class="text-[10px] font-black text-cyan-300">LEFT SIDEBAR</span>
+                            <span class="text-[10px] font-black text-cyan-300">PLAYER SELECT</span>
                         </div>
 
                         <div
@@ -95,8 +95,8 @@
                             <p class="arcade-label">Import character</p>
                             <h2 class="mt-1 text-base font-black">افزودن Sprite Sheet</h2>
                             <p class="mt-1 text-[11px] leading-5 text-zinc-500">
-                                فایل Sprite Sheet و Atlas JSON را وارد کن تا کاراکتر جدید
-                                داخل سیستم ثبت شود.
+                                Sprite Sheet و Atlas JSON را وارد کن تا کاراکتر جدید
+                                داخل موتور آرکیدی ثبت شود.
                             </p>
                         </div>
 
@@ -193,12 +193,13 @@
                     </section>
 
                     <section class="arcade-panel mt-4 rounded-[28px] p-4">
-                        <p class="arcade-label">Tips</p>
+                        <p class="arcade-label">کنترل‌ها</p>
 
                         <ul class="mt-3 space-y-2 text-[11px] leading-6 text-zinc-400">
-                            <li>• برای جمع و بازکردن سایدبار کلید M را بزن.</li>
-                            <li>• با Space پرش، با E حمله و با Q حالت برد اجرا می‌شود.</li>
-                            <li>• Orbit دوربین با F جابه‌جا و با R روی تیام متمرکز می‌شود.</li>
+                            <li>• حرکت با WASD یا کلیدهای جهت و دویدن با Shift.</li>
+                            <li>• Space پرش، E حمله و Q جشن برد را اجرا می‌کند.</li>
+                            <li>• F بین نمای کامل و دنبال‌کردن تیام جابه‌جا می‌شود.</li>
+                            <li>• R تیام را دقیقاً وسط تصویر قرار می‌دهد.</li>
                         </ul>
                     </section>
                 </div>
@@ -206,7 +207,8 @@
         </aside>
 
         <section class="manager-stage" dir="rtl">
-            <div data-demian-scene class="absolute inset-0"></div>
+            <div class="arcade-screen-bezel" aria-hidden="true"></div>
+            <div data-demian-scene class="demian-scene absolute inset-0"></div>
 
             <header class="pointer-events-none absolute inset-x-0 top-0 z-20 p-4">
                 <div class="flex items-start justify-between gap-3">
@@ -216,9 +218,9 @@
                                 type="button"
                                 data-camera-reset
                                 class="arcade-button arcade-button--small arcade-button--focus"
-                                title="دوربین را روی تیام متمرکز کن"
+                                title="تیام را وسط تصویر قرار بده"
                             >
-                                Focus TIAM · R
+                                تمرکز تیام · R
                             </button>
 
                             <button
@@ -226,7 +228,7 @@
                                 data-camera-toggle
                                 class="arcade-button arcade-button--small arcade-button--cyan"
                             >
-                                Camera F
+                                دنبال‌کردن تیام · F
                             </button>
 
                             <button
@@ -244,17 +246,26 @@
                         </div>
                     </div>
 
-                    <div class="arcade-panel pointer-events-auto rounded-[26px] px-5 py-4">
-                        <p class="arcade-label">Demian arcade engine</p>
-                        <h2 class="arcade-title mt-2 text-2xl font-black">
-                            تیام / TIAM
-                        </h2>
-                        <p class="mt-1 text-xs text-zinc-400">
-                            Sprite Sheet Character System
-                        </p>
+                    <div class="arcade-panel arcade-stage-brand pointer-events-auto rounded-[26px] px-5 py-4">
+                        <div class="flex items-center gap-3">
+                            <span class="arcade-live-dot" aria-hidden="true"></span>
+                            <div>
+                                <p class="arcade-label">Player one ready</p>
+                                <h2 class="arcade-title mt-1 text-2xl font-black">
+                                    TIAM · 2D ARCADE
+                                </h2>
+                                <p class="mt-1 text-xs text-zinc-400">
+                                    No frame flicker · Pixel-perfect character
+                                </p>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </header>
+
+            <div class="arcade-intro-note pointer-events-none absolute left-1/2 top-28 z-20 -translate-x-1/2">
+                تیام بعد از ورود، اکشن‌های بانمک را خودکار اجرا می‌کند
+            </div>
 
             <section
                 class="hud-panel arcade-panel pointer-events-none absolute bottom-4 left-4 z-20 rounded-[24px] p-3"
@@ -269,23 +280,47 @@
                     <span class="text-zinc-500">POSITION</span>
                     <strong data-position-label class="text-amber-300">0 / 0</strong>
 
-                    <span class="text-zinc-500">CAMERA</span>
-                    <strong data-camera-label class="text-cyan-300">FOLLOW</strong>
+                    <span class="text-zinc-500">VIEW</span>
+                    <strong data-camera-label class="text-cyan-300">OVERVIEW</strong>
                 </div>
             </section>
 
             <section
-                class="help-panel arcade-panel pointer-events-none absolute bottom-4 right-4 z-20 hidden rounded-[24px] p-3 text-left text-[10px] leading-5 text-zinc-400 sm:block"
+                class="help-panel arcade-panel pointer-events-none absolute bottom-4 right-4 z-20 hidden rounded-[24px] p-3 text-left text-[10px] leading-5 text-zinc-400 lg:block"
                 dir="ltr"
             >
                 <p><b class="text-white">WASD</b> move</p>
                 <p><b class="text-white">Shift</b> run</p>
                 <p><b class="text-white">Space</b> jump</p>
                 <p><b class="text-white">E</b> attack</p>
-                <p><b class="text-white">Q</b> win</p>
-                <p><b class="text-white">M</b> manager</p>
-                <p><b class="text-white">R</b> focus TIAM</p>
-                <p><b class="text-white">Mouse</b> orbit / zoom</p>
+                <p><b class="text-white">Q</b> victory</p>
+                <p><b class="text-white">F</b> full / follow view</p>
+                <p><b class="text-white">R</b> center TIAM</p>
+                <p><b class="text-white">Wheel</b> zoom</p>
+            </section>
+
+            <section class="touch-controller absolute inset-x-0 bottom-3 z-30" dir="ltr">
+                <div class="touch-controller__movement" aria-label="کنترل حرکت">
+                    <button type="button" data-input-hold="up" class="touch-key touch-key--up" aria-label="بالا">▲</button>
+                    <button type="button" data-input-hold="left" class="touch-key touch-key--left" aria-label="چپ">◀</button>
+                    <button type="button" data-input-hold="down" class="touch-key touch-key--down" aria-label="پایین">▼</button>
+                    <button type="button" data-input-hold="right" class="touch-key touch-key--right" aria-label="راست">▶</button>
+                </div>
+
+                <div class="touch-controller__actions" aria-label="اکشن‌های تیام">
+                    <button type="button" data-input-hold="run" class="touch-action touch-action--run">
+                        RUN
+                    </button>
+                    <button type="button" data-input-press="jump" class="touch-action touch-action--jump">
+                        JUMP
+                    </button>
+                    <button type="button" data-input-press="attack" class="touch-action touch-action--attack">
+                        HIT
+                    </button>
+                    <button type="button" data-input-press="win" class="touch-action touch-action--win">
+                        WIN
+                    </button>
+                </div>
             </section>
         </section>
     </main>

@@ -1,131 +1,155 @@
 import * as THREE from 'three';
-import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+const FOLLOW_SPAN = 10.5;
+const OVERVIEW_SPAN = 21.5;
 
 export default class CameraController {
     constructor(camera, domElement) {
-        this.camera = camera;
-        this.mode = 'FOLLOW';
-
-        // A portrait-friendly offset. The controls target is always the
-        // character's visual centre, so TIAM remains in the viewport centre.
-        this.defaultOffset = new THREE.Vector3(5.6, 3.7, 7.4);
-        this.defaultTarget = new THREE.Vector3(0, 1.7, 0);
-        this.followPoint = this.defaultTarget.clone();
-        this.targetDelta = new THREE.Vector3();
-
-        this.controls = new OrbitControls(camera, domElement);
-        this.controls.enabled = true;
-        this.controls.enableDamping = true;
-        this.controls.dampingFactor = 0.075;
-        this.controls.enablePan = false;
-        this.controls.screenSpacePanning = false;
-        this.controls.minDistance = 3.6;
-        this.controls.maxDistance = 18;
-        this.controls.minPolarAngle = 0.28;
-        this.controls.maxPolarAngle = Math.PI / 2.05;
-        this.controls.rotateSpeed = 0.72;
-        this.controls.zoomSpeed = 0.9;
-
-        // zoomToCursor can move OrbitControls.target away from the character.
-        // It is enabled only in FREE mode.
-        this.controls.zoomToCursor = false;
-
-        this.reset(this.defaultTarget);
-    }
-
-    update(focusPoint) {
-        this.followPoint.copy(focusPoint);
-
-        if (this.mode === 'FOLLOW') {
-            this.lockTargetTo(this.followPoint);
+        if (!(camera instanceof THREE.OrthographicCamera)) {
+            throw new Error('The 2D arcade camera must be orthographic.');
         }
 
-        this.controls.update();
+        this.camera = camera;
+        this.domElement = domElement;
+        this.mode = 'OVERVIEW';
+        this.aspect = 1;
+        this.currentSpan = OVERVIEW_SPAN;
+        this.targetSpan = OVERVIEW_SPAN;
+        this.followPoint = new THREE.Vector3(0, 1.55, 0);
+        this.currentTarget = this.followPoint.clone();
+        this.overviewTarget = new THREE.Vector3(0, 1.35, 0);
+        this.cameraOffset = new THREE.Vector3(0, 13.5, 16.5);
+        this.lookTarget = new THREE.Vector3();
+
+        this.onWheel = this.onWheel.bind(this);
+        this.domElement.addEventListener('wheel', this.onWheel, {
+            passive: false,
+        });
+
+        this.applyPose(this.overviewTarget);
+        this.updateProjection();
     }
 
-    lockTargetTo(focusPoint) {
-        // Translate camera and target by exactly the same delta. This preserves
-        // the user's orbit/zoom while guaranteeing that focusPoint is centred.
-        this.targetDelta
-            .copy(focusPoint)
-            .sub(this.controls.target);
+    update(focusPoint, deltaTime = 1 / 60) {
+        this.followPoint.copy(focusPoint);
 
-        this.camera.position.add(this.targetDelta);
-        this.controls.target.copy(focusPoint);
+        const desiredTarget =
+            this.mode === 'FOLLOW' ? this.followPoint : this.overviewTarget;
+        const targetAlpha = 1 - Math.exp(-7.5 * deltaTime);
+        const zoomAlpha = 1 - Math.exp(-6.5 * deltaTime);
+
+        this.currentTarget.lerp(desiredTarget, targetAlpha);
+        this.currentSpan = THREE.MathUtils.lerp(
+            this.currentSpan,
+            this.targetSpan,
+            zoomAlpha
+        );
+
+        this.applyPose(this.currentTarget);
+        this.updateProjection();
+    }
+
+    applyPose(target) {
+        this.camera.position.copy(target).add(this.cameraOffset);
+        this.lookTarget.copy(target);
+        this.lookTarget.y -= 0.1;
+        this.camera.lookAt(this.lookTarget);
+        this.camera.updateMatrixWorld();
     }
 
     movementBasis() {
-        const forward = new THREE.Vector3();
-        this.camera.getWorldDirection(forward);
-        forward.y = 0;
-
-        if (forward.lengthSq() < 0.001) {
-            forward.set(0, 0, -1);
-        }
-
-        forward.normalize();
-
-        const right = new THREE.Vector3()
-            .crossVectors(forward, this.camera.up)
-            .normalize();
-
-        return { forward, right };
+        return {
+            right: new THREE.Vector3(1, 0, 0),
+            forward: new THREE.Vector3(0, 0, -1),
+        };
     }
 
     setMode(mode, focusPoint = this.followPoint) {
-        this.mode = mode === 'FREE' ? 'FREE' : 'FOLLOW';
-        this.controls.enablePan = this.mode === 'FREE';
-        this.controls.zoomToCursor = this.mode === 'FREE';
+        this.mode = mode === 'FOLLOW' ? 'FOLLOW' : 'OVERVIEW';
 
         if (this.mode === 'FOLLOW') {
-            this.lockTargetTo(focusPoint);
+            this.followPoint.copy(focusPoint);
+            this.targetSpan = FOLLOW_SPAN;
+        } else {
+            this.targetSpan = OVERVIEW_SPAN;
         }
 
-        this.controls.update();
         return this.mode;
     }
 
     toggle(focusPoint) {
-        const nextMode = this.mode === 'FOLLOW' ? 'FREE' : 'FOLLOW';
-        return this.setMode(nextMode, focusPoint);
-    }
-
-    reset(focusPoint = this.defaultTarget) {
-        this.followPoint.copy(focusPoint);
-        this.controls.target.copy(focusPoint);
-        this.camera.position
-            .copy(focusPoint)
-            .add(this.defaultOffset);
-
-        this.camera.near = 0.1;
-        this.camera.far = 200;
-        this.camera.updateProjectionMatrix();
-        this.controls.update();
+        return this.setMode(
+            this.mode === 'FOLLOW' ? 'OVERVIEW' : 'FOLLOW',
+            focusPoint
+        );
     }
 
     focus(focusPoint, { close = true, follow = true } = {}) {
-        if (follow) {
-            this.mode = 'FOLLOW';
-            this.controls.enablePan = false;
-            this.controls.zoomToCursor = false;
-        }
-
         this.followPoint.copy(focusPoint);
 
-        if (close) {
-            this.controls.target.copy(focusPoint);
-            this.camera.position
-                .copy(focusPoint)
-                .add(this.defaultOffset);
-        } else {
-            this.lockTargetTo(focusPoint);
+        if (follow) {
+            this.mode = 'FOLLOW';
+            this.targetSpan = FOLLOW_SPAN;
         }
 
-        this.controls.update();
+        if (close) {
+            this.currentTarget.copy(focusPoint);
+            this.currentSpan = FOLLOW_SPAN;
+            this.applyPose(this.currentTarget);
+            this.updateProjection();
+        }
+
         return this.mode;
     }
 
+    overview({ immediate = false } = {}) {
+        this.mode = 'OVERVIEW';
+        this.targetSpan = OVERVIEW_SPAN;
+
+        if (immediate) {
+            this.currentTarget.copy(this.overviewTarget);
+            this.currentSpan = OVERVIEW_SPAN;
+            this.applyPose(this.currentTarget);
+            this.updateProjection();
+        }
+
+        return this.mode;
+    }
+
+    resize(width, height) {
+        this.aspect = Math.max(width, 1) / Math.max(height, 1);
+        this.updateProjection();
+    }
+
+    updateProjection() {
+        const halfHeight = this.currentSpan * 0.5;
+        const halfWidth = halfHeight * this.aspect;
+
+        this.camera.left = -halfWidth;
+        this.camera.right = halfWidth;
+        this.camera.top = halfHeight;
+        this.camera.bottom = -halfHeight;
+        this.camera.near = 0.1;
+        this.camera.far = 120;
+        this.camera.updateProjectionMatrix();
+    }
+
+    onWheel(event) {
+        event.preventDefault();
+
+        const direction = Math.sign(event.deltaY);
+        const base = this.mode === 'FOLLOW' ? FOLLOW_SPAN : OVERVIEW_SPAN;
+        const minimum = this.mode === 'FOLLOW' ? 8.4 : 16.5;
+        const maximum = this.mode === 'FOLLOW' ? 14 : 25;
+
+        this.targetSpan = THREE.MathUtils.clamp(
+            this.targetSpan + direction * base * 0.07,
+            minimum,
+            maximum
+        );
+    }
+
     dispose() {
-        this.controls.dispose();
+        this.domElement.removeEventListener('wheel', this.onWheel);
     }
 }

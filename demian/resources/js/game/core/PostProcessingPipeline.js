@@ -11,11 +11,10 @@ export default class PostProcessingPipeline {
 
         this.bloom = new UnrealBloomPass(
             new THREE.Vector2(width, height),
-            0.72,
-            0.5,
-            0.86
+            0.46,
+            0.28,
+            0.82
         );
-
         this.composer.addPass(this.bloom);
         this.composer.addPass(new OutputPass());
     }
@@ -25,6 +24,7 @@ export default class PostProcessingPipeline {
     }
 
     resize(width, height) {
+        this.composer.setPixelRatio(Math.min(window.devicePixelRatio, 1.75));
         this.composer.setSize(width, height);
     }
 

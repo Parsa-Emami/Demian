@@ -660,3 +660,301 @@ canvas,
         transition-duration: 0.01ms !important;
     }
 }
+
+/* --------------------------------------------------------------------------
+   Demian V3 — 2D arcade presentation
+   -------------------------------------------------------------------------- */
+
+:root {
+    --manager-sidebar-expanded: 360px;
+    --manager-sidebar-collapsed: 70px;
+}
+
+.manager-stage {
+    background:
+        radial-gradient(circle at 50% 42%, rgba(60, 72, 190, 0.16), transparent 38%),
+        linear-gradient(180deg, #080a1a 0%, #050610 100%);
+    touch-action: none;
+}
+
+.demian-scene,
+.demian-scene canvas {
+    width: 100%;
+    height: 100%;
+}
+
+.demian-scene canvas {
+    display: block;
+    touch-action: none;
+    user-select: none;
+}
+
+.manager-stage::before,
+.manager-stage::after {
+    position: absolute;
+    inset: 0;
+    z-index: 12;
+    pointer-events: none;
+    content: "";
+}
+
+.manager-stage::before {
+    background: repeating-linear-gradient(
+        180deg,
+        rgba(255, 255, 255, 0.018) 0,
+        rgba(255, 255, 255, 0.018) 1px,
+        rgba(0, 0, 0, 0.055) 2px,
+        rgba(0, 0, 0, 0.055) 4px
+    );
+    mix-blend-mode: overlay;
+    opacity: 0.55;
+}
+
+.manager-stage::after {
+    background:
+        radial-gradient(circle at center, transparent 54%, rgba(1, 2, 10, 0.42) 100%),
+        linear-gradient(90deg, rgba(255, 79, 216, 0.035), transparent 20%, transparent 80%, rgba(34, 211, 238, 0.035));
+}
+
+.arcade-screen-bezel {
+    position: absolute;
+    inset: 8px;
+    z-index: 13;
+    border: 2px solid rgba(139, 92, 246, 0.2);
+    border-radius: 24px;
+    box-shadow:
+        0 0 0 1px rgba(34, 211, 238, 0.12) inset,
+        0 0 34px rgba(139, 92, 246, 0.12) inset;
+    pointer-events: none;
+}
+
+.arcade-stage-brand {
+    max-width: min(430px, 46vw);
+}
+
+.arcade-live-dot {
+    width: 11px;
+    height: 11px;
+    flex: 0 0 auto;
+    border: 2px solid rgba(5, 6, 16, 0.9);
+    border-radius: 999px;
+    background: #34d399;
+    box-shadow: 0 0 16px rgba(52, 211, 153, 0.9);
+    animation: compact-status-pulse 1.4s ease-in-out infinite;
+}
+
+.arcade-intro-note {
+    width: max-content;
+    max-width: calc(100% - 2rem);
+    border: 1px solid rgba(255, 212, 59, 0.28);
+    border-radius: 999px;
+    padding: 0.5rem 0.9rem;
+    background: rgba(6, 8, 24, 0.72);
+    color: #fde68a;
+    font-size: 0.66rem;
+    font-weight: 900;
+    text-align: center;
+    box-shadow: 0 0 24px rgba(251, 191, 36, 0.08);
+    animation: arcade-intro-note 5.2s ease forwards;
+}
+
+.touch-controller {
+    display: none;
+    align-items: end;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-inline: max(14px, env(safe-area-inset-left)) max(14px, env(safe-area-inset-right));
+    padding-bottom: env(safe-area-inset-bottom);
+    pointer-events: none;
+}
+
+.touch-controller__movement,
+.touch-controller__actions {
+    pointer-events: auto;
+}
+
+.touch-controller__movement {
+    display: grid;
+    width: 142px;
+    height: 142px;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    gap: 5px;
+    padding: 7px;
+    border: 1px solid rgba(34, 211, 238, 0.2);
+    border-radius: 32px;
+    background: rgba(3, 5, 18, 0.68);
+    box-shadow:
+        0 16px 34px rgba(0, 0, 0, 0.38),
+        0 0 28px rgba(34, 211, 238, 0.08) inset;
+    backdrop-filter: blur(12px);
+}
+
+.touch-key,
+.touch-action {
+    -webkit-tap-highlight-color: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: #fff;
+    font-weight: 1000;
+    user-select: none;
+    touch-action: none;
+    transition:
+        transform 90ms ease,
+        background 90ms ease,
+        box-shadow 90ms ease,
+        border-color 90ms ease;
+}
+
+.touch-key {
+    display: grid;
+    place-items: center;
+    border-radius: 13px;
+    background:
+        linear-gradient(180deg, rgba(34, 211, 238, 0.13), rgba(34, 211, 238, 0.04)),
+        rgba(12, 15, 38, 0.9);
+    color: #a5f3fc;
+    font-size: 0.88rem;
+}
+
+.touch-key--up {
+    grid-column: 2;
+    grid-row: 1;
+}
+
+.touch-key--left {
+    grid-column: 1;
+    grid-row: 2;
+}
+
+.touch-key--down {
+    grid-column: 2;
+    grid-row: 3;
+}
+
+.touch-key--right {
+    grid-column: 3;
+    grid-row: 2;
+}
+
+.touch-controller__actions {
+    display: grid;
+    width: min(190px, 45vw);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+}
+
+.touch-action {
+    min-height: 54px;
+    border-radius: 18px;
+    background: rgba(8, 10, 29, 0.82);
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.35);
+    backdrop-filter: blur(12px);
+}
+
+.touch-action--run {
+    border-color: rgba(34, 211, 238, 0.34);
+    color: #a5f3fc;
+}
+
+.touch-action--jump {
+    border-color: rgba(139, 92, 246, 0.42);
+    color: #ddd6fe;
+}
+
+.touch-action--attack {
+    border-color: rgba(255, 79, 216, 0.44);
+    color: #fbcfe8;
+}
+
+.touch-action--win {
+    border-color: rgba(251, 191, 36, 0.44);
+    color: #fde68a;
+}
+
+.touch-key.is-pressed,
+.touch-action.is-pressed,
+.touch-key:active,
+.touch-action:active {
+    transform: scale(0.91);
+    border-color: rgba(255, 255, 255, 0.48);
+    background: rgba(124, 58, 237, 0.32);
+    box-shadow: 0 0 24px rgba(139, 92, 246, 0.28);
+}
+
+@keyframes arcade-intro-note {
+    0% {
+        transform: translate(-50%, -8px) scale(0.94);
+        opacity: 0;
+    }
+
+    10%,
+    72% {
+        transform: translate(-50%, 0) scale(1);
+        opacity: 1;
+    }
+
+    100% {
+        transform: translate(-50%, -6px) scale(0.98);
+        opacity: 0;
+        visibility: hidden;
+    }
+}
+
+@media (hover: none), (max-width: 900px) {
+    .touch-controller {
+        display: flex;
+    }
+
+    .hud-panel,
+    .help-panel {
+        display: none !important;
+    }
+
+    .arcade-stage-brand {
+        display: none;
+    }
+
+    .arcade-intro-note {
+        top: 90px;
+        font-size: 0.58rem;
+    }
+}
+
+@media (max-width: 560px) {
+    .manager-stage {
+        min-height: 78svh;
+    }
+
+    .manager-stage > header {
+        padding: 10px;
+    }
+
+    .manager-stage > header .arcade-panel {
+        border-radius: 14px;
+    }
+
+    .manager-stage > header .arcade-button {
+        min-height: 2.2rem;
+        padding: 0.48rem 0.62rem;
+        font-size: 0.58rem;
+    }
+
+    .touch-controller__movement {
+        width: 126px;
+        height: 126px;
+        border-radius: 28px;
+    }
+
+    .touch-controller__actions {
+        width: min(170px, 47vw);
+        gap: 6px;
+    }
+
+    .touch-action {
+        min-height: 48px;
+        border-radius: 15px;
+        font-size: 0.61rem;
+    }
+}
