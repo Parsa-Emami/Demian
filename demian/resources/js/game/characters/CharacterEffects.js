@@ -13,6 +13,8 @@ export default class CharacterEffects {
             heart: this.createTexture('heart'),
             slash: this.createTexture('slash'),
             sparkle: this.createTexture('sparkle'),
+            note: this.createTexture('note'),
+            zzz: this.createTexture('zzz'),
         };
     }
 
@@ -67,6 +69,22 @@ export default class CharacterEffects {
             context.bezierCurveTo(64, 40, 70, 28, 84, 30);
             context.bezierCurveTo(110, 34, 110, 72, 64, 104);
             context.fill();
+        }
+
+        if (type === 'note') {
+            context.fillStyle = '#7cf8ff';
+            context.font = '900 82px Arial, sans-serif';
+            context.textAlign = 'center';
+            context.textBaseline = 'middle';
+            context.fillText('♪', 64, 66);
+        }
+
+        if (type === 'zzz') {
+            context.fillStyle = '#c4b5fd';
+            context.font = '900 48px Arial, sans-serif';
+            context.textAlign = 'center';
+            context.textBaseline = 'middle';
+            context.fillText('Zzz', 64, 66);
         }
 
         if (type === 'slash') {
@@ -173,6 +191,79 @@ export default class CharacterEffects {
             }
         }
 
+
+        if (state === 'dash' || state === 'dodge') {
+            const direction = this.owner.actionDirection?.clone() ?? new THREE.Vector3(facing, 0, 0);
+
+            for (let index = 0; index < 8; index += 1) {
+                this.spawn(index % 3 === 0 ? 'sparkle' : 'dust', {
+                    position,
+                    scale: 0.2 + Math.random() * 0.18,
+                    life: 0.34 + Math.random() * 0.24,
+                    velocity: direction.clone().multiplyScalar(-1.4 - Math.random() * 2.2).add(
+                        new THREE.Vector3(
+                            (Math.random() - 0.5) * 0.9,
+                            0.35 + Math.random() * 0.85,
+                            (Math.random() - 0.5) * 0.9
+                        )
+                    ),
+                    gravity: 1.8,
+                    growth: 0.7,
+                    spin: (Math.random() - 0.5) * 5,
+                });
+            }
+        }
+
+        if (state === 'dance' || state === 'laugh') {
+            for (let index = 0; index < 8; index += 1) {
+                this.spawn(index % 2 === 0 ? 'note' : 'heart', {
+                    position,
+                    y: 1.25 + Math.random() * 0.65,
+                    scale: 0.2 + Math.random() * 0.16,
+                    life: 0.8 + Math.random() * 0.55,
+                    velocity: new THREE.Vector3(
+                        (Math.random() - 0.5) * 1.8,
+                        0.8 + Math.random() * 1.4,
+                        (Math.random() - 0.5) * 0.55
+                    ),
+                    gravity: 1.4,
+                    spin: (Math.random() - 0.5) * 4,
+                });
+            }
+        }
+
+        if (state === 'wave' || state === 'pose' || state === 'spin') {
+            for (let index = 0; index < 7; index += 1) {
+                const angle = (Math.PI * 2 * index) / 7;
+                this.spawn('sparkle', {
+                    position,
+                    y: 1.25,
+                    scale: 0.16 + Math.random() * 0.13,
+                    life: 0.65 + Math.random() * 0.4,
+                    velocity: new THREE.Vector3(
+                        Math.cos(angle) * (0.7 + Math.random()),
+                        0.65 + Math.random() * 1.25,
+                        Math.sin(angle) * 0.55
+                    ),
+                    gravity: 1.5,
+                    spin: (Math.random() - 0.5) * 6,
+                });
+            }
+        }
+
+        if (state === 'sleep') {
+            for (let index = 0; index < 3; index += 1) {
+                this.spawn('zzz', {
+                    position,
+                    y: 1.45 + index * 0.36,
+                    scale: 0.2 + index * 0.05,
+                    life: 1.1 + index * 0.25,
+                    velocity: new THREE.Vector3(0.15 * facing, 0.55 + index * 0.12, 0),
+                    growth: 0.25,
+                });
+            }
+        }
+
         if (state === 'jump') {
             for (let index = 0; index < 4; index += 1) {
                 this.spawn('dust', {
@@ -199,17 +290,28 @@ export default class CharacterEffects {
 
         this.dustTimer = speed > this.owner.walkSpeed * 1.35 ? 0.085 : 0.16;
         const position = this.owner.group.position.clone();
-        position.x -= this.owner.facing * 0.35;
+        const travel = this.owner.velocity.clone();
+        travel.y = 0;
+
+        if (travel.lengthSq() < 0.01) {
+            travel.set(this.owner.facing, 0, 0);
+        } else {
+            travel.normalize();
+        }
+
+        position.addScaledVector(travel, -0.38);
+        const side = new THREE.Vector3(-travel.z, 0, travel.x);
+        const backwardSpeed = 0.35 + Math.random() * 0.4;
 
         this.spawn('dust', {
             position,
             scale: speed > this.owner.walkSpeed * 1.35 ? 0.33 : 0.24,
             life: 0.48,
-            velocity: new THREE.Vector3(
-                -this.owner.facing * (0.35 + Math.random() * 0.4),
-                0.15 + Math.random() * 0.25,
-                (Math.random() - 0.5) * 0.35
-            ),
+            velocity: travel
+                .clone()
+                .multiplyScalar(-backwardSpeed)
+                .addScaledVector(side, (Math.random() - 0.5) * 0.45)
+                .add(new THREE.Vector3(0, 0.15 + Math.random() * 0.25, 0)),
             growth: 0.55,
         });
     }

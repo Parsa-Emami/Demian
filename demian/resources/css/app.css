@@ -958,3 +958,55 @@ canvas,
         font-size: 0.61rem;
     }
 }
+
+/* TIAM V4 action controls */
+.help-panel {
+    max-width: 340px;
+}
+
+.help-panel__grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 1rem;
+    row-gap: 0.1rem;
+}
+
+.help-panel__grid p {
+    white-space: nowrap;
+}
+
+.touch-controller__actions {
+    width: min(252px, 52vw);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.touch-action--dash {
+    border-color: rgba(52, 211, 153, 0.42);
+    color: #a7f3d0;
+}
+
+.touch-action--dance {
+    border-color: rgba(244, 114, 182, 0.44);
+    color: #fbcfe8;
+}
+
+.touch-action--speak {
+    border-color: rgba(251, 191, 36, 0.48);
+    color: #fde68a;
+    background:
+        linear-gradient(180deg, rgba(251, 191, 36, 0.12), rgba(251, 191, 36, 0.04)),
+        rgba(8, 10, 29, 0.82);
+}
+
+@media (max-width: 560px) {
+    .touch-controller__actions {
+        width: min(190px, 51vw);
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .touch-action {
+        min-height: 46px;
+        padding-inline: 0.15rem;
+        font-size: 0.56rem;
+    }
+}

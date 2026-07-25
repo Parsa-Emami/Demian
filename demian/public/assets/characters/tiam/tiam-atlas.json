@@ -1,13 +1,14 @@
 {
   "meta": {
     "name": "TIAM",
-    "version": 3,
+    "version": 4,
     "image": "tiam-spritesheet.png",
     "size": { "w": 1024, "h": 768 },
     "frameSize": { "w": 256, "h": 256 },
     "pixelArt": true,
     "stableFacing": true,
-    "note": "Action animations intentionally use one coherent facing pose. Cute motion is generated procedurally so the character never flickers left/right between frames."
+    "directionalFrames": true,
+    "note": "TIAM V4 uses explicit right/left frames where available and procedural motion for a larger action set without direction flicker."
   },
   "frames": {
     "idle_0": { "x": 0, "y": 0, "w": 256, "h": 256 },
@@ -30,14 +31,16 @@
       "loop": true
     },
     "walk": {
-      "frames": ["walk_0"],
+      "framesRight": ["walk_0"],
+      "framesLeft": ["walk_1"],
       "fps": 8,
       "loop": true,
       "procedural": "cute-step"
     },
     "run": {
-      "frames": ["run_0"],
-      "fps": 10,
+      "framesRight": ["run_0"],
+      "framesLeft": ["run_1"],
+      "fps": 11,
       "loop": true,
       "procedural": "cute-run"
     },
@@ -48,17 +51,93 @@
       "procedural": "stretch-squash"
     },
     "attack": {
-      "frames": ["attack_0"],
-      "fps": 8,
+      "framesRight": ["attack_0"],
+      "framesLeft": ["attack_1"],
+      "fps": 9,
       "loop": false,
       "procedural": "arcade-slash"
     },
     "win": {
+      "frames": ["win_0", "win_1"],
+      "fps": 5,
+      "loop": true,
+      "procedural": "victory-bounce"
+    },
+    "dash": {
+      "framesRight": ["run_0"],
+      "framesLeft": ["run_1"],
+      "fps": 14,
+      "loop": true,
+      "procedural": "speed-dash"
+    },
+    "dodge": {
+      "frames": ["jump_1"],
+      "fps": 9,
+      "loop": true,
+      "procedural": "side-roll"
+    },
+    "dance": {
+      "frames": ["win_0", "win_1"],
+      "fps": 7,
+      "loop": true,
+      "procedural": "happy-dance"
+    },
+    "wave": {
+      "frames": ["win_0", "idle_1"],
+      "fps": 6,
+      "loop": true,
+      "procedural": "friendly-wave"
+    },
+    "spin": {
+      "frames": ["idle_0", "idle_1"],
+      "fps": 12,
+      "loop": true,
+      "procedural": "full-spin"
+    },
+    "crouch": {
+      "frames": ["jump_1"],
+      "fps": 4,
+      "loop": true,
+      "procedural": "crouch-bob"
+    },
+    "laugh": {
+      "frames": ["win_1", "idle_1"],
+      "fps": 8,
+      "loop": true,
+      "procedural": "belly-laugh"
+    },
+    "pose": {
       "frames": ["win_0"],
       "fps": 3,
       "loop": true,
-      "procedural": "victory-bounce"
+      "procedural": "hero-pose"
+    },
+    "sleep": {
+      "frames": ["idle_0", "idle_1"],
+      "fps": 1,
+      "loop": true,
+      "procedural": "sleepy-sway"
+    },
+    "taunt": {
+      "framesRight": ["attack_0", "idle_0"],
+      "framesLeft": ["attack_1", "idle_0"],
+      "fps": 7,
+      "loop": true,
+      "procedural": "playful-taunt"
     }
+  },
+  "speech": {
+    "duration": 3.2,
+    "messages": [
+      "گی",
+      "کافی فقط بچ کافی",
+      "متالیکا دیگه خز شد",
+      "بریم یه دود بگیریم",
+      "باختم",
+      "صدرا لته آرت تمرین کن",
+      "صدرا بیس تمرین کن",
+      "ستایش بیا اینجا"
+    ]
   },
   "pivot": { "x": 0.5, "y": 0.96 },
   "display": { "worldWidth": 3.75, "worldHeight": 3.75 }

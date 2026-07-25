@@ -1,6 +1,37 @@
 import * as THREE from 'three';
 import SpriteAnimator from './SpriteAnimator';
 import CharacterEffects from './CharacterEffects';
+import CharacterSpeechBubble from './CharacterSpeechBubble';
+
+const LOCKED_ACTIONS = new Set([
+    'attack',
+    'win',
+    'dash',
+    'dodge',
+    'dance',
+    'wave',
+    'spin',
+    'crouch',
+    'laugh',
+    'pose',
+    'sleep',
+    'taunt',
+]);
+
+const ACTIONS = [
+    ['attack', 0.58],
+    ['win', 1.45],
+    ['dash', 0.46],
+    ['dodge', 0.64],
+    ['dance', 2.35],
+    ['wave', 1.55],
+    ['spin', 1.12],
+    ['crouch', 1.25],
+    ['laugh', 1.72],
+    ['pose', 1.65],
+    ['sleep', 2.8],
+    ['taunt', 1.42],
+];
 
 export default class SpriteCharacter {
     constructor({ scene, character, texture, atlas }) {
@@ -14,6 +45,7 @@ export default class SpriteCharacter {
 
         this.velocity = new THREE.Vector3();
         this.moveDirection = new THREE.Vector3();
+        this.lastMoveDirection = new THREE.Vector3(1, 0, 0);
         this.zeroVelocity = new THREE.Vector3();
         this.state = 'idle';
         this.previousState = null;
@@ -27,6 +59,9 @@ export default class SpriteCharacter {
         this.introClock = 0;
         this.introStep = 0;
         this.introActive = true;
+        this.depthMotion = 0;
+        this.horizontalMotion = 0;
+        this.actionDirection = new THREE.Vector3(1, 0, 0);
 
         const settings = character.settings ?? {};
         this.walkSpeed = Number(settings.walk_speed ?? 3.2);
@@ -114,6 +149,7 @@ export default class SpriteCharacter {
 
         this.animator = new SpriteAnimator(this.texture, atlas);
         this.effects = new CharacterEffects(scene, this);
+        this.speech = new CharacterSpeechBubble(this, atlas.speech ?? {});
         this.animator.play('idle');
         this.applySpawnPose(0);
     }
@@ -145,9 +181,13 @@ export default class SpriteCharacter {
         this.wasGrounded = this.grounded;
 
         const hasMovement = input.x !== 0 || input.z !== 0;
-        const hasAction = input.jump || input.attack || input.win;
+        const hasAction = ACTIONS.some(([name]) => Boolean(input[name]));
 
-        if (hasMovement || hasAction) {
+        if (input.speak) {
+            this.speech.showRandom();
+        }
+
+        if (hasMovement || hasAction || input.jump) {
             this.introActive = false;
         }
 
@@ -159,36 +199,50 @@ export default class SpriteCharacter {
             this.performJump();
         }
 
-        if (input.attack && this.grounded && this.stateLock <= 0) {
-            this.playLocked('attack', 0.54);
-        }
-
-        if (input.win && this.grounded && this.stateLock <= 0) {
-            this.velocity.multiplyScalar(0.15);
-            this.playLocked('win', 1.35);
+        if (this.grounded && this.stateLock <= 0) {
+            this.handleActionInput(input);
         }
 
         const actionBlocksMovement =
-            this.stateLock > 0 && (this.state === 'attack' || this.state === 'win');
+            this.stateLock > 0 && LOCKED_ACTIONS.has(this.state);
+        const isImpulseAction =
+            actionBlocksMovement && (this.state === 'dash' || this.state === 'dodge');
 
         if (hasMovement && !actionBlocksMovement) {
             this.moveDirection.set(input.x, 0, input.z).normalize();
+            this.lastMoveDirection.lerp(this.moveDirection, 0.75).normalize();
+            this.horizontalMotion = this.moveDirection.x;
+            this.depthMotion = this.moveDirection.z;
+
             const speed = input.run ? this.runSpeed : this.walkSpeed;
-            const desiredVelocity = this.moveDirection
-                .clone()
-                .multiplyScalar(speed);
+            const desiredVelocity = this.moveDirection.clone().multiplyScalar(speed);
             const acceleration = 1 - Math.exp(-13 * deltaTime);
             this.velocity.lerp(desiredVelocity, acceleration);
 
-            // Direction changes happen only from an explicit horizontal input.
-            // Vertical movement never flips TIAM and locked actions keep their pose.
             if (input.x !== 0 && this.stateLock <= 0) {
                 this.setFacing(input.x > 0 ? 1 : -1);
             }
+        } else if (isImpulseAction) {
+            const drag = 1 - Math.exp(-3.5 * deltaTime);
+            this.velocity.lerp(this.zeroVelocity, drag);
+            this.horizontalMotion = this.actionDirection.x;
+            this.depthMotion = this.actionDirection.z;
         } else {
             const brakingRate = actionBlocksMovement ? 24 : 16;
             const braking = 1 - Math.exp(-brakingRate * deltaTime);
             this.velocity.lerp(this.zeroVelocity, braking);
+            this.horizontalMotion = THREE.MathUtils.damp(
+                this.horizontalMotion,
+                0,
+                10,
+                deltaTime
+            );
+            this.depthMotion = THREE.MathUtils.damp(
+                this.depthMotion,
+                0,
+                10,
+                deltaTime
+            );
         }
 
         this.group.position.addScaledVector(this.velocity, deltaTime);
@@ -232,7 +286,57 @@ export default class SpriteCharacter {
 
         this.animator.update(deltaTime);
         this.effects.update(deltaTime, this.speed());
+        this.speech.update(deltaTime);
         this.updatePresentation();
+    }
+
+    handleActionInput(input) {
+        const action = ACTIONS.find(([name]) => Boolean(input[name]));
+
+        if (!action) {
+            return;
+        }
+
+        const [name, duration] = action;
+
+        if (name === 'dash') {
+            this.performImpulseAction(name, duration, 11.8);
+            return;
+        }
+
+        if (name === 'dodge') {
+            this.performImpulseAction(name, duration, 8.6, true);
+            return;
+        }
+
+        if (name === 'attack') {
+            this.velocity.multiplyScalar(0.18);
+        } else if (name !== 'spin') {
+            this.velocity.multiplyScalar(0.08);
+        }
+
+        this.playLocked(name, duration);
+    }
+
+    performImpulseAction(name, duration, speed, reverse = false) {
+        this.actionDirection.copy(this.lastMoveDirection);
+
+        if (this.actionDirection.lengthSq() < 0.01) {
+            this.actionDirection.set(this.facing, 0, 0);
+        }
+
+        if (reverse) {
+            this.actionDirection.multiplyScalar(-1);
+        }
+
+        this.actionDirection.normalize();
+        this.velocity.copy(this.actionDirection).multiplyScalar(speed);
+
+        if (Math.abs(this.actionDirection.x) > 0.08) {
+            this.setFacing(this.actionDirection.x >= 0 ? 1 : -1);
+        }
+
+        this.playLocked(name, duration);
     }
 
     updateIntro(deltaTime) {
@@ -249,14 +353,14 @@ export default class SpriteCharacter {
             this.introClock >= 1.65 &&
             this.stateLock <= 0
         ) {
-            this.playLocked('attack', 0.54);
+            this.playLocked('wave', 0.85);
             this.introStep = 2;
             return;
         }
 
         if (
             this.introStep === 2 &&
-            this.introClock >= 2.45 &&
+            this.introClock >= 2.65 &&
             this.grounded &&
             this.stateLock <= 0
         ) {
@@ -265,7 +369,18 @@ export default class SpriteCharacter {
             return;
         }
 
-        if (this.introStep === 3 && this.introClock >= 3.65) {
+        if (
+            this.introStep === 3 &&
+            this.introClock >= 3.75 &&
+            this.grounded &&
+            this.stateLock <= 0
+        ) {
+            this.playLocked('dance', 1.15);
+            this.introStep = 4;
+            return;
+        }
+
+        if (this.introStep === 4 && this.introClock >= 5.1) {
             this.introActive = false;
         }
     }
@@ -305,6 +420,7 @@ export default class SpriteCharacter {
         }
 
         this.facing = nextFacing;
+        this.animator.setFacing(nextFacing);
     }
 
     applySpawnPose(progress) {
@@ -325,12 +441,16 @@ export default class SpriteCharacter {
         const jumpRatio = THREE.MathUtils.clamp(jumpHeight / 3.2, 0, 1);
         const movementSpeed = this.speed();
         const spawnProgress = THREE.MathUtils.clamp(time / 0.62, 0, 1);
+        const depth = THREE.MathUtils.clamp(this.depthMotion, -1, 1);
+        const horizontal = THREE.MathUtils.clamp(this.horizontalMotion, -1, 1);
 
         let widthScale = 1;
         let heightScale = 1;
         let bob = 0;
         let tilt = 0;
         let offsetX = 0;
+        let offsetY = 0;
+        let rotationMultiplier = 1;
 
         if (this.state === 'idle') {
             const breath = Math.sin(time * 3.1);
@@ -339,19 +459,21 @@ export default class SpriteCharacter {
             heightScale -= breath * 0.018;
             tilt = Math.sin(time * 1.7) * 0.018;
         } else if (this.state === 'walk') {
-            const cycle = stateTime * 9.2;
+            const cycle = stateTime * (9.2 + Math.abs(depth) * 0.8);
             bob = Math.abs(Math.sin(cycle)) * 0.11;
-            widthScale += Math.cos(cycle * 2) * 0.022;
-            heightScale -= Math.cos(cycle * 2) * 0.022;
-            tilt = Math.sin(cycle) * 0.045 * this.facing;
+            widthScale += Math.cos(cycle * 2) * 0.022 - depth * 0.018;
+            heightScale -= Math.cos(cycle * 2) * 0.022 + depth * 0.012;
+            tilt = Math.sin(cycle) * 0.045 * this.facing - depth * 0.025;
+            offsetX = horizontal * Math.sin(cycle) * 0.025;
         } else if (this.state === 'run') {
-            const cycle = stateTime * 13.6;
+            const cycle = stateTime * (13.6 + Math.abs(depth) * 1.1);
             bob = Math.abs(Math.sin(cycle)) * 0.17;
-            widthScale += Math.cos(cycle * 2) * 0.04;
-            heightScale -= Math.cos(cycle * 2) * 0.04;
-            tilt = -0.075 * this.facing + Math.sin(cycle) * 0.025;
+            widthScale += Math.cos(cycle * 2) * 0.04 - depth * 0.025;
+            heightScale -= Math.cos(cycle * 2) * 0.04 + depth * 0.018;
+            tilt = -0.075 * this.facing + Math.sin(cycle) * 0.025 - depth * 0.035;
+            offsetX = horizontal * 0.04;
         } else if (this.state === 'attack') {
-            const progress = THREE.MathUtils.clamp(stateTime / 0.54, 0, 1);
+            const progress = THREE.MathUtils.clamp(stateTime / 0.58, 0, 1);
             const punch = Math.sin(progress * Math.PI);
             offsetX = punch * 0.34 * this.facing;
             tilt = -punch * 0.1 * this.facing;
@@ -364,6 +486,73 @@ export default class SpriteCharacter {
             tilt = Math.sin(cycle * 0.5) * 0.07;
             widthScale += Math.cos(cycle) * 0.035;
             heightScale -= Math.cos(cycle) * 0.035;
+        } else if (this.state === 'dash') {
+            const progress = THREE.MathUtils.clamp(stateTime / 0.46, 0, 1);
+            const burst = Math.sin(progress * Math.PI);
+            bob = Math.sin(progress * Math.PI * 4) * 0.04;
+            widthScale += burst * 0.2;
+            heightScale -= burst * 0.12;
+            tilt = -0.15 * this.facing - depth * 0.08;
+            offsetX = -this.facing * 0.08;
+        } else if (this.state === 'dodge') {
+            const progress = THREE.MathUtils.clamp(stateTime / 0.64, 0, 1);
+            const arc = Math.sin(progress * Math.PI);
+            widthScale += arc * 0.14;
+            heightScale -= arc * 0.2;
+            bob = arc * 0.22;
+            tilt = Math.sin(progress * Math.PI * 2) * 0.28 * this.facing;
+        } else if (this.state === 'dance') {
+            const cycle = stateTime * 9.4;
+            bob = Math.abs(Math.sin(cycle)) * 0.22;
+            offsetX = Math.sin(cycle * 0.5) * 0.22;
+            tilt = Math.sin(cycle * 0.5) * 0.13;
+            widthScale += Math.cos(cycle) * 0.055;
+            heightScale -= Math.cos(cycle) * 0.055;
+        } else if (this.state === 'wave') {
+            const cycle = stateTime * 8.2;
+            bob = Math.abs(Math.sin(cycle * 0.5)) * 0.08;
+            tilt = Math.sin(cycle) * 0.075 * this.facing;
+            offsetX = Math.sin(cycle * 0.5) * 0.05 * this.facing;
+        } else if (this.state === 'spin') {
+            const progress = THREE.MathUtils.clamp(stateTime / 1.12, 0, 1);
+            const spin = progress * Math.PI * 4;
+            rotationMultiplier = Math.cos(spin);
+            widthScale = Math.max(0.08, Math.abs(rotationMultiplier));
+            heightScale += Math.sin(spin * 0.5) * 0.05;
+            bob = Math.abs(Math.sin(spin * 0.5)) * 0.12;
+            tilt = Math.sin(spin) * 0.07;
+        } else if (this.state === 'crouch') {
+            const settle = 1 - Math.exp(-stateTime * 10);
+            const pulse = Math.sin(stateTime * 7.5) * 0.025;
+            widthScale += 0.12 * settle + pulse;
+            heightScale -= 0.2 * settle + pulse;
+            offsetY = -0.1 * settle;
+            tilt = -0.035 * this.facing;
+        } else if (this.state === 'laugh') {
+            const cycle = stateTime * 12;
+            bob = Math.abs(Math.sin(cycle)) * 0.13;
+            tilt = Math.sin(cycle * 0.5) * 0.055;
+            widthScale += Math.cos(cycle) * 0.055;
+            heightScale -= Math.cos(cycle) * 0.055;
+        } else if (this.state === 'pose') {
+            const settle = 1 - Math.exp(-stateTime * 8);
+            bob = Math.sin(stateTime * 3.2) * 0.035;
+            widthScale += 0.04 * settle;
+            heightScale += 0.045 * settle;
+            tilt = -0.045 * this.facing;
+        } else if (this.state === 'sleep') {
+            const sway = Math.sin(stateTime * 2.1);
+            bob = sway * 0.025;
+            tilt = (0.11 + sway * 0.035) * this.facing;
+            widthScale += sway * 0.018;
+            heightScale -= sway * 0.018;
+            offsetY = -0.04;
+        } else if (this.state === 'taunt') {
+            const cycle = stateTime * 10.5;
+            offsetX = Math.sin(cycle) * 0.11 * this.facing;
+            tilt = -Math.sin(cycle) * 0.09 * this.facing;
+            bob = Math.abs(Math.sin(cycle * 0.5)) * 0.09;
+            widthScale += Math.cos(cycle) * 0.04;
         }
 
         if (!this.grounded) {
@@ -374,22 +563,26 @@ export default class SpriteCharacter {
             );
             widthScale += verticalRatio > 0 ? -0.06 : 0.07;
             heightScale += verticalRatio > 0 ? 0.09 : -0.06;
-            tilt += -this.velocity.x * 0.012;
+            tilt += -this.velocity.x * 0.012 - depth * 0.025;
         }
 
+        const atlasHandlesFacing = this.animator.usesDirectionalFrames();
+        const facingScale = atlasHandlesFacing ? 1 : this.facing;
+        const spinSign = this.state === 'spin' ? Math.sign(rotationMultiplier || 1) : 1;
+
         this.sprite.scale.set(
-            this.baseWidth * widthScale * this.facing,
+            this.baseWidth * widthScale * facingScale * spinSign,
             this.baseHeight * heightScale,
             1
         );
         this.sprite.position.x = offsetX;
-        this.sprite.position.y = 0.02 + bob;
+        this.sprite.position.y = 0.02 + bob + offsetY;
         this.sprite.material.rotation = tilt;
 
         this.applySpawnPose(spawnProgress);
 
         this.shadow.scale.set(
-            1.4 * (1 - jumpRatio * 0.38),
+            1.4 * (1 - jumpRatio * 0.38) * (1 + Math.abs(depth) * 0.03),
             0.62 * (1 - jumpRatio * 0.22),
             1
         );
@@ -426,6 +619,7 @@ export default class SpriteCharacter {
     }
 
     dispose() {
+        this.speech.dispose();
         this.effects.dispose();
         this.texture.dispose();
         this.material.dispose();

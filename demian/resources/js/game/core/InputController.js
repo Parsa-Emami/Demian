@@ -1,4 +1,4 @@
-const MOVEMENT_KEYS = new Set([
+const CONTROL_KEYS = new Set([
     'w',
     'a',
     's',
@@ -11,6 +11,17 @@ const MOVEMENT_KEYS = new Set([
     ' ',
     'e',
     'q',
+    'x',
+    'u',
+    'c',
+    'v',
+    'z',
+    'g',
+    'b',
+    'n',
+    't',
+    'y',
+    'h',
 ]);
 
 export default class InputController {
@@ -47,7 +58,7 @@ export default class InputController {
 
         const key = event.key.toLowerCase();
 
-        if (MOVEMENT_KEYS.has(key)) {
+        if (CONTROL_KEYS.has(key)) {
             event.preventDefault();
         }
 
@@ -141,6 +152,17 @@ export default class InputController {
             jump: this.consumePressed(' ', 'jump'),
             attack: this.consumePressed('e', 'attack'),
             win: this.consumePressed('q', 'win'),
+            dash: this.consumePressed('x', 'dash'),
+            dodge: this.consumePressed('u', 'dodge'),
+            dance: this.consumePressed('c', 'dance'),
+            wave: this.consumePressed('v', 'wave'),
+            spin: this.consumePressed('z', 'spin'),
+            crouch: this.consumePressed('g', 'crouch'),
+            laugh: this.consumePressed('b', 'laugh'),
+            pose: this.consumePressed('n', 'pose'),
+            sleep: this.consumePressed('t', 'sleep'),
+            taunt: this.consumePressed('y', 'taunt'),
+            speak: this.consumePressed('h', 'speak'),
         };
     }
 

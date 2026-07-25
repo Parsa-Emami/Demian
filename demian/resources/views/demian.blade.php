@@ -196,10 +196,12 @@
                         <p class="arcade-label">کنترل‌ها</p>
 
                         <ul class="mt-3 space-y-2 text-[11px] leading-6 text-zinc-400">
-                            <li>• حرکت با WASD یا کلیدهای جهت و دویدن با Shift.</li>
-                            <li>• Space پرش، E حمله و Q جشن برد را اجرا می‌کند.</li>
-                            <li>• F بین نمای کامل و دنبال‌کردن تیام جابه‌جا می‌شود.</li>
-                            <li>• R تیام را دقیقاً وسط تصویر قرار می‌دهد.</li>
+                            <li>• حرکت با WASD یا جهت‌ها؛ Shift برای دویدن.</li>
+                            <li>• Space پرش، E ضربه، Q برد، X دش و U جاخالی.</li>
+                            <li>• C رقص، V دست‌تکان‌دادن، Z چرخش، G نشستن.</li>
+                            <li>• B خنده، N ژست، T خواب و Y کری‌خوانی.</li>
+                            <li>• با هر بار فشردن H یک جمله تصادفی بالای سر تیام نمایش داده می‌شود.</li>
+                            <li>• F تغییر نما، R تمرکز روی تیام و M جمع‌کردن سایدبار.</li>
                         </ul>
                     </section>
                 </div>
@@ -264,7 +266,7 @@
             </header>
 
             <div class="arcade-intro-note pointer-events-none absolute left-1/2 top-28 z-20 -translate-x-1/2">
-                تیام بعد از ورود، اکشن‌های بانمک را خودکار اجرا می‌کند
+                تیام اکشن‌های بیشتری دارد؛ برای جمله تصادفی کلید H را بزن
             </div>
 
             <section
@@ -289,14 +291,26 @@
                 class="help-panel arcade-panel pointer-events-none absolute bottom-4 right-4 z-20 hidden rounded-[24px] p-3 text-left text-[10px] leading-5 text-zinc-400 lg:block"
                 dir="ltr"
             >
-                <p><b class="text-white">WASD</b> move</p>
-                <p><b class="text-white">Shift</b> run</p>
-                <p><b class="text-white">Space</b> jump</p>
-                <p><b class="text-white">E</b> attack</p>
-                <p><b class="text-white">Q</b> victory</p>
-                <p><b class="text-white">F</b> full / follow view</p>
-                <p><b class="text-white">R</b> center TIAM</p>
-                <p><b class="text-white">Wheel</b> zoom</p>
+                <div class="help-panel__grid">
+                    <p><b class="text-white">WASD</b> move</p>
+                    <p><b class="text-white">Shift</b> run</p>
+                    <p><b class="text-white">Space</b> jump</p>
+                    <p><b class="text-white">E</b> attack</p>
+                    <p><b class="text-white">Q</b> victory</p>
+                    <p><b class="text-white">X</b> dash</p>
+                    <p><b class="text-white">U</b> dodge</p>
+                    <p><b class="text-white">C</b> dance</p>
+                    <p><b class="text-white">V</b> wave</p>
+                    <p><b class="text-white">Z</b> spin</p>
+                    <p><b class="text-white">G</b> crouch</p>
+                    <p><b class="text-white">B</b> laugh</p>
+                    <p><b class="text-white">N</b> pose</p>
+                    <p><b class="text-white">T</b> sleep</p>
+                    <p><b class="text-white">Y</b> taunt</p>
+                    <p><b class="text-white">H</b> random speech</p>
+                    <p><b class="text-white">F / R</b> camera</p>
+                    <p><b class="text-white">Wheel</b> zoom</p>
+                </div>
             </section>
 
             <section class="touch-controller absolute inset-x-0 bottom-3 z-30" dir="ltr">
@@ -308,18 +322,12 @@
                 </div>
 
                 <div class="touch-controller__actions" aria-label="اکشن‌های تیام">
-                    <button type="button" data-input-hold="run" class="touch-action touch-action--run">
-                        RUN
-                    </button>
-                    <button type="button" data-input-press="jump" class="touch-action touch-action--jump">
-                        JUMP
-                    </button>
-                    <button type="button" data-input-press="attack" class="touch-action touch-action--attack">
-                        HIT
-                    </button>
-                    <button type="button" data-input-press="win" class="touch-action touch-action--win">
-                        WIN
-                    </button>
+                    <button type="button" data-input-hold="run" class="touch-action touch-action--run">RUN</button>
+                    <button type="button" data-input-press="jump" class="touch-action touch-action--jump">JUMP</button>
+                    <button type="button" data-input-press="attack" class="touch-action touch-action--attack">HIT</button>
+                    <button type="button" data-input-press="dash" class="touch-action touch-action--dash">DASH</button>
+                    <button type="button" data-input-press="dance" class="touch-action touch-action--dance">DANCE</button>
+                    <button type="button" data-input-press="speak" class="touch-action touch-action--speak">SAY</button>
                 </div>
             </section>
         </section>

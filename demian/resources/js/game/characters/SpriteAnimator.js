@@ -9,6 +9,7 @@ export default class SpriteAnimator {
         this.frameIndex = 0;
         this.elapsed = 0;
         this.finished = false;
+        this.facing = 1;
 
         this.texture.wrapS = THREE.ClampToEdgeWrapping;
         this.texture.wrapT = THREE.ClampToEdgeWrapping;
@@ -37,8 +38,51 @@ export default class SpriteAnimator {
         this.applyCurrentFrame();
     }
 
+    setFacing(direction) {
+        const nextFacing = direction >= 0 ? 1 : -1;
+
+        if (this.facing === nextFacing) {
+            return;
+        }
+
+        this.facing = nextFacing;
+        this.frameIndex = Math.min(
+            this.frameIndex,
+            Math.max(this.currentFrames().length - 1, 0)
+        );
+        this.applyCurrentFrame();
+    }
+
+    currentFrames(animation = this.animation) {
+        if (!animation) {
+            return [];
+        }
+
+        if (this.facing < 0 && Array.isArray(animation.framesLeft)) {
+            return animation.framesLeft;
+        }
+
+        if (this.facing >= 0 && Array.isArray(animation.framesRight)) {
+            return animation.framesRight;
+        }
+
+        return animation.frames ?? animation.framesRight ?? animation.framesLeft ?? [];
+    }
+
+    usesDirectionalFrames() {
+        return Boolean(
+            this.animation?.framesRight?.length && this.animation?.framesLeft?.length
+        );
+    }
+
     update(deltaTime) {
         if (!this.animation || this.finished) {
+            return;
+        }
+
+        const frames = this.currentFrames();
+
+        if (frames.length === 0) {
             return;
         }
 
@@ -50,11 +94,11 @@ export default class SpriteAnimator {
             this.elapsed -= frameDuration;
             this.frameIndex += 1;
 
-            if (this.frameIndex >= this.animation.frames.length) {
+            if (this.frameIndex >= frames.length) {
                 if (this.animation.loop !== false) {
                     this.frameIndex = 0;
                 } else {
-                    this.frameIndex = this.animation.frames.length - 1;
+                    this.frameIndex = frames.length - 1;
                     this.finished = true;
                 }
             }
@@ -70,11 +114,23 @@ export default class SpriteAnimator {
             return 0;
         }
 
-        return animation.frames.length / Math.max(Number(animation.fps) || 1, 1);
+        const frameCount = Math.max(
+            animation.frames?.length ?? 0,
+            animation.framesRight?.length ?? 0,
+            animation.framesLeft?.length ?? 0,
+            1
+        );
+
+        return frameCount / Math.max(Number(animation.fps) || 1, 1);
     }
 
     applyCurrentFrame() {
-        const frameName = this.animation.frames[this.frameIndex];
+        if (!this.animation) {
+            return;
+        }
+
+        const frames = this.currentFrames();
+        const frameName = frames[this.frameIndex] ?? frames[0];
         const frame = this.atlas.frames[frameName];
 
         if (!frame) {
