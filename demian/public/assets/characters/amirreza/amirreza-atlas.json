@@ -1,0 +1,144 @@
+{
+  "meta": {
+    "name": "AMIRREZA",
+    "version": 1,
+    "image": "amirreza-spritesheet.png",
+    "size": { "w": 1024, "h": 768 },
+    "frameSize": { "w": 256, "h": 256 },
+    "pixelArt": true,
+    "stableFacing": true,
+    "directionalFrames": true,
+    "note": "AMIRREZA V1 includes angel-wing walk/run frames and boosted movement speed."
+  },
+  "frames": {
+    "idle_0": { "x": 0, "y": 0, "w": 256, "h": 256 },
+    "idle_1": { "x": 256, "y": 0, "w": 256, "h": 256 },
+    "walk_0": { "x": 512, "y": 0, "w": 256, "h": 256 },
+    "walk_1": { "x": 768, "y": 0, "w": 256, "h": 256 },
+    "run_0": { "x": 0, "y": 256, "w": 256, "h": 256 },
+    "run_1": { "x": 256, "y": 256, "w": 256, "h": 256 },
+    "jump_0": { "x": 512, "y": 256, "w": 256, "h": 256 },
+    "jump_1": { "x": 768, "y": 256, "w": 256, "h": 256 },
+    "attack_0": { "x": 0, "y": 512, "w": 256, "h": 256 },
+    "attack_1": { "x": 256, "y": 512, "w": 256, "h": 256 },
+    "win_0": { "x": 512, "y": 512, "w": 256, "h": 256 },
+    "win_1": { "x": 768, "y": 512, "w": 256, "h": 256 }
+  },
+  "animations": {
+    "idle": {
+      "frames": ["idle_0", "idle_1"],
+      "fps": 2,
+      "loop": true
+    },
+    "walk": {
+      "framesRight": ["walk_0"],
+      "framesLeft": ["walk_1"],
+      "fps": 9,
+      "loop": true,
+      "procedural": "cute-step"
+    },
+    "run": {
+      "framesRight": ["run_0"],
+      "framesLeft": ["run_1"],
+      "fps": 13,
+      "loop": true,
+      "procedural": "cute-run"
+    },
+    "jump": {
+      "frames": ["jump_0", "jump_1"],
+      "fps": 7,
+      "loop": false,
+      "procedural": "stretch-squash"
+    },
+    "attack": {
+      "framesRight": ["attack_0"],
+      "framesLeft": ["attack_1"],
+      "fps": 10,
+      "loop": false,
+      "procedural": "magic-burst"
+    },
+    "win": {
+      "frames": ["win_0", "win_1"],
+      "fps": 6,
+      "loop": true,
+      "procedural": "victory-bounce"
+    },
+    "dash": {
+      "framesRight": ["run_0"],
+      "framesLeft": ["run_1"],
+      "fps": 16,
+      "loop": true,
+      "procedural": "speed-dash"
+    },
+    "dodge": {
+      "frames": ["jump_1"],
+      "fps": 9,
+      "loop": true,
+      "procedural": "side-roll"
+    },
+    "dance": {
+      "frames": ["win_0", "win_1"],
+      "fps": 8,
+      "loop": true,
+      "procedural": "happy-dance"
+    },
+    "wave": {
+      "frames": ["win_0", "idle_1"],
+      "fps": 6,
+      "loop": true,
+      "procedural": "friendly-wave"
+    },
+    "spin": {
+      "frames": ["idle_0", "idle_1"],
+      "fps": 12,
+      "loop": true,
+      "procedural": "full-spin"
+    },
+    "crouch": {
+      "frames": ["jump_1"],
+      "fps": 4,
+      "loop": true,
+      "procedural": "crouch-bob"
+    },
+    "laugh": {
+      "frames": ["win_1", "idle_1"],
+      "fps": 8,
+      "loop": true,
+      "procedural": "belly-laugh"
+    },
+    "pose": {
+      "frames": ["win_0"],
+      "fps": 3,
+      "loop": true,
+      "procedural": "hero-pose"
+    },
+    "sleep": {
+      "frames": ["idle_0", "idle_1"],
+      "fps": 1,
+      "loop": true,
+      "procedural": "sleepy-sway"
+    },
+    "taunt": {
+      "framesRight": ["attack_0", "idle_0"],
+      "framesLeft": ["attack_1", "idle_0"],
+      "fps": 7,
+      "loop": true,
+      "procedural": "playful-taunt"
+    }
+  },
+  "speech": {
+    "duration": 3.2,
+    "messages": [
+      "بال بزن بریم",
+      "از همه سریع‌ترم",
+      "الان وقت های‌اسکوره",
+      "پرواز کوتاه، برد بزرگ",
+      "سرعت یعنی امیررضا",
+      "بزن بریم یه دور سریع",
+      "فول اسپید!",
+      "با بال‌ها می‌بریم"
+    ]
+  },
+  "pivot": { "x": 0.5, "y": 0.96 },
+  "display": { "worldWidth": 3.75, "worldHeight": 3.75 }
+}

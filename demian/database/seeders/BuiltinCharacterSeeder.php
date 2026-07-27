@@ -46,6 +46,23 @@ class BuiltinCharacterSeeder extends Seeder
                     ],
                 ]
             );
+
+            Character::query()->updateOrCreate(
+                ['slug' => 'amirreza'],
+                [
+                    'name' => 'AMIRREZA / امیررضا',
+                    'sprite_sheet_path' => 'assets/characters/amirreza/amirreza-spritesheet.png',
+                    'atlas_path' => 'assets/characters/amirreza/amirreza-atlas.json',
+                    'is_builtin' => true,
+                    'is_active' => false,
+                    'settings' => [
+                        'walk_speed' => 4.15,
+                        'run_speed' => 8.4,
+                        'jump_force' => 6.85,
+                        'scale' => 1,
+                    ],
+                ]
+            );
         });
     }
 }

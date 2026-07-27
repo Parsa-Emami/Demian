@@ -44,6 +44,25 @@ const BUILTIN_CHARACTERS = Object.freeze([
             scale: 1,
         },
     }),
+    Object.freeze({
+        id: 'builtin-amirreza',
+        name: 'AMIRREZA / امیررضا',
+        slug: 'amirreza',
+        sprite_url: builtinAssetUrl(
+            'assets/characters/amirreza/amirreza-spritesheet.png'
+        ),
+        atlas_url: builtinAssetUrl(
+            'assets/characters/amirreza/amirreza-atlas.json'
+        ),
+        is_builtin: true,
+        is_active: false,
+        settings: {
+            walk_speed: 4.15,
+            run_speed: 8.4,
+            jump_force: 6.85,
+            scale: 1,
+        },
+    }),
 ]);
 
 const BUILTIN_SLUGS = new Set(
@@ -97,7 +116,7 @@ export default class CharacterManager {
         if (this.lastBootWarning) {
             this.eventBus.emit('character:warning', {
                 message:
-                    'ارتباط دیتابیس برقرار نبود؛ تیام و روناک از فایل‌های داخلی اجرا شدند.',
+                    'ارتباط دیتابیس برقرار نبود؛ تیام، روناک و امیررضا از فایل‌های داخلی اجرا شدند.',
             });
         }
 
