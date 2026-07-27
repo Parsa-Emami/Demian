@@ -160,7 +160,7 @@ export default class ArcadeWorld {
             context.fillStyle = '#ffd43b';
             context.shadowColor = '#ff4fd8';
             context.shadowBlur = 20;
-            context.fillText('TIAM', w / 2, 138);
+            context.fillText('DEMIAN', w / 2, 138);
             context.shadowBlur = 0;
             context.font = '900 28px monospace';
             context.fillStyle = '#8ff8ff';

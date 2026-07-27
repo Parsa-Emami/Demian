@@ -1,21 +1,61 @@
 import * as THREE from 'three';
 import SpriteCharacter from '../characters/SpriteCharacter';
 
-const BUILTIN_TIAM = Object.freeze({
-    id: 'builtin-tiam',
-    name: 'TIAM / تیام',
-    slug: 'tiam',
-    sprite_url: '/assets/characters/tiam/tiam-spritesheet.png',
-    atlas_url: '/assets/characters/tiam/tiam-atlas.json',
-    is_builtin: true,
-    is_active: true,
-    settings: {
-        walk_speed: 3.2,
-        run_speed: 6.2,
-        jump_force: 6.5,
-        scale: 1,
-    },
-});
+function builtinAssetUrl(relativePath) {
+    return new URL(relativePath.replace(/^\/+/, ''), document.baseURI).toString();
+}
+
+const BUILTIN_CHARACTERS = Object.freeze([
+    Object.freeze({
+        id: 'builtin-tiam',
+        name: 'TIAM / تیام',
+        slug: 'tiam',
+        sprite_url: builtinAssetUrl(
+            'assets/characters/tiam/tiam-spritesheet.png'
+        ),
+        atlas_url: builtinAssetUrl(
+            'assets/characters/tiam/tiam-atlas.json'
+        ),
+        is_builtin: true,
+        is_active: true,
+        settings: {
+            walk_speed: 3.2,
+            run_speed: 6.2,
+            jump_force: 6.5,
+            scale: 1,
+        },
+    }),
+    Object.freeze({
+        id: 'builtin-ronak',
+        name: 'RONAK / روناک',
+        slug: 'ronak',
+        sprite_url: builtinAssetUrl(
+            'assets/characters/ronak/ronak-spritesheet.png'
+        ),
+        atlas_url: builtinAssetUrl(
+            'assets/characters/ronak/ronak-atlas.json'
+        ),
+        is_builtin: true,
+        is_active: false,
+        settings: {
+            walk_speed: 3.25,
+            run_speed: 6.35,
+            jump_force: 6.6,
+            scale: 1,
+        },
+    }),
+]);
+
+const BUILTIN_SLUGS = new Set(
+    BUILTIN_CHARACTERS.map((character) => character.slug)
+);
+
+function cloneBuiltin(character) {
+    return {
+        ...character,
+        settings: { ...character.settings },
+    };
+}
 
 export default class CharacterManager {
     constructor({ scene, repository, eventBus }) {
@@ -33,12 +73,15 @@ export default class CharacterManager {
         try {
             this.characters = await this.repository.list();
         } catch (error) {
-            console.warn('Character API was unavailable; built-in TIAM was loaded.', error);
+            console.warn(
+                'Character API was unavailable; built-in characters were loaded.',
+                error
+            );
             this.lastBootWarning = error;
             this.characters = [];
         }
 
-        this.ensureBuiltinCharacter();
+        this.ensureBuiltinCharacters();
 
         const active =
             this.characters.find((character) => character.is_active) ??
@@ -53,35 +96,44 @@ export default class CharacterManager {
 
         if (this.lastBootWarning) {
             this.eventBus.emit('character:warning', {
-                message: 'ارتباط دیتابیس برقرار نبود؛ تیام از فایل داخلی اجرا شد.',
+                message:
+                    'ارتباط دیتابیس برقرار نبود؛ تیام و روناک از فایل‌های داخلی اجرا شدند.',
             });
         }
 
         return this.characters;
     }
 
-    ensureBuiltinCharacter() {
-        const tiamIndex = this.characters.findIndex(
-            (character) => character.slug === 'tiam'
+    ensureBuiltinCharacters() {
+        const existingBySlug = new Map(
+            this.characters.map((character) => [character.slug, character])
         );
 
-        if (tiamIndex === -1) {
-            this.characters.unshift({ ...BUILTIN_TIAM });
-            return;
-        }
+        const builtins = BUILTIN_CHARACTERS.map((builtin) => {
+            const existing = existingBySlug.get(builtin.slug);
 
-        const existing = this.characters[tiamIndex];
-        this.characters[tiamIndex] = {
-            ...BUILTIN_TIAM,
-            ...existing,
-            sprite_url: existing.sprite_url || BUILTIN_TIAM.sprite_url,
-            atlas_url: existing.atlas_url || BUILTIN_TIAM.atlas_url,
-            is_builtin: true,
-            settings: {
-                ...BUILTIN_TIAM.settings,
-                ...(existing.settings ?? {}),
-            },
-        };
+            if (!existing) {
+                return cloneBuiltin(builtin);
+            }
+
+            return {
+                ...cloneBuiltin(builtin),
+                ...existing,
+                sprite_url: existing.sprite_url || builtin.sprite_url,
+                atlas_url: existing.atlas_url || builtin.atlas_url,
+                is_builtin: true,
+                settings: {
+                    ...builtin.settings,
+                    ...(existing.settings ?? {}),
+                },
+            };
+        });
+
+        const customCharacters = this.characters.filter(
+            (character) => !BUILTIN_SLUGS.has(character.slug)
+        );
+
+        this.characters = [...builtins, ...customCharacters];
     }
 
     async reload() {
@@ -89,12 +141,12 @@ export default class CharacterManager {
             this.characters = await this.repository.list();
         } catch (error) {
             console.warn('Character list reload failed.', error);
-            this.characters = this.characters.filter(
-                (character) => character.slug === 'tiam'
+            this.characters = this.characters.filter((character) =>
+                BUILTIN_SLUGS.has(character.slug)
             );
         }
 
-        this.ensureBuiltinCharacter();
+        this.ensureBuiltinCharacters();
         this.eventBus.emit('characters:changed', this.characters);
         return this.characters;
     }
@@ -147,14 +199,30 @@ export default class CharacterManager {
             (character) => String(character.id) === String(id)
         );
 
-        if (record?.id === BUILTIN_TIAM.id) {
+        if (!record) {
+            throw new Error('کاراکتر انتخاب‌شده پیدا نشد.');
+        }
+
+        if (record.is_builtin) {
+            if (!String(record.id).startsWith('builtin-')) {
+                try {
+                    await this.repository.activate(record.id);
+                } catch (error) {
+                    console.warn(
+                        'Built-in activation was kept locally because persistence is unavailable.',
+                        error
+                    );
+                }
+            }
+
             this.characters = this.characters.map((character) => ({
                 ...character,
-                is_active: character.id === BUILTIN_TIAM.id,
+                is_active: String(character.id) === String(record.id),
             }));
+
             await this.select(record.id);
             this.eventBus.emit('characters:changed', this.characters);
-            return record;
+            return { ...record, is_active: true };
         }
 
         const activated = await this.repository.activate(id);
@@ -181,7 +249,7 @@ export default class CharacterManager {
         );
 
         if (record?.is_builtin) {
-            throw new Error('کاراکتر داخلی تیام قابل حذف نیست.');
+            throw new Error('کاراکترهای داخلی بازی قابل حذف نیستند.');
         }
 
         await this.repository.remove(id);

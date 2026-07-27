@@ -15,6 +15,12 @@ export default class CharacterManagerUI {
         this.speedLabel = document.querySelector('[data-speed-label]');
         this.positionLabel = document.querySelector('[data-position-label]');
         this.cameraLabel = document.querySelector('[data-camera-label]');
+        this.activeNameElements = [
+            ...document.querySelectorAll('[data-active-character-name]'),
+        ];
+        this.focusLabelElements = [
+            ...document.querySelectorAll('[data-focus-character-label]'),
+        ];
     }
 
     boot() {
@@ -39,7 +45,12 @@ export default class CharacterManagerUI {
             this.showToast(message, false);
         });
 
+        this.eventBus.on('character:selected', ({ record }) => {
+            this.renderActiveCharacter(record);
+        });
+
         this.renderList(this.manager.characters);
+        this.renderActiveCharacter(this.manager.activeRecord);
     }
 
     renderList(characters) {
@@ -264,6 +275,30 @@ export default class CharacterManagerUI {
         if (this.cameraLabel) {
             this.cameraLabel.textContent = cameraMode;
         }
+    }
+
+    renderActiveCharacter(record) {
+        if (!record) {
+            return;
+        }
+
+        const fullName = String(record.name ?? record.slug ?? 'Character');
+        const parts = fullName
+            .split('/')
+            .map((part) => part.trim())
+            .filter(Boolean);
+        const latinName = parts[0] ?? fullName;
+        const localizedName = parts[1] ?? latinName;
+
+        this.activeNameElements.forEach((element) => {
+            element.textContent = fullName;
+        });
+
+        this.focusLabelElements.forEach((element) => {
+            element.textContent = `تمرکز ${localizedName}`;
+        });
+
+        document.title = `Demian 2D Arcade · ${latinName}`;
     }
 
     async guard(callback) {

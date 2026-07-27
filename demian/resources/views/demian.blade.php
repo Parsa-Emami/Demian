@@ -8,7 +8,7 @@
     >
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>Demian 2D Arcade · TIAM</title>
+    <title>Demian 2D Arcade · Characters</title>
 
     @vite([
         'resources/js/app.js',
@@ -46,7 +46,7 @@
                 <div class="sidebar-compact" aria-hidden="true">
                     <div class="sidebar-compact__logo">D</div>
                     <span class="sidebar-compact__active-dot"></span>
-                    <span class="sidebar-compact__name">TIAM · 2D</span>
+                    <span class="sidebar-compact__name">DEMIAN · 2D</span>
                     <span class="sidebar-compact__hint">M</span>
                 </div>
 
@@ -55,8 +55,8 @@
                         <div class="flex items-start justify-between gap-3">
                             <div>
                                 <p class="arcade-label">Demian 2D arcade engine</p>
-                                <h1 class="arcade-title mt-2 text-3xl font-black">
-                                    تیام / TIAM
+                                <h1 class="arcade-title mt-2 text-3xl font-black" data-active-character-name>
+                                    TIAM / تیام
                                 </h1>
                                 <p class="mt-1 text-xs text-zinc-400">
                                     Stable Sprite · Cute Procedural Motion
@@ -200,8 +200,8 @@
                             <li>• Space پرش، E ضربه، Q برد، X دش و U جاخالی.</li>
                             <li>• C رقص، V دست‌تکان‌دادن، Z چرخش، G نشستن.</li>
                             <li>• B خنده، N ژست، T خواب و Y کری‌خوانی.</li>
-                            <li>• با هر بار فشردن H یک جمله تصادفی بالای سر تیام نمایش داده می‌شود.</li>
-                            <li>• F تغییر نما، R تمرکز روی تیام و M جمع‌کردن سایدبار.</li>
+                            <li>• با هر بار فشردن H یک جمله تصادفی مخصوص کاراکتر انتخاب‌شده نمایش داده می‌شود.</li>
+                            <li>• F تغییر نما، R تمرکز روی کاراکتر و M جمع‌کردن سایدبار.</li>
                         </ul>
                     </section>
                 </div>
@@ -220,9 +220,9 @@
                                 type="button"
                                 data-camera-reset
                                 class="arcade-button arcade-button--small arcade-button--focus"
-                                title="تیام را وسط تصویر قرار بده"
+                                title="کاراکتر انتخاب‌شده را وسط تصویر قرار بده"
                             >
-                                تمرکز تیام · R
+                                <span data-focus-character-label>تمرکز تیام</span> · R
                             </button>
 
                             <button
@@ -230,7 +230,7 @@
                                 data-camera-toggle
                                 class="arcade-button arcade-button--small arcade-button--cyan"
                             >
-                                دنبال‌کردن تیام · F
+                                دنبال‌کردن کاراکتر · F
                             </button>
 
                             <button
@@ -253,8 +253,8 @@
                             <span class="arcade-live-dot" aria-hidden="true"></span>
                             <div>
                                 <p class="arcade-label">Player one ready</p>
-                                <h2 class="arcade-title mt-1 text-2xl font-black">
-                                    TIAM · 2D ARCADE
+                                <h2 class="arcade-title mt-1 text-2xl font-black" data-active-character-name>
+                                    TIAM / تیام
                                 </h2>
                                 <p class="mt-1 text-xs text-zinc-400">
                                     No frame flicker · Pixel-perfect character
@@ -266,7 +266,7 @@
             </header>
 
             <div class="arcade-intro-note pointer-events-none absolute left-1/2 top-28 z-20 -translate-x-1/2">
-                تیام اکشن‌های بیشتری دارد؛ برای جمله تصادفی کلید H را بزن
+                کاراکتر انتخاب‌شده آماده بازی است؛ برای جمله تصادفی کلید H را بزن
             </div>
 
             <section
@@ -321,7 +321,7 @@
                     <button type="button" data-input-hold="right" class="touch-key touch-key--right" aria-label="راست">▶</button>
                 </div>
 
-                <div class="touch-controller__actions" aria-label="اکشن‌های تیام">
+                <div class="touch-controller__actions" aria-label="اکشن‌های کاراکتر">
                     <button type="button" data-input-hold="run" class="touch-action touch-action--run">RUN</button>
                     <button type="button" data-input-press="jump" class="touch-action touch-action--jump">JUMP</button>
                     <button type="button" data-input-press="attack" class="touch-action touch-action--attack">HIT</button>

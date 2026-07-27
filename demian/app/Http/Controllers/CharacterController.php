@@ -71,7 +71,7 @@ class CharacterController extends Controller
     ): JsonResponse {
         if ($character->is_builtin && ($request->hasFile('sprite_sheet') || $request->hasFile('atlas'))) {
             throw ValidationException::withMessages([
-                'character' => 'فایل‌های کاراکتر داخلی تیام قابل جایگزینی نیستند.',
+                'character' => 'فایل‌های کاراکترهای داخلی بازی قابل جایگزینی نیستند.',
             ]);
         }
 
@@ -124,7 +124,7 @@ class CharacterController extends Controller
     {
         if ($character->is_builtin) {
             return response()->json([
-                'message' => 'کاراکتر داخلی تیام قابل حذف نیست.',
+                'message' => 'کاراکترهای داخلی بازی قابل حذف نیستند.',
             ], 422);
         }
 

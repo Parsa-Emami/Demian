@@ -18,6 +18,7 @@ export default class DemianStudio {
         this.eventBus = new EventBus();
         this.input = new InputController(document);
         this.clock = new THREE.Clock();
+        this.currentCharacterLabel = 'کاراکتر';
 
         this.scene = new THREE.Scene();
         this.scene.background = new THREE.Color(0x050714);
@@ -127,7 +128,10 @@ export default class DemianStudio {
     }
 
     bindCharacterEvents() {
-        this.eventBus.on('character:selected', () => {
+        this.eventBus.on('character:selected', ({ record }) => {
+            this.currentCharacterLabel = this.shortCharacterName(record);
+            this.updateCameraButtons(this.cameraController.mode);
+
             requestAnimationFrame(() => {
                 if (this.cameraController.mode === 'FOLLOW') {
                     this.focusCharacter({ close: true });
@@ -153,12 +157,24 @@ export default class DemianStudio {
         this.eventBus.emit('camera:mode', mode);
     }
 
+    shortCharacterName(record) {
+        const name = String(record?.name ?? record?.slug ?? 'کاراکتر');
+        const parts = name
+            .split('/')
+            .map((part) => part.trim())
+            .filter(Boolean);
+
+        return parts[1] ?? parts[0] ?? 'کاراکتر';
+    }
+
     updateCameraButtons(mode) {
         const button = document.querySelector('[data-camera-toggle]');
 
         if (button) {
             button.textContent =
-                mode === 'FOLLOW' ? 'نمای کامل · F' : 'دنبال‌کردن تیام · F';
+                mode === 'FOLLOW'
+                    ? 'نمای کامل · F'
+                    : `دنبال‌کردن ${this.currentCharacterLabel} · F`;
         }
     }
 
