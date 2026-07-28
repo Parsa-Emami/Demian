@@ -16,6 +16,7 @@ export default class CharacterManagerUI {
         this.positionLabels = [...document.querySelectorAll('[data-position-label]')];
         this.cameraLabels = [...document.querySelectorAll('[data-camera-label]')];
         this.qualityLabels = [...document.querySelectorAll('[data-quality-label]')];
+        this.npcLabels = [...document.querySelectorAll('[data-npc-label]')];
         this.activeNameElements = [
             ...document.querySelectorAll('[data-active-character-name]'),
         ];
@@ -45,6 +46,12 @@ export default class CharacterManagerUI {
         this.eventBus.on('studio:quality', ({ label }) => {
             this.qualityLabels.forEach((element) => {
                 element.textContent = label;
+            });
+        });
+
+        this.eventBus.on('world:roster', ({ npcCount }) => {
+            this.npcLabels.forEach((element) => {
+                element.textContent = String(npcCount);
             });
         });
 
@@ -80,7 +87,7 @@ export default class CharacterManagerUI {
                         src="${this.escape(character.sprite_url)}"
                         alt="${this.escape(character.name)}"
                         loading="lazy"
-                        style="width: ${character.sprite_url.includes('-v4') ? '1200%' : '400%'}"
+                        style="width: ${character.sprite_url.includes('-v5-') ? '1500%' : character.sprite_url.includes('-v4') ? '1200%' : '400%'}"
                     >
                 </div>
 
@@ -305,7 +312,7 @@ export default class CharacterManagerUI {
             element.textContent = `تمرکز ${localizedName}`;
         });
 
-        document.title = `Demian 2D Arcade · ${latinName}`;
+        document.title = `Demian V5 Open Arcade · ${latinName}`;
     }
 
     async guard(callback) {

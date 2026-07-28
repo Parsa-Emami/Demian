@@ -272,6 +272,6 @@ export default class SpriteAnimator {
 
         this.texture.repeat.set(frame.w / width, frame.h / height);
         this.texture.offset.set(frame.x / width, 1 - (frame.y + frame.h) / height);
-        this.texture.needsUpdate = true;
+        this.texture.updateMatrix();
     }
 }

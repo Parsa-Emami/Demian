@@ -7,6 +7,7 @@ import {
     directionFromVector,
     directionProfile,
 } from './DirectionResolver';
+import { WORLD_CONFIG } from '../world/WorldConfig';
 
 const LOCKED_ACTIONS = new Set([
     'attack',
@@ -66,7 +67,7 @@ function damp(current, target, smoothing, deltaTime) {
 }
 
 export default class SpriteCharacter {
-    constructor({ scene, character, texture, atlas }) {
+    constructor({ scene, character, texture, atlas, controlled = false }) {
         this.scene = scene;
         this.character = character;
         this.atlas = atlas;
@@ -80,7 +81,9 @@ export default class SpriteCharacter {
         this.moveDirection = new THREE.Vector3();
         this.lastMoveDirection = new THREE.Vector3(1, 0, 0);
         this.actionDirection = new THREE.Vector3(1, 0, 0);
+        this.jumpDirection = new THREE.Vector3(1, 0, 0);
         this.zeroVelocity = new THREE.Vector3();
+        this.isPlayerControlled = Boolean(controlled);
 
         this.state = 'idle';
         this.previousState = null;
@@ -103,7 +106,7 @@ export default class SpriteCharacter {
 
         this.introClock = 0;
         this.introStep = 0;
-        this.introActive = true;
+        this.introActive = this.isPlayerControlled;
 
         const settings = character.settings ?? {};
         this.walkSpeed = Number(settings.walk_speed ?? 3.2);
@@ -112,7 +115,9 @@ export default class SpriteCharacter {
         this.jumpForce = Number(settings.jump_force ?? 6.5);
         this.gravity = Number(settings.gravity ?? 17.5);
         this.scaleFactor = Number(settings.scale ?? 1);
-        this.bounds = { x: 13.2, z: 8.1 };
+        this.bounds = { ...WORLD_CONFIG.bounds };
+        this.airControl = Number(settings.air_control ?? 0.46);
+        this.minimumJumpSpeed = Number(settings.minimum_jump_speed ?? this.walkSpeed * 0.9);
 
         this.texture = texture;
         this.texture.needsUpdate = true;
@@ -168,6 +173,7 @@ export default class SpriteCharacter {
         this.selectionRing.rotation.x = -Math.PI / 2;
         this.selectionRing.position.y = 0.055;
         this.selectionRing.renderOrder = 3;
+        this.selectionRing.visible = this.isPlayerControlled;
 
         this.locatorMaterial = new THREE.SpriteMaterial({
             map: this.createLocatorTexture(),
@@ -179,6 +185,7 @@ export default class SpriteCharacter {
         this.locator.scale.setScalar(0.46 * this.scaleFactor);
         this.locator.position.y = this.baseHeight + 0.42;
         this.locator.renderOrder = 25;
+        this.locator.visible = this.isPlayerControlled;
 
         this.bodyRoot.add(this.sprite, this.locator);
         this.group.add(this.shadow, this.selectionRing, this.bodyRoot);
@@ -197,6 +204,30 @@ export default class SpriteCharacter {
             y: 0,
         };
         this.applySpawnPose(0);
+    }
+
+    setPlayerControlled(controlled, { playIntro = false } = {}) {
+        this.isPlayerControlled = Boolean(controlled);
+        this.locator.visible = this.isPlayerControlled;
+        this.selectionRing.visible = this.isPlayerControlled;
+        this.effects?.setIntensity(this.isPlayerControlled ? 1 : 0.28);
+
+        if (!this.isPlayerControlled) {
+            this.introActive = false;
+        } else if (playIntro) {
+            this.introClock = 0;
+            this.introStep = 0;
+            this.introActive = true;
+        }
+    }
+
+    setWorldBounds(bounds) {
+        if (!bounds) {
+            return;
+        }
+
+        this.bounds.x = Math.max(1, Number(bounds.x) || WORLD_CONFIG.bounds.x);
+        this.bounds.z = Math.max(1, Number(bounds.z) || WORLD_CONFIG.bounds.z);
     }
 
     createLocatorTexture() {
@@ -259,7 +290,7 @@ export default class SpriteCharacter {
             this.coyoteTimer > 0 &&
             this.stateLock <= 0
         ) {
-            this.performJump();
+            this.performJump(rawMove, inputMagnitude);
             this.jumpBufferTimer = 0;
         }
 
@@ -295,15 +326,22 @@ export default class SpriteCharacter {
             const turnDot = currentDirection.lengthSq() > 0.1
                 ? currentDirection.normalize().dot(this.moveDirection)
                 : 1;
-            const accelerationRate = turnDot < -0.25 ? 24 : sprinting ? 15 : 18;
+            const groundedAcceleration = turnDot < -0.25 ? 24 : sprinting ? 15 : 18;
+            const accelerationRate = this.grounded
+                ? groundedAcceleration
+                : THREE.MathUtils.lerp(5.5, 10.5, this.airControl);
             const acceleration = 1 - Math.exp(-accelerationRate * deltaTime);
             this.velocity.lerp(this.desiredVelocity, acceleration);
-            this.skidArmed = true;
+            this.skidArmed = this.grounded;
         } else if (impulseAction) {
             const drag = 1 - Math.exp(-3.1 * deltaTime);
             this.velocity.lerp(this.zeroVelocity, drag);
         } else {
-            const brakingRate = actionBlocksMovement ? 25 : 13.5;
+            const brakingRate = actionBlocksMovement
+                ? 25
+                : this.grounded
+                    ? 13.5
+                    : 0.72;
             const braking = 1 - Math.exp(-brakingRate * deltaTime);
             this.velocity.lerp(this.zeroVelocity, braking);
 
@@ -381,7 +419,13 @@ export default class SpriteCharacter {
 
     selectLocomotionState(input, inputMagnitude, deltaTime) {
         if (!this.grounded) {
-            this.setState(this.jumpVelocity > 0.35 ? 'takeoff' : 'fall');
+            this.setState(
+                this.jumpVelocity > 1.1
+                    ? 'takeoff'
+                    : this.jumpVelocity < -0.9
+                        ? 'fall'
+                        : 'jump'
+            );
             return;
         }
 
@@ -469,7 +513,7 @@ export default class SpriteCharacter {
             return;
         }
         if (this.introStep === 2 && this.introClock >= 2.5 && this.grounded && this.stateLock <= 0) {
-            this.performJump();
+            this.performJump(this.lastMoveDirection, 0.7);
             this.introStep = 3;
             return;
         }
@@ -483,7 +527,40 @@ export default class SpriteCharacter {
         }
     }
 
-    performJump() {
+    performJump(rawMove = null, inputMagnitude = 0) {
+        const requestedDirection = rawMove?.clone?.() ?? new THREE.Vector3();
+        requestedDirection.y = 0;
+
+        if (requestedDirection.lengthSq() < 0.004) {
+            requestedDirection.copy(this.velocity).setY(0);
+        }
+        if (requestedDirection.lengthSq() < 0.004) {
+            requestedDirection.copy(this.lastMoveDirection).setY(0);
+        }
+        if (requestedDirection.lengthSq() < 0.004) {
+            requestedDirection.set(this.facing, 0, 0);
+        }
+
+        requestedDirection.normalize();
+        this.jumpDirection.copy(requestedDirection);
+        this.lastMoveDirection.copy(requestedDirection);
+        this.actionDirection.copy(requestedDirection);
+        this.setDirection(directionFromVector(requestedDirection, this.direction));
+
+        if (Math.abs(requestedDirection.x) > 0.08) {
+            this.setFacing(requestedDirection.x >= 0 ? 1 : -1);
+        }
+
+        const existingSpeed = this.speed();
+        const requestedSpeed = THREE.MathUtils.lerp(
+            this.minimumJumpSpeed,
+            this.runSpeed,
+            THREE.MathUtils.clamp(inputMagnitude, 0, 1)
+        );
+        const carrySpeed = Math.max(existingSpeed, requestedSpeed);
+        this.velocity.x = requestedDirection.x * carrySpeed;
+        this.velocity.z = requestedDirection.z * carrySpeed;
+
         this.grounded = false;
         this.coyoteTimer = 0;
         this.jumpVelocity = this.jumpForce;

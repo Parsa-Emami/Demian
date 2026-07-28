@@ -12,7 +12,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>Demian V4 · Mobile Arcade</title>
+    <title>Demian V5 · Open Mobile Arcade</title>
 
     @vite([
         'resources/js/app.js',
@@ -54,7 +54,7 @@
                 <div class="sidebar-compact" aria-hidden="true">
                     <div class="sidebar-compact__logo">D</div>
                     <span class="sidebar-compact__active-dot"></span>
-                    <span class="sidebar-compact__name">DEMIAN · V4</span>
+                    <span class="sidebar-compact__name">DEMIAN · V5</span>
                     <span class="sidebar-compact__hint">M</span>
                 </div>
 
@@ -67,15 +67,15 @@
                                     TIAM / تیام
                                 </h1>
                                 <p class="mt-1 text-xs text-zinc-400">
-                                    96 Frames · 8-Way Motion · Adaptive Quality
+                                    120 Frames · Directional Jump · Adaptive Quality
                                 </p>
                             </div>
 
-                            <span class="arcade-badge">V4</span>
+                            <span class="arcade-badge">V5</span>
                         </div>
 
                         <div class="mt-4 manager-brand__chip-row">
-                            <span class="manager-chip manager-chip--pink">30+ Animations</span>
+                            <span class="manager-chip manager-chip--pink">34 Animations</span>
                             <span class="manager-chip manager-chip--cyan">8 Directions</span>
                             <span class="manager-chip manager-chip--yellow">Mobile First</span>
                         </div>
@@ -211,8 +211,8 @@
                         <ul class="mt-3 space-y-2 text-[11px] leading-6 text-zinc-400">
                             <li>• حرکت ۸ جهته با WASD، جهت‌ها یا جوی‌استیک لمسی.</li>
                             <li>• Shift برای دویدن؛ در موبایل جوی‌استیک تا انتها خودکار Sprint می‌شود.</li>
-                            <li>• Space پرش، E ضربه، J کمبو، K آپرکات و L جادو.</li>
-                            <li>• X دش، U جاخالی، Q برد و O جشن.</li>
+                            <li>• Space پرش جهت‌دار؛ جهت حرکت هنگام پرش حفظ می‌شود.</li>
+                            <li>• E ضربه، J کمبو، K آپرکات، L جادو، X دش و U جاخالی.</li>
                             <li>• C رقص، V دست‌تکان‌دادن، Z چرخش و H جمله تصادفی.</li>
                             <li>• F تغییر نما، R تمرکز، M پنل و Pinch برای زوم موبایل.</li>
                         </ul>
@@ -288,7 +288,7 @@
                                     TIAM / تیام
                                 </h2>
                                 <p class="mt-1 text-xs text-zinc-400">
-                                    High-frame arcade motion · No flicker
+                                    120-frame motion · Directional jump · Live NPCs
                                 </p>
                             </div>
                         </div>
@@ -304,6 +304,7 @@
                 <span class="mobile-status-bar__player" data-active-character-name>TIAM / تیام</span>
                 <span class="mobile-status-chip"><small>STATE</small><b data-state-label>IDLE</b></span>
                 <span class="mobile-status-chip"><small>SPD</small><b data-speed-label>0.00</b></span>
+                <span class="mobile-status-chip"><small>NPC</small><b data-npc-label>2</b></span>
             </section>
 
             <section
@@ -323,7 +324,10 @@
                     <strong data-camera-label class="text-cyan-300">OVERVIEW</strong>
 
                     <span class="text-zinc-500">QUALITY</span>
-                    <strong data-quality-label class="text-violet-300">HIGH</strong>
+                    <strong data-quality-label class="text-violet-300">AUTO</strong>
+
+                    <span class="text-zinc-500">NPC</span>
+                    <strong data-npc-label class="text-cyan-300">2</strong>
                 </div>
             </section>
 

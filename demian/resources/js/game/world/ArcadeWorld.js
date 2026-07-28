@@ -1,43 +1,51 @@
 import * as THREE from 'three';
+import { WORLD_CONFIG } from './WorldConfig';
+
+const DISTRICTS = Object.freeze([
+    Object.freeze({ x: -28, z: -3, accent: 0xff4fd8, label: 'NEON BAY' }),
+    Object.freeze({ x: 0, z: 3, accent: 0x8b5cf6, label: 'DEMIAN CORE' }),
+    Object.freeze({ x: 28, z: -2, accent: 0x22d3ee, label: 'TURBO LANE' }),
+]);
 
 export default class ArcadeWorld {
-    constructor(scene) {
+    constructor(scene, { performanceProfile = null } = {}) {
         this.scene = scene;
+        this.performanceProfile = performanceProfile;
         this.root = new THREE.Group();
-        this.root.name = 'Demian2DArcadeWorld';
+        this.root.name = 'DemianV5OpenArcadeWorld';
         this.time = 0;
         this.floaters = [];
         this.animatedSigns = [];
-        this.pulseLanes = [];
+        this.pulseObjects = [];
         this.rotators = [];
-        this.coarsePointer = window.matchMedia?.('(pointer: coarse)').matches ?? false;
         this.textures = [];
         this.materials = [];
         this.geometries = [];
+        this.decorDensity = Number(performanceProfile?.decorDensity ?? 0.8);
 
         scene.add(this.root);
 
         this.createFloor();
+        this.createRoadNetwork();
+        this.createDistricts();
+        this.createBoundary();
         this.createBackWall();
-        this.createStage();
         this.createArcadeCabinets();
-        this.createSideDecorations();
         this.createFloatingPixels();
-        this.createPulseLanes();
     }
 
-    canvasTexture(width, height, draw) {
+    canvasTexture(width, height, draw, { smooth = false } = {}) {
         const canvas = document.createElement('canvas');
         canvas.width = width;
         canvas.height = height;
         const context = canvas.getContext('2d');
-        context.imageSmoothingEnabled = false;
+        context.imageSmoothingEnabled = smooth;
         draw(context, width, height);
 
         const texture = new THREE.CanvasTexture(canvas);
         texture.colorSpace = THREE.SRGBColorSpace;
-        texture.magFilter = THREE.NearestFilter;
-        texture.minFilter = THREE.NearestFilter;
+        texture.magFilter = smooth ? THREE.LinearFilter : THREE.NearestFilter;
+        texture.minFilter = smooth ? THREE.LinearFilter : THREE.NearestFilter;
         texture.generateMipmaps = false;
         this.textures.push(texture);
         return texture;
@@ -70,272 +78,278 @@ export default class ArcadeWorld {
     }
 
     createFloor() {
-        const floorTexture = this.canvasTexture(512, 320, (context, w, h) => {
-            context.fillStyle = '#080b1c';
-            context.fillRect(0, 0, w, h);
+        const texture = this.canvasTexture(512, 512, (context, width, height) => {
+            context.fillStyle = '#070a18';
+            context.fillRect(0, 0, width, height);
 
             const tile = 32;
-            for (let y = 0; y < h; y += tile) {
-                for (let x = 0; x < w; x += tile) {
+            for (let y = 0; y < height; y += tile) {
+                for (let x = 0; x < width; x += tile) {
                     const even = (x / tile + y / tile) % 2 === 0;
-                    context.fillStyle = even ? '#10152d' : '#0c1126';
+                    context.fillStyle = even ? '#0e142b' : '#0a1024';
                     context.fillRect(x, y, tile, tile);
-                    context.fillStyle = 'rgba(99, 102, 241, 0.12)';
+                    context.fillStyle = 'rgba(104, 118, 255, .13)';
                     context.fillRect(x, y, tile, 2);
                     context.fillRect(x, y, 2, tile);
                 }
             }
 
-            context.strokeStyle = '#ff4fd8';
+            context.strokeStyle = 'rgba(255, 79, 216, .32)';
             context.lineWidth = 4;
-            context.strokeRect(8, 8, w - 16, h - 16);
-            context.strokeStyle = '#22d3ee';
+            context.strokeRect(4, 4, width - 8, height - 8);
+            context.strokeStyle = 'rgba(34, 211, 238, .22)';
             context.lineWidth = 2;
-            context.strokeRect(18, 18, w - 36, h - 36);
-
-            for (let x = 44; x < w; x += 96) {
-                context.fillStyle = '#2639a8';
-                context.fillRect(x, h / 2 - 3, 52, 6);
-                context.fillStyle = '#f04bc2';
-                context.fillRect(x + 12, h / 2 - 1, 28, 2);
-            }
+            context.strokeRect(14, 14, width - 28, height - 28);
         });
+        texture.wrapS = THREE.RepeatWrapping;
+        texture.wrapT = THREE.RepeatWrapping;
+        texture.repeat.set(WORLD_CONFIG.width / 16, WORLD_CONFIG.depth / 16);
 
         const floor = new THREE.Mesh(
-            this.geometry(new THREE.PlaneGeometry(30, 19)),
-            this.basicMaterial({ map: floorTexture })
+            this.geometry(new THREE.PlaneGeometry(WORLD_CONFIG.width, WORLD_CONFIG.depth)),
+            this.basicMaterial({ map: texture })
         );
         floor.rotation.x = -Math.PI / 2;
-        floor.position.y = -0.02;
+        floor.position.y = -0.025;
         floor.renderOrder = 0;
         this.root.add(floor);
+    }
 
-        const outerGlow = new THREE.Mesh(
-            this.geometry(new THREE.RingGeometry(4.2, 4.42, 64)),
-            this.basicMaterial({
-                color: 0x7847ff,
+    createRoadNetwork() {
+        const roadMaterial = this.basicMaterial({
+            color: 0x111936,
+            transparent: true,
+            opacity: 0.94,
+            depthWrite: false,
+        });
+        const linePink = this.basicMaterial({
+            color: 0xff4fd8,
+            transparent: true,
+            opacity: 0.36,
+            depthWrite: false,
+        });
+        const lineCyan = this.basicMaterial({
+            color: 0x22d3ee,
+            transparent: true,
+            opacity: 0.32,
+            depthWrite: false,
+        });
+
+        const roads = [
+            { width: WORLD_CONFIG.width - 4, depth: 7.2, x: 0, z: 1 },
+            { width: 8, depth: WORLD_CONFIG.depth - 4, x: 0, z: 0 },
+            { width: 5.5, depth: WORLD_CONFIG.depth - 8, x: -28, z: 0 },
+            { width: 5.5, depth: WORLD_CONFIG.depth - 8, x: 28, z: 0 },
+        ];
+
+        roads.forEach((road) => {
+            const mesh = new THREE.Mesh(
+                this.geometry(new THREE.PlaneGeometry(road.width, road.depth)),
+                roadMaterial
+            );
+            mesh.rotation.x = -Math.PI / 2;
+            mesh.position.set(road.x, 0.006, road.z);
+            mesh.renderOrder = 1;
+            this.root.add(mesh);
+        });
+
+        for (let x = -42; x <= 42; x += 4) {
+            const material = x % 8 === 0 ? linePink : lineCyan;
+            const marker = new THREE.Mesh(
+                this.geometry(new THREE.PlaneGeometry(2.1, 0.11)),
+                material
+            );
+            marker.rotation.x = -Math.PI / 2;
+            marker.position.set(x, 0.014, 1);
+            marker.renderOrder = 2;
+            this.root.add(marker);
+            this.pulseObjects.push({ object: marker, material, phase: x * 0.12, baseOpacity: material.opacity });
+        }
+
+        for (const x of [-28, 0, 28]) {
+            for (let z = -22; z <= 22; z += 4) {
+                const marker = new THREE.Mesh(
+                    this.geometry(new THREE.PlaneGeometry(0.11, 2)),
+                    x === 0 ? linePink : lineCyan
+                );
+                marker.rotation.x = -Math.PI / 2;
+                marker.position.set(x, 0.015, z);
+                marker.renderOrder = 2;
+                this.root.add(marker);
+            }
+        }
+    }
+
+    createDistricts() {
+        DISTRICTS.forEach((district, index) => {
+            const ringMaterial = this.basicMaterial({
+                color: district.accent,
                 transparent: true,
-                opacity: 0.72,
+                opacity: 0.42,
                 depthWrite: false,
-            })
-        );
-        outerGlow.rotation.x = -Math.PI / 2;
-        outerGlow.position.y = 0.025;
-        outerGlow.renderOrder = 1;
-        this.root.add(outerGlow);
-        this.animatedSigns.push({
-            object: outerGlow,
-            material: outerGlow.material,
-            phase: 0,
-            baseOpacity: 0.58,
+            });
+            const ring = new THREE.Mesh(
+                this.geometry(new THREE.RingGeometry(5.2, 5.38, 64)),
+                ringMaterial
+            );
+            ring.rotation.x = -Math.PI / 2;
+            ring.position.set(district.x, 0.025, district.z);
+            ring.renderOrder = 2;
+            this.root.add(ring);
+            this.rotators.push({ object: ring, material: ringMaterial, speed: index % 2 ? -0.11 : 0.09, phase: index * 1.7 });
+
+            const innerMaterial = this.basicMaterial({
+                color: district.accent,
+                transparent: true,
+                opacity: 0.075,
+                depthWrite: false,
+            });
+            const inner = new THREE.Mesh(
+                this.geometry(new THREE.CircleGeometry(5.15, 64)),
+                innerMaterial
+            );
+            inner.rotation.x = -Math.PI / 2;
+            inner.position.set(district.x, 0.017, district.z);
+            inner.renderOrder = 1;
+            this.root.add(inner);
+
+            const signTexture = this.canvasTexture(512, 140, (context, width, height) => {
+                context.clearRect(0, 0, width, height);
+                context.fillStyle = 'rgba(3, 5, 16, .94)';
+                context.fillRect(8, 8, width - 16, height - 16);
+                context.strokeStyle = `#${district.accent.toString(16).padStart(6, '0')}`;
+                context.lineWidth = 10;
+                context.strokeRect(12, 12, width - 24, height - 24);
+                context.fillStyle = '#f8fbff';
+                context.textAlign = 'center';
+                context.textBaseline = 'middle';
+                context.font = '900 46px monospace';
+                context.fillText(district.label, width / 2, height / 2);
+            }, { smooth: true });
+
+            const sign = new THREE.Sprite(this.spriteMaterial({ map: signTexture }));
+            sign.scale.set(6.7, 1.82, 1);
+            sign.position.set(district.x, 5.4, district.z - 5.4);
+            sign.renderOrder = 9;
+            this.root.add(sign);
+            this.animatedSigns.push({ object: sign, material: sign.material, baseY: sign.position.y, phase: index * 1.4, baseOpacity: 0.94 });
+        });
+    }
+
+    createBoundary() {
+        const railGeometryHorizontal = this.geometry(new THREE.BoxGeometry(WORLD_CONFIG.width, 0.16, 0.16));
+        const railGeometryVertical = this.geometry(new THREE.BoxGeometry(0.16, 0.16, WORLD_CONFIG.depth));
+        const materials = [
+            this.basicMaterial({ color: 0xff4fd8 }),
+            this.basicMaterial({ color: 0x22d3ee }),
+        ];
+
+        [
+            { x: 0, z: -WORLD_CONFIG.depth / 2, geometry: railGeometryHorizontal, material: materials[0] },
+            { x: 0, z: WORLD_CONFIG.depth / 2, geometry: railGeometryHorizontal, material: materials[1] },
+            { x: -WORLD_CONFIG.width / 2, z: 0, geometry: railGeometryVertical, material: materials[0] },
+            { x: WORLD_CONFIG.width / 2, z: 0, geometry: railGeometryVertical, material: materials[1] },
+        ].forEach((definition) => {
+            const rail = new THREE.Mesh(definition.geometry, definition.material);
+            rail.position.set(definition.x, 0.16, definition.z);
+            this.root.add(rail);
         });
     }
 
     createBackWall() {
-        const wallTexture = this.canvasTexture(1024, 384, (context, w, h) => {
-            const gradient = context.createLinearGradient(0, 0, 0, h);
-            gradient.addColorStop(0, '#080a1b');
-            gradient.addColorStop(1, '#121530');
+        const wallTexture = this.canvasTexture(1536, 300, (context, width, height) => {
+            const gradient = context.createLinearGradient(0, 0, 0, height);
+            gradient.addColorStop(0, '#070919');
+            gradient.addColorStop(1, '#111a36');
             context.fillStyle = gradient;
-            context.fillRect(0, 0, w, h);
+            context.fillRect(0, 0, width, height);
 
-            for (let y = 16; y < h; y += 32) {
-                context.fillStyle = 'rgba(117, 128, 255, 0.09)';
-                context.fillRect(0, y, w, 2);
+            for (let x = 0; x < width; x += 64) {
+                context.fillStyle = x % 128 === 0
+                    ? 'rgba(255,79,216,.08)'
+                    : 'rgba(34,211,238,.05)';
+                context.fillRect(x, 0, 2, height);
             }
-
-            for (let x = 0; x < w; x += 64) {
-                context.fillStyle = 'rgba(255, 79, 216, 0.045)';
-                context.fillRect(x, 0, 2, h);
+            for (let y = 24; y < height; y += 32) {
+                context.fillStyle = 'rgba(120,130,255,.07)';
+                context.fillRect(0, y, width, 2);
             }
-
-            context.fillStyle = '#050714';
-            context.fillRect(118, 55, w - 236, 188);
-            context.strokeStyle = '#7c3aed';
-            context.lineWidth = 12;
-            context.strokeRect(118, 55, w - 236, 188);
-            context.strokeStyle = '#ff4fd8';
-            context.lineWidth = 4;
-            context.strokeRect(136, 73, w - 272, 152);
 
             context.textAlign = 'center';
             context.textBaseline = 'middle';
-            context.font = '900 106px monospace';
-            context.fillStyle = '#ffd43b';
+            context.font = '900 116px monospace';
             context.shadowColor = '#ff4fd8';
-            context.shadowBlur = 20;
-            context.fillText('DEMIAN', w / 2, 138);
+            context.shadowBlur = 24;
+            context.fillStyle = '#ffd43b';
+            context.fillText('DEMIAN V5', width / 2, 115);
             context.shadowBlur = 0;
-            context.font = '900 28px monospace';
+            context.font = '900 34px monospace';
             context.fillStyle = '#8ff8ff';
-            context.fillText('V4 HIGH-FRAME ARCADE', w / 2, 204);
-
-            context.fillStyle = '#ff4fd8';
-            context.fillRect(54, 292, 42, 18);
-            context.fillRect(66, 280, 18, 42);
-            context.fillStyle = '#22d3ee';
-            context.fillRect(w - 96, 292, 42, 18);
-            context.fillRect(w - 84, 280, 18, 42);
-        });
+            context.fillText('OPEN ARCADE WORLD · MOBILE FIRST', width / 2, 220);
+        }, { smooth: true });
 
         const wall = new THREE.Mesh(
-            this.geometry(new THREE.PlaneGeometry(31.5, 11.8)),
+            this.geometry(new THREE.PlaneGeometry(WORLD_CONFIG.width, 18)),
             this.basicMaterial({ map: wallTexture })
         );
-        wall.position.set(0, 5.55, -9.55);
+        wall.position.set(0, 8.8, -WORLD_CONFIG.depth / 2 - 0.25);
         wall.renderOrder = 0;
         this.root.add(wall);
-
-        const topBar = new THREE.Mesh(
-            this.geometry(new THREE.BoxGeometry(31.5, 0.16, 0.16)),
-            this.basicMaterial({ color: 0xff4fd8 })
-        );
-        topBar.position.set(0, 11.38, -9.45);
-        this.root.add(topBar);
-    }
-
-    createStage() {
-        const stageTexture = this.canvasTexture(256, 256, (context, w, h) => {
-            context.fillStyle = '#101329';
-            context.fillRect(0, 0, w, h);
-            context.strokeStyle = '#ff4fd8';
-            context.lineWidth = 14;
-            context.strokeRect(14, 14, w - 28, h - 28);
-            context.strokeStyle = '#22d3ee';
-            context.lineWidth = 6;
-            context.strokeRect(32, 32, w - 64, h - 64);
-            context.fillStyle = 'rgba(255, 212, 59, 0.2)';
-            context.fillRect(80, 80, 96, 96);
-            context.fillStyle = '#ffd43b';
-            context.fillRect(114, 58, 28, 140);
-            context.fillRect(58, 114, 140, 28);
-        });
-
-        const stage = new THREE.Mesh(
-            this.geometry(new THREE.CircleGeometry(4.05, 64)),
-            this.basicMaterial({ map: stageTexture })
-        );
-        stage.rotation.x = -Math.PI / 2;
-        stage.position.y = 0.015;
-        stage.renderOrder = 1;
-        this.root.add(stage);
     }
 
     createCabinetTexture(accent, label) {
-        return this.canvasTexture(160, 256, (context, w, h) => {
-            context.clearRect(0, 0, w, h);
-            context.fillStyle = '#070914';
-            context.fillRect(22, 14, 116, 226);
-            context.fillStyle = '#171b36';
-            context.fillRect(30, 24, 100, 206);
+        return this.canvasTexture(160, 256, (context, width, height) => {
+            context.clearRect(0, 0, width, height);
+            context.fillStyle = '#080a16';
+            context.fillRect(20, 12, 120, 230);
+            context.fillStyle = '#151a36';
+            context.fillRect(29, 22, 102, 208);
             context.strokeStyle = accent;
             context.lineWidth = 8;
             context.strokeRect(24, 16, 112, 220);
-            context.fillStyle = '#03040b';
-            context.fillRect(42, 46, 76, 72);
+            context.fillStyle = '#02040b';
+            context.fillRect(42, 42, 76, 76);
             context.fillStyle = accent;
-            context.fillRect(48, 52, 64, 60);
-            context.fillStyle = 'rgba(255,255,255,.36)';
-            context.fillRect(52, 56, 56, 8);
+            context.fillRect(48, 48, 64, 64);
+            context.fillStyle = 'rgba(255,255,255,.34)';
+            context.fillRect(52, 52, 56, 8);
             context.fillStyle = '#090b19';
             context.fillRect(38, 132, 84, 50);
             context.fillStyle = '#ff4fd8';
             context.fillRect(54, 146, 16, 16);
             context.fillStyle = '#ffd43b';
             context.fillRect(90, 148, 12, 12);
-            context.fillStyle = '#e8f8ff';
+            context.fillStyle = '#eefcff';
             context.textAlign = 'center';
             context.font = '900 18px monospace';
-            context.fillText(label, w / 2, 211);
-            context.fillStyle = '#0a0c1b';
-            context.fillRect(12, 232, 136, 12);
+            context.fillText(label, width / 2, 211);
         });
     }
 
     createArcadeCabinets() {
-        const definitions = [
-            [-11.3, -6.9, '#ff4fd8', 'PLAY'],
-            [-7.9, -7.3, '#8b5cf6', 'JUMP'],
-            [7.9, -7.3, '#22d3ee', 'RUN'],
-            [11.3, -6.9, '#fbbf24', 'WIN'],
-        ];
+        const labels = ['PLAY', 'JUMP', 'DASH', 'RUN', 'WIN', 'COMBO'];
+        const accentValues = ['#ff4fd8', '#8b5cf6', '#22d3ee', '#fbbf24'];
+        const count = Math.max(8, Math.round(18 * this.decorDensity));
 
-        definitions.forEach(([x, z, accent, label], index) => {
+        for (let index = 0; index < count; index += 1) {
+            const district = DISTRICTS[index % DISTRICTS.length];
+            const side = index % 2 === 0 ? -1 : 1;
+            const row = Math.floor(index / 2) % 3;
+            const accent = accentValues[index % accentValues.length];
             const sprite = new THREE.Sprite(
                 this.spriteMaterial({
-                    map: this.createCabinetTexture(accent, label),
+                    map: this.createCabinetTexture(accent, labels[index % labels.length]),
                 })
             );
-            sprite.scale.set(2.7, 4.35, 1);
-            sprite.position.set(x, 2.15, z);
-            sprite.renderOrder = 8;
-            this.root.add(sprite);
-
-            this.animatedSigns.push({
-                object: sprite,
-                material: sprite.material,
-                phase: index * 0.9,
-                baseOpacity: 0.96,
-                bob: 0.035,
-                baseY: sprite.position.y,
-            });
-        });
-    }
-
-    createSideDecorations() {
-        const scoreTexture = this.canvasTexture(320, 128, (context, w, h) => {
-            context.clearRect(0, 0, w, h);
-            context.fillStyle = 'rgba(4, 6, 18, .92)';
-            context.fillRect(4, 4, w - 8, h - 8);
-            context.strokeStyle = '#22d3ee';
-            context.lineWidth = 8;
-            context.strokeRect(8, 8, w - 16, h - 16);
-            context.textAlign = 'center';
-            context.font = '900 29px monospace';
-            context.fillStyle = '#ff4fd8';
-            context.fillText('HIGH SCORE', w / 2, 46);
-            context.font = '900 38px monospace';
-            context.fillStyle = '#ffd43b';
-            context.fillText('001337', w / 2, 91);
-        });
-
-        const score = new THREE.Sprite(this.spriteMaterial({ map: scoreTexture }));
-        score.scale.set(4.5, 1.8, 1);
-        score.position.set(-10.8, 5.75, -8.85);
-        score.renderOrder = 5;
-        this.root.add(score);
-
-        const statusTexture = this.canvasTexture(320, 128, (context, w, h) => {
-            context.clearRect(0, 0, w, h);
-            context.fillStyle = 'rgba(4, 6, 18, .92)';
-            context.fillRect(4, 4, w - 8, h - 8);
-            context.strokeStyle = '#ff4fd8';
-            context.lineWidth = 8;
-            context.strokeRect(8, 8, w - 16, h - 16);
-            context.font = '900 28px monospace';
-            context.textAlign = 'center';
-            context.fillStyle = '#8ff8ff';
-            context.fillText('PLAYER 1', w / 2, 43);
-            context.font = '900 42px monospace';
-            context.fillStyle = '#ff63c7';
-            context.fillText('♥ ♥ ♥', w / 2, 94);
-        });
-
-        const status = new THREE.Sprite(
-            this.spriteMaterial({ map: statusTexture })
-        );
-        status.scale.set(4.5, 1.8, 1);
-        status.position.set(10.8, 5.75, -8.85);
-        status.renderOrder = 5;
-        this.root.add(status);
-
-        for (const x of [-14.45, 14.45]) {
-            const rail = new THREE.Mesh(
-                this.geometry(new THREE.BoxGeometry(0.16, 1.2, 18.5)),
-                this.basicMaterial({ color: x < 0 ? 0xff4fd8 : 0x22d3ee })
+            sprite.scale.set(2.3, 3.75, 1);
+            sprite.position.set(
+                district.x + side * (7.2 + row * 2.5),
+                1.86,
+                district.z - 7 + row * 5.8
             );
-            rail.position.set(x, 0.58, -0.1);
-            this.root.add(rail);
+            sprite.renderOrder = 7;
+            this.root.add(sprite);
+            this.animatedSigns.push({ object: sprite, material: sprite.material, baseY: sprite.position.y, phase: index * 0.54, baseOpacity: 0.96, bob: 0.035 });
         }
     }
 
@@ -350,19 +364,19 @@ export default class ArcadeWorld {
             context.fillRect(6, 12, 20, 8);
         });
 
-        const floaterCount = this.coarsePointer ? 10 : 18;
-        for (let index = 0; index < floaterCount; index += 1) {
+        const count = Math.max(10, Math.round(34 * this.decorDensity));
+        for (let index = 0; index < count; index += 1) {
             const material = this.spriteMaterial({
                 map: texture,
-                opacity: 0.55 + Math.random() * 0.35,
+                opacity: 0.4 + Math.random() * 0.4,
             });
-            material.color.setHSL((index % 4) / 4, 0.78, 0.68);
+            material.color.setHSL((index % 5) / 5, 0.8, 0.68);
             const sprite = new THREE.Sprite(material);
-            sprite.scale.setScalar(0.12 + Math.random() * 0.18);
+            sprite.scale.setScalar(0.11 + Math.random() * 0.18);
             sprite.position.set(
-                (Math.random() - 0.5) * 28,
-                1.1 + Math.random() * 7.5,
-                -8.8 + Math.random() * 17
+                (Math.random() * 2 - 1) * (WORLD_CONFIG.bounds.x - 2),
+                1.2 + Math.random() * 7.5,
+                (Math.random() * 2 - 1) * (WORLD_CONFIG.bounds.z - 1)
             );
             sprite.renderOrder = 4;
             this.floaters.push({
@@ -370,54 +384,9 @@ export default class ArcadeWorld {
                 baseY: sprite.position.y,
                 baseX: sprite.position.x,
                 phase: Math.random() * Math.PI * 2,
-                speed: 0.55 + Math.random() * 0.9,
+                speed: 0.45 + Math.random() * 0.85,
             });
             this.root.add(sprite);
-        }
-    }
-
-
-    createPulseLanes() {
-        const laneDefinitions = [
-            [-9.6, 0xff4fd8, 0],
-            [-5.8, 0x8b5cf6, 0.8],
-            [5.8, 0x22d3ee, 1.6],
-            [9.6, 0xfbbf24, 2.4],
-        ];
-
-        laneDefinitions.forEach(([x, color, phase]) => {
-            const material = this.basicMaterial({
-                color,
-                transparent: true,
-                opacity: 0.2,
-                depthWrite: false,
-            });
-            const lane = new THREE.Mesh(
-                this.geometry(new THREE.BoxGeometry(0.065, 0.025, 17.2)),
-                material
-            );
-            lane.position.set(x, 0.035, 0);
-            lane.renderOrder = 1;
-            this.root.add(lane);
-            this.pulseLanes.push({ lane, material, phase, baseX: x });
-        });
-
-        for (let index = 0; index < 3; index += 1) {
-            const material = this.basicMaterial({
-                color: index % 2 === 0 ? 0x22d3ee : 0xff4fd8,
-                transparent: true,
-                opacity: 0.12 + index * 0.05,
-                depthWrite: false,
-            });
-            const ring = new THREE.Mesh(
-                this.geometry(new THREE.RingGeometry(5 + index * 1.15, 5.04 + index * 1.15, 64)),
-                material
-            );
-            ring.rotation.x = -Math.PI / 2;
-            ring.position.y = 0.028 + index * 0.002;
-            ring.renderOrder = 1;
-            this.root.add(ring);
-            this.rotators.push({ object: ring, material, speed: (index % 2 ? -1 : 1) * (0.08 + index * 0.025), phase: index * 1.1 });
         }
     }
 
@@ -425,38 +394,32 @@ export default class ArcadeWorld {
         this.time += deltaTime;
 
         this.animatedSigns.forEach((item) => {
-            const pulse = Math.sin(this.time * 2.6 + item.phase);
+            const pulse = Math.sin(this.time * 2.25 + item.phase);
             item.material.opacity = THREE.MathUtils.clamp(
-                item.baseOpacity + pulse * 0.12,
-                0.18,
+                item.baseOpacity + pulse * 0.1,
+                0.3,
                 1
             );
-
-            if (item.bob) {
-                item.object.position.y =
-                    item.baseY + Math.sin(this.time * 1.8 + item.phase) * item.bob;
+            if (item.bob || item.baseY) {
+                item.object.position.y = item.baseY + Math.sin(this.time * 1.55 + item.phase) * (item.bob ?? 0.055);
             }
         });
 
-        this.pulseLanes.forEach((item) => {
-            const pulse = 0.5 + 0.5 * Math.sin(this.time * 3.2 + item.phase);
-            item.material.opacity = 0.08 + pulse * 0.24;
-            item.lane.scale.z = 0.86 + pulse * 0.18;
-            item.lane.position.x = item.baseX + Math.sin(this.time * 0.7 + item.phase) * 0.08;
+        this.pulseObjects.forEach((item) => {
+            const pulse = 0.5 + 0.5 * Math.sin(this.time * 3.1 + item.phase);
+            item.material.opacity = item.baseOpacity * (0.58 + pulse * 0.72);
+            item.object.scale.x = 0.9 + pulse * 0.18;
         });
 
         this.rotators.forEach((item) => {
             item.object.rotation.z += deltaTime * item.speed;
-            item.material.opacity = 0.08 + (0.5 + 0.5 * Math.sin(this.time * 2 + item.phase)) * 0.12;
+            item.material.opacity = 0.25 + (0.5 + 0.5 * Math.sin(this.time * 2 + item.phase)) * 0.28;
         });
 
         this.floaters.forEach((item, index) => {
-            item.sprite.position.y =
-                item.baseY + Math.sin(this.time * item.speed + item.phase) * 0.25;
-            item.sprite.position.x =
-                item.baseX + Math.sin(this.time * 0.42 + item.phase) * 0.12;
-            item.sprite.material.rotation +=
-                deltaTime * (index % 2 === 0 ? 0.45 : -0.4);
+            item.sprite.position.y = item.baseY + Math.sin(this.time * item.speed + item.phase) * 0.28;
+            item.sprite.position.x = item.baseX + Math.sin(this.time * 0.37 + item.phase) * 0.18;
+            item.sprite.material.rotation += deltaTime * (index % 2 === 0 ? 0.36 : -0.32);
         });
     }
 

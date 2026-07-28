@@ -1,7 +1,8 @@
 import * as THREE from 'three';
+import { WORLD_CONFIG } from '../world/WorldConfig';
 
-const DESKTOP_FOLLOW_SPAN = 10.5;
-const DESKTOP_OVERVIEW_SPAN = 21.5;
+const DESKTOP_FOLLOW_SPAN = WORLD_CONFIG.camera.desktopFollowSpan;
+const DESKTOP_OVERVIEW_SPAN = WORLD_CONFIG.camera.desktopOverviewSpan;
 
 export default class CameraController {
     constructor(camera, domElement) {
@@ -40,11 +41,11 @@ export default class CameraController {
     }
 
     followSpan() {
-        return this.aspect < 0.72 ? 8.9 : DESKTOP_FOLLOW_SPAN;
+        return this.aspect < 0.72 ? WORLD_CONFIG.camera.mobileFollowSpan : DESKTOP_FOLLOW_SPAN;
     }
 
     overviewSpan() {
-        return this.aspect < 0.72 ? 18.5 : DESKTOP_OVERVIEW_SPAN;
+        return this.aspect < 0.72 ? WORLD_CONFIG.camera.mobileOverviewSpan : DESKTOP_OVERVIEW_SPAN;
     }
 
     update(focusPoint, deltaTime = 1 / 60) {
@@ -81,6 +82,7 @@ export default class CameraController {
             this.followPoint.copy(focusPoint);
             this.targetSpan = this.followSpan();
         } else {
+            this.overviewTarget.copy(focusPoint);
             this.targetSpan = this.overviewSpan();
         }
 
@@ -142,7 +144,7 @@ export default class CameraController {
         this.camera.top = halfHeight;
         this.camera.bottom = -halfHeight;
         this.camera.near = 0.1;
-        this.camera.far = 120;
+        this.camera.far = 180;
         this.camera.updateProjectionMatrix();
     }
 

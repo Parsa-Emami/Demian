@@ -8,6 +8,7 @@ export default class CharacterEffects {
         this.dustTimer = 0;
         this.ghostTimer = 0;
         this.particles = [];
+        this.intensity = owner.isPlayerControlled ? 1 : 0.28;
         this.particleBudget = (window.matchMedia?.('(pointer: coarse)').matches ?? false) ? 48 : 92;
         this.textures = {
             dust: this.createTexture('dust'),
@@ -20,6 +21,10 @@ export default class CharacterEffects {
             impact: this.createTexture('impact'),
             speed: this.createTexture('speed'),
         };
+    }
+
+    setIntensity(intensity) {
+        this.intensity = THREE.MathUtils.clamp(Number(intensity) || 0, 0, 1);
     }
 
     createTexture(type) {
@@ -147,7 +152,11 @@ export default class CharacterEffects {
     }
 
     spawn(type, options = {}) {
-        if (this.particles.length >= this.particleBudget) {
+        if (this.intensity <= 0 || (this.intensity < 1 && Math.random() > this.intensity)) {
+            return;
+        }
+
+        if (this.particles.length >= this.particleBudget * Math.max(this.intensity, 0.25)) {
             return;
         }
 
@@ -183,7 +192,7 @@ export default class CharacterEffects {
     }
 
     spawnGhost(options = {}) {
-        if (this.particles.length >= this.particleBudget || !this.owner.texture) {
+        if (this.intensity < 0.7 || this.particles.length >= this.particleBudget || !this.owner.texture) {
             return;
         }
 

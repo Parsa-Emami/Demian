@@ -6,6 +6,7 @@ import PostProcessingPipeline from './core/PostProcessingPipeline';
 import CharacterRepository from './data/CharacterRepository';
 import CharacterManager from './managers/CharacterManager';
 import ArcadeWorld from './world/ArcadeWorld';
+import PerformanceProfile from './core/PerformanceProfile';
 
 export default class DemianStudio {
     constructor(container, options) {
@@ -19,7 +20,8 @@ export default class DemianStudio {
         this.input = new InputController(document);
         this.clock = new THREE.Clock();
         this.coarsePointer = window.matchMedia?.('(pointer: coarse)').matches ?? false;
-        this.maxPixelRatio = this.coarsePointer ? 1.35 : 1.75;
+        this.maxPixelRatio = 1.5;
+        this.minimumPixelRatio = 0.8;
         this.pixelRatio = Math.min(window.devicePixelRatio || 1, this.maxPixelRatio);
         this.qualityAccumulator = 0;
         this.qualityFrames = 0;
@@ -30,6 +32,16 @@ export default class DemianStudio {
         this.scene.background = new THREE.Color(0x050714);
 
         this.initRenderer();
+        this.performanceProfile = new PerformanceProfile(this.renderer);
+        this.maxPixelRatio = this.performanceProfile.maxPixelRatio;
+        this.minimumPixelRatio = this.performanceProfile.minimumPixelRatio;
+        this.pixelRatio = Math.min(window.devicePixelRatio || 1, this.maxPixelRatio);
+        this.renderer.setPixelRatio(this.pixelRatio);
+        this.container.dataset.performanceTier = this.performanceProfile.tier;
+        this.container.closest('[data-character-manager]')?.setAttribute(
+            'data-performance-tier',
+            this.performanceProfile.tier
+        );
         this.initCamera();
 
         this.cameraController = new CameraController(
@@ -37,7 +49,9 @@ export default class DemianStudio {
             this.renderer.domElement
         );
 
-        this.world = new ArcadeWorld(this.scene);
+        this.world = new ArcadeWorld(this.scene, {
+            performanceProfile: this.performanceProfile,
+        });
 
         this.repository = new CharacterRepository({
             baseUrl: options.apiBase,
@@ -48,6 +62,7 @@ export default class DemianStudio {
             scene: this.scene,
             repository: this.repository,
             eventBus: this.eventBus,
+            performanceProfile: this.performanceProfile,
         });
 
         this.pipeline = new PostProcessingPipeline(
@@ -55,7 +70,8 @@ export default class DemianStudio {
             this.scene,
             this.camera,
             container.clientWidth,
-            container.clientHeight
+            container.clientHeight,
+            this.performanceProfile
         );
 
         this.onResize = this.resize.bind(this);
@@ -71,6 +87,10 @@ export default class DemianStudio {
     async boot() {
         await this.characterManager.boot();
         this.resize();
+        this.eventBus.emit('studio:quality', {
+            pixelRatio: this.pixelRatio,
+            label: this.performanceProfile.tier.toUpperCase(),
+        });
         if (this.coarsePointer || window.innerWidth <= 900) {
             this.focusCharacter({ close: true, follow: true });
         } else {
@@ -196,13 +216,23 @@ export default class DemianStudio {
     }
 
     animate() {
-        const deltaTime = Math.min(this.clock.getDelta(), 0.05);
+        const deltaTime = Math.min(this.clock.getDelta(), 0.045);
         this.updateAdaptiveQuality(deltaTime);
         const input = this.input.snapshot();
         const basis = this.cameraController.movementBasis();
 
-        this.characterManager.update(deltaTime, input, basis);
-        this.world.update(deltaTime);
+        const subSteps = Math.max(1, Math.ceil(deltaTime / (1 / 60)));
+        const step = deltaTime / subSteps;
+
+        const heldInput = { x: input.x, z: input.z, run: input.run };
+        for (let index = 0; index < subSteps; index += 1) {
+            this.characterManager.update(
+                step,
+                index === 0 ? input : heldInput,
+                basis
+            );
+            this.world.update(step);
+        }
         this.cameraController.update(
             this.characterManager.focusPoint(),
             deltaTime
@@ -233,9 +263,12 @@ export default class DemianStudio {
         const deviceRatio = Math.min(window.devicePixelRatio || 1, this.maxPixelRatio);
         let nextRatio = this.pixelRatio;
 
-        if (averageFrame > 1 / 43 && this.pixelRatio > 0.9) {
-            nextRatio = Math.max(0.9, this.pixelRatio - 0.2);
-        } else if (averageFrame < 1 / 57 && this.pixelRatio < deviceRatio) {
+        const slowFrame = 1 / Math.max(this.performanceProfile.targetFps - 9, 36);
+        const fastFrame = 1 / Math.max(this.performanceProfile.targetFps - 2, 48);
+
+        if (averageFrame > slowFrame && this.pixelRatio > this.minimumPixelRatio) {
+            nextRatio = Math.max(this.minimumPixelRatio, this.pixelRatio - 0.18);
+        } else if (averageFrame < fastFrame && this.pixelRatio < deviceRatio) {
             nextRatio = Math.min(deviceRatio, this.pixelRatio + 0.1);
         }
 
@@ -268,7 +301,7 @@ export default class DemianStudio {
         this.renderer.setPixelRatio(this.pixelRatio);
         this.renderer.setSize(width, height, false);
         this.cameraController.resize(width, height);
-        this.pipeline.resize(width, height);
+        this.pipeline.resize(width, height, this.pixelRatio);
     }
 
     dispose() {

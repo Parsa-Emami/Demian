@@ -1733,3 +1733,132 @@ body {
         display: none;
     }
 }
+
+/* Demian V5 — open-world mobile performance layer */
+html,
+body,
+.manager-shell,
+.manager-stage {
+    overscroll-behavior: none;
+}
+
+.manager-stage,
+.demian-scene,
+.demian-scene canvas {
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+}
+
+.demian-scene {
+    contain: strict;
+    isolation: isolate;
+}
+
+.demian-scene canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+    will-change: transform;
+}
+
+.virtual-stick,
+.touch-action,
+.mobile-action-tray,
+.stage-toolbar .arcade-button {
+    -webkit-tap-highlight-color: transparent;
+}
+
+.manager-shell[data-performance-tier="performance"] .arcade-screen-bezel,
+.manager-shell[data-performance-tier="performance"] .manager-stage::before,
+.manager-shell[data-performance-tier="performance"] .manager-stage::after {
+    filter: none !important;
+    backdrop-filter: none !important;
+}
+
+.manager-shell[data-performance-tier="performance"] .arcade-panel {
+    backdrop-filter: blur(7px);
+}
+
+@media (pointer: coarse) {
+    .touch-action,
+    .stage-toolbar .arcade-button,
+    .mobile-fullscreen-button {
+        min-width: 46px;
+        min-height: 46px;
+    }
+
+    .touch-action {
+        transition: transform 90ms ease, opacity 90ms ease, border-color 90ms ease;
+    }
+
+    .touch-action:hover,
+    .arcade-button:hover {
+        transform: none;
+    }
+
+    .touch-action.is-pressed,
+    .touch-action:active {
+        transform: scale(0.92);
+    }
+}
+
+@media (max-width: 900px) {
+    .manager-stage {
+        min-height: calc(var(--demian-vh, 1vh) * 100);
+        height: calc(var(--demian-vh, 1vh) * 100);
+    }
+
+    .mobile-status-bar {
+        max-width: calc(100vw - 24px - var(--safe-left) - var(--safe-right));
+    }
+
+    .mobile-status-chip {
+        min-width: 42px;
+    }
+
+    .touch-controller {
+        pointer-events: none;
+    }
+
+    .virtual-stick,
+    .touch-controller__right,
+    .mobile-action-tray {
+        pointer-events: auto;
+    }
+
+    .manager-sidebar__scroll {
+        overscroll-behavior: contain;
+        -webkit-overflow-scrolling: touch;
+    }
+}
+
+@media (max-width: 430px) and (orientation: portrait) {
+    .mobile-status-bar {
+        gap: 0.32rem;
+        padding-inline: 0.5rem;
+    }
+
+    .mobile-status-chip {
+        min-width: 36px;
+        padding-inline: 0.38rem;
+    }
+
+    .mobile-status-chip small {
+        font-size: 0.42rem;
+    }
+
+    .mobile-status-chip b {
+        font-size: 0.58rem;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .arcade-live-dot,
+    .sidebar-compact__active-dot,
+    .orientation-hint span,
+    .virtual-stick__knob,
+    .arcade-intro-note {
+        animation: none !important;
+    }
+}

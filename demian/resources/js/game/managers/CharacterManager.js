@@ -1,28 +1,24 @@
 import * as THREE from 'three';
 import SpriteCharacter from '../characters/SpriteCharacter';
+import NpcBrain from '../npc/NpcBrain';
+import { WORLD_CONFIG } from '../world/WorldConfig';
 
 function builtinAssetUrl(relativePath) {
     return new URL(relativePath.replace(/^\/+/, ''), document.baseURI).toString();
 }
 
-const BUILTIN_CHARACTERS = Object.freeze([
+const BUILTIN_DEFINITIONS = Object.freeze([
     Object.freeze({
         id: 'builtin-tiam',
         name: 'TIAM / تیام',
         slug: 'tiam',
-        sprite_url: builtinAssetUrl(
-            'assets/characters/tiam/tiam-spritesheet-v4.png'
-        ),
-        atlas_url: builtinAssetUrl(
-            'assets/characters/tiam/tiam-atlas.json'
-        ),
-        is_builtin: true,
         is_active: true,
         settings: {
-            walk_speed: 3.2,
-            run_speed: 6.2,
-            sprint_speed: 6.85,
-            jump_force: 6.5,
+            walk_speed: 3.4,
+            run_speed: 6.55,
+            sprint_speed: 7.25,
+            jump_force: 6.7,
+            air_control: 0.56,
             scale: 1,
         },
     }),
@@ -30,19 +26,13 @@ const BUILTIN_CHARACTERS = Object.freeze([
         id: 'builtin-ronak',
         name: 'RONAK / روناک',
         slug: 'ronak',
-        sprite_url: builtinAssetUrl(
-            'assets/characters/ronak/ronak-spritesheet-v4.png'
-        ),
-        atlas_url: builtinAssetUrl(
-            'assets/characters/ronak/ronak-atlas.json'
-        ),
-        is_builtin: true,
         is_active: false,
         settings: {
-            walk_speed: 3.25,
-            run_speed: 6.35,
-            sprint_speed: 7.0,
-            jump_force: 6.6,
+            walk_speed: 3.45,
+            run_speed: 6.7,
+            sprint_speed: 7.35,
+            jump_force: 6.75,
+            air_control: 0.54,
             scale: 1,
         },
     }),
@@ -50,45 +40,53 @@ const BUILTIN_CHARACTERS = Object.freeze([
         id: 'builtin-amirreza',
         name: 'AMIRREZA / امیررضا',
         slug: 'amirreza',
-        sprite_url: builtinAssetUrl(
-            'assets/characters/amirreza/amirreza-spritesheet-v4.png'
-        ),
-        atlas_url: builtinAssetUrl(
-            'assets/characters/amirreza/amirreza-atlas.json'
-        ),
-        is_builtin: true,
         is_active: false,
         settings: {
-            walk_speed: 4.15,
-            run_speed: 8.4,
-            sprint_speed: 9.35,
-            jump_force: 6.85,
+            walk_speed: 4.25,
+            run_speed: 8.55,
+            sprint_speed: 9.5,
+            jump_force: 7.05,
+            air_control: 0.62,
             scale: 1,
         },
     }),
 ]);
 
-const BUILTIN_SLUGS = new Set(
-    BUILTIN_CHARACTERS.map((character) => character.slug)
-);
+const BUILTIN_SLUGS = new Set(BUILTIN_DEFINITIONS.map((character) => character.slug));
 
-function cloneBuiltin(character) {
+function cloneBuiltin(character, spriteVariant = 'mobile') {
+    const suffix = ['desktop', 'mobile', 'compact'].includes(spriteVariant)
+        ? spriteVariant
+        : 'mobile';
+
     return {
         ...character,
         settings: { ...character.settings },
+        sprite_url: builtinAssetUrl(
+            `assets/characters/${character.slug}/${character.slug}-spritesheet-v5-${suffix}.png`
+        ),
+        atlas_url: builtinAssetUrl(
+            `assets/characters/${character.slug}/${character.slug}-atlas-v5-${suffix}.json`
+        ),
+        is_builtin: true,
     };
 }
 
 export default class CharacterManager {
-    constructor({ scene, repository, eventBus }) {
+    constructor({ scene, repository, eventBus, performanceProfile = null }) {
         this.scene = scene;
         this.repository = repository;
         this.eventBus = eventBus;
+        this.performanceProfile = performanceProfile;
+        this.spriteVariant = performanceProfile?.spriteVariant?.() ?? 'mobile';
         this.characters = [];
         this.activeRecord = null;
         this.activeEntity = null;
+        this.entities = new Map();
+        this.brains = new Map();
         this.textureLoader = new THREE.TextureLoader();
         this.lastBootWarning = null;
+        this.npcLimit = Math.max(2, Number(performanceProfile?.npcCount ?? 3));
     }
 
     async boot() {
@@ -113,8 +111,10 @@ export default class CharacterManager {
             throw new Error('هیچ کاراکتری برای اجرا وجود ندارد.');
         }
 
-        await this.select(active.id);
+        await this.populateWorld(active.id);
+        await this.select(active.id, { preservePosition: false });
         this.eventBus.emit('characters:changed', this.characters);
+        this.emitRosterChanged();
 
         if (this.lastBootWarning) {
             this.eventBus.emit('character:warning', {
@@ -131,18 +131,18 @@ export default class CharacterManager {
             this.characters.map((character) => [character.slug, character])
         );
 
-        const builtins = BUILTIN_CHARACTERS.map((builtin) => {
+        const builtins = BUILTIN_DEFINITIONS.map((definition) => {
+            const builtin = cloneBuiltin(definition, this.spriteVariant);
             const existing = existingBySlug.get(builtin.slug);
 
             if (!existing) {
-                return cloneBuiltin(builtin);
+                return builtin;
             }
 
             return {
-                ...cloneBuiltin(builtin),
+                ...builtin,
                 ...existing,
-                // Built-in artwork is versioned with the runtime. Always use the bundled
-                // V4 sheet/atlas pair so an older database path cannot mix V3 and V4 assets.
+                // Runtime and bundled atlas must always remain a matching pair.
                 sprite_url: builtin.sprite_url,
                 atlas_url: builtin.atlas_url,
                 is_builtin: true,
@@ -160,6 +160,38 @@ export default class CharacterManager {
         this.characters = [...builtins, ...customCharacters];
     }
 
+    rosterRecords(activeId = this.activeRecord?.id) {
+        const active = this.characters.find(
+            (character) => String(character.id) === String(activeId)
+        );
+        const others = this.characters.filter(
+            (character) => String(character.id) !== String(activeId)
+        );
+
+        return [active, ...others]
+            .filter(Boolean)
+            .slice(0, this.npcLimit + 1);
+    }
+
+    async populateWorld(activeId) {
+        const roster = this.rosterRecords(activeId);
+        const active = roster[0];
+
+        if (active) {
+            await this.ensureEntity(active, 0);
+        }
+
+        const results = await Promise.allSettled(
+            roster.slice(1).map((record, index) => this.ensureEntity(record, index + 1))
+        );
+
+        results.forEach((result) => {
+            if (result.status === 'rejected') {
+                console.warn('NPC character could not be loaded.', result.reason);
+            }
+        });
+    }
+
     async reload() {
         try {
             this.characters = await this.repository.list();
@@ -171,20 +203,19 @@ export default class CharacterManager {
         }
 
         this.ensureBuiltinCharacters();
+        await this.populateWorld(this.activeRecord?.id ?? this.characters[0]?.id);
         this.eventBus.emit('characters:changed', this.characters);
+        this.emitRosterChanged();
         return this.characters;
     }
 
-    async select(id) {
-        const record = this.characters.find(
-            (character) => String(character.id) === String(id)
-        );
+    async ensureEntity(record, spawnIndex = 0) {
+        const key = String(record.id);
+        const existing = this.entities.get(key);
 
-        if (!record) {
-            throw new Error('کاراکتر انتخاب‌شده پیدا نشد.');
+        if (existing) {
+            return existing;
         }
-
-        this.eventBus.emit('character:loading', record);
 
         const [texture, atlas] = await Promise.all([
             this.loadTexture(record.sprite_url),
@@ -196,26 +227,89 @@ export default class CharacterManager {
             character: record,
             texture,
             atlas,
+            controlled: false,
         });
+        entity.setWorldBounds(WORLD_CONFIG.bounds);
 
-        const previousPosition = this.activeEntity?.group.position.clone();
+        const spawn = WORLD_CONFIG.spawnPoints[
+            spawnIndex % WORLD_CONFIG.spawnPoints.length
+        ];
+        entity.group.position.set(spawn.x, 0, spawn.z);
+        this.scene.add(entity.group);
 
-        if (previousPosition) {
-            entity.group.position.copy(previousPosition);
+        this.entities.set(key, entity);
+        this.brains.set(key, new NpcBrain(entity, spawnIndex));
+        return entity;
+    }
+
+    async select(id, { preservePosition = true } = {}) {
+        const record = this.characters.find(
+            (character) => String(character.id) === String(id)
+        );
+
+        if (!record) {
+            throw new Error('کاراکتر انتخاب‌شده پیدا نشد.');
         }
 
-        this.disposeActive();
+        this.eventBus.emit('character:loading', record);
+
+        const nextEntity = await this.ensureEntity(record, this.entities.size);
+        const previousEntity = this.activeEntity;
+        const previousPosition = previousEntity?.group.position.clone();
+        const nextNpcPosition = nextEntity.group.position.clone();
+
+        if (previousEntity && previousEntity !== nextEntity) {
+            previousEntity.setPlayerControlled(false);
+            if (preservePosition && previousPosition) {
+                previousEntity.group.position.copy(nextNpcPosition);
+                nextEntity.group.position.copy(previousPosition);
+            }
+        }
+
+        nextEntity.setPlayerControlled(true, { playIntro: !previousEntity });
         this.activeRecord = record;
-        this.activeEntity = entity;
-        this.scene.add(entity.group);
+        this.activeEntity = nextEntity;
+
+        this.characters = this.characters.map((character) => ({
+            ...character,
+            is_active: String(character.id) === String(record.id),
+        }));
+
+        await this.populateWorld(record.id);
+        this.pruneRoster(record.id);
 
         this.eventBus.emit('character:selected', {
             record,
-            position: entity.group.position.clone(),
-            height: entity.visualHeight(),
+            position: nextEntity.group.position.clone(),
+            height: nextEntity.visualHeight(),
         });
+        this.eventBus.emit('characters:changed', this.characters);
+        this.emitRosterChanged();
 
-        return entity;
+        return nextEntity;
+    }
+
+    pruneRoster(activeId) {
+        const keep = new Set(this.rosterRecords(activeId).map((record) => String(record.id)));
+
+        [...this.entities.entries()].forEach(([key, entity]) => {
+            if (keep.has(key)) {
+                return;
+            }
+
+            this.scene.remove(entity.group);
+            entity.dispose();
+            this.entities.delete(key);
+            this.brains.delete(key);
+        });
+    }
+
+    emitRosterChanged() {
+        this.eventBus.emit('world:roster', {
+            activeId: this.activeRecord?.id ?? null,
+            visibleCharacters: [...this.entities.keys()],
+            npcCount: Math.max(this.entities.size - 1, 0),
+        });
     }
 
     async activate(id) {
@@ -239,25 +333,21 @@ export default class CharacterManager {
                 }
             }
 
-            this.characters = this.characters.map((character) => ({
-                ...character,
-                is_active: String(character.id) === String(record.id),
-            }));
-
             await this.select(record.id);
             this.eventBus.emit('characters:changed', this.characters);
             return { ...record, is_active: true };
         }
 
         const activated = await this.repository.activate(id);
-        this.characters = this.characters.map((character) => ({
-            ...character,
-            is_active: String(character.id) === String(activated.id),
-        }));
+        const index = this.characters.findIndex(
+            (character) => String(character.id) === String(id)
+        );
+        if (index >= 0) {
+            this.characters[index] = { ...this.characters[index], ...activated };
+        }
 
         await this.select(activated.id);
         this.eventBus.emit('characters:changed', this.characters);
-
         return activated;
     }
 
@@ -278,7 +368,7 @@ export default class CharacterManager {
 
         await this.repository.remove(id);
         const removedWasActive = String(this.activeRecord?.id) === String(id);
-
+        this.disposeEntity(id);
         await this.reload();
 
         if (removedWasActive) {
@@ -287,15 +377,32 @@ export default class CharacterManager {
                 this.characters[0];
 
             if (next) {
-                await this.select(next.id);
-            } else {
-                this.disposeActive();
+                await this.select(next.id, { preservePosition: false });
             }
         }
     }
 
     update(deltaTime, input, movementBasis) {
-        this.activeEntity?.update(deltaTime, input, movementBasis);
+        if (!this.activeEntity) {
+            return;
+        }
+
+        this.activeEntity.update(deltaTime, input, movementBasis);
+        const neighbours = [...this.entities.values()];
+
+        this.entities.forEach((entity, key) => {
+            if (entity === this.activeEntity) {
+                return;
+            }
+
+            const brain = this.brains.get(key);
+            const npcInput = brain?.update(
+                deltaTime,
+                this.activeEntity,
+                neighbours
+            );
+            entity.update(deltaTime, npcInput ?? { x: 0, z: 0 }, movementBasis);
+        });
     }
 
     position() {
@@ -325,7 +432,7 @@ export default class CharacterManager {
     async loadJson(url) {
         const response = await fetch(url, {
             headers: { Accept: 'application/json' },
-            cache: 'no-store',
+            cache: 'force-cache',
         });
 
         if (!response.ok) {
@@ -346,18 +453,31 @@ export default class CharacterManager {
         });
     }
 
-    disposeActive() {
-        if (!this.activeEntity) {
+    disposeEntity(id) {
+        const key = String(id);
+        const entity = this.entities.get(key);
+        if (!entity) {
             return;
         }
 
-        this.scene.remove(this.activeEntity.group);
-        this.activeEntity.dispose();
-        this.activeEntity = null;
-        this.activeRecord = null;
+        this.scene.remove(entity.group);
+        entity.dispose();
+        this.entities.delete(key);
+        this.brains.delete(key);
+
+        if (entity === this.activeEntity) {
+            this.activeEntity = null;
+            this.activeRecord = null;
+        }
+    }
+
+    disposeActive() {
+        if (this.activeRecord) {
+            this.disposeEntity(this.activeRecord.id);
+        }
     }
 
     dispose() {
-        this.disposeActive();
+        [...this.entities.keys()].forEach((key) => this.disposeEntity(key));
     }
 }
