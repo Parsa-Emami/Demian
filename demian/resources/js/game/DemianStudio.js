@@ -18,6 +18,12 @@ export default class DemianStudio {
         this.eventBus = new EventBus();
         this.input = new InputController(document);
         this.clock = new THREE.Clock();
+        this.coarsePointer = window.matchMedia?.('(pointer: coarse)').matches ?? false;
+        this.maxPixelRatio = this.coarsePointer ? 1.35 : 1.75;
+        this.pixelRatio = Math.min(window.devicePixelRatio || 1, this.maxPixelRatio);
+        this.qualityAccumulator = 0;
+        this.qualityFrames = 0;
+        this.qualityCooldown = 0;
         this.currentCharacterLabel = 'کاراکتر';
 
         this.scene = new THREE.Scene();
@@ -54,8 +60,10 @@ export default class DemianStudio {
 
         this.onResize = this.resize.bind(this);
         this.animate = this.animate.bind(this);
+        this.onVisibilityChange = this.onVisibilityChange.bind(this);
 
         window.addEventListener('resize', this.onResize);
+        document.addEventListener('visibilitychange', this.onVisibilityChange);
         this.bindCameraButtons();
         this.bindCharacterEvents();
     }
@@ -63,9 +71,13 @@ export default class DemianStudio {
     async boot() {
         await this.characterManager.boot();
         this.resize();
-        this.cameraController.overview({ immediate: true });
-        this.updateCameraButtons('OVERVIEW');
-        this.eventBus.emit('camera:mode', 'OVERVIEW');
+        if (this.coarsePointer || window.innerWidth <= 900) {
+            this.focusCharacter({ close: true, follow: true });
+        } else {
+            this.cameraController.overview({ immediate: true });
+            this.updateCameraButtons('OVERVIEW');
+            this.eventBus.emit('camera:mode', 'OVERVIEW');
+        }
         this.animationFrame = requestAnimationFrame(this.animate);
     }
 
@@ -76,7 +88,7 @@ export default class DemianStudio {
             powerPreference: 'high-performance',
         });
 
-        this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.75));
+        this.renderer.setPixelRatio(this.pixelRatio);
         this.renderer.setSize(
             Math.max(this.container.clientWidth, 1),
             Math.max(this.container.clientHeight, 1),
@@ -185,6 +197,7 @@ export default class DemianStudio {
 
     animate() {
         const deltaTime = Math.min(this.clock.getDelta(), 0.05);
+        this.updateAdaptiveQuality(deltaTime);
         const input = this.input.snapshot();
         const basis = this.cameraController.movementBasis();
 
@@ -206,11 +219,53 @@ export default class DemianStudio {
         this.animationFrame = requestAnimationFrame(this.animate);
     }
 
+
+    updateAdaptiveQuality(deltaTime) {
+        this.qualityCooldown = Math.max(0, this.qualityCooldown - deltaTime);
+        this.qualityAccumulator += deltaTime;
+        this.qualityFrames += 1;
+
+        if (this.qualityFrames < 90 || this.qualityCooldown > 0) {
+            return;
+        }
+
+        const averageFrame = this.qualityAccumulator / this.qualityFrames;
+        const deviceRatio = Math.min(window.devicePixelRatio || 1, this.maxPixelRatio);
+        let nextRatio = this.pixelRatio;
+
+        if (averageFrame > 1 / 43 && this.pixelRatio > 0.9) {
+            nextRatio = Math.max(0.9, this.pixelRatio - 0.2);
+        } else if (averageFrame < 1 / 57 && this.pixelRatio < deviceRatio) {
+            nextRatio = Math.min(deviceRatio, this.pixelRatio + 0.1);
+        }
+
+        this.qualityAccumulator = 0;
+        this.qualityFrames = 0;
+
+        if (Math.abs(nextRatio - this.pixelRatio) < 0.01) {
+            return;
+        }
+
+        this.pixelRatio = nextRatio;
+        this.qualityCooldown = 3;
+        this.resize();
+        this.eventBus.emit('studio:quality', {
+            pixelRatio: this.pixelRatio,
+            label: this.pixelRatio >= 1.45 ? 'HIGH' : this.pixelRatio >= 1.1 ? 'BALANCED' : 'PERFORMANCE',
+        });
+    }
+
+    onVisibilityChange() {
+        if (!document.hidden) {
+            this.clock.getDelta();
+        }
+    }
+
     resize() {
         const width = Math.max(this.container.clientWidth, 1);
         const height = Math.max(this.container.clientHeight, 1);
 
-        this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.75));
+        this.renderer.setPixelRatio(this.pixelRatio);
         this.renderer.setSize(width, height, false);
         this.cameraController.resize(width, height);
         this.pipeline.resize(width, height);
@@ -219,6 +274,7 @@ export default class DemianStudio {
     dispose() {
         cancelAnimationFrame(this.animationFrame);
         window.removeEventListener('resize', this.onResize);
+        document.removeEventListener('visibilitychange', this.onVisibilityChange);
         this.input.dispose();
         this.cameraController.dispose();
         this.characterManager.dispose();

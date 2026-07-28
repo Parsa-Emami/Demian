@@ -2,6 +2,7 @@ import '../css/app.css';
 import DemianStudio from './game/DemianStudio';
 import CharacterManagerUI from './ui/CharacterManagerUI';
 import SidebarController from './ui/SidebarController';
+import MobileGameUI from './ui/MobileGameUI';
 
 document.addEventListener('DOMContentLoaded', async () => {
     const sceneContainer = document.querySelector('[data-demian-scene]');
@@ -12,6 +13,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     const sidebar = new SidebarController({ root: managerRoot });
+    const mobileUI = new MobileGameUI({ root: managerRoot });
 
     const studio = new DemianStudio(sceneContainer, {
         apiBase: managerRoot.dataset.apiBase,
@@ -25,6 +27,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     sidebar.boot();
+    mobileUI.boot();
 
     const ui = new CharacterManagerUI({
         root: managerRoot,

@@ -6,7 +6,9 @@ export default class CharacterEffects {
         this.owner = owner;
         this.time = 0;
         this.dustTimer = 0;
+        this.ghostTimer = 0;
         this.particles = [];
+        this.particleBudget = (window.matchMedia?.('(pointer: coarse)').matches ?? false) ? 48 : 92;
         this.textures = {
             dust: this.createTexture('dust'),
             star: this.createTexture('star'),
@@ -15,6 +17,8 @@ export default class CharacterEffects {
             sparkle: this.createTexture('sparkle'),
             note: this.createTexture('note'),
             zzz: this.createTexture('zzz'),
+            impact: this.createTexture('impact'),
+            speed: this.createTexture('speed'),
         };
     }
 
@@ -87,6 +91,37 @@ export default class CharacterEffects {
             context.fillText('Zzz', 64, 66);
         }
 
+        if (type === 'impact') {
+            context.save();
+            context.translate(64, 64);
+            context.strokeStyle = '#ffffff';
+            context.lineWidth = 8;
+            context.shadowColor = '#7cf8ff';
+            context.shadowBlur = 18;
+            for (let index = 0; index < 8; index += 1) {
+                context.rotate(Math.PI / 4);
+                context.beginPath();
+                context.moveTo(22, 0);
+                context.lineTo(52, 0);
+                context.stroke();
+            }
+            context.restore();
+        }
+
+        if (type === 'speed') {
+            context.strokeStyle = 'rgba(165, 243, 252, 0.95)';
+            context.lineWidth = 8;
+            context.lineCap = 'round';
+            context.beginPath();
+            context.moveTo(18, 42);
+            context.lineTo(108, 42);
+            context.moveTo(30, 64);
+            context.lineTo(112, 64);
+            context.moveTo(12, 86);
+            context.lineTo(94, 86);
+            context.stroke();
+        }
+
         if (type === 'slash') {
             context.strokeStyle = '#ffd43b';
             context.lineWidth = 16;
@@ -112,6 +147,10 @@ export default class CharacterEffects {
     }
 
     spawn(type, options = {}) {
+        if (this.particles.length >= this.particleBudget) {
+            return;
+        }
+
         const material = new THREE.SpriteMaterial({
             map: this.textures[type],
             transparent: true,
@@ -139,13 +178,62 @@ export default class CharacterEffects {
             growth: options.growth ?? 0.5,
             spin: options.spin ?? 0,
             gravity: options.gravity ?? 0,
+            ownsTexture: false,
+        });
+    }
+
+    spawnGhost(options = {}) {
+        if (this.particles.length >= this.particleBudget || !this.owner.texture) {
+            return;
+        }
+
+        const texture = this.owner.texture.clone();
+        texture.image = this.owner.texture.image;
+        texture.offset.copy(this.owner.texture.offset);
+        texture.repeat.copy(this.owner.texture.repeat);
+        texture.wrapS = this.owner.texture.wrapS;
+        texture.wrapT = this.owner.texture.wrapT;
+        texture.magFilter = this.owner.texture.magFilter;
+        texture.minFilter = this.owner.texture.minFilter;
+        texture.generateMipmaps = false;
+        texture.needsUpdate = true;
+
+        const material = new THREE.SpriteMaterial({
+            map: texture,
+            transparent: true,
+            depthWrite: false,
+            toneMapped: false,
+            opacity: options.opacity ?? 0.34,
+            color: options.color ?? 0x9ae6ff,
+        });
+        const sprite = new THREE.Sprite(material);
+        sprite.center.copy(this.owner.sprite.center);
+        sprite.position.copy(this.owner.group.position);
+        sprite.position.y += this.owner.bodyRoot.position.y + this.owner.sprite.position.y;
+        sprite.scale.copy(this.owner.sprite.scale);
+        sprite.renderOrder = 16;
+        this.scene.add(sprite);
+
+        const life = options.life ?? 0.24;
+        this.particles.push({
+            sprite,
+            material,
+            velocity: (options.velocity ?? new THREE.Vector3()).clone(),
+            life,
+            maxLife: life,
+            startScale: 1,
+            growth: options.growth ?? 0.06,
+            spin: 0,
+            gravity: 0,
+            ownsTexture: true,
+            preserveScale: true,
         });
     }
 
     onStateChanged(state, facing) {
         const position = this.owner.group.position.clone();
 
-        if (state === 'attack') {
+        if (['attack', 'combo', 'uppercut', 'cast'].includes(state)) {
             position.x += facing * 0.95;
             position.y += 1.45;
             this.spawn('slash', {
@@ -156,7 +244,8 @@ export default class CharacterEffects {
                 spin: -facing * 1.9,
             });
 
-            for (let index = 0; index < 4; index += 1) {
+            const burstCount = state === 'combo' ? 7 : state === 'cast' ? 9 : 4;
+            for (let index = 0; index < burstCount; index += 1) {
                 this.spawn('sparkle', {
                     position,
                     scale: 0.18 + index * 0.035,
@@ -172,7 +261,7 @@ export default class CharacterEffects {
             }
         }
 
-        if (state === 'win') {
+        if (state === 'win' || state === 'celebrate') {
             for (let index = 0; index < 10; index += 1) {
                 const angle = (Math.PI * 2 * index) / 10;
                 this.spawn(index % 3 === 0 ? 'heart' : 'star', {
@@ -192,7 +281,7 @@ export default class CharacterEffects {
         }
 
 
-        if (state === 'dash' || state === 'dodge') {
+        if (state === 'dash' || state === 'dodge' || state === 'slide') {
             const direction = this.owner.actionDirection?.clone() ?? new THREE.Vector3(facing, 0, 0);
 
             for (let index = 0; index < 8; index += 1) {
@@ -232,7 +321,7 @@ export default class CharacterEffects {
             }
         }
 
-        if (state === 'wave' || state === 'pose' || state === 'spin') {
+        if (state === 'wave' || state === 'salute' || state === 'pose' || state === 'spin') {
             for (let index = 0; index < 7; index += 1) {
                 const angle = (Math.PI * 2 * index) / 7;
                 this.spawn('sparkle', {
@@ -264,7 +353,7 @@ export default class CharacterEffects {
             }
         }
 
-        if (state === 'jump') {
+        if (state === 'jump' || state === 'takeoff') {
             for (let index = 0; index < 4; index += 1) {
                 this.spawn('dust', {
                     position,
@@ -316,10 +405,21 @@ export default class CharacterEffects {
         });
     }
 
-    landing() {
+    landing(impact = 0) {
         const position = this.owner.group.position.clone();
 
-        for (let index = 0; index < 7; index += 1) {
+        if (impact > this.owner.jumpForce * 1.05) {
+            this.spawn('impact', {
+                position,
+                y: 0.18,
+                scale: 1.05,
+                life: 0.34,
+                growth: 1.15,
+            });
+        }
+
+        const count = impact > this.owner.jumpForce * 1.15 ? 10 : 7;
+        for (let index = 0; index < count; index += 1) {
             const direction = index % 2 === 0 ? -1 : 1;
             this.spawn('dust', {
                 position,
@@ -335,9 +435,34 @@ export default class CharacterEffects {
         }
     }
 
+    skid() {
+        const position = this.owner.group.position.clone();
+        const direction = this.owner.lastMoveDirection.clone().normalize();
+        for (let index = 0; index < 6; index += 1) {
+            this.spawn(index % 2 ? 'dust' : 'speed', {
+                position,
+                scale: 0.2 + index * 0.025,
+                life: 0.34 + index * 0.035,
+                velocity: direction.clone().multiplyScalar(-1.2 - index * 0.15).add(
+                    new THREE.Vector3((Math.random() - 0.5) * 0.6, 0.2 + Math.random() * 0.35, (Math.random() - 0.5) * 0.6)
+                ),
+                growth: 0.55,
+            });
+        }
+    }
+
     update(deltaTime, speed) {
         this.time += deltaTime;
+        this.ghostTimer -= deltaTime;
         this.emitMovementDust(deltaTime, speed);
+
+        if (['dash', 'slide'].includes(this.owner.state) && this.ghostTimer <= 0) {
+            this.ghostTimer = 0.055;
+            this.spawnGhost({ life: 0.22, opacity: 0.3 });
+        } else if (this.owner.state === 'sprint' && speed > this.owner.runSpeed && this.ghostTimer <= 0) {
+            this.ghostTimer = 0.12;
+            this.spawnGhost({ life: 0.17, opacity: 0.18 });
+        }
 
         for (let index = this.particles.length - 1; index >= 0; index -= 1) {
             const particle = this.particles[index];
@@ -350,9 +475,12 @@ export default class CharacterEffects {
             particle.sprite.material.rotation += particle.spin * deltaTime;
 
             const progress = 1 - particle.life / particle.maxLife;
-            const scale =
-                particle.startScale * (1 + progress * particle.growth);
-            particle.sprite.scale.setScalar(Math.max(scale, 0.001));
+            if (!particle.preserveScale) {
+                const scale = particle.startScale * (1 + progress * particle.growth);
+                particle.sprite.scale.setScalar(Math.max(scale, 0.001));
+            } else {
+                particle.sprite.scale.multiplyScalar(1 + particle.growth * deltaTime);
+            }
             particle.material.opacity = Math.max(
                 0,
                 1 - progress * progress
@@ -360,6 +488,9 @@ export default class CharacterEffects {
 
             if (particle.life <= 0) {
                 this.scene.remove(particle.sprite);
+                if (particle.ownsTexture) {
+                    particle.material.map?.dispose();
+                }
                 particle.material.dispose();
                 this.particles.splice(index, 1);
             }
@@ -369,6 +500,9 @@ export default class CharacterEffects {
     dispose() {
         this.particles.forEach(({ sprite, material }) => {
             this.scene.remove(sprite);
+            if (material.map && !Object.values(this.textures).includes(material.map)) {
+                material.map.dispose();
+            }
             material.dispose();
         });
         this.particles = [];

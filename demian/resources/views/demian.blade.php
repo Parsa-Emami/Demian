@@ -4,11 +4,15 @@
     <meta charset="UTF-8">
     <meta
         name="viewport"
-        content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+        content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no"
     >
+    <meta name="theme-color" content="#050610">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>Demian 2D Arcade · Characters</title>
+    <title>Demian V4 · Mobile Arcade</title>
 
     @vite([
         'resources/js/app.js',
@@ -20,7 +24,8 @@
         data-character-manager
         data-manager-shell
         data-api-base="{{ route('characters.index') }}"
-        data-sidebar-state="expanded"
+        data-sidebar-state="collapsed"
+        data-mobile-actions="collapsed"
         class="manager-shell"
         dir="ltr"
     >
@@ -29,13 +34,16 @@
             data-manager-sidebar
             class="manager-sidebar"
             dir="rtl"
+            aria-label="مدیریت کاراکترها"
         >
+            <div class="mobile-sheet-handle" aria-hidden="true"></div>
+
             <button
                 type="button"
                 data-sidebar-toggle
                 class="sidebar-edge-toggle"
                 aria-controls="character-manager-sidebar"
-                aria-expanded="true"
+                aria-expanded="false"
                 title="جمع‌کردن مدیریت کاراکترها (M)"
             >
                 <span data-sidebar-toggle-icon aria-hidden="true">‹</span>
@@ -46,7 +54,7 @@
                 <div class="sidebar-compact" aria-hidden="true">
                     <div class="sidebar-compact__logo">D</div>
                     <span class="sidebar-compact__active-dot"></span>
-                    <span class="sidebar-compact__name">DEMIAN · 2D</span>
+                    <span class="sidebar-compact__name">DEMIAN · V4</span>
                     <span class="sidebar-compact__hint">M</span>
                 </div>
 
@@ -54,22 +62,22 @@
                     <section class="arcade-panel manager-brand rounded-[28px] p-4">
                         <div class="flex items-start justify-between gap-3">
                             <div>
-                                <p class="arcade-label">Demian 2D arcade engine</p>
+                                <p class="arcade-label">Demian mobile arcade engine</p>
                                 <h1 class="arcade-title mt-2 text-3xl font-black" data-active-character-name>
                                     TIAM / تیام
                                 </h1>
                                 <p class="mt-1 text-xs text-zinc-400">
-                                    Stable Sprite · Cute Procedural Motion
+                                    96 Frames · 8-Way Motion · Adaptive Quality
                                 </p>
                             </div>
 
-                            <span class="arcade-badge">V3</span>
+                            <span class="arcade-badge">V4</span>
                         </div>
 
                         <div class="mt-4 manager-brand__chip-row">
-                            <span class="manager-chip manager-chip--pink">Stable Facing</span>
-                            <span class="manager-chip manager-chip--cyan">2D Arcade</span>
-                            <span class="manager-chip manager-chip--yellow">Cute FX</span>
+                            <span class="manager-chip manager-chip--pink">30+ Animations</span>
+                            <span class="manager-chip manager-chip--cyan">8 Directions</span>
+                            <span class="manager-chip manager-chip--yellow">Mobile First</span>
                         </div>
                     </section>
 
@@ -77,7 +85,7 @@
                         <div class="flex items-center justify-between gap-3">
                             <div>
                                 <p class="arcade-label">Character manager</p>
-                                <h2 class="mt-1 text-lg font-black">مدیریت کاراکترها</h2>
+                                <h2 class="mt-1 text-lg font-black">انتخاب کاراکتر</h2>
                             </div>
 
                             <span class="text-[10px] font-black text-cyan-300">PLAYER SELECT</span>
@@ -90,15 +98,14 @@
                         ></div>
                     </section>
 
-                    <section class="arcade-panel mt-4 rounded-[28px] p-4">
-                        <div>
-                            <p class="arcade-label">Import character</p>
-                            <h2 class="mt-1 text-base font-black">افزودن Sprite Sheet</h2>
-                            <p class="mt-1 text-[11px] leading-5 text-zinc-500">
-                                Sprite Sheet و Atlas JSON را وارد کن تا کاراکتر جدید
-                                داخل موتور آرکیدی ثبت شود.
-                            </p>
-                        </div>
+                    <details class="arcade-panel manager-details mt-4 rounded-[28px] p-4">
+                        <summary class="manager-details__summary">
+                            <span>
+                                <small class="arcade-label">Import character</small>
+                                <strong>افزودن Sprite Sheet</strong>
+                            </span>
+                            <span aria-hidden="true">＋</span>
+                        </summary>
 
                         <form
                             data-character-form
@@ -153,7 +160,7 @@
                                             PNG / WEBP Sprite Sheet
                                         </strong>
                                         <p class="mt-1 text-[10px] text-zinc-500">
-                                            فایل را بکش و اینجا رها کن یا انتخابش کن
+                                            فایل را رها یا انتخاب کن
                                         </p>
                                     </div>
                                 </div>
@@ -190,39 +197,66 @@
                                 افزودن کاراکتر
                             </button>
                         </form>
-                    </section>
+                    </details>
 
-                    <section class="arcade-panel mt-4 rounded-[28px] p-4">
-                        <p class="arcade-label">کنترل‌ها</p>
+                    <details class="arcade-panel manager-details mt-4 rounded-[28px] p-4">
+                        <summary class="manager-details__summary">
+                            <span>
+                                <small class="arcade-label">Controls</small>
+                                <strong>راهنمای کنترل‌ها</strong>
+                            </span>
+                            <span aria-hidden="true">＋</span>
+                        </summary>
 
                         <ul class="mt-3 space-y-2 text-[11px] leading-6 text-zinc-400">
-                            <li>• حرکت با WASD یا جهت‌ها؛ Shift برای دویدن.</li>
-                            <li>• Space پرش، E ضربه، Q برد، X دش و U جاخالی.</li>
-                            <li>• C رقص، V دست‌تکان‌دادن، Z چرخش، G نشستن.</li>
-                            <li>• B خنده، N ژست، T خواب و Y کری‌خوانی.</li>
-                            <li>• با هر بار فشردن H یک جمله تصادفی مخصوص کاراکتر انتخاب‌شده نمایش داده می‌شود.</li>
-                            <li>• F تغییر نما، R تمرکز روی کاراکتر و M جمع‌کردن سایدبار.</li>
+                            <li>• حرکت ۸ جهته با WASD، جهت‌ها یا جوی‌استیک لمسی.</li>
+                            <li>• Shift برای دویدن؛ در موبایل جوی‌استیک تا انتها خودکار Sprint می‌شود.</li>
+                            <li>• Space پرش، E ضربه، J کمبو، K آپرکات و L جادو.</li>
+                            <li>• X دش، U جاخالی، Q برد و O جشن.</li>
+                            <li>• C رقص، V دست‌تکان‌دادن، Z چرخش و H جمله تصادفی.</li>
+                            <li>• F تغییر نما، R تمرکز، M پنل و Pinch برای زوم موبایل.</li>
                         </ul>
-                    </section>
+                    </details>
                 </div>
             </div>
         </aside>
+
+        <button
+            type="button"
+            data-sidebar-backdrop
+            class="manager-sidebar-backdrop"
+            aria-label="بستن مدیریت کاراکترها"
+            aria-hidden="true"
+            tabindex="-1"
+        ></button>
 
         <section class="manager-stage" dir="rtl">
             <div class="arcade-screen-bezel" aria-hidden="true"></div>
             <div data-demian-scene class="demian-scene absolute inset-0"></div>
 
-            <header class="pointer-events-none absolute inset-x-0 top-0 z-20 p-4">
+            <header class="stage-toolbar pointer-events-none absolute inset-x-0 top-0 z-20 p-4">
                 <div class="flex items-start justify-between gap-3">
-                    <div class="arcade-panel pointer-events-auto rounded-2xl p-2">
+                    <div class="arcade-panel stage-toolbar__controls pointer-events-auto rounded-2xl p-2">
                         <div class="flex flex-wrap gap-2">
+                            <button
+                                type="button"
+                                data-sidebar-toggle
+                                class="arcade-button arcade-button--small stage-menu-button"
+                                aria-controls="character-manager-sidebar"
+                                aria-expanded="false"
+                            >
+                                <span data-sidebar-toggle-icon aria-hidden="true">☰</span>
+                                <span data-sidebar-toggle-label>کاراکترها</span>
+                            </button>
+
                             <button
                                 type="button"
                                 data-camera-reset
                                 class="arcade-button arcade-button--small arcade-button--focus"
                                 title="کاراکتر انتخاب‌شده را وسط تصویر قرار بده"
                             >
-                                <span data-focus-character-label>تمرکز تیام</span> · R
+                                <span data-focus-character-label>تمرکز تیام</span>
+                                <span class="desktop-key-hint">· R</span>
                             </button>
 
                             <button
@@ -235,15 +269,12 @@
 
                             <button
                                 type="button"
-                                data-sidebar-toggle
-                                class="arcade-button arcade-button--small sidebar-stage-toggle"
-                                aria-controls="character-manager-sidebar"
-                                aria-expanded="true"
-                                title="جمع‌کردن مدیریت کاراکترها (M)"
+                                data-mobile-fullscreen
+                                class="arcade-button arcade-button--small mobile-fullscreen-button"
+                                aria-pressed="false"
                             >
-                                <span data-sidebar-toggle-icon aria-hidden="true">‹</span>
-                                <span data-sidebar-toggle-label>جمع‌کردن</span>
-                                <kbd>M</kbd>
+                                <span aria-hidden="true">⛶</span>
+                                <span data-fullscreen-label>تمام‌صفحه</span>
                             </button>
                         </div>
                     </div>
@@ -257,7 +288,7 @@
                                     TIAM / تیام
                                 </h2>
                                 <p class="mt-1 text-xs text-zinc-400">
-                                    No frame flicker · Pixel-perfect character
+                                    High-frame arcade motion · No flicker
                                 </p>
                             </div>
                         </div>
@@ -266,8 +297,14 @@
             </header>
 
             <div class="arcade-intro-note pointer-events-none absolute left-1/2 top-28 z-20 -translate-x-1/2">
-                کاراکتر انتخاب‌شده آماده بازی است؛ برای جمله تصادفی کلید H را بزن
+                جوی‌استیک را تا لبه ببر تا کاراکتر Sprint کند
             </div>
+
+            <section class="mobile-status-bar arcade-panel pointer-events-none absolute z-20" aria-label="وضعیت بازی">
+                <span class="mobile-status-bar__player" data-active-character-name>TIAM / تیام</span>
+                <span class="mobile-status-chip"><small>STATE</small><b data-state-label>IDLE</b></span>
+                <span class="mobile-status-chip"><small>SPD</small><b data-speed-label>0.00</b></span>
+            </section>
 
             <section
                 class="hud-panel arcade-panel pointer-events-none absolute bottom-4 left-4 z-20 rounded-[24px] p-3"
@@ -284,6 +321,9 @@
 
                     <span class="text-zinc-500">VIEW</span>
                     <strong data-camera-label class="text-cyan-300">OVERVIEW</strong>
+
+                    <span class="text-zinc-500">QUALITY</span>
+                    <strong data-quality-label class="text-violet-300">HIGH</strong>
                 </div>
             </section>
 
@@ -292,44 +332,90 @@
                 dir="ltr"
             >
                 <div class="help-panel__grid">
-                    <p><b class="text-white">WASD</b> move</p>
-                    <p><b class="text-white">Shift</b> run</p>
+                    <p><b class="text-white">WASD</b> 8-way move</p>
+                    <p><b class="text-white">Shift</b> sprint</p>
                     <p><b class="text-white">Space</b> jump</p>
-                    <p><b class="text-white">E</b> attack</p>
-                    <p><b class="text-white">Q</b> victory</p>
-                    <p><b class="text-white">X</b> dash</p>
-                    <p><b class="text-white">U</b> dodge</p>
-                    <p><b class="text-white">C</b> dance</p>
-                    <p><b class="text-white">V</b> wave</p>
-                    <p><b class="text-white">Z</b> spin</p>
-                    <p><b class="text-white">G</b> crouch</p>
-                    <p><b class="text-white">B</b> laugh</p>
-                    <p><b class="text-white">N</b> pose</p>
-                    <p><b class="text-white">T</b> sleep</p>
-                    <p><b class="text-white">Y</b> taunt</p>
+                    <p><b class="text-white">E / J</b> hit / combo</p>
+                    <p><b class="text-white">K / L</b> uppercut / cast</p>
+                    <p><b class="text-white">X / U</b> dash / dodge</p>
+                    <p><b class="text-white">Q / O</b> win / celebrate</p>
+                    <p><b class="text-white">C / V</b> dance / wave</p>
+                    <p><b class="text-white">Z / G</b> spin / crouch</p>
+                    <p><b class="text-white">B / N</b> laugh / pose</p>
+                    <p><b class="text-white">T / Y</b> sleep / taunt</p>
                     <p><b class="text-white">H</b> random speech</p>
                     <p><b class="text-white">F / R</b> camera</p>
                     <p><b class="text-white">Wheel</b> zoom</p>
                 </div>
             </section>
 
-            <section class="touch-controller absolute inset-x-0 bottom-3 z-30" dir="ltr">
-                <div class="touch-controller__movement" aria-label="کنترل حرکت">
-                    <button type="button" data-input-hold="up" class="touch-key touch-key--up" aria-label="بالا">▲</button>
-                    <button type="button" data-input-hold="left" class="touch-key touch-key--left" aria-label="چپ">◀</button>
-                    <button type="button" data-input-hold="down" class="touch-key touch-key--down" aria-label="پایین">▼</button>
-                    <button type="button" data-input-hold="right" class="touch-key touch-key--right" aria-label="راست">▶</button>
+            <section class="touch-controller absolute inset-x-0 bottom-0 z-30" dir="ltr" aria-label="کنترل‌های لمسی بازی">
+                <div
+                    data-virtual-stick
+                    class="virtual-stick"
+                    role="application"
+                    aria-label="جوی‌استیک حرکت ۸ جهته"
+                >
+                    <div class="virtual-stick__arrows" aria-hidden="true">
+                        <span>▲</span><span>▶</span><span>▼</span><span>◀</span>
+                    </div>
+                    <div data-virtual-stick-knob class="virtual-stick__knob">
+                        <span aria-hidden="true">✦</span>
+                    </div>
+                    <small class="virtual-stick__label">MOVE / SPRINT</small>
                 </div>
 
-                <div class="touch-controller__actions" aria-label="اکشن‌های کاراکتر">
-                    <button type="button" data-input-hold="run" class="touch-action touch-action--run">RUN</button>
-                    <button type="button" data-input-press="jump" class="touch-action touch-action--jump">JUMP</button>
-                    <button type="button" data-input-press="attack" class="touch-action touch-action--attack">HIT</button>
-                    <button type="button" data-input-press="dash" class="touch-action touch-action--dash">DASH</button>
-                    <button type="button" data-input-press="dance" class="touch-action touch-action--dance">DANCE</button>
-                    <button type="button" data-input-press="speak" class="touch-action touch-action--speak">SAY</button>
+                <div class="touch-controller__right">
+                    <div
+                        id="mobile-action-tray"
+                        data-mobile-actions-tray
+                        class="mobile-action-tray"
+                        aria-hidden="true"
+                    >
+                        <button type="button" data-input-press="combo" class="touch-action touch-action--mini">COMBO</button>
+                        <button type="button" data-input-press="uppercut" class="touch-action touch-action--mini">UPPER</button>
+                        <button type="button" data-input-press="cast" class="touch-action touch-action--mini">MAGIC</button>
+                        <button type="button" data-input-press="dodge" class="touch-action touch-action--mini">DODGE</button>
+                        <button type="button" data-input-press="slide" class="touch-action touch-action--mini">SLIDE</button>
+                        <button type="button" data-input-press="win" class="touch-action touch-action--mini">WIN</button>
+                        <button type="button" data-input-press="celebrate" class="touch-action touch-action--mini">PARTY</button>
+                        <button type="button" data-input-press="dance" class="touch-action touch-action--mini">DANCE</button>
+                        <button type="button" data-input-press="wave" class="touch-action touch-action--mini">WAVE</button>
+                        <button type="button" data-input-press="spin" class="touch-action touch-action--mini">SPIN</button>
+                        <button type="button" data-input-press="speak" class="touch-action touch-action--mini touch-action--speak">SAY</button>
+                        <button type="button" data-input-press="taunt" class="touch-action touch-action--mini">TAUNT</button>
+                    </div>
+
+                    <div class="touch-controller__actions" aria-label="اکشن‌های اصلی">
+                        <button type="button" data-input-hold="run" class="touch-action touch-action--run">
+                            <span>RUN</span><small>hold</small>
+                        </button>
+                        <button type="button" data-input-press="jump" class="touch-action touch-action--jump touch-action--primary">
+                            <span>JUMP</span><small>▲</small>
+                        </button>
+                        <button type="button" data-input-press="attack" class="touch-action touch-action--attack touch-action--primary">
+                            <span>HIT</span><small>✦</small>
+                        </button>
+                        <button type="button" data-input-press="dash" class="touch-action touch-action--dash">
+                            <span>DASH</span><small>»</small>
+                        </button>
+                        <button
+                            type="button"
+                            data-mobile-actions-toggle
+                            class="touch-action touch-action--more"
+                            aria-controls="mobile-action-tray"
+                            aria-expanded="false"
+                        >
+                            <span data-mobile-actions-label>اکشن‌ها</span><small>•••</small>
+                        </button>
+                    </div>
                 </div>
             </section>
+
+            <div data-orientation-hint class="orientation-hint" aria-hidden="true">
+                <span aria-hidden="true">↻</span>
+                <strong>برای فضای بازی بیشتر گوشی را افقی کن</strong>
+            </div>
         </section>
     </main>
 </body>

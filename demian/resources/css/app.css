@@ -1010,3 +1010,726 @@ canvas,
         font-size: 0.56rem;
     }
 }
+
+/* --------------------------------------------------------------------------
+   Demian V4 — high-frame animation + mobile-first arcade interface
+   -------------------------------------------------------------------------- */
+
+:root {
+    --demian-vh: 1vh;
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-right: env(safe-area-inset-right, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+    --safe-left: env(safe-area-inset-left, 0px);
+    --mobile-control-size: clamp(132px, 34vw, 172px);
+}
+
+html {
+    overscroll-behavior: none;
+}
+
+body {
+    min-height: calc(var(--demian-vh) * 100);
+    overscroll-behavior: none;
+}
+
+.manager-shell {
+    min-height: calc(var(--demian-vh) * 100);
+}
+
+.manager-sidebar-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 42;
+    display: none;
+    border: 0;
+    background: rgba(2, 3, 12, 0.68);
+    opacity: 0;
+    pointer-events: none;
+    backdrop-filter: blur(7px);
+    transition: opacity 220ms ease;
+}
+
+.mobile-sheet-handle,
+.mobile-status-bar,
+.mobile-fullscreen-button,
+.stage-menu-button,
+.orientation-hint {
+    display: none;
+}
+
+.manager-details {
+    overflow: hidden;
+}
+
+.manager-details__summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    cursor: pointer;
+    user-select: none;
+    list-style: none;
+}
+
+.manager-details__summary::-webkit-details-marker {
+    display: none;
+}
+
+.manager-details__summary > span:first-child {
+    display: grid;
+    gap: 0.25rem;
+}
+
+.manager-details__summary > span:last-child {
+    display: grid;
+    width: 2rem;
+    height: 2rem;
+    place-items: center;
+    border: 1px solid rgba(34, 211, 238, 0.22);
+    border-radius: 0.75rem;
+    color: #a5f3fc;
+    transition: transform 180ms ease;
+}
+
+.manager-details[open] .manager-details__summary > span:last-child {
+    transform: rotate(45deg);
+}
+
+.stage-toolbar {
+    padding-top: max(1rem, var(--safe-top));
+    padding-inline: max(1rem, var(--safe-left)) max(1rem, var(--safe-right));
+}
+
+.touch-controller {
+    padding:
+        0 max(14px, var(--safe-right))
+        max(12px, var(--safe-bottom))
+        max(14px, var(--safe-left));
+}
+
+.virtual-stick,
+.touch-controller__right,
+.mobile-action-tray {
+    pointer-events: auto;
+}
+
+.virtual-stick {
+    --stick-x: 0px;
+    --stick-y: 0px;
+    --stick-force: 0;
+    position: relative;
+    display: grid;
+    width: var(--mobile-control-size);
+    height: var(--mobile-control-size);
+    flex: 0 0 auto;
+    place-items: center;
+    border: 1px solid rgba(34, 211, 238, 0.24);
+    border-radius: 50%;
+    background:
+        radial-gradient(circle, rgba(34, 211, 238, 0.08) 0 34%, transparent 35%),
+        conic-gradient(from 45deg, rgba(255, 79, 216, 0.08), rgba(34, 211, 238, 0.12), rgba(139, 92, 246, 0.1), rgba(255, 79, 216, 0.08)),
+        rgba(4, 6, 20, 0.72);
+    box-shadow:
+        0 18px 40px rgba(0, 0, 0, 0.42),
+        0 0 calc(18px + var(--stick-force) * 20px) rgba(34, 211, 238, calc(0.08 + var(--stick-force) * 0.16)) inset,
+        0 0 0 8px rgba(3, 5, 18, 0.28);
+    touch-action: none;
+    user-select: none;
+    backdrop-filter: blur(14px);
+}
+
+.virtual-stick::before,
+.virtual-stick::after {
+    position: absolute;
+    content: "";
+    background: rgba(165, 243, 252, 0.13);
+    pointer-events: none;
+}
+
+.virtual-stick::before {
+    width: 58%;
+    height: 1px;
+}
+
+.virtual-stick::after {
+    width: 1px;
+    height: 58%;
+}
+
+.virtual-stick__knob {
+    position: relative;
+    z-index: 2;
+    display: grid;
+    width: 43%;
+    height: 43%;
+    place-items: center;
+    transform: translate3d(var(--stick-x), var(--stick-y), 0);
+    border: 1px solid rgba(255, 255, 255, 0.38);
+    border-radius: 50%;
+    background:
+        radial-gradient(circle at 35% 28%, rgba(255, 255, 255, 0.28), transparent 30%),
+        linear-gradient(145deg, rgba(34, 211, 238, 0.34), rgba(139, 92, 246, 0.38)),
+        rgba(8, 10, 30, 0.94);
+    color: #fff;
+    font-size: 1.15rem;
+    box-shadow:
+        0 12px 28px rgba(0, 0, 0, 0.42),
+        0 0 calc(10px + var(--stick-force) * 24px) rgba(34, 211, 238, 0.32);
+    transition: transform 90ms cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 100ms ease;
+    will-change: transform;
+}
+
+.virtual-stick.is-active .virtual-stick__knob {
+    transition: box-shadow 80ms ease;
+}
+
+.virtual-stick__arrows {
+    position: absolute;
+    inset: 8%;
+    color: rgba(165, 243, 252, 0.4);
+    font-size: 0.58rem;
+    pointer-events: none;
+}
+
+.virtual-stick__arrows span {
+    position: absolute;
+}
+
+.virtual-stick__arrows span:nth-child(1) {
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.virtual-stick__arrows span:nth-child(2) {
+    top: 50%;
+    right: 0;
+    transform: translateY(-50%);
+}
+
+.virtual-stick__arrows span:nth-child(3) {
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.virtual-stick__arrows span:nth-child(4) {
+    top: 50%;
+    left: 0;
+    transform: translateY(-50%);
+}
+
+.virtual-stick__label {
+    position: absolute;
+    bottom: 11%;
+    color: rgba(165, 243, 252, 0.5);
+    font-size: 0.48rem;
+    font-weight: 1000;
+    letter-spacing: 0.12em;
+    pointer-events: none;
+}
+
+.touch-controller__right {
+    position: relative;
+    display: grid;
+    justify-items: end;
+    align-content: end;
+    gap: 0.55rem;
+    min-width: 0;
+}
+
+.touch-controller__actions {
+    display: grid;
+    width: min(260px, 54vw);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-areas:
+        "run jump jump"
+        "dash attack more";
+    gap: 0.48rem;
+}
+
+.touch-controller__actions .touch-action--run { grid-area: run; }
+.touch-controller__actions .touch-action--jump { grid-area: jump; }
+.touch-controller__actions .touch-action--attack { grid-area: attack; }
+.touch-controller__actions .touch-action--dash { grid-area: dash; }
+.touch-controller__actions .touch-action--more { grid-area: more; }
+
+.touch-action {
+    display: grid;
+    min-height: 50px;
+    place-content: center;
+    gap: 0.05rem;
+    padding: 0.42rem 0.35rem;
+    border-radius: 17px;
+    line-height: 1;
+    box-shadow:
+        0 12px 28px rgba(0, 0, 0, 0.38),
+        inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.touch-action span {
+    font-size: 0.66rem;
+    font-weight: 1000;
+    letter-spacing: 0.07em;
+}
+
+.touch-action small {
+    color: rgba(255, 255, 255, 0.48);
+    font-size: 0.48rem;
+    font-weight: 900;
+}
+
+.touch-action--primary {
+    min-height: 60px;
+    border-radius: 22px;
+}
+
+.touch-action--jump {
+    background:
+        radial-gradient(circle at 50% 25%, rgba(255, 255, 255, 0.16), transparent 35%),
+        linear-gradient(145deg, rgba(139, 92, 246, 0.34), rgba(76, 29, 149, 0.24)),
+        rgba(8, 10, 29, 0.9);
+}
+
+.touch-action--attack {
+    background:
+        radial-gradient(circle at 50% 25%, rgba(255, 255, 255, 0.15), transparent 35%),
+        linear-gradient(145deg, rgba(255, 79, 216, 0.34), rgba(157, 23, 77, 0.22)),
+        rgba(8, 10, 29, 0.9);
+}
+
+.touch-action--more {
+    border-color: rgba(251, 191, 36, 0.34);
+    color: #fde68a;
+}
+
+.mobile-action-tray {
+    display: grid;
+    width: min(330px, 78vw);
+    max-height: min(36vh, 270px);
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.4rem;
+    overflow-y: auto;
+    transform: translateY(14px) scale(0.97);
+    transform-origin: bottom right;
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    border-radius: 22px;
+    padding: 0.55rem;
+    background:
+        linear-gradient(180deg, rgba(34, 211, 238, 0.05), transparent 45%),
+        rgba(4, 6, 20, 0.9);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    box-shadow:
+        0 18px 44px rgba(0, 0, 0, 0.48),
+        0 0 30px rgba(139, 92, 246, 0.12) inset;
+    backdrop-filter: blur(18px);
+    transition:
+        transform 180ms cubic-bezier(0.22, 1, 0.36, 1),
+        opacity 140ms ease,
+        visibility 0s linear 180ms;
+}
+
+.manager-shell[data-mobile-actions="expanded"] .mobile-action-tray {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transition-delay: 0s;
+}
+
+.touch-action--mini {
+    min-height: 42px;
+    border-radius: 13px;
+    padding: 0.25rem;
+    font-size: 0.53rem;
+    letter-spacing: 0.04em;
+}
+
+.mobile-status-bar {
+    top: calc(max(64px, var(--safe-top) + 52px));
+    left: 50%;
+    align-items: center;
+    max-width: calc(100% - 1.4rem);
+    transform: translateX(-50%);
+    gap: 0.45rem;
+    border-radius: 999px;
+    padding: 0.35rem 0.5rem;
+    white-space: nowrap;
+}
+
+.mobile-status-bar__player {
+    max-width: 34vw;
+    overflow: hidden;
+    padding-inline: 0.35rem;
+    color: #fff;
+    font-size: 0.58rem;
+    font-weight: 1000;
+    text-overflow: ellipsis;
+}
+
+.mobile-status-chip {
+    display: grid;
+    min-width: 3.2rem;
+    gap: 0.03rem;
+    border-inline-start: 1px solid rgba(255, 255, 255, 0.1);
+    padding-inline: 0.45rem;
+    text-align: center;
+}
+
+.mobile-status-chip small {
+    color: #71717a;
+    font-size: 0.42rem;
+    letter-spacing: 0.08em;
+}
+
+.mobile-status-chip b {
+    color: #a5f3fc;
+    font-size: 0.56rem;
+}
+
+.orientation-hint {
+    position: absolute;
+    top: 52%;
+    left: 50%;
+    z-index: 40;
+    width: min(270px, calc(100% - 2rem));
+    transform: translate(-50%, -50%);
+    align-items: center;
+    gap: 0.7rem;
+    border: 1px solid rgba(34, 211, 238, 0.3);
+    border-radius: 18px;
+    padding: 0.75rem 0.9rem;
+    background: rgba(4, 6, 20, 0.88);
+    color: #cffafe;
+    font-size: 0.68rem;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.48);
+    pointer-events: none;
+    backdrop-filter: blur(16px);
+}
+
+.orientation-hint span {
+    font-size: 1.35rem;
+}
+
+@keyframes orientation-hint-life {
+    0%, 12% { opacity: 0; transform: translate(-50%, -44%) scale(0.94); }
+    22%, 72% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+    100% { opacity: 0; transform: translate(-50%, -56%) scale(0.98); visibility: hidden; }
+}
+
+@media (min-width: 1024px) {
+    .stage-menu-button,
+    .mobile-fullscreen-button {
+        display: none !important;
+    }
+}
+
+@media (hover: none), (pointer: coarse), (max-width: 900px) {
+    html,
+    body {
+        width: 100%;
+        height: calc(var(--demian-vh) * 100);
+        min-height: 0;
+        overflow: hidden;
+    }
+
+    body.has-mobile-sheet {
+        touch-action: none;
+    }
+
+    .manager-shell,
+    .manager-stage {
+        width: 100%;
+        height: calc(var(--demian-vh) * 100);
+        min-height: 0;
+    }
+
+    .manager-shell {
+        display: block;
+    }
+
+    .manager-stage {
+        min-height: 0;
+        border-radius: 0;
+    }
+
+    .arcade-screen-bezel {
+        inset: max(4px, var(--safe-top)) 4px max(4px, var(--safe-bottom));
+        border-radius: 18px;
+    }
+
+    .manager-sidebar {
+        position: fixed;
+        inset: auto 0 0;
+        z-index: 46;
+        width: 100%;
+        min-width: 0;
+        max-height: min(86dvh, 760px);
+        transform: translateY(calc(100% + 20px));
+        border: 1px solid rgba(139, 92, 246, 0.24);
+        border-bottom: 0;
+        border-radius: 28px 28px 0 0;
+        background:
+            radial-gradient(circle at 50% 0, rgba(139, 92, 246, 0.18), transparent 34%),
+            rgba(5, 6, 18, 0.97);
+        box-shadow: 0 -24px 70px rgba(0, 0, 0, 0.62);
+        visibility: hidden;
+        transition:
+            transform 320ms cubic-bezier(0.22, 1, 0.36, 1),
+            visibility 0s linear 320ms;
+    }
+
+    .manager-shell[data-sidebar-state="expanded"] .manager-sidebar {
+        transform: translateY(0);
+        visibility: visible;
+        transition-delay: 0s;
+    }
+
+    .manager-sidebar__scroll {
+        height: min(86dvh, 760px);
+        max-height: min(86dvh, 760px);
+        overflow-y: auto;
+        padding:
+            24px max(14px, var(--safe-right))
+            max(20px, var(--safe-bottom))
+            max(14px, var(--safe-left));
+        overscroll-behavior: contain;
+    }
+
+    .manager-shell[data-sidebar-state="collapsed"] .manager-sidebar,
+    .manager-shell[data-sidebar-state="collapsed"] .manager-sidebar__scroll {
+        max-height: min(86dvh, 760px);
+    }
+
+    .manager-shell[data-sidebar-state="collapsed"] .sidebar-expanded-content {
+        position: static;
+        width: auto;
+        transform: none;
+        opacity: 1;
+        visibility: visible;
+    }
+
+    .manager-shell[data-sidebar-state="collapsed"] .sidebar-compact {
+        display: none;
+    }
+
+    .mobile-sheet-handle {
+        position: absolute;
+        top: 9px;
+        left: 50%;
+        z-index: 3;
+        display: block;
+        width: 52px;
+        height: 5px;
+        transform: translateX(-50%);
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.2);
+    }
+
+    .sidebar-edge-toggle {
+        display: none !important;
+    }
+
+    .manager-sidebar-backdrop {
+        display: block;
+    }
+
+    .manager-shell[data-sidebar-state="expanded"] .manager-sidebar-backdrop {
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+    .stage-menu-button,
+    .mobile-fullscreen-button,
+    .mobile-status-bar {
+        display: inline-flex;
+    }
+
+    .stage-toolbar {
+        padding-top: max(8px, var(--safe-top));
+        padding-inline: max(8px, var(--safe-left)) max(8px, var(--safe-right));
+    }
+
+    .stage-toolbar__controls {
+        max-width: calc(100vw - max(16px, var(--safe-left) + var(--safe-right)));
+        padding: 0.38rem;
+        border-radius: 16px;
+    }
+
+    .stage-toolbar__controls > div {
+        flex-wrap: nowrap;
+    }
+
+    .stage-toolbar .arcade-button {
+        min-height: 2.25rem;
+        padding: 0.45rem 0.58rem;
+        border-radius: 11px;
+        font-size: 0.54rem;
+        white-space: nowrap;
+    }
+
+    .stage-toolbar [data-camera-reset] {
+        display: none;
+    }
+
+    .desktop-key-hint {
+        display: none;
+    }
+
+    .arcade-intro-note {
+        top: calc(max(108px, var(--safe-top) + 90px));
+        max-width: calc(100% - 1.2rem);
+        padding: 0.4rem 0.7rem;
+        font-size: 0.54rem;
+    }
+
+    .touch-controller {
+        display: flex;
+        align-items: end;
+        justify-content: space-between;
+        gap: 0.65rem;
+    }
+
+    .touch-controller__movement {
+        display: none !important;
+    }
+
+    .hud-panel,
+    .help-panel,
+    .arcade-stage-brand {
+        display: none !important;
+    }
+
+    .orientation-hint[aria-hidden="false"] {
+        display: flex;
+        animation: orientation-hint-life 4.5s ease forwards;
+        animation-delay: 1.2s;
+    }
+
+    .character-card {
+        align-items: center;
+    }
+
+    .manager-brand {
+        padding-top: 1.1rem;
+    }
+}
+
+@media (max-width: 560px) and (orientation: portrait) {
+    :root {
+        --mobile-control-size: clamp(126px, 35vw, 150px);
+    }
+
+    .touch-controller {
+        gap: 0.35rem;
+        padding-inline: max(8px, var(--safe-left)) max(8px, var(--safe-right));
+        padding-bottom: max(8px, var(--safe-bottom));
+    }
+
+    .touch-controller__actions {
+        width: min(206px, 54vw);
+        gap: 0.34rem;
+    }
+
+    .touch-action {
+        min-height: 45px;
+        border-radius: 14px;
+        padding: 0.3rem 0.2rem;
+    }
+
+    .touch-action--primary {
+        min-height: 54px;
+        border-radius: 18px;
+    }
+
+    .touch-action span {
+        font-size: 0.57rem;
+    }
+
+    .touch-action small {
+        font-size: 0.42rem;
+    }
+
+    .mobile-action-tray {
+        width: min(292px, 86vw);
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .mobile-status-bar {
+        top: calc(max(58px, var(--safe-top) + 48px));
+    }
+
+    .stage-toolbar [data-camera-toggle] {
+        max-width: 9rem;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+}
+
+@media (max-height: 500px) and (orientation: landscape) {
+    :root {
+        --mobile-control-size: clamp(112px, 27vh, 138px);
+    }
+
+    .stage-toolbar {
+        padding-top: max(5px, var(--safe-top));
+    }
+
+    .stage-toolbar .arcade-button {
+        min-height: 2rem;
+        padding-block: 0.35rem;
+    }
+
+    .mobile-status-bar {
+        top: calc(max(52px, var(--safe-top) + 42px));
+        transform: translateX(-50%) scale(0.9);
+    }
+
+    .touch-controller {
+        padding-bottom: max(5px, var(--safe-bottom));
+    }
+
+    .touch-controller__actions {
+        width: min(242px, 42vw);
+    }
+
+    .touch-action {
+        min-height: 41px;
+    }
+
+    .touch-action--primary {
+        min-height: 49px;
+    }
+
+    .mobile-action-tray {
+        width: min(390px, 62vw);
+        max-height: 44vh;
+        grid-template-columns: repeat(6, minmax(0, 1fr));
+    }
+
+    .arcade-intro-note,
+    .orientation-hint {
+        display: none !important;
+    }
+}
+
+@media (max-width: 360px) {
+    :root {
+        --mobile-control-size: 118px;
+    }
+
+    .touch-controller__actions {
+        width: 188px;
+    }
+
+    .stage-toolbar [data-camera-toggle] {
+        display: none;
+    }
+
+    .mobile-status-bar__player {
+        display: none;
+    }
+}

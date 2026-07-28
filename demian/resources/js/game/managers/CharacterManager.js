@@ -11,7 +11,7 @@ const BUILTIN_CHARACTERS = Object.freeze([
         name: 'TIAM / تیام',
         slug: 'tiam',
         sprite_url: builtinAssetUrl(
-            'assets/characters/tiam/tiam-spritesheet.png'
+            'assets/characters/tiam/tiam-spritesheet-v4.png'
         ),
         atlas_url: builtinAssetUrl(
             'assets/characters/tiam/tiam-atlas.json'
@@ -21,6 +21,7 @@ const BUILTIN_CHARACTERS = Object.freeze([
         settings: {
             walk_speed: 3.2,
             run_speed: 6.2,
+            sprint_speed: 6.85,
             jump_force: 6.5,
             scale: 1,
         },
@@ -30,7 +31,7 @@ const BUILTIN_CHARACTERS = Object.freeze([
         name: 'RONAK / روناک',
         slug: 'ronak',
         sprite_url: builtinAssetUrl(
-            'assets/characters/ronak/ronak-spritesheet.png'
+            'assets/characters/ronak/ronak-spritesheet-v4.png'
         ),
         atlas_url: builtinAssetUrl(
             'assets/characters/ronak/ronak-atlas.json'
@@ -40,6 +41,7 @@ const BUILTIN_CHARACTERS = Object.freeze([
         settings: {
             walk_speed: 3.25,
             run_speed: 6.35,
+            sprint_speed: 7.0,
             jump_force: 6.6,
             scale: 1,
         },
@@ -49,7 +51,7 @@ const BUILTIN_CHARACTERS = Object.freeze([
         name: 'AMIRREZA / امیررضا',
         slug: 'amirreza',
         sprite_url: builtinAssetUrl(
-            'assets/characters/amirreza/amirreza-spritesheet.png'
+            'assets/characters/amirreza/amirreza-spritesheet-v4.png'
         ),
         atlas_url: builtinAssetUrl(
             'assets/characters/amirreza/amirreza-atlas.json'
@@ -59,6 +61,7 @@ const BUILTIN_CHARACTERS = Object.freeze([
         settings: {
             walk_speed: 4.15,
             run_speed: 8.4,
+            sprint_speed: 9.35,
             jump_force: 6.85,
             scale: 1,
         },
@@ -138,8 +141,10 @@ export default class CharacterManager {
             return {
                 ...cloneBuiltin(builtin),
                 ...existing,
-                sprite_url: existing.sprite_url || builtin.sprite_url,
-                atlas_url: existing.atlas_url || builtin.atlas_url,
+                // Built-in artwork is versioned with the runtime. Always use the bundled
+                // V4 sheet/atlas pair so an older database path cannot mix V3 and V4 assets.
+                sprite_url: builtin.sprite_url,
+                atlas_url: builtin.atlas_url,
                 is_builtin: true,
                 settings: {
                     ...builtin.settings,

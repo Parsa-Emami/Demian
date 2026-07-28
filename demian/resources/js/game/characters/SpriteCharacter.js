@@ -2,36 +2,68 @@ import * as THREE from 'three';
 import SpriteAnimator from './SpriteAnimator';
 import CharacterEffects from './CharacterEffects';
 import CharacterSpeechBubble from './CharacterSpeechBubble';
+import {
+    cameraRelativeDirection,
+    directionFromVector,
+    directionProfile,
+} from './DirectionResolver';
 
 const LOCKED_ACTIONS = new Set([
     'attack',
+    'combo',
+    'uppercut',
+    'cast',
+    'charge',
+    'hurt',
     'win',
+    'celebrate',
     'dash',
+    'slide',
     'dodge',
     'dance',
     'wave',
+    'salute',
     'spin',
     'crouch',
     'laugh',
     'pose',
     'sleep',
     'taunt',
+    'land',
+    'skid',
+    'turn',
+    'blink',
+    'ready',
 ]);
 
-const ACTIONS = [
-    ['attack', 0.58],
-    ['win', 1.45],
-    ['dash', 0.46],
-    ['dodge', 0.64],
-    ['dance', 2.35],
-    ['wave', 1.55],
-    ['spin', 1.12],
-    ['crouch', 1.25],
-    ['laugh', 1.72],
-    ['pose', 1.65],
-    ['sleep', 2.8],
-    ['taunt', 1.42],
-];
+const ACTIONS = Object.freeze([
+    { name: 'attack', duration: 0.5, velocityRetention: 0.18 },
+    { name: 'combo', duration: 0.78, velocityRetention: 0.08 },
+    { name: 'uppercut', duration: 0.7, velocityRetention: 0.08 },
+    { name: 'cast', duration: 0.9, velocityRetention: 0.05 },
+    { name: 'charge', duration: 1.15, velocityRetention: 0.02 },
+    { name: 'hurt', duration: 0.58, velocityRetention: 0.02 },
+    { name: 'win', duration: 1.3, velocityRetention: 0.05 },
+    { name: 'celebrate', duration: 1.8, velocityRetention: 0.04 },
+    { name: 'dash', duration: 0.42, impulse: 12.8 },
+    { name: 'slide', duration: 0.58, impulse: 9.7 },
+    { name: 'dodge', duration: 0.62, impulse: 8.8, reverse: true },
+    { name: 'dance', duration: 2.15, velocityRetention: 0.02 },
+    { name: 'wave', duration: 1.35, velocityRetention: 0.02 },
+    { name: 'salute', duration: 1.05, velocityRetention: 0.02 },
+    { name: 'spin', duration: 1.02, velocityRetention: 0.04 },
+    { name: 'crouch', duration: 1.1, velocityRetention: 0 },
+    { name: 'laugh', duration: 1.55, velocityRetention: 0.02 },
+    { name: 'pose', duration: 1.45, velocityRetention: 0.02 },
+    { name: 'sleep', duration: 2.5, velocityRetention: 0 },
+    { name: 'taunt', duration: 1.3, velocityRetention: 0.04 },
+]);
+
+const IDLE_VARIANTS = Object.freeze(['blink', 'breathe', 'ready']);
+
+function damp(current, target, smoothing, deltaTime) {
+    return THREE.MathUtils.damp(current, target, smoothing, deltaTime);
+}
 
 export default class SpriteCharacter {
     constructor({ scene, character, texture, atlas }) {
@@ -44,35 +76,43 @@ export default class SpriteCharacter {
         this.bodyRoot.name = `CharacterBody:${character.slug}`;
 
         this.velocity = new THREE.Vector3();
+        this.desiredVelocity = new THREE.Vector3();
         this.moveDirection = new THREE.Vector3();
         this.lastMoveDirection = new THREE.Vector3(1, 0, 0);
+        this.actionDirection = new THREE.Vector3(1, 0, 0);
         this.zeroVelocity = new THREE.Vector3();
+
         this.state = 'idle';
         this.previousState = null;
         this.stateLock = 0;
         this.stateTime = 0;
+        this.presentationTime = 0;
+        this.direction = 'e';
+        this.facing = 1;
+        this.horizontalMotion = 0;
+        this.depthMotion = 0;
+
         this.jumpVelocity = 0;
         this.grounded = true;
         this.wasGrounded = true;
-        this.facing = 1;
-        this.presentationTime = 0;
+        this.coyoteTimer = 0.1;
+        this.jumpBufferTimer = 0;
+        this.skidArmed = false;
+        this.idleVariantTimer = 2.6 + Math.random() * 1.8;
+        this.dashCooldown = 0;
+
         this.introClock = 0;
         this.introStep = 0;
         this.introActive = true;
-        this.depthMotion = 0;
-        this.horizontalMotion = 0;
-        this.actionDirection = new THREE.Vector3(1, 0, 0);
 
         const settings = character.settings ?? {};
         this.walkSpeed = Number(settings.walk_speed ?? 3.2);
         this.runSpeed = Number(settings.run_speed ?? 6.2);
+        this.sprintSpeed = Number(settings.sprint_speed ?? this.runSpeed * 1.1);
         this.jumpForce = Number(settings.jump_force ?? 6.5);
-        this.gravity = 17;
+        this.gravity = Number(settings.gravity ?? 17.5);
         this.scaleFactor = Number(settings.scale ?? 1);
-        this.bounds = {
-            x: 13.2,
-            z: 8.1,
-        };
+        this.bounds = { x: 13.2, z: 8.1 };
 
         this.texture = texture;
         this.texture.needsUpdate = true;
@@ -80,7 +120,7 @@ export default class SpriteCharacter {
         this.material = new THREE.SpriteMaterial({
             map: this.texture,
             transparent: true,
-            alphaTest: 0.035,
+            alphaTest: 0.025,
             depthWrite: false,
             toneMapped: false,
         });
@@ -115,18 +155,14 @@ export default class SpriteCharacter {
         this.shadow.renderOrder = 2;
 
         this.ringMaterial = new THREE.MeshBasicMaterial({
-            color: 0xff66d9,
+            color: character.slug === 'amirreza' ? 0x67e8f9 : 0xff66d9,
             transparent: true,
             opacity: 0.72,
             depthWrite: false,
             toneMapped: false,
         });
         this.selectionRing = new THREE.Mesh(
-            new THREE.RingGeometry(
-                0.9 * this.scaleFactor,
-                1.08 * this.scaleFactor,
-                48
-            ),
+            new THREE.RingGeometry(0.9 * this.scaleFactor, 1.08 * this.scaleFactor, 48),
             this.ringMaterial
         );
         this.selectionRing.rotation.x = -Math.PI / 2;
@@ -151,6 +187,15 @@ export default class SpriteCharacter {
         this.effects = new CharacterEffects(scene, this);
         this.speech = new CharacterSpeechBubble(this, atlas.speech ?? {});
         this.animator.play('idle');
+
+        this.visual = {
+            width: 1,
+            height: 1,
+            bob: 0,
+            tilt: 0,
+            x: 0,
+            y: 0,
+        };
         this.applySpawnPose(0);
     }
 
@@ -174,18 +219,32 @@ export default class SpriteCharacter {
         return texture;
     }
 
-    update(deltaTime, input) {
+    update(deltaTime, input, movementBasis) {
         this.stateLock = Math.max(0, this.stateLock - deltaTime);
+        this.dashCooldown = Math.max(0, this.dashCooldown - deltaTime);
+        this.jumpBufferTimer = Math.max(0, this.jumpBufferTimer - deltaTime);
         this.stateTime += deltaTime;
         this.presentationTime += deltaTime;
         this.wasGrounded = this.grounded;
 
-        const hasMovement = input.x !== 0 || input.z !== 0;
-        const hasAction = ACTIONS.some(([name]) => Boolean(input[name]));
+        if (this.grounded) {
+            this.coyoteTimer = 0.11;
+        } else {
+            this.coyoteTimer = Math.max(0, this.coyoteTimer - deltaTime);
+        }
+
+        if (input.jump) {
+            this.jumpBufferTimer = 0.14;
+        }
 
         if (input.speak) {
             this.speech.showRandom();
         }
+
+        const rawMove = cameraRelativeDirection(input.x, input.z, movementBasis);
+        const inputMagnitude = THREE.MathUtils.clamp(rawMove.length(), 0, 1);
+        const hasMovement = inputMagnitude > 0.06;
+        const hasAction = ACTIONS.some(({ name }) => Boolean(input[name]));
 
         if (hasMovement || hasAction || input.jump) {
             this.introActive = false;
@@ -195,127 +254,183 @@ export default class SpriteCharacter {
             this.updateIntro(deltaTime);
         }
 
-        if (input.jump && this.grounded && this.stateLock <= 0) {
+        if (
+            this.jumpBufferTimer > 0 &&
+            this.coyoteTimer > 0 &&
+            this.stateLock <= 0
+        ) {
             this.performJump();
+            this.jumpBufferTimer = 0;
         }
 
         if (this.grounded && this.stateLock <= 0) {
             this.handleActionInput(input);
         }
 
-        const actionBlocksMovement =
-            this.stateLock > 0 && LOCKED_ACTIONS.has(this.state);
-        const isImpulseAction =
-            actionBlocksMovement && (this.state === 'dash' || this.state === 'dodge');
+        const actionBlocksMovement = this.stateLock > 0 && LOCKED_ACTIONS.has(this.state);
+        const impulseAction = actionBlocksMovement && ['dash', 'dodge', 'slide'].includes(this.state);
 
         if (hasMovement && !actionBlocksMovement) {
-            this.moveDirection.set(input.x, 0, input.z).normalize();
-            this.lastMoveDirection.lerp(this.moveDirection, 0.75).normalize();
-            this.horizontalMotion = this.moveDirection.x;
-            this.depthMotion = this.moveDirection.z;
+            this.moveDirection.copy(rawMove).normalize();
+            const directionAlpha = 1 - Math.exp(-18 * deltaTime);
+            this.lastMoveDirection.lerp(this.moveDirection, directionAlpha).normalize();
+            this.actionDirection.copy(this.lastMoveDirection);
 
-            const speed = input.run ? this.runSpeed : this.walkSpeed;
-            const desiredVelocity = this.moveDirection.clone().multiplyScalar(speed);
-            const acceleration = 1 - Math.exp(-13 * deltaTime);
-            this.velocity.lerp(desiredVelocity, acceleration);
+            const nextDirection = directionFromVector(this.moveDirection, this.direction);
+            this.setDirection(nextDirection);
 
-            if (input.x !== 0 && this.stateLock <= 0) {
-                this.setFacing(input.x > 0 ? 1 : -1);
+            if (Math.abs(this.moveDirection.x) > 0.12) {
+                this.setFacing(this.moveDirection.x > 0 ? 1 : -1);
             }
-        } else if (isImpulseAction) {
-            const drag = 1 - Math.exp(-3.5 * deltaTime);
+
+            const sprinting = input.run && inputMagnitude > 0.9;
+            const targetSpeed = sprinting
+                ? this.sprintSpeed
+                : input.run
+                    ? this.runSpeed
+                    : this.walkSpeed;
+
+            this.desiredVelocity.copy(this.moveDirection).multiplyScalar(targetSpeed * inputMagnitude);
+            const currentDirection = this.velocity.clone().setY(0);
+            const turnDot = currentDirection.lengthSq() > 0.1
+                ? currentDirection.normalize().dot(this.moveDirection)
+                : 1;
+            const accelerationRate = turnDot < -0.25 ? 24 : sprinting ? 15 : 18;
+            const acceleration = 1 - Math.exp(-accelerationRate * deltaTime);
+            this.velocity.lerp(this.desiredVelocity, acceleration);
+            this.skidArmed = true;
+        } else if (impulseAction) {
+            const drag = 1 - Math.exp(-3.1 * deltaTime);
             this.velocity.lerp(this.zeroVelocity, drag);
-            this.horizontalMotion = this.actionDirection.x;
-            this.depthMotion = this.actionDirection.z;
         } else {
-            const brakingRate = actionBlocksMovement ? 24 : 16;
+            const brakingRate = actionBlocksMovement ? 25 : 13.5;
             const braking = 1 - Math.exp(-brakingRate * deltaTime);
             this.velocity.lerp(this.zeroVelocity, braking);
-            this.horizontalMotion = THREE.MathUtils.damp(
-                this.horizontalMotion,
-                0,
-                10,
-                deltaTime
-            );
-            this.depthMotion = THREE.MathUtils.damp(
-                this.depthMotion,
-                0,
-                10,
-                deltaTime
-            );
+
+            if (
+                !actionBlocksMovement &&
+                this.skidArmed &&
+                this.grounded &&
+                this.speed() > this.runSpeed * 0.58
+            ) {
+                this.skidArmed = false;
+                this.playLocked('skid', 0.24);
+                this.effects.skid?.();
+            }
         }
+
+        this.horizontalMotion = damp(this.horizontalMotion, this.lastMoveDirection.x, 12, deltaTime);
+        this.depthMotion = damp(this.depthMotion, this.lastMoveDirection.z, 12, deltaTime);
 
         this.group.position.addScaledVector(this.velocity, deltaTime);
-        this.group.position.x = THREE.MathUtils.clamp(
-            this.group.position.x,
-            -this.bounds.x,
-            this.bounds.x
-        );
-        this.group.position.z = THREE.MathUtils.clamp(
-            this.group.position.z,
-            -this.bounds.z,
-            this.bounds.z
-        );
-
-        if (!this.grounded) {
-            this.jumpVelocity -= this.gravity * deltaTime;
-            this.bodyRoot.position.y += this.jumpVelocity * deltaTime;
-
-            if (this.bodyRoot.position.y <= 0) {
-                this.bodyRoot.position.y = 0;
-                this.jumpVelocity = 0;
-                this.grounded = true;
-                this.stateLock = 0;
-                this.effects.landing();
-            }
-        }
+        this.constrainToWorld();
+        this.updateJumpPhysics(deltaTime);
 
         if (this.stateLock <= 0) {
-            const planarSpeed = this.speed();
-
-            if (!this.grounded) {
-                this.setState('jump');
-            } else if (planarSpeed > this.walkSpeed * 1.35) {
-                this.setState('run');
-            } else if (planarSpeed > 0.18) {
-                this.setState('walk');
-            } else {
-                this.setState('idle');
-            }
+            this.selectLocomotionState(input, inputMagnitude, deltaTime);
         }
 
+        const movementRatio = THREE.MathUtils.clamp(this.speed() / Math.max(this.runSpeed, 0.01), 0, 1.5);
+        const rate = this.state === 'walk'
+            ? THREE.MathUtils.lerp(0.78, 1.3, movementRatio)
+            : ['run', 'sprint'].includes(this.state)
+                ? THREE.MathUtils.lerp(0.86, 1.28, movementRatio)
+                : 1;
+        this.animator.setPlaybackRate(rate);
         this.animator.update(deltaTime);
         this.effects.update(deltaTime, this.speed());
         this.speech.update(deltaTime);
-        this.updatePresentation();
+        this.updatePresentation(deltaTime);
+    }
+
+    constrainToWorld() {
+        const previousX = this.group.position.x;
+        const previousZ = this.group.position.z;
+
+        this.group.position.x = THREE.MathUtils.clamp(this.group.position.x, -this.bounds.x, this.bounds.x);
+        this.group.position.z = THREE.MathUtils.clamp(this.group.position.z, -this.bounds.z, this.bounds.z);
+
+        if (this.group.position.x !== previousX) {
+            this.velocity.x = 0;
+        }
+        if (this.group.position.z !== previousZ) {
+            this.velocity.z = 0;
+        }
+    }
+
+    updateJumpPhysics(deltaTime) {
+        if (this.grounded) {
+            return;
+        }
+
+        this.jumpVelocity -= this.gravity * deltaTime;
+        this.bodyRoot.position.y += this.jumpVelocity * deltaTime;
+
+        if (this.bodyRoot.position.y > 0) {
+            return;
+        }
+
+        const impact = Math.abs(this.jumpVelocity);
+        this.bodyRoot.position.y = 0;
+        this.jumpVelocity = 0;
+        this.grounded = true;
+        this.coyoteTimer = 0.11;
+        this.effects.landing(impact);
+        this.playLocked('land', impact > this.jumpForce * 1.25 ? 0.28 : 0.18);
+    }
+
+    selectLocomotionState(input, inputMagnitude, deltaTime) {
+        if (!this.grounded) {
+            this.setState(this.jumpVelocity > 0.35 ? 'takeoff' : 'fall');
+            return;
+        }
+
+        const planarSpeed = this.speed();
+        if (input.run && inputMagnitude > 0.9 && planarSpeed > this.runSpeed * 0.82) {
+            this.setState('sprint');
+            return;
+        }
+        if (planarSpeed > this.walkSpeed * 1.32) {
+            this.setState('run');
+            return;
+        }
+        if (planarSpeed > 0.16) {
+            this.setState('walk');
+            return;
+        }
+
+        this.setState('idle');
+        this.idleVariantTimer -= deltaTime;
+
+        if (this.idleVariantTimer <= 0) {
+            const available = IDLE_VARIANTS.filter((name) => this.animator.has(name));
+            if (available.length > 0) {
+                const name = available[Math.floor(Math.random() * available.length)];
+                this.playLocked(name, Math.min(this.animator.duration(name), 0.9));
+            }
+            this.idleVariantTimer = 2.8 + Math.random() * 3.2;
+        }
     }
 
     handleActionInput(input) {
-        const action = ACTIONS.find(([name]) => Boolean(input[name]));
-
+        const action = ACTIONS.find(({ name }) => Boolean(input[name]));
         if (!action) {
             return;
         }
 
-        const [name, duration] = action;
-
-        if (name === 'dash') {
-            this.performImpulseAction(name, duration, 11.8);
+        if (['dash', 'slide', 'dodge'].includes(action.name)) {
+            if (action.name === 'dash' && this.dashCooldown > 0) {
+                return;
+            }
+            this.performImpulseAction(action.name, action.duration, action.impulse, action.reverse);
+            if (action.name === 'dash') {
+                this.dashCooldown = 0.18;
+            }
             return;
         }
 
-        if (name === 'dodge') {
-            this.performImpulseAction(name, duration, 8.6, true);
-            return;
-        }
-
-        if (name === 'attack') {
-            this.velocity.multiplyScalar(0.18);
-        } else if (name !== 'spin') {
-            this.velocity.multiplyScalar(0.08);
-        }
-
-        this.playLocked(name, duration);
+        this.velocity.multiplyScalar(action.velocityRetention ?? 0.05);
+        this.playLocked(action.name, action.duration);
     }
 
     performImpulseAction(name, duration, speed, reverse = false) {
@@ -331,6 +446,7 @@ export default class SpriteCharacter {
 
         this.actionDirection.normalize();
         this.velocity.copy(this.actionDirection).multiplyScalar(speed);
+        this.setDirection(directionFromVector(this.actionDirection, this.direction));
 
         if (Math.abs(this.actionDirection.x) > 0.08) {
             this.setFacing(this.actionDirection.x >= 0 ? 1 : -1);
@@ -342,62 +458,42 @@ export default class SpriteCharacter {
     updateIntro(deltaTime) {
         this.introClock += deltaTime;
 
-        if (this.introStep === 0 && this.introClock >= 0.45) {
-            this.playLocked('win', 1.05);
+        if (this.introStep === 0 && this.introClock >= 0.4) {
+            this.playLocked('ready', 0.75);
             this.introStep = 1;
             return;
         }
-
-        if (
-            this.introStep === 1 &&
-            this.introClock >= 1.65 &&
-            this.stateLock <= 0
-        ) {
-            this.playLocked('wave', 0.85);
+        if (this.introStep === 1 && this.introClock >= 1.35 && this.stateLock <= 0) {
+            this.playLocked('wave', 0.9);
             this.introStep = 2;
             return;
         }
-
-        if (
-            this.introStep === 2 &&
-            this.introClock >= 2.65 &&
-            this.grounded &&
-            this.stateLock <= 0
-        ) {
+        if (this.introStep === 2 && this.introClock >= 2.5 && this.grounded && this.stateLock <= 0) {
             this.performJump();
             this.introStep = 3;
             return;
         }
-
-        if (
-            this.introStep === 3 &&
-            this.introClock >= 3.75 &&
-            this.grounded &&
-            this.stateLock <= 0
-        ) {
-            this.playLocked('dance', 1.15);
+        if (this.introStep === 3 && this.introClock >= 3.55 && this.grounded && this.stateLock <= 0) {
+            this.playLocked('celebrate', 1.15);
             this.introStep = 4;
             return;
         }
-
-        if (this.introStep === 4 && this.introClock >= 5.1) {
+        if (this.introStep === 4 && this.introClock >= 5.0) {
             this.introActive = false;
         }
     }
 
     performJump() {
         this.grounded = false;
+        this.coyoteTimer = 0;
         this.jumpVelocity = this.jumpForce;
-        this.stateLock = 0.12;
-        this.setState('jump', true);
+        this.stateLock = 0.08;
+        this.setState('takeoff', true);
     }
 
     playLocked(animationName, minimumDuration = 0) {
         this.setState(animationName, true);
-        this.stateLock = Math.max(
-            minimumDuration,
-            this.animator.duration(animationName)
-        );
+        this.stateLock = Math.max(minimumDuration, this.animator.duration(animationName));
     }
 
     setState(state, restart = false) {
@@ -412,9 +508,17 @@ export default class SpriteCharacter {
         this.effects.onStateChanged(state, this.facing);
     }
 
+    setDirection(direction) {
+        if (!direction || this.direction === direction) {
+            return;
+        }
+
+        this.direction = direction;
+        this.animator.setDirection(direction);
+    }
+
     setFacing(direction) {
         const nextFacing = direction >= 0 ? 1 : -1;
-
         if (this.facing === nextFacing) {
             return;
         }
@@ -426,172 +530,203 @@ export default class SpriteCharacter {
     applySpawnPose(progress) {
         const clamped = THREE.MathUtils.clamp(progress, 0, 1);
         const back = 1.70158;
-        const overshoot =
-            clamped === 1
-                ? 1
-                : 1 + (back + 1) * Math.pow(clamped - 1, 3) +
-                  back * Math.pow(clamped - 1, 2);
+        const overshoot = clamped === 1
+            ? 1
+            : 1 + (back + 1) * Math.pow(clamped - 1, 3) + back * Math.pow(clamped - 1, 2);
         this.bodyRoot.scale.setScalar(Math.max(0.001, overshoot));
     }
 
-    updatePresentation() {
+    targetPresentation() {
         const time = this.presentationTime;
         const stateTime = this.stateTime;
-        const jumpHeight = Math.max(this.bodyRoot.position.y, 0);
-        const jumpRatio = THREE.MathUtils.clamp(jumpHeight / 3.2, 0, 1);
-        const movementSpeed = this.speed();
-        const spawnProgress = THREE.MathUtils.clamp(time / 0.62, 0, 1);
+        const progress = this.animator.progress();
         const depth = THREE.MathUtils.clamp(this.depthMotion, -1, 1);
         const horizontal = THREE.MathUtils.clamp(this.horizontalMotion, -1, 1);
+        const target = { width: 1, height: 1, bob: 0, tilt: 0, x: 0, y: 0 };
 
-        let widthScale = 1;
-        let heightScale = 1;
-        let bob = 0;
-        let tilt = 0;
-        let offsetX = 0;
-        let offsetY = 0;
-        let rotationMultiplier = 1;
-
-        if (this.state === 'idle') {
-            const breath = Math.sin(time * 3.1);
-            bob = breath * 0.045;
-            widthScale += breath * 0.018;
-            heightScale -= breath * 0.018;
-            tilt = Math.sin(time * 1.7) * 0.018;
+        if (['idle', 'breathe', 'blink', 'ready'].includes(this.state)) {
+            const breath = Math.sin(time * 3.25);
+            target.bob = breath * 0.038;
+            target.width += breath * 0.013;
+            target.height -= breath * 0.015;
+            target.tilt = Math.sin(time * 1.65) * 0.014;
         } else if (this.state === 'walk') {
-            const cycle = stateTime * (9.2 + Math.abs(depth) * 0.8);
-            bob = Math.abs(Math.sin(cycle)) * 0.11;
-            widthScale += Math.cos(cycle * 2) * 0.022 - depth * 0.018;
-            heightScale -= Math.cos(cycle * 2) * 0.022 + depth * 0.012;
-            tilt = Math.sin(cycle) * 0.045 * this.facing - depth * 0.025;
-            offsetX = horizontal * Math.sin(cycle) * 0.025;
-        } else if (this.state === 'run') {
-            const cycle = stateTime * (13.6 + Math.abs(depth) * 1.1);
-            bob = Math.abs(Math.sin(cycle)) * 0.17;
-            widthScale += Math.cos(cycle * 2) * 0.04 - depth * 0.025;
-            heightScale -= Math.cos(cycle * 2) * 0.04 + depth * 0.018;
-            tilt = -0.075 * this.facing + Math.sin(cycle) * 0.025 - depth * 0.035;
-            offsetX = horizontal * 0.04;
-        } else if (this.state === 'attack') {
-            const progress = THREE.MathUtils.clamp(stateTime / 0.58, 0, 1);
-            const punch = Math.sin(progress * Math.PI);
-            offsetX = punch * 0.34 * this.facing;
-            tilt = -punch * 0.1 * this.facing;
-            widthScale += punch * 0.08;
-            heightScale -= punch * 0.05;
-            bob = punch * 0.08;
-        } else if (this.state === 'win') {
-            const cycle = stateTime * 8.4;
-            bob = Math.abs(Math.sin(cycle)) * 0.19;
-            tilt = Math.sin(cycle * 0.5) * 0.07;
-            widthScale += Math.cos(cycle) * 0.035;
-            heightScale -= Math.cos(cycle) * 0.035;
-        } else if (this.state === 'dash') {
-            const progress = THREE.MathUtils.clamp(stateTime / 0.46, 0, 1);
+            const cycle = stateTime * 10.5;
+            target.bob = Math.abs(Math.sin(cycle)) * 0.075;
+            target.width += Math.cos(cycle * 2) * 0.016;
+            target.height -= Math.cos(cycle * 2) * 0.018;
+            target.tilt = Math.sin(cycle) * 0.026 * this.facing - depth * 0.018;
+            target.x = horizontal * Math.sin(cycle) * 0.018;
+        } else if (['run', 'sprint'].includes(this.state)) {
+            const multiplier = this.state === 'sprint' ? 1.18 : 1;
+            const cycle = stateTime * 14.2 * multiplier;
+            target.bob = Math.abs(Math.sin(cycle)) * 0.11 * multiplier;
+            target.width += Math.cos(cycle * 2) * 0.026;
+            target.height -= Math.cos(cycle * 2) * 0.03;
+            target.tilt = -0.05 * this.facing + Math.sin(cycle) * 0.018 - depth * 0.025;
+            target.x = horizontal * 0.025;
+        } else if (['takeoff', 'jump', 'fall', 'hover'].includes(this.state)) {
+            const verticalRatio = THREE.MathUtils.clamp(this.jumpVelocity / this.jumpForce, -1, 1);
+            target.width += verticalRatio > 0 ? -0.045 : 0.055;
+            target.height += verticalRatio > 0 ? 0.065 : -0.045;
+            target.tilt = -this.velocity.x * 0.009 - depth * 0.02;
+        } else if (this.state === 'land') {
+            const impact = Math.sin(progress * Math.PI);
+            target.width += impact * 0.12;
+            target.height -= impact * 0.15;
+            target.y = -impact * 0.07;
+        } else if (['skid', 'slide'].includes(this.state)) {
             const burst = Math.sin(progress * Math.PI);
-            bob = Math.sin(progress * Math.PI * 4) * 0.04;
-            widthScale += burst * 0.2;
-            heightScale -= burst * 0.12;
-            tilt = -0.15 * this.facing - depth * 0.08;
-            offsetX = -this.facing * 0.08;
+            target.width += burst * 0.12;
+            target.height -= burst * 0.09;
+            target.tilt = -0.13 * this.facing - depth * 0.05;
+            target.x = -this.facing * burst * 0.07;
+        } else if (['attack', 'combo', 'uppercut', 'cast'].includes(this.state)) {
+            const punch = Math.sin(progress * Math.PI);
+            const power = this.state === 'combo' ? 1.18 : this.state === 'uppercut' ? 1.1 : 1;
+            target.x = punch * 0.24 * this.facing * power;
+            target.tilt = -punch * 0.075 * this.facing;
+            target.width += punch * 0.06;
+            target.height -= punch * 0.038;
+            target.bob = punch * 0.055;
+        } else if (this.state === 'charge') {
+            const pulse = Math.sin(stateTime * 15);
+            target.width += pulse * 0.025;
+            target.height -= pulse * 0.025;
+            target.bob = Math.abs(pulse) * 0.045;
+        } else if (this.state === 'hurt') {
+            const shake = Math.sin(stateTime * 32) * (1 - progress);
+            target.x = shake * 0.12;
+            target.tilt = shake * 0.09;
+            target.width += 0.08 * (1 - progress);
+            target.height -= 0.08 * (1 - progress);
+        } else if (['win', 'celebrate'].includes(this.state)) {
+            const cycle = stateTime * 8.8;
+            target.bob = Math.abs(Math.sin(cycle)) * 0.14;
+            target.tilt = Math.sin(cycle * 0.5) * 0.045;
+            target.width += Math.cos(cycle) * 0.025;
+            target.height -= Math.cos(cycle) * 0.025;
+        } else if (this.state === 'dash') {
+            const burst = Math.sin(progress * Math.PI);
+            target.width += burst * 0.16;
+            target.height -= burst * 0.1;
+            target.tilt = -0.12 * this.facing - depth * 0.06;
+            target.x = -this.facing * 0.06;
         } else if (this.state === 'dodge') {
-            const progress = THREE.MathUtils.clamp(stateTime / 0.64, 0, 1);
             const arc = Math.sin(progress * Math.PI);
-            widthScale += arc * 0.14;
-            heightScale -= arc * 0.2;
-            bob = arc * 0.22;
-            tilt = Math.sin(progress * Math.PI * 2) * 0.28 * this.facing;
+            target.width += arc * 0.12;
+            target.height -= arc * 0.16;
+            target.bob = arc * 0.16;
+            target.tilt = Math.sin(progress * Math.PI * 2) * 0.22 * this.facing;
         } else if (this.state === 'dance') {
-            const cycle = stateTime * 9.4;
-            bob = Math.abs(Math.sin(cycle)) * 0.22;
-            offsetX = Math.sin(cycle * 0.5) * 0.22;
-            tilt = Math.sin(cycle * 0.5) * 0.13;
-            widthScale += Math.cos(cycle) * 0.055;
-            heightScale -= Math.cos(cycle) * 0.055;
-        } else if (this.state === 'wave') {
-            const cycle = stateTime * 8.2;
-            bob = Math.abs(Math.sin(cycle * 0.5)) * 0.08;
-            tilt = Math.sin(cycle) * 0.075 * this.facing;
-            offsetX = Math.sin(cycle * 0.5) * 0.05 * this.facing;
+            const cycle = stateTime * 9.5;
+            target.bob = Math.abs(Math.sin(cycle)) * 0.17;
+            target.x = Math.sin(cycle * 0.5) * 0.17;
+            target.tilt = Math.sin(cycle * 0.5) * 0.1;
+            target.width += Math.cos(cycle) * 0.04;
+            target.height -= Math.cos(cycle) * 0.04;
+        } else if (['wave', 'salute'].includes(this.state)) {
+            const cycle = stateTime * 8;
+            target.bob = Math.abs(Math.sin(cycle * 0.5)) * 0.055;
+            target.tilt = Math.sin(cycle) * 0.05 * this.facing;
+            target.x = Math.sin(cycle * 0.5) * 0.035 * this.facing;
         } else if (this.state === 'spin') {
-            const progress = THREE.MathUtils.clamp(stateTime / 1.12, 0, 1);
             const spin = progress * Math.PI * 4;
-            rotationMultiplier = Math.cos(spin);
-            widthScale = Math.max(0.08, Math.abs(rotationMultiplier));
-            heightScale += Math.sin(spin * 0.5) * 0.05;
-            bob = Math.abs(Math.sin(spin * 0.5)) * 0.12;
-            tilt = Math.sin(spin) * 0.07;
+            target.width = Math.max(0.08, Math.abs(Math.cos(spin)));
+            target.height += Math.sin(spin * 0.5) * 0.04;
+            target.bob = Math.abs(Math.sin(spin * 0.5)) * 0.09;
+            target.tilt = Math.sin(spin) * 0.055;
         } else if (this.state === 'crouch') {
             const settle = 1 - Math.exp(-stateTime * 10);
-            const pulse = Math.sin(stateTime * 7.5) * 0.025;
-            widthScale += 0.12 * settle + pulse;
-            heightScale -= 0.2 * settle + pulse;
-            offsetY = -0.1 * settle;
-            tilt = -0.035 * this.facing;
+            target.width += 0.1 * settle;
+            target.height -= 0.17 * settle;
+            target.y = -0.08 * settle;
+            target.tilt = -0.025 * this.facing;
         } else if (this.state === 'laugh') {
-            const cycle = stateTime * 12;
-            bob = Math.abs(Math.sin(cycle)) * 0.13;
-            tilt = Math.sin(cycle * 0.5) * 0.055;
-            widthScale += Math.cos(cycle) * 0.055;
-            heightScale -= Math.cos(cycle) * 0.055;
+            const cycle = stateTime * 11.5;
+            target.bob = Math.abs(Math.sin(cycle)) * 0.1;
+            target.tilt = Math.sin(cycle * 0.5) * 0.04;
+            target.width += Math.cos(cycle) * 0.04;
+            target.height -= Math.cos(cycle) * 0.04;
         } else if (this.state === 'pose') {
-            const settle = 1 - Math.exp(-stateTime * 8);
-            bob = Math.sin(stateTime * 3.2) * 0.035;
-            widthScale += 0.04 * settle;
-            heightScale += 0.045 * settle;
-            tilt = -0.045 * this.facing;
+            target.bob = Math.sin(stateTime * 3.1) * 0.028;
+            target.width += 0.03;
+            target.height += 0.035;
+            target.tilt = -0.035 * this.facing;
         } else if (this.state === 'sleep') {
-            const sway = Math.sin(stateTime * 2.1);
-            bob = sway * 0.025;
-            tilt = (0.11 + sway * 0.035) * this.facing;
-            widthScale += sway * 0.018;
-            heightScale -= sway * 0.018;
-            offsetY = -0.04;
+            const sway = Math.sin(stateTime * 2.05);
+            target.bob = sway * 0.018;
+            target.tilt = (0.09 + sway * 0.025) * this.facing;
+            target.width += sway * 0.012;
+            target.height -= sway * 0.012;
+            target.y = -0.035;
         } else if (this.state === 'taunt') {
-            const cycle = stateTime * 10.5;
-            offsetX = Math.sin(cycle) * 0.11 * this.facing;
-            tilt = -Math.sin(cycle) * 0.09 * this.facing;
-            bob = Math.abs(Math.sin(cycle * 0.5)) * 0.09;
-            widthScale += Math.cos(cycle) * 0.04;
+            const cycle = stateTime * 10.3;
+            target.x = Math.sin(cycle) * 0.08 * this.facing;
+            target.tilt = -Math.sin(cycle) * 0.065 * this.facing;
+            target.bob = Math.abs(Math.sin(cycle * 0.5)) * 0.065;
+            target.width += Math.cos(cycle) * 0.03;
         }
 
-        if (!this.grounded) {
-            const verticalRatio = THREE.MathUtils.clamp(
-                this.jumpVelocity / this.jumpForce,
-                -1,
-                1
-            );
-            widthScale += verticalRatio > 0 ? -0.06 : 0.07;
-            heightScale += verticalRatio > 0 ? 0.09 : -0.06;
-            tilt += -this.velocity.x * 0.012 - depth * 0.025;
+        return target;
+    }
+
+    updatePresentation(deltaTime) {
+        const target = this.targetPresentation();
+        const profile = directionProfile(this.direction);
+        const motion = this.atlas.motion ?? {};
+        const northSouthScale = Number(motion.northSouthScale ?? 0.92);
+        const diagonalScale = Number(motion.diagonalScale ?? 0.97);
+        const directionDepthScale = Number(motion.directionDepthScale ?? 0.08);
+
+        if (profile.isVertical) {
+            target.width *= northSouthScale;
+        } else if (profile.isDiagonal) {
+            target.width *= diagonalScale;
         }
+        target.height *= 1 - profile.depthSign * directionDepthScale * 0.12;
+        target.y += profile.depthSign * 0.025;
+
+        const smoothing = this.state === 'dash' ? 22 : 16;
+        this.visual.width = damp(this.visual.width, target.width, smoothing, deltaTime);
+        this.visual.height = damp(this.visual.height, target.height, smoothing, deltaTime);
+        this.visual.bob = damp(this.visual.bob, target.bob, 20, deltaTime);
+        this.visual.tilt = damp(this.visual.tilt, target.tilt, 18, deltaTime);
+        this.visual.x = damp(this.visual.x, target.x, 20, deltaTime);
+        this.visual.y = damp(this.visual.y, target.y, 20, deltaTime);
 
         const atlasHandlesFacing = this.animator.usesDirectionalFrames();
         const facingScale = atlasHandlesFacing ? 1 : this.facing;
-        const spinSign = this.state === 'spin' ? Math.sign(rotationMultiplier || 1) : 1;
+        const spinSign = this.state === 'spin'
+            ? Math.sign(Math.cos(this.animator.progress() * Math.PI * 4) || 1)
+            : 1;
 
         this.sprite.scale.set(
-            this.baseWidth * widthScale * facingScale * spinSign,
-            this.baseHeight * heightScale,
+            this.baseWidth * this.visual.width * facingScale * spinSign,
+            this.baseHeight * this.visual.height,
             1
         );
-        this.sprite.position.x = offsetX;
-        this.sprite.position.y = 0.02 + bob + offsetY;
-        this.sprite.material.rotation = tilt;
+        this.sprite.position.x = this.visual.x;
+        this.sprite.position.y = 0.02 + this.visual.bob + this.visual.y;
+        this.sprite.material.rotation = this.visual.tilt;
 
+        const spawnProgress = THREE.MathUtils.clamp(this.presentationTime / 0.62, 0, 1);
         this.applySpawnPose(spawnProgress);
 
+        const jumpHeight = Math.max(this.bodyRoot.position.y, 0);
+        const jumpRatio = THREE.MathUtils.clamp(jumpHeight / 3.2, 0, 1);
+        const movementSpeed = this.speed();
         this.shadow.scale.set(
-            1.4 * (1 - jumpRatio * 0.38) * (1 + Math.abs(depth) * 0.03),
+            1.4 * (1 - jumpRatio * 0.38) * (1 + Math.abs(this.depthMotion) * 0.03),
             0.62 * (1 - jumpRatio * 0.22),
             1
         );
         this.shadowMaterial.opacity = 0.38 - jumpRatio * 0.24;
 
+        const time = this.presentationTime;
         const locatorPulse = 1 + Math.sin(time * 5.4) * 0.13;
         this.locator.scale.setScalar(0.46 * this.scaleFactor * locatorPulse);
-        this.locator.position.y =
-            this.baseHeight + 0.42 + Math.sin(time * 3.4) * 0.08;
+        this.locator.position.y = this.baseHeight + 0.42 + Math.sin(time * 3.4) * 0.08;
         this.locatorMaterial.opacity = 0.72 + Math.sin(time * 5.4) * 0.2;
 
         const ringPulse = 1 + Math.sin(time * 4.2) * 0.07;

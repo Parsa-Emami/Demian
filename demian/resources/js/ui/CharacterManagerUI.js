@@ -11,10 +11,11 @@ export default class CharacterManagerUI {
         this.submitButton = root.querySelector('[data-character-submit]');
         this.formError = root.querySelector('[data-form-error]');
 
-        this.stateLabel = document.querySelector('[data-state-label]');
-        this.speedLabel = document.querySelector('[data-speed-label]');
-        this.positionLabel = document.querySelector('[data-position-label]');
-        this.cameraLabel = document.querySelector('[data-camera-label]');
+        this.stateLabels = [...document.querySelectorAll('[data-state-label]')];
+        this.speedLabels = [...document.querySelectorAll('[data-speed-label]')];
+        this.positionLabels = [...document.querySelectorAll('[data-position-label]')];
+        this.cameraLabels = [...document.querySelectorAll('[data-camera-label]')];
+        this.qualityLabels = [...document.querySelectorAll('[data-quality-label]')];
         this.activeNameElements = [
             ...document.querySelectorAll('[data-active-character-name]'),
         ];
@@ -36,9 +37,15 @@ export default class CharacterManagerUI {
         });
 
         this.eventBus.on('camera:mode', (mode) => {
-            if (this.cameraLabel) {
-                this.cameraLabel.textContent = mode;
-            }
+            this.cameraLabels.forEach((label) => {
+                label.textContent = mode;
+            });
+        });
+
+        this.eventBus.on('studio:quality', ({ label }) => {
+            this.qualityLabels.forEach((element) => {
+                element.textContent = label;
+            });
         });
 
         this.eventBus.on('character:warning', ({ message }) => {
@@ -73,6 +80,7 @@ export default class CharacterManagerUI {
                         src="${this.escape(character.sprite_url)}"
                         alt="${this.escape(character.name)}"
                         loading="lazy"
+                        style="width: ${character.sprite_url.includes('-v4') ? '1200%' : '400%'}"
                     >
                 </div>
 
@@ -259,22 +267,21 @@ export default class CharacterManagerUI {
     }
 
     renderHud({ state, speed, position, cameraMode }) {
-        if (this.stateLabel) {
-            this.stateLabel.textContent = state.toUpperCase();
-        }
+        this.stateLabels.forEach((label) => {
+            label.textContent = state.toUpperCase();
+        });
 
-        if (this.speedLabel) {
-            this.speedLabel.textContent = speed.toFixed(2);
-        }
+        this.speedLabels.forEach((label) => {
+            label.textContent = speed.toFixed(2);
+        });
 
-        if (this.positionLabel) {
-            this.positionLabel.textContent =
-                `${position.x.toFixed(1)} / ${position.z.toFixed(1)}`;
-        }
+        this.positionLabels.forEach((label) => {
+            label.textContent = `${position.x.toFixed(1)} / ${position.z.toFixed(1)}`;
+        });
 
-        if (this.cameraLabel) {
-            this.cameraLabel.textContent = cameraMode;
-        }
+        this.cameraLabels.forEach((label) => {
+            label.textContent = cameraMode;
+        });
     }
 
     renderActiveCharacter(record) {

@@ -17,13 +17,14 @@ class BuiltinCharacterSeeder extends Seeder
                 ['slug' => 'tiam'],
                 [
                     'name' => 'TIAM / تیام',
-                    'sprite_sheet_path' => 'assets/characters/tiam/tiam-spritesheet.png',
+                    'sprite_sheet_path' => 'assets/characters/tiam/tiam-spritesheet-v4.png',
                     'atlas_path' => 'assets/characters/tiam/tiam-atlas.json',
                     'is_builtin' => true,
                     'is_active' => true,
                     'settings' => [
                         'walk_speed' => 3.2,
                         'run_speed' => 6.2,
+                        'sprint_speed' => 6.85,
                         'jump_force' => 6.5,
                         'scale' => 1,
                     ],
@@ -34,13 +35,14 @@ class BuiltinCharacterSeeder extends Seeder
                 ['slug' => 'ronak'],
                 [
                     'name' => 'RONAK / روناک',
-                    'sprite_sheet_path' => 'assets/characters/ronak/ronak-spritesheet.png',
+                    'sprite_sheet_path' => 'assets/characters/ronak/ronak-spritesheet-v4.png',
                     'atlas_path' => 'assets/characters/ronak/ronak-atlas.json',
                     'is_builtin' => true,
                     'is_active' => false,
                     'settings' => [
                         'walk_speed' => 3.25,
                         'run_speed' => 6.35,
+                        'sprint_speed' => 7.0,
                         'jump_force' => 6.6,
                         'scale' => 1,
                     ],
@@ -51,13 +53,14 @@ class BuiltinCharacterSeeder extends Seeder
                 ['slug' => 'amirreza'],
                 [
                     'name' => 'AMIRREZA / امیررضا',
-                    'sprite_sheet_path' => 'assets/characters/amirreza/amirreza-spritesheet.png',
+                    'sprite_sheet_path' => 'assets/characters/amirreza/amirreza-spritesheet-v4.png',
                     'atlas_path' => 'assets/characters/amirreza/amirreza-atlas.json',
                     'is_builtin' => true,
                     'is_active' => false,
                     'settings' => [
                         'walk_speed' => 4.15,
                         'run_speed' => 8.4,
+                        'sprint_speed' => 9.35,
                         'jump_force' => 6.85,
                         'scale' => 1,
                     ],

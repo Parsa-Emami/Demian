@@ -8,6 +8,9 @@ export default class ArcadeWorld {
         this.time = 0;
         this.floaters = [];
         this.animatedSigns = [];
+        this.pulseLanes = [];
+        this.rotators = [];
+        this.coarsePointer = window.matchMedia?.('(pointer: coarse)').matches ?? false;
         this.textures = [];
         this.materials = [];
         this.geometries = [];
@@ -20,6 +23,7 @@ export default class ArcadeWorld {
         this.createArcadeCabinets();
         this.createSideDecorations();
         this.createFloatingPixels();
+        this.createPulseLanes();
     }
 
     canvasTexture(width, height, draw) {
@@ -164,7 +168,7 @@ export default class ArcadeWorld {
             context.shadowBlur = 0;
             context.font = '900 28px monospace';
             context.fillStyle = '#8ff8ff';
-            context.fillText('DEMIAN 2D ARCADE', w / 2, 204);
+            context.fillText('V4 HIGH-FRAME ARCADE', w / 2, 204);
 
             context.fillStyle = '#ff4fd8';
             context.fillRect(54, 292, 42, 18);
@@ -346,7 +350,8 @@ export default class ArcadeWorld {
             context.fillRect(6, 12, 20, 8);
         });
 
-        for (let index = 0; index < 18; index += 1) {
+        const floaterCount = this.coarsePointer ? 10 : 18;
+        for (let index = 0; index < floaterCount; index += 1) {
             const material = this.spriteMaterial({
                 map: texture,
                 opacity: 0.55 + Math.random() * 0.35,
@@ -371,6 +376,51 @@ export default class ArcadeWorld {
         }
     }
 
+
+    createPulseLanes() {
+        const laneDefinitions = [
+            [-9.6, 0xff4fd8, 0],
+            [-5.8, 0x8b5cf6, 0.8],
+            [5.8, 0x22d3ee, 1.6],
+            [9.6, 0xfbbf24, 2.4],
+        ];
+
+        laneDefinitions.forEach(([x, color, phase]) => {
+            const material = this.basicMaterial({
+                color,
+                transparent: true,
+                opacity: 0.2,
+                depthWrite: false,
+            });
+            const lane = new THREE.Mesh(
+                this.geometry(new THREE.BoxGeometry(0.065, 0.025, 17.2)),
+                material
+            );
+            lane.position.set(x, 0.035, 0);
+            lane.renderOrder = 1;
+            this.root.add(lane);
+            this.pulseLanes.push({ lane, material, phase, baseX: x });
+        });
+
+        for (let index = 0; index < 3; index += 1) {
+            const material = this.basicMaterial({
+                color: index % 2 === 0 ? 0x22d3ee : 0xff4fd8,
+                transparent: true,
+                opacity: 0.12 + index * 0.05,
+                depthWrite: false,
+            });
+            const ring = new THREE.Mesh(
+                this.geometry(new THREE.RingGeometry(5 + index * 1.15, 5.04 + index * 1.15, 64)),
+                material
+            );
+            ring.rotation.x = -Math.PI / 2;
+            ring.position.y = 0.028 + index * 0.002;
+            ring.renderOrder = 1;
+            this.root.add(ring);
+            this.rotators.push({ object: ring, material, speed: (index % 2 ? -1 : 1) * (0.08 + index * 0.025), phase: index * 1.1 });
+        }
+    }
+
     update(deltaTime) {
         this.time += deltaTime;
 
@@ -386,6 +436,18 @@ export default class ArcadeWorld {
                 item.object.position.y =
                     item.baseY + Math.sin(this.time * 1.8 + item.phase) * item.bob;
             }
+        });
+
+        this.pulseLanes.forEach((item) => {
+            const pulse = 0.5 + 0.5 * Math.sin(this.time * 3.2 + item.phase);
+            item.material.opacity = 0.08 + pulse * 0.24;
+            item.lane.scale.z = 0.86 + pulse * 0.18;
+            item.lane.position.x = item.baseX + Math.sin(this.time * 0.7 + item.phase) * 0.08;
+        });
+
+        this.rotators.forEach((item) => {
+            item.object.rotation.z += deltaTime * item.speed;
+            item.material.opacity = 0.08 + (0.5 + 0.5 * Math.sin(this.time * 2 + item.phase)) * 0.12;
         });
 
         this.floaters.forEach((item, index) => {

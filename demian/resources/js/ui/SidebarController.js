@@ -9,12 +9,14 @@ export default class SidebarController {
         this.root = root;
         this.storageKey = storageKey;
         this.sidebar = root.querySelector('[data-manager-sidebar]');
-        this.toggleButtons = Array.from(
-            root.querySelectorAll('[data-sidebar-toggle]')
-        );
+        this.backdrop = root.querySelector('[data-sidebar-backdrop]');
+        this.toggleButtons = Array.from(root.querySelectorAll('[data-sidebar-toggle]'));
+        this.mobileQuery = window.matchMedia('(max-width: 1023px)');
 
         this.onToggle = this.onToggle.bind(this);
         this.onKeyDown = this.onKeyDown.bind(this);
+        this.onBackdrop = this.onBackdrop.bind(this);
+        this.onBreakpointChange = this.onBreakpointChange.bind(this);
 
         this.state = this.readState();
     }
@@ -24,11 +26,10 @@ export default class SidebarController {
             return;
         }
 
-        this.toggleButtons.forEach((button) => {
-            button.addEventListener('click', this.onToggle);
-        });
-
+        this.toggleButtons.forEach((button) => button.addEventListener('click', this.onToggle));
+        this.backdrop?.addEventListener('click', this.onBackdrop);
         window.addEventListener('keydown', this.onKeyDown);
+        this.mobileQuery.addEventListener?.('change', this.onBreakpointChange);
         this.applyState({ animate: false });
     }
 
@@ -38,8 +39,26 @@ export default class SidebarController {
         this.applyState({ animate: true });
     }
 
+    onBackdrop() {
+        if (this.state !== 'collapsed') {
+            this.state = 'collapsed';
+            this.persistState();
+            this.applyState({ animate: true });
+        }
+    }
+
+    onBreakpointChange(event) {
+        if (event.matches) {
+            this.state = 'collapsed';
+        } else {
+            this.state = this.readDesktopState();
+        }
+        this.applyState({ animate: false });
+    }
+
     onKeyDown(event) {
-        if (event.key.toLowerCase() !== 'm' || event.repeat) {
+        const key = event.key.toLowerCase();
+        if ((key !== 'm' && key !== 'escape') || event.repeat) {
             return;
         }
 
@@ -54,8 +73,18 @@ export default class SidebarController {
             return;
         }
 
+        if (key === 'escape' && this.state === 'collapsed') {
+            return;
+        }
+
         event.preventDefault();
-        this.onToggle();
+        if (key === 'escape') {
+            this.state = 'collapsed';
+            this.persistState();
+            this.applyState({ animate: true });
+        } else {
+            this.onToggle();
+        }
     }
 
     applyState({ animate }) {
@@ -63,52 +92,50 @@ export default class SidebarController {
         this.sidebar.dataset.sidebarState = this.state;
 
         const expanded = this.state === 'expanded';
+        const mobile = this.mobileQuery.matches;
+        document.body.classList.toggle('has-mobile-sheet', mobile && expanded);
+        this.backdrop?.setAttribute('aria-hidden', String(!(mobile && expanded)));
+        this.sidebar.setAttribute('aria-hidden', String(mobile && !expanded));
 
         this.toggleButtons.forEach((button) => {
             button.setAttribute('aria-expanded', String(expanded));
-            button.setAttribute(
-                'aria-label',
-                expanded ? 'جمع‌کردن سایدبار' : 'بازکردن سایدبار'
-            );
-            button.title = expanded
-                ? 'جمع‌کردن مدیریت کاراکترها (M)'
-                : 'بازکردن مدیریت کاراکترها (M)';
+            button.setAttribute('aria-label', expanded ? 'بستن مدیریت کاراکترها' : 'بازکردن مدیریت کاراکترها');
+            button.title = expanded ? 'بستن مدیریت کاراکترها (M)' : 'بازکردن مدیریت کاراکترها (M)';
 
             const icon = button.querySelector('[data-sidebar-toggle-icon]');
             const label = button.querySelector('[data-sidebar-toggle-label]');
-
             if (icon) {
-                icon.textContent = expanded ? '‹' : '›';
+                icon.textContent = mobile ? (expanded ? '×' : '☰') : (expanded ? '‹' : '›');
             }
-
             if (label) {
-                label.textContent = expanded ? 'جمع‌کردن' : 'بازکردن';
+                label.textContent = expanded ? 'بستن' : 'کاراکترها';
             }
         });
 
-        this.root.dispatchEvent(
-            new CustomEvent('sidebar:changed', {
-                detail: { state: this.state, expanded },
-            })
-        );
+        this.root.dispatchEvent(new CustomEvent('sidebar:changed', {
+            detail: { state: this.state, expanded, mobile },
+        }));
 
-        const delay = animate ? 340 : 0;
-
-        window.setTimeout(() => {
-            window.dispatchEvent(new Event('resize'));
-        }, delay);
+        window.setTimeout(() => window.dispatchEvent(new Event('resize')), animate ? 360 : 0);
     }
 
-    readState() {
+    readDesktopState() {
         try {
-            const saved = window.localStorage.getItem(this.storageKey);
-            return saved === 'collapsed' ? 'collapsed' : 'expanded';
+            return window.localStorage.getItem(this.storageKey) === 'collapsed' ? 'collapsed' : 'expanded';
         } catch {
             return 'expanded';
         }
     }
 
+    readState() {
+        return this.mobileQuery.matches ? 'collapsed' : this.readDesktopState();
+    }
+
     persistState() {
+        if (this.mobileQuery.matches) {
+            return;
+        }
+
         try {
             window.localStorage.setItem(this.storageKey, this.state);
         } catch {
@@ -117,10 +144,9 @@ export default class SidebarController {
     }
 
     dispose() {
-        this.toggleButtons.forEach((button) => {
-            button.removeEventListener('click', this.onToggle);
-        });
-
+        this.toggleButtons.forEach((button) => button.removeEventListener('click', this.onToggle));
+        this.backdrop?.removeEventListener('click', this.onBackdrop);
         window.removeEventListener('keydown', this.onKeyDown);
+        this.mobileQuery.removeEventListener?.('change', this.onBreakpointChange);
     }
 }

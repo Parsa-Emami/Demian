@@ -59,18 +59,43 @@ class AtlasManifest
         }
 
         foreach (($manifest['animations'] ?? []) as $name => $animation) {
-            if (
-                !isset($animation['frames']) ||
-                !is_array($animation['frames']) ||
-                $animation['frames'] === []
-            ) {
+            $collections = [];
+
+            foreach (['frames', 'framesRight', 'framesLeft'] as $collectionName) {
+                if (isset($animation[$collectionName])) {
+                    if (!is_array($animation[$collectionName])) {
+                        $errors[] = "Animation {$name} مقدار معتبر {$collectionName} ندارد.";
+                    } elseif ($animation[$collectionName] !== []) {
+                        $collections[$collectionName] = $animation[$collectionName];
+                    }
+                }
+            }
+
+            if (isset($animation['framesByDirection'])) {
+                if (!is_array($animation['framesByDirection'])) {
+                    $errors[] = "Animation {$name} مقدار معتبر framesByDirection ندارد.";
+                } else {
+                    foreach ($animation['framesByDirection'] as $direction => $directionFrames) {
+                        if (!is_array($directionFrames) || $directionFrames === []) {
+                            $errors[] = "Animation {$name} برای جهت {$direction} فریم معتبر ندارد.";
+                            continue;
+                        }
+
+                        $collections['framesByDirection.'.$direction] = $directionFrames;
+                    }
+                }
+            }
+
+            if ($collections === []) {
                 $errors[] = "Animation {$name} فریم ندارد.";
                 continue;
             }
 
-            foreach ($animation['frames'] as $frameName) {
-                if (!array_key_exists($frameName, $manifest['frames'] ?? [])) {
-                    $errors[] = "Animation {$name} به Frame ناموجود {$frameName} اشاره می‌کند.";
+            foreach ($collections as $collectionName => $frameNames) {
+                foreach ($frameNames as $frameName) {
+                    if (!is_string($frameName) || !array_key_exists($frameName, $manifest['frames'] ?? [])) {
+                        $errors[] = "Animation {$name} در {$collectionName} به Frame ناموجود {$frameName} اشاره می‌کند.";
+                    }
                 }
             }
         }
