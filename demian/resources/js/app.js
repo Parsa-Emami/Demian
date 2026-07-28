@@ -26,6 +26,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         studio.handleLayoutChange();
     });
 
+    managerRoot.addEventListener('mobile:layout-changed', () => {
+        studio.handleLayoutChange();
+    });
+
     sidebar.boot();
     mobileUI.boot();
 

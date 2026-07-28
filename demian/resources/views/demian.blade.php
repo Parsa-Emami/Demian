@@ -7,12 +7,20 @@
         content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no"
     >
     <meta name="theme-color" content="#050610">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <meta name="screen-orientation" content="landscape">
+    <meta name="x5-orientation" content="landscape">
+    <meta name="full-screen" content="yes">
+    <meta name="x5-fullscreen" content="true">
+    <link rel="manifest" href="manifest.webmanifest">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>Demian V5 · Open Mobile Arcade</title>
+    <title>Demian V5.2 · Landscape Mobile Arcade</title>
 
     @vite([
         'resources/js/app.js',
@@ -26,6 +34,7 @@
         data-api-base="{{ route('characters.index') }}"
         data-sidebar-state="collapsed"
         data-mobile-actions="collapsed"
+        data-runtime-version="5.2"
         class="manager-shell"
         dir="ltr"
     >
@@ -274,7 +283,7 @@
                                 aria-pressed="false"
                             >
                                 <span aria-hidden="true">⛶</span>
-                                <span data-fullscreen-label>تمام‌صفحه</span>
+                                <span data-fullscreen-label>افقی تمام‌صفحه</span>
                             </button>
                         </div>
                     </div>
@@ -418,7 +427,7 @@
 
             <div data-orientation-hint class="orientation-hint" aria-hidden="true">
                 <span aria-hidden="true">↻</span>
-                <strong>برای فضای بازی بیشتر گوشی را افقی کن</strong>
+                <strong>حالت افقی بازی فعال است</strong>
             </div>
         </section>
     </main>

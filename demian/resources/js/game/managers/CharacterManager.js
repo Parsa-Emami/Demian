@@ -53,21 +53,33 @@ const BUILTIN_DEFINITIONS = Object.freeze([
 ]);
 
 const BUILTIN_SLUGS = new Set(BUILTIN_DEFINITIONS.map((character) => character.slug));
+const SPRITE_VARIANTS = Object.freeze(['mobile', 'compact', 'desktop']);
+
+function builtinAssetPair(slug, variant = 'mobile') {
+    const suffix = SPRITE_VARIANTS.includes(variant) ? variant : 'mobile';
+
+    return {
+        spriteUrl: builtinAssetUrl(
+            `assets/characters/${slug}/${slug}-spritesheet-v5-${suffix}.png`
+        ),
+        atlasUrl: builtinAssetUrl(
+            `assets/characters/${slug}/${slug}-atlas-v5-${suffix}.json`
+        ),
+    };
+}
 
 function cloneBuiltin(character, spriteVariant = 'mobile') {
     const suffix = ['desktop', 'mobile', 'compact'].includes(spriteVariant)
         ? spriteVariant
         : 'mobile';
 
+    const pair = builtinAssetPair(character.slug, suffix);
+
     return {
         ...character,
-        settings: { ...character.settings },
-        sprite_url: builtinAssetUrl(
-            `assets/characters/${character.slug}/${character.slug}-spritesheet-v5-${suffix}.png`
-        ),
-        atlas_url: builtinAssetUrl(
-            `assets/characters/${character.slug}/${character.slug}-atlas-v5-${suffix}.json`
-        ),
+        settings: { ...character.settings, scale: 1 },
+        sprite_url: pair.spriteUrl,
+        atlas_url: pair.atlasUrl,
         is_builtin: true,
     };
 }
@@ -149,6 +161,8 @@ export default class CharacterManager {
                 settings: {
                     ...builtin.settings,
                     ...(existing.settings ?? {}),
+                    // Built-in characters always share one canonical world size.
+                    scale: 1,
                 },
             };
         });
@@ -217,10 +231,7 @@ export default class CharacterManager {
             return existing;
         }
 
-        const [texture, atlas] = await Promise.all([
-            this.loadTexture(record.sprite_url),
-            this.loadJson(record.atlas_url),
-        ]);
+        const { texture, atlas } = await this.loadCharacterAssets(record);
 
         const entity = new SpriteCharacter({
             scene: this.scene,
@@ -429,10 +440,79 @@ export default class CharacterManager {
         return this.activeEntity?.state ?? 'loading';
     }
 
+    characterAssetPairs(record) {
+        const pairs = [];
+        const seen = new Set();
+        const add = (spriteUrl, atlasUrl) => {
+            if (!spriteUrl || !atlasUrl) {
+                return;
+            }
+
+            const key = `${spriteUrl}::${atlasUrl}`;
+            if (seen.has(key)) {
+                return;
+            }
+
+            seen.add(key);
+            pairs.push({ spriteUrl, atlasUrl });
+        };
+
+        add(record.sprite_url, record.atlas_url);
+
+        if (BUILTIN_SLUGS.has(record.slug)) {
+            [this.spriteVariant, ...SPRITE_VARIANTS].forEach((variant) => {
+                const pair = builtinAssetPair(record.slug, variant);
+                add(pair.spriteUrl, pair.atlasUrl);
+            });
+
+            // V4 compatibility is intentionally last. It keeps older GitHub
+            // Pages deployments playable while a new hashed Vite bundle is
+            // propagating through the browser/CDN cache.
+            add(
+                builtinAssetUrl(
+                    `assets/characters/${record.slug}/${record.slug}-spritesheet-v4.png`
+                ),
+                builtinAssetUrl(
+                    `assets/characters/${record.slug}/${record.slug}-atlas.json`
+                )
+            );
+        }
+
+        return pairs;
+    }
+
+    async loadCharacterAssets(record) {
+        const failures = [];
+
+        for (const pair of this.characterAssetPairs(record)) {
+            try {
+                const atlas = await this.loadJson(pair.atlasUrl);
+                const atlasImage = atlas?.meta?.image;
+                const spriteUrl = atlasImage
+                    ? new URL(atlasImage, pair.atlasUrl).toString()
+                    : pair.spriteUrl;
+                const texture = await this.loadTexture(spriteUrl);
+
+                return { texture, atlas, spriteUrl, atlasUrl: pair.atlasUrl };
+            } catch (error) {
+                failures.push(error);
+                console.warn('Character asset pair failed; trying fallback.', {
+                    slug: record.slug,
+                    spriteUrl: pair.spriteUrl,
+                    atlasUrl: pair.atlasUrl,
+                    error,
+                });
+            }
+        }
+
+        const reason = failures.at(-1)?.message ?? 'unknown asset error';
+        throw new Error(`Character assets could not be loaded for ${record.slug}: ${reason}`);
+    }
+
     async loadJson(url) {
         const response = await fetch(url, {
             headers: { Accept: 'application/json' },
-            cache: 'force-cache',
+            cache: 'no-cache',
         });
 
         if (!response.ok) {

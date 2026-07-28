@@ -5,6 +5,10 @@ export const WORLD_CONFIG = Object.freeze({
         x: 43.5,
         z: 24.5,
     }),
+    characterDisplay: Object.freeze({
+        worldWidth: 3.75,
+        worldHeight: 3.75,
+    }),
     camera: Object.freeze({
         desktopOverviewSpan: 36,
         mobileOverviewSpan: 25,

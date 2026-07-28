@@ -114,7 +114,10 @@ export default class SpriteCharacter {
         this.sprintSpeed = Number(settings.sprint_speed ?? this.runSpeed * 1.1);
         this.jumpForce = Number(settings.jump_force ?? 6.5);
         this.gravity = Number(settings.gravity ?? 17.5);
-        this.scaleFactor = Number(settings.scale ?? 1);
+        // Every world entity uses one canonical visual footprint. Database scale
+        // values from older versions must not make the selected player smaller
+        // or larger than the NPC representation of another character.
+        this.scaleFactor = 1;
         this.bounds = { ...WORLD_CONFIG.bounds };
         this.airControl = Number(settings.air_control ?? 0.46);
         this.minimumJumpSpeed = Number(settings.minimum_jump_speed ?? this.walkSpeed * 0.9);
@@ -131,9 +134,9 @@ export default class SpriteCharacter {
         });
 
         this.sprite = new THREE.Sprite(this.material);
-        const display = atlas.display ?? {};
-        this.baseWidth = Number(display.worldWidth ?? 3.7) * this.scaleFactor;
-        this.baseHeight = Number(display.worldHeight ?? 3.7) * this.scaleFactor;
+        const display = WORLD_CONFIG.characterDisplay ?? {};
+        this.baseWidth = Number(display.worldWidth ?? 3.75);
+        this.baseHeight = Number(display.worldHeight ?? 3.75);
         const pivot = atlas.pivot ?? { x: 0.5, y: 0.96 };
 
         this.sprite.center.set(
@@ -211,6 +214,10 @@ export default class SpriteCharacter {
         this.locator.visible = this.isPlayerControlled;
         this.selectionRing.visible = this.isPlayerControlled;
         this.effects?.setIntensity(this.isPlayerControlled ? 1 : 0.28);
+        // Role changes never alter the character dimensions. This also clears
+        // any incomplete spawn scale left by a very fast character switch.
+        this.bodyRoot.scale.setScalar(1);
+        this.presentationTime = Math.max(this.presentationTime, 0.62);
 
         if (!this.isPlayerControlled) {
             this.introActive = false;
@@ -604,13 +611,11 @@ export default class SpriteCharacter {
         this.animator.setFacing(nextFacing);
     }
 
-    applySpawnPose(progress) {
-        const clamped = THREE.MathUtils.clamp(progress, 0, 1);
-        const back = 1.70158;
-        const overshoot = clamped === 1
-            ? 1
-            : 1 + (back + 1) * Math.pow(clamped - 1, 3) + back * Math.pow(clamped - 1, 2);
-        this.bodyRoot.scale.setScalar(Math.max(0.001, overshoot));
+    applySpawnPose() {
+        // Keep player and NPC sprites at exactly the same world scale from the
+        // first rendered frame. Spawn personality is handled by animation and
+        // particles instead of changing the body dimensions.
+        this.bodyRoot.scale.setScalar(1);
     }
 
     targetPresentation() {

@@ -129,6 +129,47 @@ jobs:
           echo "Vite build completed successfully."
           find public/build -maxdepth 2 -type f | sort
 
+      - name: Prepare character asset compatibility
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          python3 <<'PYTHON'
+          import json
+          import shutil
+          from pathlib import Path
+
+          root = Path('public/assets/characters')
+
+          for slug in ('tiam', 'ronak', 'amirreza'):
+              directory = root / slug
+              v5_atlas = directory / f'{slug}-atlas-v5-mobile.json'
+              v5_sheet = directory / f'{slug}-spritesheet-v5-mobile.png'
+              legacy_atlas = directory / f'{slug}-atlas.json'
+              legacy_sheet = directory / f'{slug}-spritesheet-v4.png'
+
+              if not v5_atlas.is_file() or not v5_sheet.is_file():
+                  raise SystemExit(
+                      f'ERROR: V5 mobile assets are missing for {slug}: '
+                      f'{v5_atlas} / {v5_sheet}'
+                  )
+
+              # A cached V4 bundle may still request the legacy filenames for a
+              # short time after deployment. Keep a matching compatibility pair
+              # so that rollout never ends in a 404 or a mixed atlas/sheet pair.
+              if not legacy_atlas.is_file() or not legacy_sheet.is_file():
+                  shutil.copy2(v5_sheet, legacy_sheet)
+                  payload = json.loads(v5_atlas.read_text(encoding='utf-8'))
+                  payload.setdefault('meta', {})['image'] = legacy_sheet.name
+                  payload['meta']['compatibilityAlias'] = True
+                  legacy_atlas.write_text(
+                      json.dumps(payload, ensure_ascii=False, indent=2),
+                      encoding='utf-8',
+                  )
+
+              print(f'Character assets ready: {slug}')
+          PYTHON
+
       - name: Export Laravel as a static GitHub Pages demo
         shell: bash
         run: |
@@ -299,14 +340,16 @@ jobs:
           index_path.write_text(html, encoding='utf-8')
           (site / '404.html').write_text(html, encoding='utf-8')
 
-          # The built-in fallback character uses root-relative public paths.
-          # Prefix those paths with the repository base path for project Pages.
+          # Older and newer runtime bundles may contain root-relative
+          # built-in paths. Prefix every built-in character path for project
+          # Pages instead of patching TIAM only.
           for asset in (site / 'build').rglob('*.js'):
               source = asset.read_text(encoding='utf-8')
-              source = source.replace(
-                  '/assets/characters/tiam/',
-                  f'{pages_base_path}/assets/characters/tiam/',
-              )
+              for slug in ('tiam', 'ronak', 'amirreza'):
+                  source = source.replace(
+                      f'/assets/characters/{slug}/',
+                      f'{pages_base_path}/assets/characters/{slug}/',
+                  )
               asset.write_text(source, encoding='utf-8')
           PYTHON
 
@@ -337,6 +380,12 @@ jobs:
           if 'TIAM' not in html and 'تیام' not in html:
               raise SystemExit('ERROR: TIAM heading was not found in index.html.')
 
+          if 'Demian V5.2' not in html:
+              raise SystemExit('ERROR: V5.2 Blade output was not deployed.')
+
+          if not (site / 'manifest.webmanifest').is_file():
+              raise SystemExit('ERROR: Landscape web manifest was not published.')
+
           if '127.0.0.1:8000' in html or 'localhost:8000' in html:
               raise SystemExit('ERROR: Local Laravel URLs remain in index.html.')
 
@@ -349,37 +398,65 @@ jobs:
           if not characters:
               raise SystemExit('ERROR: No characters were exported.')
 
-          tiam = next(
-              (character for character in characters if character.get('slug') == 'tiam'),
-              None,
-          )
-
-          if not tiam:
-              raise SystemExit('ERROR: TIAM was not found in characters.json.')
-
           repository_name = os.environ['GITHUB_REPOSITORY'].split('/', 1)[1]
           marker = f'/{repository_name}/'
+          expected_slugs = {'tiam', 'ronak', 'amirreza'}
+          exported_slugs = {character.get('slug') for character in characters}
+          missing_slugs = expected_slugs - exported_slugs
 
-          for field in ('sprite_url', 'atlas_url'):
-              url = tiam.get(field)
+          if missing_slugs:
+              raise SystemExit(
+                  f'ERROR: Built-in characters were not exported: {sorted(missing_slugs)}'
+              )
 
-              if not url:
-                  raise SystemExit(f'ERROR: TIAM {field} is missing.')
+          for character in characters:
+              slug = character.get('slug', 'unknown')
+              if slug not in expected_slugs:
+                  continue
 
-              path = unquote(urlparse(url).path)
+              for field in ('sprite_url', 'atlas_url'):
+                  url = character.get(field)
 
-              if marker in path:
-                  relative = path.split(marker, 1)[1]
-              else:
-                  relative = path.lstrip('/')
+                  if not url:
+                      raise SystemExit(f'ERROR: {slug} {field} is missing.')
 
-              target = site / relative
+                  path = unquote(urlparse(url).path)
 
-              if not target.is_file():
-                  raise SystemExit(
-                      f'ERROR: {field} does not point to a published file: '
-                      f'{url} -> {target}'
-                  )
+                  if marker in path:
+                      relative = path.split(marker, 1)[1]
+                  else:
+                      relative = path.lstrip('/')
+
+                  target = site / relative
+
+                  if not target.is_file():
+                      raise SystemExit(
+                          f'ERROR: {slug} {field} does not point to a published file: '
+                          f'{url} -> {target}'
+                      )
+
+          # Validate both V5 files and the V4 compatibility filenames. This is
+          # what prevents the mobile 404 seen while an older bundle is cached.
+          for slug in sorted(expected_slugs):
+              directory = site / 'assets' / 'characters' / slug
+              required = (
+                  directory / f'{slug}-atlas-v5-mobile.json',
+                  directory / f'{slug}-spritesheet-v5-mobile.png',
+                  directory / f'{slug}-atlas.json',
+                  directory / f'{slug}-spritesheet-v4.png',
+              )
+
+              for target in required:
+                  if not target.is_file() or target.stat().st_size == 0:
+                      raise SystemExit(f'ERROR: Published character asset is missing: {target}')
+
+              for atlas_path in (required[0], required[2]):
+                  atlas = json.loads(atlas_path.read_text(encoding='utf-8'))
+                  image_name = atlas.get('meta', {}).get('image')
+                  if not image_name or not (directory / image_name).is_file():
+                      raise SystemExit(
+                          f'ERROR: Atlas image is not published: {atlas_path} -> {image_name}'
+                      )
 
           class AssetParser(HTMLParser):
               def __init__(self):

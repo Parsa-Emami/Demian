@@ -1,0 +1,12 @@
+{
+  "name": "Demian Mobile Arcade",
+  "short_name": "Demian",
+  "description": "Mobile-first open-world arcade character demo",
+  "start_url": "./",
+  "scope": "./",
+  "display": "fullscreen",
+  "display_override": ["fullscreen", "standalone"],
+  "orientation": "landscape",
+  "background_color": "#050610",
+  "theme_color": "#050610"
+}
