@@ -17,8 +17,8 @@ class BuiltinCharacterSeeder extends Seeder
                 ['slug' => 'tiam'],
                 [
                     'name' => 'TIAM / تیام',
-                    'sprite_sheet_path' => 'assets/characters/tiam/tiam-spritesheet-v4.png',
-                    'atlas_path' => 'assets/characters/tiam/tiam-atlas.json',
+                    'sprite_sheet_path' => 'assets/characters/tiam/tiam-spritesheet-v5-mobile.png',
+                    'atlas_path' => 'assets/characters/tiam/tiam-atlas-v5-mobile.json',
                     'is_builtin' => true,
                     'is_active' => true,
                     'settings' => [
@@ -35,8 +35,8 @@ class BuiltinCharacterSeeder extends Seeder
                 ['slug' => 'ronak'],
                 [
                     'name' => 'RONAK / روناک',
-                    'sprite_sheet_path' => 'assets/characters/ronak/ronak-spritesheet-v4.png',
-                    'atlas_path' => 'assets/characters/ronak/ronak-atlas.json',
+                    'sprite_sheet_path' => 'assets/characters/ronak/ronak-spritesheet-v5-mobile.png',
+                    'atlas_path' => 'assets/characters/ronak/ronak-atlas-v5-mobile.json',
                     'is_builtin' => true,
                     'is_active' => false,
                     'settings' => [
@@ -53,8 +53,8 @@ class BuiltinCharacterSeeder extends Seeder
                 ['slug' => 'amirreza'],
                 [
                     'name' => 'AMIRREZA / امیررضا',
-                    'sprite_sheet_path' => 'assets/characters/amirreza/amirreza-spritesheet-v4.png',
-                    'atlas_path' => 'assets/characters/amirreza/amirreza-atlas.json',
+                    'sprite_sheet_path' => 'assets/characters/amirreza/amirreza-spritesheet-v5-mobile.png',
+                    'atlas_path' => 'assets/characters/amirreza/amirreza-atlas-v5-mobile.json',
                     'is_builtin' => true,
                     'is_active' => false,
                     'settings' => [
