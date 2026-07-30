@@ -117,14 +117,6 @@ jobs:
           php artisan route:list --no-ansi --except-vendor --path=api/v1/events | grep -Fq "api/v1/events/active"
           php artisan route:list --no-ansi --except-vendor --path=api/v1/events | grep -Fq "api/v1/events/{event}/sessions"
 
-      - name: Verify Laravel tests isolate Vite assets
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          grep -Fq '$this->withoutVite();' tests/TestCase.php
-          php -l tests/TestCase.php
-
       - name: Run Laravel tests
         env:
           APP_ENV: testing
@@ -439,8 +431,8 @@ jobs:
           if 'TIAM' not in html and 'تیام' not in html:
               raise SystemExit('ERROR: TIAM heading was not found in index.html.')
 
-          if 'data-runtime-version="8.1.3-final"' not in html:
-              raise SystemExit('ERROR: final 8.1.3 Blade output was not deployed.')
+          if 'data-runtime-version="8.1.2-final"' not in html:
+              raise SystemExit('ERROR: final 8.1.2 Blade output was not deployed.')
 
           if not (site / 'manifest.webmanifest').is_file():
               raise SystemExit('ERROR: Landscape web manifest was not published.')

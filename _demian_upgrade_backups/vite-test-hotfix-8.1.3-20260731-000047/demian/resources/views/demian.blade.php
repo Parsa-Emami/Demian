@@ -35,7 +35,7 @@
         data-event-api-base="{{ url('/api/v1/events') }}"
         data-sidebar-state="collapsed"
         data-mobile-actions="collapsed"
-        data-runtime-version="8.1.3-final"
+        data-runtime-version="8.1.2-final"
         data-session-state="booting"
         data-shell-screen="boot"
         data-control-layout="none"
