@@ -1,7 +1,6 @@
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { dirname, extname, join, resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
-import { testRunnerCoversGroup } from './validation/testRunnerContract.mjs';
 
 const root = resolve(import.meta.dirname, '..');
 const failures = [];
@@ -68,7 +67,7 @@ const required = [
 ];
 required.forEach((file) => assert(existsSync(join(root, file)), `Missing ${file}`));
 
-const domainRoots = ['config', 'match', 'systems', 'ai', 'maps'];
+const domainRoots = ['config', 'match', 'systems', 'ai', 'maps', 'protocol'];
 domainRoots.flatMap((directory) => walk(join(root, `resources/js/game/games/hide-and-seek/${directory}`), (file) => extname(file) === '.js'))
     .forEach((file) => {
         const source = readFileSync(file, 'utf8');
@@ -119,7 +118,7 @@ for (const marker of ['.hide-seek-hud', '.hide-seek-touch-actions', 'data-contro
 
 const packageJson = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'));
 assert(packageJson.scripts?.['validate:phase5'] === 'node tools/validate_phase5.mjs', 'validate:phase5 script is missing');
-assert(testRunnerCoversGroup(root, packageJson, 'hide-and-seek'), 'test:js omits Hide and Seek tests');
+assert(packageJson.scripts?.['test:js']?.includes('tests/js/hide-and-seek/*.test.js'), 'test:js omits Hide and Seek tests');
 
 const workflow = readFileSync(resolve(root, '../.github/workflows/deploy-demian-pages.yml'), 'utf8');
 assert(workflow.includes('npm run validate:phase5'), 'CI does not run validate:phase5');

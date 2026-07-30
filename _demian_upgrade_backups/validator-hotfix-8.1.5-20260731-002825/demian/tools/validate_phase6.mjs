@@ -1,7 +1,6 @@
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { dirname, extname, join, resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
-import { testRunnerCoversGroup } from './validation/testRunnerContract.mjs';
 import { validateEventDefinition } from '../resources/js/game/games/event/core/EventDefinitionValidator.js';
 
 const root = resolve(import.meta.dirname, '..');
@@ -157,7 +156,7 @@ assert(bootstrap.includes("api: __DIR__.'/../routes/api.php'"), 'Laravel API rou
 
 const packageJson = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'));
 assert(packageJson.scripts?.['validate:phase6'] === 'node tools/validate_phase6.mjs', 'validate:phase6 script is missing.');
-assert(testRunnerCoversGroup(root, packageJson, 'event'), 'test:js omits Event Framework tests.');
+assert(packageJson.scripts?.['test:js']?.includes('tests/js/event/*.test.js'), 'test:js omits Event Framework tests.');
 const workflow = readFileSync(resolve(root, '../.github/workflows/deploy-demian-pages.yml'), 'utf8');
 assert(workflow.includes('npm run validate:phase6'), 'CI does not run validate:phase6.');
 assert(workflow.includes('php artisan test'), 'CI does not run Laravel tests.');

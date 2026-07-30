@@ -1,7 +1,6 @@
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { dirname, extname, join, resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
-import { testRunnerCoversGroup } from './validation/testRunnerContract.mjs';
 
 const root = resolve(import.meta.dirname, '..');
 const failures = [];
@@ -112,7 +111,7 @@ assert(css.includes('.touch-action--interact'), 'Mobile interaction CSS is missi
 const packageJson = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'));
 assert(packageJson.scripts?.['validate:phase4'] === 'node tools/validate_phase4.mjs', 'validate:phase4 script is missing');
 for (const group of ['collision', 'interaction', 'navigation', 'world']) {
-    assert(testRunnerCoversGroup(root, packageJson, group), `test:js omits ${group} tests`);
+    assert(packageJson.scripts?.['test:js']?.includes(`tests/js/${group}/*.test.js`), `test:js omits ${group} tests`);
 }
 
 const lock = JSON.parse(readFileSync(join(root, 'package-lock.json'), 'utf8'));

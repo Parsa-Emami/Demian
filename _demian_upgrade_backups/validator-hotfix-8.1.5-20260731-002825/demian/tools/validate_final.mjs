@@ -74,7 +74,7 @@ for (const file of jsFiles) {
 
 const blade = readFileSync(join(root, 'resources/views/demian.blade.php'), 'utf8');
 for (const marker of [
-    'data-runtime-version="8.1.5-final"',
+    'data-runtime-version="8.1.4-final"',
     'data-character-scroll-previous',
     'data-character-scroll-next',
     'data-character-scroll-status',
@@ -154,7 +154,7 @@ const strippedCss = css.replace(/\/\*[\s\S]*?\*\//g, '');
 assert((strippedCss.match(/{/g) ?? []).length === (strippedCss.match(/}/g) ?? []).length, 'CSS braces are unbalanced.');
 
 const packageJson = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'));
-assert(packageJson.version === '8.1.5', 'package.json final version is not 8.1.5.');
+assert(packageJson.version === '8.1.4', 'package.json final version is not 8.1.4.');
 assert(packageJson.scripts?.['validate:final'] === 'node tools/validate_final.mjs', 'validate:final script missing.');
 assert(packageJson.scripts?.['test:js'] === 'node tools/run_js_tests.mjs', 'Cross-platform JavaScript test runner is not configured.');
 
@@ -168,7 +168,7 @@ for (const marker of [
 const workflow = readFileSync(join(projectRoot, '.github/workflows/deploy-demian-pages.yml'), 'utf8');
 const baseTestCase = readFileSync(join(root, 'tests/TestCase.php'), 'utf8');
 assert(workflow.includes('npm run validate:final'), 'CI does not run the final validator.');
-assert(workflow.includes('data-runtime-version="8.1.5-final"'), 'Static deployment does not verify final runtime version.');
+assert(workflow.includes('data-runtime-version="8.1.4-final"'), 'Static deployment does not verify final runtime version.');
 assert(workflow.includes('Verify Laravel tests isolate Vite assets'), 'CI does not verify Vite isolation for Laravel tests.');
 assert(baseTestCase.includes('$this->withoutVite();'), 'Laravel tests do not isolate Vite asset resolution.');
 

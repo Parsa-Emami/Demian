@@ -1,7 +1,6 @@
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { dirname, extname, join, resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
-import { testRunnerCoversGroup } from './validation/testRunnerContract.mjs';
 import manifest, { DEMIAN_CITY_MANIFEST_DEFINITION } from '../resources/js/game/games/open-world/data/DemianCityManifest.js';
 import { validateWorldManifest } from '../resources/js/game/games/open-world/world/WorldManifest.js';
 import WorldPartition from '../resources/js/game/games/open-world/world/WorldPartition.js';
@@ -113,7 +112,7 @@ assert((strippedCss.match(/{/g) ?? []).length === (strippedCss.match(/}/g) ?? []
 
 const packageJson = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'));
 assert(packageJson.scripts?.['validate:phase8'] === 'node tools/validate_phase8.mjs', 'validate:phase8 script missing.');
-assert(testRunnerCoversGroup(root, packageJson, 'open-world'), 'Open World tests omitted from test:js.');
+assert(packageJson.scripts?.['test:js']?.includes('tests/js/open-world/*.test.js'), 'Open World tests omitted from test:js.');
 const workflow = readFileSync(resolve(root, '../.github/workflows/deploy-demian-pages.yml'), 'utf8');
 assert(workflow.includes('npm run validate:phase8'), 'CI does not run validate:phase8.');
 const lock = readFileSync(join(root, 'package-lock.json'), 'utf8');

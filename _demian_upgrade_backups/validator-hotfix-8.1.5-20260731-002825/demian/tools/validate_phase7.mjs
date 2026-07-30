@@ -1,7 +1,6 @@
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { dirname, extname, join, resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
-import { testRunnerCoversGroup } from './validation/testRunnerContract.mjs';
 import { validateRolePlayContent } from '../resources/js/game/games/role-play/core/RolePlayDefinitionValidator.js';
 import { BUILT_IN_ROLE_PLAY_CONTENT } from '../resources/js/game/games/role-play/content/RolePlayContentRegistry.js';
 
@@ -22,7 +21,7 @@ const catalog=readFileSync(join(root,'resources/js/game/catalog/GameCatalog.js')
 const input=readFileSync(join(root,'resources/js/game/input/InputContexts.js'),'utf8');for(const marker of ['ROLE_PLAY: Object.freeze','toggleInventory','toggleQuests','cancelDialogue'])assert(input.includes(marker),`Role Play input missing: ${marker}`);
 const controls=readFileSync(join(root,'resources/js/game/controls/ControlLayoutService.js'),'utf8');assert(controls.includes("ROLE_PLAY: Object.freeze({ id: 'role-play', joystick: true })"),'Role Play mobile layout missing.');
 const css=readFileSync(join(root,'resources/css/app.css'),'utf8');for(const marker of ['.role-play-hud','.role-play-dialogue','.role-play-side-panel','data-control-layout="role-play"'])assert(css.includes(marker),`Role Play CSS missing: ${marker}`);const stripped=css.replace(/\/\*[\s\S]*?\*\//g,'');assert((stripped.match(/{/g)??[]).length===(stripped.match(/}/g)??[]).length,'CSS braces unbalanced.');
-const packageJson=JSON.parse(readFileSync(join(root,'package.json'),'utf8'));assert(packageJson.scripts?.['validate:phase7']==='node tools/validate_phase7.mjs','validate:phase7 script missing.');assert(testRunnerCoversGroup(root,packageJson,'role-play'),'Role Play tests omitted.');
+const packageJson=JSON.parse(readFileSync(join(root,'package.json'),'utf8'));assert(packageJson.scripts?.['validate:phase7']==='node tools/validate_phase7.mjs','validate:phase7 script missing.');assert(packageJson.scripts?.['test:js']?.includes('tests/js/role-play/*.test.js'),'Role Play tests omitted.');
 const workflow=readFileSync(resolve(root,'../.github/workflows/deploy-demian-pages.yml'),'utf8');assert(workflow.includes('npm run validate:phase7'),'CI does not run validate:phase7.');
 const lock=readFileSync(join(root,'package-lock.json'),'utf8');assert(!/mirror-npm|runflare/i.test(lock),'package-lock references private mirror.');
 const phpFiles=walk(root,(f)=>extname(f)==='.php');for(const file of phpFiles){const check=spawnSync('php',['-l',file],{encoding:'utf8'});assert(check.status===0,`PHP syntax error: ${file}\n${check.stderr}`);}
