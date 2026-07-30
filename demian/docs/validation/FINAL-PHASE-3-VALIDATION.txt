@@ -1,0 +1,5 @@
+
+> validate:phase3
+> node tools/validate_phase3.mjs
+
+Phase 3 source validation passed: 228 JavaScript files checked.

@@ -1,3 +1,23 @@
+export function resolveMobileViewportMode({ sessionState = '', sidebarState = '' } = {}) {
+    if (sidebarState === 'expanded') return 'character-sheet';
+    if (['playing', 'paused'].includes(sessionState)) return 'gameplay';
+    return 'shell';
+}
+
+export function shouldForceLandscape({
+    isMobileDevice = false,
+    physicalPortrait = false,
+    preference = 'any',
+    mode = 'shell',
+} = {}) {
+    return Boolean(
+        isMobileDevice
+        && physicalPortrait
+        && preference === 'landscape'
+        && mode === 'gameplay'
+    );
+}
+
 function isLikelyMobileDevice() {
     const coarsePointer = window.matchMedia?.('(pointer: coarse)').matches ?? false;
     const touchPoints = Number(navigator.maxTouchPoints ?? 0) > 0;
@@ -17,6 +37,7 @@ export default class MobileGameUI {
         this.isExpanded = false;
         this.isMobileDevice = isLikelyMobileDevice();
         this.lastForcedLandscape = null;
+        this.attributeObserver = null;
 
         this.onActionsToggle = this.onActionsToggle.bind(this);
         this.onActionPress = this.onActionPress.bind(this);
@@ -24,6 +45,9 @@ export default class MobileGameUI {
         this.onViewportChange = this.onViewportChange.bind(this);
         this.onFullscreenChange = this.onFullscreenChange.bind(this);
         this.onFirstInteraction = this.onFirstInteraction.bind(this);
+        this.onOrientationPreferenceChanged = this.onOrientationPreferenceChanged.bind(this);
+        this.onSidebarChanged = this.onSidebarChanged.bind(this);
+        this.onRootAttributesChanged = this.onRootAttributesChanged.bind(this);
     }
 
     boot() {
@@ -44,10 +68,50 @@ export default class MobileGameUI {
         window.addEventListener('orientationchange', this.onViewportChange, { passive: true });
         window.visualViewport?.addEventListener('resize', this.onViewportChange, { passive: true });
         screen.orientation?.addEventListener?.('change', this.onViewportChange);
+        this.root.addEventListener('game:orientation-changed', this.onOrientationPreferenceChanged);
+        this.root.addEventListener('sidebar:changed', this.onSidebarChanged);
+
+        if (typeof MutationObserver !== 'undefined') {
+            this.attributeObserver = new MutationObserver(this.onRootAttributesChanged);
+            this.attributeObserver.observe(this.root, {
+                attributes: true,
+                attributeFilter: ['data-session-state', 'data-shell-screen', 'data-sidebar-state'],
+            });
+        }
 
         this.stage?.addEventListener('contextmenu', (event) => event.preventDefault());
         this.onViewportChange();
         this.applyExpandedState();
+    }
+
+
+    gameplayActive() {
+        return ['playing', 'paused'].includes(this.root.dataset.sessionState ?? '');
+    }
+
+    characterSheetExpanded() {
+        return this.root.dataset.sidebarState === 'expanded';
+    }
+
+    viewportMode() {
+        return resolveMobileViewportMode({
+            sessionState: this.root.dataset.sessionState,
+            sidebarState: this.root.dataset.sidebarState,
+        });
+    }
+
+    onRootAttributesChanged() {
+        this.onViewportChange();
+    }
+
+    async onSidebarChanged(event) {
+        const expanded = event.detail?.expanded ?? this.characterSheetExpanded();
+        if (this.isMobileDevice && expanded) {
+            await this.unlockOrientation();
+        } else if (document.fullscreenElement ?? document.webkitFullscreenElement) {
+            await this.lockPreferredOrientation().catch(() => undefined);
+        }
+        this.onViewportChange();
     }
 
     onActionsToggle(event) {
@@ -85,23 +149,29 @@ export default class MobileGameUI {
             return;
         }
 
-        await this.lockLandscape().catch(() => undefined);
+        await this.lockPreferredOrientation().catch(() => undefined);
     }
 
-    async lockLandscape() {
+    orientationPreference() {
+        return this.root.dataset.gameOrientation ?? 'any';
+    }
+
+    async lockPreferredOrientation() {
+        const preference = this.orientationPreference();
+        if (preference === 'any') return false;
         const orientation = screen.orientation;
         if (!orientation?.lock) {
             return false;
         }
 
         try {
-            await orientation.lock('landscape');
-            this.root.dataset.nativeLandscapeLock = 'true';
+            await orientation.lock(preference === 'portrait' ? 'portrait-primary' : 'landscape');
+            this.root.dataset.nativeOrientationLock = preference;
             return true;
         } catch (error) {
             // iOS Safari and some Android browsers only allow orientation lock
             // in installed/fullscreen mode. CSS forced-landscape remains active.
-            this.root.dataset.nativeLandscapeLock = 'false';
+            this.root.dataset.nativeOrientationLock = 'false';
             return false;
         }
     }
@@ -124,7 +194,7 @@ export default class MobileGameUI {
             } else {
                 const request = this.stage?.requestFullscreen ?? this.stage?.webkitRequestFullscreen;
                 await request?.call(this.stage, { navigationUI: 'hide' });
-                await this.lockLandscape();
+                await this.lockPreferredOrientation();
             }
         } catch (error) {
             console.warn('Fullscreen mode is not available on this browser.', error);
@@ -139,14 +209,25 @@ export default class MobileGameUI {
         this.fullscreenButton?.setAttribute('aria-pressed', String(active));
 
         if (active) {
-            this.lockLandscape().catch(() => undefined);
+            this.lockPreferredOrientation().catch(() => undefined);
         }
 
         const label = this.fullscreenButton?.querySelector('[data-fullscreen-label]');
         if (label) {
-            label.textContent = active ? 'خروج' : 'افقی تمام‌صفحه';
+            const preference = this.orientationPreference();
+            label.textContent = active ? 'خروج' : preference === 'landscape' ? 'افقی تمام‌صفحه' : 'تمام‌صفحه';
         }
 
+        this.onViewportChange();
+    }
+
+
+    async onOrientationPreferenceChanged() {
+        await this.unlockOrientation();
+        const fullscreenElement = document.fullscreenElement ?? document.webkitFullscreenElement;
+        if (fullscreenElement) {
+            await this.lockPreferredOrientation().catch(() => undefined);
+        }
         this.onViewportChange();
     }
 
@@ -160,20 +241,33 @@ export default class MobileGameUI {
             Math.round(window.visualViewport?.height ?? window.innerHeight)
         );
         const physicalPortrait = viewportHeight > viewportWidth;
-        const forcedLandscape = this.isMobileDevice && physicalPortrait;
+        const preference = this.orientationPreference();
+        const mode = this.viewportMode();
+        const forcedLandscape = shouldForceLandscape({
+            isMobileDevice: this.isMobileDevice,
+            physicalPortrait,
+            preference,
+            mode,
+        });
         const logicalWidth = forcedLandscape ? viewportHeight : viewportWidth;
         const logicalHeight = forcedLandscape ? viewportWidth : viewportHeight;
         const compactLandscape = logicalHeight < 500;
+        const viewportTop = Math.max(0, Math.round(window.visualViewport?.offsetTop ?? 0));
+        const viewportLeft = Math.max(0, Math.round(window.visualViewport?.offsetLeft ?? 0));
 
         document.documentElement.style.setProperty('--demian-vh', `${logicalHeight * 0.01}px`);
         document.documentElement.style.setProperty('--demian-logical-width', `${logicalWidth}px`);
         document.documentElement.style.setProperty('--demian-logical-height', `${logicalHeight}px`);
+        document.documentElement.style.setProperty('--demian-viewport-top', `${viewportTop}px`);
+        document.documentElement.style.setProperty('--demian-viewport-left', `${viewportLeft}px`);
         document.documentElement.classList.toggle('demian-forced-landscape', forcedLandscape);
 
         this.root.dataset.physicalOrientation = physicalPortrait ? 'portrait' : 'landscape';
         this.root.dataset.orientation = forcedLandscape || !physicalPortrait ? 'landscape' : 'portrait';
         this.root.dataset.forcedLandscape = forcedLandscape ? 'true' : 'false';
         this.root.dataset.compactLandscape = compactLandscape ? 'true' : 'false';
+        this.root.dataset.viewportMode = mode;
+        document.body.classList.toggle('is-gameplay-active', mode === 'gameplay');
 
         if (this.orientationHint) {
             this.orientationHint.setAttribute('aria-hidden', 'true');
@@ -214,6 +308,11 @@ export default class MobileGameUI {
         window.removeEventListener('orientationchange', this.onViewportChange);
         window.visualViewport?.removeEventListener('resize', this.onViewportChange);
         screen.orientation?.removeEventListener?.('change', this.onViewportChange);
+        this.root.removeEventListener('game:orientation-changed', this.onOrientationPreferenceChanged);
+        this.root.removeEventListener('sidebar:changed', this.onSidebarChanged);
+        this.attributeObserver?.disconnect();
+        this.attributeObserver = null;
         document.documentElement.classList.remove('demian-forced-landscape');
+        document.body.classList.remove('is-gameplay-active');
     }
 }

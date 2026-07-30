@@ -1,0 +1,160 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://demian.local/schemas/event-definition.schema.json",
+  "title": "Demian Event Definition",
+  "type": "object",
+  "additionalProperties": true,
+  "required": [
+    "schemaVersion",
+    "id",
+    "revision",
+    "title",
+    "map",
+    "duration",
+    "countdown",
+    "playerCount",
+    "spawn",
+    "objectives",
+    "modifiers",
+    "rewards",
+    "world"
+  ],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]{2,63}$" },
+    "revision": { "type": "integer", "minimum": 1 },
+    "title": { "type": "string", "minLength": 2 },
+    "subtitle": { "type": "string" },
+    "description": { "type": "string" },
+    "map": { "type": "string", "minLength": 1 },
+    "duration": { "type": "number", "exclusiveMinimum": 0, "maximum": 3600 },
+    "countdown": { "type": "number", "minimum": 0, "maximum": 15 },
+    "playerCount": {
+      "type": "object",
+      "required": ["min", "max"],
+      "properties": {
+        "min": { "type": "integer", "minimum": 1, "maximum": 64 },
+        "max": { "type": "integer", "minimum": 1, "maximum": 64 }
+      }
+    },
+    "spawn": { "$ref": "#/$defs/point" },
+    "objectives": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/objective" }
+    },
+    "modifiers": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/modifier" }
+    },
+    "rewards": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/reward" }
+    },
+    "world": {
+      "type": "object",
+      "required": ["collectibles", "zones", "enemies"],
+      "properties": {
+        "collectibles": { "type": "array", "items": { "$ref": "#/$defs/collectible" } },
+        "zones": { "type": "array", "items": { "$ref": "#/$defs/zone" } },
+        "enemies": { "type": "array", "items": { "$ref": "#/$defs/enemy" } }
+      }
+    }
+  },
+  "$defs": {
+    "point": {
+      "type": "object",
+      "required": ["x", "z"],
+      "properties": {
+        "x": { "type": "number" },
+        "z": { "type": "number" }
+      }
+    },
+    "objective": {
+      "type": "object",
+      "required": ["id", "type"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "type": { "enum": ["collect", "reach", "survive", "defeat", "score"] },
+        "title": { "type": "string" },
+        "required": { "type": "boolean" },
+        "requires": { "type": "array", "items": { "type": "string" }, "uniqueItems": true },
+        "points": { "type": "number", "minimum": 0 },
+        "item": { "type": "string" },
+        "zone": { "type": "string" },
+        "enemy": { "type": "string" },
+        "amount": { "type": "number", "exclusiveMinimum": 0 },
+        "seconds": { "type": "number", "exclusiveMinimum": 0 }
+      }
+    },
+    "modifier": {
+      "type": "object",
+      "required": ["id", "type", "value"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "type": { "enum": ["speed", "low-gravity", "fog", "double-score"] },
+        "value": { "type": "number" }
+      }
+    },
+    "reward": {
+      "type": "object",
+      "required": ["type"],
+      "properties": {
+        "type": { "enum": ["coin", "xp", "badge", "cosmetic"] },
+        "id": { "type": "string" },
+        "amount": { "type": "number", "minimum": 0 },
+        "conditions": {
+          "type": "object",
+          "properties": {
+            "minScore": { "type": "number", "minimum": 0 },
+            "objectiveId": { "type": "string" }
+          }
+        }
+      }
+    },
+    "collectible": {
+      "allOf": [
+        { "$ref": "#/$defs/point" },
+        {
+          "type": "object",
+          "required": ["id", "item"],
+          "properties": {
+            "id": { "type": "string" },
+            "item": { "type": "string" },
+            "points": { "type": "number", "minimum": 0 }
+          }
+        }
+      ]
+    },
+    "zone": {
+      "allOf": [
+        { "$ref": "#/$defs/point" },
+        {
+          "type": "object",
+          "required": ["id", "radius"],
+          "properties": {
+            "id": { "type": "string" },
+            "label": { "type": "string" },
+            "radius": { "type": "number", "exclusiveMinimum": 0 }
+          }
+        }
+      ]
+    },
+    "enemy": {
+      "allOf": [
+        { "$ref": "#/$defs/point" },
+        {
+          "type": "object",
+          "required": ["id", "kind", "health"],
+          "properties": {
+            "id": { "type": "string" },
+            "kind": { "type": "string" },
+            "health": { "type": "number", "exclusiveMinimum": 0 },
+            "speed": { "type": "number", "exclusiveMinimum": 0 },
+            "points": { "type": "number", "minimum": 0 }
+          }
+        }
+      ]
+    }
+  }
+}

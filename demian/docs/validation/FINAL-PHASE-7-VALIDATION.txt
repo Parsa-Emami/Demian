@@ -1,0 +1,5 @@
+
+> validate:phase7
+> node tools/validate_phase7.mjs
+
+Phase 7 source validation passed: 235 JavaScript/MJS, 53 PHP, 3 dialogues and 3 quests checked.

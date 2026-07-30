@@ -1,0 +1,427 @@
+# Demian Phase 4 Validation
+Generated: 2026-07-29T13:39:37Z
+
+## npm run test:js
+
+> test:js
+> node --test tests/js/*.test.js tests/js/tetris/*.test.js tests/js/collision/*.test.js tests/js/interaction/*.test.js tests/js/navigation/*.test.js tests/js/world/*.test.js
+
+TAP version 13
+# Subtest: ControlLayoutService maps input contexts to isolated mobile layouts
+ok 1 - ControlLayoutService maps input contexts to isolated mobile layouts
+  ---
+  duration_ms: 0.5945
+  type: 'test'
+  ...
+# Subtest: ControlLayoutService accepts future game control surfaces without core changes
+ok 2 - ControlLayoutService accepts future game control surfaces without core changes
+  ---
+  duration_ms: 0.570955
+  type: 'test'
+  ...
+# Subtest: Phase three catalog exposes all planned games with Tetris and Open World playable
+ok 3 - Phase three catalog exposes all planned games with Tetris and Open World playable
+  ---
+  duration_ms: 0.981774
+  type: 'test'
+  ...
+# Subtest: GameRegistry lazily loads a module once and creates fresh instances
+ok 4 - GameRegistry lazily loads a module once and creates fresh instances
+  ---
+  duration_ms: 0.830039
+  type: 'test'
+  ...
+# Subtest: GameRegistry clears failed lazy imports so launch can be retried
+ok 5 - GameRegistry clears failed lazy imports so launch can be retried
+  ---
+  duration_ms: 1.128571
+  type: 'test'
+  ...
+# Subtest: GameRegistry rejects duplicate and unknown game ids
+ok 6 - GameRegistry rejects duplicate and unknown game ids
+  ---
+  duration_ms: 0.190091
+  type: 'test'
+  ...
+# Subtest: GameRuntime advances game logic with a deterministic fixed step
+ok 7 - GameRuntime advances game logic with a deterministic fixed step
+  ---
+  duration_ms: 1.145026
+  type: 'test'
+  ...
+# Subtest: GameRuntime keeps transient input queued until a fixed step occurs
+ok 8 - GameRuntime keeps transient input queued until a fixed step occurs
+  ---
+  duration_ms: 0.145034
+  type: 'test'
+  ...
+# Subtest: GameRuntime caps catch-up work and reports dropped simulation time
+ok 9 - GameRuntime caps catch-up work and reports dropped simulation time
+  ---
+  duration_ms: 1.031808
+  type: 'test'
+  ...
+# Subtest: GameRuntime pause and resume notify the active game once
+ok 10 - GameRuntime pause and resume notify the active game once
+  ---
+  duration_ms: 0.193086
+  type: 'test'
+  ...
+# Subtest: Open World and Tetris map Space to different semantic actions
+ok 11 - Open World and Tetris map Space to different semantic actions
+  ---
+  duration_ms: 0.662431
+  type: 'test'
+  ...
+# Subtest: Open World preserves all current character action names
+ok 12 - Open World preserves all current character action names
+  ---
+  duration_ms: 0.132206
+  type: 'test'
+  ...
+# Subtest: ScreenManager serializes primary replacement and closes previous screen
+ok 13 - ScreenManager serializes primary replacement and closes previous screen
+  ---
+  duration_ms: 1.26294
+  type: 'test'
+  ...
+# Subtest: ScreenManager keeps modal stack separate from primary navigation
+ok 14 - ScreenManager keeps modal stack separate from primary navigation
+  ---
+  duration_ms: 1.057897
+  type: 'test'
+  ...
+# Subtest: ScreenManager rejects duplicate screen identifiers
+ok 15 - ScreenManager rejects duplicate screen identifiers
+  ---
+  duration_ms: 0.331651
+  type: 'test'
+  ...
+# Subtest: ScreenManager refreshes an already visible screen without duplicating it
+ok 16 - ScreenManager refreshes an already visible screen without duplicating it
+  ---
+  duration_ms: 0.78375
+  type: 'test'
+  ...
+# Subtest: SessionStateMachine supports the phase-two menu and gameplay lifecycle
+ok 17 - SessionStateMachine supports the phase-two menu and gameplay lifecycle
+  ---
+  duration_ms: 0.621089
+  type: 'test'
+  ...
+# Subtest: SessionStateMachine rejects invalid transitions
+ok 18 - SessionStateMachine rejects invalid transitions
+  ---
+  duration_ms: 0.299744
+  type: 'test'
+  ...
+# Subtest: SettingsStore validates persisted values and preserves defaults
+ok 19 - SettingsStore validates persisted values and preserves defaults
+  ---
+  duration_ms: 0.687819
+  type: 'test'
+  ...
+# Subtest: SettingsStore persists updates and emits immutable snapshots
+ok 20 - SettingsStore persists updates and emits immutable snapshots
+  ---
+  duration_ms: 0.70225
+  type: 'test'
+  ...
+# Subtest: SettingsStore resolves system motion preference without overwriting user state
+ok 21 - SettingsStore resolves system motion preference without overwriting user state
+  ---
+  duration_ms: 0.739595
+  type: 'test'
+  ...
+# Subtest: CollisionWorld prevents tunnelling and slides a dynamic circle along a static AABB
+ok 22 - CollisionWorld prevents tunnelling and slides a dynamic circle along a static AABB
+  ---
+  duration_ms: 2.229762
+  type: 'test'
+  ...
+# Subtest: CollisionWorld optionally resolves dynamic circle separation
+ok 23 - CollisionWorld optionally resolves dynamic circle separation
+  ---
+  duration_ms: 0.370899
+  type: 'test'
+  ...
+# Subtest: CollisionWorld raycast returns nearest hit and supports exclusions
+ok 24 - CollisionWorld raycast returns nearest hit and supports exclusions
+  ---
+  duration_ms: 0.962275
+  type: 'test'
+  ...
+# Subtest: CollisionWorld emits deterministic trigger enter, stay and exit phases
+ok 25 - CollisionWorld emits deterministic trigger enter, stay and exit phases
+  ---
+  duration_ms: 0.759415
+  type: 'test'
+  ...
+# Subtest: Collision scopes isolate ownership and dispose only their colliders
+ok 26 - Collision scopes isolate ownership and dispose only their colliders
+  ---
+  duration_ms: 0.361786
+  type: 'test'
+  ...
+# Subtest: SpatialHash inserts each collider once across overlapping cells
+ok 27 - SpatialHash inserts each collider once across overlapping cells
+  ---
+  duration_ms: 1.685787
+  type: 'test'
+  ...
+# Subtest: SpatialHash updates memberships and removes empty cells
+ok 28 - SpatialHash updates memberships and removes empty cells
+  ---
+  duration_ms: 0.307676
+  type: 'test'
+  ...
+# Subtest: InteractionService selects the best visible candidate by priority, distance and facing
+ok 29 - InteractionService selects the best visible candidate by priority, distance and facing
+  ---
+  duration_ms: 1.354356
+  type: 'test'
+  ...
+# Subtest: InteractionService rejects candidates occluded by world geometry
+ok 30 - InteractionService rejects candidates occluded by world geometry
+  ---
+  duration_ms: 0.809148
+  type: 'test'
+  ...
+# Subtest: InteractionService excludes the target own occluder and runs one action at a time
+ok 31 - InteractionService excludes the target own occluder and runs one action at a time
+  ---
+  duration_ms: 0.403638
+  type: 'test'
+  ...
+# Subtest: Interaction scopes allow same local ids and clean active prompts on disposal
+ok 32 - Interaction scopes allow same local ids and clean active prompts on disposal
+  ---
+  duration_ms: 0.286164
+  type: 'test'
+  ...
+# Subtest: InteractionService does not prompt for an object behind the actor
+ok 33 - InteractionService does not prompt for an object behind the actor
+  ---
+  duration_ms: 0.185815
+  type: 'test'
+  ...
+# Subtest: NavigationGrid finds an A* path around blocked cells
+ok 34 - NavigationGrid finds an A* path around blocked cells
+  ---
+  duration_ms: 2.575523
+  type: 'test'
+  ...
+# Subtest: NavigationGrid prevents diagonal corner cutting
+ok 35 - NavigationGrid prevents diagonal corner cutting
+  ---
+  duration_ms: 0.530656
+  type: 'test'
+  ...
+# Subtest: NavigationGrid weights slow and danger cells instead of always taking shortest geometry
+ok 36 - NavigationGrid weights slow and danger cells instead of always taking shortest geometry
+  ---
+  duration_ms: 0.23653
+  type: 'test'
+  ...
+# Subtest: NavigationGrid supports dynamic blockers and path smoothing
+ok 37 - NavigationGrid supports dynamic blockers and path smoothing
+  ---
+  duration_ms: 1.745675
+  type: 'test'
+  ...
+# Subtest: Tetris Board locks pieces and clears completed rows
+ok 38 - Tetris Board locks pieces and clears completed rows
+  ---
+  duration_ms: 1.456978
+  type: 'test'
+  ...
+# Subtest: Tetris Board computes ghost landing without mutating piece
+ok 39 - Tetris Board computes ghost landing without mutating piece
+  ---
+  duration_ms: 0.452731
+  type: 'test'
+  ...
+# Subtest: Tetris Board treats walls and floor as occupied
+ok 40 - Tetris Board treats walls and floor as occupied
+  ---
+  duration_ms: 0.118826
+  type: 'test'
+  ...
+# Subtest: Input repeat emits immediate movement then DAS/ARR repeats
+ok 41 - Input repeat emits immediate movement then DAS/ARR repeats
+  ---
+  duration_ms: 1.038979
+  type: 'test'
+  ...
+# Subtest: Input repeat changes direction immediately
+ok 42 - Input repeat changes direction immediately
+  ---
+  duration_ms: 0.687829
+  type: 'test'
+  ...
+# Subtest: Seven Bag emits each tetromino exactly once per bag
+ok 43 - Seven Bag emits each tetromino exactly once per bag
+  ---
+  duration_ms: 1.19545
+  type: 'test'
+  ...
+# Subtest: Seven Bag is deterministic for the same seed
+ok 44 - Seven Bag is deterministic for the same seed
+  ---
+  duration_ms: 0.273905
+  type: 'test'
+  ...
+# Subtest: Replay recorder stores only semantic input changes
+ok 45 - Replay recorder stores only semantic input changes
+  ---
+  duration_ms: 1.346173
+  type: 'test'
+  ...
+# Subtest: Replay player restores held and pressed semantic inputs by tick
+ok 46 - Replay player restores held and pressed semantic inputs by tick
+  ---
+  duration_ms: 0.300715
+  type: 'test'
+  ...
+# Subtest: Replay player rejects malformed input events
+ok 47 - Replay player rejects malformed input events
+  ---
+  duration_ms: 0.310029
+  type: 'test'
+  ...
+# Subtest: SRS rotates a free T piece without a kick
+ok 48 - SRS rotates a free T piece without a kick
+  ---
+  duration_ms: 0.777581
+  type: 'test'
+  ...
+# Subtest: SRS applies an I-piece wall kick near the left wall
+ok 49 - SRS applies an I-piece wall kick near the left wall
+  ---
+  duration_ms: 0.333444
+  type: 'test'
+  ...
+# Subtest: SRS rejects rotation when every kick position is blocked
+ok 50 - SRS rejects rotation when every kick position is blocked
+  ---
+  duration_ms: 0.250681
+  type: 'test'
+  ...
+# Subtest: Scoring awards guideline line clear values and drop points
+ok 51 - Scoring awards guideline line clear values and drop points
+  ---
+  duration_ms: 0.750592
+  type: 'test'
+  ...
+# Subtest: Scoring preserves and rewards back-to-back difficult clears
+ok 52 - Scoring preserves and rewards back-to-back difficult clears
+  ---
+  duration_ms: 0.125806
+  type: 'test'
+  ...
+# Subtest: Scoring tracks combo and perfect-clear bonuses
+ok 53 - Scoring tracks combo and perfect-clear bonuses
+  ---
+  duration_ms: 0.145826
+  type: 'test'
+  ...
+# Subtest: Tetris engine starts deterministic sessions with queue, hold and ghost
+ok 54 - Tetris engine starts deterministic sessions with queue, hold and ghost
+  ---
+  duration_ms: 2.192537
+  type: 'test'
+  ...
+# Subtest: Tetris engine permits one hold per active piece
+ok 55 - Tetris engine permits one hold per active piece
+  ---
+  duration_ms: 0.285673
+  type: 'test'
+  ...
+# Subtest: Tetris engine hard drop clears lines and scores
+ok 56 - Tetris engine hard drop clears lines and scores
+  ---
+  duration_ms: 1.653559
+  type: 'test'
+  ...
+# Subtest: Tetris engine exports a deterministic replay for live sessions
+ok 57 - Tetris engine exports a deterministic replay for live sessions
+  ---
+  duration_ms: 0.625346
+  type: 'test'
+  ...
+# Subtest: Tetris replay reproduces the same deterministic engine state
+ok 58 - Tetris replay reproduces the same deterministic engine state
+  ---
+  duration_ms: 4.55821
+  type: 'test'
+  ...
+# Subtest: Tetris lock delay waits before locking a grounded piece
+ok 59 - Tetris lock delay waits before locking a grounded piece
+  ---
+  duration_ms: 0.550285
+  type: 'test'
+  ...
+# Subtest: Tetris engine rejects replays recorded at a different fixed step
+ok 60 - Tetris engine rejects replays recorded at a different fixed step
+  ---
+  duration_ms: 0.500902
+  type: 'test'
+  ...
+# Subtest: Tetris engine rejects replays without a finite matching fixed-step
+ok 61 - Tetris engine rejects replays without a finite matching fixed-step
+  ---
+  duration_ms: 0.312472
+  type: 'test'
+  ...
+# Subtest: Tetris is a playable lazy game with portrait preference
+ok 62 - Tetris is a playable lazy game with portrait preference
+  ---
+  duration_ms: 0.50632
+  type: 'test'
+  ...
+# Subtest: Tetris score store persists versioned aggregate progress
+ok 63 - Tetris score store persists versioned aggregate progress
+  ---
+  duration_ms: 0.696011
+  type: 'test'
+  ...
+# Subtest: Tetris score store rejects malformed persisted numbers
+ok 64 - Tetris score store rejects malformed persisted numbers
+  ---
+  duration_ms: 0.143603
+  type: 'test'
+  ...
+# Subtest: OpenWorld manifest creates deterministic cabinet, collider, trigger and interaction data
+ok 65 - OpenWorld manifest creates deterministic cabinet, collider, trigger and interaction data
+  ---
+  duration_ms: 2.128863
+  type: 'test'
+  ...
+1..65
+# tests 65
+# suites 0
+# pass 65
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 326.372232
+
+## npm run validate:phase3
+
+> validate:phase3
+> node tools/validate_phase3.mjs
+
+Phase 3 source validation passed: 98 JavaScript files checked.
+
+## npm run validate:phase4
+
+> validate:phase4
+> node tools/validate_phase4.mjs
+
+Phase 4 source validation passed: 100 JavaScript/MJS and 41 PHP files checked.
+
+## Frontend build environment
+npm ci attempted and failed because the sandbox internal npm gateway returned HTTP 404 for yargs-parser-21.1.1.tgz.
+package-lock.json contains no private mirror or internal gateway URL.
+Vite build was not executed because dependencies could not be installed in this sandbox.

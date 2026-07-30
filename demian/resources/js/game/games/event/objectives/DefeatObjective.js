@@ -1,0 +1,2 @@
+import BaseObjective, { OBJECTIVE_STATUS } from './BaseObjective.js';
+export default class DefeatObjective extends BaseObjective { constructor(definition){ super(definition); this.enemy=definition.enemy; this.target=Math.max(1,Number(definition.amount)||1); } apply(event){ if(this.status!==OBJECTIVE_STATUS.ACTIVE||event.type!=='defeat'||event.enemy!==this.enemy)return false; this.current=Math.min(this.target,this.current+Math.max(1,Number(event.amount)||1)); return this.current>=this.target ? this.complete() : true; } }

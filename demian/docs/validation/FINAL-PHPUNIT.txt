@@ -1,0 +1,5 @@
+PHP Warning:  require(/mnt/data/demian-final-work/Demian-Final/demian/vendor/autoload.php): Failed to open stream: No such file or directory in /mnt/data/demian-final-work/Demian-Final/demian/artisan on line 10
+PHP Fatal error:  Uncaught Error: Failed opening required '/mnt/data/demian-final-work/Demian-Final/demian/vendor/autoload.php' (include_path='.:/usr/share/php') in /mnt/data/demian-final-work/Demian-Final/demian/artisan:10
+Stack trace:
+#0 {main}
+  thrown in /mnt/data/demian-final-work/Demian-Final/demian/artisan on line 10

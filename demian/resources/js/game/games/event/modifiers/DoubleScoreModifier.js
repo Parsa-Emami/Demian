@@ -1,0 +1,1 @@
+import BaseModifier from './BaseModifier.js'; export default class DoubleScoreModifier extends BaseModifier { apply(runtime){ super.apply(runtime); runtime.scoreMultiplier*=Math.max(1,this.value||2); } revert(runtime){ if(this.applied)runtime.scoreMultiplier/=Math.max(1,this.value||2); super.revert(runtime); } }

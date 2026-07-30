@@ -1,0 +1,362 @@
+Demian Phase 3 Validation
+Generated: 2026-07-29
+
+== JavaScript tests ==
+
+> test:js
+> node --test tests/js/*.test.js tests/js/tetris/*.test.js
+
+TAP version 13
+# Subtest: ControlLayoutService maps input contexts to isolated mobile layouts
+ok 1 - ControlLayoutService maps input contexts to isolated mobile layouts
+  ---
+  duration_ms: 0.582072
+  type: 'test'
+  ...
+# Subtest: ControlLayoutService accepts future game control surfaces without core changes
+ok 2 - ControlLayoutService accepts future game control surfaces without core changes
+  ---
+  duration_ms: 0.5334
+  type: 'test'
+  ...
+# Subtest: Phase three catalog exposes all planned games with Tetris and Open World playable
+ok 3 - Phase three catalog exposes all planned games with Tetris and Open World playable
+  ---
+  duration_ms: 0.968574
+  type: 'test'
+  ...
+# Subtest: GameRegistry lazily loads a module once and creates fresh instances
+ok 4 - GameRegistry lazily loads a module once and creates fresh instances
+  ---
+  duration_ms: 0.838952
+  type: 'test'
+  ...
+# Subtest: GameRegistry clears failed lazy imports so launch can be retried
+ok 5 - GameRegistry clears failed lazy imports so launch can be retried
+  ---
+  duration_ms: 1.286345
+  type: 'test'
+  ...
+# Subtest: GameRegistry rejects duplicate and unknown game ids
+ok 6 - GameRegistry rejects duplicate and unknown game ids
+  ---
+  duration_ms: 0.1825
+  type: 'test'
+  ...
+# Subtest: GameRuntime advances game logic with a deterministic fixed step
+ok 7 - GameRuntime advances game logic with a deterministic fixed step
+  ---
+  duration_ms: 1.147869
+  type: 'test'
+  ...
+# Subtest: GameRuntime keeps transient input queued until a fixed step occurs
+ok 8 - GameRuntime keeps transient input queued until a fixed step occurs
+  ---
+  duration_ms: 0.161649
+  type: 'test'
+  ...
+# Subtest: GameRuntime caps catch-up work and reports dropped simulation time
+ok 9 - GameRuntime caps catch-up work and reports dropped simulation time
+  ---
+  duration_ms: 0.90494
+  type: 'test'
+  ...
+# Subtest: GameRuntime pause and resume notify the active game once
+ok 10 - GameRuntime pause and resume notify the active game once
+  ---
+  duration_ms: 0.164443
+  type: 'test'
+  ...
+# Subtest: Open World and Tetris map Space to different semantic actions
+ok 11 - Open World and Tetris map Space to different semantic actions
+  ---
+  duration_ms: 0.552859
+  type: 'test'
+  ...
+# Subtest: Open World preserves all current character action names
+ok 12 - Open World preserves all current character action names
+  ---
+  duration_ms: 0.129091
+  type: 'test'
+  ...
+# Subtest: ScreenManager serializes primary replacement and closes previous screen
+ok 13 - ScreenManager serializes primary replacement and closes previous screen
+  ---
+  duration_ms: 1.215209
+  type: 'test'
+  ...
+# Subtest: ScreenManager keeps modal stack separate from primary navigation
+ok 14 - ScreenManager keeps modal stack separate from primary navigation
+  ---
+  duration_ms: 1.048803
+  type: 'test'
+  ...
+# Subtest: ScreenManager rejects duplicate screen identifiers
+ok 15 - ScreenManager rejects duplicate screen identifiers
+  ---
+  duration_ms: 0.316519
+  type: 'test'
+  ...
+# Subtest: ScreenManager refreshes an already visible screen without duplicating it
+ok 16 - ScreenManager refreshes an already visible screen without duplicating it
+  ---
+  duration_ms: 0.24267
+  type: 'test'
+  ...
+# Subtest: SessionStateMachine supports the phase-two menu and gameplay lifecycle
+ok 17 - SessionStateMachine supports the phase-two menu and gameplay lifecycle
+  ---
+  duration_ms: 0.617444
+  type: 'test'
+  ...
+# Subtest: SessionStateMachine rejects invalid transitions
+ok 18 - SessionStateMachine rejects invalid transitions
+  ---
+  duration_ms: 0.301827
+  type: 'test'
+  ...
+# Subtest: SettingsStore validates persisted values and preserves defaults
+ok 19 - SettingsStore validates persisted values and preserves defaults
+  ---
+  duration_ms: 0.710653
+  type: 'test'
+  ...
+# Subtest: SettingsStore persists updates and emits immutable snapshots
+ok 20 - SettingsStore persists updates and emits immutable snapshots
+  ---
+  duration_ms: 0.661129
+  type: 'test'
+  ...
+# Subtest: SettingsStore resolves system motion preference without overwriting user state
+ok 21 - SettingsStore resolves system motion preference without overwriting user state
+  ---
+  duration_ms: 0.805073
+  type: 'test'
+  ...
+# Subtest: Tetris Board locks pieces and clears completed rows
+ok 22 - Tetris Board locks pieces and clears completed rows
+  ---
+  duration_ms: 1.706968
+  type: 'test'
+  ...
+# Subtest: Tetris Board computes ghost landing without mutating piece
+ok 23 - Tetris Board computes ghost landing without mutating piece
+  ---
+  duration_ms: 0.369277
+  type: 'test'
+  ...
+# Subtest: Tetris Board treats walls and floor as occupied
+ok 24 - Tetris Board treats walls and floor as occupied
+  ---
+  duration_ms: 0.115291
+  type: 'test'
+  ...
+# Subtest: Input repeat emits immediate movement then DAS/ARR repeats
+ok 25 - Input repeat emits immediate movement then DAS/ARR repeats
+  ---
+  duration_ms: 1.030315
+  type: 'test'
+  ...
+# Subtest: Input repeat changes direction immediately
+ok 26 - Input repeat changes direction immediately
+  ---
+  duration_ms: 1.084866
+  type: 'test'
+  ...
+# Subtest: Seven Bag emits each tetromino exactly once per bag
+ok 27 - Seven Bag emits each tetromino exactly once per bag
+  ---
+  duration_ms: 1.23574
+  type: 'test'
+  ...
+# Subtest: Seven Bag is deterministic for the same seed
+ok 28 - Seven Bag is deterministic for the same seed
+  ---
+  duration_ms: 0.305032
+  type: 'test'
+  ...
+# Subtest: Replay recorder stores only semantic input changes
+ok 29 - Replay recorder stores only semantic input changes
+  ---
+  duration_ms: 1.25592
+  type: 'test'
+  ...
+# Subtest: Replay player restores held and pressed semantic inputs by tick
+ok 30 - Replay player restores held and pressed semantic inputs by tick
+  ---
+  duration_ms: 0.301917
+  type: 'test'
+  ...
+# Subtest: Replay player rejects malformed input events
+ok 31 - Replay player rejects malformed input events
+  ---
+  duration_ms: 0.323118
+  type: 'test'
+  ...
+# Subtest: SRS rotates a free T piece without a kick
+ok 32 - SRS rotates a free T piece without a kick
+  ---
+  duration_ms: 0.768918
+  type: 'test'
+  ...
+# Subtest: SRS applies an I-piece wall kick near the left wall
+ok 33 - SRS applies an I-piece wall kick near the left wall
+  ---
+  duration_ms: 0.217081
+  type: 'test'
+  ...
+# Subtest: SRS rejects rotation when every kick position is blocked
+ok 34 - SRS rejects rotation when every kick position is blocked
+  ---
+  duration_ms: 0.238624
+  type: 'test'
+  ...
+# Subtest: Scoring awards guideline line clear values and drop points
+ok 35 - Scoring awards guideline line clear values and drop points
+  ---
+  duration_ms: 0.624314
+  type: 'test'
+  ...
+# Subtest: Scoring preserves and rewards back-to-back difficult clears
+ok 36 - Scoring preserves and rewards back-to-back difficult clears
+  ---
+  duration_ms: 0.12161
+  type: 'test'
+  ...
+# Subtest: Scoring tracks combo and perfect-clear bonuses
+ok 37 - Scoring tracks combo and perfect-clear bonuses
+  ---
+  duration_ms: 0.147048
+  type: 'test'
+  ...
+# Subtest: Tetris engine starts deterministic sessions with queue, hold and ghost
+ok 38 - Tetris engine starts deterministic sessions with queue, hold and ghost
+  ---
+  duration_ms: 2.092138
+  type: 'test'
+  ...
+# Subtest: Tetris engine permits one hold per active piece
+ok 39 - Tetris engine permits one hold per active piece
+  ---
+  duration_ms: 0.347314
+  type: 'test'
+  ...
+# Subtest: Tetris engine hard drop clears lines and scores
+ok 40 - Tetris engine hard drop clears lines and scores
+  ---
+  duration_ms: 0.874636
+  type: 'test'
+  ...
+# Subtest: Tetris engine exports a deterministic replay for live sessions
+ok 41 - Tetris engine exports a deterministic replay for live sessions
+  ---
+  duration_ms: 0.620038
+  type: 'test'
+  ...
+# Subtest: Tetris replay reproduces the same deterministic engine state
+ok 42 - Tetris replay reproduces the same deterministic engine state
+  ---
+  duration_ms: 4.575696
+  type: 'test'
+  ...
+# Subtest: Tetris lock delay waits before locking a grounded piece
+ok 43 - Tetris lock delay waits before locking a grounded piece
+  ---
+  duration_ms: 0.498478
+  type: 'test'
+  ...
+# Subtest: Tetris engine rejects replays recorded at a different fixed step
+ok 44 - Tetris engine rejects replays recorded at a different fixed step
+  ---
+  duration_ms: 0.513601
+  type: 'test'
+  ...
+# Subtest: Tetris engine rejects replays without a finite matching fixed-step
+ok 45 - Tetris engine rejects replays without a finite matching fixed-step
+  ---
+  duration_ms: 0.384559
+  type: 'test'
+  ...
+# Subtest: Tetris is a playable lazy game with portrait preference
+ok 46 - Tetris is a playable lazy game with portrait preference
+  ---
+  duration_ms: 0.556484
+  type: 'test'
+  ...
+# Subtest: Tetris score store persists versioned aggregate progress
+ok 47 - Tetris score store persists versioned aggregate progress
+  ---
+  duration_ms: 0.717803
+  type: 'test'
+  ...
+# Subtest: Tetris score store rejects malformed persisted numbers
+ok 48 - Tetris score store rejects malformed persisted numbers
+  ---
+  duration_ms: 0.14865
+  type: 'test'
+  ...
+1..48
+# tests 48
+# suites 0
+# pass 48
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 252.50077
+
+== Phase 3 source validator ==
+
+> validate:phase3
+> node tools/validate_phase3.mjs
+
+Phase 3 source validation passed: 82 JavaScript files checked.
+
+== PHP syntax ==
+No syntax errors detected in app/Http/Controllers/CharacterController.php
+No syntax errors detected in app/Http/Controllers/CharacterStudioController.php
+No syntax errors detected in app/Http/Controllers/Controller.php
+No syntax errors detected in app/Http/Requests/StoreCharacterRequest.php
+No syntax errors detected in app/Http/Requests/UpdateCharacterRequest.php
+No syntax errors detected in app/Models/Character.php
+No syntax errors detected in app/Models/User.php
+No syntax errors detected in app/Providers/AppServiceProvider.php
+No syntax errors detected in app/Services/Characters/AtlasManifest.php
+No syntax errors detected in app/Services/Characters/CharacterAssetService.php
+No syntax errors detected in bootstrap/app.php
+No syntax errors detected in bootstrap/providers.php
+No syntax errors detected in config/app.php
+No syntax errors detected in config/auth.php
+No syntax errors detected in config/cache.php
+No syntax errors detected in config/database.php
+No syntax errors detected in config/filesystems.php
+No syntax errors detected in config/logging.php
+No syntax errors detected in config/mail.php
+No syntax errors detected in config/queue.php
+No syntax errors detected in config/services.php
+No syntax errors detected in config/session.php
+No syntax errors detected in database/factories/UserFactory.php
+No syntax errors detected in database/migrations/0001_01_01_000000_create_users_table.php
+No syntax errors detected in database/migrations/0001_01_01_000001_create_cache_table.php
+No syntax errors detected in database/migrations/0001_01_01_000002_create_jobs_table.php
+No syntax errors detected in database/migrations/2026_07_24_000000_create_characters_table.php
+No syntax errors detected in database/seeders/AmirRezaCharacterSeeder.php
+No syntax errors detected in database/seeders/BuiltinCharacterSeeder.php
+No syntax errors detected in database/seeders/DatabaseSeeder.php
+No syntax errors detected in database/seeders/RonakCharacterSeeder.php
+No syntax errors detected in database/seeders/TiamCharacterSeeder.php
+No syntax errors detected in routes/console.php
+No syntax errors detected in routes/web.php
+No syntax errors detected in tests/Feature/CharacterManagerTest.php
+No syntax errors detected in tests/Feature/ExampleTest.php
+No syntax errors detected in tests/TestCase.php
+No syntax errors detected in tests/Unit/ExampleTest.php
+
+== JSON validation ==
+package.json and package-lock.json are valid JSON.
+
+== Lockfile registry check ==
+All resolved package tarballs use https://registry.npmjs.org/.
+
+== Forbidden debug markers in Phase 3 ==
+No TODO/FIXME/console.log/debugger markers found in Tetris source or tests.

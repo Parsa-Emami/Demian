@@ -1,0 +1,5 @@
+Demian Game Platform
+Final cumulative release: 8.1.0
+Runtime marker: 8.1.0-final
+Includes phases: 1, 2, 3, 4, 5, 6, 7, 8
+Final UX refactor: responsive game viewport + native mobile scroll-snap for game and character selection

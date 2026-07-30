@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta
         name="viewport"
-        content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no"
+        content="width=device-width, initial-scale=1.0, viewport-fit=cover"
     >
     <meta name="theme-color" content="#050610">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
@@ -20,7 +20,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>Demian V5.2 · Landscape Mobile Arcade</title>
+    <title>Demian Game Platform · Café Game Room</title>
 
     @vite([
         'resources/js/app.js',
@@ -32,9 +32,16 @@
         data-character-manager
         data-manager-shell
         data-api-base="{{ route('characters.index') }}"
+        data-event-api-base="{{ url('/api/v1/events') }}"
         data-sidebar-state="collapsed"
         data-mobile-actions="collapsed"
-        data-runtime-version="5.2"
+        data-runtime-version="8.1.0-final"
+        data-session-state="booting"
+        data-shell-screen="boot"
+        data-control-layout="none"
+        data-hud-visible="true"
+        data-hints-visible="true"
+        data-interface-density="comfortable"
         class="manager-shell"
         dir="ltr"
     >
@@ -91,20 +98,28 @@
                     </section>
 
                     <section class="arcade-panel mt-4 rounded-[28px] p-4">
-                        <div class="flex items-center justify-between gap-3">
+                        <div class="character-selection__header">
                             <div>
                                 <p class="arcade-label">Character manager</p>
                                 <h2 class="mt-1 text-lg font-black">انتخاب کاراکتر</h2>
                             </div>
 
-                            <span class="text-[10px] font-black text-cyan-300">PLAYER SELECT</span>
+                            <div class="scroll-rail-controls" aria-label="پیمایش فهرست کاراکترها">
+                                <button type="button" data-character-scroll-previous class="scroll-rail-button" aria-label="کاراکتر قبلی">›</button>
+                                <output data-character-scroll-status class="scroll-rail-status" aria-live="polite">0 / 0</output>
+                                <button type="button" data-character-scroll-next class="scroll-rail-button" aria-label="کاراکتر بعدی">‹</button>
+                            </div>
                         </div>
 
                         <div
                             data-character-list
-                            class="mt-4 grid gap-3"
+                            class="character-selection-rail mt-4"
+                            tabindex="0"
+                            role="list"
+                            aria-label="کاراکترهای قابل انتخاب"
                             aria-live="polite"
                         ></div>
+                        <p class="scroll-rail-hint">در گوشی کارت‌ها را به چپ و راست بکش یا از دکمه‌های پیمایش استفاده کن.</p>
                     </section>
 
                     <details class="arcade-panel manager-details mt-4 rounded-[28px] p-4">
@@ -243,7 +258,225 @@
             <div class="arcade-screen-bezel" aria-hidden="true"></div>
             <div data-demian-scene class="demian-scene absolute inset-0"></div>
 
-            <header class="stage-toolbar pointer-events-none absolute inset-x-0 top-0 z-20 p-4">
+
+            <div data-game-shell class="game-shell absolute inset-0 z-40" dir="rtl" aria-live="polite">
+                <div data-shell-toast-host class="shell-toast-host" aria-live="polite" aria-atomic="false"></div>
+
+                <section
+                    data-screen="boot"
+                    class="shell-screen shell-screen--boot"
+                    aria-label="راه‌اندازی دمیان"
+                >
+                    <div class="boot-console">
+                        <div class="boot-console__mark" aria-hidden="true">D</div>
+                        <p class="shell-kicker">DEMIAN GAME PLATFORM</p>
+                        <h1>CAFÉ DEMIAN</h1>
+                        <p data-boot-message class="boot-console__message">در حال راه‌اندازی هسته‌ی دمیان…</p>
+                        <div data-boot-progress-bar class="shell-progress shell-progress--boot">
+                            <span></span>
+                        </div>
+                        <div class="boot-console__meta">
+                            <span data-boot-progress-value>0%</span>
+                            <span>CORE / RENDERER / INPUT / SHELL</span>
+                        </div>
+                    </div>
+                </section>
+
+                <section
+                    data-screen="cafe-menu"
+                    class="shell-screen shell-screen--cafe"
+                    aria-label="منوی اصلی کافه دمیان"
+                    aria-hidden="true"
+                    hidden
+                >
+                    <div class="cafe-menu__ambient" aria-hidden="true">
+                        <span></span><span></span><span></span>
+                    </div>
+                    <div class="cafe-menu__content">
+                        <div data-menu-reveal class="cafe-menu__eyebrow">
+                            <span class="arcade-live-dot"></span>
+                            GAME ROOM ONLINE
+                        </div>
+                        <div data-menu-reveal>
+                            <p class="shell-kicker">WELCOME TO</p>
+                            <h1 class="cafe-menu__title">CAFÉ<br><b>DEMIAN</b></h1>
+                            <p class="cafe-menu__lead">
+                                یک هسته، چند جهان؛ کاراکترت را انتخاب کن و وارد بازی بعدی شو.
+                            </p>
+                        </div>
+                        <div data-menu-reveal class="cafe-menu__actions">
+                            <button type="button" data-shell-action="play" data-screen-autofocus class="shell-button shell-button--primary">
+                                <span>انتخاب بازی</span><b aria-hidden="true">←</b>
+                            </button>
+                            <button type="button" data-shell-action="continue" class="shell-button">
+                                <span>ورود سریع به Open World</span><b aria-hidden="true">▶</b>
+                            </button>
+                            <button type="button" data-shell-action="settings" class="shell-button shell-button--ghost">
+                                <span>تنظیمات</span><b aria-hidden="true">⚙</b>
+                            </button>
+                        </div>
+                        <div data-menu-reveal class="cafe-menu__footer">
+                            <span>PHASE 3</span>
+                            <span>ONE RENDERER · LAZY GAMES · FIXED 60HZ</span>
+                        </div>
+                    </div>
+                    <aside class="cafe-menu__cabinet" aria-hidden="true">
+                        <div class="cafe-cabinet__sign">NOW PLAYING</div>
+                        <div class="cafe-cabinet__screen">
+                            <span>OPEN</span><b>WORLD</b><small>LIVE BACKDROP</small>
+                        </div>
+                        <div class="cafe-cabinet__controls"><i></i><i></i><i></i></div>
+                    </aside>
+                </section>
+
+                <section
+                    data-screen="game-selection"
+                    class="shell-screen shell-screen--selection"
+                    aria-label="انتخاب بازی"
+                    aria-hidden="true"
+                    hidden
+                >
+                    <div class="shell-page">
+                        <header class="shell-page__header">
+                            <div>
+                                <p class="shell-kicker">CAFÉ DEMIAN / GAME LIBRARY</p>
+                                <h2>یک بازی انتخاب کن</h2>
+                                <p>هر بازی به‌صورت Lazy بارگذاری می‌شود و از همان هسته‌ی مشترک استفاده می‌کند.</p>
+                            </div>
+                            <button type="button" data-shell-action="back-cafe" class="shell-icon-button" aria-label="بازگشت به منوی کافه">×</button>
+                        </header>
+                        <div class="game-library-toolbar">
+                            <span class="game-library-toolbar__hint">در موبایل برای دیدن بازی‌های بعدی اسکرول کن</span>
+                            <div class="scroll-rail-controls" aria-label="پیمایش کتابخانه بازی">
+                                <button type="button" data-game-scroll-previous class="scroll-rail-button" aria-label="بازی قبلی">›</button>
+                                <output data-game-scroll-status class="scroll-rail-status" aria-live="polite">0 / 0</output>
+                                <button type="button" data-game-scroll-next class="scroll-rail-button" aria-label="بازی بعدی">‹</button>
+                            </div>
+                        </div>
+                        <div data-game-grid class="game-grid" tabindex="0" role="list" aria-label="کتابخانه بازی‌های دمیان"></div>
+                        <footer class="shell-page__footer">
+                            <span>همه‌ی بازی‌های فازهای ۱ تا ۸ در دسترس‌اند</span>
+                            <span>ESC · بازگشت</span>
+                        </footer>
+                    </div>
+                </section>
+
+                <section
+                    data-screen="loading"
+                    class="shell-screen shell-screen--loading"
+                    aria-label="بارگذاری بازی"
+                    aria-hidden="true"
+                    hidden
+                >
+                    <div class="loading-console">
+                        <div class="loading-console__orbit" aria-hidden="true"><i></i><i></i><i></i></div>
+                        <p class="shell-kicker">LOADING GAME MODULE</p>
+                        <h2 data-loading-title>OPEN WORLD</h2>
+                        <p data-loading-step>در حال آماده‌سازی بازی…</p>
+                        <div data-loading-progress-bar class="shell-progress shell-progress--loading"><span></span></div>
+                        <div class="loading-console__meta">
+                            <span data-loading-progress-value>0%</span>
+                            <span>LAZY IMPORT → PRELOAD → ENTER</span>
+                        </div>
+                    </div>
+                </section>
+
+                <section
+                    data-screen="pause"
+                    class="shell-screen shell-screen--modal"
+                    aria-label="توقف بازی"
+                    aria-hidden="true"
+                    hidden
+                >
+                    <div class="shell-modal pause-panel" role="dialog" aria-modal="true" aria-labelledby="pause-title">
+                        <p class="shell-kicker">GAME PAUSED</p>
+                        <h2 id="pause-title">توقف بازی</h2>
+                        <p data-pause-game-title>DEMIAN GAME</p>
+                        <div class="shell-modal__actions">
+                            <button type="button" data-shell-action="resume" data-screen-autofocus class="shell-button shell-button--primary">ادامه‌ی بازی</button>
+                            <button type="button" data-shell-action="restart" class="shell-button">شروع دوباره</button>
+                            <button type="button" data-shell-action="settings" class="shell-button">تنظیمات</button>
+                            <button type="button" data-shell-action="exit-game" class="shell-button shell-button--danger">خروج به کافه</button>
+                        </div>
+                        <small>ESC برای ادامه</small>
+                    </div>
+                </section>
+
+                <section
+                    data-screen="settings"
+                    class="shell-screen shell-screen--modal"
+                    aria-label="تنظیمات"
+                    aria-hidden="true"
+                    hidden
+                >
+                    <div class="shell-modal settings-panel" role="dialog" aria-modal="true" aria-labelledby="settings-title">
+                        <header class="shell-modal__header">
+                            <div><p class="shell-kicker">PLATFORM SETTINGS</p><h2 id="settings-title">تنظیمات</h2></div>
+                            <button type="button" data-shell-action="close-modal" class="shell-icon-button" aria-label="بستن تنظیمات">×</button>
+                        </header>
+                        <form data-settings-form class="settings-form">
+                            <label class="settings-field">
+                                <span><b>کیفیت تصویر</b><small>مستقیماً روی Pixel Ratio بازی اعمال می‌شود.</small></span>
+                                <select name="quality">
+                                    <option value="auto">خودکار</option>
+                                    <option value="performance">Performance</option>
+                                    <option value="balanced">Balanced</option>
+                                    <option value="high">High</option>
+                                </select>
+                            </label>
+                            <label class="settings-field">
+                                <span><b>حرکت رابط</b><small>هماهنگ با prefers-reduced-motion و Anime.js.</small></span>
+                                <select name="motion">
+                                    <option value="system">تنظیم سیستم</option>
+                                    <option value="full">کامل</option>
+                                    <option value="reduced">کاهش‌یافته</option>
+                                </select>
+                            </label>
+                            <label class="settings-field">
+                                <span><b>تراکم رابط</b><small>اندازه‌ی پنل‌ها و فاصله‌ها.</small></span>
+                                <select name="interfaceDensity">
+                                    <option value="comfortable">راحت</option>
+                                    <option value="compact">فشرده</option>
+                                </select>
+                            </label>
+                            <div class="settings-toggle-grid">
+                                <label><input type="checkbox" name="hudVisible"><span>نمایش HUD</span></label>
+                                <label><input type="checkbox" name="hintsVisible"><span>نمایش راهنما</span></label>
+                                <label><input type="checkbox" name="soundEnabled"><span>افکت صوتی</span></label>
+                                <label><input type="checkbox" name="musicEnabled"><span>موسیقی</span></label>
+                            </div>
+                            <div class="shell-modal__actions shell-modal__actions--row">
+                                <button type="submit" data-screen-autofocus class="shell-button shell-button--primary">ذخیره تنظیمات</button>
+                                <button type="button" data-shell-action="reset-settings" class="shell-button shell-button--ghost">پیش‌فرض</button>
+                            </div>
+                        </form>
+                    </div>
+                </section>
+
+                <section
+                    data-screen="results"
+                    class="shell-screen shell-screen--results"
+                    aria-label="نتیجه بازی"
+                    aria-hidden="true"
+                    hidden
+                >
+                    <div class="results-panel">
+                        <p class="shell-kicker">SESSION COMPLETE</p>
+                        <h2 data-results-title>نتیجه‌ی بازی</h2>
+                        <p data-results-subtitle>مرحله به پایان رسید.</p>
+                        <div class="results-panel__score"><small>SCORE</small><strong data-results-score>0</strong></div>
+                        <div data-results-stats class="results-panel__stats"></div>
+                        <div class="shell-modal__actions shell-modal__actions--row">
+                            <button type="button" data-shell-action="restart" class="shell-button shell-button--primary">دوباره</button>
+                            <button type="button" data-shell-action="replay" data-results-replay class="shell-button" hidden>بازپخش</button>
+                            <button type="button" data-shell-action="exit-game" class="shell-button">بازگشت به کافه</button>
+                        </div>
+                    </div>
+                </section>
+                <div data-game-hud-host class="game-hud-host"></div>
+            </div>
+
+            <header data-gameplay-ui data-world-ui class="stage-toolbar pointer-events-none absolute inset-x-0 top-0 z-20 p-4">
                 <div class="flex items-start justify-between gap-3">
                     <div class="arcade-panel stage-toolbar__controls pointer-events-auto rounded-2xl p-2">
                         <div class="flex flex-wrap gap-2">
@@ -278,6 +511,24 @@
 
                             <button
                                 type="button"
+                                data-shell-action="menu"
+                                class="arcade-button arcade-button--small"
+                                title="بازگشت به کافه"
+                            >
+                                کافه
+                            </button>
+
+                            <button
+                                type="button"
+                                data-shell-action="pause"
+                                class="arcade-button arcade-button--small"
+                                title="توقف بازی (Esc)"
+                            >
+                                توقف
+                            </button>
+
+                            <button
+                                type="button"
                                 data-mobile-fullscreen
                                 class="arcade-button arcade-button--small mobile-fullscreen-button"
                                 aria-pressed="false"
@@ -305,11 +556,11 @@
                 </div>
             </header>
 
-            <div class="arcade-intro-note pointer-events-none absolute left-1/2 top-28 z-20 -translate-x-1/2">
+            <div data-gameplay-ui data-world-ui data-hint-ui class="arcade-intro-note pointer-events-none absolute left-1/2 top-28 z-20 -translate-x-1/2">
                 جوی‌استیک را تا لبه ببر تا کاراکتر Sprint کند
             </div>
 
-            <section class="mobile-status-bar arcade-panel pointer-events-none absolute z-20" aria-label="وضعیت بازی">
+            <section data-gameplay-ui data-world-ui data-hud-ui class="mobile-status-bar arcade-panel pointer-events-none absolute z-20" aria-label="وضعیت بازی">
                 <span class="mobile-status-bar__player" data-active-character-name>TIAM / تیام</span>
                 <span class="mobile-status-chip"><small>STATE</small><b data-state-label>IDLE</b></span>
                 <span class="mobile-status-chip"><small>SPD</small><b data-speed-label>0.00</b></span>
@@ -317,7 +568,7 @@
             </section>
 
             <section
-                class="hud-panel arcade-panel pointer-events-none absolute bottom-4 left-4 z-20 rounded-[24px] p-3"
+                data-gameplay-ui data-world-ui data-hud-ui class="hud-panel arcade-panel pointer-events-none absolute bottom-4 left-4 z-20 rounded-[24px] p-3"
             >
                 <div class="grid grid-cols-2 gap-x-5 gap-y-2 text-[11px]">
                     <span class="text-zinc-500">STATE</span>
@@ -341,7 +592,7 @@
             </section>
 
             <section
-                class="help-panel arcade-panel pointer-events-none absolute bottom-4 right-4 z-20 hidden rounded-[24px] p-3 text-left text-[10px] leading-5 text-zinc-400 lg:block"
+                data-gameplay-ui data-world-ui data-hint-ui class="help-panel arcade-panel pointer-events-none absolute bottom-4 right-4 z-20 hidden rounded-[24px] p-3 text-left text-[10px] leading-5 text-zinc-400 lg:block"
                 dir="ltr"
             >
                 <div class="help-panel__grid">
@@ -357,12 +608,15 @@
                     <p><b class="text-white">B / N</b> laugh / pose</p>
                     <p><b class="text-white">T / Y</b> sleep / taunt</p>
                     <p><b class="text-white">H</b> random speech</p>
+                    <p><b class="text-white">Enter</b> interact</p>
                     <p><b class="text-white">F / R</b> camera</p>
+                    <p><b class="text-white">M</b> world map</p>
+                    <p><b class="text-white">F6</b> quick save</p>
                     <p><b class="text-white">Wheel</b> zoom</p>
                 </div>
             </section>
 
-            <section class="touch-controller absolute inset-x-0 bottom-0 z-30" dir="ltr" aria-label="کنترل‌های لمسی بازی">
+            <section data-gameplay-ui data-control-surface="world" class="touch-controller absolute inset-x-0 bottom-0 z-30" dir="ltr" aria-label="کنترل‌های لمسی بازی">
                 <div
                     data-virtual-stick
                     class="virtual-stick"
@@ -400,6 +654,9 @@
                     </div>
 
                     <div class="touch-controller__actions" aria-label="اکشن‌های اصلی">
+                        <button type="button" data-input-press="interact" class="touch-action touch-action--interact touch-action--primary">
+                            <span>USE</span><small>◎</small>
+                        </button>
                         <button type="button" data-input-hold="run" class="touch-action touch-action--run">
                             <span>RUN</span><small>hold</small>
                         </button>

@@ -85,11 +85,28 @@ function cloneBuiltin(character, spriteVariant = 'mobile') {
 }
 
 export default class CharacterManager {
-    constructor({ scene, repository, eventBus, performanceProfile = null }) {
+    constructor({
+        scene,
+        repository,
+        eventBus,
+        performanceProfile = null,
+        collisionScope = null,
+        navigationGrid = null,
+        worldBounds = WORLD_CONFIG.bounds,
+        spawnPoints = WORLD_CONFIG.spawnPoints,
+        aiBudget = null,
+    }) {
         this.scene = scene;
         this.repository = repository;
         this.eventBus = eventBus;
         this.performanceProfile = performanceProfile;
+        this.collisionScope = collisionScope;
+        this.navigationGrid = navigationGrid;
+        this.worldBounds = Object.freeze('minX' in worldBounds ? { ...worldBounds } : { minX: -worldBounds.x, maxX: worldBounds.x, minZ: -worldBounds.z, maxZ: worldBounds.z });
+        this.spawnPoints = Object.freeze(spawnPoints.map((point) => Object.freeze({ ...point })));
+        this.aiBudget = aiBudget;
+        this.colliderKeys = new Map();
+        this.characterRadius = 0.72;
         this.spriteVariant = performanceProfile?.spriteVariant?.() ?? 'mobile';
         this.characters = [];
         this.activeRecord = null;
@@ -240,17 +257,56 @@ export default class CharacterManager {
             atlas,
             controlled: false,
         });
-        entity.setWorldBounds(WORLD_CONFIG.bounds);
+        entity.setWorldBounds(this.worldBounds);
 
-        const spawn = WORLD_CONFIG.spawnPoints[
-            spawnIndex % WORLD_CONFIG.spawnPoints.length
+        const spawn = this.spawnPoints[
+            spawnIndex % this.spawnPoints.length
         ];
         entity.group.position.set(spawn.x, 0, spawn.z);
         this.scene.add(entity.group);
 
         this.entities.set(key, entity);
-        this.brains.set(key, new NpcBrain(entity, spawnIndex));
+        this.brains.set(key, new NpcBrain(entity, spawnIndex, {
+            navigationGrid: this.navigationGrid,
+            worldBounds: this.worldBounds,
+        }));
+        this.attachCollision(key, entity);
         return entity;
+    }
+
+    attachCollision(key, entity) {
+        if (!this.collisionScope || this.colliderKeys.has(key)) {
+            return;
+        }
+
+        const localId = `character-${key}`;
+        this.collisionScope.addDynamicCircle(
+            localId,
+            entity.group.position,
+            this.characterRadius,
+            { userData: { kind: 'character', characterId: key, entity } }
+        );
+        this.colliderKeys.set(key, localId);
+        this.bindMovementResolver(key, entity);
+    }
+
+    bindMovementResolver(key, entity) {
+        const localId = this.colliderKeys.get(String(key));
+        if (!localId || !this.collisionScope || !entity) return;
+        entity.setMovementResolver(
+            ({ target }) => this.collisionScope.moveCircle(localId, target, {
+                collideWithDynamic: true,
+                maxSubstep: this.characterRadius * 0.45,
+            }),
+            { radius: this.characterRadius }
+        );
+    }
+
+    syncCollision(key, entity) {
+        const localId = this.colliderKeys.get(key);
+        if (localId && this.collisionScope) {
+            this.collisionScope.sync(localId, entity.group.position);
+        }
     }
 
     async select(id, { preservePosition = true } = {}) {
@@ -271,13 +327,17 @@ export default class CharacterManager {
 
         if (previousEntity && previousEntity !== nextEntity) {
             previousEntity.setPlayerControlled(false);
+            this.bindMovementResolver(String(previousEntity.character.id), previousEntity);
             if (preservePosition && previousPosition) {
                 previousEntity.group.position.copy(nextNpcPosition);
                 nextEntity.group.position.copy(previousPosition);
+                this.syncCollision(String(previousEntity.character.id), previousEntity);
+                this.syncCollision(String(nextEntity.character.id), nextEntity);
             }
         }
 
         nextEntity.setPlayerControlled(true, { playIntro: !previousEntity });
+        this.bindMovementResolver(String(nextEntity.character.id), nextEntity);
         this.activeRecord = record;
         this.activeEntity = nextEntity;
 
@@ -312,6 +372,10 @@ export default class CharacterManager {
             entity.dispose();
             this.entities.delete(key);
             this.brains.delete(key);
+            this.aiBudget?.remove(key);
+            const colliderId = this.colliderKeys.get(key);
+            if (colliderId) this.collisionScope?.remove(colliderId);
+            this.colliderKeys.delete(key);
         });
     }
 
@@ -399,25 +463,65 @@ export default class CharacterManager {
         }
 
         this.activeEntity.update(deltaTime, input, movementBasis);
+        this.syncCollision(String(this.activeRecord?.id), this.activeEntity);
+        const activeCollider = this.activeColliderId();
+        if (activeCollider) this.collisionScope?.updateTriggers(activeCollider);
         const neighbours = [...this.entities.values()];
+        this.aiBudget?.beginFrame();
 
         this.entities.forEach((entity, key) => {
             if (entity === this.activeEntity) {
+                entity.group.visible = true;
                 return;
             }
 
+            const distance = entity.group.position.distanceTo(this.activeEntity.group.position);
+            const budget = this.aiBudget?.take(key, deltaTime, distance, { visible: entity.group.visible }) ?? {
+                update: true,
+                deltaTime,
+                render: true,
+                simulateOnly: false,
+            };
+            entity.group.visible = budget.render;
+            if (!budget.update) return;
+
             const brain = this.brains.get(key);
             const npcInput = brain?.update(
-                deltaTime,
+                budget.deltaTime,
                 this.activeEntity,
                 neighbours
             );
-            entity.update(deltaTime, npcInput ?? { x: 0, z: 0 }, movementBasis);
+            if (!budget.simulateOnly) {
+                entity.update(budget.deltaTime, npcInput ?? { x: 0, z: 0 }, movementBasis);
+                this.syncCollision(key, entity);
+            }
         });
+    }
+
+    activeColliderId() {
+        const key = String(this.activeRecord?.id ?? '');
+        return this.colliderKeys.get(key) ?? null;
+    }
+
+    forward() {
+        const direction = this.activeEntity?.lastMoveDirection;
+        return direction
+            ? { x: direction.x, z: direction.z }
+            : { x: 0, z: 1 };
     }
 
     position() {
         return this.activeEntity?.group.position ?? new THREE.Vector3();
+    }
+
+
+    setPosition(position, { sync = true } = {}) {
+        if (!this.activeEntity) return false;
+        const x = Math.max(this.worldBounds.minX, Math.min(this.worldBounds.maxX, Number(position?.x) || 0));
+        const z = Math.max(this.worldBounds.minZ, Math.min(this.worldBounds.maxZ, Number(position?.z) || 0));
+        this.activeEntity.group.position.set(x, Number(position?.y) || 0, z);
+        if (sync) this.syncCollision(String(this.activeRecord?.id), this.activeEntity);
+        return true;
     }
 
     focusPoint() {
@@ -544,6 +648,10 @@ export default class CharacterManager {
         entity.dispose();
         this.entities.delete(key);
         this.brains.delete(key);
+        this.aiBudget?.remove(key);
+        const colliderId = this.colliderKeys.get(key);
+        if (colliderId) this.collisionScope?.remove(colliderId);
+        this.colliderKeys.delete(key);
 
         if (entity === this.activeEntity) {
             this.activeEntity = null;
@@ -559,5 +667,10 @@ export default class CharacterManager {
 
     dispose() {
         [...this.entities.keys()].forEach((key) => this.disposeEntity(key));
+        this.colliderKeys.clear();
+        this.collisionScope = null;
+        this.navigationGrid = null;
+        this.aiBudget?.clear?.();
+        this.aiBudget = null;
     }
 }

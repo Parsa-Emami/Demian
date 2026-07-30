@@ -1,10 +1,17 @@
+import ScrollSnapRail from './ScrollSnapRail.js';
+
 export default class CharacterManagerUI {
-    constructor({ root, manager, eventBus }) {
+    constructor({ root, manager = null, managerProvider = null, eventBus }) {
         this.root = root;
-        this.manager = manager;
+        this.managerRef = manager;
+        this.managerProvider = managerProvider;
         this.eventBus = eventBus;
 
         this.listElement = root.querySelector('[data-character-list]');
+        this.characterRail = null;
+        this.characterRailPrevious = root.querySelector('[data-character-scroll-previous]');
+        this.characterRailNext = root.querySelector('[data-character-scroll-next]');
+        this.characterRailStatus = root.querySelector('[data-character-scroll-status]');
         this.form = root.querySelector('[data-character-form]');
         this.dropZone = root.querySelector('[data-drop-zone]');
         this.preview = root.querySelector('[data-sheet-preview]');
@@ -25,8 +32,13 @@ export default class CharacterManagerUI {
         ];
     }
 
+    getManager() {
+        return this.managerProvider?.() ?? this.managerRef;
+    }
+
     boot() {
         this.bindForm();
+        this.bindCharacterRail();
         this.bindDropZone();
 
         this.eventBus.on('characters:changed', (characters) => {
@@ -63,8 +75,33 @@ export default class CharacterManagerUI {
             this.renderActiveCharacter(record);
         });
 
-        this.renderList(this.manager.characters);
-        this.renderActiveCharacter(this.manager.activeRecord);
+        this.eventBus.on('game:launched', () => {
+            const manager = this.getManager();
+            if (manager) {
+                this.renderList(manager.characters);
+                this.renderActiveCharacter(manager.activeRecord);
+            }
+        });
+
+        const manager = this.getManager();
+        if (manager) {
+            this.renderList(manager.characters);
+            this.renderActiveCharacter(manager.activeRecord);
+        }
+    }
+
+
+    bindCharacterRail() {
+        if (!this.listElement || this.characterRail) return;
+
+        this.characterRail = new ScrollSnapRail({
+            viewport: this.listElement,
+            itemSelector: '[data-character-card]',
+            previousButton: this.characterRailPrevious,
+            nextButton: this.characterRailNext,
+            statusElement: this.characterRailStatus,
+            focusSelector: '[data-select-character], [data-activate-character]',
+        }).boot();
     }
 
     renderList(characters) {
@@ -80,6 +117,11 @@ export default class CharacterManagerUI {
                 'character-card',
                 character.is_active ? 'is-active' : '',
             ].join(' ');
+            card.dataset.characterCard = String(character.id);
+            card.dataset.scrollRailItem = String(character.id);
+            card.setAttribute('role', 'group');
+            card.setAttribute('aria-label', `${character.name}${character.is_active ? '، کاراکتر فعال' : ''}`);
+            card.dir = 'rtl';
 
             card.innerHTML = `
                 <div class="character-card__preview">
@@ -152,13 +194,19 @@ export default class CharacterManagerUI {
             this.listElement.appendChild(card);
         });
 
+        const activeCard = this.listElement.querySelector('.character-card.is-active');
+        this.characterRail?.refresh({ preserveIndex: true, preferredItem: activeCard });
+
         this.listElement
             .querySelectorAll('[data-select-character]')
             .forEach((button) => {
                 button.addEventListener('click', async () => {
                     await this.guard(() =>
-                        this.manager.select(button.dataset.selectCharacter)
+                        this.getManager()?.select(button.dataset.selectCharacter)
                     );
+                    const card = button.closest('[data-character-card]');
+                    const index = this.characterRail?.items.indexOf(card) ?? -1;
+                    if (index >= 0) this.characterRail?.scrollTo(index, { behavior: 'smooth' });
                 });
             });
 
@@ -167,8 +215,12 @@ export default class CharacterManagerUI {
             .forEach((button) => {
                 button.addEventListener('click', async () => {
                     await this.guard(() =>
-                        this.manager.activate(button.dataset.activateCharacter)
+                        this.getManager()?.activate(button.dataset.activateCharacter)
                     );
+                    this.root.dispatchEvent(new CustomEvent('character-ui:activated', {
+                        bubbles: true,
+                        detail: { characterId: button.dataset.activateCharacter },
+                    }));
                 });
             });
 
@@ -185,7 +237,7 @@ export default class CharacterManagerUI {
                     }
 
                     await this.guard(() =>
-                        this.manager.remove(button.dataset.deleteCharacter)
+                        this.getManager()?.remove(button.dataset.deleteCharacter)
                     );
                 });
             });
@@ -208,7 +260,11 @@ export default class CharacterManagerUI {
             this.setSubmitting(true);
 
             try {
-                const character = await this.manager.create(formData);
+                const manager = this.getManager();
+                if (!manager) {
+                    throw new Error('مدیریت کاراکتر در این بازی در دسترس نیست.');
+                }
+                const character = await manager.create(formData);
                 this.form.reset();
                 this.preview?.removeAttribute('src');
                 this.showToast(`${character.name} ساخته شد.`);
@@ -376,6 +432,11 @@ export default class CharacterManagerUI {
             .trim()
             .replace(/[^a-z0-9]+/g, '-')
             .replace(/^-+|-+$/g, '') || `character-${Date.now()}`;
+    }
+
+    dispose() {
+        this.characterRail?.dispose();
+        this.characterRail = null;
     }
 
     escape(value) {

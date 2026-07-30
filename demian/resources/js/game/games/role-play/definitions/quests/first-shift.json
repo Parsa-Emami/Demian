@@ -1,0 +1,9 @@
+{
+  "id":"first-shift","title":"اولین شیفت در کافه","description":"با روناک هماهنگ شو، سه فنجان بردار و سفارش را تحویل بده.",
+  "objectives":[
+    {"id":"talk-ronak","type":"talk","title":"با روناک صحبت کن","target":"ronak","amount":1},
+    {"id":"collect-coffee","type":"collect","title":"سه فنجان قهوه بردار","itemId":"coffee-cup","amount":3,"requires":["talk-ronak"]},
+    {"id":"deliver-table","type":"deliver","title":"سفارش را به میز ۴ تحویل بده","itemId":"coffee-cup","target":"table-04","amount":3,"requires":["collect-coffee"]}
+  ],
+  "rewards":[{"type":"coins","amount":120},{"type":"item","itemId":"cafe-apron","amount":1},{"type":"relationship","npcId":"ronak","amount":8},{"type":"jobXp","jobId":"cafe","amount":80}]
+}

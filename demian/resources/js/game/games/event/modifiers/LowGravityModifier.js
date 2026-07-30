@@ -1,0 +1,1 @@
+import BaseModifier from './BaseModifier.js'; export default class LowGravityModifier extends BaseModifier { apply(runtime){ super.apply(runtime); runtime.gravityMultiplier*=Math.max(.05,this.value); } revert(runtime){ if(this.applied)runtime.gravityMultiplier/=Math.max(.05,this.value); super.revert(runtime); } }

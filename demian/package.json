@@ -4,7 +4,15 @@
     "type": "module",
     "scripts": {
         "build": "vite build",
-        "dev": "vite"
+        "dev": "vite",
+        "test:js": "node --test tests/js/*.test.js tests/js/tetris/*.test.js tests/js/collision/*.test.js tests/js/interaction/*.test.js tests/js/navigation/*.test.js tests/js/world/*.test.js tests/js/hide-and-seek/*.test.js tests/js/event/*.test.js tests/js/role-play/*.test.js tests/js/open-world/*.test.js",
+        "validate:phase3": "node tools/validate_phase3.mjs",
+        "validate:phase4": "node tools/validate_phase4.mjs",
+        "validate:phase5": "node tools/validate_phase5.mjs",
+        "validate:phase6": "node tools/validate_phase6.mjs",
+        "validate:phase7": "node tools/validate_phase7.mjs",
+        "validate:phase8": "node tools/validate_phase8.mjs",
+        "validate:final": "node tools/validate_final.mjs"
     },
     "devDependencies": {
         "@tailwindcss/vite": "^4.0.0",
@@ -15,5 +23,6 @@
     },
     "dependencies": {
         "three": "^0.185.1"
-    }
+    },
+    "version": "8.1.0"
 }

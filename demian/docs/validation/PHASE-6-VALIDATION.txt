@@ -1,0 +1,5 @@
+
+> validate:phase6
+> node tools/validate_phase6.mjs
+
+Phase 6 source validation passed: 231 JavaScript/MJS, 53 PHP and 3 event definitions checked.

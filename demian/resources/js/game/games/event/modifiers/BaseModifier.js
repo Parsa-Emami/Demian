@@ -1,0 +1,1 @@
+export default class BaseModifier { constructor(definition){ this.definition=definition; this.id=definition.id; this.type=definition.type; this.value=Number(definition.value); this.applied=false; } apply(_runtime){ this.applied=true; } revert(_runtime){ this.applied=false; } snapshot(){ return Object.freeze({id:this.id,type:this.type,value:this.value,applied:this.applied}); } }

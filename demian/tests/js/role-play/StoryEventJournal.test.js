@@ -1,0 +1,3 @@
+import test from 'node:test';import assert from 'node:assert/strict';import StoryEventJournal from '../../../resources/js/game/shared/story/StoryEventJournal.js';
+function storage(){const map=new Map();return{getItem:(k)=>map.get(k)??null,setItem:(k,v)=>map.set(k,v),removeItem:(k)=>map.delete(k)};}
+test('story journal persists ordered cross-game semantic events',()=>{const mem=storage(),a=new StoryEventJournal({storage:mem});a.append('play',{gameId:'tetris'});a.append('win',{gameId:'tetris'});const b=new StoryEventJournal({storage:mem});assert.deepEqual(b.since(0).map((e)=>e.type),['play','win']);assert.equal(b.latestCursor(),2);assert.deepEqual(b.since(1).map((e)=>e.type),['win']);});

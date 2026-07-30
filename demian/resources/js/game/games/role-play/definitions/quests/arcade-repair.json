@@ -1,0 +1,8 @@
+{
+  "id":"arcade-repair","title":"کابین پرنویز","description":"کیت تعمیر را پیدا کن و کابین آرکید را سرویس کن.",
+  "objectives":[
+    {"id":"collect-kit","type":"collect","title":"کیت تعمیر را بردار","itemId":"repair-kit","amount":1},
+    {"id":"repair-cabinet","type":"interact","title":"کابین آرکید را تعمیر کن","target":"arcade-repair","amount":1,"requires":["collect-kit"]}
+  ],
+  "rewards":[{"type":"coins","amount":180},{"type":"item","itemId":"neon-token","amount":10},{"type":"relationship","npcId":"amirreza","amount":10},{"type":"jobXp","jobId":"arcade-tech","amount":110}]
+}

@@ -1,0 +1,65 @@
+DEMIAN GAME PLATFORM — FINAL PHASE 8 VALIDATION
+Date: 2026-07-30
+
+1) JavaScript regression suite
+Command: npm run test:js
+Result: PASS
+Tests: 143
+Passed: 143
+Failed: 0
+Skipped: 0
+Raw output: docs/validation/PHASE-8-JS-TESTS.txt
+
+2) Architecture validators
+Phase 3: PASS — 225 JavaScript files
+Phase 4: PASS — 231 JavaScript/MJS + 53 PHP files
+Phase 5: PASS — 231 JavaScript/MJS + 53 PHP files
+Phase 6: PASS — 231 JavaScript/MJS + 53 PHP files + 3 event definitions
+Phase 7: PASS — 231 JavaScript/MJS + 53 PHP files + 3 dialogues + 3 quests
+Phase 8: PASS — 231 JavaScript/MJS + 53 PHP files + 24 chunks + 6 districts + 6 save points
+Raw outputs: docs/validation/PHASE-*-VALIDATION.txt
+
+3) Phase 8 acceptance scope
+PASS — versioned World Manifest
+PASS — 24 data-driven chunks
+PASS — 6 districts
+PASS — 6 persistent save points
+PASS — prioritized chunk streaming
+PASS — active/preload rings
+PASS — concurrency and memory budget
+PASS — obsolete load cancellation with AbortController
+PASS — collider and navigation blocker lifecycle
+PASS — mini map and world map
+PASS — fog of war and discovery persistence
+PASS — fast travel restricted to unlocked save points
+PASS — distance-tiered AI budgeting
+PASS — checksum/version guarded Open World save
+PASS — one shared renderer and one shared runtime
+PASS — regressions for phases 1–7
+
+4) Environment-dependent commands
+npm ci: NOT EXECUTABLE IN THIS SANDBOX
+Reason: the sandbox's internal npm proxy returned HTTP 404 for yargs-parser-21.1.1.tgz.
+The committed package-lock.json uses registry.npmjs.org URLs and contains no private mirror URL.
+
+npm run build: NOT EXECUTABLE AFTER npm ci FAILURE
+Reason: Vite could not be installed in this sandbox.
+
+php artisan test: NOT EXECUTABLE IN THIS SANDBOX
+Reason: vendor/autoload.php is absent because Composer dependencies are not installed.
+PHP syntax validation for all 53 PHP files passed in the architecture validators.
+
+Raw environment output: docs/validation/PHASE-8-ENVIRONMENT-CHECK.txt
+
+5) Expected production verification
+composer install
+php artisan test
+npm ci
+npm run test:js
+npm run validate:phase3
+npm run validate:phase4
+npm run validate:phase5
+npm run validate:phase6
+npm run validate:phase7
+npm run validate:phase8
+npm run build

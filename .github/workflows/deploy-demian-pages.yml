@@ -88,7 +88,6 @@ jobs:
       - name: Install Composer dependencies
         run: |
           composer install \
-            --no-dev \
             --prefer-dist \
             --optimize-autoloader \
             --no-interaction \
@@ -102,6 +101,9 @@ jobs:
           php artisan db:seed --class=TiamCharacterSeeder --force
           php artisan route:list
 
+      - name: Run Laravel tests
+        run: php artisan test
+
       - name: Install frontend dependencies
         shell: bash
         run: |
@@ -112,6 +114,20 @@ jobs:
           else
             npm install
           fi
+
+      - name: Run JavaScript architecture tests
+        run: npm run test:js
+
+      - name: Validate platform architecture
+        shell: bash
+        run: |
+          npm run validate:phase3
+          npm run validate:phase4
+          npm run validate:phase5
+          npm run validate:phase6
+          npm run validate:phase7
+          npm run validate:phase8
+          npm run validate:final
 
       - name: Build frontend assets
         run: npm run build
@@ -380,8 +396,8 @@ jobs:
           if 'TIAM' not in html and 'تیام' not in html:
               raise SystemExit('ERROR: TIAM heading was not found in index.html.')
 
-          if 'Demian V5.2' not in html:
-              raise SystemExit('ERROR: V5.2 Blade output was not deployed.')
+          if 'data-runtime-version="8.1.0-final"' not in html:
+              raise SystemExit('ERROR: final 8.1.0 Blade output was not deployed.')
 
           if not (site / 'manifest.webmanifest').is_file():
               raise SystemExit('ERROR: Landscape web manifest was not published.')

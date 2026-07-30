@@ -1,0 +1,2 @@
+import BaseObjective, { OBJECTIVE_STATUS } from './BaseObjective.js';
+export default class ScoreObjective extends BaseObjective { constructor(definition){ super(definition); this.target=Math.max(1,Number(definition.amount)||1); } apply(event){ if(this.status!==OBJECTIVE_STATUS.ACTIVE||event.type!=='score')return false; this.current=Math.max(this.current,Math.max(0,Number(event.total)||0)); return this.current>=this.target ? this.complete() : true; } }

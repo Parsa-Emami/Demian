@@ -1,0 +1,9 @@
+{
+  "id":"meet-the-team","title":"آشنایی با تیم دمیان","description":"با هر سه عضو تیم کافه صحبت کن.",
+  "objectives":[
+    {"id":"talk-tiam","type":"talk","title":"با تیام صحبت کن","target":"tiam","amount":1},
+    {"id":"talk-ronak","type":"talk","title":"با روناک صحبت کن","target":"ronak","amount":1},
+    {"id":"talk-amirreza","type":"talk","title":"با امیررضا صحبت کن","target":"amirreza","amount":1}
+  ],
+  "rewards":[{"type":"coins","amount":75},{"type":"item","itemId":"neon-token","amount":5}]
+}

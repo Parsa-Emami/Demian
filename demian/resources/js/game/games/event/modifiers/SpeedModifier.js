@@ -1,0 +1,1 @@
+import BaseModifier from './BaseModifier.js'; export default class SpeedModifier extends BaseModifier { apply(runtime){ super.apply(runtime); runtime.movementSpeedMultiplier*=Math.max(.1,this.value); } revert(runtime){ if(this.applied)runtime.movementSpeedMultiplier/=Math.max(.1,this.value); super.revert(runtime); } }

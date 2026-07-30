@@ -1,0 +1,132 @@
+{
+  "$schema": "../schemas/event-definition.schema.json",
+  "schemaVersion": 1,
+  "id": "survival-night",
+  "revision": 1,
+  "title": "Survival Night",
+  "subtitle": "Outlast the dark.",
+  "description": "تا پایان شب دوام بیاور و نگهبان‌های سایه را شکست بده.",
+  "map": "demian-event-arena",
+  "duration": 48,
+  "countdown": 4,
+  "playerCount": {
+    "min": 1,
+    "max": 4
+  },
+  "spawn": {
+    "x": 0,
+    "z": 8
+  },
+  "objectives": [
+    {
+      "id": "survive-night",
+      "type": "survive",
+      "title": "زنده‌ماندن",
+      "seconds": 48,
+      "points": 900
+    },
+    {
+      "id": "defeat-drones",
+      "type": "defeat",
+      "title": "شکست نگهبان‌ها",
+      "enemy": "shadow-drone",
+      "amount": 5,
+      "points": 140
+    }
+  ],
+  "modifiers": [
+    {
+      "id": "night-fog",
+      "type": "fog",
+      "value": 0.052
+    },
+    {
+      "id": "survival-speed",
+      "type": "speed",
+      "value": 1.08
+    }
+  ],
+  "rewards": [
+    {
+      "type": "coin",
+      "amount": 500
+    },
+    {
+      "type": "xp",
+      "amount": 300
+    },
+    {
+      "type": "badge",
+      "id": "night-survivor"
+    }
+  ],
+  "world": {
+    "collectibles": [],
+    "zones": [],
+    "enemies": [
+      {
+        "id": "drone-01",
+        "kind": "shadow-drone",
+        "x": -17,
+        "z": -8,
+        "health": 2,
+        "speed": 2.25,
+        "points": 180
+      },
+      {
+        "id": "drone-02",
+        "kind": "shadow-drone",
+        "x": -9,
+        "z": -10,
+        "health": 2,
+        "speed": 2.2,
+        "points": 180
+      },
+      {
+        "id": "drone-03",
+        "kind": "shadow-drone",
+        "x": 1,
+        "z": -10,
+        "health": 2,
+        "speed": 2.3,
+        "points": 180
+      },
+      {
+        "id": "drone-04",
+        "kind": "shadow-drone",
+        "x": 11,
+        "z": -8,
+        "health": 2,
+        "speed": 2.15,
+        "points": 180
+      },
+      {
+        "id": "drone-05",
+        "kind": "shadow-drone",
+        "x": 18,
+        "z": 2,
+        "health": 2,
+        "speed": 2.25,
+        "points": 180
+      },
+      {
+        "id": "drone-06",
+        "kind": "shadow-drone",
+        "x": 12,
+        "z": 10,
+        "health": 2,
+        "speed": 2.2,
+        "points": 180
+      },
+      {
+        "id": "drone-07",
+        "kind": "shadow-drone",
+        "x": -15,
+        "z": 8,
+        "health": 2,
+        "speed": 2.3,
+        "points": 180
+      }
+    ]
+  }
+}

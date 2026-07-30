@@ -26,12 +26,12 @@ export const WORLD_CONFIG = Object.freeze({
     ]),
 });
 
-export function randomWorldPoint(margin = 4) {
+export function randomWorldPoint(margin = 4, random = Math.random) {
     const xLimit = Math.max(1, WORLD_CONFIG.bounds.x - margin);
     const zLimit = Math.max(1, WORLD_CONFIG.bounds.z - margin);
 
     return {
-        x: (Math.random() * 2 - 1) * xLimit,
-        z: (Math.random() * 2 - 1) * zLimit,
+        x: (random() * 2 - 1) * xLimit,
+        z: (random() * 2 - 1) * zLimit,
     };
 }

@@ -17,6 +17,7 @@ export default class SidebarController {
         this.onKeyDown = this.onKeyDown.bind(this);
         this.onBackdrop = this.onBackdrop.bind(this);
         this.onBreakpointChange = this.onBreakpointChange.bind(this);
+        this.onCharacterActivated = this.onCharacterActivated.bind(this);
 
         this.state = this.readState();
     }
@@ -28,6 +29,7 @@ export default class SidebarController {
 
         this.toggleButtons.forEach((button) => button.addEventListener('click', this.onToggle));
         this.backdrop?.addEventListener('click', this.onBackdrop);
+        this.root.addEventListener('character-ui:activated', this.onCharacterActivated);
         window.addEventListener('keydown', this.onKeyDown);
         this.mobileQuery.addEventListener?.('change', this.onBreakpointChange);
         this.applyState({ animate: false });
@@ -45,6 +47,15 @@ export default class SidebarController {
             this.persistState();
             this.applyState({ animate: true });
         }
+    }
+
+
+    onCharacterActivated() {
+        if (!this.mobileQuery.matches || this.state !== 'expanded') return;
+        window.setTimeout(() => {
+            this.state = 'collapsed';
+            this.applyState({ animate: true });
+        }, 120);
     }
 
     onBreakpointChange(event) {
@@ -146,6 +157,7 @@ export default class SidebarController {
     dispose() {
         this.toggleButtons.forEach((button) => button.removeEventListener('click', this.onToggle));
         this.backdrop?.removeEventListener('click', this.onBackdrop);
+        this.root.removeEventListener('character-ui:activated', this.onCharacterActivated);
         window.removeEventListener('keydown', this.onKeyDown);
         this.mobileQuery.removeEventListener?.('change', this.onBreakpointChange);
     }

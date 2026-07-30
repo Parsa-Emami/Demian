@@ -1,16 +1,17 @@
 import * as THREE from 'three';
 import { WORLD_CONFIG } from './WorldConfig';
+import { OPEN_WORLD_DISTRICTS, createCabinetDefinitions } from './OpenWorldManifest';
 
-const DISTRICTS = Object.freeze([
-    Object.freeze({ x: -28, z: -3, accent: 0xff4fd8, label: 'NEON BAY' }),
-    Object.freeze({ x: 0, z: 3, accent: 0x8b5cf6, label: 'DEMIAN CORE' }),
-    Object.freeze({ x: 28, z: -2, accent: 0x22d3ee, label: 'TURBO LANE' }),
-]);
+const DISTRICTS = Object.freeze(OPEN_WORLD_DISTRICTS.map((district, index) => Object.freeze({
+    ...district,
+    accent: [0xff4fd8, 0x8b5cf6, 0x22d3ee][index],
+})));
 
 export default class ArcadeWorld {
-    constructor(scene, { performanceProfile = null } = {}) {
+    constructor(scene, { performanceProfile = null, streamingMode = false } = {}) {
         this.scene = scene;
         this.performanceProfile = performanceProfile;
+        this.streamingMode = Boolean(streamingMode);
         this.root = new THREE.Group();
         this.root.name = 'DemianV5OpenArcadeWorld';
         this.time = 0;
@@ -22,14 +23,17 @@ export default class ArcadeWorld {
         this.materials = [];
         this.geometries = [];
         this.decorDensity = Number(performanceProfile?.decorDensity ?? 0.8);
+        this.cabinets = createCabinetDefinitions(this.decorDensity);
 
         scene.add(this.root);
 
         this.createFloor();
         this.createRoadNetwork();
         this.createDistricts();
-        this.createBoundary();
-        this.createBackWall();
+        if (!this.streamingMode) {
+            this.createBoundary();
+            this.createBackWall();
+        }
         this.createArcadeCabinets();
         this.createFloatingPixels();
     }
@@ -327,30 +331,26 @@ export default class ArcadeWorld {
     }
 
     createArcadeCabinets() {
-        const labels = ['PLAY', 'JUMP', 'DASH', 'RUN', 'WIN', 'COMBO'];
-        const accentValues = ['#ff4fd8', '#8b5cf6', '#22d3ee', '#fbbf24'];
-        const count = Math.max(8, Math.round(18 * this.decorDensity));
-
-        for (let index = 0; index < count; index += 1) {
-            const district = DISTRICTS[index % DISTRICTS.length];
-            const side = index % 2 === 0 ? -1 : 1;
-            const row = Math.floor(index / 2) % 3;
-            const accent = accentValues[index % accentValues.length];
+        this.cabinets.forEach((cabinet) => {
             const sprite = new THREE.Sprite(
                 this.spriteMaterial({
-                    map: this.createCabinetTexture(accent, labels[index % labels.length]),
+                    map: this.createCabinetTexture(cabinet.accent, cabinet.label),
                 })
             );
+            sprite.name = `ArcadeCabinet:${cabinet.id}`;
             sprite.scale.set(2.3, 3.75, 1);
-            sprite.position.set(
-                district.x + side * (7.2 + row * 2.5),
-                1.86,
-                district.z - 7 + row * 5.8
-            );
+            sprite.position.set(cabinet.x, 1.86, cabinet.z);
             sprite.renderOrder = 7;
             this.root.add(sprite);
-            this.animatedSigns.push({ object: sprite, material: sprite.material, baseY: sprite.position.y, phase: index * 0.54, baseOpacity: 0.96, bob: 0.035 });
-        }
+            this.animatedSigns.push({
+                object: sprite,
+                material: sprite.material,
+                baseY: sprite.position.y,
+                phase: cabinet.index * 0.54,
+                baseOpacity: 0.96,
+                bob: 0.035,
+            });
+        });
     }
 
     createFloatingPixels() {

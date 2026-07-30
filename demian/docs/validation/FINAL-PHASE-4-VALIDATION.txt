@@ -1,0 +1,5 @@
+
+> validate:phase4
+> node tools/validate_phase4.mjs
+
+Phase 4 source validation passed: 235 JavaScript/MJS and 53 PHP files checked.

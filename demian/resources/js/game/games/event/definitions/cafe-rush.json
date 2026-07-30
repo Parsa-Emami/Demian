@@ -1,0 +1,148 @@
+{
+  "$schema": "../schemas/event-definition.schema.json",
+  "schemaVersion": 1,
+  "id": "cafe-rush",
+  "revision": 1,
+  "title": "Cafe Rush",
+  "subtitle": "Collect. Deliver. Celebrate.",
+  "description": "فنجان‌های سفارش را جمع کن و پیش از پایان زمان به پیشخوان تحویل بده.",
+  "map": "demian-event-arena",
+  "duration": 75,
+  "countdown": 3,
+  "playerCount": {
+    "min": 1,
+    "max": 4
+  },
+  "spawn": {
+    "x": -16,
+    "z": 9
+  },
+  "objectives": [
+    {
+      "id": "collect-coffee",
+      "type": "collect",
+      "title": "جمع‌آوری سفارش‌ها",
+      "item": "coffee-cup",
+      "amount": 8,
+      "points": 80
+    },
+    {
+      "id": "deliver-order",
+      "type": "reach",
+      "title": "تحویل در پیشخوان",
+      "zone": "delivery-counter",
+      "requires": [
+        "collect-coffee"
+      ],
+      "points": 500
+    }
+  ],
+  "modifiers": [
+    {
+      "id": "rush-speed",
+      "type": "speed",
+      "value": 1.15
+    }
+  ],
+  "rewards": [
+    {
+      "type": "coin",
+      "amount": 300
+    },
+    {
+      "type": "xp",
+      "amount": 150
+    },
+    {
+      "type": "badge",
+      "id": "cafe-runner",
+      "conditions": {
+        "minScore": 900
+      }
+    }
+  ],
+  "world": {
+    "collectibles": [
+      {
+        "id": "cup-01",
+        "item": "coffee-cup",
+        "x": -14,
+        "z": 5,
+        "points": 60
+      },
+      {
+        "id": "cup-02",
+        "item": "coffee-cup",
+        "x": -8,
+        "z": 9,
+        "points": 60
+      },
+      {
+        "id": "cup-03",
+        "item": "coffee-cup",
+        "x": -2,
+        "z": 5,
+        "points": 60
+      },
+      {
+        "id": "cup-04",
+        "item": "coffee-cup",
+        "x": 5,
+        "z": 9,
+        "points": 60
+      },
+      {
+        "id": "cup-05",
+        "item": "coffee-cup",
+        "x": 14,
+        "z": 6,
+        "points": 60
+      },
+      {
+        "id": "cup-06",
+        "item": "coffee-cup",
+        "x": 15,
+        "z": -5,
+        "points": 60
+      },
+      {
+        "id": "cup-07",
+        "item": "coffee-cup",
+        "x": 7,
+        "z": -9,
+        "points": 60
+      },
+      {
+        "id": "cup-08",
+        "item": "coffee-cup",
+        "x": -3,
+        "z": -10,
+        "points": 60
+      },
+      {
+        "id": "cup-09",
+        "item": "coffee-cup",
+        "x": -12,
+        "z": -7,
+        "points": 60
+      },
+      {
+        "id": "cup-10",
+        "item": "coffee-cup",
+        "x": 2,
+        "z": 0,
+        "points": 60
+      }
+    ],
+    "zones": [
+      {
+        "id": "delivery-counter",
+        "label": "DELIVERY",
+        "x": -5,
+        "z": -10.6,
+        "radius": 2.1
+      }
+    ],
+    "enemies": []
+  }
+}

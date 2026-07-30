@@ -1,0 +1,1 @@
+export const ROLE_PLAY_CONFIG=Object.freeze({fixedStep:1/60,player:Object.freeze({radius:0.48,walkSpeed:3.6,runSpeed:6.1}),npc:Object.freeze({radius:0.44,speed:2.1,repathSeconds:1.4}),world:Object.freeze({startMinute:510,minutesPerSecond:2.5,autosaveSeconds:12}),camera:Object.freeze({height:17.5,distance:15.5,smoothing:4.5}),inventory:Object.freeze({capacity:24})});

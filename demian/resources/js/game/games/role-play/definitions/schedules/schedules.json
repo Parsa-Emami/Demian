@@ -1,0 +1,27 @@
+[
+  {"npcId":"tiam","entries":[
+    {"minute":0,"activity":"rest","position":{"x":-13,"z":9}},
+    {"minute":480,"activity":"enter","position":{"x":-11,"z":8}},
+    {"minute":540,"activity":"work","position":{"x":-5,"z":-3}},
+    {"minute":780,"activity":"eat","position":{"x":6,"z":7}},
+    {"minute":900,"activity":"play","position":{"x":12,"z":-5}},
+    {"minute":1080,"activity":"talk","position":{"x":-2,"z":1}},
+    {"minute":1320,"activity":"leave","position":{"x":-14,"z":10}}
+  ]},
+  {"npcId":"ronak","entries":[
+    {"minute":0,"activity":"rest","position":{"x":-12,"z":9}},
+    {"minute":450,"activity":"enter","position":{"x":-10,"z":8}},
+    {"minute":510,"activity":"work","position":{"x":-6,"z":-1}},
+    {"minute":720,"activity":"talk","position":{"x":-1,"z":0}},
+    {"minute":960,"activity":"rest","position":{"x":7,"z":7}},
+    {"minute":1260,"activity":"leave","position":{"x":-14,"z":10}}
+  ]},
+  {"npcId":"amirreza","entries":[
+    {"minute":0,"activity":"rest","position":{"x":13,"z":9}},
+    {"minute":600,"activity":"enter","position":{"x":11,"z":8}},
+    {"minute":660,"activity":"work","position":{"x":10,"z":-5}},
+    {"minute":840,"activity":"play","position":{"x":12,"z":-4}},
+    {"minute":1080,"activity":"talk","position":{"x":5,"z":1}},
+    {"minute":1380,"activity":"leave","position":{"x":14,"z":10}}
+  ]}
+]

@@ -1,0 +1,5 @@
+
+> validate:phase8
+> node tools/validate_phase8.mjs
+
+Phase 8 source validation passed: 235 JavaScript/MJS, 53 PHP, 24 chunks, 6 districts and 6 save points checked.

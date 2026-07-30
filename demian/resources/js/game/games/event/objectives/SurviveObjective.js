@@ -1,0 +1,2 @@
+import BaseObjective, { OBJECTIVE_STATUS } from './BaseObjective.js';
+export default class SurviveObjective extends BaseObjective { constructor(definition){ super(definition); this.target=Math.max(.001,Number(definition.seconds)||1); } update(deltaTime){ if(this.status!==OBJECTIVE_STATUS.ACTIVE)return false; this.current=Math.min(this.target,this.current+Math.max(0,deltaTime)); return this.current>=this.target ? this.complete() : true; } }

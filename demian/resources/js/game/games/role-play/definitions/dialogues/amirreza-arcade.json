@@ -1,0 +1,12 @@
+{
+  "id":"amirreza-arcade","speaker":"amirreza","start":"intro","nodes":{
+    "intro":{"speaker":"امیررضا","text":"کابین قدیمی دوباره نویز می‌ده. اگه تعمیرش کنیم، حالت مخفی بازی باز می‌شه.","choices":[
+      {"id":"help","text":"کیت تعمیر رو پیدا می‌کنم.","next":"accepted","actions":[{"type":"startQuest","questId":"arcade-repair"},{"type":"relationship","npcId":"amirreza","amount":3}]},
+      {"id":"tetris","text":"اول یک دست تتریس بازی کنم.","next":"play","actions":[{"type":"emit","event":"launch-game","payload":{"gameId":"tetris"}}]},
+      {"id":"later","text":"بعداً.","next":"bye"}
+    ]},
+    "accepted":{"speaker":"امیررضا","text":"کیت کنار انبار کوچیکه. بعدش روی کابین تعمیر رو انجام بده.","end":true},
+    "play":{"speaker":"امیررضا","text":"رکوردت رو می‌بینم!","end":true},
+    "bye":{"speaker":"امیررضا","text":"باشه، ولی این صدا بالاخره همه رو کلافه می‌کنه.","end":true}
+  }
+}

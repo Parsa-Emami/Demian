@@ -1,0 +1,5 @@
+[
+  {"id":"cafe","title":"باریستای کافه","shiftXp":30,"levels":[{"level":1,"xp":50},{"level":2,"xp":150},{"level":3,"xp":350}]},
+  {"id":"delivery","title":"پیک دمیان","shiftXp":35,"levels":[{"level":1,"xp":60},{"level":2,"xp":180},{"level":3,"xp":400}]},
+  {"id":"arcade-tech","title":"تکنسین آرکید","shiftXp":40,"levels":[{"level":1,"xp":75},{"level":2,"xp":220},{"level":3,"xp":480}]}
+]

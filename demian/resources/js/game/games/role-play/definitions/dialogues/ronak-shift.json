@@ -1,0 +1,10 @@
+{
+  "id":"ronak-shift","speaker":"ronak","start":"hello","nodes":{
+    "hello":{"speaker":"روناک","text":"شیفت اول همیشه شلوغه، ولی نگران نباش. فنجان‌ها کنار کانتر آماده‌ان.","actions":[{"type":"emit","event":"quest-event","payload":{"type":"talk","target":"ronak"}}],"choices":[
+      {"id":"tips","text":"نکته‌ای برای بهتر کار کردن؟","next":"tip"},
+      {"id":"ready","text":"آماده‌ام.","next":"ready"}
+    ]},
+    "tip":{"speaker":"روناک","text":"اول سفارش رو کامل کن، بعد تحویل بده. عجله بدون دقت امتیاز رابطه رو کم می‌کنه.","actions":[{"type":"relationship","npcId":"ronak","amount":3,"reason":"asked-advice"}],"end":true},
+    "ready":{"speaker":"روناک","text":"پس شروع کنیم. سه فنجان بردار و به میز شماره چهار ببر.","end":true}
+  }
+}

@@ -84,6 +84,8 @@ export default class SpriteCharacter {
         this.jumpDirection = new THREE.Vector3(1, 0, 0);
         this.zeroVelocity = new THREE.Vector3();
         this.isPlayerControlled = Boolean(controlled);
+        this.movementResolver = null;
+        this.colliderRadius = 0.72;
 
         this.state = 'idle';
         this.previousState = null;
@@ -118,7 +120,7 @@ export default class SpriteCharacter {
         // values from older versions must not make the selected player smaller
         // or larger than the NPC representation of another character.
         this.scaleFactor = 1;
-        this.bounds = { ...WORLD_CONFIG.bounds };
+        this.bounds = { minX: -WORLD_CONFIG.bounds.x, maxX: WORLD_CONFIG.bounds.x, minZ: -WORLD_CONFIG.bounds.z, maxZ: WORLD_CONFIG.bounds.z };
         this.airControl = Number(settings.air_control ?? 0.46);
         this.minimumJumpSpeed = Number(settings.minimum_jump_speed ?? this.walkSpeed * 0.9);
 
@@ -211,6 +213,8 @@ export default class SpriteCharacter {
 
     setPlayerControlled(controlled, { playIntro = false } = {}) {
         this.isPlayerControlled = Boolean(controlled);
+        this.movementResolver = null;
+        this.colliderRadius = 0.72;
         this.locator.visible = this.isPlayerControlled;
         this.selectionRing.visible = this.isPlayerControlled;
         this.effects?.setIntensity(this.isPlayerControlled ? 1 : 0.28);
@@ -233,8 +237,60 @@ export default class SpriteCharacter {
             return;
         }
 
-        this.bounds.x = Math.max(1, Number(bounds.x) || WORLD_CONFIG.bounds.x);
-        this.bounds.z = Math.max(1, Number(bounds.z) || WORLD_CONFIG.bounds.z);
+        if ([bounds.minX, bounds.maxX, bounds.minZ, bounds.maxZ].every(Number.isFinite)) {
+            this.bounds.minX = Number(bounds.minX);
+            this.bounds.maxX = Number(bounds.maxX);
+            this.bounds.minZ = Number(bounds.minZ);
+            this.bounds.maxZ = Number(bounds.maxZ);
+            return;
+        }
+        const x = Math.max(1, Number(bounds.x) || WORLD_CONFIG.bounds.x);
+        const z = Math.max(1, Number(bounds.z) || WORLD_CONFIG.bounds.z);
+        this.bounds = { minX: -x, maxX: x, minZ: -z, maxZ: z };
+    }
+
+    setMovementResolver(resolver, { radius = this.colliderRadius } = {}) {
+        if (resolver !== null && typeof resolver !== 'function') {
+            throw new TypeError('Movement resolver must be a function or null.');
+        }
+
+        this.movementResolver = resolver;
+        this.colliderRadius = Math.max(0.1, Number(radius) || this.colliderRadius);
+    }
+
+    applyHorizontalMovement(deltaTime) {
+        const start = { x: this.group.position.x, z: this.group.position.z };
+        const target = {
+            x: start.x + this.velocity.x * deltaTime,
+            z: start.z + this.velocity.z * deltaTime,
+        };
+
+        if (!this.movementResolver) {
+            this.group.position.x = target.x;
+            this.group.position.z = target.z;
+            this.constrainToWorld();
+            return;
+        }
+
+        const result = this.movementResolver({
+            from: start,
+            target,
+            radius: this.colliderRadius,
+            entity: this,
+        });
+
+        if (!result?.position) {
+            this.group.position.x = target.x;
+            this.group.position.z = target.z;
+            this.constrainToWorld();
+            return;
+        }
+
+        this.group.position.x = result.position.x;
+        this.group.position.z = result.position.z;
+        if (result.blockedX) this.velocity.x = 0;
+        if (result.blockedZ) this.velocity.z = 0;
+        this.constrainToWorld();
     }
 
     createLocatorTexture() {
@@ -367,8 +423,7 @@ export default class SpriteCharacter {
         this.horizontalMotion = damp(this.horizontalMotion, this.lastMoveDirection.x, 12, deltaTime);
         this.depthMotion = damp(this.depthMotion, this.lastMoveDirection.z, 12, deltaTime);
 
-        this.group.position.addScaledVector(this.velocity, deltaTime);
-        this.constrainToWorld();
+        this.applyHorizontalMovement(deltaTime);
         this.updateJumpPhysics(deltaTime);
 
         if (this.stateLock <= 0) {
@@ -392,8 +447,8 @@ export default class SpriteCharacter {
         const previousX = this.group.position.x;
         const previousZ = this.group.position.z;
 
-        this.group.position.x = THREE.MathUtils.clamp(this.group.position.x, -this.bounds.x, this.bounds.x);
-        this.group.position.z = THREE.MathUtils.clamp(this.group.position.z, -this.bounds.z, this.bounds.z);
+        this.group.position.x = THREE.MathUtils.clamp(this.group.position.x, this.bounds.minX, this.bounds.maxX);
+        this.group.position.z = THREE.MathUtils.clamp(this.group.position.z, this.bounds.minZ, this.bounds.maxZ);
 
         if (this.group.position.x !== previousX) {
             this.velocity.x = 0;
@@ -836,6 +891,7 @@ export default class SpriteCharacter {
     }
 
     dispose() {
+        this.movementResolver = null;
         this.speech.dispose();
         this.effects.dispose();
         this.texture.dispose();

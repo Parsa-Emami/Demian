@@ -1,0 +1,14 @@
+{
+  "id":"tiam-intro","speaker":"tiam","start":"welcome","nodes":{
+    "welcome":{"speaker":"تیام","text":"به کافه دمیان خوش اومدی. اینجا هر انتخاب، بخشی از داستانت می‌شه.","choices":[
+      {"id":"work","text":"برای شروع چه کاری داری؟","next":"job-offer","actions":[{"type":"relationship","npcId":"tiam","amount":2,"reason":"curious"}]},
+      {"id":"explore","text":"فعلاً می‌خوام کافه رو ببینم.","next":"goodbye"}
+    ]},
+    "job-offer":{"speaker":"تیام","text":"روناک برای اولین شیفت کمک لازم داره. سه فنجان آماده کن و به میز چهار برسون.","choices":[
+      {"id":"accept","text":"قبول می‌کنم.","next":"accepted","actions":[{"type":"setFlag","key":"accepted-first-shift"},{"type":"startQuest","questId":"first-shift"},{"type":"jobXp","jobId":"cafe","amount":5}]},
+      {"id":"later","text":"بعداً برمی‌گردم.","next":"goodbye"}
+    ]},
+    "accepted":{"speaker":"تیام","text":"عالیه. اول با روناک حرف بزن؛ مسیر رو بهت نشون می‌ده.","actions":[{"type":"relationship","npcId":"tiam","amount":4,"reason":"accepted-job"}],"end":true},
+    "goodbye":{"speaker":"تیام","text":"هر وقت آماده بودی، من اینجام.","end":true}
+  }
+}

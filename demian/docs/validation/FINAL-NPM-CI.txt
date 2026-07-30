@@ -1,0 +1,8 @@
+npm error code E404
+npm error 404 Not Found - GET https://packages.applied-caas-gateway1.internal.api.openai.org/artifactory/api/npm/npm-public/yargs-parser/-/yargs-parser-21.1.1.tgz
+npm error 404
+npm error 404  'yargs-parser@https://packages.applied-caas-gateway1.internal.api.openai.org/artifactory/api/npm/npm-public/yargs-parser/-/yargs-parser-21.1.1.tgz' is not in this registry.
+npm error 404
+npm error 404 Note that you can also install from a
+npm error 404 tarball, folder, http url, or git url.
+npm error A complete log of this run can be found in: /home/oai/.npm/_logs/2026-07-30T08_53_15_908Z-debug-0.log

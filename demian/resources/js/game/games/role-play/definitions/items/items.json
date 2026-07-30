@@ -1,0 +1,8 @@
+[
+  {"id":"coffee-cup","title":"فنجان قهوه","stackSize":8,"weight":0.3,"value":18,"tags":["drink","quest"]},
+  {"id":"coffee-beans","title":"دانه قهوه","stackSize":20,"weight":0.1,"value":6,"tags":["ingredient"]},
+  {"id":"repair-kit","title":"کیت تعمیر آرکید","stackSize":4,"weight":1.2,"value":65,"tags":["tool","quest"],"equipSlot":"tool"},
+  {"id":"cafe-apron","title":"پیش‌بند کافه دمیان","stackSize":1,"weight":0.5,"value":90,"tags":["outfit"],"equipSlot":"outfit"},
+  {"id":"neon-token","title":"توکن نئون","stackSize":99,"weight":0.01,"value":4,"tags":["currency"]},
+  {"id":"delivery-bag","title":"کیف پیک","stackSize":1,"weight":0.8,"value":120,"tags":["tool"],"equipSlot":"tool"}
+]

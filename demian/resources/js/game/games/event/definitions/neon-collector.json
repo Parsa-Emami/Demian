@@ -1,0 +1,153 @@
+{
+  "$schema": "../schemas/event-definition.schema.json",
+  "schemaVersion": 1,
+  "id": "neon-collector",
+  "revision": 1,
+  "title": "Neon Collector",
+  "subtitle": "Follow the glow.",
+  "description": "خرده‌نورهای نئون را جمع کن و امتیاز هدف را به دست بیاور.",
+  "map": "demian-event-arena",
+  "duration": 90,
+  "countdown": 3,
+  "playerCount": {
+    "min": 1,
+    "max": 4
+  },
+  "spawn": {
+    "x": 0,
+    "z": 10
+  },
+  "objectives": [
+    {
+      "id": "collect-shards",
+      "type": "collect",
+      "title": "جمع‌آوری خرده‌نور",
+      "item": "neon-shard",
+      "amount": 10,
+      "points": 100
+    },
+    {
+      "id": "score-target",
+      "type": "score",
+      "title": "رسیدن به امتیاز هدف",
+      "amount": 1800,
+      "points": 350
+    }
+  ],
+  "modifiers": [
+    {
+      "id": "double-score",
+      "type": "double-score",
+      "value": 2
+    },
+    {
+      "id": "neon-fog",
+      "type": "fog",
+      "value": 0.045
+    }
+  ],
+  "rewards": [
+    {
+      "type": "coin",
+      "amount": 420
+    },
+    {
+      "type": "xp",
+      "amount": 220
+    },
+    {
+      "type": "cosmetic",
+      "id": "neon-trail"
+    }
+  ],
+  "world": {
+    "collectibles": [
+      {
+        "id": "shard-01",
+        "item": "neon-shard",
+        "x": -18,
+        "z": 9,
+        "points": 90
+      },
+      {
+        "id": "shard-02",
+        "item": "neon-shard",
+        "x": -13,
+        "z": 1,
+        "points": 90
+      },
+      {
+        "id": "shard-03",
+        "item": "neon-shard",
+        "x": -16,
+        "z": -9,
+        "points": 90
+      },
+      {
+        "id": "shard-04",
+        "item": "neon-shard",
+        "x": -7,
+        "z": -5,
+        "points": 90
+      },
+      {
+        "id": "shard-05",
+        "item": "neon-shard",
+        "x": -5,
+        "z": 8,
+        "points": 90
+      },
+      {
+        "id": "shard-06",
+        "item": "neon-shard",
+        "x": 1,
+        "z": 5,
+        "points": 90
+      },
+      {
+        "id": "shard-07",
+        "item": "neon-shard",
+        "x": 4,
+        "z": -9,
+        "points": 90
+      },
+      {
+        "id": "shard-08",
+        "item": "neon-shard",
+        "x": 9,
+        "z": 1,
+        "points": 90
+      },
+      {
+        "id": "shard-09",
+        "item": "neon-shard",
+        "x": 15,
+        "z": 8,
+        "points": 90
+      },
+      {
+        "id": "shard-10",
+        "item": "neon-shard",
+        "x": 18,
+        "z": -7,
+        "points": 90
+      },
+      {
+        "id": "shard-11",
+        "item": "neon-shard",
+        "x": 11,
+        "z": -10,
+        "points": 90
+      },
+      {
+        "id": "shard-12",
+        "item": "neon-shard",
+        "x": 0,
+        "z": -1,
+        "points": 90
+      }
+    ],
+    "zones": [],
+    "enemies": []
+  }
+}
