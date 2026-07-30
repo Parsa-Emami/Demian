@@ -8,7 +8,7 @@ use Tests\TestCase;
 
 class RouteRegistrationTest extends TestCase
 {
-    public function test_required_routes_are_present_in_the_http_test_kernel(): void
+    public function test_required_web_and_api_routes_are_registered(): void
     {
         /** @var Router $router */
         $router = $this->app->make(Router::class);
@@ -22,16 +22,5 @@ class RouteRegistrationTest extends TestCase
 
         $this->assertSame('api/v1/events/active', $activeEvent->uri());
         $this->assertSame('api/v1/events/{event}/sessions', $startSession->uri());
-    }
-
-    public function test_required_routes_are_reachable_through_the_http_kernel(): void
-    {
-        $this->get('/')
-            ->assertOk()
-            ->assertSee('Character manager');
-
-        $this->getJson('/api/v1/events/active')
-            ->assertOk()
-            ->assertJsonPath('data.id', 'cafe-rush');
     }
 }

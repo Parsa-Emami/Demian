@@ -7,18 +7,16 @@ use Illuminate\Http\Request;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
-        web: __DIR__.'/../routes/web.php',
-        api: __DIR__.'/../routes/api.php',
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        // Laravel applies the default web and API middleware groups to the
-        // route files registered above.
+        // Route middleware groups are configured by Laravel. Application routes
+        // are registered explicitly from AppServiceProvider so web and API
+        // routes are loaded consistently in HTTP, console, CI and test boots.
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(
-            fn (Request $request): bool => $request->is('api/*') || $request->expectsJson(),
+            fn (Request $request) => $request->is('api/*') || $request->expectsJson(),
         );
-    })
-    ->create();
+    })->create();

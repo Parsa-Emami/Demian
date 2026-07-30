@@ -120,24 +120,15 @@ jobs:
       - name: Run Laravel tests
         env:
           APP_ENV: testing
-          APP_URL: http://localhost
-          ASSET_URL: ""
           DB_CONNECTION: sqlite
           DB_DATABASE: ":memory:"
           CACHE_STORE: array
           SESSION_DRIVER: array
           QUEUE_CONNECTION: sync
         run: |
-          set -euo pipefail
-
-          php artisan optimize:clear
-
-          # This targeted test boots the same HTTP test kernel used by the full
-          # suite. It catches route-registration regressions that route:list
-          # alone cannot detect.
-          php artisan test tests/Feature/RouteRegistrationTest.php
-
-          php artisan test
+          php artisan config:clear
+          php artisan route:clear
+          php artisan test --stop-on-failure
 
       - name: Install frontend dependencies
         shell: bash
@@ -431,8 +422,8 @@ jobs:
           if 'TIAM' not in html and 'تیام' not in html:
               raise SystemExit('ERROR: TIAM heading was not found in index.html.')
 
-          if 'data-runtime-version="8.1.2-final"' not in html:
-              raise SystemExit('ERROR: final 8.1.2 Blade output was not deployed.')
+          if 'data-runtime-version="8.1.0-final"' not in html:
+              raise SystemExit('ERROR: final 8.1.0 Blade output was not deployed.')
 
           if not (site / 'manifest.webmanifest').is_file():
               raise SystemExit('ERROR: Landscape web manifest was not published.')
