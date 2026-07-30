@@ -1,0 +1,5 @@
+
+> validate:final
+> node tools/validate_final.mjs
+
+Final project validation passed: 236 JavaScript/MJS and 54 PHP files checked; phases 1-8 and mobile scroll refactor verified.

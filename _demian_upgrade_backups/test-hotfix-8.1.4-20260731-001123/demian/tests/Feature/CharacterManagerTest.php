@@ -41,11 +41,6 @@ class CharacterManagerTest extends TestCase
             ],
             'animations' => [
                 'idle' => ['frames' => ['idle_0'], 'fps' => 1, 'loop' => true],
-                'walk' => ['frames' => ['idle_0'], 'fps' => 8, 'loop' => true],
-                'run' => ['frames' => ['idle_0'], 'fps' => 12, 'loop' => true],
-                'jump' => ['frames' => ['idle_0'], 'fps' => 1, 'loop' => false],
-                'attack' => ['frames' => ['idle_0'], 'fps' => 1, 'loop' => false],
-                'win' => ['frames' => ['idle_0'], 'fps' => 1, 'loop' => false],
             ],
         ];
 
@@ -66,37 +61,6 @@ class CharacterManagerTest extends TestCase
 
         $this->assertDatabaseHas('characters', [
             'slug' => 'test-character',
-        ]);
-    }
-
-    public function test_incomplete_atlas_is_rejected_with_validation_errors(): void
-    {
-        Storage::fake('public');
-
-        $atlas = [
-            'meta' => ['size' => ['w' => 256, 'h' => 256]],
-            'frames' => [
-                'idle_0' => ['x' => 0, 'y' => 0, 'w' => 256, 'h' => 256],
-            ],
-            'animations' => [
-                'idle' => ['frames' => ['idle_0'], 'fps' => 1, 'loop' => true],
-            ],
-        ];
-
-        $this->post('/characters', [
-            'name' => 'Incomplete Character',
-            'slug' => 'incomplete-character',
-            'sprite_sheet' => UploadedFile::fake()->image('sheet.png', 256, 256),
-            'atlas' => UploadedFile::fake()->createWithContent(
-                'atlas.json',
-                json_encode($atlas)
-            ),
-        ], ['Accept' => 'application/json'])
-            ->assertUnprocessable()
-            ->assertJsonValidationErrors(['atlas']);
-
-        $this->assertDatabaseMissing('characters', [
-            'slug' => 'incomplete-character',
         ]);
     }
 

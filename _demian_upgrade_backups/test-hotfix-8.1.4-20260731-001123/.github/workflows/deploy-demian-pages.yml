@@ -159,11 +159,7 @@ jobs:
           fi
 
       - name: Run JavaScript architecture tests
-        shell: bash
-        run: |
-          set -euo pipefail
-          test -f tools/run_js_tests.mjs
-          npm run test:js
+        run: npm run test:js
 
       - name: Validate platform architecture
         shell: bash
@@ -443,8 +439,8 @@ jobs:
           if 'TIAM' not in html and 'تیام' not in html:
               raise SystemExit('ERROR: TIAM heading was not found in index.html.')
 
-          if 'data-runtime-version="8.1.4-final"' not in html:
-              raise SystemExit('ERROR: final 8.1.4 Blade output was not deployed.')
+          if 'data-runtime-version="8.1.3-final"' not in html:
+              raise SystemExit('ERROR: final 8.1.3 Blade output was not deployed.')
 
           if not (site / 'manifest.webmanifest').is_file():
               raise SystemExit('ERROR: Landscape web manifest was not published.')
