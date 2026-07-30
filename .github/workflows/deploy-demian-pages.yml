@@ -101,8 +101,34 @@ jobs:
           php artisan db:seed --class=TiamCharacterSeeder --force
           php artisan route:list
 
+      - name: Verify required Laravel routes
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          test -f routes/web.php
+          test -f routes/api.php
+
+          php artisan route:clear
+          php artisan route:list --no-ansi --except-vendor
+
+          php artisan route:list --no-ansi --except-vendor --name=studio | grep -q "studio"
+          php artisan route:list --no-ansi --except-vendor --name=characters.index | grep -q "characters.index"
+          php artisan route:list --no-ansi --except-vendor --path=api/v1/events | grep -Fq "api/v1/events/active"
+          php artisan route:list --no-ansi --except-vendor --path=api/v1/events | grep -Fq "api/v1/events/{event}/sessions"
+
       - name: Run Laravel tests
-        run: php artisan test
+        env:
+          APP_ENV: testing
+          DB_CONNECTION: sqlite
+          DB_DATABASE: ":memory:"
+          CACHE_STORE: array
+          SESSION_DRIVER: array
+          QUEUE_CONNECTION: sync
+        run: |
+          php artisan config:clear
+          php artisan route:clear
+          php artisan test --stop-on-failure
 
       - name: Install frontend dependencies
         shell: bash
