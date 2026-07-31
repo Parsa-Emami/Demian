@@ -112,6 +112,8 @@ export default class CharacterManagerUI {
         this.listElement.innerHTML = '';
 
         characters.forEach((character) => {
+            const metaLine = this.renderCharacterMetaLine(character);
+            const badgeLine = this.renderCharacterStatBadges(character);
             const card = document.createElement('article');
             card.className = [
                 'character-card',
@@ -142,6 +144,7 @@ export default class CharacterManagerUI {
                             <p class="mt-1 truncate font-mono text-[11px] text-zinc-500">
                                 ${this.escape(character.slug)}
                             </p>
+                            ${metaLine}
                         </div>
 
                         ${
@@ -150,6 +153,8 @@ export default class CharacterManagerUI {
                                 : ''
                         }
                     </div>
+
+                    ${badgeLine}
 
                     <div class="mt-3 flex flex-wrap gap-2">
                         <button
@@ -242,6 +247,49 @@ export default class CharacterManagerUI {
                 });
             });
     }
+
+    renderCharacterMetaLine(character) {
+        const roleTitle = character?.settings?.role_title;
+        const tagline = character?.settings?.tagline;
+        const chunks = [roleTitle, tagline]
+            .filter(Boolean)
+            .map((value) => this.escape(String(value)));
+
+        if (!chunks.length) {
+            return '';
+        }
+
+        return `
+            <p class="mt-1 leading-4 text-[11px] text-amber-300/90">
+                ${chunks.join(' · ')}
+            </p>
+        `;
+    }
+
+    renderCharacterStatBadges(character) {
+        const badges = [];
+        const speed = character?.settings?.speed_rating;
+        const power = character?.settings?.power_rating;
+
+        if (speed) {
+            badges.push(`<span class="arcade-badge arcade-badge--subtle">SPD ${this.escape(String(speed))}</span>`);
+        }
+
+        if (power) {
+            badges.push(`<span class="arcade-badge arcade-badge--subtle arcade-badge--gold">PWR ${this.escape(String(power))}</span>`);
+        }
+
+        if (!badges.length) {
+            return '';
+        }
+
+        return `
+            <div class="mt-3 flex flex-wrap gap-2">
+                ${badges.join('')}
+            </div>
+        `;
+    }
+
 
     bindForm() {
         this.form?.addEventListener('submit', async (event) => {

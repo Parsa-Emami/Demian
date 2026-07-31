@@ -50,6 +50,25 @@ const BUILTIN_DEFINITIONS = Object.freeze([
             scale: 1,
         },
     }),
+    Object.freeze({
+        id: 'builtin-parsa',
+        name: 'PARSA / پارسا',
+        slug: 'parsa',
+        is_active: false,
+        settings: {
+            walk_speed: 4.5,
+            run_speed: 9.1,
+            sprint_speed: 10.15,
+            jump_force: 7.35,
+            air_control: 0.68,
+            scale: 1,
+            role_title: 'FASTEST / STRONGEST',
+            tagline: 'Black-shadow runner · Red guitar solo',
+            speed_rating: 'S+',
+            power_rating: 'S+',
+            signature_action: 'guitar',
+        },
+    }),
 ]);
 
 const BUILTIN_SLUGS = new Set(BUILTIN_DEFINITIONS.map((character) => character.slug));
@@ -148,7 +167,7 @@ export default class CharacterManager {
         if (this.lastBootWarning) {
             this.eventBus.emit('character:warning', {
                 message:
-                    'ارتباط دیتابیس برقرار نبود؛ تیام، روناک و امیررضا از فایل‌های داخلی اجرا شدند.',
+                    'ارتباط دیتابیس برقرار نبود؛ تیام، روناک، امیررضا و پارسا از فایل‌های داخلی اجرا شدند.',
             });
         }
 

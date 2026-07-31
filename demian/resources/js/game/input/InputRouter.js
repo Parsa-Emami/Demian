@@ -11,6 +11,7 @@ const ACTION_HAPTICS = new Set([
     'dodge',
     'win',
     'celebrate',
+    'guitar',
     'hardDrop',
     'interact',
     'revealPulse',

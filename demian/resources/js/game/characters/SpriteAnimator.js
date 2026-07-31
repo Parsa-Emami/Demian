@@ -30,6 +30,8 @@ const DEFAULT_ANIMATION_FALLBACKS = Object.freeze({
     celebrate: 'win',
     salute: 'win',
     hover: 'jump',
+    guitar: 'attack',
+    guitar_loop: 'celebrate',
 });
 
 export default class SpriteAnimator {

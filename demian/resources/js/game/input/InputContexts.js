@@ -39,6 +39,7 @@ export const INPUT_CONTEXTS = Object.freeze({
             slide: pressed('slide'),
             dodge: pressed('u', 'dodge'),
             dance: pressed('c', 'dance'),
+            guitar: pressed('r', 'guitar'),
             wave: pressed('v', 'wave'),
             salute: pressed('salute'),
             spin: pressed('z', 'spin'),

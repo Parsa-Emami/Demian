@@ -66,6 +66,29 @@ class BuiltinCharacterSeeder extends Seeder
                     ],
                 ]
             );
+
+            Character::query()->updateOrCreate(
+                ['slug' => 'parsa'],
+                [
+                    'name' => 'PARSA / پارسا',
+                    'sprite_sheet_path' => 'assets/characters/parsa/parsa-spritesheet-v5-mobile.png',
+                    'atlas_path' => 'assets/characters/parsa/parsa-atlas-v5-mobile.json',
+                    'is_builtin' => true,
+                    'is_active' => false,
+                    'settings' => [
+                        'walk_speed' => 4.5,
+                        'run_speed' => 9.1,
+                        'sprint_speed' => 10.15,
+                        'jump_force' => 7.35,
+                        'air_control' => 0.68,
+                        'scale' => 1,
+                        'role_title' => 'FASTEST / STRONGEST',
+                        'tagline' => 'Black-shadow runner',
+                        'speed_rating' => 'S+',
+                        'power_rating' => 'S+',
+                    ],
+                ]
+            );
         });
     }
 }

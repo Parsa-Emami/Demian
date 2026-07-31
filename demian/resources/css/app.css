@@ -1,5 +1,4 @@
 @import "tailwindcss";
-@import "./layers.css";
 
 @source "../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php";
 @source "../../storage/framework/views/*.php";
@@ -80,7 +79,7 @@ canvas,
 
 .manager-sidebar {
     position: relative;
-    z-index: var(--z-app-sidebar);
+    z-index: 35;
     min-width: 0;
     background:
         linear-gradient(180deg, rgba(18, 8, 37, 0.36), rgba(7, 8, 21, 0.95)),
@@ -178,7 +177,7 @@ canvas,
     position: absolute;
     top: 20px;
     right: -17px;
-    z-index: var(--z-app-sidebar-control);
+    z-index: 60;
     display: none;
     width: 34px;
     height: 48px;
@@ -490,6 +489,19 @@ canvas,
     font-weight: 900;
 }
 
+
+.arcade-badge--subtle {
+    border-color: rgba(255, 255, 255, 0.16);
+    background: rgba(255, 255, 255, 0.06);
+    color: #e4e4e7;
+}
+
+.arcade-badge--gold {
+    border-color: rgba(251, 191, 36, 0.34);
+    background: rgba(251, 191, 36, 0.12);
+    color: #fde68a;
+}
+
 .arcade-drop-zone {
     display: grid;
     min-height: 8.8rem;
@@ -523,7 +535,7 @@ canvas,
     position: fixed;
     right: 1rem;
     bottom: 1rem;
-    z-index: var(--z-app-toast);
+    z-index: 100;
     max-width: min(24rem, calc(100vw - 2rem));
     transform: translateY(1rem);
     border: 1px solid rgba(34, 211, 238, 0.36);
@@ -694,7 +706,7 @@ canvas,
 .manager-stage::after {
     position: absolute;
     inset: 0;
-    z-index: var(--z-stage-effects);
+    z-index: 12;
     pointer-events: none;
     content: "";
 }
@@ -720,7 +732,7 @@ canvas,
 .arcade-screen-bezel {
     position: absolute;
     inset: 8px;
-    z-index: var(--z-stage-effects);
+    z-index: 13;
     border: 2px solid rgba(139, 92, 246, 0.2);
     border-radius: 24px;
     box-shadow:
@@ -1041,7 +1053,7 @@ body {
 .manager-sidebar-backdrop {
     position: fixed;
     inset: 0;
-    z-index: var(--z-app-sidebar-backdrop);
+    z-index: 42;
     display: none;
     border: 0;
     background: rgba(2, 3, 12, 0.68);
@@ -1160,7 +1172,7 @@ body {
 
 .virtual-stick__knob {
     position: relative;
-    z-index: var(--z-local-control);
+    z-index: 2;
     display: grid;
     width: 43%;
     height: 43%;
@@ -1395,7 +1407,7 @@ body {
     position: absolute;
     top: 52%;
     left: 50%;
-    z-index: var(--z-stage-system);
+    z-index: 40;
     width: min(270px, calc(100% - 2rem));
     transform: translate(-50%, -50%);
     align-items: center;
@@ -1465,7 +1477,7 @@ body {
     .manager-sidebar {
         position: fixed;
         inset: auto 0 0;
-        z-index: var(--z-app-sidebar);
+        z-index: 46;
         width: 100%;
         min-width: 0;
         max-height: min(86dvh, 760px);
@@ -1521,7 +1533,7 @@ body {
         position: absolute;
         top: 9px;
         left: 50%;
-        z-index: var(--z-local-sticky);
+        z-index: 3;
         display: block;
         width: 52px;
         height: 5px;
@@ -2044,7 +2056,7 @@ html.demian-forced-landscape .manager-sidebar__scroll {
 }
 
 .shell-screen--modal {
-    z-index: var(--z-shell-modal);
+    z-index: 10;
     padding: 18px;
     background: rgba(2, 4, 14, 0.72);
     backdrop-filter: blur(15px) saturate(0.85);
@@ -2143,7 +2155,7 @@ html.demian-forced-landscape .manager-sidebar__scroll {
 
 .cafe-menu__content {
     position: relative;
-    z-index: var(--z-local-control);
+    z-index: 2;
     display: flex;
     width: min(640px, 66%);
     min-height: 100%;
@@ -2250,7 +2262,7 @@ html.demian-forced-landscape .manager-sidebar__scroll {
     position: absolute;
     top: 50%;
     left: clamp(22px, 7vw, 110px);
-    z-index: var(--z-local-raised);
+    z-index: 1;
     width: clamp(150px, 20vw, 270px);
     aspect-ratio: 0.72;
     padding: 18px;
@@ -2470,7 +2482,7 @@ html.demian-forced-landscape .manager-sidebar__scroll {
     position: absolute;
     top: 18px;
     left: 50%;
-    z-index: var(--z-shell-toast);
+    z-index: 50;
     display: grid;
     width: min(410px, calc(100% - 28px));
     gap: 8px;
@@ -2552,16 +2564,10 @@ html.demian-forced-landscape .manager-sidebar__scroll {
    Demian Game Platform · Phase 3 Tetris Module
    -------------------------------------------------------------------------- */
 
-.game-hud-host,
-.game-prompt-host,
-.game-overlay-host {
+.game-hud-host {
     position: absolute;
     inset: 0;
     pointer-events: none;
-}
-
-.game-overlay-host > * {
-    pointer-events: auto;
 }
 
 .manager-shell[data-active-game="tetris"] [data-world-ui] {
@@ -2573,7 +2579,7 @@ html.demian-forced-landscape .manager-sidebar__scroll {
     --tetris-panel: rgba(5, 8, 24, 0.9);
     position: absolute;
     inset: 0;
-    z-index: var(--z-local-base);
+    z-index: 4;
     color: #e5faff;
     pointer-events: none;
     font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
@@ -3044,7 +3050,7 @@ html.demian-forced-landscape .manager-sidebar__scroll {
     position: absolute;
     bottom: clamp(90px, 14vh, 150px);
     left: 50%;
-    z-index: var(--z-local-base);
+    z-index: 34;
     display: flex;
     align-items: center;
     gap: 10px;
@@ -3132,7 +3138,7 @@ html.demian-forced-landscape .manager-sidebar__scroll {
     --hs-panel: rgba(4, 8, 22, 0.86);
     position: absolute;
     inset: 0;
-    z-index: var(--z-local-base);
+    z-index: 29;
     color: #f8fafc;
     pointer-events: none;
 }
@@ -3511,7 +3517,7 @@ html.demian-forced-landscape .manager-sidebar__scroll {
     --event-panel: rgba(4, 8, 22, 0.86);
     position: absolute;
     inset: 0;
-    z-index: var(--z-local-base);
+    z-index: 25;
     pointer-events: none;
     color: #e2e8f0;
     font-family: Inter, Vazirmatn, ui-sans-serif, system-ui, sans-serif;
@@ -3618,7 +3624,7 @@ html.demian-forced-landscape .manager-sidebar__scroll {
 }
 
 /* Phase 7 — Role Play */
-.role-play-hud { position:absolute; inset:0; z-index:var(--z-local-base); pointer-events:none; color:#f8fafc; font-family:inherit; }
+.role-play-hud { position:absolute; inset:0; z-index:32; pointer-events:none; color:#f8fafc; font-family:inherit; }
 .role-play-hud__top { display:flex; align-items:center; justify-content:space-between; gap:1rem; margin:1rem; padding:.75rem 1rem; border:1px solid rgba(167,139,250,.34); border-radius:1.35rem; background:linear-gradient(135deg,rgba(10,12,27,.9),rgba(35,18,55,.72)); box-shadow:0 20px 55px rgba(0,0,0,.3); backdrop-filter:blur(18px); pointer-events:auto; }
 .role-play-hud__brand { display:flex; align-items:center; gap:.7rem; }.role-play-hud__brand>span{font-size:2rem;color:#c4b5fd}.role-play-hud__brand small,.role-play-hud__stats small{display:block;color:#a78bfa;font-size:.62rem;letter-spacing:.16em}.role-play-hud__brand strong{display:block;font-size:1rem}
 .role-play-hud__stats { display:flex; gap:.55rem; }.role-play-hud__stats span{min-width:4.4rem;padding:.45rem .65rem;border-radius:.8rem;background:rgba(15,23,42,.72);text-align:center}.role-play-hud__stats b{font-size:.82rem;color:#e9d5ff}
@@ -3629,7 +3635,7 @@ html.demian-forced-landscape .manager-sidebar__scroll {
 .role-play-dialogue{position:absolute;left:50%;bottom:4.8rem;transform:translateX(-50%);width:min(46rem,calc(100vw - 2rem));padding:1rem 1.1rem;border-radius:1.4rem;border:1px solid rgba(196,181,253,.42);background:linear-gradient(145deg,rgba(7,9,24,.96),rgba(35,17,53,.94));box-shadow:0 28px 80px rgba(0,0,0,.55);pointer-events:auto}.role-play-dialogue[hidden]{display:none}.role-play-dialogue header{display:flex;align-items:center;gap:.75rem}.role-play-dialogue header small{color:#a78bfa;letter-spacing:.15em}.role-play-dialogue header strong{font-size:1.05rem}.role-play-dialogue header button{margin-right:auto;font-size:1.4rem}.role-play-dialogue p{margin:.8rem 0;line-height:1.9;color:#e2e8f0}.role-play-dialogue [data-rp-choices]{display:grid;gap:.45rem}.role-play-dialogue [data-rp-choice]{display:flex;gap:.65rem;align-items:center;width:100%;padding:.65rem .75rem;border-radius:.8rem;background:rgba(76,29,149,.28);border:1px solid rgba(167,139,250,.2);text-align:right}.role-play-dialogue [data-rp-choice]:hover{background:rgba(109,40,217,.42)}.role-play-dialogue [data-rp-choice] b{display:grid;place-items:center;width:1.5rem;height:1.5rem;border-radius:50%;background:#7c3aed}
 .role-play-side-panel{position:absolute;top:6.8rem;left:1rem;width:min(25rem,44vw);max-height:calc(100vh - 9rem);overflow:auto;padding:1rem;border-radius:1.2rem;border:1px solid rgba(167,139,250,.3);background:rgba(6,8,20,.94);box-shadow:0 25px 70px rgba(0,0,0,.45);pointer-events:auto}.role-play-side-panel[hidden]{display:none}.role-play-side-panel header{display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem}.role-play-side-panel header small{color:#a78bfa;letter-spacing:.14em}.role-play-side-panel article{padding:.75rem;border-radius:.85rem;background:rgba(30,41,59,.48);margin-bottom:.6rem}.role-play-side-panel h3{margin:0;color:#e9d5ff}.role-play-side-panel p{font-size:.75rem;color:#94a3b8}.role-play-side-panel ul{display:grid;gap:.35rem;padding:0;list-style:none}.role-play-side-panel li{display:flex;gap:.4rem;font-size:.74rem;color:#cbd5e1}.role-play-side-panel li b{margin-right:auto}.role-play-side-panel li[data-complete="true"]{color:#6ee7b7}.role-play-side-panel li[data-locked="true"]{opacity:.45}
 .role-play-equipment{display:grid;grid-template-columns:repeat(3,1fr);gap:.45rem;margin-bottom:.7rem}.role-play-equipment span,.role-play-inventory-grid button{padding:.6rem;border-radius:.75rem;background:rgba(30,41,59,.62);border:1px solid rgba(148,163,184,.14)}.role-play-equipment small,.role-play-equipment b{display:block}.role-play-inventory-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:.45rem}.role-play-inventory-grid button{text-align:right}.role-play-inventory-grid small,.role-play-inventory-grid i{display:block;color:#94a3b8;font-size:.65rem}
-.role-play-touch-actions{display:none;position:absolute;right:1rem;bottom:1rem;z-index:var(--z-local-control);grid-template-columns:repeat(2,minmax(4.5rem,1fr));gap:.45rem;pointer-events:auto}.role-play-touch-actions button{min-height:3rem;border-radius:1rem;border:1px solid rgba(196,181,253,.35);background:rgba(46,16,101,.88);font-size:.68rem;font-weight:800}.role-play-touch-actions button.is-primary{background:linear-gradient(135deg,#7c3aed,#a855f7)}
+.role-play-touch-actions{display:none;position:absolute;right:1rem;bottom:1rem;z-index:40;grid-template-columns:repeat(2,minmax(4.5rem,1fr));gap:.45rem;pointer-events:auto}.role-play-touch-actions button{min-height:3rem;border-radius:1rem;border:1px solid rgba(196,181,253,.35);background:rgba(46,16,101,.88);font-size:.68rem;font-weight:800}.role-play-touch-actions button.is-primary{background:linear-gradient(135deg,#7c3aed,#a855f7)}
 .manager-shell[data-session-state="playing"][data-control-layout="role-play"] [data-control-surface="world"]{display:flex}.manager-shell[data-control-layout="role-play"] [data-control-surface="world"] .touch-controller__right{display:none}.manager-shell[data-session-state="playing"][data-control-layout="role-play"] [data-control-surface="role-play"]{display:grid}
 @media(max-width:900px){.role-play-hud__stats span:nth-child(n+3),.role-play-hud__footer{display:none}.role-play-hud__top{margin:.55rem;padding:.55rem}.role-play-hud__objective{top:5.6rem;right:.55rem;width:calc(100vw - 1.1rem)}.role-play-dialogue{bottom:7.5rem}.role-play-side-panel{top:5.7rem;left:.55rem;width:calc(100vw - 1.1rem)}.role-play-hud__buttons button:not([data-rp-pause]){display:none}}
 @media(pointer:fine){.role-play-touch-actions{display:none!important}}
@@ -3639,7 +3645,7 @@ html.demian-forced-landscape .manager-sidebar__scroll {
     position: absolute;
     inset-inline-end: max(1rem, env(safe-area-inset-right));
     top: 7.4rem;
-    z-index: var(--z-local-raised);
+    z-index: 44;
     width: clamp(8.5rem, 16vw, 11rem);
     aspect-ratio: 1;
     padding: .45rem;
@@ -3658,7 +3664,7 @@ html.demian-forced-landscape .manager-sidebar__scroll {
     position: absolute;
     inset-inline-end: max(1rem, env(safe-area-inset-right));
     top: calc(7.4rem + clamp(8.5rem, 16vw, 11rem) + .75rem);
-    z-index: var(--z-local-base);
+    z-index: 43;
     display: grid;
     width: clamp(8.5rem, 16vw, 11rem);
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -3670,9 +3676,9 @@ html.demian-forced-landscape .manager-sidebar__scroll {
 .open-world-streaming-hud small { display: block; color: #64748b; font-size: .52rem; letter-spacing: .08em; }
 .open-world-streaming-hud b { display: block; overflow: hidden; color: #e2e8f0; font-size: .7rem; text-overflow: ellipsis; white-space: nowrap; }
 .open-world-map {
-    position: absolute;
+    position: fixed;
     inset: 0;
-    z-index: var(--z-local-base);
+    z-index: 95;
     display: grid;
     place-items: center;
     padding: max(1rem, env(safe-area-inset-top)) max(1rem, env(safe-area-inset-right)) max(1rem, env(safe-area-inset-bottom)) max(1rem, env(safe-area-inset-left));
@@ -3932,7 +3938,7 @@ html.demian-forced-landscape .manager-sidebar__scroll {
     .game-library-toolbar {
         position: sticky;
         top: -1px;
-        z-index: var(--z-local-sticky);
+        z-index: 4;
         margin: 14px -2px 0;
         padding: 8px 2px;
         background: linear-gradient(180deg, rgba(7, 8, 24, 0.98), rgba(7, 8, 24, 0.86), transparent);

@@ -22,6 +22,7 @@ const LOCKED_ACTIONS = new Set([
     'slide',
     'dodge',
     'dance',
+    'guitar',
     'wave',
     'salute',
     'spin',
@@ -50,6 +51,7 @@ const ACTIONS = Object.freeze([
     { name: 'slide', duration: 0.58, impulse: 9.7 },
     { name: 'dodge', duration: 0.62, impulse: 8.8, reverse: true },
     { name: 'dance', duration: 2.15, velocityRetention: 0.02 },
+    { name: 'guitar', duration: 2.25, velocityRetention: 0.01 },
     { name: 'wave', duration: 1.35, velocityRetention: 0.02 },
     { name: 'salute', duration: 1.05, velocityRetention: 0.02 },
     { name: 'spin', duration: 1.02, velocityRetention: 0.04 },
@@ -111,6 +113,8 @@ export default class SpriteCharacter {
         this.introActive = this.isPlayerControlled;
 
         const settings = character.settings ?? {};
+        this.signatureAction = typeof settings.signature_action === 'string' ? settings.signature_action : null;
+        this.signatureActionTimer = this.initialSignatureActionDelay();
         this.walkSpeed = Number(settings.walk_speed ?? 3.2);
         this.runSpeed = Number(settings.run_speed ?? 6.2);
         this.sprintSpeed = Number(settings.sprint_speed ?? this.runSpeed * 1.1);
@@ -164,8 +168,13 @@ export default class SpriteCharacter {
         this.shadow.scale.set(1.4, 0.62, 1);
         this.shadow.renderOrder = 2;
 
+        const selectionRingColor = {
+            amirreza: 0x67e8f9,
+            parsa: 0xfbbf24,
+        }[character.slug] ?? 0xff66d9;
+
         this.ringMaterial = new THREE.MeshBasicMaterial({
-            color: character.slug === 'amirreza' ? 0x67e8f9 : 0xff66d9,
+            color: selectionRingColor,
             transparent: true,
             opacity: 0.72,
             depthWrite: false,
@@ -313,6 +322,36 @@ export default class SpriteCharacter {
         return texture;
     }
 
+    initialSignatureActionDelay() {
+        return 8.5 + Math.random() * 5.5;
+    }
+
+    maybePerformSignatureAction(deltaTime) {
+        if (this.signatureAction !== 'guitar' || !this.grounded || this.stateLock > 0) {
+            return;
+        }
+
+        if (!this.animator.has('guitar')) {
+            return;
+        }
+
+        if (this.state !== 'idle') {
+            this.signatureActionTimer = Math.min(this.signatureActionTimer, 5.5);
+            return;
+        }
+
+        this.signatureActionTimer -= deltaTime;
+
+        if (this.signatureActionTimer > 0) {
+            return;
+        }
+
+        this.velocity.multiplyScalar(0.02);
+        this.playLocked('guitar', 2.25);
+        this.signatureActionTimer = this.initialSignatureActionDelay();
+    }
+
+
     update(deltaTime, input, movementBasis) {
         this.stateLock = Math.max(0, this.stateLock - deltaTime);
         this.dashCooldown = Math.max(0, this.dashCooldown - deltaTime);
@@ -428,6 +467,7 @@ export default class SpriteCharacter {
 
         if (this.stateLock <= 0) {
             this.selectLocomotionState(input, inputMagnitude, deltaTime);
+            this.maybePerformSignatureAction(deltaTime);
         }
 
         const movementRatio = THREE.MathUtils.clamp(this.speed() / Math.max(this.runSpeed, 0.01), 0, 1.5);
@@ -762,6 +802,14 @@ export default class SpriteCharacter {
             target.tilt = Math.sin(cycle * 0.5) * 0.1;
             target.width += Math.cos(cycle) * 0.04;
             target.height -= Math.cos(cycle) * 0.04;
+        } else if (this.state === 'guitar') {
+            const riff = Math.sin(progress * Math.PI);
+            const pulse = Math.sin(stateTime * 14.5);
+            target.bob = Math.abs(pulse) * 0.12 + riff * 0.05;
+            target.x = Math.sin(stateTime * 7.5) * 0.05 * this.facing;
+            target.tilt = (-0.08 * this.facing) + Math.sin(stateTime * 5.5) * 0.05;
+            target.width += riff * 0.08;
+            target.height -= riff * 0.03;
         } else if (['wave', 'salute'].includes(this.state)) {
             const cycle = stateTime * 8;
             target.bob = Math.abs(Math.sin(cycle * 0.5)) * 0.055;
