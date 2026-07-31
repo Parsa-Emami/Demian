@@ -1,3 +1,4 @@
+import { UI_LAYER, assignUiLayer } from '../../../ui/UiLayer.js';
 const NUMBER_FORMATTER = new Intl.NumberFormat('en-US');
 
 function formatTime(seconds) {
@@ -29,6 +30,7 @@ export default class HideAndSeekHud {
         if (!host || this.element) return;
         const element = document.createElement('section');
         element.className = 'hide-seek-hud';
+        assignUiLayer(element, UI_LAYER.LOCAL_BASE);
         element.dataset.gameHud = 'hide-and-seek';
         element.dataset.gameplayUi = '';
         element.setAttribute('aria-label', 'رابط بازی قایم‌باشک');

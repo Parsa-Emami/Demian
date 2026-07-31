@@ -1,3 +1,4 @@
+import { UI_LAYER, assignUiLayer } from '../../../ui/UiLayer.js';
 import { cellsFor, TETROMINO_COLORS } from '../domain/Tetrominoes.js';
 
 const NUMBER_FORMATTER = new Intl.NumberFormat('en-US');
@@ -44,6 +45,7 @@ export default class TetrisHud {
 
         const element = document.createElement('section');
         element.className = 'tetris-hud';
+        assignUiLayer(element, UI_LAYER.LOCAL_BASE);
         element.dataset.gameHud = 'tetris';
         element.dataset.gameplayUi = '';
         element.setAttribute('aria-label', 'رابط بازی تتریس');

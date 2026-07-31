@@ -1,3 +1,5 @@
+import { UI_LAYER, assignUiLayer } from '../../../ui/UiLayer.js';
+
 export default class InteractionPrompt {
     constructor({ host, eventBus, animation = null } = {}) {
         this.host = host;
@@ -12,6 +14,7 @@ export default class InteractionPrompt {
         if (!this.host || this.element) return;
         this.element = document.createElement('div');
         this.element.className = 'interaction-prompt';
+        assignUiLayer(this.element, UI_LAYER.LOCAL_BASE);
         this.element.hidden = true;
         this.element.setAttribute('role', 'status');
         this.element.setAttribute('aria-live', 'polite');

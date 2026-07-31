@@ -1,3 +1,4 @@
+import { UI_LAYER, assignUiLayer } from '../../../ui/UiLayer.js';
 const NUMBER_FORMATTER = new Intl.NumberFormat('fa-IR');
 
 function phaseLabel(state) {
@@ -39,6 +40,7 @@ export default class EventHud {
         if (!host || this.element) return;
         const element = document.createElement('section');
         element.className = 'event-hud';
+        assignUiLayer(element, UI_LAYER.LOCAL_BASE);
         element.dir = 'rtl';
         element.innerHTML = `
             <header class="event-hud__top">

@@ -31,6 +31,7 @@
     <main
         data-character-manager
         data-manager-shell
+        data-ui-layer-root
         data-api-base="{{ route('characters.index') }}"
         data-event-api-base="{{ url('/api/v1/events') }}"
         data-sidebar-state="collapsed"
@@ -48,6 +49,7 @@
         <aside
             id="character-manager-sidebar"
             data-manager-sidebar
+            data-ui-layer="sidebar"
             class="manager-sidebar"
             dir="rtl"
             aria-label="مدیریت کاراکترها"
@@ -57,6 +59,7 @@
             <button
                 type="button"
                 data-sidebar-toggle
+                data-ui-layer="sidebar-control"
                 class="sidebar-edge-toggle"
                 aria-controls="character-manager-sidebar"
                 aria-expanded="false"
@@ -248,19 +251,20 @@
         <button
             type="button"
             data-sidebar-backdrop
+            data-ui-layer="sidebar-backdrop"
             class="manager-sidebar-backdrop"
             aria-label="بستن مدیریت کاراکترها"
             aria-hidden="true"
             tabindex="-1"
         ></button>
 
-        <section class="manager-stage" dir="rtl">
-            <div class="arcade-screen-bezel" aria-hidden="true"></div>
-            <div data-demian-scene class="demian-scene absolute inset-0"></div>
+        <section class="manager-stage" data-ui-layer="stage" dir="rtl">
+            <div class="arcade-screen-bezel" data-ui-layer="stage-effect" aria-hidden="true"></div>
+            <div data-demian-scene data-ui-layer="canvas" class="demian-scene absolute inset-0"></div>
 
 
-            <div data-game-shell class="game-shell absolute inset-0 z-40" dir="rtl" aria-live="polite">
-                <div data-shell-toast-host class="shell-toast-host" aria-live="polite" aria-atomic="false"></div>
+            <div data-game-shell data-ui-layer="shell" class="game-shell absolute inset-0" dir="rtl" aria-live="polite">
+                <div data-shell-toast-host data-ui-layer="shell-toast" class="shell-toast-host" aria-live="polite" aria-atomic="false"></div>
 
                 <section
                     data-screen="boot"
@@ -473,10 +477,13 @@
                         </div>
                     </div>
                 </section>
-                <div data-game-hud-host class="game-hud-host"></div>
             </div>
 
-            <header data-gameplay-ui data-world-ui class="stage-toolbar pointer-events-none absolute inset-x-0 top-0 z-20 p-4">
+            <div data-game-hud-host data-ui-layer="hud" class="game-hud-host"></div>
+            <div data-game-prompt-host data-ui-layer="prompt" class="game-prompt-host"></div>
+            <div data-game-overlay-host data-ui-layer="game-overlay" class="game-overlay-host"></div>
+
+            <header data-gameplay-ui data-world-ui data-ui-layer="hud" class="stage-toolbar pointer-events-none absolute inset-x-0 top-0 p-4">
                 <div class="flex items-start justify-between gap-3">
                     <div class="arcade-panel stage-toolbar__controls pointer-events-auto rounded-2xl p-2">
                         <div class="flex flex-wrap gap-2">
@@ -556,11 +563,11 @@
                 </div>
             </header>
 
-            <div data-gameplay-ui data-world-ui data-hint-ui class="arcade-intro-note pointer-events-none absolute left-1/2 top-28 z-20 -translate-x-1/2">
+            <div data-gameplay-ui data-world-ui data-hint-ui data-ui-layer="hud" class="arcade-intro-note pointer-events-none absolute left-1/2 top-28 -translate-x-1/2">
                 جوی‌استیک را تا لبه ببر تا کاراکتر Sprint کند
             </div>
 
-            <section data-gameplay-ui data-world-ui data-hud-ui class="mobile-status-bar arcade-panel pointer-events-none absolute z-20" aria-label="وضعیت بازی">
+            <section data-gameplay-ui data-world-ui data-hud-ui data-ui-layer="hud" class="mobile-status-bar arcade-panel pointer-events-none absolute" aria-label="وضعیت بازی">
                 <span class="mobile-status-bar__player" data-active-character-name>TIAM / تیام</span>
                 <span class="mobile-status-chip"><small>STATE</small><b data-state-label>IDLE</b></span>
                 <span class="mobile-status-chip"><small>SPD</small><b data-speed-label>0.00</b></span>
@@ -568,7 +575,7 @@
             </section>
 
             <section
-                data-gameplay-ui data-world-ui data-hud-ui class="hud-panel arcade-panel pointer-events-none absolute bottom-4 left-4 z-20 rounded-[24px] p-3"
+                data-gameplay-ui data-world-ui data-hud-ui data-ui-layer="hud" class="hud-panel arcade-panel pointer-events-none absolute bottom-4 left-4 rounded-[24px] p-3"
             >
                 <div class="grid grid-cols-2 gap-x-5 gap-y-2 text-[11px]">
                     <span class="text-zinc-500">STATE</span>
@@ -592,7 +599,7 @@
             </section>
 
             <section
-                data-gameplay-ui data-world-ui data-hint-ui class="help-panel arcade-panel pointer-events-none absolute bottom-4 right-4 z-20 hidden rounded-[24px] p-3 text-left text-[10px] leading-5 text-zinc-400 lg:block"
+                data-gameplay-ui data-world-ui data-hint-ui data-ui-layer="hud" class="help-panel arcade-panel pointer-events-none absolute bottom-4 right-4 hidden rounded-[24px] p-3 text-left text-[10px] leading-5 text-zinc-400 lg:block"
                 dir="ltr"
             >
                 <div class="help-panel__grid">
@@ -616,7 +623,7 @@
                 </div>
             </section>
 
-            <section data-gameplay-ui data-control-surface="world" class="touch-controller absolute inset-x-0 bottom-0 z-30" dir="ltr" aria-label="کنترل‌های لمسی بازی">
+            <section data-gameplay-ui data-control-surface="world" data-ui-layer="controls" class="touch-controller absolute inset-x-0 bottom-0" dir="ltr" aria-label="کنترل‌های لمسی بازی">
                 <div
                     data-virtual-stick
                     class="virtual-stick"
@@ -682,7 +689,7 @@
                 </div>
             </section>
 
-            <div data-orientation-hint class="orientation-hint" aria-hidden="true">
+            <div data-orientation-hint data-ui-layer="stage-system" class="orientation-hint" aria-hidden="true">
                 <span aria-hidden="true">↻</span>
                 <strong>حالت افقی بازی فعال است</strong>
             </div>

@@ -1,3 +1,5 @@
+import { UI_LAYER, assignUiLayer } from '../../../ui/UiLayer.js';
+
 function setText(element, value) {
     if (element) element.textContent = String(value ?? '');
 }
@@ -22,6 +24,7 @@ export default class WorldMap {
         if (!this.host || this.root) return;
         this.root = document.createElement('section');
         this.root.className = 'open-world-map';
+        assignUiLayer(this.root, UI_LAYER.LOCAL_BASE);
         this.root.hidden = true;
         this.root.setAttribute('aria-hidden', 'true');
         this.root.innerHTML = `

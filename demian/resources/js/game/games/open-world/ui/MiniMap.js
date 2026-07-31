@@ -1,3 +1,5 @@
+import { UI_LAYER, assignUiLayer } from '../../../ui/UiLayer.js';
+
 function canvasSize(canvas) {
     const dpr = Math.min(globalThis.devicePixelRatio || 1, 2);
     const rect = canvas.getBoundingClientRect();
@@ -29,6 +31,7 @@ export default class MiniMap {
         this.root = document.createElement('button');
         this.root.type = 'button';
         this.root.className = 'open-world-minimap';
+        assignUiLayer(this.root, UI_LAYER.LOCAL_RAISED);
         this.root.setAttribute('aria-label', 'بازکردن نقشه جهان');
         this.root.innerHTML = '<canvas aria-hidden="true"></canvas><span>MAP · M</span>';
         this.canvas = this.root.querySelector('canvas');

@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { UI_LAYER, assignUiLayer } from '../ui/UiLayer.js';
 
 /** Owns the single WebGLRenderer shared by every game. */
 export default class RendererService {
@@ -7,7 +8,7 @@ export default class RendererService {
             throw new Error('Game renderer container was not found.');
         }
 
-        this.container = container;
+        this.container = assignUiLayer(container, UI_LAYER.CANVAS);
         this.renderer = new THREE.WebGLRenderer({
             antialias: false,
             alpha: false,
@@ -17,6 +18,7 @@ export default class RendererService {
         this.renderer.toneMapping = THREE.NoToneMapping;
         this.renderer.sortObjects = true;
         this.renderer.domElement.dataset.gameCanvas = '';
+        assignUiLayer(this.renderer.domElement, UI_LAYER.LOCAL_BASE);
         this.container.appendChild(this.renderer.domElement);
         this.resize(1);
     }

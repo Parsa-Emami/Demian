@@ -107,7 +107,8 @@ export default class HideAndSeekGame extends BaseGame {
         this.hud = new HideAndSeekHud({ root: context.root, animation: context.animation });
         this.hud.mount();
         this.prompt = new InteractionPrompt({
-            host: context.root.querySelector('[data-game-hud-host]'),
+            host: context.root.querySelector('[data-game-prompt-host]')
+                ?? context.root.querySelector('[data-game-hud-host]'),
             eventBus: context.eventBus,
             animation: context.animation,
         });

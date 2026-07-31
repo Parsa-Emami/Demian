@@ -1,0 +1,80 @@
+/**
+ * Demian UI layer contract
+ *
+ * Only this file owns the layer scale. Feature styles must consume these
+ * tokens instead of introducing numeric z-index values. The stage and shell
+ * are isolated stacking contexts so a mini-game cannot escape into app UI.
+ */
+:root {
+    /* Application siblings */
+    --z-app-stage: 0;
+    --z-app-sidebar-backdrop: 80;
+    --z-app-sidebar: 90;
+    --z-app-sidebar-control: 91;
+    --z-app-system-overlay: 100;
+    --z-app-toast: 110;
+
+    /* Children of .manager-stage */
+    --z-stage-canvas: 0;
+    --z-stage-effects: 10;
+    --z-stage-hud: 20;
+    --z-stage-prompt: 30;
+    --z-stage-controls: 40;
+    --z-stage-overlay: 50;
+    --z-stage-shell: 60;
+    --z-stage-system: 70;
+
+    /* Children of .game-shell */
+    --z-shell-screen: 1;
+    --z-shell-modal: 2;
+    --z-shell-toast: 3;
+
+    /* Feature-local layers inside an isolated host */
+    --z-local-base: 0;
+    --z-local-raised: 1;
+    --z-local-control: 2;
+    --z-local-sticky: 3;
+}
+
+.manager-shell {
+    position: relative;
+    isolation: isolate;
+}
+
+.manager-stage {
+    z-index: var(--z-app-stage);
+}
+
+/* Static and dynamic nodes share the same semantic API. */
+[data-ui-layer="stage"] { z-index: var(--z-app-stage); }
+[data-ui-layer="canvas"] { z-index: var(--z-stage-canvas); }
+[data-ui-layer="stage-effect"] { z-index: var(--z-stage-effects); }
+[data-ui-layer="hud"] { z-index: var(--z-stage-hud); }
+[data-ui-layer="prompt"] { z-index: var(--z-stage-prompt); }
+[data-ui-layer="controls"] { z-index: var(--z-stage-controls); }
+[data-ui-layer="game-overlay"] { z-index: var(--z-stage-overlay); }
+[data-ui-layer="shell"] { z-index: var(--z-stage-shell); }
+[data-ui-layer="stage-system"] { z-index: var(--z-stage-system); }
+[data-ui-layer="sidebar-backdrop"] { z-index: var(--z-app-sidebar-backdrop); }
+[data-ui-layer="sidebar"] { z-index: var(--z-app-sidebar); }
+[data-ui-layer="sidebar-control"] { z-index: var(--z-app-sidebar-control); }
+[data-ui-layer="system-overlay"] { z-index: var(--z-app-system-overlay); }
+[data-ui-layer="toast"] { z-index: var(--z-app-toast); }
+
+[data-ui-layer="shell-screen"] { z-index: var(--z-shell-screen); }
+[data-ui-layer="shell-modal"] { z-index: var(--z-shell-modal); }
+[data-ui-layer="shell-toast"] { z-index: var(--z-shell-toast); }
+
+[data-ui-layer="local-base"] { z-index: var(--z-local-base); }
+[data-ui-layer="local-raised"] { z-index: var(--z-local-raised); }
+[data-ui-layer="local-control"] { z-index: var(--z-local-control); }
+[data-ui-layer="local-sticky"] { z-index: var(--z-local-sticky); }
+
+/* Hosts are intentionally isolated. Children can order themselves locally,
+   but can never cover a shell screen, sidebar or application toast. */
+.game-hud-host,
+.game-prompt-host,
+.game-overlay-host,
+.game-shell {
+    isolation: isolate;
+}

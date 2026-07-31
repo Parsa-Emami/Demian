@@ -289,14 +289,17 @@ export default class OpenWorldGame extends BaseGame {
 
     mountUi() {
         const host = this.context.root?.querySelector('[data-game-hud-host]');
+        const promptHost = this.context.root?.querySelector('[data-game-prompt-host]') ?? host;
+        const overlayHost = this.context.root?.querySelector('[data-game-overlay-host]') ?? host;
         this.interactionPrompt = new InteractionPrompt({
-            host,
+            host: promptHost,
             eventBus: this.context.eventBus,
             animation: this.context.animation,
         });
         this.interactionPrompt.mount();
         this.hud = new OpenWorldHud({
             host,
+            overlayHost,
             manifest: this.manifest,
             discovery: this.discovery,
             onFastTravel: (point) => this.fastTravel(point),

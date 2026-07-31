@@ -36,6 +36,10 @@ const requiredPhaseDocs = [
 requiredPhaseDocs.forEach((file) => assert(existsSync(join(root, file)), `Missing cumulative delivery document: ${file}`));
 
 const requiredFinalFiles = [
+    'resources/css/layers.css',
+    'resources/js/game/ui/UiLayer.js',
+    'tools/validate_ui_layers.mjs',
+    'tests/js/ui/UiLayer.test.js',
     'resources/js/ui/ScrollSnapRail.js',
     'resources/js/ui/CharacterManagerUI.js',
     'resources/js/ui/MobileGameUI.js',
@@ -153,10 +157,22 @@ for (const marker of [
 const strippedCss = css.replace(/\/\*[\s\S]*?\*\//g, '');
 assert((strippedCss.match(/{/g) ?? []).length === (strippedCss.match(/}/g) ?? []).length, 'CSS braces are unbalanced.');
 
+const uiLayerValidation = spawnSync(process.execPath, ['tools/validate_ui_layers.mjs'], {
+    cwd: root,
+    encoding: 'utf8',
+});
+assert(
+    uiLayerValidation.status === 0,
+    `UI layer contract validation failed:
+${uiLayerValidation.stdout}
+${uiLayerValidation.stderr}`
+);
+
 const packageJson = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'));
 assert(packageJson.version === '8.1.5', 'package.json final version is not 8.1.5.');
 assert(packageJson.scripts?.['validate:final'] === 'node tools/validate_final.mjs', 'validate:final script missing.');
 assert(packageJson.scripts?.['test:js'] === 'node tools/run_js_tests.mjs', 'Cross-platform JavaScript test runner is not configured.');
+assert(packageJson.scripts?.['validate:ui-layers'] === 'node tools/validate_ui_layers.mjs', 'UI layer validator script is not configured.');
 
 const jsTestRunner = readFileSync(join(root, 'tools/run_js_tests.mjs'), 'utf8');
 for (const marker of [

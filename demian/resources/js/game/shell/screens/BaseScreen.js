@@ -1,3 +1,5 @@
+import { UI_LAYER, assignUiLayer } from '../../ui/UiLayer.js';
+
 export default class BaseScreen {
     constructor({ id, element, animation, layer = 'primary' }) {
         if (!id || !element) {
@@ -8,6 +10,10 @@ export default class BaseScreen {
         this.element = element;
         this.animation = animation;
         this.layer = layer;
+        assignUiLayer(
+            this.element,
+            layer === 'modal' ? UI_LAYER.SHELL_MODAL : UI_LAYER.SHELL_SCREEN
+        );
         this.active = false;
         this.payload = null;
         this.returnFocusTarget = null;

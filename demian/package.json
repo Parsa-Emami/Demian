@@ -6,6 +6,7 @@
         "build": "vite build",
         "dev": "vite",
         "test:js": "node tools/run_js_tests.mjs",
+        "validate:ui-layers": "node tools/validate_ui_layers.mjs",
         "validate:phase3": "node tools/validate_phase3.mjs",
         "validate:phase4": "node tools/validate_phase4.mjs",
         "validate:phase5": "node tools/validate_phase5.mjs",
