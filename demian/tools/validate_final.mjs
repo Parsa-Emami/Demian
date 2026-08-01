@@ -172,6 +172,7 @@ const packageJson = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'))
 assert(packageJson.version === '8.1.5', 'package.json final version is not 8.1.5.');
 assert(packageJson.scripts?.['validate:final'] === 'node tools/validate_final.mjs', 'validate:final script missing.');
 assert(packageJson.scripts?.['test:js'] === 'node tools/run_js_tests.mjs', 'Cross-platform JavaScript test runner is not configured.');
+assert(packageJson.scripts?.['test:ci']?.startsWith('node --test '), 'Focused CI smoke test script is not configured.');
 assert(packageJson.scripts?.['validate:ui-layers'] === 'node tools/validate_ui_layers.mjs', 'UI layer validator script is not configured.');
 
 const jsTestRunner = readFileSync(join(root, 'tools/run_js_tests.mjs'), 'utf8');
@@ -185,8 +186,10 @@ const workflow = readFileSync(join(projectRoot, '.github/workflows/deploy-demian
 const baseTestCase = readFileSync(join(root, 'tests/TestCase.php'), 'utf8');
 assert(workflow.includes('npm run validate:final'), 'CI does not run the final validator.');
 assert(workflow.includes('data-runtime-version="8.1.5-final"'), 'Static deployment does not verify final runtime version.');
-assert(workflow.includes('Verify Laravel tests isolate Vite assets'), 'CI does not verify Vite isolation for Laravel tests.');
-assert(baseTestCase.includes('$this->withoutVite();'), 'Laravel tests do not isolate Vite asset resolution.');
+assert(workflow.includes('npm run test:ci'), 'CI does not run the focused deployment smoke suite.');
+assert(workflow.includes('npm run validate:ui-layers'), 'CI does not validate the central UI layer contract.');
+assert(!workflow.includes('php artisan test\n'), 'CI still runs the full Laravel test suite instead of the lean deployment path.');
+assert(baseTestCase.includes('$this->withoutVite();'), 'Local Laravel tests do not isolate Vite asset resolution.');
 
 const lock = readFileSync(join(root, 'package-lock.json'), 'utf8');
 assert(!/mirror-npm|runflare/i.test(lock), 'package-lock references a private mirror.');

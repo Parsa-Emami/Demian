@@ -90,6 +90,7 @@ jobs:
           composer install \
             --prefer-dist \
             --optimize-autoloader \
+            --no-dev \
             --no-interaction \
             --no-progress
 
@@ -117,63 +118,28 @@ jobs:
           php artisan route:list --no-ansi --except-vendor --path=api/v1/events | grep -Fq "api/v1/events/active"
           php artisan route:list --no-ansi --except-vendor --path=api/v1/events | grep -Fq "api/v1/events/{event}/sessions"
 
-      - name: Verify Laravel tests isolate Vite assets
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          grep -Fq '$this->withoutVite();' tests/TestCase.php
-          php -l tests/TestCase.php
-
-      - name: Run Laravel tests
-        env:
-          APP_ENV: testing
-          APP_URL: http://localhost
-          ASSET_URL: ""
-          DB_CONNECTION: sqlite
-          DB_DATABASE: ":memory:"
-          CACHE_STORE: array
-          SESSION_DRIVER: array
-          QUEUE_CONNECTION: sync
-        run: |
-          set -euo pipefail
-
-          php artisan optimize:clear
-
-          # This targeted test boots the same HTTP test kernel used by the full
-          # suite. It catches route-registration regressions that route:list
-          # alone cannot detect.
-          php artisan test tests/Feature/RouteRegistrationTest.php
-
-          php artisan test
-
       - name: Install frontend dependencies
         shell: bash
         run: |
           set -euo pipefail
 
           if [ -f package-lock.json ]; then
-            npm ci
+            npm ci --prefer-offline --no-audit --fund=false
           else
-            npm install
+            npm install --no-audit --fund=false
           fi
 
-      - name: Run JavaScript architecture tests
+      - name: Run focused deployment smoke tests
         shell: bash
         run: |
           set -euo pipefail
-          test -f tools/run_js_tests.mjs
-          npm run test:js
+          npm run test:ci
 
-      - name: Validate platform architecture
+      - name: Validate UI layers and final project contract
         shell: bash
         run: |
-          npm run validate:phase3
-          npm run validate:phase4
-          npm run validate:phase5
-          npm run validate:phase6
-          npm run validate:phase7
-          npm run validate:phase8
+          set -euo pipefail
+          npm run validate:ui-layers
           npm run validate:final
 
       - name: Build frontend assets

@@ -6,6 +6,7 @@
         "build": "vite build",
         "dev": "vite",
         "test:js": "node tools/run_js_tests.mjs",
+        "test:ci": "node --test tests/js/GameRegistry.test.js tests/js/GameRuntime.test.js tests/js/ScreenManager.test.js tests/js/MobileViewportPolicy.test.js tests/js/ControlLayoutService.test.js tests/js/ScrollSnapRail.test.js tests/js/ui/UiLayer.test.js",
         "validate:ui-layers": "node tools/validate_ui_layers.mjs",
         "validate:phase3": "node tools/validate_phase3.mjs",
         "validate:phase4": "node tools/validate_phase4.mjs",
