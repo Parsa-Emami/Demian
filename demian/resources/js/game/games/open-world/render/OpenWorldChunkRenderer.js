@@ -1,13 +1,5 @@
 import * as THREE from 'three';
 
-function disposeObject(object) {
-    object?.traverse?.((child) => {
-        child.geometry?.dispose?.();
-        if (Array.isArray(child.material)) child.material.forEach((material) => material.dispose?.());
-        else child.material?.dispose?.();
-    });
-}
-
 export default class OpenWorldChunkRenderer {
     constructor({ scene, collisionScope, navigationGrid, environment, manifest, eventBus } = {}) {
         this.scene = scene;
@@ -18,7 +10,14 @@ export default class OpenWorldChunkRenderer {
         this.eventBus = eventBus;
     }
 
-    create(definition, tier = 'preload') {
+    create(definition, options = {}) {
+        const tier = typeof options === 'string' ? options : options?.tier ?? 'preload';
+        const signal = typeof options === 'object' ? options?.signal ?? null : null;
+        if (signal?.aborted) {
+            const error = new Error('Chunk loading aborted.');
+            error.name = 'AbortError';
+            throw error;
+        }
         const group = new THREE.Group();
         group.name = `ReferenceCafeChunk:${definition.id}`;
 
@@ -77,7 +76,9 @@ export default class OpenWorldChunkRenderer {
             },
             dispose() {
                 if (group.parent) group.parent.remove(group);
-                disposeObject(group);
+                // Geometry and materials are cached and owned by EnvironmentSystem.
+                // Disposing them here would invalidate resources used by other chunks.
+                group.clear();
             },
         };
         handle.setTier(tier);

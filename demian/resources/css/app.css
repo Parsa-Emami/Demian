@@ -4780,3 +4780,28 @@ body {
         transition: none !important;
     }
 }
+
+/* Demian 8.1.6 · Open World direct-render reliability */
+.manager-shell[data-active-game="open-world"] .demian-scene,
+.manager-shell[data-active-game="open-world"] .demian-scene canvas {
+    visibility: visible;
+    opacity: 1;
+}
+
+.demian-scene[data-open-world-render-state="context-lost"]::after,
+.demian-scene[data-open-world-render-state="error"]::after {
+    position: absolute;
+    inset: auto 50% 24px auto;
+    z-index: var(--z-local-raised);
+    max-width: min(90%, 520px);
+    transform: translateX(50%);
+    border: 1px solid rgba(248, 113, 113, 0.3);
+    border-radius: 14px;
+    padding: 10px 14px;
+    background: rgba(20, 8, 14, 0.9);
+    color: #fecaca;
+    content: "رندر Open World موقتاً متوقف شد؛ بازی در حال بازیابی WebGL است.";
+    font-size: 12px;
+    text-align: center;
+    pointer-events: none;
+}

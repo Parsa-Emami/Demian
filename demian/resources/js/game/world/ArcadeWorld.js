@@ -17,6 +17,31 @@ export default class ArcadeWorld {
         this.collectDecorReferences();
     }
 
+
+    ensureAttached() {
+        if (!this.scene || !this.root) return false;
+        if (this.root.parent !== this.scene) this.scene.add(this.root);
+        this.root.visible = true;
+        if (this.environment) this.environment.visible = true;
+        return true;
+    }
+
+    renderStats() {
+        let meshes = 0;
+        let visibleMeshes = 0;
+        this.root?.traverse?.((child) => {
+            if (!child?.isMesh) return;
+            meshes += 1;
+            if (child.visible !== false) visibleMeshes += 1;
+        });
+        return Object.freeze({
+            attached: this.root?.parent === this.scene,
+            visible: this.root?.visible !== false,
+            meshes,
+            visibleMeshes,
+        });
+    }
+
     collectDecorReferences() {
         this.root.traverse((child) => {
             if (!child?.material) return;

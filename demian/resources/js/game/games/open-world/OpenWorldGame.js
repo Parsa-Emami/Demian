@@ -1,7 +1,6 @@
 import * as THREE from 'three';
 import BaseGame from '../../contracts/BaseGame.js';
 import CameraController from '../../core/CameraController.js';
-import PostProcessingPipeline from '../../core/PostProcessingPipeline.js';
 import CharacterRepository from '../../data/CharacterRepository.js';
 import CharacterManager from '../../managers/CharacterManager.js';
 import ArcadeWorld from '../../world/ArcadeWorld.js';
@@ -45,7 +44,8 @@ export default class OpenWorldGame extends BaseGame {
         this.environment = null;
         this.repository = null;
         this.characterManager = null;
-        this.pipeline = null;
+        this.firstFrameRendered = false;
+        this.renderFailureCount = 0;
         this.manifest = DEMIAN_REFERENCE_CAFE_MANIFEST;
         this.partition = new WorldPartition(this.manifest);
         this.collisionScope = null;
@@ -88,7 +88,6 @@ export default class OpenWorldGame extends BaseGame {
 
     async enter(context) {
         this.context = context;
-        const { renderer } = context.renderer;
         const { performanceProfile } = context.services;
         this.maxPixelRatio = performanceProfile.maxPixelRatio;
         this.minimumPixelRatio = performanceProfile.minimumPixelRatio;
@@ -105,6 +104,13 @@ export default class OpenWorldGame extends BaseGame {
         this.setupWorldServices();
         this.environment = new EnvironmentSystem({ scene: this.scene, performanceProfile });
         this.setupStreaming();
+
+        // The café must be visible independently from API, sprite and chunk loading.
+        // Render one direct frame immediately so GitHub Pages never shows a blank
+        // Open World while the heavier character assets are still being prepared.
+        this.resize({ reframe: false });
+        this.cameraController.overview({ immediate: true });
+        this.renderScene({ phase: 'bootstrap', strict: false });
 
         this.discovery.discoverChunk(this.partition.chunkAt(this.manifest.spawn)?.id);
         this.discovery.unlockSavePoint('save-entrance');
@@ -125,15 +131,6 @@ export default class OpenWorldGame extends BaseGame {
             spawnPoints: worldSpawnPoints(this.manifest),
             aiBudget: this.aiBudget,
         });
-        this.pipeline = new PostProcessingPipeline(
-            renderer,
-            this.scene,
-            this.camera,
-            context.container.clientWidth,
-            context.container.clientHeight,
-            performanceProfile
-        );
-
         this.savePoints = new SavePointSystem({
             manifest: this.manifest,
             discovery: this.discovery,
@@ -162,6 +159,11 @@ export default class OpenWorldGame extends BaseGame {
             this.updateCameraButtons('OVERVIEW');
             context.eventBus.emit('camera:mode', 'OVERVIEW');
         }
+
+        // Draw once after the final camera pose as well. The runtime will own all
+        // subsequent frames, but the scene is already visible before the loading
+        // screen is removed.
+        this.renderScene({ phase: 'ready', strict: false });
     }
 
     setupWorldServices() {
@@ -482,19 +484,61 @@ export default class OpenWorldGame extends BaseGame {
     }
 
     render() {
-        if (!this.context.renderer.prepareFrame()) return;
-        this.pipeline.render();
+        this.renderScene({ phase: 'frame', strict: true });
     }
 
-    resize() {
-        const width = this.context.container.clientWidth;
-        const height = this.context.container.clientHeight;
-        this.context.renderer.resize(this.pixelRatio);
-        this.pipeline.resize(width, height, this.pixelRatio);
+    renderScene({ phase = 'frame', strict = true } = {}) {
+        if (!this.context?.renderer || !this.scene || !this.camera || !this.world) return false;
+
+        this.world.ensureAttached();
+        this.world.updateCameraVisibility(this.camera);
+        this.camera.updateMatrixWorld(true);
+        this.scene.updateMatrixWorld(true);
+
+        try {
+            const rendered = this.context.renderer.render(this.scene, this.camera);
+            if (!rendered) {
+                this.context.container.dataset.openWorldRenderState = 'context-lost';
+                return false;
+            }
+
+            this.renderFailureCount = 0;
+            this.context.container.dataset.openWorldRenderState = 'ready';
+            if (!this.firstFrameRendered) {
+                this.firstFrameRendered = true;
+                this.context.eventBus.emit('world:first-frame-rendered', {
+                    phase,
+                    scene: this.world.renderStats(),
+                    renderer: this.context.renderer.dimensions(),
+                });
+            }
+            return true;
+        } catch (error) {
+            this.renderFailureCount += 1;
+            this.context.container.dataset.openWorldRenderState = 'error';
+            this.context.eventBus.emit('world:render-failed', {
+                phase,
+                count: this.renderFailureCount,
+                error,
+            });
+            if (strict) throw error;
+            console.warn(`[Open World] ${phase} frame could not be rendered yet.`, error);
+            return false;
+        }
+    }
+
+    resize({ reframe = true } = {}) {
+        if (!this.context?.renderer || !this.cameraController) return { width: 1, height: 1 };
+        const { width, height } = this.context.renderer.resize(this.pixelRatio);
         this.cameraController.resize(width, height);
-        const mode = this.cameraController?.mode ?? 'FOLLOW';
-        if (mode === 'FOLLOW') this.focusCharacter({ close: true });
-        else this.cameraController.overview({ immediate: true });
+
+        if (reframe) {
+            const mode = this.cameraController?.mode ?? 'OVERVIEW';
+            if (mode === 'FOLLOW' && this.characterManager) this.focusCharacter({ close: true });
+            else this.cameraController.overview({ immediate: true });
+        }
+
+        return { width, height };
     }
 
     updateAdaptiveQuality(deltaTime) {
@@ -505,7 +549,7 @@ export default class OpenWorldGame extends BaseGame {
             });
             return;
         }
-        if (!deltaTime || !this.pipeline) return;
+        if (!deltaTime || !this.context?.renderer) return;
         this.qualityAccumulator += deltaTime;
         this.qualityFrames += 1;
         if (this.qualityAccumulator < 1.5 || this.qualityCooldown > 0) {
@@ -540,7 +584,7 @@ export default class OpenWorldGame extends BaseGame {
         this.interactionPrompt?.unmount();
         this.hud?.unmount();
         this.chunkManager?.dispose();
-        this.pipeline?.dispose();
+        this.cameraController?.dispose();
         this.characterManager?.dispose();
         this.environment?.dispose();
         this.world?.dispose();
