@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import manifest from '../../../resources/js/game/games/open-world/data/DemianCityManifest.js';
+import manifest from '../../../resources/js/game/games/open-world/data/DemianReferenceCafeManifest.js';
 import WorldPartition from '../../../resources/js/game/games/open-world/world/WorldPartition.js';
 import ChunkManager from '../../../resources/js/game/games/open-world/streaming/ChunkManager.js';
 
@@ -53,7 +53,7 @@ test('chunk manager unloads old chunks and promotes destination on movement', as
     manager.update({ x: 0, z: 0 });
     await manager.whenIdle();
     const oldCurrent = manager.stats().currentChunkId;
-    manager.update({ x: -64, z: -32 });
+    manager.update({ x: -18, z: -12 });
     await manager.whenIdle();
     assert.notEqual(manager.stats().currentChunkId, oldCurrent);
     assert.equal(manager.loaded.get(manager.stats().currentChunkId).tier, 'active');
@@ -94,11 +94,11 @@ test('chunk manager aborts obsolete in-flight loads after a long-distance move',
         maxLoadedChunks: 1,
         concurrency: 1,
     });
-    manager.update({ x: 0, z: 0 });
-    manager.update({ x: -64, z: -32 });
+    manager.update({ x: -18, z: -12 });
+    manager.update({ x: 18, z: 12 });
     await manager.whenIdle();
     assert.ok(aborted >= 1);
-    assert.equal(manager.stats().currentChunkId, 'chunk-n2-n1');
-    assert.ok(manager.loaded.has('chunk-n2-n1'));
+    assert.equal(manager.stats().currentChunkId, 'cafe-3-2');
+    assert.ok(manager.loaded.has('cafe-3-2'));
     await manager.dispose();
 });

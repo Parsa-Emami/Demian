@@ -1,15 +1,15 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import manifest from '../../../resources/js/game/games/open-world/data/DemianCityManifest.js';
+import manifest from '../../../resources/js/game/games/open-world/data/DemianReferenceCafeManifest.js';
 import WorldPartition from '../../../resources/js/game/games/open-world/world/WorldPartition.js';
 
 const partition = new WorldPartition(manifest);
 
 test('world partition maps positions to chunks with manifest origin', () => {
-    assert.equal(partition.chunkAt({ x: 0, z: 0 }).id, 'chunk-p0-p0');
-    assert.equal(partition.chunkAt({ x: -64, z: -32 }).id, 'chunk-n2-n1');
+    assert.equal(partition.chunkAt({ x: 0, z: 0 }).id, 'cafe-2-1');
+    assert.equal(partition.chunkAt({ x: -18, z: -12 }).id, 'cafe-0-0');
     const center = partition.gridToWorld({ x: 1, z: 0 });
-    assert.deepEqual(center, { x: 32, z: 0 });
+    assert.deepEqual(center, { x: -6, z: -12 });
     assert.deepEqual(partition.worldToGrid(center), { x: 1, z: 0 });
 });
 
