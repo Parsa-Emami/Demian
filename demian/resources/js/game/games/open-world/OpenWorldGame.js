@@ -15,13 +15,13 @@ import ChunkLoader from './streaming/ChunkLoader.js';
 import ChunkUnloader from './streaming/ChunkUnloader.js';
 import ChunkManager from './streaming/ChunkManager.js';
 import OpenWorldChunkRenderer from './render/OpenWorldChunkRenderer.js';
+import OpenWorldPixelRenderer from './render/OpenWorldPixelRenderer.js';
 import AiBudgetScheduler from './entities/AiBudgetScheduler.js';
 import WorldDiscovery from './world/WorldDiscovery.js';
 import OpenWorldSaveStore from './persistence/OpenWorldSaveStore.js';
 import SavePointSystem from './persistence/SavePointSystem.js';
 import OpenWorldHud from './ui/OpenWorldHud.js';
 import { assertCafeWorldManifest } from '../../shared/cafe/CafeEnvironmentContract.js';
-import { configureCafeScene } from '../../shared/cafe/CafeScenePolicy.js';
 
 function worldSpawnPoints(manifest) {
     return [
@@ -57,6 +57,8 @@ export default class OpenWorldGame extends BaseGame {
         this.staticColliders = [];
         this.chunkManager = null;
         this.chunkRenderer = null;
+        this.pixelRenderer = null;
+        this.lastRenderDelta = 0;
         this.aiBudget = new AiBudgetScheduler({ maxUpdatesPerFrame: 6 });
         this.discovery = new WorldDiscovery();
         this.saveStore = new OpenWorldSaveStore();
@@ -97,10 +99,12 @@ export default class OpenWorldGame extends BaseGame {
         context.root?.setAttribute('data-performance-tier', performanceProfile.tier);
 
         assertCafeWorldManifest(this.manifest);
-        this.scene = configureCafeScene(new THREE.Scene(), { fogDensity: 0.008 });
+        // Three remains only as the character simulation container; visible output is Canvas2D.
+        this.scene = new THREE.Scene();
         this.camera = new THREE.OrthographicCamera(-10, 10, 10, -10, 0.1, 220);
         this.cameraController = new CameraController(this.camera, context.renderer.canvas);
         this.world = new ArcadeWorld(this.scene, { performanceProfile, streamingMode: true });
+        this.pixelRenderer = new OpenWorldPixelRenderer(context, this.manifest);
         this.setupWorldServices();
         this.environment = new EnvironmentSystem({ scene: this.scene, performanceProfile });
         this.setupStreaming();
@@ -110,6 +114,7 @@ export default class OpenWorldGame extends BaseGame {
         // Open World while the heavier character assets are still being prepared.
         this.resize({ reframe: false });
         this.cameraController.overview({ immediate: true });
+        this.pixelRenderer.setMode('OVERVIEW', this.manifest.spawn, { immediate: true });
         this.renderScene({ phase: 'bootstrap', strict: false });
 
         this.discovery.discoverChunk(this.partition.chunkAt(this.manifest.spawn)?.id);
@@ -156,6 +161,7 @@ export default class OpenWorldGame extends BaseGame {
             this.focusCharacter({ close: true, follow: true });
         } else {
             this.cameraController.overview({ immediate: true });
+            this.pixelRenderer.setMode('OVERVIEW', this.manifest.spawn, { immediate: true });
             this.updateCameraButtons('OVERVIEW');
             context.eventBus.emit('camera:mode', 'OVERVIEW');
         }
@@ -418,12 +424,14 @@ export default class OpenWorldGame extends BaseGame {
 
     toggleCamera() {
         const mode = this.cameraController.toggle(this.characterManager.focusPoint());
+        this.pixelRenderer?.setMode(mode, this.characterManager.position(), { immediate: false });
         this.updateCameraButtons(mode);
         this.context.eventBus.emit('camera:mode', mode);
     }
 
     focusCharacter({ close = true, follow = true } = {}) {
         const mode = this.cameraController.focus(this.characterManager.focusPoint(), { close, follow });
+        this.pixelRenderer?.setMode(mode, this.characterManager.position(), { immediate: close });
         this.updateCameraButtons(mode);
         this.context.eventBus.emit('camera:mode', mode);
     }
@@ -458,6 +466,7 @@ export default class OpenWorldGame extends BaseGame {
     }
 
     update(deltaTime) {
+        this.lastRenderDelta = deltaTime;
         this.updateAdaptiveQuality(deltaTime);
         this.cameraController.update(this.characterManager.focusPoint(), deltaTime);
         this.world.updateCameraVisibility(this.camera);
@@ -488,27 +497,26 @@ export default class OpenWorldGame extends BaseGame {
     }
 
     renderScene({ phase = 'frame', strict = true } = {}) {
-        if (!this.context?.renderer || !this.scene || !this.camera || !this.world) return false;
-
-        this.world.ensureAttached();
-        this.world.updateCameraVisibility(this.camera);
-        this.camera.updateMatrixWorld(true);
-        this.scene.updateMatrixWorld(true);
-
+        if (!this.context?.renderer || !this.pixelRenderer) return false;
         try {
-            const rendered = this.context.renderer.render(this.scene, this.camera);
-            if (!rendered) {
-                this.context.container.dataset.openWorldRenderState = 'context-lost';
-                return false;
-            }
-
+            const activeChunkIds = [...(this.chunkManager?.loaded ?? new Map())]
+                .filter(([, record]) => record.tier === 'active')
+                .map(([chunkId]) => chunkId);
+            const rendered = this.pixelRenderer.render({
+                characterManager: this.characterManager,
+                loadedChunks: this.chunkManager?.loaded ?? new Map(),
+                activeChunkIds,
+                discovery: this.discovery,
+                deltaTime: this.lastRenderDelta,
+            });
+            if (!rendered) return false;
             this.renderFailureCount = 0;
             this.context.container.dataset.openWorldRenderState = 'ready';
             if (!this.firstFrameRendered) {
                 this.firstFrameRendered = true;
                 this.context.eventBus.emit('world:first-frame-rendered', {
                     phase,
-                    scene: this.world.renderStats(),
+                    scene: this.world?.renderStats?.() ?? { backend: 'canvas2d-pixel' },
                     renderer: this.context.renderer.dimensions(),
                 });
             }
@@ -516,13 +524,9 @@ export default class OpenWorldGame extends BaseGame {
         } catch (error) {
             this.renderFailureCount += 1;
             this.context.container.dataset.openWorldRenderState = 'error';
-            this.context.eventBus.emit('world:render-failed', {
-                phase,
-                count: this.renderFailureCount,
-                error,
-            });
+            this.context.eventBus.emit('world:render-failed', { phase, count: this.renderFailureCount, error });
             if (strict) throw error;
-            console.warn(`[Open World] ${phase} frame could not be rendered yet.`, error);
+            console.warn(`[Open World] ${phase} pixel frame could not be rendered yet.`, error);
             return false;
         }
     }
@@ -531,11 +535,15 @@ export default class OpenWorldGame extends BaseGame {
         if (!this.context?.renderer || !this.cameraController) return { width: 1, height: 1 };
         const { width, height } = this.context.renderer.resize(this.pixelRatio);
         this.cameraController.resize(width, height);
+        this.pixelRenderer?.resize();
 
         if (reframe) {
             const mode = this.cameraController?.mode ?? 'OVERVIEW';
             if (mode === 'FOLLOW' && this.characterManager) this.focusCharacter({ close: true });
-            else this.cameraController.overview({ immediate: true });
+            else {
+                this.cameraController.overview({ immediate: true });
+                this.pixelRenderer?.setMode('OVERVIEW', this.manifest.spawn, { immediate: true });
+            }
         }
 
         return { width, height };
@@ -585,6 +593,7 @@ export default class OpenWorldGame extends BaseGame {
         this.hud?.unmount();
         this.chunkManager?.dispose();
         this.cameraController?.dispose();
+        this.pixelRenderer?.dispose();
         this.characterManager?.dispose();
         this.environment?.dispose();
         this.world?.dispose();

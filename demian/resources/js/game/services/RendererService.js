@@ -1,88 +1,116 @@
-import * as THREE from 'three';
 import { UI_LAYER, assignUiLayer } from '../ui/UiLayer.js';
 
-const MIN_PIXEL_RATIO = 0.5;
-const MAX_PIXEL_RATIO = 2;
+const MIN_SCALE = 1;
+const MAX_SCALE = 4;
+const DEFAULT_REFERENCE_HEIGHT = 270;
 
-function finitePixelRatio(value, fallback = 1) {
-    const numeric = Number(value);
-    if (!Number.isFinite(numeric) || numeric <= 0) return fallback;
-    return Math.min(MAX_PIXEL_RATIO, Math.max(MIN_PIXEL_RATIO, numeric));
+function clamp(value, min, max) {
+    return Math.min(max, Math.max(min, value));
 }
 
-/** Owns the single WebGLRenderer shared by every game. */
+function finiteScale(value, fallback = 1) {
+    const numeric = Number(value);
+    return Number.isFinite(numeric) && numeric > 0 ? clamp(numeric, MIN_SCALE, MAX_SCALE) : fallback;
+}
+
+function createCanvas() {
+    const canvas = document.createElement('canvas');
+    canvas.dataset.gameCanvas = '';
+    canvas.dataset.renderer = 'pixel-2d';
+    canvas.setAttribute('aria-label', 'Demian pixel game canvas');
+    assignUiLayer(canvas, UI_LAYER.LOCAL_BASE);
+    Object.assign(canvas.style, {
+        position: 'absolute', inset: '0', display: 'block', width: '100%', height: '100%',
+        minWidth: '1px', minHeight: '1px', imageRendering: 'pixelated',
+    });
+    return canvas;
+}
+
+/**
+ * Shared deterministic HTML5 Canvas renderer.
+ *
+ * Games draw to a small logical backbuffer and the service presents it with
+ * nearest-neighbour scaling. This keeps pixel edges stable and removes the
+ * WebGL/context-loss failure mode from the visible game pipeline.
+ */
 export default class RendererService {
-    constructor(container) {
-        if (!(container instanceof HTMLElement)) {
-            throw new Error('Game renderer container was not found.');
-        }
+    constructor(container, { referenceHeight = DEFAULT_REFERENCE_HEIGHT } = {}) {
+        if (!(container instanceof HTMLElement)) throw new Error('Game renderer container was not found.');
 
         this.container = assignUiLayer(container, UI_LAYER.CANVAS);
+        this.canvas = createCanvas();
+        this.context2d = this.canvas.getContext('2d', { alpha: false, desynchronized: true });
+        if (!this.context2d) throw new Error('Canvas 2D is not available in this browser.');
+
+        this.bufferCanvas = document.createElement('canvas');
+        this.bufferContext = this.bufferCanvas.getContext('2d', { alpha: false });
+        if (!this.bufferContext) throw new Error('Canvas 2D backbuffer could not be created.');
+
+        this.referenceHeight = Math.max(180, Number(referenceHeight) || DEFAULT_REFERENCE_HEIGHT);
         this.pixelRatio = 1;
         this.lastWidth = 0;
         this.lastHeight = 0;
-        this.contextLost = false;
+        this.logicalWidth = 480;
+        this.logicalHeight = this.referenceHeight;
         this.resizeFrame = null;
-
-        this.renderer = new THREE.WebGLRenderer({
-            antialias: false,
-            alpha: false,
-            powerPreference: 'high-performance',
-            failIfMajorPerformanceCaveat: false,
-        });
-        this.renderer.outputColorSpace = THREE.SRGBColorSpace;
-        this.renderer.toneMapping = THREE.NoToneMapping;
-        this.renderer.sortObjects = true;
-        this.renderer.domElement.dataset.gameCanvas = '';
-        assignUiLayer(this.renderer.domElement, UI_LAYER.LOCAL_BASE);
-
-        Object.assign(this.renderer.domElement.style, {
-            position: 'absolute',
-            inset: '0',
-            display: 'block',
-            width: '100%',
-            height: '100%',
-            minWidth: '1px',
-            minHeight: '1px',
-        });
-
-        this.onContextLost = this.onContextLost.bind(this);
-        this.onContextRestored = this.onContextRestored.bind(this);
-        this.onObservedResize = this.onObservedResize.bind(this);
-        this.canvas.addEventListener('webglcontextlost', this.onContextLost, false);
-        this.canvas.addEventListener('webglcontextrestored', this.onContextRestored, false);
+        this.frameOpen = false;
         this.container.appendChild(this.canvas);
 
+        // Compatibility object consumed by PerformanceProfile. Rendering no
+        // longer depends on a Three/WebGL renderer.
+        this.renderer = Object.freeze({
+            capabilities: Object.freeze({ maxTextureSize: 8192, isWebGL2: false }),
+            domElement: this.canvas,
+            backend: 'canvas2d',
+        });
+
+        this.onObservedResize = this.onObservedResize.bind(this);
         this.resizeObserver = typeof ResizeObserver === 'function'
             ? new ResizeObserver(this.onObservedResize)
             : null;
         this.resizeObserver?.observe(this.container);
-        this.resize(1);
+        this.resize();
         this.queueResize();
-    }
-
-    get canvas() {
-        return this.renderer.domElement;
     }
 
     dimensions() {
         const rect = this.container.getBoundingClientRect?.();
         const width = Math.round(this.container.clientWidth || rect?.width || 0);
         const height = Math.round(this.container.clientHeight || rect?.height || 0);
-        return {
-            width: Math.max(width, 1),
-            height: Math.max(height, 1),
-        };
+        return { width: Math.max(width, 1), height: Math.max(height, 1) };
+    }
+
+    logicalDimensions() {
+        return { width: this.logicalWidth, height: this.logicalHeight };
     }
 
     resize(pixelRatio = this.pixelRatio) {
-        this.pixelRatio = finitePixelRatio(pixelRatio, this.pixelRatio);
+        this.pixelRatio = finiteScale(pixelRatio, this.pixelRatio);
         const { width, height } = this.dimensions();
         this.lastWidth = width;
         this.lastHeight = height;
-        this.renderer.setPixelRatio(this.pixelRatio);
-        this.renderer.setSize(width, height, false);
-        return { width, height };
+
+        const aspect = width / Math.max(height, 1);
+        const qualityHeight = clamp(Math.round(this.referenceHeight * Math.sqrt(this.pixelRatio)), 180, 540);
+        this.logicalHeight = qualityHeight;
+        this.logicalWidth = Math.max(320, Math.round(qualityHeight * aspect));
+
+        const deviceRatio = clamp(globalThis.devicePixelRatio || 1, 1, 2);
+        this.canvas.width = Math.max(1, Math.round(width * deviceRatio));
+        this.canvas.height = Math.max(1, Math.round(height * deviceRatio));
+        this.bufferCanvas.width = this.logicalWidth;
+        this.bufferCanvas.height = this.logicalHeight;
+        this.configureContext(this.context2d);
+        this.configureContext(this.bufferContext);
+        this.container.dataset.rendererBackend = 'pixel-2d';
+        return { width, height, logicalWidth: this.logicalWidth, logicalHeight: this.logicalHeight };
+    }
+
+    configureContext(context) {
+        context.imageSmoothingEnabled = false;
+        context.textBaseline = 'middle';
+        context.lineJoin = 'miter';
+        context.lineCap = 'butt';
     }
 
     queueResize() {
@@ -93,81 +121,83 @@ export default class RendererService {
         });
     }
 
-    onObservedResize() {
-        this.queueResize();
-    }
+    onObservedResize() { this.queueResize(); }
 
     ensureSize() {
         const { width, height } = this.dimensions();
-        if (width !== this.lastWidth || height !== this.lastHeight) {
-            return this.resize(this.pixelRatio);
-        }
-        return { width, height };
+        if (width !== this.lastWidth || height !== this.lastHeight) return this.resize(this.pixelRatio);
+        return { width, height, logicalWidth: this.logicalWidth, logicalHeight: this.logicalHeight };
     }
 
     resetState({ clear = false } = {}) {
-        const { width, height } = this.ensureSize();
-        this.renderer.setRenderTarget(null);
-        this.renderer.setScissorTest(false);
-        this.renderer.setViewport(0, 0, width, height);
-        this.renderer.autoClear = true;
-        this.renderer.resetState?.();
-        if (clear && !this.contextLost) this.renderer.clear(true, true, true);
-        return { width, height };
-    }
-
-    prepareFrame() {
-        if (this.contextLost) return null;
-        this.resetState();
-        return this.renderer;
-    }
-
-    render(scene, camera) {
-        if (!scene || !camera || this.contextLost) return false;
-
-        try {
-            this.prepareFrame();
-            this.renderer.render(scene, camera);
-            return true;
-        } catch (error) {
-            // EffectComposer and multi-pass games can leave stale GL state behind
-            // during a game switch. Reset once and retry before surfacing the error.
-            this.renderer.setRenderTarget(null);
-            this.renderer.setScissorTest(false);
-            this.renderer.resetState?.();
-            this.ensureSize();
-            try {
-                this.renderer.render(scene, camera);
-                return true;
-            } catch (retryError) {
-                retryError.cause ??= error;
-                throw retryError;
-            }
+        const dimensions = this.ensureSize();
+        this.frameOpen = false;
+        this.bufferContext.setTransform(1, 0, 0, 1, 0, 0);
+        this.context2d.setTransform(1, 0, 0, 1, 0, 0);
+        this.configureContext(this.bufferContext);
+        this.configureContext(this.context2d);
+        if (clear) {
+            this.bufferContext.fillStyle = '#17130f';
+            this.bufferContext.fillRect(0, 0, this.logicalWidth, this.logicalHeight);
+            this.present();
         }
+        return dimensions;
     }
 
-    onContextLost(event) {
-        event.preventDefault();
-        this.contextLost = true;
-        this.container.dataset.webglState = 'lost';
+    beginFrame(clear = '#17130f') {
+        this.ensureSize();
+        const ctx = this.bufferContext;
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        this.configureContext(ctx);
+        ctx.fillStyle = clear;
+        ctx.fillRect(0, 0, this.logicalWidth, this.logicalHeight);
+        this.frameOpen = true;
+        return ctx;
     }
 
-    onContextRestored() {
-        this.contextLost = false;
-        this.container.dataset.webglState = 'ready';
-        this.resize(this.pixelRatio);
-        this.resetState({ clear: true });
+    prepareFrame() { return this.beginFrame(); }
+
+    present() {
+        const ctx = this.context2d;
+        const width = this.canvas.width;
+        const height = this.canvas.height;
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        this.configureContext(ctx);
+        ctx.fillStyle = '#0c0a09';
+        ctx.fillRect(0, 0, width, height);
+
+        const sourceAspect = this.logicalWidth / this.logicalHeight;
+        const targetAspect = width / height;
+        let drawWidth = width;
+        let drawHeight = height;
+        let offsetX = 0;
+        let offsetY = 0;
+        if (targetAspect > sourceAspect) {
+            drawWidth = Math.floor(height * sourceAspect);
+            offsetX = Math.floor((width - drawWidth) / 2);
+        } else if (targetAspect < sourceAspect) {
+            drawHeight = Math.floor(width / sourceAspect);
+            offsetY = Math.floor((height - drawHeight) / 2);
+        }
+        ctx.drawImage(this.bufferCanvas, 0, 0, this.logicalWidth, this.logicalHeight, offsetX, offsetY, drawWidth, drawHeight);
+        this.frameOpen = false;
+        return true;
+    }
+
+    render(drawable, camera) {
+        if (!drawable) return false;
+        const ctx = this.beginFrame();
+        if (typeof drawable === 'function') drawable(ctx, camera, this);
+        else if (typeof drawable.renderPixel2D === 'function') drawable.renderPixel2D(ctx, camera, this);
+        else return false;
+        return this.present();
     }
 
     dispose() {
         this.resizeObserver?.disconnect();
-        if (this.resizeFrame !== null && typeof cancelAnimationFrame === 'function') {
-            cancelAnimationFrame(this.resizeFrame);
-            this.resizeFrame = null;
-        }
-        this.canvas.removeEventListener('webglcontextlost', this.onContextLost, false);
-        this.canvas.removeEventListener('webglcontextrestored', this.onContextRestored, false);
-        this.renderer.dispose();
+        if (this.resizeFrame !== null && typeof cancelAnimationFrame === 'function') cancelAnimationFrame(this.resizeFrame);
         this.canvas.remove();
+        this.bufferCanvas.width = 1;
+        this.bufferCanvas.height = 1;
     }
 }

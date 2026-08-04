@@ -1,212 +1,69 @@
-import * as THREE from 'three';
-import { createCafeEnvironment, updateCafeEnvironmentVisibility } from '../../../shared/cafe/CafeSceneFactory.js';
-import { configureCafeScene } from '../../../shared/cafe/CafeScenePolicy.js';
+import CafeGameRenderer2D from '../../../rendering2d/CafeGameRenderer2D.js';
+import { drawPixelActor } from '../../../rendering2d/PixelActorRenderer.js';
+import { cssColor, PIXEL_PALETTE as P } from '../../../rendering2d/PixelPalette.js';
 
-const ROLE_COLORS = Object.freeze({
-    player: 0x67e8f9,
-    seeker: 0xfb7185,
-    hider: 0xa78bfa,
-    eliminated: 0x475569,
-});
+const ROLE_COLORS = Object.freeze({ player: P.cyan, seeker: P.red, hider: P.purple, eliminated: '#475569' });
 
-function disposeObject(object) {
-    object?.traverse?.((child) => {
-        child.geometry?.dispose?.();
-        if (Array.isArray(child.material)) child.material.forEach((material) => material.dispose?.());
-        else child.material?.dispose?.();
-    });
-}
-
-function createActorMesh({ color, isPlayer }) {
-    const group = new THREE.Group();
-    const bodyMaterial = new THREE.MeshStandardMaterial({ color, roughness: 0.62, metalness: 0.08 });
-    const body = new THREE.Mesh(new THREE.SphereGeometry(0.48, 14, 10), bodyMaterial);
-    body.position.y = 0.96;
-    body.scale.y = 1.9;
-
-    const head = new THREE.Mesh(
-        new THREE.SphereGeometry(0.34, 14, 10),
-        new THREE.MeshStandardMaterial({ color: 0xf8d9c5, roughness: 0.8 })
-    );
-    head.position.y = 1.83;
-
-    const direction = new THREE.Mesh(
-        new THREE.ConeGeometry(0.17, 0.48, 8),
-        new THREE.MeshBasicMaterial({ color: isPlayer ? 0xffffff : color })
-    );
-    direction.rotation.x = Math.PI / 2;
-    direction.position.set(0, 0.16, 0.65);
-
-    const ring = new THREE.Mesh(
-        new THREE.RingGeometry(0.6, 0.72, 32),
-        new THREE.MeshBasicMaterial({
-            color: isPlayer ? 0x67e8f9 : color,
-            transparent: true,
-            opacity: isPlayer ? 0.8 : 0.34,
-            side: THREE.DoubleSide,
-        })
-    );
-    ring.rotation.x = -Math.PI / 2;
-    ring.position.y = 0.03;
-
-    group.add(body, head, direction, ring);
-    group.userData.parts = { body, head, direction, ring };
-    return group;
-}
-
-export default class HideAndSeekRenderer {
+export default class HideAndSeekRenderer extends CafeGameRenderer2D {
     constructor(context, map) {
-        this.context = context;
-        this.map = map;
-        this.scene = configureCafeScene(new THREE.Scene(), { fogDensity: 0.016 });
-        this.camera = new THREE.PerspectiveCamera(48, 1, 0.1, 180);
-        this.camera.position.set(0, 18, 17);
-        this.cameraTarget = new THREE.Vector3();
-        this.cameraLook = new THREE.Vector3();
-        this.entities = new Map();
-        this.hideSpotMeshes = new Map();
-        this.pixelRatio = 1;
-        this.createLighting();
-        this.createMap();
-        this.createVisionCone();
+        super(context, map, { follow: true, atmosphere: 'night', zoom: 11 });
+        this.activeSpots = new Set();
         this.resize();
     }
 
-    createLighting() {
-        this.scene.add(new THREE.HemisphereLight(0xf1ece4, 0x746d67, 1.42));
-        const key = new THREE.DirectionalLight(0xfff2d9, 1.95);
-        key.position.set(-8, 18, 9);
-        this.scene.add(key);
-        const entrance = new THREE.PointLight(0xffffff, 4.5, 18, 2);
-        entrance.position.set(0, 3.0, 14.5);
-        const lounge = new THREE.PointLight(0xffcb82, 7.0, 10, 2);
-        lounge.position.set(-20.5, 2.4, -8.5);
-        const counter = new THREE.PointLight(0xffefce, 6.0, 15, 2);
-        counter.position.set(14, 3.1, 4.0);
-        this.scene.add(entrance, lounge, counter);
-    }
-
-    createMap() {
-        this.environment = createCafeEnvironment(this.scene, { includeCeiling: false });
-
-        this.map.hideSpots.forEach((spot) => {
-            const mesh = new THREE.Mesh(
-                new THREE.CylinderGeometry(spot.radius * 0.7, spot.radius, 0.12, 28),
-                new THREE.MeshBasicMaterial({ color: spot.color ?? 0xa78bfa, transparent: true, opacity: 0.16, depthWrite: false })
-            );
-            mesh.position.set(spot.position.x, 0.08, spot.position.z);
-            this.scene.add(mesh);
-            this.hideSpotMeshes.set(spot.id, mesh);
-        });
-    }
-
-    createVisionCone() {
-        const shape = new THREE.Shape();
-        shape.moveTo(0, 0);
-        const radius = 13.5;
-        const half = THREE.MathUtils.degToRad(52.5);
-        const segments = 36;
-        for (let index = 0; index <= segments; index += 1) {
-            const angle = -half + (index / segments) * half * 2;
-            shape.lineTo(Math.sin(angle) * radius, Math.cos(angle) * radius);
-        }
-        shape.lineTo(0, 0);
-        this.visionCone = new THREE.Mesh(
-            new THREE.ShapeGeometry(shape),
-            new THREE.MeshBasicMaterial({ color: 0xfb7185, transparent: true, opacity: 0.07, depthWrite: false, side: THREE.DoubleSide })
-        );
-        this.visionCone.rotation.x = -Math.PI / 2;
-        this.visionCone.visible = false;
-        this.scene.add(this.visionCone);
-    }
-
-    syncParticipants(participants, playerId, seekerId) {
-        const live = new Set(participants.map((participant) => participant.id));
-        for (const [id, mesh] of this.entities) {
-            if (!live.has(id)) {
-                this.scene.remove(mesh);
-                disposeObject(mesh);
-                this.entities.delete(id);
-            }
-        }
-
-        participants.forEach((participant) => {
-            let mesh = this.entities.get(participant.id);
-            if (!mesh) {
-                const role = participant.id === playerId
-                    ? 'player'
-                    : participant.id === seekerId
-                        ? 'seeker'
-                        : 'hider';
-                mesh = createActorMesh({ color: ROLE_COLORS[role], isPlayer: participant.id === playerId });
-                this.entities.set(participant.id, mesh);
-                this.scene.add(mesh);
-            }
-
-            mesh.position.set(participant.position.x, 0, participant.position.z);
-            mesh.rotation.y = Math.atan2(participant.forward?.x ?? 0, participant.forward?.z ?? 1);
-            const isEliminated = Boolean(participant.eliminated);
-            const activeColor = participant.id === playerId
-                ? ROLE_COLORS.player
-                : participant.id === seekerId
-                    ? ROLE_COLORS.seeker
-                    : ROLE_COLORS.hider;
-            mesh.userData.parts.body.material.color.setHex(isEliminated ? ROLE_COLORS.eliminated : activeColor);
-            mesh.userData.parts.direction.material.color.setHex(participant.id === playerId ? 0xffffff : activeColor);
-            mesh.userData.parts.ring.material.color.setHex(isEliminated ? ROLE_COLORS.eliminated : activeColor);
-            mesh.userData.parts.ring.material.opacity = participant.id === playerId ? 0.82 : isEliminated ? 0.16 : 0.34;
-
-            if (participant.id === seekerId) {
-                this.visionCone.visible = true;
-                this.visionCone.position.set(participant.position.x, 0.06, participant.position.z);
-                this.visionCone.rotation.z = -Math.atan2(participant.forward?.x ?? 0, participant.forward?.z ?? 1);
-            }
-        });
-    }
-
-    updateCamera(player, deltaTime) {
-        if (!player) return;
-        const desired = new THREE.Vector3(player.position.x, 18, player.position.z + 16);
-        const alpha = 1 - Math.exp(-4.2 * Math.max(0, deltaTime));
-        this.camera.position.lerp(desired, alpha);
-        this.cameraLook.set(player.position.x, 0.5, player.position.z);
-        this.cameraTarget.lerp(this.cameraLook, alpha);
-        this.camera.lookAt(this.cameraTarget);
-        updateCafeEnvironmentVisibility(this.environment, this.camera);
-    }
-
     setSpotActive(spotId, active) {
-        const mesh = this.hideSpotMeshes.get(spotId);
-        if (!mesh) return;
-        mesh.material.opacity = active ? 0.42 : 0.16;
-        mesh.scale.setScalar(active ? 1.12 : 1);
+        if (active) this.activeSpots.add(spotId); else this.activeSpots.delete(spotId);
+    }
+
+    drawHideSpots(ctx) {
+        for (const spot of this.map.hideSpots ?? []) {
+            const screen = this.camera.worldToScreen(spot.position);
+            const radius = Math.max(4, Math.round((spot.radius ?? 1) * this.camera.pixelsPerUnit));
+            ctx.globalAlpha = this.activeSpots.has(spot.id) ? 0.8 : 0.34;
+            ctx.strokeStyle = cssColor(spot.color, P.purple);
+            ctx.lineWidth = this.activeSpots.has(spot.id) ? 3 : 1;
+            ctx.strokeRect(screen.x - radius, screen.y - radius, radius * 2, radius * 2);
+            ctx.globalAlpha = 1;
+        }
+    }
+
+    drawVisionCone(ctx, seeker) {
+        if (!seeker || seeker.eliminated) return;
+        const position = this.camera.worldToScreen(seeker.position);
+        const forward = seeker.forward ?? { x: 0, z: 1 };
+        const angle = Math.atan2(forward.z, forward.x);
+        const length = Math.max(38, Math.round(this.camera.pixelsPerUnit * 6.5));
+        const spread = 0.55;
+        ctx.fillStyle = 'rgba(251, 113, 133, 0.13)';
+        ctx.beginPath();
+        ctx.moveTo(position.x, position.y);
+        ctx.lineTo(position.x + Math.cos(angle - spread) * length, position.y + Math.sin(angle - spread) * length);
+        ctx.lineTo(position.x + Math.cos(angle + spread) * length, position.y + Math.sin(angle + spread) * length);
+        ctx.closePath();
+        ctx.fill();
     }
 
     render(participants, { playerId, seekerId, deltaTime = 0 } = {}) {
-        if (!participants) return;
-        this.syncParticipants(participants, playerId, seekerId);
-        this.updateCamera(participants.find((participant) => participant.id === playerId), deltaTime);
-        this.hideSpotMeshes.forEach((mesh) => {
-            mesh.rotation.y += deltaTime * 0.25;
+        const player = participants.find((entry) => entry.id === playerId) ?? participants[0];
+        const seeker = participants.find((entry) => entry.id === seekerId);
+        const ctx = this.begin({ target: player?.position, deltaTime, atmosphere: 'night' });
+        this.drawHideSpots(ctx);
+        this.drawVisionCone(ctx, seeker);
+
+        participants.forEach((participant) => {
+            const role = participant.id === seekerId ? 'seeker' : participant.id === playerId ? 'player' : 'hider';
+            this.queue.add({
+                layer: 20,
+                y: participant.position?.z ?? 0,
+                draw: () => drawPixelActor(ctx, this.camera, participant, {
+                    color: participant.eliminated ? ROLE_COLORS.eliminated : ROLE_COLORS[role],
+                    player: participant.id === playerId,
+                    eliminated: participant.eliminated,
+                    hidden: Boolean(participant.hidden || participant.hideSpotId),
+                    label: role === 'seeker' ? 'SEEKER' : '',
+                }),
+            });
         });
-        this.context.renderer.render(this.scene, this.camera);
-    }
-
-    resize(pixelRatio = this.pixelRatio) {
-        this.pixelRatio = pixelRatio;
-        const { width, height } = this.context.renderer.resize(pixelRatio);
-        this.camera.aspect = width / Math.max(1, height);
-        this.camera.updateProjectionMatrix();
-        return { width, height };
-    }
-
-    dispose() {
-        this.entities.forEach((mesh) => disposeObject(mesh));
-        this.entities.clear();
-        this.hideSpotMeshes.forEach((mesh) => disposeObject(mesh));
-        this.hideSpotMeshes.clear();
-        disposeObject(this.environment);
-        disposeObject(this.visionCone);
-        this.scene.clear();
+        this.end(ctx);
     }
 }

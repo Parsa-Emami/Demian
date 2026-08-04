@@ -78,7 +78,7 @@ for (const file of jsFiles) {
 
 const blade = readFileSync(join(root, 'resources/views/demian.blade.php'), 'utf8');
 for (const marker of [
-    'data-runtime-version="8.1.6-cafe-map"',
+    'data-runtime-version="9.0.0-pixel2d"',
     'data-character-scroll-previous',
     'data-character-scroll-next',
     'data-character-scroll-status',
@@ -169,7 +169,7 @@ ${uiLayerValidation.stderr}`
 );
 
 const packageJson = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'));
-assert(packageJson.version === '8.1.6', 'package.json final version is not 8.1.6.');
+assert(packageJson.version === '9.0.0', 'package.json final version is not 9.0.0.');
 assert(packageJson.scripts?.['validate:final'] === 'node tools/validate_final.mjs', 'validate:final script missing.');
 assert(packageJson.scripts?.['test:js'] === 'node tools/run_js_tests.mjs', 'Cross-platform JavaScript test runner is not configured.');
 assert(packageJson.scripts?.['test:ci']?.startsWith('node --test '), 'Focused CI smoke test script is not configured.');
@@ -185,7 +185,7 @@ for (const marker of [
 const workflow = readFileSync(join(projectRoot, '.github/workflows/deploy-demian-pages.yml'), 'utf8');
 const baseTestCase = readFileSync(join(root, 'tests/TestCase.php'), 'utf8');
 assert(workflow.includes('npm run validate:final'), 'CI does not run the final validator.');
-assert(workflow.includes('data-runtime-version="8.1.6-cafe-map"'), 'Static deployment does not verify final runtime version.');
+assert(workflow.includes('data-runtime-version="9.0.0-pixel2d"'), 'Static deployment does not verify final runtime version.');
 assert(workflow.includes('npm run test:ci'), 'CI does not run the focused deployment smoke suite.');
 assert(workflow.includes('npm run validate:ui-layers'), 'CI does not validate the central UI layer contract.');
 assert(!workflow.includes('php artisan test\n'), 'CI still runs the full Laravel test suite instead of the lean deployment path.');

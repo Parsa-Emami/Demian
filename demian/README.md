@@ -29,3 +29,7 @@ php artisan serve
 ```
 
 See `docs/FINAL-INTEGRATION-AND-MOBILE-UX.fa.md` for the Persian implementation guide.
+
+## Demian 9 — 2D Pixel Rendering
+
+The visible game pipeline now uses a deterministic Canvas2D pixel renderer with a logical backbuffer, nearest-neighbour presentation, shared café data, Y-sorted entities and a data-only Open World chunk renderer. See `docs/PIXEL-2D-ARCHITECTURE.fa.md`.

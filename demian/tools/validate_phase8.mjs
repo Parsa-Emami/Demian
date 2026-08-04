@@ -50,6 +50,10 @@ const required = [
     'resources/js/game/games/open-world/streaming/ChunkLoader.js',
     'resources/js/game/games/open-world/streaming/ChunkUnloader.js',
     'resources/js/game/games/open-world/render/OpenWorldChunkRenderer.js',
+    'resources/js/game/games/open-world/render/OpenWorldPixelRenderer.js',
+    'resources/js/game/games/open-world/data/DemianReferenceCafeManifest.js',
+    'resources/js/game/rendering2d/PixelCamera2D.js',
+    'resources/js/game/rendering2d/CafePixelRenderer.js',
     'resources/js/game/games/open-world/entities/AiBudgetScheduler.js',
     'resources/js/game/games/open-world/persistence/OpenWorldSaveStore.js',
     'resources/js/game/games/open-world/persistence/SavePointSystem.js',
@@ -62,9 +66,9 @@ required.forEach((file) => assert(existsSync(join(root, file)), `Missing ${file}
 
 const manifestErrors = validateWorldManifest(DEMIAN_CITY_MANIFEST_DEFINITION);
 assert(manifestErrors.length === 0, `Invalid bundled world manifest: ${manifestErrors.join('; ')}`);
-assert(manifest.chunks.length === 24, `Expected 24 chunks, got ${manifest.chunks.length}.`);
-assert(manifest.districts.length === 6, `Expected 6 districts, got ${manifest.districts.length}.`);
-assert(manifest.savePoints.length === 6, `Expected 6 save points, got ${manifest.savePoints.length}.`);
+assert(manifest.chunks.length === 12, `Expected 12 café chunks, got ${manifest.chunks.length}.`);
+assert(manifest.districts.length === 4, `Expected 4 café districts, got ${manifest.districts.length}.`);
+assert(manifest.savePoints.length === 4, `Expected 4 save points, got ${manifest.savePoints.length}.`);
 const partition = new WorldPartition(manifest);
 for (const point of manifest.savePoints) {
     assert(partition.chunkAt(point.position)?.id === point.chunkId, `Save point ${point.id} is outside its declared chunk.`);
@@ -92,8 +96,13 @@ for (const marker of [
 ]) assert(game.includes(marker), `OpenWorldGame integration missing: ${marker}`);
 
 const renderer = readFileSync(join(root, 'resources/js/game/games/open-world/render/OpenWorldChunkRenderer.js'), 'utf8');
-for (const marker of ['addStaticAabb', 'setDynamicBlocker', 'removeDynamicBlocker', 'setTier', 'dispose']) {
+for (const marker of ['Data-only chunk factory', 'setTier', 'dispose', 'handles']) {
     assert(renderer.includes(marker), `Chunk renderer lifecycle missing: ${marker}`);
+}
+assert(!renderer.includes("from 'three'"), 'Chunk renderer must not import Three.js.');
+const pixelRenderer = readFileSync(join(root, 'resources/js/game/games/open-world/render/OpenWorldPixelRenderer.js'), 'utf8');
+for (const marker of ['PixelCamera2D', 'CafePixelRenderer', 'drawSpriteCharacter', 'context.renderer.present']) {
+    assert(pixelRenderer.includes(marker), `Pixel Open World renderer missing: ${marker}`);
 }
 const manager = readFileSync(join(root, 'resources/js/game/games/open-world/streaming/ChunkManager.js'), 'utf8');
 for (const marker of ['AbortController', 'maxLoadedChunks', 'concurrency', 'activeRadius', 'preloadRadius', 'enforceBudget', 'whenIdle']) {
@@ -101,7 +110,7 @@ for (const marker of ['AbortController', 'maxLoadedChunks', 'concurrency', 'acti
 }
 
 const definitions = readFileSync(join(root, 'resources/js/game/registry/GameDefinitions.js'), 'utf8');
-for (const marker of ['phase: 8', 'chunkStreaming: true', "worldManifest: 'demian-reference-cafe@2'", 'miniMap: true', 'worldMap: true', 'aiBudgeting: true', 'persistentSavePoints: true']) {
+for (const marker of ['phase: 8', 'chunkStreaming: true', "worldManifest: CAFE_ENVIRONMENT_ID", 'miniMap: true', 'worldMap: true', 'aiBudgeting: true', 'persistentSavePoints: true']) {
     assert(definitions.includes(marker), `Open World definition missing: ${marker}`);
 }
 const input = readFileSync(join(root, 'resources/js/game/input/InputContexts.js'), 'utf8');

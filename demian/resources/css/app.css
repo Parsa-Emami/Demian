@@ -4805,3 +4805,21 @@ body {
     text-align: center;
     pointer-events: none;
 }
+
+/* Demian 9 · deterministic 2D pixel renderer */
+.demian-scene[data-renderer-backend="pixel-2d"] canvas[data-renderer="pixel-2d"],
+.demian-scene canvas[data-renderer="pixel-2d"] {
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+    object-fit: contain;
+    background: #17130f;
+    transform: translateZ(0);
+}
+
+.demian-scene[data-renderer-backend="pixel-2d"]::after {
+    content: none;
+}
+
+.demian-scene[data-open-world-render-state="error"]::after {
+    content: "رندر دوبعدی موقتاً متوقف شد؛ بازی در حال بازیابی فریم بعدی است.";
+}
