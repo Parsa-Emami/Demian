@@ -8,8 +8,8 @@ import ArcadeWorld from '../../world/ArcadeWorld.js';
 import { findGameCatalogEntry } from '../../catalog/GameCatalog.js';
 import InteractionPrompt from '../../shared/interaction/ui/InteractionPrompt.js';
 import { COLLISION_LAYERS } from '../../shared/collision/CollisionLayers.js';
-import { createOpenWorldCollisionManifest } from '../../world/OpenWorldManifest.js';
-import DEMIAN_CITY_MANIFEST from './data/DemianCityManifest.js';
+import { CAFE_STATIC_COLLIDERS } from '../../shared/cafe/CafeReferenceLayout.js';
+import DEMIAN_REFERENCE_CAFE_MANIFEST from './data/DemianReferenceCafeManifest.js';
 import WorldPartition from './world/WorldPartition.js';
 import EnvironmentSystem from './world/EnvironmentSystem.js';
 import ChunkLoader from './streaming/ChunkLoader.js';
@@ -23,16 +23,13 @@ import SavePointSystem from './persistence/SavePointSystem.js';
 import OpenWorldHud from './ui/OpenWorldHud.js';
 
 function worldSpawnPoints(manifest) {
-    const points = [manifest.spawn];
-    const offsets = [
-        { x: -7, z: 3 },
-        { x: 8, z: -4 },
-        { x: -12, z: -7 },
-        { x: 13, z: 8 },
-        { x: -20, z: 12 },
+    return [
+        manifest.spawn,
+        { x: -12, z: 8 },
+        { x: 14, z: 6 },
+        { x: -15, z: -9 },
+        { x: 7, z: -3 },
     ];
-    offsets.forEach((offset) => points.push({ x: manifest.spawn.x + offset.x, z: manifest.spawn.z + offset.z }));
-    return points;
 }
 
 export default class OpenWorldGame extends BaseGame {
@@ -47,7 +44,7 @@ export default class OpenWorldGame extends BaseGame {
         this.repository = null;
         this.characterManager = null;
         this.pipeline = null;
-        this.manifest = DEMIAN_CITY_MANIFEST;
+        this.manifest = DEMIAN_REFERENCE_CAFE_MANIFEST;
         this.partition = new WorldPartition(this.manifest);
         this.collisionScope = null;
         this.interactionScope = null;
@@ -99,7 +96,8 @@ export default class OpenWorldGame extends BaseGame {
         context.root?.setAttribute('data-performance-tier', performanceProfile.tier);
 
         this.scene = new THREE.Scene();
-        this.scene.background = new THREE.Color(0x050714);
+        this.scene.background = new THREE.Color(0xdcd6cf);
+        this.scene.fog = new THREE.FogExp2(0xdcd6cf, 0.008);
         this.camera = new THREE.OrthographicCamera(-10, 10, 10, -10, 0.1, 220);
         this.cameraController = new CameraController(this.camera, context.renderer.canvas);
         this.world = new ArcadeWorld(this.scene, { performanceProfile, streamingMode: true });
@@ -108,7 +106,7 @@ export default class OpenWorldGame extends BaseGame {
         this.setupStreaming();
 
         this.discovery.discoverChunk(this.partition.chunkAt(this.manifest.spawn)?.id);
-        this.discovery.unlockSavePoint('save-cafe');
+        this.discovery.unlockSavePoint('save-entrance');
         await this.chunkManager.ensureAround(this.manifest.spawn);
 
         this.repository = new CharacterRepository({
@@ -172,27 +170,24 @@ export default class OpenWorldGame extends BaseGame {
         this.navigationScope = navigation.createScope('open-world');
         this.interactionActorId = `${this.interactionScope.owner}:player`;
 
-        const legacyManifest = createOpenWorldCollisionManifest(this.world.cabinets);
-        this.staticColliders = legacyManifest.staticColliders
-            .filter((definition) => definition.metadata.kind !== 'boundary')
-            .map((definition) => this.collisionScope.addStaticAabb(
-                definition.id,
-                definition.position,
-                definition.halfExtents,
-                {
-                    layer: COLLISION_LAYERS.WORLD,
-                    mask: COLLISION_LAYERS.CHARACTER,
-                    userData: definition.metadata,
-                }
-            ));
+        this.staticColliders = CAFE_STATIC_COLLIDERS.map((definition) => this.collisionScope.addStaticAabb(
+            definition.id,
+            definition.position,
+            definition.halfExtents,
+            {
+                layer: COLLISION_LAYERS.WORLD,
+                mask: COLLISION_LAYERS.CHARACTER,
+                userData: { kind: definition.kind },
+            }
+        ));
 
         const bounds = this.manifest.bounds;
         const thickness = 0.8;
         const boundaryDefinitions = [
-            { id: 'city-north', position: { x: (bounds.minX + bounds.maxX) / 2, z: bounds.minZ - thickness / 2 }, halfExtents: { x: (bounds.maxX - bounds.minX) / 2 + 1, z: thickness / 2 } },
-            { id: 'city-south', position: { x: (bounds.minX + bounds.maxX) / 2, z: bounds.maxZ + thickness / 2 }, halfExtents: { x: (bounds.maxX - bounds.minX) / 2 + 1, z: thickness / 2 } },
-            { id: 'city-west', position: { x: bounds.minX - thickness / 2, z: (bounds.minZ + bounds.maxZ) / 2 }, halfExtents: { x: thickness / 2, z: (bounds.maxZ - bounds.minZ) / 2 + 1 } },
-            { id: 'city-east', position: { x: bounds.maxX + thickness / 2, z: (bounds.minZ + bounds.maxZ) / 2 }, halfExtents: { x: thickness / 2, z: (bounds.maxZ - bounds.minZ) / 2 + 1 } },
+            { id: 'cafe-north', position: { x: (bounds.minX + bounds.maxX) / 2, z: bounds.minZ - thickness / 2 }, halfExtents: { x: (bounds.maxX - bounds.minX) / 2 + 1, z: thickness / 2 } },
+            { id: 'cafe-south', position: { x: (bounds.minX + bounds.maxX) / 2, z: bounds.maxZ + thickness / 2 }, halfExtents: { x: (bounds.maxX - bounds.minX) / 2 + 1, z: thickness / 2 } },
+            { id: 'cafe-west', position: { x: bounds.minX - thickness / 2, z: (bounds.minZ + bounds.maxZ) / 2 }, halfExtents: { x: thickness / 2, z: (bounds.maxZ - bounds.minZ) / 2 + 1 } },
+            { id: 'cafe-east', position: { x: bounds.maxX + thickness / 2, z: (bounds.minZ + bounds.maxZ) / 2 }, halfExtents: { x: thickness / 2, z: (bounds.maxZ - bounds.minZ) / 2 + 1 } },
         ];
         boundaryDefinitions.forEach((definition) => {
             this.staticColliders.push(this.collisionScope.addStaticAabb(
@@ -203,12 +198,12 @@ export default class OpenWorldGame extends BaseGame {
             ));
         });
 
-        this.navigationGrid = this.navigationScope.createGrid('demian-city', {
+        this.navigationGrid = this.navigationScope.createGrid('demian-reference-cafe', {
             ...bounds,
-            cellSize: 2,
+            cellSize: 1.5,
             allowDiagonal: true,
         });
-        this.navigationGrid.rasterizeColliders(this.staticColliders, { padding: 0.72 });
+        this.navigationGrid.rasterizeColliders(this.staticColliders, { padding: 0.68 });
         this.context.eventBus.emit('world:spatial-services-ready', {
             collision: this.context.services.collision.stats(),
             navigation: this.navigationGrid.stats(),
@@ -478,156 +473,77 @@ export default class OpenWorldGame extends BaseGame {
         this.context.eventBus.emit('studio:frame', {
             state: this.characterManager.state(),
             speed: this.characterManager.speed(),
-            position,
-            cameraMode: this.cameraController.mode,
             chunkStats,
-            districtId: this.currentDistrict?.id ?? null,
+            aiStats: this.aiBudget.stats(),
+            pixelRatio: this.pixelRatio,
         });
     }
 
-    render(_alpha, deltaTime) { this.pipeline.render(deltaTime); }
-
-    updateAdaptiveQuality(deltaTime) {
-        if (this.qualityPreference !== 'auto') return;
-        const { performanceProfile } = this.context.services;
-        this.qualityCooldown = Math.max(0, this.qualityCooldown - deltaTime);
-        this.qualityAccumulator += deltaTime;
-        this.qualityFrames += 1;
-        if (this.qualityFrames < 90 || this.qualityCooldown > 0) return;
-        const averageFrame = this.qualityAccumulator / this.qualityFrames;
-        const deviceRatio = Math.min(globalThis.devicePixelRatio || 1, this.maxPixelRatio);
-        let nextRatio = this.pixelRatio;
-        const slowFrame = 1 / Math.max(performanceProfile.targetFps - 9, 36);
-        const fastFrame = 1 / Math.max(performanceProfile.targetFps - 2, 48);
-        if (averageFrame > slowFrame && this.pixelRatio > this.minimumPixelRatio) nextRatio = Math.max(this.minimumPixelRatio, this.pixelRatio - 0.18);
-        else if (averageFrame < fastFrame && this.pixelRatio < deviceRatio) nextRatio = Math.min(deviceRatio, this.pixelRatio + 0.1);
-        this.qualityAccumulator = 0;
-        this.qualityFrames = 0;
-        if (Math.abs(nextRatio - this.pixelRatio) < 0.01) return;
-        this.pixelRatio = nextRatio;
-        this.qualityCooldown = 3;
-        this.resize();
-        this.context.eventBus.emit('studio:quality', {
-            pixelRatio: this.pixelRatio,
-            label: this.pixelRatio >= 1.45 ? 'HIGH' : this.pixelRatio >= 1.1 ? 'BALANCED' : 'PERFORMANCE',
-        });
+    render() {
+        this.pipeline.render();
     }
 
     resize() {
-        if (!this.context || !this.cameraController || !this.pipeline) return;
-        const { width, height } = this.context.renderer.resize(this.pixelRatio);
-        this.cameraController.resize(width, height);
+        const width = this.context.container.clientWidth;
+        const height = this.context.container.clientHeight;
+        this.context.renderer.resize(this.pixelRatio);
         this.pipeline.resize(width, height, this.pixelRatio);
-        if (this.hud?.isMapOpen()) this.hud.worldMap.draw();
+        this.cameraController.resize(width, height);
+        const mode = this.cameraController?.mode ?? 'FOLLOW';
+        if (mode === 'FOLLOW') this.focusCharacter({ close: true });
+        else this.cameraController.overview({ immediate: true });
     }
 
-    synchronizeUi() {
-        if (!this.characterManager || !this.context) return;
-        this.context.eventBus.emit('characters:changed', this.characterManager.characters);
-        this.characterManager.emitRosterChanged();
-        if (this.characterManager.activeRecord) {
-            this.context.eventBus.emit('character:selected', {
-                record: this.characterManager.activeRecord,
-                position: this.characterManager.position().clone(),
-                height: this.characterManager.visualHeight(),
+    updateAdaptiveQuality(deltaTime) {
+        if (this.qualityPreference !== 'auto') {
+            this.context?.eventBus?.emit('studio:quality', {
+                pixelRatio: this.pixelRatio,
+                label: this.context?.services?.performanceProfile?.tier?.toUpperCase() ?? 'CUSTOM',
             });
+            return;
         }
-        this.context.eventBus.emit('camera:mode', this.cameraController.mode);
+        if (!deltaTime || !this.pipeline) return;
+        this.qualityAccumulator += deltaTime;
+        this.qualityFrames += 1;
+        if (this.qualityAccumulator < 1.5 || this.qualityCooldown > 0) {
+            this.qualityCooldown = Math.max(0, this.qualityCooldown - deltaTime);
+            return;
+        }
+        const averageFrame = this.qualityAccumulator / Math.max(1, this.qualityFrames);
+        let nextPixelRatio = this.pixelRatio;
+        if (averageFrame > 0.022 && this.pixelRatio > this.minimumPixelRatio) {
+            nextPixelRatio = Math.max(this.minimumPixelRatio, this.pixelRatio - 0.1);
+        } else if (averageFrame < 0.015 && this.pixelRatio < this.maxPixelRatio) {
+            nextPixelRatio = Math.min(this.maxPixelRatio, this.pixelRatio + 0.1);
+        }
+        this.qualityAccumulator = 0;
+        this.qualityFrames = 0;
+        if (Math.abs(nextPixelRatio - this.pixelRatio) < 0.05) return;
+        this.pixelRatio = Number(nextPixelRatio.toFixed(2));
+        this.resize();
+        this.qualityCooldown = 1.5;
         this.context.eventBus.emit('studio:quality', {
             pixelRatio: this.pixelRatio,
-            label: this.context.services.performanceProfile.tier.toUpperCase(),
+            label: `${this.context.services.performanceProfile.tier.toUpperCase()} · AUTO`,
         });
     }
 
-    async startSession() {
-        await this.restoreSession();
-        this.mapOpen = false;
-        this.hud.closeMap();
-        this.updateStreaming(true);
-        if (this.coarsePointer || globalThis.innerWidth <= 900) this.focusCharacter({ close: true, follow: true });
-    }
-
-    pause() {
-        this.context?.services.interaction.clearActor(this.interactionActorId);
-        this.savePoints?.save({ reason: 'pause' });
-    }
-
-    resume() { this.updateInteraction({}); }
-
-    enterMenuMode() {
-        this.context?.services.interaction.clearActor(this.interactionActorId);
-        this.hud?.closeMap();
-        this.mapOpen = false;
-        this.characterManager?.setPosition(this.manifest.spawn);
-        this.updateStreaming(true);
-        if (!this.cameraController) return;
-        this.cameraController.overview({ immediate: false });
-        this.updateCameraButtons('OVERVIEW');
-        this.context?.eventBus.emit('camera:mode', 'OVERVIEW');
-    }
-
-    applySettings(settings = {}) {
-        if (!this.context) return;
-        const profile = this.context.services.performanceProfile;
-        this.qualityPreference = settings.quality ?? 'auto';
-        const presets = {
-            performance: { max: 1, min: 0.72, label: 'PERFORMANCE' },
-            balanced: { max: 1.35, min: 0.82, label: 'BALANCED' },
-            high: { max: 1.75, min: 1, label: 'HIGH' },
-            auto: { max: profile.maxPixelRatio, min: profile.minimumPixelRatio, label: profile.tier.toUpperCase() },
-        };
-        const preset = presets[this.qualityPreference] ?? presets.auto;
-        this.maxPixelRatio = preset.max;
-        this.minimumPixelRatio = preset.min;
-        this.pixelRatio = Math.min(globalThis.devicePixelRatio || 1, this.maxPixelRatio);
-        this.qualityAccumulator = 0;
-        this.qualityFrames = 0;
-        this.resize();
-        this.context.eventBus.emit('studio:quality', { pixelRatio: this.pixelRatio, label: preset.label });
-    }
-
     async exit() {
-        if (this.sessionRestored) this.savePoints?.save({ reason: 'exit' });
-        this.context?.eventBus.emit('game:exiting', { gameId: 'open-world' });
-    }
-
-    dispose() {
+        this.savePoints?.save({ reason: 'exit' });
+        this.unsubscribeCharacterSelected?.();
         this.cameraToggleButton?.removeEventListener('click', this.onCameraToggle);
         this.cameraResetButton?.removeEventListener('click', this.onCameraReset);
         globalThis.removeEventListener('keydown', this.onKeyboardShortcut);
-        this.unsubscribeCharacterSelected?.();
-        this.unsubscribeCharacterSelected = null;
-        this.context?.services.interaction.clearActor(this.interactionActorId);
-        this.interactionPrompt?.dispose();
-        this.hud?.dispose();
-        this.cameraController?.dispose();
-        this.characterManager?.dispose();
-        void this.chunkManager?.dispose();
-        this.world?.dispose();
-        this.environment?.dispose();
+        this.interactionPrompt?.unmount();
+        this.hud?.unmount();
+        this.chunkManager?.dispose();
         this.pipeline?.dispose();
+        this.characterManager?.dispose();
+        this.environment?.dispose();
+        this.world?.dispose();
         this.interactionScope?.dispose();
-        this.navigationScope?.dispose();
         this.collisionScope?.dispose();
-        this.aiBudget.clear();
-
-        this.cameraController = null;
-        this.characterManager = null;
-        this.chunkManager = null;
-        this.chunkRenderer = null;
-        this.world = null;
-        this.environment = null;
-        this.pipeline = null;
-        this.collisionScope = null;
-        this.interactionScope = null;
-        this.navigationScope = null;
-        this.navigationGrid = null;
-        this.interactionPrompt = null;
-        this.hud = null;
-        this.interactionActorId = null;
-        this.staticColliders = [];
-        this.scene = null;
-        this.camera = null;
-        this.context = null;
+        this.navigationScope?.dispose();
+        this.scene?.clear();
     }
 }

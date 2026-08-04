@@ -1,13 +1,13 @@
 import * as THREE from 'three';
 
 const THEME_COLORS = Object.freeze({
-    cafe: 0x3d1238,
-    arcade: 0x44340a,
-    park: 0x08394a,
-    market: 0x40231d,
-    industrial: 0x12382e,
-    residential: 0x2b1747,
-    skyline: 0x122b4a,
+    cafe: 0xc9a66b,
+    arcade: 0xc9a66b,
+    park: 0xc9a66b,
+    market: 0xc9a66b,
+    industrial: 0xc9a66b,
+    residential: 0xc9a66b,
+    skyline: 0xc9a66b,
 });
 
 export default class EnvironmentSystem {
@@ -17,10 +17,14 @@ export default class EnvironmentSystem {
         this.time = 0;
         this.geometries = new Map();
         this.materials = new Map();
-        this.ambient = new THREE.AmbientLight(0x8294ff, 1.05);
-        this.keyLight = new THREE.DirectionalLight(0xffb7ef, 1.35);
-        this.keyLight.position.set(24, 42, 18);
-        this.scene.add(this.ambient, this.keyLight);
+        this.ambient = new THREE.AmbientLight(0xf2ece2, 1.22);
+        this.keyLight = new THREE.DirectionalLight(0xfff1d4, 1.05);
+        this.keyLight.position.set(22, 36, 18);
+        this.fillLight = new THREE.PointLight(0xffcb88, 2.1, 28, 2);
+        this.fillLight.position.set(12, 3.4, 6);
+        this.loungeLight = new THREE.PointLight(0xffd5a0, 1.7, 20, 2);
+        this.loungeLight.position.set(-15, 2.6, -8);
+        this.scene.add(this.ambient, this.keyLight, this.fillLight, this.loungeLight);
     }
 
     geometry(key, factory) {
@@ -36,22 +40,24 @@ export default class EnvironmentSystem {
     }
 
     themeColor(theme) {
-        return THEME_COLORS[theme] ?? 0x18213c;
+        return THEME_COLORS[theme] ?? 0xc9a66b;
     }
 
     update(deltaTime, playerPosition = null) {
         this.time += Math.max(0, Number(deltaTime) || 0);
-        const wave = (Math.sin(this.time * 0.08) + 1) / 2;
-        this.ambient.intensity = 0.9 + wave * 0.24;
-        this.keyLight.intensity = 1.1 + (1 - wave) * 0.35;
+        const wave = (Math.sin(this.time * 0.7) + 1) / 2;
+        this.ambient.intensity = 1.16 + wave * 0.08;
+        this.keyLight.intensity = 0.98 + (1 - wave) * 0.09;
+        this.fillLight.intensity = 1.9 + wave * 0.28;
+        this.loungeLight.intensity = 1.55 + (1 - wave) * 0.22;
         if (playerPosition) {
-            this.keyLight.position.x = playerPosition.x + 24;
-            this.keyLight.position.z = playerPosition.z + 18;
+            this.keyLight.position.x = playerPosition.x + 18;
+            this.keyLight.position.z = playerPosition.z + 14;
         }
     }
 
     dispose() {
-        this.scene?.remove(this.ambient, this.keyLight);
+        this.scene?.remove(this.ambient, this.keyLight, this.fillLight, this.loungeLight);
         this.geometries.forEach((geometry) => geometry.dispose());
         this.materials.forEach((material) => material.dispose());
         this.geometries.clear();
