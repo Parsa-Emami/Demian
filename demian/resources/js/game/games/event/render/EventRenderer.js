@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { createCafeEnvironment } from '../../../shared/cafe/CafeSceneFactory.js';
 
 function disposeObject(object) {
     object?.traverse?.((child) => {
@@ -40,9 +41,9 @@ export default class EventRenderer {
         this.context = context;
         this.map = map;
         this.scene = new THREE.Scene();
-        this.scene.background = new THREE.Color(0x030611);
-        this.scene.fog = new THREE.FogExp2(0x030611, 0.018);
-        this.camera = new THREE.PerspectiveCamera(48, 1, 0.1, 140);
+        this.scene.background = new THREE.Color(0xdad5cc);
+        this.scene.fog = new THREE.FogExp2(0xdad5cc, 0.014);
+        this.camera = new THREE.PerspectiveCamera(48, 1, 0.1, 180);
         this.camera.position.set(0, 18, 16);
         this.cameraTarget = new THREE.Vector3();
         this.cameraLook = new THREE.Vector3();
@@ -59,45 +60,21 @@ export default class EventRenderer {
     }
 
     createLighting() {
-        this.scene.add(new THREE.HemisphereLight(0x9ae6ff, 0x12091e, 1.45));
-        const key = new THREE.DirectionalLight(0xffdef5, 1.4);
+        this.scene.add(new THREE.HemisphereLight(0xf2eee6, 0x766e65, 1.45));
+        const key = new THREE.DirectionalLight(0xfff0d6, 1.82);
         key.position.set(-8, 18, 10);
         this.scene.add(key);
-        const cyan = new THREE.PointLight(0x22d3ee, 30, 26, 2);
-        cyan.position.set(-14, 5, -6);
-        const amber = new THREE.PointLight(0xfbbf24, 28, 24, 2);
-        amber.position.set(14, 5, 7);
-        this.scene.add(cyan, amber);
+        const entrance = new THREE.PointLight(0xffffff, 4.2, 18, 2);
+        entrance.position.set(0, 3.2, 14.5);
+        const amber = new THREE.PointLight(0xfbbf24, 5.2, 14, 2);
+        amber.position.set(14, 3.0, 7);
+        const warm = new THREE.PointLight(0xffc778, 5.8, 10, 2);
+        warm.position.set(-20.6, 2.4, -8.4);
+        this.scene.add(entrance, amber, warm);
     }
 
     createMap() {
-        const floor = new THREE.Mesh(
-            new THREE.PlaneGeometry(this.map.floor.width, this.map.floor.depth),
-            new THREE.MeshStandardMaterial({ color: this.map.floor.color, roughness: 0.93, metalness: 0.03 })
-        );
-        floor.rotation.x = -Math.PI / 2;
-        this.scene.add(floor);
-        this.floor = floor;
-
-        for (const definition of this.map.staticColliders) {
-            const height = definition.height ?? 2;
-            const mesh = new THREE.Mesh(
-                new THREE.BoxGeometry(definition.halfExtents.x * 2, height, definition.halfExtents.z * 2),
-                new THREE.MeshStandardMaterial({ color: definition.color ?? 0x24334f, roughness: 0.72, metalness: 0.08 })
-            );
-            mesh.position.set(definition.position.x, height / 2, definition.position.z);
-            this.scene.add(mesh);
-        }
-
-        const grid = new THREE.GridHelper(44, 44, 0x27436a, 0x11192d);
-        grid.position.y = 0.015;
-        const materials = Array.isArray(grid.material) ? grid.material : [grid.material];
-        materials.forEach((material) => {
-            material.transparent = true;
-            material.opacity = 0.23;
-        });
-        this.scene.add(grid);
-        this.grid = grid;
+        this.environment = createCafeEnvironment(this.scene);
     }
 
     configure(definition, modifiers) {
@@ -221,9 +198,8 @@ export default class EventRenderer {
 
     dispose() {
         this.clearEventEntities();
+        disposeObject(this.environment);
         disposeObject(this.playerMesh);
-        disposeObject(this.floor);
-        disposeObject(this.grid);
         this.scene.clear();
     }
 }

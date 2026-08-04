@@ -1,5 +1,11 @@
-const point=(x,z)=>Object.freeze({x,z});
-export const EVENT_ARENA_MAP=Object.freeze({id:'demian-event-arena',bounds:Object.freeze({minX:-22,maxX:22,minZ:-14,maxZ:14}),floor:Object.freeze({width:44,depth:28,color:0x080b18}),spawn:point(-16,9),staticColliders:Object.freeze([
- Object.freeze({id:'wall-north',position:point(0,-14),halfExtents:point(22,.45),height:2.7,color:0x1b2542}),Object.freeze({id:'wall-south',position:point(0,14),halfExtents:point(22,.45),height:2.7,color:0x1b2542}),Object.freeze({id:'wall-west',position:point(-22,0),halfExtents:point(.45,14),height:2.7,color:0x1b2542}),Object.freeze({id:'wall-east',position:point(22,0),halfExtents:point(.45,14),height:2.7,color:0x1b2542}),
- Object.freeze({id:'counter',position:point(-5,-8),halfExtents:point(5.2,1.25),height:1.2,color:0x40204f}),Object.freeze({id:'center-a',position:point(0,-3.8),halfExtents:point(.55,3.2),height:2.4,color:0x1c2f50}),Object.freeze({id:'center-b',position:point(0,6.5),halfExtents:point(.55,2.8),height:2.4,color:0x1c2f50}),Object.freeze({id:'table-west',position:point(-10,2.5),halfExtents:point(2,1.25),height:.85,color:0x5b3348}),Object.freeze({id:'table-east',position:point(10,-3),halfExtents:point(2,1.25),height:.85,color:0x334f5b}),Object.freeze({id:'arcade-row',position:point(9,9.8),halfExtents:point(5.2,.85),height:2,color:0x223269})
-])});
+import { CAFE_BOUNDS, CAFE_FLOOR, CAFE_STATIC_COLLIDERS } from '../../../shared/cafe/CafeReferenceLayout.js';
+
+const point = (x, z) => Object.freeze({ x, z });
+
+export const EVENT_ARENA_MAP = Object.freeze({
+    id: 'demian-event-arena-reference-cafe',
+    bounds: CAFE_BOUNDS,
+    floor: CAFE_FLOOR,
+    spawn: point(-17.2, 13.0),
+    staticColliders: CAFE_STATIC_COLLIDERS,
+});
