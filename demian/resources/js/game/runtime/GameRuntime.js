@@ -1,4 +1,5 @@
 const DEFAULT_FIXED_STEP = 1 / 60;
+const ERROR_REPORT_INTERVAL = 1000;
 
 /**
  * One deterministic fixed-step loop shared by all games.
@@ -28,6 +29,8 @@ export default class GameRuntime {
         this.lastTimestamp = null;
         this.frameRequest = null;
         this.visibilityTarget = visibilityTarget;
+        this.errorCounts = new Map();
+        this.lastErrorReport = new Map();
 
         this.tick = this.tick.bind(this);
         this.onVisibilityChange = this.onVisibilityChange.bind(this);
@@ -38,6 +41,8 @@ export default class GameRuntime {
         this.currentGame = game;
         this.accumulator = 0;
         this.lastTimestamp = null;
+        this.errorCounts.clear();
+        this.lastErrorReport.clear();
     }
 
     start() {
@@ -54,24 +59,29 @@ export default class GameRuntime {
             return;
         }
 
-        if (this.lastTimestamp === null) {
+        try {
+            if (this.lastTimestamp === null) {
+                this.lastTimestamp = timestamp;
+            }
+
+            const frameDelta = Math.min(
+                Math.max((timestamp - this.lastTimestamp) / 1000, 0),
+                this.maxFrameDelta
+            );
             this.lastTimestamp = timestamp;
+
+            if (!this.paused) {
+                this.step(frameDelta, timestamp);
+            }
+        } catch (error) {
+            this.reportError('frame', error, timestamp);
+        } finally {
+            // A single render error must never permanently kill the arcade loop.
+            if (this.running) this.frameRequest = this.requestFrame(this.tick);
         }
-
-        const frameDelta = Math.min(
-            Math.max((timestamp - this.lastTimestamp) / 1000, 0),
-            this.maxFrameDelta
-        );
-        this.lastTimestamp = timestamp;
-
-        if (!this.paused) {
-            this.step(frameDelta);
-        }
-
-        this.frameRequest = this.requestFrame(this.tick);
     }
 
-    step(frameDelta) {
+    step(frameDelta, timestamp = globalThis.performance?.now?.() ?? Date.now()) {
         const game = this.currentGame;
 
         if (!game) {
@@ -95,7 +105,31 @@ export default class GameRuntime {
 
         const alpha = this.accumulator / this.fixedStep;
         game.update(frameDelta);
-        game.render(alpha, frameDelta);
+
+        try {
+            game.render(alpha, frameDelta);
+            this.errorCounts.delete('render');
+            this.lastErrorReport.delete('render');
+        } catch (error) {
+            this.reportError('render', error, timestamp);
+        }
+    }
+
+    reportError(phase, error, timestamp = Date.now()) {
+        const count = (this.errorCounts.get(phase) ?? 0) + 1;
+        this.errorCounts.set(phase, count);
+        const previous = this.lastErrorReport.get(phase) ?? -Infinity;
+        const shouldReport = count === 1 || timestamp - previous >= ERROR_REPORT_INTERVAL;
+
+        if (!shouldReport) return;
+        this.lastErrorReport.set(phase, timestamp);
+        console.error(`[Demian Runtime] ${phase} error`, error);
+        this.eventBus?.emit('runtime:error', {
+            phase,
+            error,
+            count,
+            recoverable: phase === 'render',
+        });
     }
 
     pause({ notifyGame = true } = {}) {
@@ -141,5 +175,7 @@ export default class GameRuntime {
         this.stop();
         this.visibilityTarget?.removeEventListener('visibilitychange', this.onVisibilityChange);
         this.currentGame = null;
+        this.errorCounts.clear();
+        this.lastErrorReport.clear();
     }
 }

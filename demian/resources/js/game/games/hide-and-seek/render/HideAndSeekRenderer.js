@@ -20,8 +20,9 @@ function disposeObject(object) {
 function createActorMesh({ color, isPlayer }) {
     const group = new THREE.Group();
     const bodyMaterial = new THREE.MeshStandardMaterial({ color, roughness: 0.62, metalness: 0.08 });
-    const body = new THREE.Mesh(new THREE.CapsuleGeometry(0.46, 0.92, 5, 10), bodyMaterial);
+    const body = new THREE.Mesh(new THREE.SphereGeometry(0.48, 14, 10), bodyMaterial);
     body.position.y = 0.96;
+    body.scale.y = 1.9;
 
     const head = new THREE.Mesh(
         new THREE.SphereGeometry(0.34, 14, 10),
@@ -188,7 +189,7 @@ export default class HideAndSeekRenderer {
         this.hideSpotMeshes.forEach((mesh) => {
             mesh.rotation.y += deltaTime * 0.25;
         });
-        this.context.renderer.renderer.render(this.scene, this.camera);
+        this.context.renderer.render(this.scene, this.camera);
     }
 
     resize(pixelRatio = this.pixelRatio) {

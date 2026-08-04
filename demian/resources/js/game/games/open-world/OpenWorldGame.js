@@ -482,6 +482,7 @@ export default class OpenWorldGame extends BaseGame {
     }
 
     render() {
+        if (!this.context.renderer.prepareFrame()) return;
         this.pipeline.render();
     }
 

@@ -13,10 +13,11 @@ function disposeObject(object) {
 function createPlayerMesh() {
     const group = new THREE.Group();
     const body = new THREE.Mesh(
-        new THREE.CapsuleGeometry(0.46, 0.92, 5, 10),
+        new THREE.SphereGeometry(0.48, 14, 10),
         new THREE.MeshStandardMaterial({ color: 0x67e8f9, roughness: 0.55, metalness: 0.12 })
     );
     body.position.y = 0.98;
+    body.scale.y = 1.9;
     const head = new THREE.Mesh(
         new THREE.SphereGeometry(0.34, 14, 10),
         new THREE.MeshStandardMaterial({ color: 0xf8d9c5, roughness: 0.78 })
@@ -185,7 +186,7 @@ export default class EventRenderer {
         if (!world) return;
         this.sync(world, deltaTime);
         this.updateCamera(world.player, deltaTime);
-        this.context.renderer.renderer.render(this.scene, this.camera);
+        this.context.renderer.render(this.scene, this.camera);
     }
 
     resize(pixelRatio = this.pixelRatio) {

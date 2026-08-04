@@ -697,10 +697,34 @@ canvas,
     height: 100%;
 }
 
+.demian-scene {
+    position: absolute;
+    inset: 0;
+    min-width: 1px;
+    min-height: 1px;
+    overflow: hidden;
+}
+
 .demian-scene canvas {
+    position: absolute;
+    inset: 0;
     display: block;
     touch-action: none;
     user-select: none;
+}
+
+
+.demian-scene[data-webgl-state="lost"]::after {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    padding: 24px;
+    background: rgba(3, 5, 16, 0.92);
+    color: #f8fafc;
+    content: "WebGL متوقف شد؛ صفحه را یک‌بار تازه‌سازی کنید.";
+    text-align: center;
+    z-index: var(--z-local-raised);
 }
 
 .manager-stage::before,

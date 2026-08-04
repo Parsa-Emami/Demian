@@ -113,3 +113,35 @@ test('GameRuntime pause and resume notify the active game once', () => {
     assert.equal(game.pauseCount, 1);
     assert.equal(game.resumeCount, 1);
 });
+
+test('GameRuntime keeps requesting frames after a recoverable render error', () => {
+    const callbacks = [];
+    const originalConsoleError = console.error;
+    console.error = () => undefined;
+
+    try {
+        const { runtime, events } = createRuntime({
+            requestFrame(callback) {
+                callbacks.push(callback);
+                return callbacks.length;
+            },
+        });
+        const game = createGame();
+        game.render = () => {
+            throw new Error('temporary WebGL state error');
+        };
+        runtime.setGame(game);
+        runtime.start();
+
+        assert.equal(callbacks.length, 1);
+        callbacks[0](1000);
+
+        assert.equal(runtime.running, true);
+        assert.equal(callbacks.length, 2);
+        assert.equal(events.at(-1).name, 'runtime:error');
+        assert.equal(events.at(-1).payload.phase, 'render');
+        assert.equal(events.at(-1).payload.recoverable, true);
+    } finally {
+        console.error = originalConsoleError;
+    }
+});

@@ -135,14 +135,20 @@ export default class TetrisRenderer {
         });
         this.ghost.commit();
 
-        const renderer = this.context.renderer.renderer;
+        const renderer = this.context.renderer.prepareFrame();
+        if (!renderer) return;
         const previousAutoClear = renderer.autoClear;
-        renderer.autoClear = false;
-        renderer.clear(true, true, true);
-        renderer.render(this.cafeScene, this.cafeCamera);
-        renderer.clearDepth();
-        renderer.render(this.scene, this.camera);
-        renderer.autoClear = previousAutoClear;
+        try {
+            renderer.autoClear = false;
+            renderer.clear(true, true, true);
+            renderer.render(this.cafeScene, this.cafeCamera);
+            renderer.clearDepth();
+            renderer.render(this.scene, this.camera);
+        } finally {
+            renderer.autoClear = previousAutoClear;
+            renderer.setRenderTarget(null);
+            renderer.setScissorTest(false);
+        }
     }
 
     flashRows(rows) {

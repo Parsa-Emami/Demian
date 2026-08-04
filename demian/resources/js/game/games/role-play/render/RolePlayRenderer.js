@@ -13,10 +13,11 @@ function disposeObject(object) {
 function actorMesh(color, isPlayer = false) {
     const group = new THREE.Group();
     const body = new THREE.Mesh(
-        new THREE.CapsuleGeometry(0.45, 0.88, 5, 10),
+        new THREE.SphereGeometry(0.47, 14, 10),
         new THREE.MeshStandardMaterial({ color, roughness: 0.66 })
     );
     body.position.y = 0.95;
+    body.scale.y = 1.9;
     const head = new THREE.Mesh(
         new THREE.SphereGeometry(0.32, 14, 10),
         new THREE.MeshStandardMaterial({ color: 0xf4d5c4, roughness: 0.82 })
@@ -141,7 +142,7 @@ export default class RolePlayRenderer {
     }
 
     render() {
-        this.context.renderer.renderer.render(this.scene, this.camera);
+        this.context.renderer.render(this.scene, this.camera);
     }
 
     setPixelRatio(value) {
