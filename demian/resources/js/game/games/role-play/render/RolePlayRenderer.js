@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { createCafeEnvironment } from '../../../shared/cafe/CafeSceneFactory.js';
+import { createCafeEnvironment, updateCafeEnvironmentVisibility } from '../../../shared/cafe/CafeSceneFactory.js';
 
 function disposeObject(object) {
     object?.traverse?.((child) => {
@@ -70,7 +70,7 @@ export default class RolePlayRenderer {
     }
 
     createMap() {
-        this.environment = createCafeEnvironment(this.scene);
+        this.environment = createCafeEnvironment(this.scene, { includeCeiling: false });
 
         this.map.pickups.forEach((pickup) => {
             const mesh = new THREE.Mesh(
@@ -127,6 +127,7 @@ export default class RolePlayRenderer {
         const alpha = 1 - Math.exp(-4.5 * Math.max(0, dt));
         this.camera.position.lerp(desired, alpha);
         this.camera.lookAt(player.position.x, 0, player.position.z - 1.2);
+        updateCafeEnvironmentVisibility(this.environment, this.camera);
     }
 
     setPickupVisible(id, visible) {

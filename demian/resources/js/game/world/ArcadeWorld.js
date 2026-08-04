@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { createCafeEnvironment } from '../shared/cafe/CafeSceneFactory.js';
+import { createCafeEnvironment, updateCafeEnvironmentVisibility } from '../shared/cafe/CafeSceneFactory.js';
 
 export default class ArcadeWorld {
     constructor(scene, { performanceProfile = null, streamingMode = false } = {}) {
@@ -13,7 +13,7 @@ export default class ArcadeWorld {
         this.elapsed = 0;
 
         scene.add(this.root);
-        this.environment = createCafeEnvironment(this.root, { includeCeiling: true });
+        this.environment = createCafeEnvironment(this.root, { includeCeiling: false });
         this.collectDecorReferences();
     }
 
@@ -36,6 +36,10 @@ export default class ArcadeWorld {
             const wave = 0.92 + Math.sin(this.elapsed * 0.9 + entry.phase) * 0.08;
             entry.object.material.emissiveIntensity = entry.baseIntensity * wave;
         });
+    }
+
+    updateCameraVisibility(camera) {
+        updateCafeEnvironmentVisibility(this.environment, camera);
     }
 
     dispose() {

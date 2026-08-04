@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { createCafeEnvironment } from '../../../shared/cafe/CafeSceneFactory.js';
+import { createCafeEnvironment, updateCafeEnvironmentVisibility } from '../../../shared/cafe/CafeSceneFactory.js';
 
 function disposeObject(object) {
     object?.traverse?.((child) => {
@@ -74,7 +74,7 @@ export default class EventRenderer {
     }
 
     createMap() {
-        this.environment = createCafeEnvironment(this.scene);
+        this.environment = createCafeEnvironment(this.scene, { includeCeiling: false });
     }
 
     configure(definition, modifiers) {
@@ -179,6 +179,7 @@ export default class EventRenderer {
         this.cameraLook.set(player.position.x, 0.6, player.position.z);
         this.cameraTarget.lerp(this.cameraLook, alpha);
         this.camera.lookAt(this.cameraTarget);
+        updateCafeEnvironmentVisibility(this.environment, this.camera);
     }
 
     render(world, deltaTime = 0) {

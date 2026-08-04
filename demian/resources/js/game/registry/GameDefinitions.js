@@ -12,6 +12,7 @@ export const GAME_DEFINITIONS = Object.freeze({
             persistentProgress: true,
             sharedWorldServices: true,
             renderer: 'shared-webgl',
+            environment: 'demian-reference-cafe@2',
         }),
     }),
     event: Object.freeze({
@@ -27,6 +28,7 @@ export const GAME_DEFINITIONS = Object.freeze({
             deterministicDirector: true,
             remoteDefinitionsReady: true,
             renderer: 'shared-webgl',
+            environment: 'demian-reference-cafe@2',
         }),
     }),
     'hide-and-seek': Object.freeze({
@@ -41,6 +43,7 @@ export const GAME_DEFINITIONS = Object.freeze({
             deterministicMatch: true,
             networkReady: true,
             renderer: 'shared-webgl',
+            environment: 'demian-reference-cafe@2',
         }),
     }),
     tetris: Object.freeze({
@@ -54,6 +57,7 @@ export const GAME_DEFINITIONS = Object.freeze({
             supportsResults: true,
             deterministic: true,
             renderer: 'shared-webgl',
+            environment: 'demian-reference-cafe@2',
         }),
     }),
     'open-world': Object.freeze({
@@ -67,12 +71,13 @@ export const GAME_DEFINITIONS = Object.freeze({
             shellBackdrop: true,
             supportsResults: false,
             chunkStreaming: true,
-            worldManifest: 'demian-city@1',
+            worldManifest: 'demian-reference-cafe@2',
             miniMap: true,
             worldMap: true,
             aiBudgeting: true,
             persistentSavePoints: true,
             renderer: 'shared-webgl',
+            environment: 'demian-reference-cafe@2',
         }),
     }),
 });

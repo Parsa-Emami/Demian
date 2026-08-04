@@ -457,6 +457,7 @@ export default class OpenWorldGame extends BaseGame {
     update(deltaTime) {
         this.updateAdaptiveQuality(deltaTime);
         this.cameraController.update(this.characterManager.focusPoint(), deltaTime);
+        this.world.updateCameraVisibility(this.camera);
         const position = this.characterManager.position();
         const chunkStats = this.chunkManager.stats();
         const activeChunkIds = [...this.chunkManager.loaded]

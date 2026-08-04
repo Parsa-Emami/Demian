@@ -10,6 +10,7 @@ export const GAME_CATALOG = Object.freeze([
         available: true,
         orientation: 'portrait',
         accent: 'cyan',
+        environment: 'demian-reference-cafe@2',
     }),
     Object.freeze({
         id: 'hide-and-seek',
@@ -22,6 +23,7 @@ export const GAME_CATALOG = Object.freeze([
         available: true,
         orientation: 'landscape',
         accent: 'pink',
+        environment: 'demian-reference-cafe@2',
     }),
     Object.freeze({
         id: 'event',
@@ -34,6 +36,7 @@ export const GAME_CATALOG = Object.freeze([
         available: true,
         orientation: 'landscape',
         accent: 'amber',
+        environment: 'demian-reference-cafe@2',
     }),
     Object.freeze({
         id: 'role-play',
@@ -46,18 +49,20 @@ export const GAME_CATALOG = Object.freeze([
         available: true,
         orientation: 'landscape',
         accent: 'violet',
+        environment: 'demian-reference-cafe@2',
     }),
     Object.freeze({
         id: 'open-world',
         title: 'OPEN WORLD',
         subtitle: 'Explore Demian City',
-        description: 'شهر گسترده‌ی دمیان با Chunk Streaming، نقشه، سفر سریع و Save Point.',
+        description: 'کاوش آزاد در کافه دمیان با Chunk Streaming، نقشه، سفر سریع و Save Point.',
         icon: '◫',
         phase: 8,
         status: 'available',
         available: true,
         orientation: 'landscape',
         accent: 'emerald',
+        environment: 'demian-reference-cafe@2',
     }),
 ]);
 

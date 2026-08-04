@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { createCafeEnvironment } from '../../../shared/cafe/CafeSceneFactory.js';
+import { createCafeEnvironment, updateCafeEnvironmentVisibility } from '../../../shared/cafe/CafeSceneFactory.js';
 
 const ROLE_COLORS = Object.freeze({
     player: 0x67e8f9,
@@ -87,7 +87,7 @@ export default class HideAndSeekRenderer {
     }
 
     createMap() {
-        this.environment = createCafeEnvironment(this.scene);
+        this.environment = createCafeEnvironment(this.scene, { includeCeiling: false });
 
         this.map.hideSpots.forEach((spot) => {
             const mesh = new THREE.Mesh(
@@ -172,6 +172,7 @@ export default class HideAndSeekRenderer {
         this.cameraLook.set(player.position.x, 0.5, player.position.z);
         this.cameraTarget.lerp(this.cameraLook, alpha);
         this.camera.lookAt(this.cameraTarget);
+        updateCafeEnvironmentVisibility(this.environment, this.camera);
     }
 
     setSpotActive(spotId, active) {

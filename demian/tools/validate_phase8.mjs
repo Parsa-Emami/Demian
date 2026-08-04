@@ -101,7 +101,7 @@ for (const marker of ['AbortController', 'maxLoadedChunks', 'concurrency', 'acti
 }
 
 const definitions = readFileSync(join(root, 'resources/js/game/registry/GameDefinitions.js'), 'utf8');
-for (const marker of ['phase: 8', 'chunkStreaming: true', "worldManifest: 'demian-city@1'", 'miniMap: true', 'worldMap: true', 'aiBudgeting: true', 'persistentSavePoints: true']) {
+for (const marker of ['phase: 8', 'chunkStreaming: true', "worldManifest: 'demian-reference-cafe@2'", 'miniMap: true', 'worldMap: true', 'aiBudgeting: true', 'persistentSavePoints: true']) {
     assert(definitions.includes(marker), `Open World definition missing: ${marker}`);
 }
 const input = readFileSync(join(root, 'resources/js/game/input/InputContexts.js'), 'utf8');

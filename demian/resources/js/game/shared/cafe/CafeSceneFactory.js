@@ -160,7 +160,7 @@ function createSconce(parent, materials, { x, y, z, rotationY = 0 } = {}) {
     parent.add(group);
 }
 
-export function createCafeEnvironment(scene, { includeCeiling = true } = {}) {
+export function createCafeEnvironment(scene, { includeCeiling = false } = {}) {
     const group = new THREE.Group();
     group.name = 'ReferenceCafeEnvironment';
 
@@ -300,15 +300,26 @@ export function createCafeEnvironment(scene, { includeCeiling = true } = {}) {
     floor.receiveShadow = true;
 
     const wallHeight = 4.2;
-    addMesh(group, new THREE.BoxGeometry(48, wallHeight, 0.4), materials.wall, { x: 0, y: wallHeight / 2, z: -18.1 });
-    addMesh(group, new THREE.BoxGeometry(0.4, wallHeight, 36), materials.wall, { x: -24.1, y: wallHeight / 2, z: 0 });
-    addMesh(group, new THREE.BoxGeometry(0.4, wallHeight, 36), materials.wall, { x: 24.1, y: wallHeight / 2, z: 0 });
-    addMesh(group, new THREE.BoxGeometry(18, wallHeight, 0.4), materials.wall, { x: -15, y: wallHeight / 2, z: 18.1 });
-    addMesh(group, new THREE.BoxGeometry(18, wallHeight, 0.4), materials.wall, { x: 15, y: wallHeight / 2, z: 18.1 });
+    const cameraOccluders = {
+        north: [addMesh(group, new THREE.BoxGeometry(48, wallHeight, 0.4), materials.wall, { x: 0, y: wallHeight / 2, z: -18.1 })],
+        west: [addMesh(group, new THREE.BoxGeometry(0.4, wallHeight, 36), materials.wall, { x: -24.1, y: wallHeight / 2, z: 0 })],
+        east: [addMesh(group, new THREE.BoxGeometry(0.4, wallHeight, 36), materials.wall, { x: 24.1, y: wallHeight / 2, z: 0 })],
+        south: [
+            addMesh(group, new THREE.BoxGeometry(18, wallHeight, 0.4), materials.wall, { x: -15, y: wallHeight / 2, z: 18.1 }),
+            addMesh(group, new THREE.BoxGeometry(18, wallHeight, 0.4), materials.wall, { x: 15, y: wallHeight / 2, z: 18.1 }),
+        ],
+        ceiling: [],
+    };
 
     if (includeCeiling) {
-        addMesh(group, new THREE.PlaneGeometry(48, 36), materials.ceiling, { rx: Math.PI / 2, y: wallHeight - 0.02 });
+        cameraOccluders.ceiling.push(
+            addMesh(group, new THREE.PlaneGeometry(48, 36), materials.ceiling, { rx: Math.PI / 2, y: wallHeight - 0.02 })
+        );
     }
+
+    group.userData.cameraOccluders = cameraOccluders;
+    group.userData.cafeBounds = Object.freeze({ minX: -24, maxX: 24, minZ: -18, maxZ: 18, wallHeight });
+    group.userData.referenceCafe = true;
 
     [-7.2, 7.2].forEach((x) => {
         addMesh(group, new THREE.BoxGeometry(1.4, wallHeight, 1.4), materials.concrete, { x, y: wallHeight / 2, z: 0.5 });
@@ -446,4 +457,23 @@ export function createCafeEnvironment(scene, { includeCeiling = true } = {}) {
 
     scene.add(group);
     return group;
+}
+
+
+/**
+ * Prevents the outside wall or ceiling from covering the café when a gameplay
+ * camera follows a character from beyond the room bounds.
+ */
+export function updateCafeEnvironmentVisibility(environment, camera) {
+    const occluders = environment?.userData?.cameraOccluders;
+    const bounds = environment?.userData?.cafeBounds;
+    if (!occluders || !bounds || !camera?.position) return;
+
+    const setVisible = (items, visible) => items?.forEach?.((item) => { item.visible = visible; });
+    const margin = 0.35;
+    setVisible(occluders.south, camera.position.z <= bounds.maxZ - margin);
+    setVisible(occluders.north, camera.position.z >= bounds.minZ + margin);
+    setVisible(occluders.west, camera.position.x >= bounds.minX + margin);
+    setVisible(occluders.east, camera.position.x <= bounds.maxX - margin);
+    setVisible(occluders.ceiling, camera.position.y < bounds.wallHeight - 0.15);
 }

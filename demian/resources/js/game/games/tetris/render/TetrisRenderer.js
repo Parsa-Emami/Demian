@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { TETROMINO_COLORS } from '../domain/Tetrominoes.js';
 import BlockPool from './BlockPool.js';
 import TetrisEffects from './TetrisEffects.js';
+import { createCafeEnvironment, updateCafeEnvironmentVisibility } from '../../../shared/cafe/CafeSceneFactory.js';
 
 const GHOST_COLOR = 0xbff7ff;
 
@@ -10,7 +11,14 @@ export default class TetrisRenderer {
         this.context = context;
         this.config = config;
         this.scene = new THREE.Scene();
-        this.scene.background = new THREE.Color(0x03040c);
+        this.scene.background = null;
+        this.cafeScene = new THREE.Scene();
+        this.cafeScene.background = new THREE.Color(0xdad5cc);
+        this.cafeScene.fog = new THREE.FogExp2(0xdad5cc, 0.012);
+        this.cafeCamera = new THREE.PerspectiveCamera(48, 1, 0.1, 180);
+        this.cafeCamera.position.set(0, 8.8, 15.4);
+        this.cafeCamera.lookAt(0, 0.8, -3.5);
+        this.createCafeBackdrop();
         this.camera = new THREE.OrthographicCamera(-6, 6, 11, -11, 0.1, 50);
         this.camera.position.set(0, 0, 12);
         this.camera.lookAt(0, 0, 0);
@@ -45,6 +53,19 @@ export default class TetrisRenderer {
         this.createAmbientBackdrop();
         this.effects = new TetrisEffects(this.scene, config.board);
         this.resize();
+    }
+
+    createCafeBackdrop() {
+        this.cafeScene.add(new THREE.HemisphereLight(0xf3f0e8, 0x756d64, 1.45));
+        const key = new THREE.DirectionalLight(0xfff0d7, 1.85);
+        key.position.set(-10, 18, 12);
+        const counter = new THREE.PointLight(0xffd89a, 5.5, 16, 2);
+        counter.position.set(14, 3.0, 4.5);
+        const lounge = new THREE.PointLight(0xffbd72, 4.5, 12, 2);
+        lounge.position.set(-20, 2.4, -9.0);
+        this.cafeScene.add(key, counter, lounge);
+        this.cafeEnvironment = createCafeEnvironment(this.cafeScene, { includeCeiling: false });
+        updateCafeEnvironmentVisibility(this.cafeEnvironment, this.cafeCamera);
     }
 
     createBoardFrame() {
@@ -82,7 +103,7 @@ export default class TetrisRenderer {
 
     createAmbientBackdrop() {
         const geometry = new THREE.PlaneGeometry(40, 40);
-        const material = new THREE.MeshBasicMaterial({ color: 0x050614 });
+        const material = new THREE.MeshBasicMaterial({ color: 0x050614, transparent: true, opacity: 0.48, depthWrite: false });
         this.backdrop = new THREE.Mesh(geometry, material);
         this.backdrop.position.z = -2;
         this.scene.add(this.backdrop);
@@ -137,7 +158,14 @@ export default class TetrisRenderer {
         });
         this.ghost.commit();
 
-        this.context.renderer.renderer.render(this.scene, this.camera);
+        const renderer = this.context.renderer.renderer;
+        const previousAutoClear = renderer.autoClear;
+        renderer.autoClear = false;
+        renderer.clear(true, true, true);
+        renderer.render(this.cafeScene, this.cafeCamera);
+        renderer.clearDepth();
+        renderer.render(this.scene, this.camera);
+        renderer.autoClear = previousAutoClear;
     }
 
     flashRows(rows) {
@@ -160,6 +188,8 @@ export default class TetrisRenderer {
         this.camera.top = viewHeight / 2;
         this.camera.bottom = -viewHeight / 2;
         this.camera.updateProjectionMatrix();
+        this.cafeCamera.aspect = aspect;
+        this.cafeCamera.updateProjectionMatrix();
         return { width, height };
     }
 
@@ -181,6 +211,12 @@ export default class TetrisRenderer {
         this.backdrop.material.dispose();
         this.glow.geometry.dispose();
         this.glow.material.dispose();
+        this.cafeEnvironment?.traverse?.((child) => {
+            child.geometry?.dispose?.();
+            if (Array.isArray(child.material)) child.material.forEach((material) => material.dispose?.());
+            else child.material?.dispose?.();
+        });
+        this.cafeScene.clear();
         this.scene.clear();
     }
 }
