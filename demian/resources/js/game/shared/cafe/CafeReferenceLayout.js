@@ -49,7 +49,7 @@ export const CAFE_STATIC_COLLIDERS = Object.freeze([
 
 export const ROLE_PLAY_NPCS = Object.freeze([
     Object.freeze({ id: 'tiam', name: 'تیام', dialogueId: 'tiam-intro', position: point(-12.8, 5.0), color: 0x22d3ee }),
-    Object.freeze({ id: 'ronak', name: 'روناک', dialogueId: 'ronak-shift', position: point(13.4, 4.0), color: 0xf472b6 }),
+    Object.freeze({ id: 'ronak', name: 'روناک', dialogueId: 'ronak-shift', position: point(8.8, 4.0), color: 0xf472b6 }),
     Object.freeze({ id: 'amirreza', name: 'امیررضا', dialogueId: 'amirreza-arcade', position: point(8.8, -9.1), color: 0xfbbf24 }),
 ]);
 
@@ -75,10 +75,10 @@ export const ROLE_PLAY_ZONES = Object.freeze([
 export const HIDE_SPOTS = Object.freeze([
     Object.freeze({ id: 'behind-counter', label: 'پشت پیشخوان', position: point(12.6, -1.4), exitPosition: point(12.6, 0.2), radius: 1.4, capacity: 1, concealment: 0.95, color: 0xf472b6 }),
     Object.freeze({ id: 'merch-shelf-shadow', label: 'کنار استند محصولات', position: point(-20.8, 12.6), exitPosition: point(-18.8, 12.6), radius: 1.2, capacity: 1, concealment: 0.9, color: 0x22d3ee }),
-    Object.freeze({ id: 'communal-table', label: 'زیر میز جمعی', position: point(-11.5, 7.4), exitPosition: point(-8.2, 7.4), radius: 1.15, capacity: 1, concealment: 0.82, color: 0xfb7185 }),
+    Object.freeze({ id: 'hide-communal-table', label: 'زیر میز جمعی', position: point(-11.5, 7.4), exitPosition: point(-8.2, 7.4), radius: 1.15, capacity: 1, concealment: 0.82, color: 0xfb7185 }),
     Object.freeze({ id: 'mirror-corner', label: 'کنار آینه', position: point(-4.2, -0.4), exitPosition: point(-2.4, -0.4), radius: 1.12, capacity: 1, concealment: 0.84, color: 0x67e8f9 }),
     Object.freeze({ id: 'sofa-shadow', label: 'پشت مبل', position: point(-19.4, -6.2), exitPosition: point(-16.9, -6.2), radius: 1.2, capacity: 1, concealment: 0.88, color: 0xc084fc }),
-    Object.freeze({ id: 'round-table-left', label: 'پشت میز گرد چپ', position: point(-9.8, -7.5), exitPosition: point(-9.8, -5.6), radius: 1.0, capacity: 1, concealment: 0.8, color: 0xfbbf24 }),
+    Object.freeze({ id: 'hide-round-table-left', label: 'پشت میز گرد چپ', position: point(-9.8, -7.5), exitPosition: point(-9.8, -5.6), radius: 1.0, capacity: 1, concealment: 0.8, color: 0xfbbf24 }),
     Object.freeze({ id: 'entrance-planters', label: 'میان گلدان‌های ورودی', position: point(14.9, 15.2), exitPosition: point(12.9, 14.2), radius: 1.1, capacity: 1, concealment: 0.79, color: 0x34d399 }),
     Object.freeze({ id: 'lounge-corner', label: 'گوشه‌ی لانژ', position: point(-16.0, -13.2), exitPosition: point(-14.0, -12.0), radius: 1.15, capacity: 1, concealment: 0.9, color: 0xa78bfa }),
 ]);

@@ -1,16 +1,20 @@
+import { CAFE_ENVIRONMENT_ID, CAFE_REFERENCE_ASSET_ROOT } from '../shared/cafe/CafeEnvironmentContract.js';
+
 export const GAME_CATALOG = Object.freeze([
     Object.freeze({
         id: 'tetris',
         title: 'TETRIS',
         subtitle: 'Classic Puzzle',
-        description: 'چیدمان کلاسیک، رکورد و رقابت در کابین نئونی کافه.',
+        description: 'چیدمان کلاسیک، رکورد و رقابت روی میز بازی داخل کافه دمیان.',
         icon: '▦',
         phase: 3,
         status: 'available',
         available: true,
         orientation: 'portrait',
         accent: 'cyan',
-        environment: 'demian-reference-cafe@2',
+        environment: CAFE_ENVIRONMENT_ID,
+        environmentLocked: true,
+        referenceAssets: CAFE_REFERENCE_ASSET_ROOT,
     }),
     Object.freeze({
         id: 'hide-and-seek',
@@ -23,7 +27,9 @@ export const GAME_CATALOG = Object.freeze([
         available: true,
         orientation: 'landscape',
         accent: 'pink',
-        environment: 'demian-reference-cafe@2',
+        environment: CAFE_ENVIRONMENT_ID,
+        environmentLocked: true,
+        referenceAssets: CAFE_REFERENCE_ASSET_ROOT,
     }),
     Object.freeze({
         id: 'event',
@@ -36,7 +42,9 @@ export const GAME_CATALOG = Object.freeze([
         available: true,
         orientation: 'landscape',
         accent: 'amber',
-        environment: 'demian-reference-cafe@2',
+        environment: CAFE_ENVIRONMENT_ID,
+        environmentLocked: true,
+        referenceAssets: CAFE_REFERENCE_ASSET_ROOT,
     }),
     Object.freeze({
         id: 'role-play',
@@ -49,12 +57,14 @@ export const GAME_CATALOG = Object.freeze([
         available: true,
         orientation: 'landscape',
         accent: 'violet',
-        environment: 'demian-reference-cafe@2',
+        environment: CAFE_ENVIRONMENT_ID,
+        environmentLocked: true,
+        referenceAssets: CAFE_REFERENCE_ASSET_ROOT,
     }),
     Object.freeze({
         id: 'open-world',
         title: 'OPEN WORLD',
-        subtitle: 'Explore Demian City',
+        subtitle: 'Explore Demian Café',
         description: 'کاوش آزاد در کافه دمیان با Chunk Streaming، نقشه، سفر سریع و Save Point.',
         icon: '◫',
         phase: 8,
@@ -62,7 +72,9 @@ export const GAME_CATALOG = Object.freeze([
         available: true,
         orientation: 'landscape',
         accent: 'emerald',
-        environment: 'demian-reference-cafe@2',
+        environment: CAFE_ENVIRONMENT_ID,
+        environmentLocked: true,
+        referenceAssets: CAFE_REFERENCE_ASSET_ROOT,
     }),
 ]);
 

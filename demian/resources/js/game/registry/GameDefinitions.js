@@ -1,3 +1,5 @@
+import { CAFE_ENVIRONMENT_ID, CAFE_REFERENCE_ASSET_ROOT } from '../shared/cafe/CafeEnvironmentContract.js';
+
 export const GAME_DEFINITIONS = Object.freeze({
     'role-play': Object.freeze({
         title: 'Role Play',
@@ -12,7 +14,9 @@ export const GAME_DEFINITIONS = Object.freeze({
             persistentProgress: true,
             sharedWorldServices: true,
             renderer: 'shared-webgl',
-            environment: 'demian-reference-cafe@2',
+            environment: CAFE_ENVIRONMENT_ID,
+            environmentLocked: true,
+            referenceAssets: CAFE_REFERENCE_ASSET_ROOT,
         }),
     }),
     event: Object.freeze({
@@ -28,7 +32,9 @@ export const GAME_DEFINITIONS = Object.freeze({
             deterministicDirector: true,
             remoteDefinitionsReady: true,
             renderer: 'shared-webgl',
-            environment: 'demian-reference-cafe@2',
+            environment: CAFE_ENVIRONMENT_ID,
+            environmentLocked: true,
+            referenceAssets: CAFE_REFERENCE_ASSET_ROOT,
         }),
     }),
     'hide-and-seek': Object.freeze({
@@ -43,7 +49,9 @@ export const GAME_DEFINITIONS = Object.freeze({
             deterministicMatch: true,
             networkReady: true,
             renderer: 'shared-webgl',
-            environment: 'demian-reference-cafe@2',
+            environment: CAFE_ENVIRONMENT_ID,
+            environmentLocked: true,
+            referenceAssets: CAFE_REFERENCE_ASSET_ROOT,
         }),
     }),
     tetris: Object.freeze({
@@ -57,7 +65,9 @@ export const GAME_DEFINITIONS = Object.freeze({
             supportsResults: true,
             deterministic: true,
             renderer: 'shared-webgl',
-            environment: 'demian-reference-cafe@2',
+            environment: CAFE_ENVIRONMENT_ID,
+            environmentLocked: true,
+            referenceAssets: CAFE_REFERENCE_ASSET_ROOT,
         }),
     }),
     'open-world': Object.freeze({
@@ -71,13 +81,15 @@ export const GAME_DEFINITIONS = Object.freeze({
             shellBackdrop: true,
             supportsResults: false,
             chunkStreaming: true,
-            worldManifest: 'demian-reference-cafe@2',
+            worldManifest: CAFE_ENVIRONMENT_ID,
             miniMap: true,
             worldMap: true,
             aiBudgeting: true,
             persistentSavePoints: true,
             renderer: 'shared-webgl',
-            environment: 'demian-reference-cafe@2',
+            environment: CAFE_ENVIRONMENT_ID,
+            environmentLocked: true,
+            referenceAssets: CAFE_REFERENCE_ASSET_ROOT,
         }),
     }),
 });

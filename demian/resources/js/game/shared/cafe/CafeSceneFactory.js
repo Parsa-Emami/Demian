@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { markCafeEnvironment } from './CafeEnvironmentContract.js';
 
 function createCanvasTexture(width, height, draw) {
     const canvas = document.createElement('canvas');
@@ -319,7 +320,7 @@ export function createCafeEnvironment(scene, { includeCeiling = false } = {}) {
 
     group.userData.cameraOccluders = cameraOccluders;
     group.userData.cafeBounds = Object.freeze({ minX: -24, maxX: 24, minZ: -18, maxZ: 18, wallHeight });
-    group.userData.referenceCafe = true;
+    markCafeEnvironment(group);
 
     [-7.2, 7.2].forEach((x) => {
         addMesh(group, new THREE.BoxGeometry(1.4, wallHeight, 1.4), materials.concrete, { x, y: wallHeight / 2, z: 0.5 });

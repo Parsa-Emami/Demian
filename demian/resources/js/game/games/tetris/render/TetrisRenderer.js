@@ -3,6 +3,7 @@ import { TETROMINO_COLORS } from '../domain/Tetrominoes.js';
 import BlockPool from './BlockPool.js';
 import TetrisEffects from './TetrisEffects.js';
 import { createCafeEnvironment, updateCafeEnvironmentVisibility } from '../../../shared/cafe/CafeSceneFactory.js';
+import { configureCafeScene } from '../../../shared/cafe/CafeScenePolicy.js';
 
 const GHOST_COLOR = 0xbff7ff;
 
@@ -12,9 +13,7 @@ export default class TetrisRenderer {
         this.config = config;
         this.scene = new THREE.Scene();
         this.scene.background = null;
-        this.cafeScene = new THREE.Scene();
-        this.cafeScene.background = new THREE.Color(0xdad5cc);
-        this.cafeScene.fog = new THREE.FogExp2(0xdad5cc, 0.012);
+        this.cafeScene = configureCafeScene(new THREE.Scene(), { fogDensity: 0.012 });
         this.cafeCamera = new THREE.PerspectiveCamera(48, 1, 0.1, 180);
         this.cafeCamera.position.set(0, 8.8, 15.4);
         this.cafeCamera.lookAt(0, 0.8, -3.5);
@@ -50,7 +49,6 @@ export default class TetrisRenderer {
         });
 
         this.createBoardFrame();
-        this.createAmbientBackdrop();
         this.effects = new TetrisEffects(this.scene, config.board);
         this.resize();
     }
@@ -101,26 +99,6 @@ export default class TetrisRenderer {
         this.scene.add(this.frame);
     }
 
-    createAmbientBackdrop() {
-        const geometry = new THREE.PlaneGeometry(40, 40);
-        const material = new THREE.MeshBasicMaterial({ color: 0x050614, transparent: true, opacity: 0.48, depthWrite: false });
-        this.backdrop = new THREE.Mesh(geometry, material);
-        this.backdrop.position.z = -2;
-        this.scene.add(this.backdrop);
-
-        const glowGeometry = new THREE.RingGeometry(7.8, 8.1, 64);
-        const glowMaterial = new THREE.MeshBasicMaterial({
-            color: 0xa855f7,
-            transparent: true,
-            opacity: 0.12,
-            blending: THREE.AdditiveBlending,
-            depthWrite: false,
-        });
-        this.glow = new THREE.Mesh(glowGeometry, glowMaterial);
-        this.glow.position.z = -1;
-        this.scene.add(this.glow);
-    }
-
     cellToWorld(x, boardY) {
         return {
             x: x - (this.config.board.width / 2) + 0.5,
@@ -131,7 +109,6 @@ export default class TetrisRenderer {
     render(snapshot, deltaTime) {
         if (!snapshot) return;
         this.effects.update(deltaTime);
-        this.glow.rotation.z += deltaTime * 0.04;
 
         this.blocks.begin();
         snapshot.board.forEach((row, y) => {
@@ -197,7 +174,7 @@ export default class TetrisRenderer {
         this.blocks.dispose(this.scene);
         this.ghost.dispose(this.scene);
         this.effects.dispose();
-        this.scene.remove(this.panel, this.grid, this.frame, this.backdrop, this.glow);
+        this.scene.remove(this.panel, this.grid, this.frame);
         this.blockGeometry.dispose();
         this.blockMaterial.dispose();
         this.ghostMaterial.dispose();
@@ -207,10 +184,6 @@ export default class TetrisRenderer {
         this.gridMaterial.dispose();
         this.frameGeometry.dispose();
         this.frameMaterial.dispose();
-        this.backdrop.geometry.dispose();
-        this.backdrop.material.dispose();
-        this.glow.geometry.dispose();
-        this.glow.material.dispose();
         this.cafeEnvironment?.traverse?.((child) => {
             child.geometry?.dispose?.();
             if (Array.isArray(child.material)) child.material.forEach((material) => material.dispose?.());

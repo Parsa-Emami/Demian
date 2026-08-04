@@ -6,6 +6,6 @@ export const EVENT_ARENA_MAP = Object.freeze({
     id: 'demian-event-arena-reference-cafe',
     bounds: CAFE_BOUNDS,
     floor: CAFE_FLOOR,
-    spawn: point(-17.2, 13.0),
+    spawn: point(0, 14.2),
     staticColliders: CAFE_STATIC_COLLIDERS,
 });

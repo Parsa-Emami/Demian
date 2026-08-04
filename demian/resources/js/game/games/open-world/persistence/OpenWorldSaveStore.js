@@ -1,3 +1,5 @@
+import { CAFE_WORLD_ID } from '../../../shared/cafe/CafeEnvironmentContract.js';
+
 const SAVE_VERSION = 1;
 const DEFAULT_KEY = 'demian.open-world.save.v1';
 
@@ -33,7 +35,7 @@ export default class OpenWorldSaveStore {
     save(state) {
         const envelope = {
             version: SAVE_VERSION,
-            worldId: String(state.worldId ?? 'demian-city'),
+            worldId: String(state.worldId ?? CAFE_WORLD_ID),
             worldVersion: Number(state.worldVersion ?? 1),
             savedAt: this.now(),
             state: clone(state),

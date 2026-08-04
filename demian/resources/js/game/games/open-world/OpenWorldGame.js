@@ -21,6 +21,8 @@ import WorldDiscovery from './world/WorldDiscovery.js';
 import OpenWorldSaveStore from './persistence/OpenWorldSaveStore.js';
 import SavePointSystem from './persistence/SavePointSystem.js';
 import OpenWorldHud from './ui/OpenWorldHud.js';
+import { assertCafeWorldManifest } from '../../shared/cafe/CafeEnvironmentContract.js';
+import { configureCafeScene } from '../../shared/cafe/CafeScenePolicy.js';
 
 function worldSpawnPoints(manifest) {
     return [
@@ -95,9 +97,8 @@ export default class OpenWorldGame extends BaseGame {
         context.container.dataset.performanceTier = performanceProfile.tier;
         context.root?.setAttribute('data-performance-tier', performanceProfile.tier);
 
-        this.scene = new THREE.Scene();
-        this.scene.background = new THREE.Color(0xdcd6cf);
-        this.scene.fog = new THREE.FogExp2(0xdcd6cf, 0.008);
+        assertCafeWorldManifest(this.manifest);
+        this.scene = configureCafeScene(new THREE.Scene(), { fogDensity: 0.008 });
         this.camera = new THREE.OrthographicCamera(-10, 10, 10, -10, 0.1, 220);
         this.cameraController = new CameraController(this.camera, context.renderer.canvas);
         this.world = new ArcadeWorld(this.scene, { performanceProfile, streamingMode: true });

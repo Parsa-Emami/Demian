@@ -10,6 +10,7 @@ import CollisionWorld from '../shared/collision/CollisionWorld';
 import InteractionService from '../shared/interaction/InteractionService';
 import NavigationService from '../shared/navigation/NavigationService';
 import StoryEventJournal from '../shared/story/StoryEventJournal';
+import { assertCafeGameDefinition, CAFE_ENVIRONMENT_ID } from '../shared/cafe/CafeEnvironmentContract.js';
 import SettingsStore from '../settings/SettingsStore';
 import ControlLayoutService from '../controls/ControlLayoutService';
 import GameShell from '../shell/GameShell';
@@ -236,6 +237,7 @@ export default class GameApplication {
 
     async performGameSwitch(gameId, params = {}) {
         const definition = this.registry.get(gameId);
+        assertCafeGameDefinition(gameId, definition);
         const previousGame = this.activeGame;
         const previousGameId = this.activeGameId;
         const runtimeWasPaused = this.runtime.paused;
@@ -290,6 +292,7 @@ export default class GameApplication {
             }
 
             this.root.dataset.activeGame = gameId;
+            this.root.dataset.gameEnvironment = CAFE_ENVIRONMENT_ID;
             this.applyOrientationPreference(definition.orientation);
             this.eventBus.emit('game:loading-step', {
                 gameId,
@@ -313,6 +316,7 @@ export default class GameApplication {
             this.activeGameId = previousGameId;
             this.activeDefinition = previousGameId ? this.registry.get(previousGameId) : null;
             this.root.dataset.activeGame = previousGameId ?? '';
+            this.root.dataset.gameEnvironment = previousGameId ? CAFE_ENVIRONMENT_ID : '';
             this.applyOrientationPreference(this.activeDefinition?.orientation ?? 'any');
             previousGame?.resize?.();
             if (runtimeWasRunning && !runtimeWasPaused) {

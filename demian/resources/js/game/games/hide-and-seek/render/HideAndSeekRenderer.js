@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { createCafeEnvironment, updateCafeEnvironmentVisibility } from '../../../shared/cafe/CafeSceneFactory.js';
+import { configureCafeScene } from '../../../shared/cafe/CafeScenePolicy.js';
 
 const ROLE_COLORS = Object.freeze({
     player: 0x67e8f9,
@@ -56,9 +57,7 @@ export default class HideAndSeekRenderer {
     constructor(context, map) {
         this.context = context;
         this.map = map;
-        this.scene = new THREE.Scene();
-        this.scene.background = new THREE.Color(0xd8d2c9);
-        this.scene.fog = new THREE.FogExp2(0xd8d2c9, 0.016);
+        this.scene = configureCafeScene(new THREE.Scene(), { fogDensity: 0.016 });
         this.camera = new THREE.PerspectiveCamera(48, 1, 0.1, 180);
         this.camera.position.set(0, 18, 17);
         this.cameraTarget = new THREE.Vector3();

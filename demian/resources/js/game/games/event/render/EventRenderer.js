@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { createCafeEnvironment, updateCafeEnvironmentVisibility } from '../../../shared/cafe/CafeSceneFactory.js';
+import { configureCafeScene } from '../../../shared/cafe/CafeScenePolicy.js';
 
 function disposeObject(object) {
     object?.traverse?.((child) => {
@@ -40,9 +41,7 @@ export default class EventRenderer {
     constructor(context, map) {
         this.context = context;
         this.map = map;
-        this.scene = new THREE.Scene();
-        this.scene.background = new THREE.Color(0xdad5cc);
-        this.scene.fog = new THREE.FogExp2(0xdad5cc, 0.014);
+        this.scene = configureCafeScene(new THREE.Scene(), { fogDensity: 0.014 });
         this.camera = new THREE.PerspectiveCamera(48, 1, 0.1, 180);
         this.camera.position.set(0, 18, 16);
         this.cameraTarget = new THREE.Vector3();
