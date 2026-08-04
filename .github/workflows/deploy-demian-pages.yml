@@ -128,10 +128,27 @@ jobs:
             npm install --no-audit --fund=false
           fi
 
-      - name: Run Laravel tests
+      - name: Run Laravel tests with an isolated testing URL
         shell: bash
+        env:
+          APP_ENV: testing
+          APP_URL: http://localhost
+          ASSET_URL: ""
+          DB_CONNECTION: sqlite
+          DB_DATABASE: ":memory:"
+          SESSION_DRIVER: array
+          CACHE_STORE: array
+          QUEUE_CONNECTION: sync
         run: |
           set -euo pipefail
+
+          # The production .env intentionally contains the GitHub Pages
+          # project URL (/Demian). Feature tests must not inherit that
+          # subdirectory as their HTTP base path, otherwise GET / can be
+          # transformed into a request that does not match the root route.
+          php artisan optimize:clear
+          php artisan route:list --no-ansi --except-vendor --name=studio | grep -q "studio"
+          php artisan test tests/Feature/CharacterManagerTest.php --stop-on-failure
           php artisan test --stop-on-failure
 
       - name: Run focused deployment smoke tests

@@ -13,11 +13,21 @@ class CharacterManagerTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_studio_route_is_registered_at_the_root(): void
+    {
+        $route = app('router')->getRoutes()->getByName('studio');
+
+        $this->assertNotNull($route);
+        $this->assertSame('/', $route->uri());
+        $this->assertSame(['GET', 'HEAD'], $route->methods());
+    }
+
     public function test_studio_page_is_available(): void
     {
         $this->get('/')
             ->assertOk()
-            ->assertSee('Character manager');
+            ->assertSee('Character manager')
+            ->assertSee('data-character-manager', false);
     }
 
     public function test_tiam_can_be_seeded_and_listed(): void

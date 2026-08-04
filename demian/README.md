@@ -2,6 +2,8 @@
 
 نسخه تجمعی فازهای ۱ تا ۸ با رندر دوبعدی پیکسلی، کافه مشترک و استقرار Atomic روی GitHub Pages.
 
+> Patch استقرار و تست Laravel: `9.1.1`
+
 ## بازی‌ها و زیرساخت‌ها
 
 - یک `GameRuntime` قطعی با Fixed Update و Input Context مستقل برای هر بازی
@@ -14,6 +16,7 @@
 - رابط واکنش‌گرا برای موبایل و دسکتاپ
 - یک Bundle جاوااسکریپت Atomic برای جلوگیری از خطای فایل‌های هش‌شده‌ی حذف‌شده در GitHub Pages
 - Recovery محافظت‌شده برای `vite:preloadError` و Asset Fallback برای کاراکترها
+- محیط تست Laravel ایزوله از مسیر `/Demian` گیت‌هاب پیجز برای جلوگیری از پاسخ 404 در `GET /`
 
 ## راه‌اندازی
 
@@ -53,4 +56,5 @@ npm run validate:build
 - `docs/PIXEL-2D-ARCHITECTURE.fa.md`
 - `docs/PHASE-8-OPEN-WORLD.fa.md`
 - `docs/GITHUB-PAGES-ATOMIC-DEPLOYMENT.fa.md`
+- `docs/CI-LARAVEL-ROOT-ROUTE-FIX.fa.md`
 - `docs/FINAL-INTEGRATION-AND-MOBILE-UX.fa.md`
