@@ -4,16 +4,6 @@ use App\Http\Controllers\CharacterController;
 use App\Http\Controllers\CharacterStudioController;
 use Illuminate\Support\Facades\Route;
 
-/*
-|--------------------------------------------------------------------------
-| Character Studio
-|--------------------------------------------------------------------------
-|
-| Keep the browser entry point explicit and unconditional. GitHub Pages is
-| exported from this route, while Laravel feature tests request the same /.
-| Do not prefix this route with the repository Pages base path.
-|
-*/
 Route::get('/', CharacterStudioController::class)
     ->name('studio');
 

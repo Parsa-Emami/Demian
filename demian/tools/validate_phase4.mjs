@@ -60,11 +60,19 @@ const requiredPhase4Files = [
 ];
 requiredPhase4Files.forEach((file) => assert(existsSync(join(root, file)), `Missing ${file}`));
 
+const legacyCafeScenePolicy = join(root, 'resources/js/game/shared/cafe/CafeScenePolicy.js');
+assert(
+    !existsSync(legacyCafeScenePolicy),
+    'Obsolete Three.js café scene policy still exists inside the renderer-neutral shared domain.'
+);
+
+const threeImportPattern = /(?:\bfrom\s+|\bimport\s*\(\s*)['"]three['"]/;
 const phase4DomainFiles = walk(join(root, 'resources/js/game/shared'), (file) => extname(file) === '.js')
     .filter((file) => !file.endsWith('InteractionPrompt.js'));
 phase4DomainFiles.forEach((file) => {
     const source = readFileSync(file, 'utf8');
-    assert(!source.includes("from 'three'"), `Shared phase-four domain imports Three.js: ${file}`);
+    assert(!threeImportPattern.test(source), `Shared phase-four domain imports Three.js: ${file}`);
+    assert(!/\bTHREE\s*\./.test(source), `Shared phase-four domain references the Three.js namespace: ${file}`);
     assert(!/\b(document|window|HTMLElement)\b/.test(source), `Shared phase-four domain depends on DOM globals: ${file}`);
     assert(!/\b(TODO|FIXME|debugger|console\.log)\b/.test(source), `Debug marker found: ${file}`);
 });
