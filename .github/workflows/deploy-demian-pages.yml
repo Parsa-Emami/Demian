@@ -33,7 +33,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           fetch-depth: 1
 
@@ -90,7 +90,6 @@ jobs:
           composer install \
             --prefer-dist \
             --optimize-autoloader \
-            --no-dev \
             --no-interaction \
             --no-progress
 
@@ -129,6 +128,12 @@ jobs:
             npm install --no-audit --fund=false
           fi
 
+      - name: Run Laravel tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          php artisan test --stop-on-failure
+
       - name: Run focused deployment smoke tests
         shell: bash
         run: |
@@ -140,23 +145,23 @@ jobs:
         run: |
           set -euo pipefail
           npm run validate:ui-layers
+          npm run validate:phase3
+          npm run validate:phase4
+          npm run validate:phase5
+          npm run validate:phase6
+          npm run validate:phase7
           npm run validate:phase8
           npm run validate:final
 
-      - name: Build frontend assets
-        run: npm run build
-
-      - name: Verify Vite build
+      - name: Build one atomic frontend bundle
         shell: bash
         run: |
           set -euo pipefail
+          rm -rf public/build
+          npm run build
+          npm run validate:build
 
-          if [ ! -f public/build/manifest.json ]; then
-            echo "ERROR: public/build/manifest.json was not generated."
-            exit 1
-          fi
-
-          echo "Vite build completed successfully."
+          echo "Atomic Vite build completed successfully."
           find public/build -maxdepth 2 -type f | sort
 
       - name: Prepare character asset compatibility
@@ -171,7 +176,7 @@ jobs:
 
           root = Path('public/assets/characters')
 
-          for slug in ('tiam', 'ronak', 'amirreza'):
+          for slug in ('tiam', 'ronak', 'amirreza', 'parsa'):
               directory = root / slug
               v5_atlas = directory / f'{slug}-atlas-v5-mobile.json'
               v5_sheet = directory / f'{slug}-spritesheet-v5-mobile.png'
@@ -369,13 +374,22 @@ jobs:
 
           index_path.write_text(html, encoding='utf-8')
           (site / '404.html').write_text(html, encoding='utf-8')
+          (site / 'version.json').write_text(
+              json.dumps({
+                  'runtime': '9.1.0-atomic-pixel2d',
+                  'commit': os.environ.get('GITHUB_SHA', 'local'),
+                  'run_id': os.environ.get('GITHUB_RUN_ID', 'local'),
+                  'bundle_mode': 'atomic',
+              }, ensure_ascii=False, indent=2),
+              encoding='utf-8',
+          )
 
           # Older and newer runtime bundles may contain root-relative
           # built-in paths. Prefix every built-in character path for project
           # Pages instead of patching TIAM only.
           for asset in (site / 'build').rglob('*.js'):
               source = asset.read_text(encoding='utf-8')
-              for slug in ('tiam', 'ronak', 'amirreza'):
+              for slug in ('tiam', 'ronak', 'amirreza', 'parsa'):
                   source = source.replace(
                       f'/assets/characters/{slug}/',
                       f'{pages_base_path}/assets/characters/{slug}/',
@@ -398,6 +412,7 @@ jobs:
           site = Path('_site')
           index = site / 'index.html'
           characters_file = site / 'characters.json'
+          version_file = site / 'version.json'
 
           if not index.is_file() or index.stat().st_size == 0:
               raise SystemExit('ERROR: _site/index.html is missing or empty.')
@@ -405,13 +420,20 @@ jobs:
           if not characters_file.is_file() or characters_file.stat().st_size == 0:
               raise SystemExit('ERROR: _site/characters.json is missing or empty.')
 
+          if not version_file.is_file() or version_file.stat().st_size == 0:
+              raise SystemExit('ERROR: _site/version.json is missing or empty.')
+
+          version = json.loads(version_file.read_text(encoding='utf-8'))
+          if version.get('bundle_mode') != 'atomic':
+              raise SystemExit('ERROR: deployment is not marked as an atomic bundle.')
+
           html = index.read_text(encoding='utf-8')
 
           if 'TIAM' not in html and 'تیام' not in html:
               raise SystemExit('ERROR: TIAM heading was not found in index.html.')
 
-          if 'data-runtime-version="9.0.0-pixel2d"' not in html:
-              raise SystemExit('ERROR: final 9.0.0 pixel2d Blade output was not deployed.')
+          if 'data-runtime-version="9.1.0-atomic-pixel2d"' not in html:
+              raise SystemExit('ERROR: final 9.1.0 atomic pixel2d Blade output was not deployed.')
 
           if not (site / 'manifest.webmanifest').is_file():
               raise SystemExit('ERROR: Landscape web manifest was not published.')
@@ -431,6 +453,7 @@ jobs:
           repository_name = os.environ['GITHUB_REPOSITORY'].split('/', 1)[1]
           marker = f'/{repository_name}/'
           expected_slugs = {'tiam', 'ronak', 'amirreza'}
+          bundled_slugs = expected_slugs | {'parsa'}
           exported_slugs = {character.get('slug') for character in characters}
           missing_slugs = expected_slugs - exported_slugs
 
@@ -467,7 +490,7 @@ jobs:
 
           # Validate both V5 files and the V4 compatibility filenames. This is
           # what prevents the mobile 404 seen while an older bundle is cached.
-          for slug in sorted(expected_slugs):
+          for slug in sorted(bundled_slugs):
               directory = site / 'assets' / 'characters' / slug
               required = (
                   directory / f'{slug}-atlas-v5-mobile.json',
@@ -523,6 +546,17 @@ jobs:
                       f'ERROR: HTML asset URL does not point to a published file: '
                       f'{url} -> {relative}'
                   )
+
+          javascript_files = sorted((site / 'build').rglob('*.js'))
+          if len(javascript_files) != 1:
+              raise SystemExit(
+                  f'ERROR: expected one atomic JavaScript bundle, found {len(javascript_files)}: ' +
+                  ', '.join(str(path.relative_to(site)) for path in javascript_files)
+              )
+
+          forbidden_chunks = ('RolePlayGame-', 'OpenWorldGame-', 'EventGame-', 'HideAndSeekGame-', 'TetrisGame-')
+          if any(any(marker in path.name for marker in forbidden_chunks) for path in javascript_files):
+              raise SystemExit('ERROR: standalone game chunks remain in the published artifact.')
 
           print('Demian static export validated successfully.')
           print(f'Characters exported: {len(characters)}')

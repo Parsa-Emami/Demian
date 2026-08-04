@@ -5,6 +5,8 @@ export const GAME_DEFINITIONS = Object.freeze({
         title: 'Role Play',
         inputContext: 'ROLE_PLAY',
         orientation: 'landscape',
+        // Kept asynchronous for the registry API; Vite production inlines this
+        // module into Demian's single atomic JavaScript bundle.
         loader: () => import('../games/role-play/RolePlayGame.js'),
         metadata: Object.freeze({
             phase: 7,
@@ -14,6 +16,7 @@ export const GAME_DEFINITIONS = Object.freeze({
             persistentProgress: true,
             sharedWorldServices: true,
             renderer: 'shared-canvas2d-pixel',
+            deployment: 'atomic-bundle',
             environment: CAFE_ENVIRONMENT_ID,
             environmentLocked: true,
             referenceAssets: CAFE_REFERENCE_ASSET_ROOT,
@@ -32,6 +35,7 @@ export const GAME_DEFINITIONS = Object.freeze({
             deterministicDirector: true,
             remoteDefinitionsReady: true,
             renderer: 'shared-canvas2d-pixel',
+            deployment: 'atomic-bundle',
             environment: CAFE_ENVIRONMENT_ID,
             environmentLocked: true,
             referenceAssets: CAFE_REFERENCE_ASSET_ROOT,
@@ -49,6 +53,7 @@ export const GAME_DEFINITIONS = Object.freeze({
             deterministicMatch: true,
             networkReady: true,
             renderer: 'shared-canvas2d-pixel',
+            deployment: 'atomic-bundle',
             environment: CAFE_ENVIRONMENT_ID,
             environmentLocked: true,
             referenceAssets: CAFE_REFERENCE_ASSET_ROOT,
@@ -65,6 +70,7 @@ export const GAME_DEFINITIONS = Object.freeze({
             supportsResults: true,
             deterministic: true,
             renderer: 'shared-canvas2d-pixel',
+            deployment: 'atomic-bundle',
             environment: CAFE_ENVIRONMENT_ID,
             environmentLocked: true,
             referenceAssets: CAFE_REFERENCE_ASSET_ROOT,
@@ -87,6 +93,7 @@ export const GAME_DEFINITIONS = Object.freeze({
             aiBudgeting: true,
             persistentSavePoints: true,
             renderer: 'shared-canvas2d-pixel',
+            deployment: 'atomic-bundle',
             environment: CAFE_ENVIRONMENT_ID,
             environmentLocked: true,
             referenceAssets: CAFE_REFERENCE_ASSET_ROOT,

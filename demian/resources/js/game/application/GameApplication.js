@@ -254,7 +254,6 @@ export default class GameApplication {
             previousGame?.pause?.();
             this.runtime.pause({ notifyGame: false });
         }
-        this.rendererService.resetState({ clear: true });
 
         let nextGame = null;
         try {
@@ -291,8 +290,6 @@ export default class GameApplication {
                     previousGame.dispose();
                 }
             }
-            this.rendererService.resetState({ clear: true });
-            nextGame.resize?.();
 
             this.root.dataset.activeGame = gameId;
             this.root.dataset.gameEnvironment = CAFE_ENVIRONMENT_ID;

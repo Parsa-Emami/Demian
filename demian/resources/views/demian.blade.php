@@ -22,6 +22,34 @@
 
     <title>Demian Game Platform · Café Game Room</title>
 
+    <script>
+        (() => {
+            const recoveryKey = 'demian.deployment-recovery.v1';
+            const chunkFailure = /(?:dynamically imported module|importing a module script failed|chunkloaderror|loading chunk|\/build\/assets\/.*\.js)/i;
+
+            const recover = (reason) => {
+                const message = String(reason?.message ?? reason?.reason?.message ?? reason ?? '');
+                if (!chunkFailure.test(message)) return;
+
+                const previous = Number(sessionStorage.getItem(recoveryKey) || 0);
+                const now = Date.now();
+                if (now - previous < 60000) return;
+
+                sessionStorage.setItem(recoveryKey, String(now));
+                const url = new URL(window.location.href);
+                url.searchParams.set('__demian_refresh', String(now));
+                window.location.replace(url.toString());
+            };
+
+            window.addEventListener('vite:preloadError', (event) => {
+                event.preventDefault();
+                recover(event.payload ?? event);
+            });
+            window.addEventListener('unhandledrejection', (event) => recover(event.reason));
+            window.addEventListener('error', (event) => recover(event.error ?? event.message), true);
+        })();
+    </script>
+
     @vite([
         'resources/js/app.js',
     ])
@@ -36,7 +64,8 @@
         data-event-api-base="{{ url('/api/v1/events') }}"
         data-sidebar-state="collapsed"
         data-mobile-actions="collapsed"
-        data-runtime-version="9.0.0-pixel2d"
+        data-runtime-version="9.1.0-atomic-pixel2d"
+        data-deployment-mode="atomic-bundle"
         data-session-state="booting"
         data-shell-screen="boot"
         data-control-layout="none"
@@ -321,7 +350,7 @@
                         </div>
                         <div data-menu-reveal class="cafe-menu__footer">
                             <span>PHASE 3</span>
-                            <span>ONE RENDERER · LAZY GAMES · FIXED 60HZ</span>
+                            <span>ONE RENDERER · ATOMIC GAMES · FIXED 60HZ</span>
                         </div>
                     </div>
                     <aside class="cafe-menu__cabinet" aria-hidden="true">

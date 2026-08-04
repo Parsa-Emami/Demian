@@ -49,6 +49,13 @@ const requiredFinalFiles = [
     'tools/run_js_tests.mjs',
     'tests/js/MobileViewportPolicy.test.js',
     'FINAL-VERSION.txt',
+    'vite.config.js',
+    'tools/validate_build_bundle.mjs',
+    'tests/js/AtomicDeployment.test.js',
+    'resources/js/game/shared/cafe/CafeEnvironmentContract.js',
+    'resources/js/game/games/open-world/data/DemianReferenceCafeManifest.js',
+    'resources/js/game/rendering2d/CafePixelRenderer.js',
+    'resources/js/game/rendering2d/PixelCamera2D.js',
 ];
 requiredFinalFiles.forEach((file) => assert(existsSync(join(root, file)), `Missing final integration file: ${file}`));
 
@@ -78,7 +85,7 @@ for (const file of jsFiles) {
 
 const blade = readFileSync(join(root, 'resources/views/demian.blade.php'), 'utf8');
 for (const marker of [
-    'data-runtime-version="9.0.0-pixel2d"',
+    'data-runtime-version="9.1.0-atomic-pixel2d"',
     'data-character-scroll-previous',
     'data-character-scroll-next',
     'data-character-scroll-status',
@@ -168,8 +175,23 @@ ${uiLayerValidation.stdout}
 ${uiLayerValidation.stderr}`
 );
 
+
+const viteConfig = readFileSync(join(root, 'vite.config.js'), 'utf8');
+assert(viteConfig.includes('rolldownOptions'), 'Vite 8 Rolldown production options are missing.');
+assert(/codeSplitting\s*:\s*false/.test(viteConfig), 'Production game code splitting is still enabled.');
+assert(/strictExecutionOrder\s*:\s*true/.test(viteConfig), 'Atomic bundle execution order is not protected.');
+assert(!viteConfig.includes('rollupOptions:'), 'Deprecated Vite rollupOptions alias is still used.');
+
+const characterManager = readFileSync(join(root, 'resources/js/game/managers/CharacterManager.js'), 'utf8');
+assert(characterManager.includes('createFallbackCharacterAssets'), 'Character asset fallback is missing.');
+assert(characterManager.includes('assets = this.createFallbackCharacterAssets(record)'), 'Character fallback is not wired into entity creation.');
+assert(blade.includes('vite:preloadError'), 'Stale Vite chunk recovery listener is missing.');
+assert(blade.includes('__demian_refresh'), 'Guarded deployment refresh is missing.');
+assert(blade.includes('data-deployment-mode="atomic-bundle"'), 'Atomic deployment marker is missing.');
+assert(readFileSync(join(root, 'FINAL-VERSION.txt'), 'utf8').trim() === '9.1.0', 'FINAL-VERSION.txt is not 9.1.0.');
+
 const packageJson = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'));
-assert(packageJson.version === '9.0.0', 'package.json final version is not 9.0.0.');
+assert(packageJson.version === '9.1.0', 'package.json final version is not 9.1.0.');
 assert(packageJson.scripts?.['validate:final'] === 'node tools/validate_final.mjs', 'validate:final script missing.');
 assert(packageJson.scripts?.['test:js'] === 'node tools/run_js_tests.mjs', 'Cross-platform JavaScript test runner is not configured.');
 assert(packageJson.scripts?.['test:ci']?.startsWith('node --test '), 'Focused CI smoke test script is not configured.');
@@ -185,9 +207,11 @@ for (const marker of [
 const workflow = readFileSync(join(projectRoot, '.github/workflows/deploy-demian-pages.yml'), 'utf8');
 const baseTestCase = readFileSync(join(root, 'tests/TestCase.php'), 'utf8');
 assert(workflow.includes('npm run validate:final'), 'CI does not run the final validator.');
-assert(workflow.includes('data-runtime-version="9.0.0-pixel2d"'), 'Static deployment does not verify final runtime version.');
+assert(workflow.includes('data-runtime-version="9.1.0-atomic-pixel2d"'), 'Static deployment does not verify final runtime version.');
 assert(workflow.includes('npm run test:ci'), 'CI does not run the focused deployment smoke suite.');
 assert(workflow.includes('npm run validate:ui-layers'), 'CI does not validate the central UI layer contract.');
+assert(workflow.includes('npm run validate:build'), 'CI does not validate the atomic production bundle.');
+assert(workflow.includes('expected one atomic JavaScript bundle'), 'Static export does not enforce a single JavaScript bundle.');
 assert(!workflow.includes('php artisan test\n'), 'CI still runs the full Laravel test suite instead of the lean deployment path.');
 assert(baseTestCase.includes('$this->withoutVite();'), 'Local Laravel tests do not isolate Vite asset resolution.');
 

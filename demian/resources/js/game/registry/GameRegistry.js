@@ -4,7 +4,7 @@ function assertDefinition(id, definition) {
     }
 
     if (!definition || typeof definition.loader !== 'function') {
-        throw new TypeError(`Game "${id}" must provide a lazy loader function.`);
+        throw new TypeError(`Game "${id}" must provide an asynchronous module loader function.`);
     }
 }
 
@@ -20,8 +20,9 @@ function normalizeDefinition(id, definition) {
 }
 
 /**
- * Lazy game catalogue. Modules are cached after their first import, while a
- * fresh game instance is created for every launch.
+ * Deferred game catalogue. Production modules live in one atomic bundle, but
+ * module resolution stays asynchronous and cached while every launch receives
+ * a fresh game instance.
  */
 export default class GameRegistry {
     constructor(definitions = {}) {

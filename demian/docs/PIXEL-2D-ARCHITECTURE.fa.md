@@ -84,3 +84,7 @@ public/assets/pixel/
 - `resources/js/game/games/open-world/render/OpenWorldPixelRenderer.js`
 - `resources/js/game/games/open-world/data/DemianReferenceCafeManifest.js`
 - `tests/js/PixelRenderingArchitecture.test.js`
+
+## استقرار Atomic در نسخه 9.1
+
+برای جلوگیری از Version Skew در GitHub Pages، Dynamic Importهای رجیستری در Build Production با `build.rolldownOptions.output.codeSplitting = false` داخل یک فایل JavaScript قرار می‌گیرند. این تصمیم فقط Deployment Boundary را تغییر می‌دهد؛ API غیرهمزمان Registry، Lifecycle بازی‌ها و استقلال Domainها حفظ شده است. `tools/validate_build_bundle.mjs` مانع Deploy شدن Build چندChunkی می‌شود.

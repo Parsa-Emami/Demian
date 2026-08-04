@@ -1,20 +1,21 @@
-# Demian Game Platform 8.1
+# Demian Game Platform 9.1
 
-Cumulative final release containing phases 1 through 8 in one Laravel/Vite project.
+نسخه تجمعی فازهای ۱ تا ۸ با رندر دوبعدی پیکسلی، کافه مشترک و استقرار Atomic روی GitHub Pages.
 
-## Included games and platform modules
+## بازی‌ها و زیرساخت‌ها
 
-- Shared renderer, deterministic runtime, input contexts and game registry
-- Responsive Game Shell and transactional lifecycle
-- Tetris with deterministic replay
-- Shared collision, interaction and navigation
-- Hide & Seek
-- Data-driven Event Framework and Laravel event APIs
-- Role Play with dialogue, quests, inventory, jobs and versioned saves
-- Expanded Open World with chunk streaming, world map, minimap and save points
-- Final mobile UX: stable viewport modes and native scroll-snap rails for game/character selection
+- یک `GameRuntime` قطعی با Fixed Update و Input Context مستقل برای هر بازی
+- یک Renderer قابل‌مشاهده‌ی مشترک مبتنی بر Canvas2D و Nearest-Neighbor
+- کافه داده‌محور مشترک برای Open World، Role Play، Hide & Seek، Event و پس‌زمینه Tetris
+- Collision، Interaction و Navigation مستقل از Renderer
+- Open World با ۱۲ Chunk، چهار District، Mini Map، World Map و Save Point
+- Role Play با Dialogue، Quest، Inventory، Job و Save نسخه‌دار
+- Hide & Seek، Event Framework و Tetris قطعی
+- رابط واکنش‌گرا برای موبایل و دسکتاپ
+- یک Bundle جاوااسکریپت Atomic برای جلوگیری از خطای فایل‌های هش‌شده‌ی حذف‌شده در GitHub Pages
+- Recovery محافظت‌شده برای `vite:preloadError` و Asset Fallback برای کاراکترها
 
-## Setup
+## راه‌اندازی
 
 ```bash
 composer install
@@ -25,11 +26,31 @@ npm ci
 npm run test:js
 npm run validate:final
 npm run build
+npm run validate:build
 php artisan serve
 ```
 
-See `docs/FINAL-INTEGRATION-AND-MOBILE-UX.fa.md` for the Persian implementation guide.
+## اعتبارسنجی کامل
 
-## Demian 9 — 2D Pixel Rendering
+```bash
+npm run test:js
+npm run validate:ui-layers
+npm run validate:phase3
+npm run validate:phase4
+npm run validate:phase5
+npm run validate:phase6
+npm run validate:phase7
+npm run validate:phase8
+npm run validate:final
+npm run build
+npm run validate:build
+```
 
-The visible game pipeline now uses a deterministic Canvas2D pixel renderer with a logical backbuffer, nearest-neighbour presentation, shared café data, Y-sorted entities and a data-only Open World chunk renderer. See `docs/PIXEL-2D-ARCHITECTURE.fa.md`.
+`validate:build` فقط زمانی موفق می‌شود که Manifest تولیدی Vite یک Entry معتبر و دقیقاً یک فایل JavaScript داشته باشد و هیچ Chunk مستقلی با نام بازی‌ها تولید نشده باشد.
+
+## مستندات کلیدی
+
+- `docs/PIXEL-2D-ARCHITECTURE.fa.md`
+- `docs/PHASE-8-OPEN-WORLD.fa.md`
+- `docs/GITHUB-PAGES-ATOMIC-DEPLOYMENT.fa.md`
+- `docs/FINAL-INTEGRATION-AND-MOBILE-UX.fa.md`

@@ -267,8 +267,23 @@ export default class CharacterManager {
             return existing;
         }
 
-        const { texture, atlas } = await this.loadCharacterAssets(record);
+        let assets;
+        try {
+            assets = await this.loadCharacterAssets(record);
+        } catch (error) {
+            // Character art is optional for the world simulation. A missing or
+            // stale GitHub Pages asset must never prevent the café map or the
+            // games from starting. Pixel renderers can draw this generated
+            // fallback entity until the real atlas becomes available.
+            console.warn('Character assets were unavailable; using the built-in pixel fallback.', {
+                slug: record.slug,
+                error,
+            });
+            this.lastBootWarning ??= error;
+            assets = this.createFallbackCharacterAssets(record);
+        }
 
+        const { texture, atlas } = assets;
         const entity = new SpriteCharacter({
             scene: this.scene,
             character: record,
@@ -602,6 +617,61 @@ export default class CharacterManager {
         }
 
         return pairs;
+    }
+
+    createFallbackCharacterAssets(record) {
+        const canvas = document.createElement('canvas');
+        canvas.width = 16;
+        canvas.height = 24;
+        const context = canvas.getContext('2d');
+        const accent = {
+            tiam: '#22d3ee',
+            ronak: '#f472b6',
+            amirreza: '#fbbf24',
+            parsa: '#ef4444',
+        }[record.slug] ?? '#a78bfa';
+
+        context.imageSmoothingEnabled = false;
+        context.clearRect(0, 0, canvas.width, canvas.height);
+        context.fillStyle = 'rgba(0, 0, 0, 0.3)';
+        context.fillRect(3, 21, 10, 2);
+        context.fillStyle = accent;
+        context.fillRect(4, 9, 8, 10);
+        context.fillStyle = '#e8c8ac';
+        context.fillRect(5, 3, 6, 7);
+        context.fillStyle = '#33251f';
+        context.fillRect(4, 2, 8, 3);
+        context.fillStyle = '#f8fafc';
+        context.fillRect(9, 5, 1, 1);
+
+        const texture = new THREE.CanvasTexture(canvas);
+        const frame = Object.freeze({ x: 0, y: 0, w: 16, h: 24 });
+        const animation = Object.freeze({ frames: Object.freeze(['fallback']), fps: 1, loop: true });
+        const atlas = Object.freeze({
+            meta: Object.freeze({ size: Object.freeze({ w: 16, h: 24 }), generatedFallback: true }),
+            pivot: Object.freeze({ x: 0.5, y: 0.96 }),
+            frames: Object.freeze({ fallback: frame }),
+            animations: Object.freeze({
+                idle: animation,
+                walk: animation,
+                run: animation,
+                jump: animation,
+                attack: animation,
+                win: animation,
+            }),
+            fallbacks: Object.freeze({
+                breathe: 'idle', blink: 'idle', ready: 'idle', sprint: 'run',
+                skid: 'run', turn: 'walk', takeoff: 'jump', fall: 'jump',
+                land: 'jump', combo: 'attack', uppercut: 'attack', cast: 'attack',
+                charge: 'idle', hurt: 'attack', slide: 'run', celebrate: 'win',
+                salute: 'win', hover: 'jump', guitar: 'attack',
+                guitar_loop: 'win', dance: 'win', wave: 'win', pose: 'win',
+                sleep: 'idle', taunt: 'attack', dodge: 'run', crouch: 'idle',
+                laugh: 'win', spin: 'win',
+            }),
+        });
+
+        return { texture, atlas, spriteUrl: null, atlasUrl: null, fallback: true };
     }
 
     async loadCharacterAssets(record) {
