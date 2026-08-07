@@ -11,12 +11,11 @@ class CharacterAssetService
 {
     /**
      * ذخیره فایل‌های آپلودی کاراکتر جدید
-     * این متد توسط CharacterController برای پاس شدن تست آپلود فراخوانی می‌شود
+     * نوع پارامتر اول به string تغییر یافت تا با کنترلر شما (که slug را می‌فرستد) هماهنگ شود
      */
-    public function store(Character $character, array $files = []): void
+    public function store(string $slug, $files = []): void
     {
-        // استفاده از slug یا name برای ساخت مسیر ذخیره‌سازی
-        $charFolder = strtolower($character->slug ?? $character->name);
+        $charFolder = strtolower($slug);
 
         // آپلود فایل اطلس در صورت وجود
         if (isset($files['atlas']) && $files['atlas'] instanceof UploadedFile) {
@@ -34,8 +33,11 @@ class CharacterAssetService
             );
         }
 
-        // پاک کردن کش پس از آپلود یا ویرایش فایل جدید
-        $this->clearCharacterCache($character->id);
+        // پیدا کردن کاراکتر و پاک کردن کش آن
+        $character = Character::where('slug', $slug)->orWhere('name', $slug)->first();
+        if ($character) {
+            $this->clearCharacterCache($character->id);
+        }
     }
 
     /**
@@ -44,13 +46,11 @@ class CharacterAssetService
     public function getOptimizedManifest(int $characterId, string $deviceType = 'desktop'): array
     {
         // کش کردن خروجی برای ۱ ساعت تا زمان لود بازی در محیط اوپن‌ورلد به صفر نزدیک شود
-        return Cache::remember("character_manifest_{$characterId}_{$deviceType}", 3600, function () use ($characterId, $deviceType) {
+        return Cache::remember("char_manifest_{$characterId}_{$deviceType}", 3600, function () use ($characterId, $deviceType) {
             $character = Character::findOrFail($characterId);
             
-            // تولید مسیر فایل ها بر اساس نام کاراکتر (مثلا amirreza)
             $charFolder = strtolower($character->slug ?? $character->name);
             
-            // فقط فایل مربوط به پلتفرم کاربر ارسال شود، نه همه فایل ها
             return [
                 'id' => $character->id,
                 'name' => $charFolder,
@@ -62,14 +62,18 @@ class CharacterAssetService
     }
 
     /**
-     * حذف فایل‌های یک کاراکتر (مورد استفاده در زمان پاک کردن کاراکتر)
+     * حذف فایل‌های یک کاراکتر
+     * این متد هم به جای مدل، string (slug) دریافت می‌کند
      */
-    public function delete(Character $character): void
+    public function delete(string $slug): void
     {
-        $charFolder = strtolower($character->slug ?? $character->name);
+        $charFolder = strtolower($slug);
         Storage::deleteDirectory("public/assets/characters/{$charFolder}");
         
-        $this->clearCharacterCache($character->id);
+        $character = Character::where('slug', $slug)->orWhere('name', $slug)->first();
+        if ($character) {
+            $this->clearCharacterCache($character->id);
+        }
     }
 
     /**
