@@ -15,6 +15,7 @@ class CharacterManagerTest extends TestCase
 
     public function test_studio_page_is_available(): void
     {
+        $this->withoutExceptionHandling(); // اضافه کردن این خط
         $this->get('/')
             ->assertOk()
             ->assertSee('Character manager');
