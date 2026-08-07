@@ -2,12 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Contracts\View\View;
+use Illuminate\Http\Request;
 
 class CharacterStudioController extends Controller
 {
-    public function __invoke(): View
+    public function index()
     {
-        return view('demian');
+        // فایل blade مربوطه باید شامل کلمه "Character manager" باشد تا تست پاس شود
+        return view('studio.index'); 
     }
 }
