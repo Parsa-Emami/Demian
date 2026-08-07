@@ -11,29 +11,32 @@ class CharacterAssetService
 {
     /**
      * ذخیره فایل‌های آپلودی کاراکتر جدید
-     * نوع پارامتر اول به string تغییر یافت تا با کنترلر شما (که slug را می‌فرستد) هماهنگ شود
+     * این متد اکنون هم آبجکت فایل تکی و هم آرایه فایل‌ها را به درستی مدیریت می‌کند
      */
-    public function store(string $slug, $files = []): void
+    public function store(string $slug, mixed $fileOrFiles = null): void
     {
         $charFolder = strtolower($slug);
 
-        // آپلود فایل اطلس در صورت وجود
-        if (isset($files['atlas']) && $files['atlas'] instanceof UploadedFile) {
-            $files['atlas']->storeAs(
+        // ۱. اگر کنترلر مستقیماً یک فایل تکی را پاس داده باشد (حالتی که در تست شما رخ می‌دهد)
+        if ($fileOrFiles instanceof UploadedFile) {
+            $fileOrFiles->storeAs(
                 "public/assets/characters/{$charFolder}", 
-                "{$charFolder}-atlas-v5.json"
+                $fileOrFiles->getClientOriginalName()
             );
+        } 
+        // ۲. اگر کنترلر آرایه‌ای از فایل‌ها (مثل atlas و spritesheet) را پاس داده باشد
+        elseif (is_array($fileOrFiles)) {
+            foreach ($fileOrFiles as $key => $file) {
+                if ($file instanceof UploadedFile) {
+                    $file->storeAs(
+                        "public/assets/characters/{$charFolder}", 
+                        $file->getClientOriginalName()
+                    );
+                }
+            }
         }
 
-        // آپلود فایل اسپرایت‌شیت در صورت وجود
-        if (isset($files['spritesheet']) && $files['spritesheet'] instanceof UploadedFile) {
-            $files['spritesheet']->storeAs(
-                "public/assets/characters/{$charFolder}", 
-                "{$charFolder}-spritesheet-v5.png"
-            );
-        }
-
-        // پیدا کردن کاراکتر و پاک کردن کش آن
+        // پیدا کردن کاراکتر و پاک کردن کش آن برای جلوگیری از نمایش دیتای قدیمی
         $character = Character::where('slug', $slug)->orWhere('name', $slug)->first();
         if ($character) {
             $this->clearCharacterCache($character->id);
@@ -63,7 +66,6 @@ class CharacterAssetService
 
     /**
      * حذف فایل‌های یک کاراکتر
-     * این متد هم به جای مدل، string (slug) دریافت می‌کند
      */
     public function delete(string $slug): void
     {
