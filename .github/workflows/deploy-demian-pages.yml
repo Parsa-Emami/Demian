@@ -130,6 +130,8 @@ jobs:
 
       - name: Run Laravel tests
         shell: bash
+        env:
+          APP_URL: http://localhost
         run: |
           set -euo pipefail
           php artisan test --stop-on-failure
