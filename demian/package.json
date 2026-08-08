@@ -6,7 +6,7 @@
         "build": "vite build",
         "dev": "vite",
         "test:js": "node tools/run_js_tests.mjs",
-        "test:ci": "node --test tests/js/AtomicDeployment.test.js tests/js/CafeArchitectureBoundary.test.js tests/js/CafeEnvironmentContract.test.js tests/js/CafeEnvironmentIntegration.test.js tests/js/PixelRenderingArchitecture.test.js tests/js/open-world/OpenWorldRendering.test.js tests/js/GameRegistry.test.js tests/js/GameRuntime.test.js tests/js/ScreenManager.test.js tests/js/MobileViewportPolicy.test.js tests/js/ControlLayoutService.test.js tests/js/ScrollSnapRail.test.js tests/js/ui/UiLayer.test.js",
+        "test:ci": "node --test tests/js/AtomicDeployment.test.js tests/js/CafeArchitectureBoundary.test.js tests/js/CafeEnvironmentContract.test.js tests/js/CafeEnvironmentIntegration.test.js tests/js/PixelRenderingArchitecture.test.js tests/js/open-world/OpenWorldRendering.test.js tests/js/GameRegistry.test.js tests/js/GameRuntime.test.js tests/js/ScreenManager.test.js tests/js/MobileViewportPolicy.test.js tests/js/ControlLayoutService.test.js tests/js/ScrollSnapRail.test.js tests/js/ui/UiLayer.test.js tests/js/CharacterRenderingRuntime.test.js tests/js/open-world/OpenWorldStartupSafety.test.js",
         "validate:ui-layers": "node tools/validate_ui_layers.mjs",
         "validate:phase3": "node tools/validate_phase3.mjs",
         "validate:phase4": "node tools/validate_phase4.mjs",
@@ -15,7 +15,10 @@
         "validate:phase7": "node tools/validate_phase7.mjs",
         "validate:phase8": "node tools/validate_phase8.mjs",
         "validate:final": "node tools/validate_final.mjs",
-        "validate:build": "node tools/validate_build_bundle.mjs"
+        "validate:build": "node tools/validate_build_bundle.mjs",
+        "validate:character-art": "python3 tools/audit_character_sprite_packs.py",
+        "validate:character-art:strict": "python3 tools/audit_character_sprite_packs.py --strict",
+        "repair:character-art": "python3 tools/repair_known_character_artifacts.py && python3 tools/repair_parsa_sprite_corruption.py && python3 tools/audit_character_sprite_packs.py --write-metadata --strict"
     },
     "devDependencies": {
         "@tailwindcss/vite": "^4.0.0",

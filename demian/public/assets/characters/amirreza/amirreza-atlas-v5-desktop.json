@@ -27,7 +27,8 @@
     ],
     "generatedFrameCount": 120,
     "animationCount": 34,
-    "note": "Demian V5 dual-resolution 120-frame pack with directional airborne animation."
+    "note": "Demian V5 dual-resolution 120-frame pack with directional airborne animation.",
+    "artIntegrity": "valid"
   },
   "frames": {
     "idle_00": {
@@ -2762,5 +2763,8 @@
     "diagonalScale": 0.965,
     "northSouthScale": 0.91,
     "transitionSeconds": 0.07
+  },
+  "render": {
+    "referenceBodyHeightRatio": 0.8574
   }
 }

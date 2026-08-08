@@ -220,6 +220,54 @@ export default class SpriteCharacter {
         this.applySpawnPose(0);
     }
 
+    replaceVisualAssets(texture, atlas) {
+        if (!texture || !atlas) {
+            throw new TypeError('Character visual assets require a texture and atlas.');
+        }
+
+        const previousTexture = this.texture;
+        const previousAnimator = this.animator;
+        const animationName = previousAnimator?.requestedAnimationName ?? previousAnimator?.animationName ?? this.state ?? 'idle';
+        const animationProgress = previousAnimator?.progress?.() ?? 0;
+        const direction = previousAnimator?.direction ?? this.direction;
+        const facing = previousAnimator?.facing ?? this.facing;
+        const playbackRate = previousAnimator?.playbackRate ?? 1;
+
+        this.texture = texture;
+        this.texture.needsUpdate = true;
+        this.atlas = atlas;
+        this.material.map = this.texture;
+        this.material.needsUpdate = true;
+
+        const pivot = atlas.pivot ?? { x: 0.5, y: 0.96 };
+        this.sprite.center.set(
+            Number(pivot.x ?? 0.5),
+            THREE.MathUtils.clamp(1 - Number(pivot.y ?? 0.96), 0, 1)
+        );
+
+        this.animator = new SpriteAnimator(this.texture, atlas);
+        this.animator.setDirection(direction);
+        this.animator.setFacing(facing);
+        this.animator.setPlaybackRate(playbackRate);
+        const resolved = this.animator.play(animationName, { restart: true });
+        const frames = this.animator.currentFrames();
+        if (frames.length > 1 && Number.isFinite(animationProgress)) {
+            this.animator.frameIndex = Math.min(
+                frames.length - 1,
+                Math.max(0, Math.round(animationProgress * (frames.length - 1)))
+            );
+            this.animator.applyCurrentFrame();
+        }
+
+        if (!resolved) {
+            this.animator.play('idle', { restart: true });
+        }
+
+        if (previousTexture && previousTexture !== this.texture) {
+            previousTexture.dispose();
+        }
+    }
+
     setPlayerControlled(controlled, { playIntro = false } = {}) {
         this.isPlayerControlled = Boolean(controlled);
         this.movementResolver = null;

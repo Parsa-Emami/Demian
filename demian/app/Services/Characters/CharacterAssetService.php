@@ -83,8 +83,8 @@ class CharacterAssetService
      */
     protected function clearCharacterCache(int $characterId): void
     {
-        Cache::forget("character_manifest_{$characterId}_desktop");
-        Cache::forget("character_manifest_{$characterId}_mobile");
-        Cache::forget("character_manifest_{$characterId}_compact");
+        Cache::forget("char_manifest_{$characterId}_desktop");
+        Cache::forget("char_manifest_{$characterId}_mobile");
+        Cache::forget("char_manifest_{$characterId}_compact");
     }
 }

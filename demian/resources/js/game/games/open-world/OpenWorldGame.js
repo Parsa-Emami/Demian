@@ -170,6 +170,7 @@ export default class OpenWorldGame extends BaseGame {
         // subsequent frames, but the scene is already visible before the loading
         // screen is removed.
         this.renderScene({ phase: 'ready', strict: false });
+        this.characterManager.startBackgroundHydration();
     }
 
     setupWorldServices() {
@@ -240,7 +241,7 @@ export default class OpenWorldGame extends BaseGame {
             activeRadius: metadata.activeRadius,
             preloadRadius: metadata.preloadRadius,
             maxLoadedChunks: metadata.maxLoadedChunks,
-            concurrency: this.context.services.performanceProfile.tier === 'low' ? 1 : 2,
+            concurrency: this.context.services.performanceProfile.tier === 'performance' ? 1 : 2,
         });
     }
 

@@ -7,6 +7,8 @@ The mobile and compact packs keep the decoded texture budget low while the deskt
 from __future__ import annotations
 
 import json
+import subprocess
+import sys
 from pathlib import Path
 from typing import Iterable
 
@@ -256,6 +258,15 @@ def build_character(character: str) -> None:
 def main() -> None:
     for character in CHARACTERS:
         build_character(character)
+
+    # Every generated pack must pass through the same integrity/size metadata audit.
+    # This also flags runtime packs (such as separately supplied character art) that
+    # bypassed the canonical V4 -> V5 build pipeline.
+    subprocess.run(
+        [sys.executable, str(ROOT / "tools" / "audit_character_sprite_packs.py"), "--write-metadata", "--strict"],
+        cwd=ROOT,
+        check=True,
+    )
 
 
 if __name__ == "__main__":

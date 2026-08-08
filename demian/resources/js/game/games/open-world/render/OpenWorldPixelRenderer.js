@@ -83,6 +83,7 @@ export default class OpenWorldPixelRenderer {
         this.drawSavePoints(ctx, discovery);
 
         for (const [id, entity] of characterManager?.entities ?? []) {
+            if (entity?.group?.visible === false) continue;
             const position = entity?.group?.position;
             this.queue.add({
                 layer: 20,

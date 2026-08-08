@@ -2,6 +2,11 @@ import * as THREE from 'three';
 import SpriteCharacter from '../characters/SpriteCharacter';
 import NpcBrain from '../npc/NpcBrain';
 import { WORLD_CONFIG } from '../world/WorldConfig';
+import {
+    CHARACTER_ASSET_TIMEOUT_MS,
+    characterRuntimeVariants,
+    orderedSpriteVariants,
+} from '../characters/runtime/CharacterRuntimePolicy.js';
 
 function builtinAssetUrl(relativePath) {
     return new URL(relativePath.replace(/^\/+/, ''), document.baseURI).toString();
@@ -84,6 +89,7 @@ function builtinAssetPair(slug, variant = 'mobile') {
         atlasUrl: builtinAssetUrl(
             `assets/characters/${slug}/${slug}-atlas-v5-${suffix}.json`
         ),
+        variant: suffix,
     };
 }
 
@@ -126,14 +132,19 @@ export default class CharacterManager {
         this.aiBudget = aiBudget;
         this.colliderKeys = new Map();
         this.characterRadius = 0.72;
-        this.spriteVariant = performanceProfile?.spriteVariant?.() ?? 'mobile';
+        this.runtimeVariants = characterRuntimeVariants(performanceProfile);
+        this.spriteVariant = this.runtimeVariants.active;
         this.characters = [];
         this.activeRecord = null;
         this.activeEntity = null;
         this.entities = new Map();
         this.brains = new Map();
         this.textureLoader = new THREE.TextureLoader();
+        this.assetPromises = new Map();
+        this.entityPromises = new Map();
         this.lastBootWarning = null;
+        this.disposed = false;
+        this.hydrationGeneration = 0;
         this.npcLimit = Math.max(2, Number(performanceProfile?.npcCount ?? 3));
     }
 
@@ -159,8 +170,7 @@ export default class CharacterManager {
             throw new Error('هیچ کاراکتری برای اجرا وجود ندارد.');
         }
 
-        await this.populateWorld(active.id);
-        await this.select(active.id, { preservePosition: false });
+        await this.select(active.id, { preservePosition: false, hydrateRoster: false });
         this.eventBus.emit('characters:changed', this.characters);
         this.emitRosterChanged();
 
@@ -223,23 +233,54 @@ export default class CharacterManager {
             .slice(0, this.npcLimit + 1);
     }
 
-    async populateWorld(activeId) {
+    async populateWorld(activeId, {
+        background = false,
+        generation = this.hydrationGeneration,
+    } = {}) {
+        if (this.disposed || generation !== this.hydrationGeneration) return;
+
         const roster = this.rosterRecords(activeId);
         const active = roster[0];
 
         if (active) {
-            await this.ensureEntity(active, 0);
+            await this.ensureEntity(active, 0, { variant: this.runtimeVariants.active });
         }
 
-        const results = await Promise.allSettled(
-            roster.slice(1).map((record, index) => this.ensureEntity(record, index + 1))
-        );
+        if (this.disposed || generation !== this.hydrationGeneration) return;
 
-        results.forEach((result) => {
-            if (result.status === 'rejected') {
-                console.warn('NPC character could not be loaded.', result.reason);
+        for (let index = 1; index < roster.length; index += 1) {
+            if (this.disposed || generation !== this.hydrationGeneration) {
+                break;
             }
-        });
+
+            const record = roster[index];
+            try {
+                await this.ensureEntity(record, index, { variant: this.runtimeVariants.npc });
+                if (background) {
+                    this.emitRosterChanged();
+                    await new Promise((resolve) => globalThis.setTimeout(resolve, 0));
+                }
+            } catch (error) {
+                console.warn('NPC character could not be loaded.', error);
+            }
+        }
+    }
+
+    startBackgroundHydration(activeId = this.activeRecord?.id) {
+        const generation = ++this.hydrationGeneration;
+        const run = async () => {
+            if (this.disposed || generation !== this.hydrationGeneration) return;
+            await this.populateWorld(activeId, { background: true, generation });
+            if (!this.disposed && generation === this.hydrationGeneration) {
+                this.pruneRoster(activeId);
+                this.emitRosterChanged();
+            }
+        };
+
+        const schedule = globalThis.requestIdleCallback
+            ? (callback) => globalThis.requestIdleCallback(callback, { timeout: 500 })
+            : (callback) => globalThis.setTimeout(callback, 0);
+        schedule(() => void run());
     }
 
     async reload() {
@@ -253,34 +294,85 @@ export default class CharacterManager {
         }
 
         this.ensureBuiltinCharacters();
-        await this.populateWorld(this.activeRecord?.id ?? this.characters[0]?.id);
+        const activeId = this.activeRecord?.id ?? this.characters[0]?.id;
+        if (activeId) this.startBackgroundHydration(activeId);
         this.eventBus.emit('characters:changed', this.characters);
         this.emitRosterChanged();
         return this.characters;
     }
 
-    async ensureEntity(record, spawnIndex = 0) {
+    async ensureEntity(record, spawnIndex = 0, { variant = this.runtimeVariants.npc } = {}) {
         const key = String(record.id);
         const existing = this.entities.get(key);
+        if (existing) return this.ensureEntityVariant(record, existing, variant);
 
-        if (existing) {
-            return existing;
+        const pending = this.entityPromises.get(key);
+        if (pending) {
+            const entity = await pending;
+            return this.ensureEntityVariant(record, entity, variant);
+        }
+
+        const creation = this.createEntity(record, spawnIndex, variant, key)
+            .finally(() => this.entityPromises.delete(key));
+        this.entityPromises.set(key, creation);
+        return await creation;
+    }
+
+    variantRank(variant) {
+        return { compact: 1, mobile: 2, desktop: 3, custom: 3 }[variant] ?? 0;
+    }
+
+    async ensureEntityVariant(record, entity, variant) {
+        const currentVariant = entity.runtimeSpriteVariant ?? 'compact';
+        if (this.variantRank(variant) <= this.variantRank(currentVariant)) {
+            return entity;
         }
 
         let assets;
         try {
-            assets = await this.loadCharacterAssets(record);
+            assets = await this.loadCharacterAssets(record, { preferredVariant: variant });
         } catch (error) {
-            // Character art is optional for the world simulation. A missing or
-            // stale GitHub Pages asset must never prevent the café map or the
-            // games from starting. Pixel renderers can draw this generated
-            // fallback entity until the real atlas becomes available.
+            console.warn('Higher-resolution character asset could not be loaded; keeping current visuals.', {
+                slug: record.slug,
+                currentVariant,
+                requestedVariant: variant,
+                error,
+            });
+            return entity;
+        }
+
+        if (this.disposed || this.entities.get(String(record.id)) !== entity) {
+            assets.texture?.dispose?.();
+            return entity;
+        }
+
+        entity.replaceVisualAssets(assets.texture, assets.atlas);
+        entity.runtimeSpriteVariant = assets.fallback ? 'fallback' : (assets.variant ?? variant);
+        return entity;
+    }
+
+    async createEntity(record, spawnIndex, variant, key) {
+        let assets;
+        try {
+            assets = await this.loadCharacterAssets(record, { preferredVariant: variant });
+        } catch (error) {
             console.warn('Character assets were unavailable; using the built-in pixel fallback.', {
                 slug: record.slug,
                 error,
             });
             this.lastBootWarning ??= error;
             assets = this.createFallbackCharacterAssets(record);
+        }
+
+        if (this.disposed) {
+            assets.texture?.dispose?.();
+            throw new Error('Character manager was disposed while an asset was loading.');
+        }
+
+        const existing = this.entities.get(key);
+        if (existing) {
+            assets.texture?.dispose?.();
+            return existing;
         }
 
         const { texture, atlas } = assets;
@@ -291,11 +383,10 @@ export default class CharacterManager {
             atlas,
             controlled: false,
         });
+        entity.runtimeSpriteVariant = assets.fallback ? 'fallback' : (assets.variant ?? variant);
         entity.setWorldBounds(this.worldBounds);
 
-        const spawn = this.spawnPoints[
-            spawnIndex % this.spawnPoints.length
-        ];
+        const spawn = this.spawnPoints[spawnIndex % this.spawnPoints.length];
         entity.group.position.set(spawn.x, 0, spawn.z);
         this.scene.add(entity.group);
 
@@ -343,7 +434,7 @@ export default class CharacterManager {
         }
     }
 
-    async select(id, { preservePosition = true } = {}) {
+    async select(id, { preservePosition = true, hydrateRoster = true } = {}) {
         const record = this.characters.find(
             (character) => String(character.id) === String(id)
         );
@@ -354,7 +445,7 @@ export default class CharacterManager {
 
         this.eventBus.emit('character:loading', record);
 
-        const nextEntity = await this.ensureEntity(record, this.entities.size);
+        const nextEntity = await this.ensureEntity(record, this.entities.size, { variant: this.runtimeVariants.active });
         const previousEntity = this.activeEntity;
         const previousPosition = previousEntity?.group.position.clone();
         const nextNpcPosition = nextEntity.group.position.clone();
@@ -380,8 +471,8 @@ export default class CharacterManager {
             is_active: String(character.id) === String(record.id),
         }));
 
-        await this.populateWorld(record.id);
         this.pruneRoster(record.id);
+        if (hydrateRoster) this.startBackgroundHydration(record.id);
 
         this.eventBus.emit('character:selected', {
             record,
@@ -578,10 +669,10 @@ export default class CharacterManager {
         return this.activeEntity?.state ?? 'loading';
     }
 
-    characterAssetPairs(record) {
+    characterAssetPairs(record, preferredVariant = this.runtimeVariants.active) {
         const pairs = [];
         const seen = new Set();
-        const add = (spriteUrl, atlasUrl) => {
+        const add = (spriteUrl, atlasUrl, variant = null) => {
             if (!spriteUrl || !atlasUrl) {
                 return;
             }
@@ -592,16 +683,15 @@ export default class CharacterManager {
             }
 
             seen.add(key);
-            pairs.push({ spriteUrl, atlasUrl });
+            pairs.push({ spriteUrl, atlasUrl, variant });
         };
 
-        add(record.sprite_url, record.atlas_url);
-
         if (BUILTIN_SLUGS.has(record.slug)) {
-            [this.spriteVariant, ...SPRITE_VARIANTS].forEach((variant) => {
+            orderedSpriteVariants(preferredVariant).forEach((variant) => {
                 const pair = builtinAssetPair(record.slug, variant);
-                add(pair.spriteUrl, pair.atlasUrl);
+                add(pair.spriteUrl, pair.atlasUrl, pair.variant);
             });
+            add(record.sprite_url, record.atlas_url);
 
             // V4 compatibility is intentionally last. It keeps older GitHub
             // Pages deployments playable while a new hashed Vite bundle is
@@ -612,8 +702,11 @@ export default class CharacterManager {
                 ),
                 builtinAssetUrl(
                     `assets/characters/${record.slug}/${record.slug}-atlas.json`
-                )
+                ),
+                'legacy'
             );
+        } else {
+            add(record.sprite_url, record.atlas_url, 'custom');
         }
 
         return pairs;
@@ -621,8 +714,8 @@ export default class CharacterManager {
 
     createFallbackCharacterAssets(record) {
         const canvas = document.createElement('canvas');
-        canvas.width = 16;
-        canvas.height = 24;
+        canvas.width = 48;
+        canvas.height = 64;
         const context = canvas.getContext('2d');
         const accent = {
             tiam: '#22d3ee',
@@ -633,23 +726,57 @@ export default class CharacterManager {
 
         context.imageSmoothingEnabled = false;
         context.clearRect(0, 0, canvas.width, canvas.height);
-        context.fillStyle = 'rgba(0, 0, 0, 0.3)';
-        context.fillRect(3, 21, 10, 2);
-        context.fillStyle = accent;
-        context.fillRect(4, 9, 8, 10);
-        context.fillStyle = '#e8c8ac';
-        context.fillRect(5, 3, 6, 7);
-        context.fillStyle = '#33251f';
-        context.fillRect(4, 2, 8, 3);
-        context.fillStyle = '#f8fafc';
-        context.fillRect(9, 5, 1, 1);
+        context.fillStyle = 'rgba(0, 0, 0, 0.28)';
+        context.fillRect(10, 59, 28, 3);
+        context.fillStyle = record.slug === 'parsa' ? '#171717' : accent;
+        context.fillRect(14, 31, 20, 22);
+        context.fillStyle = '#202020';
+        context.fillRect(15, 50, 8, 10);
+        context.fillRect(27, 50, 8, 10);
+        context.fillStyle = '#d89b6e';
+        context.fillRect(14, 15, 20, 18);
+        context.fillStyle = '#191716';
+        context.fillRect(12, 11, 24, 9);
+        context.fillRect(13, 8, 20, 6);
+
+        if (record.slug === 'parsa') {
+            context.fillStyle = '#111827';
+            context.fillRect(15, 21, 8, 5);
+            context.fillRect(26, 21, 8, 5);
+            context.fillRect(23, 22, 3, 2);
+            context.fillStyle = '#2a1b17';
+            context.fillRect(16, 28, 17, 5);
+            context.fillRect(20, 33, 10, 3);
+            context.save();
+            context.translate(31, 42);
+            context.rotate(-0.48);
+            context.fillStyle = '#b91c1c';
+            context.fillRect(-5, -3, 19, 8);
+            context.fillStyle = '#ef4444';
+            context.fillRect(-1, -1, 8, 4);
+            context.fillStyle = '#3f3f46';
+            context.fillRect(12, 0, 13, 2);
+            context.restore();
+        } else {
+            context.fillStyle = '#f8fafc';
+            context.fillRect(28, 21, 3, 3);
+            context.fillStyle = accent;
+            context.fillRect(11, 35, 4, 12);
+            context.fillRect(34, 35, 4, 12);
+        }
 
         const texture = new THREE.CanvasTexture(canvas);
-        const frame = Object.freeze({ x: 0, y: 0, w: 16, h: 24 });
+        texture.colorSpace = THREE.SRGBColorSpace;
+        texture.magFilter = THREE.NearestFilter;
+        texture.minFilter = THREE.NearestFilter;
+        texture.generateMipmaps = false;
+        const frame = Object.freeze({ x: 0, y: 0, w: 48, h: 64 });
         const animation = Object.freeze({ frames: Object.freeze(['fallback']), fps: 1, loop: true });
         const atlas = Object.freeze({
-            meta: Object.freeze({ size: Object.freeze({ w: 16, h: 24 }), generatedFallback: true }),
-            pivot: Object.freeze({ x: 0.5, y: 0.96 }),
+            meta: Object.freeze({ size: Object.freeze({ w: 48, h: 64 }), generatedFallback: true }),
+            pivot: Object.freeze({ x: 0.5, y: 0.95 }),
+            display: Object.freeze({ worldWidth: 3.75, worldHeight: 3.75 }),
+            render: Object.freeze({ referenceBodyHeightRatio: 0.86 }),
             frames: Object.freeze({ fallback: frame }),
             animations: Object.freeze({
                 idle: animation,
@@ -674,19 +801,24 @@ export default class CharacterManager {
         return { texture, atlas, spriteUrl: null, atlasUrl: null, fallback: true };
     }
 
-    async loadCharacterAssets(record) {
+    async loadCharacterAssets(record, { preferredVariant = this.runtimeVariants.active } = {}) {
         const failures = [];
 
-        for (const pair of this.characterAssetPairs(record)) {
+        for (const pair of this.characterAssetPairs(record, preferredVariant)) {
             try {
-                const atlas = await this.loadJson(pair.atlasUrl);
-                const atlasImage = atlas?.meta?.image;
-                const spriteUrl = atlasImage
-                    ? new URL(atlasImage, pair.atlasUrl).toString()
-                    : pair.spriteUrl;
-                const texture = await this.loadTexture(spriteUrl);
-
-                return { texture, atlas, spriteUrl, atlasUrl: pair.atlasUrl };
+                const key = `${pair.atlasUrl}::${pair.spriteUrl}`;
+                let pending = this.assetPromises.get(key);
+                if (!pending) {
+                    pending = this.loadAssetPair(pair);
+                    this.assetPromises.set(key, pending);
+                }
+                try {
+                    return await pending;
+                } finally {
+                    if (this.assetPromises.get(key) === pending) {
+                        this.assetPromises.delete(key);
+                    }
+                }
             } catch (error) {
                 failures.push(error);
                 console.warn('Character asset pair failed; trying fallback.', {
@@ -702,26 +834,73 @@ export default class CharacterManager {
         throw new Error(`Character assets could not be loaded for ${record.slug}: ${reason}`);
     }
 
-    async loadJson(url) {
-        const response = await fetch(url, {
-            headers: { Accept: 'application/json' },
-            cache: 'no-cache',
-        });
-
-        if (!response.ok) {
-            throw new Error(`Atlas load failed: ${response.status} (${url})`);
+    async loadAssetPair(pair) {
+        const atlas = await this.loadJson(pair.atlasUrl);
+        if (atlas?.meta?.artIntegrity === 'invalid') {
+            throw new Error(`Character art failed integrity validation (${pair.atlasUrl})`);
         }
+        const atlasImage = atlas?.meta?.image;
+        const spriteUrl = atlasImage
+            ? new URL(atlasImage, pair.atlasUrl).toString()
+            : pair.spriteUrl;
+        const texture = await this.loadTexture(spriteUrl);
+        return { texture, atlas, spriteUrl, atlasUrl: pair.atlasUrl, variant: pair.variant };
+    }
 
-        return response.json();
+    async loadJson(url) {
+        const controller = new AbortController();
+        const timeout = globalThis.setTimeout(() => controller.abort(), CHARACTER_ASSET_TIMEOUT_MS);
+        try {
+            const response = await fetch(url, {
+                headers: { Accept: 'application/json' },
+                cache: 'no-cache',
+                signal: controller.signal,
+            });
+
+            if (!response.ok) {
+                throw new Error(`Atlas load failed: ${response.status} (${url})`);
+            }
+
+            return await response.json();
+        } catch (error) {
+            if (error?.name === 'AbortError') {
+                throw new Error(`Atlas load timed out (${url})`);
+            }
+            throw error;
+        } finally {
+            globalThis.clearTimeout(timeout);
+        }
     }
 
     loadTexture(url) {
         return new Promise((resolve, reject) => {
+            let settled = false;
+            const finish = (callback, value) => {
+                if (settled) return;
+                settled = true;
+                globalThis.clearTimeout(timeout);
+                callback(value);
+            };
+            const timeout = globalThis.setTimeout(
+                () => finish(reject, new Error(`Sprite Sheet load timed out (${url})`)),
+                CHARACTER_ASSET_TIMEOUT_MS
+            );
+
             this.textureLoader.load(
                 url,
-                (texture) => resolve(texture),
+                (texture) => {
+                    if (settled) {
+                        texture.dispose();
+                        return;
+                    }
+                    texture.colorSpace = THREE.SRGBColorSpace;
+                    texture.magFilter = THREE.NearestFilter;
+                    texture.minFilter = THREE.NearestFilter;
+                    texture.generateMipmaps = false;
+                    finish(resolve, texture);
+                },
                 undefined,
-                () => reject(new Error(`Sprite Sheet load failed (${url})`))
+                () => finish(reject, new Error(`Sprite Sheet load failed (${url})`))
             );
         });
     }
@@ -755,6 +934,10 @@ export default class CharacterManager {
     }
 
     dispose() {
+        this.disposed = true;
+        this.hydrationGeneration += 1;
+        this.assetPromises.clear();
+        this.entityPromises.clear();
         [...this.entities.keys()].forEach((key) => this.disposeEntity(key));
         this.colliderKeys.clear();
         this.collisionScope = null;
