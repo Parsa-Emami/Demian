@@ -3,38 +3,72 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Models\EventSession;
 use App\Services\Events\EventSessionService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 
-class EventSessionController extends Controller
+final class EventSessionController extends Controller
 {
-    protected EventSessionService $sessionService;
+    public function __construct(private readonly EventSessionService $sessionService) {}
 
-    public function __construct(EventSessionService $sessionService)
+    /**
+     * Start an authoritative event session and return the one-time raw token.
+     */
+    public function store(Request $request, string $event): JsonResponse
     {
-        $this->sessionService = $sessionService;
+        $metadata = $request->validate([
+            'source' => ['sometimes', 'string', 'max:64'],
+            'client_version' => ['sometimes', 'string', 'max:64'],
+            'platform' => ['sometimes', 'string', 'max:64'],
+        ]);
+
+        $started = $this->sessionService->start($event, $metadata);
+        /** @var EventSession $session */
+        $session = $started['session'];
+
+        return response()->json([
+            'data' => [
+                'id' => $session->id,
+                'event_id' => $session->event_id,
+                'definition_revision' => $session->definition_revision,
+                'seed' => $session->seed,
+                'token' => $started['token'],
+                'status' => $session->status,
+                'started_at' => $session->started_at?->toISOString(),
+                'expires_at' => $session->expires_at?->toISOString(),
+            ],
+            'definition' => $started['definition'],
+        ], 201);
     }
 
     /**
-     * ورود به محیط جهان باز
+     * Validate the submitted client evidence and claim the event reward once.
      */
-    public function enterOpenWorld(Request $request): JsonResponse
+    public function complete(Request $request, EventSession $eventSession): JsonResponse
     {
-        $user = $request->user();
-        
-        // 1. بررسی سریع سشن بدون درگیر کردن جداول پاداش
-        $activeSession = $this->sessionService->getOrCreateActiveSession($user->id);
-
-        if (!$activeSession) {
-            return response()->json(['error' => 'Session creation failed'], 500);
+        $token = trim((string) $request->header('X-Event-Token', ''));
+        if ($token === '') {
+            throw ValidationException::withMessages([
+                'token' => 'The X-Event-Token header is required.',
+            ]);
         }
 
-        // 2. ارسال پاسخ سریع به بازی برای عبور از صفحه لودینگ
-        return response()->json([
-            'status' => 'success',
-            'session_id' => $activeSession->id,
-            'world_state' => Cache::get('current_world_state', 'default'),
+        $payload = $request->validate([
+            'score' => ['required', 'integer', 'min:0'],
+            'elapsed_ms' => ['required', 'integer', 'min:0'],
+            'evidence' => ['required', 'array'],
+            'evidence.collected_item_ids' => ['sometimes', 'array'],
+            'evidence.collected_item_ids.*' => ['string', 'max:128', 'distinct'],
+            'evidence.reached_zone_ids' => ['sometimes', 'array'],
+            'evidence.reached_zone_ids.*' => ['string', 'max:128', 'distinct'],
+            'evidence.defeated_enemy_ids' => ['sometimes', 'array'],
+            'evidence.defeated_enemy_ids.*' => ['string', 'max:128', 'distinct'],
         ]);
+
+        $claim = $this->sessionService->complete($eventSession, $token, $payload);
+
+        return response()->json(['data' => $claim]);
     }
 }

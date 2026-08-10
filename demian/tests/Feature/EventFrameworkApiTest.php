@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\EventSession;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -22,10 +23,19 @@ class EventFrameworkApiTest extends TestCase
         $started = $this->postJson('/api/v1/events/cafe-rush/sessions', [
             'source' => 'feature-test',
             'client_version' => 'phase-6',
-        ])->assertCreated();
+        ])->assertCreated()
+            ->assertJsonPath('data.event_id', 'cafe-rush')
+            ->assertJsonPath('data.status', 'active')
+            ->assertJsonPath('definition.id', 'cafe-rush');
 
         $sessionId = $started->json('data.id');
         $token = $started->json('data.token');
+
+        $this->assertIsString($sessionId);
+        $this->assertIsString($token);
+        $this->assertSame(64, strlen($token));
+        $this->assertNotSame($token, EventSession::query()->findOrFail($sessionId)->token_hash);
+
         $this->travel(46)->seconds();
         $payload = [
             'score' => 1200,
@@ -49,5 +59,35 @@ class EventFrameworkApiTest extends TestCase
 
         $this->assertSame($first->json('data.id'), $second->json('data.id'));
         $this->assertDatabaseCount('event_reward_claims', 1);
+    }
+
+    public function test_event_completion_requires_the_session_token_header(): void
+    {
+        $started = $this->postJson('/api/v1/events/cafe-rush/sessions')->assertCreated();
+        $sessionId = $started->json('data.id');
+
+        $this->postJson("/api/v1/event-sessions/{$sessionId}/complete", [
+            'score' => 0,
+            'elapsed_ms' => 0,
+            'evidence' => [],
+        ])->assertUnprocessable()
+            ->assertJsonValidationErrors(['token']);
+
+        $this->assertDatabaseCount('event_reward_claims', 0);
+    }
+
+    public function test_event_completion_rejects_an_invalid_session_token(): void
+    {
+        $started = $this->postJson('/api/v1/events/cafe-rush/sessions')->assertCreated();
+        $sessionId = $started->json('data.id');
+
+        $this->withHeader('X-Event-Token', str_repeat('x', 64))
+            ->postJson("/api/v1/event-sessions/{$sessionId}/complete", [
+                'score' => 0,
+                'elapsed_ms' => 0,
+                'evidence' => [],
+            ])->assertForbidden();
+
+        $this->assertDatabaseCount('event_reward_claims', 0);
     }
 }
