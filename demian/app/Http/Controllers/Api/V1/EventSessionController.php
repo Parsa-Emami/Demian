@@ -58,7 +58,7 @@ final class EventSessionController extends Controller
         $payload = $request->validate([
             'score' => ['required', 'integer', 'min:0'],
             'elapsed_ms' => ['required', 'integer', 'min:0'],
-            'evidence' => ['required', 'array'],
+            'evidence' => ['present', 'array'],
             'evidence.collected_item_ids' => ['sometimes', 'array'],
             'evidence.collected_item_ids.*' => ['string', 'max:128', 'distinct'],
             'evidence.reached_zone_ids' => ['sometimes', 'array'],
