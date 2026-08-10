@@ -4,7 +4,7 @@ use App\Http\Controllers\CharacterController;
 use App\Http\Controllers\CharacterStudioController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', [CharacterStudioController::class, 'index'])->name('studio.index');
+Route::get('/', [CharacterStudioController::class, 'index'])->name('studio');
 
 Route::prefix('characters')
     ->name('characters.')
