@@ -67,7 +67,12 @@ class CharacterManagerTest extends TestCase
 
         $this->assertDatabaseHas('characters', [
             'slug' => 'test-character',
+            'sprite_sheet_path' => 'characters/test-character/spritesheet.png',
+            'atlas_path' => 'characters/test-character/atlas.json',
         ]);
+
+        Storage::disk('public')->assertExists('characters/test-character/spritesheet.png');
+        Storage::disk('public')->assertExists('characters/test-character/atlas.json');
     }
 
     public function test_incomplete_atlas_is_rejected_with_validation_errors(): void
@@ -108,5 +113,71 @@ class CharacterManagerTest extends TestCase
 
         $this->deleteJson("/characters/{$tiam->id}")
             ->assertUnprocessable();
+    }
+
+
+    public function test_custom_character_can_be_updated_without_replacing_assets(): void
+    {
+        Storage::fake('public');
+
+        $character = $this->createCustomCharacter('update-character');
+
+        $this->patchJson("/characters/{$character->id}", [
+            'name' => 'Updated Character',
+            'settings' => json_encode(['scale' => 1.25]),
+        ])
+            ->assertOk()
+            ->assertJsonPath('data.name', 'Updated Character')
+            ->assertJsonPath('data.settings.scale', 1.25);
+
+        Storage::disk('public')->assertExists('characters/update-character/spritesheet.png');
+        Storage::disk('public')->assertExists('characters/update-character/atlas.json');
+    }
+
+    public function test_custom_character_assets_are_deleted_with_character(): void
+    {
+        Storage::fake('public');
+
+        $character = $this->createCustomCharacter('delete-character');
+
+        $this->deleteJson("/characters/{$character->id}")
+            ->assertOk();
+
+        $this->assertDatabaseMissing('characters', [
+            'id' => $character->id,
+        ]);
+
+        Storage::disk('public')->assertMissing('characters/delete-character/spritesheet.png');
+        Storage::disk('public')->assertMissing('characters/delete-character/atlas.json');
+    }
+
+    private function createCustomCharacter(string $slug): Character
+    {
+        $atlas = [
+            'meta' => ['size' => ['w' => 256, 'h' => 256]],
+            'frames' => [
+                'idle_0' => ['x' => 0, 'y' => 0, 'w' => 256, 'h' => 256],
+            ],
+            'animations' => [
+                'idle' => ['frames' => ['idle_0'], 'fps' => 1, 'loop' => true],
+                'walk' => ['frames' => ['idle_0'], 'fps' => 8, 'loop' => true],
+                'run' => ['frames' => ['idle_0'], 'fps' => 12, 'loop' => true],
+                'jump' => ['frames' => ['idle_0'], 'fps' => 1, 'loop' => false],
+                'attack' => ['frames' => ['idle_0'], 'fps' => 1, 'loop' => false],
+                'win' => ['frames' => ['idle_0'], 'fps' => 1, 'loop' => false],
+            ],
+        ];
+
+        $this->post('/characters', [
+            'name' => ucfirst(str_replace('-', ' ', $slug)),
+            'slug' => $slug,
+            'sprite_sheet' => UploadedFile::fake()->image('sheet.png', 256, 256),
+            'atlas' => UploadedFile::fake()->createWithContent(
+                'atlas.json',
+                json_encode($atlas)
+            ),
+        ])->assertCreated();
+
+        return Character::query()->where('slug', $slug)->firstOrFail();
     }
 }
