@@ -1,13 +1,13 @@
-import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { dirname, extname, join, resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { testRunnerCoversGroup } from './validation/testRunnerContract.mjs';
 import { validateRolePlayContent } from '../resources/js/game/games/role-play/core/RolePlayDefinitionValidator.js';
 import { BUILT_IN_ROLE_PLAY_CONTENT } from '../resources/js/game/games/role-play/content/RolePlayContentRegistry.js';
+import { walk, lintPhpFiles } from './validation/projectWalk.mjs';
 
 const root = resolve(import.meta.dirname, '..');
 const failures = [];
-function walk(directory, predicate = () => true) { if (!existsSync(directory)) return []; const out=[]; for (const entry of readdirSync(directory)) { const file=join(directory,entry); const stat=statSync(file); if(stat.isDirectory())out.push(...walk(file,predicate)); else if(predicate(file))out.push(file); } return out; }
 function assert(condition,message){if(!condition)failures.push(message);}
 const jsFiles=[...walk(join(root,'resources/js'),(f)=>extname(f)==='.js'),...walk(join(root,'tests/js'),(f)=>extname(f)==='.js'),...walk(join(root,'tools'),(f)=>extname(f)==='.mjs')];
 for(const file of jsFiles){const check=spawnSync(process.execPath,['--check',file],{encoding:'utf8'});assert(check.status===0,`Syntax error: ${file}\n${check.stderr}`);const source=readFileSync(file,'utf8');const imports=file.includes(`${join('tools','')}`)?[]:[...source.matchAll(/\bfrom\s+['"]([^'"]+)['"]/g),...source.matchAll(/\bimport\(\s*['"]([^'"]+)['"]\s*\)/g)].map((m)=>m[1]).filter((s)=>s.startsWith('.'));for(const specifier of imports){const base=resolve(dirname(file),specifier);assert([base,`${base}.js`,`${base}.mjs`,`${base}.json`,join(base,'index.js')].some(existsSync),`Unresolved import ${specifier} in ${file}`);}}
@@ -25,5 +25,5 @@ const css=readFileSync(join(root,'resources/css/app.css'),'utf8');for(const mark
 const packageJson=JSON.parse(readFileSync(join(root,'package.json'),'utf8'));assert(packageJson.scripts?.['validate:phase7']==='node tools/validate_phase7.mjs','validate:phase7 script missing.');assert(testRunnerCoversGroup(root,packageJson,'role-play'),'Role Play tests omitted.');
 const workflow=readFileSync(resolve(root,'../.github/workflows/deploy-demian-pages.yml'),'utf8');assert(workflow.includes('npm run validate:phase7'),'CI does not run validate:phase7.');
 const lock=readFileSync(join(root,'package-lock.json'),'utf8');assert(!/mirror-npm|runflare/i.test(lock),'package-lock references private mirror.');
-const phpFiles=walk(root,(f)=>extname(f)==='.php');for(const file of phpFiles){const check=spawnSync('php',['-l',file],{encoding:'utf8'});assert(check.status===0,`PHP syntax error: ${file}\n${check.stderr}`);}
+const phpFiles=lintPhpFiles(root,assert);
 if(failures.length){console.error(`Phase 7 validation failed (${failures.length}):`);failures.forEach((f)=>console.error(`- ${f}`));process.exit(1);}console.log(`Phase 7 source validation passed: ${jsFiles.length} JavaScript/MJS, ${phpFiles.length} PHP, ${BUILT_IN_ROLE_PLAY_CONTENT.dialogues.length} dialogues and ${BUILT_IN_ROLE_PLAY_CONTENT.quests.length} quests checked.`);

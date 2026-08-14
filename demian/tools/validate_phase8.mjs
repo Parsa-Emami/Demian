@@ -1,24 +1,14 @@
-import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { dirname, extname, join, resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { testRunnerCoversGroup } from './validation/testRunnerContract.mjs';
+import { walk, lintPhpFiles } from './validation/projectWalk.mjs';
 import manifest, { DEMIAN_CITY_MANIFEST_DEFINITION } from '../resources/js/game/games/open-world/data/DemianCityManifest.js';
 import { validateWorldManifest } from '../resources/js/game/games/open-world/world/WorldManifest.js';
 import WorldPartition from '../resources/js/game/games/open-world/world/WorldPartition.js';
 
 const root = resolve(import.meta.dirname, '..');
 const failures = [];
-function walk(directory, predicate = () => true) {
-    if (!existsSync(directory)) return [];
-    const output = [];
-    for (const entry of readdirSync(directory)) {
-        const file = join(directory, entry);
-        const stat = statSync(file);
-        if (stat.isDirectory()) output.push(...walk(file, predicate));
-        else if (predicate(file)) output.push(file);
-    }
-    return output;
-}
 function assert(condition, message) { if (!condition) failures.push(message); }
 
 const jsFiles = [
@@ -128,11 +118,7 @@ assert(workflow.includes('npm run validate:phase8'), 'CI does not run validate:p
 const lock = readFileSync(join(root, 'package-lock.json'), 'utf8');
 assert(!/mirror-npm|runflare/i.test(lock), 'package-lock references a private mirror.');
 
-const phpFiles = walk(root, (file) => extname(file) === '.php');
-for (const file of phpFiles) {
-    const check = spawnSync('php', ['-l', file], { encoding: 'utf8' });
-    assert(check.status === 0, `PHP syntax error: ${file}\n${check.stderr}`);
-}
+const phpFiles = lintPhpFiles(root, assert);
 
 if (failures.length > 0) {
     console.error(`Phase 8 validation failed (${failures.length}):`);

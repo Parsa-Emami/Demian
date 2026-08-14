@@ -1,21 +1,11 @@
-import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { dirname, extname, join, resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { testRunnerCoversGroup } from './validation/testRunnerContract.mjs';
+import { walk, lintPhpFiles } from './validation/projectWalk.mjs';
 
 const root = resolve(import.meta.dirname, '..');
 const failures = [];
-
-function walk(directory, predicate = () => true) {
-    const files = [];
-    for (const entry of readdirSync(directory)) {
-        const absolute = join(directory, entry);
-        const stat = statSync(absolute);
-        if (stat.isDirectory()) files.push(...walk(absolute, predicate));
-        else if (predicate(absolute)) files.push(absolute);
-    }
-    return files;
-}
 
 function assert(condition, message) {
     if (!condition) failures.push(message);
@@ -127,11 +117,7 @@ assert(workflow.includes('npm run validate:phase5'), 'CI does not run validate:p
 const lockText = readFileSync(join(root, 'package-lock.json'), 'utf8');
 assert(!/mirror-npm|runflare/i.test(lockText), 'package-lock references a private mirror');
 
-const phpFiles = walk(root, (file) => extname(file) === '.php');
-for (const file of phpFiles) {
-    const result = spawnSync('php', ['-l', file], { encoding: 'utf8' });
-    assert(result.status === 0, `PHP syntax error: ${file}\n${result.stderr}`);
-}
+const phpFiles = lintPhpFiles(root, assert);
 
 if (failures.length > 0) {
     console.error(`Phase 5 validation failed (${failures.length}):`);

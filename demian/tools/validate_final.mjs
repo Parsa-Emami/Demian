@@ -1,22 +1,11 @@
-import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { dirname, extname, join, resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
+import { walk, lintPhpFiles } from './validation/projectWalk.mjs';
 
 const root = resolve(import.meta.dirname, '..');
 const projectRoot = resolve(root, '..');
 const failures = [];
-
-function walk(directory, predicate = () => true) {
-    if (!existsSync(directory)) return [];
-    const output = [];
-    for (const entry of readdirSync(directory)) {
-        const file = join(directory, entry);
-        const stat = statSync(file);
-        if (stat.isDirectory()) output.push(...walk(file, predicate));
-        else if (predicate(file)) output.push(file);
-    }
-    return output;
-}
 
 function assert(condition, message) {
     if (!condition) failures.push(message);
@@ -230,11 +219,7 @@ const phaseMarkers = [
 ];
 phaseMarkers.forEach((file) => assert(existsSync(join(root, file)), `Cumulative phase implementation missing: ${file}`));
 
-const phpFiles = walk(root, (file) => extname(file) === '.php');
-for (const file of phpFiles) {
-    const check = spawnSync('php', ['-l', file], { encoding: 'utf8' });
-    assert(check.status === 0, `PHP syntax error: ${file}\n${check.stderr}`);
-}
+const phpFiles = lintPhpFiles(root, assert);
 
 if (failures.length > 0) {
     console.error(`Final project validation failed (${failures.length}):`);
