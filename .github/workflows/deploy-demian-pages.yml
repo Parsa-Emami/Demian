@@ -21,11 +21,10 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
 
-    # اگر کل فایل‌های لاراول شما (مثل فایل artisan) داخل پوشه demian قرار دارند، 
-    # سه خط زیر را از کامنت در بیاورید تا اکشن در مسیر درست اجرا شود:
-    # defaults:
-    #   run:
-    #     working-directory: ./demian
+    # تنظیم پوشه پیش‌فرض برای اجرای دستورات با توجه به ساختار پروژه شما
+    defaults:
+      run:
+        working-directory: ./demian
 
     steps:
       - name: 🛒 Checkout repository
@@ -34,7 +33,7 @@ jobs:
       - name: 🐘 Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.2' # در صورت نیاز به 8.3 تغییر دهید
+          php-version: '8.2'
           tools: composer:v2
           extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, bcmath, soap, intl, gd, exif, iconv, imagick
 
@@ -105,9 +104,8 @@ jobs:
       - name: 📤 Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          # اگر در بالا defaults.run.working-directory را فعال کردید، 
-          # مسیر زیر باید به './demian/_site' تغییر کند.
-          path: './_site' 
+          # مسیر آپلود آرتیفکت با توجه به تنظیمات working-directory
+          path: './demian/_site' 
 
       - name: 🌍 Deploy to GitHub Pages
         id: deployment
