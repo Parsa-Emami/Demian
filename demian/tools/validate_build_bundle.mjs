@@ -34,10 +34,28 @@ if (!appEntry?.isEntry || typeof appEntry.file !== 'string') {
     fail('resources/js/app.js is not a valid Vite entry.');
 }
 
+// With `rolldownOptions.output.codeSplitting: false` (see vite.config.js),
+// Vite/Rolldown inlines every dynamic import() into the single entry chunk,
+// but the manifest still records a `dynamicImports` metadata entry for the
+// entry itself (self-referencing "resources/js/app.js" -> ["resources/js/app.js"]).
+// That's just bookkeeping about what the source *syntactically* imports
+// dynamically - it does not mean a separate deployment chunk was emitted.
+//
+// The real signal for "did this dynamic import actually produce a separate
+// chunk file" is whether the imported module maps to a *different* physical
+// output file than the importer. So instead of failing on any non-empty
+// `dynamicImports` array, compare output files.
+const outputFileBySource = new Map(
+    Object.entries(manifest ?? {}).map(([source, entry]) => [source, entry?.file]),
+);
+
 for (const [source, entry] of Object.entries(manifest ?? {})) {
     const dynamicImports = Array.isArray(entry?.dynamicImports) ? entry.dynamicImports : [];
-    if (dynamicImports.length > 0) {
-        fail(`${source} still emits dynamic deployment chunks: ${dynamicImports.join(', ')}`);
+    const externalDynamicImports = dynamicImports.filter(
+        (imported) => outputFileBySource.get(imported) !== entry?.file,
+    );
+    if (externalDynamicImports.length > 0) {
+        fail(`${source} still emits dynamic deployment chunks: ${externalDynamicImports.join(', ')}`);
     }
 }
 
