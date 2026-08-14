@@ -45,17 +45,20 @@ jobs:
         with:
           node-version: '20'
 
-      - name: 🛠️ Install NPM Dependencies & Build Vite
-        run: |
-          npm ci
-          npm run build
-
       - name: ⚙️ Prepare Laravel Environment
         run: |
           cp .env.example .env
           php artisan key:generate
           touch database/database.sqlite
           php artisan migrate --force
+          # تنظیم مسیرهای پایه برای ساب‌فولدر گیت‌هاب پیجز
+          sed -i 's|APP_URL=http://localhost|APP_URL=https://parsa-emami.github.io/Demian|g' .env
+          echo "ASSET_URL=https://parsa-emami.github.io/Demian" >> .env
+
+      - name: 🛠️ Install NPM Dependencies & Build Vite
+        run: |
+          npm ci
+          npm run build
 
       - name: 🚀 Build Demian static demo
         run: |
