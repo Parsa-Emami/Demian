@@ -33,4 +33,17 @@ test('the shared renderer owns a nearest-neighbour logical backbuffer', async ()
     assert.match(source, /imageSmoothingEnabled = false/);
     assert.match(source, /imageRendering: 'pixelated'/);
     assert.doesNotMatch(source, /WebGLRenderer/);
+    assert.match(source, /lowLatency = false/);
+    assert.match(source, /rendererLowLatency/);
+    assert.match(source, /\? \{ alpha: false, desynchronized: true \}/);
+});
+
+test('primary Canvas2D rendering does not request the low-latency compositor by default', async () => {
+    const source = await readFile(url('resources/js/game/services/RendererService.js'), 'utf8');
+    const defaultOptions = source.indexOf('lowLatency = false');
+    const conditionalLowLatency = source.indexOf('? { alpha: false, desynchronized: true }');
+    const stableDefault = source.indexOf(': { alpha: false }');
+    assert.ok(defaultOptions >= 0);
+    assert.ok(conditionalLowLatency > defaultOptions);
+    assert.ok(stableDefault > conditionalLowLatency);
 });

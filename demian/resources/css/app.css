@@ -1797,7 +1797,8 @@ body,
     display: block;
     width: 100%;
     height: 100%;
-    will-change: transform;
+    /* Do not force the main canvas into a separate GPU-composited layer. */
+    will-change: auto;
 }
 
 .virtual-stick,
@@ -4811,9 +4812,10 @@ body {
 .demian-scene canvas[data-renderer="pixel-2d"] {
     image-rendering: pixelated;
     image-rendering: crisp-edges;
-    object-fit: contain;
+    /* RendererService already performs aspect-fit into the visible canvas. */
+    object-fit: fill;
     background: #17130f;
-    transform: translateZ(0);
+    transform: none;
 }
 
 .demian-scene[data-renderer-backend="pixel-2d"]::after {

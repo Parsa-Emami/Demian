@@ -34,13 +34,26 @@ function createCanvas() {
  * WebGL/context-loss failure mode from the visible game pipeline.
  */
 export default class RendererService {
-    constructor(container, { referenceHeight = DEFAULT_REFERENCE_HEIGHT } = {}) {
+    constructor(container, { referenceHeight = DEFAULT_REFERENCE_HEIGHT, lowLatency = false } = {}) {
         if (!(container instanceof HTMLElement)) throw new Error('Game renderer container was not found.');
 
         this.container = assignUiLayer(container, UI_LAYER.CANVAS);
         this.canvas = createCanvas();
-        this.context2d = this.canvas.getContext('2d', { alpha: false, desynchronized: true });
+
+        // Keep the primary game canvas on the normal compositor path by default.
+        // `desynchronized: true` can place Canvas2D on Chrome's low-latency swap-chain
+        // path; on some Windows/GPU combinations that surface can become black while
+        // DOM HUDs and ordinary 2D canvases (for example the minimap) still render.
+        // Low latency remains opt-in for controlled environments, never the default.
+        const contextOptions = lowLatency
+            ? { alpha: false, desynchronized: true }
+            : { alpha: false };
+        this.context2d = this.canvas.getContext('2d', contextOptions)
+            ?? this.canvas.getContext('2d');
         if (!this.context2d) throw new Error('Canvas 2D is not available in this browser.');
+
+        const contextAttributes = this.context2d.getContextAttributes?.();
+        this.container.dataset.rendererLowLatency = contextAttributes?.desynchronized ? 'on' : 'off';
 
         this.bufferCanvas = document.createElement('canvas');
         this.bufferContext = this.bufferCanvas.getContext('2d', { alpha: false });
