@@ -28,7 +28,11 @@ class RouteRegistrationTest extends TestCase
     {
         $this->get('/')
             ->assertOk()
-            ->assertSee('Character manager');
+            ->assertViewIs('demian')
+            ->assertSee('Character manager')
+            ->assertSee('data-character-manager', false)
+            ->assertSee('data-demian-scene', false)
+            ->assertSee('data-runtime-version="9.1.0-atomic-pixel2d"', false);
 
         $this->getJson('/api/v1/events/active')
             ->assertOk()

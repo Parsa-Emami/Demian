@@ -2,13 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use Illuminate\Contracts\View\View;
 
 class CharacterStudioController extends Controller
 {
-    public function index()
+    public function index(): View
     {
-        // برگرداندن مستقیم متن برای پاس شدن تست و جلوگیری از خطایِ نبودن فایل view
-        return response('Welcome to the Character manager studio.', 200);
+        return view('demian');
     }
 }
