@@ -487,6 +487,8 @@ export default class OpenWorldGame extends BaseGame {
         this.context.eventBus.emit('studio:frame', {
             state: this.characterManager.state(),
             speed: this.characterManager.speed(),
+            position,
+            cameraMode: this.cameraController?.mode ?? 'OVERVIEW',
             chunkStats,
             aiStats: this.aiBudget.stats(),
             pixelRatio: this.pixelRatio,

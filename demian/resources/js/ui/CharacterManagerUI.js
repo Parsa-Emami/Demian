@@ -377,7 +377,24 @@ export default class CharacterManagerUI {
         this.preview.onload = () => URL.revokeObjectURL(url);
     }
 
-    renderHud({ state, speed, position, cameraMode }) {
+    renderHud(frame = {}) {
+        const state = typeof frame.state === 'string' && frame.state
+            ? frame.state
+            : 'loading';
+        const speed = Number.isFinite(Number(frame.speed))
+            ? Number(frame.speed)
+            : 0;
+        const position = frame.position ?? {};
+        const positionX = Number.isFinite(Number(position.x))
+            ? Number(position.x)
+            : 0;
+        const positionZ = Number.isFinite(Number(position.z))
+            ? Number(position.z)
+            : 0;
+        const cameraMode = typeof frame.cameraMode === 'string' && frame.cameraMode
+            ? frame.cameraMode
+            : 'OVERVIEW';
+
         this.stateLabels.forEach((label) => {
             label.textContent = state.toUpperCase();
         });
@@ -387,7 +404,7 @@ export default class CharacterManagerUI {
         });
 
         this.positionLabels.forEach((label) => {
-            label.textContent = `${position.x.toFixed(1)} / ${position.z.toFixed(1)}`;
+            label.textContent = `${positionX.toFixed(1)} / ${positionZ.toFixed(1)}`;
         });
 
         this.cameraLabels.forEach((label) => {

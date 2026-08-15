@@ -47,3 +47,21 @@ test('primary Canvas2D rendering does not request the low-latency compositor by 
     assert.ok(conditionalLowLatency > defaultOptions);
     assert.ok(stableDefault > conditionalLowLatency);
 });
+
+test('Open World studio frame payload satisfies CharacterManagerUI HUD contract', async () => {
+    const source = await readFile(url('resources/js/game/games/open-world/OpenWorldGame.js'), 'utf8');
+    const frameEmit = source.slice(source.indexOf("this.context.eventBus.emit('studio:frame'"), source.indexOf("this.context.eventBus.emit('studio:frame'") + 700);
+    assert.match(frameEmit, /position,/);
+    assert.match(frameEmit, /cameraMode:\s*this\.cameraController\?\.mode\s*\?\?\s*'OVERVIEW'/);
+});
+
+test('CharacterManagerUI HUD tolerates incomplete telemetry without breaking the game frame', async () => {
+    const source = await readFile(url('resources/js/ui/CharacterManagerUI.js'), 'utf8');
+    const hudStart = source.indexOf('renderHud(frame = {})');
+    const hud = source.slice(hudStart, source.indexOf('renderActiveCharacter', hudStart));
+    assert.match(hud, /const position = frame\.position \?\? \{\}/);
+    assert.match(hud, /Number\.isFinite\(Number\(position\.x\)\)/);
+    assert.match(hud, /Number\.isFinite\(Number\(position\.z\)\)/);
+    assert.match(hud, /'OVERVIEW'/);
+});
+
