@@ -18,7 +18,8 @@
         "validate:build": "node tools/validate_build_bundle.mjs",
         "validate:character-art": "python3 tools/audit_character_sprite_packs.py",
         "validate:character-art:strict": "python3 tools/audit_character_sprite_packs.py --strict",
-        "repair:character-art": "python3 tools/repair_known_character_artifacts.py && python3 tools/repair_parsa_sprite_corruption.py && python3 tools/audit_character_sprite_packs.py --write-metadata --strict"
+        "repair:character-art": "python3 tools/repair_known_character_artifacts.py && python3 tools/repair_parsa_sprite_corruption.py && python3 tools/audit_character_sprite_packs.py --write-metadata --strict",
+        "art:8bit": "python3 tools/rebuild_8bit_character_art.py"
     },
     "devDependencies": {
         "@tailwindcss/vite": "^4.0.0",

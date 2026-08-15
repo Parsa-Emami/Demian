@@ -65,3 +65,28 @@ test('CharacterManagerUI HUD tolerates incomplete telemetry without breaking the
     assert.match(hud, /'OVERVIEW'/);
 });
 
+
+test('V10 renderer presents the logical backbuffer at an integer pixel scale', async () => {
+    const source = await readFile(url('resources/js/game/services/RendererService.js'), 'utf8');
+    assert.match(source, /choosePixelGrid\(/);
+    assert.match(source, /presentationScale/);
+    assert.match(source, /this\.logicalWidth \* this\.presentationScale/);
+    assert.match(source, /this\.logicalHeight \* this\.presentationScale/);
+    assert.match(source, /data(?:set)?\.pixelGrid|dataset\.pixelGrid/);
+});
+
+test('Open World applies hard-edged 8-bit scene finishing after actors are drawn', async () => {
+    const source = await readFile(url('resources/js/game/games/open-world/render/OpenWorldPixelRenderer.js'), 'utf8');
+    const queue = source.indexOf('this.queue.flush(ctx)');
+    const effects = source.indexOf('drawPixelSceneEffects(ctx');
+    assert.ok(queue >= 0 && effects > queue);
+    assert.match(source, /setZoom\(15/);
+});
+
+test('World map derives district labels from chunk centers instead of optional manifest fields', async () => {
+    const source = await readFile(url('resources/js/game/games/open-world/ui/WorldMap.js'), 'utf8');
+    assert.match(source, /districtCenter\(districtId\)/);
+    assert.match(source, /chunk\.center\.x/);
+    assert.match(source, /chunk\.center\.z/);
+    assert.match(source, /district\?\.color/);
+});

@@ -1,4 +1,5 @@
 import { UI_LAYER, assignUiLayer } from '../../../ui/UiLayer.js';
+import { PIXEL_PALETTE as P } from '../../../rendering2d/PixelPalette.js';
 
 function canvasSize(canvas) {
     const dpr = Math.min(globalThis.devicePixelRatio || 1, 2);
@@ -11,6 +12,8 @@ function canvasSize(canvas) {
     }
     return { width, height, dpr };
 }
+
+function pixel(value) { return Math.round(Number(value) || 0); }
 
 export default class MiniMap {
     constructor({ host, manifest, discovery, onOpenMap = null } = {}) {
@@ -35,14 +38,21 @@ export default class MiniMap {
         this.root.setAttribute('aria-label', 'بازکردن نقشه جهان');
         this.root.innerHTML = '<canvas aria-hidden="true"></canvas><span>MAP · M</span>';
         this.canvas = this.root.querySelector('canvas');
-        this.context = this.canvas.getContext('2d');
+        this.context = this.canvas.getContext('2d', { alpha: false });
+        if (this.context) this.context.imageSmoothingEnabled = false;
         this.root.addEventListener('click', this.onClick);
         this.host.append(this.root);
         this.draw();
     }
 
     update({ position, forward, activeChunkIds = [] } = {}) {
-        if (position) this.player = { x: Number(position.x) || 0, z: Number(position.z) || 0, forward: forward ?? this.player.forward };
+        if (position) {
+            this.player = {
+                x: Number(position.x) || 0,
+                z: Number(position.z) || 0,
+                forward: forward ?? this.player.forward,
+            };
+        }
         this.activeChunks = new Set(activeChunkIds);
         this.draw();
     }
@@ -59,44 +69,73 @@ export default class MiniMap {
         if (!this.context || !this.canvas) return;
         const { width, height } = canvasSize(this.canvas);
         const context = this.context;
-        context.clearRect(0, 0, width, height);
-        context.fillStyle = 'rgba(3, 6, 18, .94)';
+        context.imageSmoothingEnabled = false;
+        context.fillStyle = P.void;
         context.fillRect(0, 0, width, height);
-        const bounds = this.manifest.bounds;
+
+        // Hard 8-bit grid behind chunks.
+        context.fillStyle = 'rgba(67,230,233,.05)';
+        const grid = Math.max(8, Math.round(width / 8));
+        for (let x = 0; x < width; x += grid) context.fillRect(x, 0, 1, height);
+        for (let y = 0; y < height; y += grid) context.fillRect(0, y, width, 1);
+
         for (const chunk of this.manifest.chunks) {
             const topLeft = this.project({ x: chunk.bounds.minX, z: chunk.bounds.maxZ }, width, height);
             const bottomRight = this.project({ x: chunk.bounds.maxX, z: chunk.bounds.minZ }, width, height);
             const discovered = this.discovery.isChunkDiscovered(chunk.id);
-            context.fillStyle = discovered ? (this.activeChunks.has(chunk.id) ? 'rgba(34,211,238,.35)' : 'rgba(107,114,128,.2)') : 'rgba(0,0,0,.76)';
-            context.fillRect(topLeft.x + 1, topLeft.y + 1, bottomRight.x - topLeft.x - 2, bottomRight.y - topLeft.y - 2);
-            context.strokeStyle = discovered ? 'rgba(148,163,184,.35)' : 'rgba(20,24,39,.9)';
-            context.strokeRect(topLeft.x, topLeft.y, bottomRight.x - topLeft.x, bottomRight.y - topLeft.y);
+            const active = this.activeChunks.has(chunk.id);
+            const x = pixel(topLeft.x) + 1;
+            const y = pixel(topLeft.y) + 1;
+            const w = Math.max(1, pixel(bottomRight.x - topLeft.x) - 2);
+            const h = Math.max(1, pixel(bottomRight.y - topLeft.y) - 2);
+
+            context.fillStyle = discovered
+                ? (active ? '#164c5a' : '#202b3f')
+                : '#05070d';
+            context.fillRect(x, y, w, h);
+            context.strokeStyle = discovered
+                ? (active ? P.cyan : '#52627a')
+                : '#151c2c';
+            context.lineWidth = active ? 2 : 1;
+            context.strokeRect(pixel(topLeft.x) + 0.5, pixel(topLeft.y) + 0.5, Math.max(1, pixel(bottomRight.x - topLeft.x) - 1), Math.max(1, pixel(bottomRight.y - topLeft.y) - 1));
         }
+
         for (const point of this.manifest.savePoints) {
             if (!this.discovery.isSavePointUnlocked(point.id)) continue;
             const projected = this.project(point.position, width, height);
-            context.fillStyle = '#34d399';
-            context.beginPath();
-            context.arc(projected.x, projected.y, Math.max(2, width * 0.014), 0, Math.PI * 2);
-            context.fill();
+            const x = pixel(projected.x);
+            const y = pixel(projected.y);
+            const size = Math.max(3, pixel(width * 0.014));
+            context.fillStyle = P.green;
+            context.fillRect(x - size, y - size, size * 2 + 1, size * 2 + 1);
+            context.fillStyle = P.white;
+            context.fillRect(x, y - Math.max(1, size - 1), 1, Math.max(3, size * 2 - 1));
+            context.fillRect(x - Math.max(1, size - 1), y, Math.max(3, size * 2 - 1), 1);
         }
+
         const player = this.project(this.player, width, height);
-        const angle = Math.atan2(this.player.forward?.z ?? 1, this.player.forward?.x ?? 0);
-        const size = Math.max(4, width * 0.035);
-        context.save();
-        context.translate(player.x, player.y);
-        context.rotate(-angle + Math.PI / 2);
-        context.fillStyle = '#f472b6';
-        context.beginPath();
-        context.moveTo(0, -size);
-        context.lineTo(size * 0.65, size * 0.7);
-        context.lineTo(-size * 0.65, size * 0.7);
-        context.closePath();
-        context.fill();
-        context.restore();
-        context.strokeStyle = 'rgba(244,114,182,.75)';
+        const x = pixel(player.x);
+        const y = pixel(player.y);
+        const fx = Number(this.player.forward?.x) || 0;
+        const fz = Number(this.player.forward?.z) || 0;
+        const stepX = Math.sign(fx);
+        const stepY = -Math.sign(fz);
+        const marker = Math.max(3, pixel(width * 0.022));
+
+        context.fillStyle = P.pinkDark;
+        context.fillRect(x - marker, y - marker, marker * 2 + 1, marker * 2 + 1);
+        context.fillStyle = P.pink;
+        context.fillRect(x - marker + 1, y - marker + 1, marker * 2 - 1, marker * 2 - 1);
+        context.fillStyle = P.white;
+        context.fillRect(x, y, 1, 1);
+        context.fillRect(x + stepX * marker, y + stepY * marker, Math.max(1, Math.abs(stepY)), Math.max(1, Math.abs(stepX)));
+
+        context.strokeStyle = P.pink;
+        context.lineWidth = 2;
         context.strokeRect(1, 1, width - 2, height - 2);
-        void bounds;
+        context.strokeStyle = P.cyanDark;
+        context.lineWidth = 1;
+        context.strokeRect(4.5, 4.5, Math.max(1, width - 9), Math.max(1, height - 9));
     }
 
     dispose() {

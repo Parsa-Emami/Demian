@@ -21,7 +21,7 @@ test('CanvasTexture images without HTMLImageElement.complete remain drawable', (
     assert.equal(isDrawableImage({ complete: true, naturalWidth: 0, naturalHeight: 0 }), false);
 });
 
-test('sprite drawing is foot-pivot anchored and respects presentation offsets', () => {
+test('sprite drawing is foot-pivot anchored, pixel-snapped and respects presentation offsets', () => {
     const camera = {
         pixelsPerUnit: 10,
         worldToScreen: () => ({ x: 100, y: 120 }),
@@ -41,7 +41,9 @@ test('sprite drawing is foot-pivot anchored and respects presentation offsets', 
     assert.equal(metrics.pivotX, 0.5);
     assert.equal(metrics.pivotY, 0.96);
     assert.equal(metrics.anchorX, 101);
-    assert.equal(metrics.anchorY, 117.5);
+    assert.equal(metrics.anchorY, 118);
+    assert.equal(Number.isInteger(metrics.frameWidth), true);
+    assert.equal(Number.isInteger(metrics.frameHeight), true);
     assert.equal(metrics.rotation, 0.12);
     assert.ok(metrics.frameHeight > 40);
 });

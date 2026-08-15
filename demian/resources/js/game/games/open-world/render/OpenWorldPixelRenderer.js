@@ -3,6 +3,7 @@ import CafePixelRenderer from '../../../rendering2d/CafePixelRenderer.js';
 import PixelRenderQueue from '../../../rendering2d/PixelRenderQueue.js';
 import { drawSpriteCharacter } from '../../../rendering2d/PixelActorRenderer.js';
 import { PIXEL_PALETTE as P } from '../../../rendering2d/PixelPalette.js';
+import { drawPixelSceneEffects } from '../../../rendering2d/PixelSceneEffects.js';
 import { CAFE_STATIC_COLLIDERS } from '../../../shared/cafe/CafeReferenceLayout.js';
 
 export default class OpenWorldPixelRenderer {
@@ -26,7 +27,7 @@ export default class OpenWorldPixelRenderer {
     setMode(mode, target, { immediate = false } = {}) {
         this.mode = mode === 'FOLLOW' ? 'FOLLOW' : 'OVERVIEW';
         if (this.mode === 'FOLLOW') {
-            this.camera.setZoom(12, { immediate });
+            this.camera.setZoom(15, { immediate });
             this.camera.follow(target, { immediate });
         } else {
             const logical = this.context.renderer.logicalDimensions();
@@ -77,7 +78,7 @@ export default class OpenWorldPixelRenderer {
         if (this.mode === 'FOLLOW') this.camera.follow(focus);
         this.camera.update(deltaTime);
 
-        const ctx = this.context.renderer.beginFrame('#17130f');
+        const ctx = this.context.renderer.beginFrame(P.voidBlue);
         this.cafe.draw(ctx, this.camera, { atmosphere: 'day' });
         this.drawChunks(ctx, loadedChunks, activeChunkIds);
         this.drawSavePoints(ctx, discovery);
@@ -95,6 +96,11 @@ export default class OpenWorldPixelRenderer {
             });
         }
         this.queue.flush(ctx);
+        drawPixelSceneEffects(ctx, logical.width, logical.height, {
+            scanlines: true,
+            frame: true,
+            vignette: true,
+        });
         return this.context.renderer.present();
     }
 
