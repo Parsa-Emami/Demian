@@ -30,8 +30,11 @@ export function spriteDrawMetrics(camera, entity, frame) {
         * (Number(visual.width) || 1);
     const scaleY = (worldMetrics.frameHeight * camera.pixelsPerUnit / Math.max(1, frame.h))
         * (Number(visual.height) || 1);
-    const frameWidth = frame.w * scaleX;
-    const frameHeight = frame.h * scaleY;
+    // Keep sprite presentation locked to the logical pixel grid. Fractional
+    // destination rectangles introduce shimmer/blur while walking, running and
+    // jumping even when image smoothing is disabled.
+    const frameWidth = Math.max(1, Math.round(frame.w * scaleX));
+    const frameHeight = Math.max(1, Math.round(frame.h * scaleY));
     const worldOffsetX = (Number(visual.x) || 0) * camera.pixelsPerUnit;
     const worldOffsetY = ((Number(visual.bob) || 0) + (Number(visual.y) || 0)) * camera.pixelsPerUnit;
 
@@ -43,10 +46,10 @@ export function spriteDrawMetrics(camera, entity, frame) {
         bodyHeight,
         frameWidth,
         frameHeight,
-        anchorX: screen.x + worldOffsetX,
-        anchorY: screen.y - worldOffsetY,
+        anchorX: Math.round(screen.x + worldOffsetX),
+        anchorY: Math.round(screen.y - worldOffsetY),
         rotation: Number(visual.tilt) || 0,
-        labelY: screen.y - bodyHeight - 8,
+        labelY: Math.round(screen.y - bodyHeight - 8),
     };
 }
 

@@ -377,17 +377,24 @@ export default class CharacterManagerUI {
         this.preview.onload = () => URL.revokeObjectURL(url);
     }
 
-    renderHud({ state, speed, position, cameraMode }) {
+    renderHud(frame = {}) {
+        const position = frame.position ?? {};
+        const state = String(frame.state ?? 'idle');
+        const speed = Number(frame.speed);
+        const x = Number.isFinite(Number(position.x)) ? Number(position.x) : 0;
+        const z = Number.isFinite(Number(position.z)) ? Number(position.z) : 0;
+        const cameraMode = String(frame.cameraMode ?? 'OVERVIEW');
+
         this.stateLabels.forEach((label) => {
             label.textContent = state.toUpperCase();
         });
 
         this.speedLabels.forEach((label) => {
-            label.textContent = speed.toFixed(2);
+            label.textContent = Number.isFinite(speed) ? speed.toFixed(2) : '0.00';
         });
 
         this.positionLabels.forEach((label) => {
-            label.textContent = `${position.x.toFixed(1)} / ${position.z.toFixed(1)}`;
+            label.textContent = `${x.toFixed(1)} / ${z.toFixed(1)}`;
         });
 
         this.cameraLabels.forEach((label) => {
