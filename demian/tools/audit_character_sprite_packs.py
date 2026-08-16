@@ -35,10 +35,10 @@ def occupancy(image: Image.Image, frame: dict[str, int]) -> float:
     return opaque / max(1, frame["w"] * frame["h"])
 
 
-def audit_pack(character: str, variant: str, write_metadata: bool) -> dict[str, object]:
+def audit_pack(character: str, variant: str, write_metadata: bool, pack_version: int = 5) -> dict[str, object]:
     directory = ROOT / "public" / "assets" / "characters" / character
-    atlas_path = directory / f"{character}-atlas-v5-{variant}.json"
-    image_path = directory / f"{character}-spritesheet-v5-{variant}.png"
+    atlas_path = directory / f"{character}-atlas-v{pack_version}-{variant}.json"
+    image_path = directory / f"{character}-spritesheet-v{pack_version}-{variant}.png"
     atlas = json.loads(atlas_path.read_text(encoding="utf-8"))
     image = Image.open(image_path).convert("RGBA")
 
@@ -47,6 +47,7 @@ def audit_pack(character: str, variant: str, write_metadata: bool) -> dict[str, 
         raise ValueError(f"{character}/{variant}: atlas size does not match PNG size")
 
     frame_occupancy: list[float] = []
+    idle_width_ratios: list[float] = []
     idle_height_ratios: list[float] = []
     edge_to_edge_frames = 0
     for name, frame in atlas.get("frames", {}).items():
@@ -58,6 +59,7 @@ def audit_pack(character: str, variant: str, write_metadata: bool) -> dict[str, 
         if width_ratio >= 0.995 and height_ratio >= 0.995:
             edge_to_edge_frames += 1
         if name.startswith("idle_") and height_ratio > 0:
+            idle_width_ratios.append(width_ratio)
             idle_height_ratios.append(height_ratio)
 
     median_occupancy = statistics.median(frame_occupancy) if frame_occupancy else 0.0
@@ -66,10 +68,13 @@ def audit_pack(character: str, variant: str, write_metadata: bool) -> dict[str, 
         full_frames >= max(3, len(frame_occupancy) // 2)
         or edge_to_edge_frames >= max(3, len(frame_occupancy) // 2)
     )
-    reference_ratio = statistics.median(idle_height_ratios) if idle_height_ratios else 0.86
-    reference_ratio = min(0.98, max(0.62, reference_ratio))
+    reference_width_ratio = statistics.median(idle_width_ratios) if idle_width_ratios else 0.72
+    reference_height_ratio = statistics.median(idle_height_ratios) if idle_height_ratios else 0.86
+    reference_width_ratio = min(0.98, max(0.42, reference_width_ratio))
+    reference_height_ratio = min(0.98, max(0.62, reference_height_ratio))
 
-    atlas.setdefault("render", {})["referenceBodyHeightRatio"] = round(reference_ratio, 4)
+    atlas.setdefault("render", {})["referenceBodyWidthRatio"] = round(reference_width_ratio, 4)
+    atlas.setdefault("render", {})["referenceBodyHeightRatio"] = round(reference_height_ratio, 4)
     atlas.setdefault("meta", {})["artIntegrity"] = "invalid" if invalid_background else "valid"
     if invalid_background:
         atlas["meta"]["artIntegrityReason"] = "opaque-or-baked-background-detected"
@@ -86,7 +91,8 @@ def audit_pack(character: str, variant: str, write_metadata: bool) -> dict[str, 
         "median_occupancy": median_occupancy,
         "full_frames": full_frames,
         "edge_to_edge_frames": edge_to_edge_frames,
-        "reference_body_height_ratio": reference_ratio,
+        "reference_body_width_ratio": reference_width_ratio,
+        "reference_body_height_ratio": reference_height_ratio,
         "valid": not invalid_background,
     }
 
@@ -94,11 +100,12 @@ def audit_pack(character: str, variant: str, write_metadata: bool) -> dict[str, 
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--write-metadata", action="store_true")
+    parser.add_argument("--version", type=int, default=5, help="Character pack version to audit (default: 5).")
     parser.add_argument("--strict", action="store_true", help="Exit non-zero when corrupted art is detected.")
     args = parser.parse_args()
 
     results = [
-        audit_pack(character, variant, args.write_metadata)
+        audit_pack(character, variant, args.write_metadata, args.version)
         for character in CHARACTERS
         for variant in VARIANTS
     ]
@@ -109,7 +116,7 @@ def main() -> int:
         print(
             f"{status:7} {result['character']:9}/{result['variant']:7} "
             f"frames={result['frames']:3} occupancy={result['median_occupancy']:.3f} "
-            f"body={result['reference_body_height_ratio']:.3f}"
+            f"body={result['reference_body_width_ratio']:.3f}x{result['reference_body_height_ratio']:.3f}"
         )
 
     if invalid:

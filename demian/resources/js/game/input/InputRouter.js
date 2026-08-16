@@ -2,10 +2,6 @@ import { INPUT_CONTEXTS } from './InputContexts';
 
 const ACTION_HAPTICS = new Set([
     'jump',
-    'attack',
-    'combo',
-    'uppercut',
-    'cast',
     'dash',
     'slide',
     'dodge',

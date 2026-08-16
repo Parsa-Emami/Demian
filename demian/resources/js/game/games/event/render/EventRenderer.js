@@ -1,5 +1,6 @@
+import CanvasCharacterRoster from '../../../characters/runtime/CanvasCharacterRoster.js';
 import CafeGameRenderer2D from '../../../rendering2d/CafeGameRenderer2D.js';
-import { drawPixelActor } from '../../../rendering2d/PixelActorRenderer.js';
+import { drawPixelActor, drawSpriteCharacter } from '../../../rendering2d/PixelActorRenderer.js';
 import { cssColor, PIXEL_PALETTE as P } from '../../../rendering2d/PixelPalette.js';
 
 export default class EventRenderer extends CafeGameRenderer2D {
@@ -7,7 +8,14 @@ export default class EventRenderer extends CafeGameRenderer2D {
         super(context, map, { follow: true, atmosphere: 'night', zoom: 11 });
         this.definition = null;
         this.modifiers = {};
+        this.characters = new CanvasCharacterRoster(context.services.characterVisuals);
         this.resize();
+    }
+
+    async preloadCharacters() {
+        await this.characters.preload([
+            { key: 'player', actorId: 'player', player: true, index: 0 },
+        ]);
     }
 
     configure(definition, modifiers = {}) {
@@ -37,6 +45,15 @@ export default class EventRenderer extends CafeGameRenderer2D {
         ctx.globalAlpha = 1;
     }
 
+    drawPlayer(ctx, player, deltaTime) {
+        const avatar = this.characters.sync('player', player, deltaTime);
+        if (avatar) {
+            drawSpriteCharacter(ctx, this.camera, avatar, { player: true });
+            return;
+        }
+        drawPixelActor(ctx, this.camera, player, { color: P.cyan, player: true, label: '' });
+    }
+
     render(world, deltaTime = 0) {
         if (!world?.player) return;
         const ctx = this.begin({ target: world.player.position, deltaTime, atmosphere: 'night' });
@@ -44,9 +61,26 @@ export default class EventRenderer extends CafeGameRenderer2D {
         for (const item of world.collectibles?.values?.() ?? []) this.drawCollectible(ctx, item);
         for (const enemy of world.enemies?.values?.() ?? []) {
             if (enemy.defeated) continue;
-            this.queue.add({ layer: 20, y: enemy.position.z, draw: () => drawPixelActor(ctx, this.camera, enemy, { color: P.red, label: enemy.health > 1 ? `${enemy.health}` : '', size: 0.92 }) });
+            this.queue.add({
+                layer: 20,
+                y: enemy.position.z,
+                draw: () => drawPixelActor(ctx, this.camera, enemy, {
+                    color: P.red,
+                    label: enemy.health > 1 ? `${enemy.health}` : '',
+                    size: 0.92,
+                }),
+            });
         }
-        this.queue.add({ layer: 21, y: world.player.position.z, draw: () => drawPixelActor(ctx, this.camera, world.player, { color: P.cyan, player: true, label: '' }) });
+        this.queue.add({
+            layer: 21,
+            y: world.player.position.z,
+            draw: () => this.drawPlayer(ctx, world.player, deltaTime),
+        });
         this.end(ctx);
+    }
+
+    dispose() {
+        this.characters.dispose();
+        super.dispose();
     }
 }

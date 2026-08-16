@@ -7,10 +7,7 @@ import {
     characterRuntimeVariants,
     orderedSpriteVariants,
 } from '../characters/runtime/CharacterRuntimePolicy.js';
-
-function builtinAssetUrl(relativePath) {
-    return new URL(relativePath.replace(/^\/+/, ''), document.baseURI).toString();
-}
+import { builtinCharacterAssetPair } from '../characters/CharacterVisualContract.js';
 
 const BUILTIN_DEFINITIONS = Object.freeze([
     Object.freeze({
@@ -77,20 +74,9 @@ const BUILTIN_DEFINITIONS = Object.freeze([
 ]);
 
 const BUILTIN_SLUGS = new Set(BUILTIN_DEFINITIONS.map((character) => character.slug));
-const SPRITE_VARIANTS = Object.freeze(['mobile', 'compact', 'desktop']);
 
 function builtinAssetPair(slug, variant = 'mobile') {
-    const suffix = SPRITE_VARIANTS.includes(variant) ? variant : 'mobile';
-
-    return {
-        spriteUrl: builtinAssetUrl(
-            `assets/characters/${slug}/${slug}-spritesheet-v5-${suffix}.png`
-        ),
-        atlasUrl: builtinAssetUrl(
-            `assets/characters/${slug}/${slug}-atlas-v5-${suffix}.json`
-        ),
-        variant: suffix,
-    };
+    return builtinCharacterAssetPair(slug, variant);
 }
 
 function cloneBuiltin(character, spriteVariant = 'mobile') {
@@ -691,20 +677,7 @@ export default class CharacterManager {
                 const pair = builtinAssetPair(record.slug, variant);
                 add(pair.spriteUrl, pair.atlasUrl, pair.variant);
             });
-            add(record.sprite_url, record.atlas_url);
 
-            // V4 compatibility is intentionally last. It keeps older GitHub
-            // Pages deployments playable while a new hashed Vite bundle is
-            // propagating through the browser/CDN cache.
-            add(
-                builtinAssetUrl(
-                    `assets/characters/${record.slug}/${record.slug}-spritesheet-v4.png`
-                ),
-                builtinAssetUrl(
-                    `assets/characters/${record.slug}/${record.slug}-atlas.json`
-                ),
-                'legacy'
-            );
         } else {
             add(record.sprite_url, record.atlas_url, 'custom');
         }
@@ -776,25 +749,23 @@ export default class CharacterManager {
             meta: Object.freeze({ size: Object.freeze({ w: 48, h: 64 }), generatedFallback: true }),
             pivot: Object.freeze({ x: 0.5, y: 0.95 }),
             display: Object.freeze({ worldWidth: 3.75, worldHeight: 3.75 }),
-            render: Object.freeze({ referenceBodyHeightRatio: 0.86 }),
+            render: Object.freeze({ referenceBodyWidthRatio: 0.68, referenceBodyHeightRatio: 0.86 }),
             frames: Object.freeze({ fallback: frame }),
             animations: Object.freeze({
                 idle: animation,
                 walk: animation,
                 run: animation,
                 jump: animation,
-                attack: animation,
                 win: animation,
             }),
             fallbacks: Object.freeze({
-                breathe: 'idle', blink: 'idle', ready: 'idle', sprint: 'run',
-                skid: 'run', turn: 'walk', takeoff: 'jump', fall: 'jump',
-                land: 'jump', combo: 'attack', uppercut: 'attack', cast: 'attack',
-                charge: 'idle', hurt: 'attack', slide: 'run', celebrate: 'win',
-                salute: 'win', hover: 'jump', guitar: 'attack',
+                breathe: 'idle', blink: 'idle', ready: 'idle', tiptoe: 'walk',
+                sprint: 'run', skid: 'run', turn: 'walk', takeoff: 'jump',
+                hop: 'jump', fall: 'jump', land: 'jump', slide: 'run',
+                celebrate: 'win', salute: 'win', hover: 'jump', guitar: 'win',
                 guitar_loop: 'win', dance: 'win', wave: 'win', pose: 'win',
-                sleep: 'idle', taunt: 'attack', dodge: 'run', crouch: 'idle',
-                laugh: 'win', spin: 'win',
+                sleep: 'idle', taunt: 'win', dodge: 'run', crouch: 'idle',
+                laugh: 'win', spin: 'win', dash: 'run',
             }),
         });
 

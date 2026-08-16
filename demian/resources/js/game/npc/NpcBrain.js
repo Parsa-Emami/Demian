@@ -3,12 +3,6 @@ import { WORLD_CONFIG } from '../world/WorldConfig';
 
 const EMPTY_ACTIONS = Object.freeze({
     jump: false,
-    attack: false,
-    combo: false,
-    uppercut: false,
-    cast: false,
-    charge: false,
-    hurt: false,
     dash: false,
     slide: false,
     dodge: false,

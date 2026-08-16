@@ -16,10 +16,11 @@
         "validate:phase8": "node tools/validate_phase8.mjs",
         "validate:final": "node tools/validate_final.mjs",
         "validate:build": "node tools/validate_build_bundle.mjs",
-        "validate:character-art": "python3 tools/audit_character_sprite_packs.py",
-        "validate:character-art:strict": "python3 tools/audit_character_sprite_packs.py --strict",
-        "repair:character-art": "python3 tools/repair_known_character_artifacts.py && python3 tools/repair_parsa_sprite_corruption.py && python3 tools/audit_character_sprite_packs.py --write-metadata --strict",
-        "art:8bit": "python3 tools/rebuild_8bit_character_art.py"
+        "validate:character-art": "python3 tools/audit_character_sprite_packs.py --version 6",
+        "validate:character-art:strict": "python3 tools/audit_character_sprite_packs.py --version 6 --strict",
+        "repair:character-art": "npm run build:character-art:v6",
+        "build:character-art:v6": "python3 tools/build_arcade_animation_pack_v6.py && python3 tools/audit_character_sprite_packs.py --version 6 --write-metadata --strict && python3 tools/validate_arcade_animation_pack_v6.py",
+        "validate:character-pack:v6": "python3 tools/validate_arcade_animation_pack_v6.py"
     },
     "devDependencies": {
         "@tailwindcss/vite": "^4.0.0",

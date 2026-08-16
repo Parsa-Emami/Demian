@@ -110,6 +110,7 @@ export default class EventGame extends BaseGame {
             timeoutMs: 2500,
         });
         this.renderer = new EventRenderer(context, this.map);
+        await this.renderer.preloadCharacters();
         this.hud = new EventHud({
             root: context.root,
             animation: context.animation,

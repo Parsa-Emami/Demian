@@ -4,6 +4,7 @@ import InputRouter from '../input/InputRouter';
 import GameRegistry from '../registry/GameRegistry';
 import { GAME_DEFINITIONS } from '../registry/GameDefinitions';
 import GameRuntime from '../runtime/GameRuntime';
+import CharacterVisualService from '../characters/runtime/CharacterVisualService.js';
 import AnimationService from '../services/AnimationService';
 import RendererService from '../services/RendererService';
 import CollisionWorld from '../shared/collision/CollisionWorld';
@@ -51,6 +52,10 @@ export default class GameApplication {
         ];
         this.rendererService = new RendererService(container);
         this.performanceProfile = new PerformanceProfile(this.rendererService.renderer);
+        this.characterVisuals = new CharacterVisualService({
+            eventBus: this.eventBus,
+            performanceProfile: this.performanceProfile,
+        });
         this.settings = new SettingsStore();
         this.animation = new AnimationService({
             reducedMotion: this.settings.resolvedReducedMotion(),
@@ -347,6 +352,7 @@ export default class GameApplication {
                 interaction: this.interaction,
                 navigation: this.navigation,
                 storyJournal: this.storyJournal,
+                characterVisuals: this.characterVisuals,
             }),
         });
     }
@@ -458,6 +464,7 @@ export default class GameApplication {
         this.interaction.dispose();
         this.storyJournalSubscriptions?.forEach((unsubscribe) => unsubscribe());
         this.storyJournal.dispose();
+        this.characterVisuals.dispose();
         this.navigation.dispose();
         this.collision.dispose();
         this.rendererService.dispose();

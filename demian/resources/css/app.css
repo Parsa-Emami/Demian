@@ -901,7 +901,7 @@ canvas,
     color: #ddd6fe;
 }
 
-.touch-action--attack {
+.touch-action--emote {
     border-color: rgba(255, 79, 216, 0.44);
     color: #fbcfe8;
 }
@@ -1283,13 +1283,13 @@ body {
     grid-template-columns: repeat(3, minmax(0, 1fr));
     grid-template-areas:
         "run jump jump"
-        "dash attack more";
+        "dash emote more";
     gap: 0.48rem;
 }
 
 .touch-controller__actions .touch-action--run { grid-area: run; }
 .touch-controller__actions .touch-action--jump { grid-area: jump; }
-.touch-controller__actions .touch-action--attack { grid-area: attack; }
+.touch-controller__actions .touch-action--emote { grid-area: emote; }
 .touch-controller__actions .touch-action--dash { grid-area: dash; }
 .touch-controller__actions .touch-action--more { grid-area: more; }
 
@@ -1330,7 +1330,7 @@ body {
         rgba(8, 10, 29, 0.9);
 }
 
-.touch-action--attack {
+.touch-action--emote {
     background:
         radial-gradient(circle at 50% 25%, rgba(255, 255, 255, 0.15), transparent 35%),
         linear-gradient(145deg, rgba(255, 79, 216, 0.34), rgba(157, 23, 77, 0.22)),
@@ -1797,8 +1797,7 @@ body,
     display: block;
     width: 100%;
     height: 100%;
-    /* Do not force the main canvas into a separate GPU-composited layer. */
-    will-change: auto;
+    will-change: transform;
 }
 
 .virtual-stick,
@@ -4812,10 +4811,9 @@ body {
 .demian-scene canvas[data-renderer="pixel-2d"] {
     image-rendering: pixelated;
     image-rendering: crisp-edges;
-    /* RendererService already performs aspect-fit into the visible canvas. */
-    object-fit: fill;
+    object-fit: contain;
     background: #17130f;
-    transform: none;
+    transform: translateZ(0);
 }
 
 .demian-scene[data-renderer-backend="pixel-2d"]::after {
@@ -4824,442 +4822,4 @@ body {
 
 .demian-scene[data-open-world-render-state="error"]::after {
     content: "رندر دوبعدی موقتاً متوقف شد؛ بازی در حال بازیابی فریم بعدی است.";
-}
-
-/* ========================================================================== 
-   Demian V10 · PREMIUM 8-BIT ART DIRECTION
-   Hard-edged, pixel-perfect UI that matches the Canvas2D world renderer.
-   ========================================================================== */
-:root {
-    --pixel-void: #050816;
-    --pixel-ink: #0b1020;
-    --pixel-panel: #10162a;
-    --pixel-panel-hi: #17213a;
-    --pixel-line: #31415f;
-    --pixel-line-hi: #43e6e9;
-    --pixel-cyan: #43e6e9;
-    --pixel-pink: #ff6fb5;
-    --pixel-gold: #ffd166;
-    --pixel-purple: #a986ff;
-    --pixel-green: #52d273;
-    --pixel-white: #fff4d6;
-    --pixel-muted: #9aa8bd;
-    --pixel-shadow: #02040b;
-    --pixel-step-shadow: 4px 4px 0 var(--pixel-shadow);
-    --pixel-step-shadow-small: 2px 2px 0 var(--pixel-shadow);
-}
-
-html,
-body {
-    background: var(--pixel-void);
-}
-
-body {
-    text-rendering: optimizeSpeed;
-}
-
-.manager-stage {
-    background:
-        linear-gradient(90deg, rgba(67, 230, 233, 0.025) 1px, transparent 1px),
-        linear-gradient(0deg, rgba(67, 230, 233, 0.02) 1px, transparent 1px),
-        var(--pixel-void);
-    background-size: 16px 16px;
-}
-
-.manager-stage::before {
-    background: repeating-linear-gradient(
-        180deg,
-        rgba(255, 244, 214, 0.018) 0,
-        rgba(255, 244, 214, 0.018) 1px,
-        transparent 1px,
-        transparent 4px
-    );
-    mix-blend-mode: normal;
-    opacity: 0.48;
-}
-
-.manager-stage::after {
-    background:
-        linear-gradient(90deg, rgba(5, 8, 22, 0.28), transparent 7%, transparent 93%, rgba(5, 8, 22, 0.28)),
-        linear-gradient(0deg, rgba(5, 8, 22, 0.24), transparent 8%, transparent 92%, rgba(5, 8, 22, 0.24));
-}
-
-.arcade-screen-bezel {
-    inset: 6px;
-    border: 2px solid #263555;
-    border-radius: 2px;
-    box-shadow:
-        0 0 0 2px #050816 inset,
-        0 0 0 3px rgba(67, 230, 233, 0.18) inset,
-        4px 4px 0 rgba(2, 4, 11, 0.72);
-}
-
-.manager-sidebar {
-    border-inline-end: 2px solid #243451;
-    background:
-        linear-gradient(90deg, rgba(169, 134, 255, 0.05) 1px, transparent 1px),
-        #090d1c;
-    background-size: 8px 8px;
-}
-
-.arcade-panel,
-.shell-page,
-.shell-modal,
-.results-panel,
-.game-card,
-.character-card,
-.hud-panel,
-.help-panel {
-    border: 2px solid var(--pixel-line);
-    border-radius: 2px;
-    background: var(--pixel-panel);
-    box-shadow:
-        var(--pixel-step-shadow),
-        0 0 0 1px rgba(255, 244, 214, 0.04) inset;
-    backdrop-filter: none;
-}
-
-.arcade-panel::before,
-.shell-page::before,
-.shell-modal::before,
-.results-panel::before,
-.game-card::before,
-.character-card::before {
-    border-radius: 0;
-}
-
-.arcade-title,
-.shell-page__header h2,
-.shell-modal h2,
-.results-panel h2,
-.game-card h3 {
-    letter-spacing: 0;
-    text-shadow:
-        2px 0 0 #5a3da6,
-        0 2px 0 #5a3da6,
-        2px 2px 0 #10162a;
-}
-
-.arcade-label,
-.shell-kicker,
-.open-world-minimap span,
-.open-world-streaming-hud small,
-.mobile-status-chip small {
-    color: var(--pixel-cyan);
-    text-shadow: 1px 1px 0 #102033;
-}
-
-.manager-chip,
-.mobile-status-chip {
-    border: 1px solid #31415f;
-    border-radius: 2px;
-    background: #11192d;
-    box-shadow: var(--pixel-step-shadow-small);
-}
-
-.manager-chip--pink { border-color: #9c376b; color: #ffc0dd; background: #271326; }
-.manager-chip--cyan { border-color: #117e91; color: #bffcff; background: #0a2631; }
-.manager-chip--yellow { border-color: #9b6b18; color: #ffe49a; background: #2d2410; }
-
-.arcade-button,
-.shell-button,
-.shell-icon-button,
-.scroll-rail-button,
-.game-card__action,
-.open-world-map__panel button,
-.role-play-hud__buttons button,
-.event-touch-actions button,
-.hide-seek-touch-actions button {
-    border: 2px solid #344461;
-    border-radius: 2px;
-    background: #121a30;
-    color: var(--pixel-white);
-    box-shadow: var(--pixel-step-shadow-small);
-    text-shadow: 1px 1px 0 #050816;
-    backdrop-filter: none;
-    transition:
-        transform 70ms steps(2, end),
-        border-color 70ms steps(2, end),
-        background-color 70ms steps(2, end);
-}
-
-.arcade-button--cyan,
-.shell-button--primary,
-.game-card__action:hover,
-.open-world-map__panel button:not(:disabled):hover {
-    border-color: #1797a7;
-    background: #123142;
-    color: #d7ffff;
-}
-
-.arcade-button--focus {
-    border-color: #9c7b22;
-    background: #302713;
-    color: #fff0a6;
-}
-
-.arcade-button:hover,
-.shell-button:hover,
-.shell-icon-button:hover,
-.scroll-rail-button:hover,
-.game-card__action:hover {
-    transform: translate(-1px, -1px);
-    box-shadow: 3px 3px 0 var(--pixel-shadow);
-}
-
-.arcade-button:active,
-.shell-button:active,
-.shell-icon-button:active,
-.scroll-rail-button:active,
-.game-card__action:active {
-    transform: translate(2px, 2px);
-    box-shadow: none;
-}
-
-button:focus-visible,
-input:focus-visible,
-select:focus-visible {
-    outline: 2px solid var(--pixel-gold);
-    outline-offset: 3px;
-}
-
-.character-card {
-    overflow: visible;
-}
-
-.character-card:hover,
-.character-card.is-active,
-.character-card.is-rail-current {
-    border-color: var(--pixel-cyan);
-    background: #111d31;
-    box-shadow:
-        4px 4px 0 #02040b,
-        0 0 0 1px #164c5a inset;
-}
-
-.character-card__preview {
-    border: 2px solid #263856;
-    border-radius: 0;
-    background:
-        linear-gradient(90deg, rgba(67, 230, 233, 0.05) 1px, transparent 1px),
-        linear-gradient(0deg, rgba(67, 230, 233, 0.05) 1px, transparent 1px),
-        #070b18;
-    background-size: 8px 8px;
-    box-shadow: 2px 2px 0 #02040b inset;
-}
-
-.character-card__preview img,
-[data-sheet-preview] {
-    image-rendering: pixelated;
-    image-rendering: crisp-edges;
-    filter: saturate(1.08) contrast(1.08);
-}
-
-.touch-controller__movement,
-.touch-controller__joystick,
-.joystick-base {
-    border-radius: 0;
-    clip-path: polygon(25% 0, 75% 0, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0 75%, 0 25%);
-}
-
-.touch-controller__movement {
-    border: 2px solid #24536c;
-    background: rgba(8, 19, 35, 0.9);
-    box-shadow:
-        4px 4px 0 #02040b,
-        0 0 0 2px rgba(67, 230, 233, 0.06) inset;
-    backdrop-filter: none;
-}
-
-.touch-action {
-    border: 2px solid #3c4868;
-    border-radius: 2px;
-    background: #12192e;
-    box-shadow: 3px 3px 0 #02040b;
-    color: #e7ecff;
-    text-shadow: 1px 1px 0 #050816;
-    backdrop-filter: none;
-}
-
-.touch-action--primary,
-.touch-action--jump {
-    border-color: #6245a6;
-    background: #251b4a;
-}
-
-.touch-action--attack {
-    border-color: #9c376b;
-    background: #35162d;
-}
-
-.touch-action--dash,
-.touch-action--interact {
-    border-color: #14798a;
-    background: #0d2a35;
-}
-
-.touch-action.is-pressed,
-.touch-action:active {
-    transform: translate(2px, 2px);
-    box-shadow: none;
-}
-
-.stage-toolbar .arcade-panel,
-.stage-toolbar > div {
-    border-radius: 2px;
-}
-
-.open-world-minimap {
-    padding: 6px;
-    border: 2px solid #14798a;
-    border-radius: 2px;
-    background: #070d1c;
-    box-shadow:
-        4px 4px 0 #02040b,
-        0 0 0 1px rgba(67, 230, 233, 0.1) inset;
-    color: #bffcff;
-    backdrop-filter: none;
-}
-
-.open-world-minimap canvas {
-    border: 1px solid #253b58;
-    border-radius: 0;
-    background: #040813;
-    image-rendering: pixelated;
-}
-
-.open-world-streaming-hud {
-    gap: 6px;
-}
-
-.open-world-streaming-hud span {
-    padding: 7px 8px;
-    border: 2px solid #2b3956;
-    border-radius: 2px;
-    background: #090f20;
-    box-shadow: 2px 2px 0 #02040b;
-    backdrop-filter: none;
-}
-
-.open-world-streaming-hud b {
-    color: var(--pixel-white);
-    text-shadow: 1px 1px 0 #050816;
-}
-
-.open-world-map {
-    background:
-        repeating-linear-gradient(0deg, rgba(67, 230, 233, 0.025) 0 1px, transparent 1px 5px),
-        rgba(2, 4, 11, 0.94);
-    backdrop-filter: none;
-}
-
-.open-world-map__panel {
-    border: 3px solid #31415f;
-    border-radius: 2px;
-    background: #0b1122;
-    box-shadow:
-        8px 8px 0 #02040b,
-        0 0 0 2px #111c32 inset;
-}
-
-.open-world-map__panel header {
-    border-bottom: 2px solid #243451;
-    background: #10182c;
-}
-
-.open-world-map__panel footer {
-    border-top: 2px solid #243451;
-    background: #0d1426;
-}
-
-.open-world-map__canvas-wrap {
-    padding: 10px;
-    background: #060a15;
-}
-
-.open-world-map__canvas-wrap canvas {
-    border: 2px solid #263a59;
-    border-radius: 0;
-    background: #040813;
-    image-rendering: pixelated;
-}
-
-.game-shell,
-.shell-toast,
-.role-play-dialogue,
-.role-play-side-panel,
-.role-play-hud__top,
-.role-play-hud__objective,
-.event-hud__panel,
-.hide-seek-hud {
-    border-radius: 2px;
-}
-
-.shell-toast {
-    border: 2px solid #31415f;
-    background: #0d1426;
-    box-shadow: 3px 3px 0 #02040b;
-    backdrop-filter: none;
-}
-
-.game-card {
-    min-height: 280px;
-}
-
-.game-card__icon,
-.game-card__action,
-.settings-field,
-.settings-field select,
-.settings-toggle-grid label,
-.results-panel__stats div {
-    border-radius: 2px;
-}
-
-.game-card__glow,
-.cafe-menu__ambient {
-    display: none;
-}
-
-.settings-field,
-.settings-toggle-grid label,
-.results-panel__stats div {
-    border: 1px solid #2a3854;
-    background: #0d1426;
-}
-
-.demian-scene canvas[data-renderer="pixel-2d"] {
-    background: var(--pixel-void);
-    image-rendering: pixelated;
-    image-rendering: crisp-edges;
-}
-
-.demian-scene[data-renderer-backend="pixel-2d"] {
-    background: #050816;
-}
-
-.manager-shell[data-performance-tier="performance"] .arcade-panel,
-.manager-shell[data-performance-tier="performance"] .open-world-minimap,
-.manager-shell[data-performance-tier="performance"] .open-world-streaming-hud span {
-    backdrop-filter: none;
-}
-
-@media (max-width: 900px) {
-    .open-world-minimap {
-        border-radius: 2px;
-        box-shadow: 3px 3px 0 #02040b;
-    }
-
-    .open-world-map__panel {
-        border-radius: 2px;
-        box-shadow: 5px 5px 0 #02040b;
-    }
-
-    .arcade-panel,
-    .shell-page,
-    .shell-modal,
-    .results-panel,
-    .game-card,
-    .character-card {
-        box-shadow: 3px 3px 0 #02040b;
-    }
 }

@@ -104,6 +104,7 @@ export default class HideAndSeekGame extends BaseGame {
             onEvent: (event) => this.onMatchEvent(event),
         });
         this.renderer = new HideAndSeekRenderer(context, this.map);
+        await this.renderer.preloadCharacters();
         this.hud = new HideAndSeekHud({ root: context.root, animation: context.animation });
         this.hud.mount();
         this.prompt = new InteractionPrompt({

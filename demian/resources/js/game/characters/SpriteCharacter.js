@@ -8,14 +8,13 @@ import {
     directionProfile,
 } from './DirectionResolver';
 import { WORLD_CONFIG } from '../world/WorldConfig';
+import { characterFrameWorldSize } from './CharacterVisualContract.js';
+import {
+    characterPlaybackRate,
+    characterPresentationPose,
+} from './CharacterMotionProfile.js';
 
 const LOCKED_ACTIONS = new Set([
-    'attack',
-    'combo',
-    'uppercut',
-    'cast',
-    'charge',
-    'hurt',
     'win',
     'celebrate',
     'dash',
@@ -39,12 +38,6 @@ const LOCKED_ACTIONS = new Set([
 ]);
 
 const ACTIONS = Object.freeze([
-    { name: 'attack', duration: 0.5, velocityRetention: 0.18 },
-    { name: 'combo', duration: 0.78, velocityRetention: 0.08 },
-    { name: 'uppercut', duration: 0.7, velocityRetention: 0.08 },
-    { name: 'cast', duration: 0.9, velocityRetention: 0.05 },
-    { name: 'charge', duration: 1.15, velocityRetention: 0.02 },
-    { name: 'hurt', duration: 0.58, velocityRetention: 0.02 },
     { name: 'win', duration: 1.3, velocityRetention: 0.05 },
     { name: 'celebrate', duration: 1.8, velocityRetention: 0.04 },
     { name: 'dash', duration: 0.42, impulse: 12.8 },
@@ -140,9 +133,7 @@ export default class SpriteCharacter {
         });
 
         this.sprite = new THREE.Sprite(this.material);
-        const display = WORLD_CONFIG.characterDisplay ?? {};
-        this.baseWidth = Number(display.worldWidth ?? 3.75);
-        this.baseHeight = Number(display.worldHeight ?? 3.75);
+        this.applyAtlasVisualMetrics(atlas);
         const pivot = atlas.pivot ?? { x: 0.5, y: 0.96 };
 
         this.sprite.center.set(
@@ -197,7 +188,7 @@ export default class SpriteCharacter {
         });
         this.locator = new THREE.Sprite(this.locatorMaterial);
         this.locator.scale.setScalar(0.46 * this.scaleFactor);
-        this.locator.position.y = this.baseHeight + 0.42;
+        this.locator.position.y = this.bodyWorldHeight + 0.42;
         this.locator.renderOrder = 25;
         this.locator.visible = this.isPlayerControlled;
 
@@ -218,6 +209,22 @@ export default class SpriteCharacter {
             y: 0,
         };
         this.applySpawnPose(0);
+    }
+
+    applyAtlasVisualMetrics(atlas) {
+        const worldDisplay = WORLD_CONFIG.characterDisplay ?? {};
+        const atlasDisplay = atlas?.display ?? {};
+        const metrics = characterFrameWorldSize(atlas, {
+            worldWidth: Number(atlasDisplay.worldWidth ?? worldDisplay.worldWidth ?? 3.75),
+            worldHeight: Number(atlasDisplay.worldHeight ?? worldDisplay.worldHeight ?? 3.75),
+        });
+        this.bodyWorldWidth = metrics.bodyWidth;
+        this.bodyWorldHeight = metrics.bodyHeight;
+        this.baseWidth = metrics.frameWidth;
+        this.baseHeight = metrics.frameHeight;
+        if (this.sprite) this.sprite.scale.set(this.baseWidth, this.baseHeight, 1);
+        if (this.locator) this.locator.position.y = this.bodyWorldHeight + 0.42;
+        return metrics;
     }
 
     replaceVisualAssets(texture, atlas) {
@@ -244,6 +251,7 @@ export default class SpriteCharacter {
             Number(pivot.x ?? 0.5),
             THREE.MathUtils.clamp(1 - Number(pivot.y ?? 0.96), 0, 1)
         );
+        this.applyAtlasVisualMetrics(atlas);
 
         this.animator = new SpriteAnimator(this.texture, atlas);
         this.animator.setDirection(direction);
@@ -519,12 +527,7 @@ export default class SpriteCharacter {
         }
 
         const movementRatio = THREE.MathUtils.clamp(this.speed() / Math.max(this.runSpeed, 0.01), 0, 1.5);
-        const rate = this.state === 'walk'
-            ? THREE.MathUtils.lerp(0.78, 1.3, movementRatio)
-            : ['run', 'sprint'].includes(this.state)
-                ? THREE.MathUtils.lerp(0.86, 1.28, movementRatio)
-                : 1;
-        this.animator.setPlaybackRate(rate);
+        this.animator.setPlaybackRate(characterPlaybackRate(this.state, movementRatio));
         this.animator.update(deltaTime);
         this.effects.update(deltaTime, this.speed());
         this.speech.update(deltaTime);
@@ -762,146 +765,19 @@ export default class SpriteCharacter {
     }
 
     targetPresentation() {
-        const time = this.presentationTime;
-        const stateTime = this.stateTime;
-        const progress = this.animator.progress();
-        const depth = THREE.MathUtils.clamp(this.depthMotion, -1, 1);
-        const horizontal = THREE.MathUtils.clamp(this.horizontalMotion, -1, 1);
-        const target = { width: 1, height: 1, bob: 0, tilt: 0, x: 0, y: 0 };
-
-        if (['idle', 'breathe', 'blink', 'ready'].includes(this.state)) {
-            const breath = Math.sin(time * 3.25);
-            target.bob = breath * 0.038;
-            target.width += breath * 0.013;
-            target.height -= breath * 0.015;
-            target.tilt = Math.sin(time * 1.65) * 0.014;
-        } else if (this.state === 'walk') {
-            const cycle = stateTime * 10.5;
-            target.bob = Math.abs(Math.sin(cycle)) * 0.075;
-            target.width += Math.cos(cycle * 2) * 0.016;
-            target.height -= Math.cos(cycle * 2) * 0.018;
-            target.tilt = Math.sin(cycle) * 0.026 * this.facing - depth * 0.018;
-            target.x = horizontal * Math.sin(cycle) * 0.018;
-        } else if (['run', 'sprint'].includes(this.state)) {
-            const multiplier = this.state === 'sprint' ? 1.18 : 1;
-            const cycle = stateTime * 14.2 * multiplier;
-            target.bob = Math.abs(Math.sin(cycle)) * 0.11 * multiplier;
-            target.width += Math.cos(cycle * 2) * 0.026;
-            target.height -= Math.cos(cycle * 2) * 0.03;
-            target.tilt = -0.05 * this.facing + Math.sin(cycle) * 0.018 - depth * 0.025;
-            target.x = horizontal * 0.025;
-        } else if (['takeoff', 'jump', 'fall', 'hover'].includes(this.state)) {
-            const verticalRatio = THREE.MathUtils.clamp(this.jumpVelocity / this.jumpForce, -1, 1);
-            target.width += verticalRatio > 0 ? -0.045 : 0.055;
-            target.height += verticalRatio > 0 ? 0.065 : -0.045;
-            target.tilt = -this.velocity.x * 0.009 - depth * 0.02;
-        } else if (this.state === 'land') {
-            const impact = Math.sin(progress * Math.PI);
-            target.width += impact * 0.12;
-            target.height -= impact * 0.15;
-            target.y = -impact * 0.07;
-        } else if (['skid', 'slide'].includes(this.state)) {
-            const burst = Math.sin(progress * Math.PI);
-            target.width += burst * 0.12;
-            target.height -= burst * 0.09;
-            target.tilt = -0.13 * this.facing - depth * 0.05;
-            target.x = -this.facing * burst * 0.07;
-        } else if (['attack', 'combo', 'uppercut', 'cast'].includes(this.state)) {
-            const punch = Math.sin(progress * Math.PI);
-            const power = this.state === 'combo' ? 1.18 : this.state === 'uppercut' ? 1.1 : 1;
-            target.x = punch * 0.24 * this.facing * power;
-            target.tilt = -punch * 0.075 * this.facing;
-            target.width += punch * 0.06;
-            target.height -= punch * 0.038;
-            target.bob = punch * 0.055;
-        } else if (this.state === 'charge') {
-            const pulse = Math.sin(stateTime * 15);
-            target.width += pulse * 0.025;
-            target.height -= pulse * 0.025;
-            target.bob = Math.abs(pulse) * 0.045;
-        } else if (this.state === 'hurt') {
-            const shake = Math.sin(stateTime * 32) * (1 - progress);
-            target.x = shake * 0.12;
-            target.tilt = shake * 0.09;
-            target.width += 0.08 * (1 - progress);
-            target.height -= 0.08 * (1 - progress);
-        } else if (['win', 'celebrate'].includes(this.state)) {
-            const cycle = stateTime * 8.8;
-            target.bob = Math.abs(Math.sin(cycle)) * 0.14;
-            target.tilt = Math.sin(cycle * 0.5) * 0.045;
-            target.width += Math.cos(cycle) * 0.025;
-            target.height -= Math.cos(cycle) * 0.025;
-        } else if (this.state === 'dash') {
-            const burst = Math.sin(progress * Math.PI);
-            target.width += burst * 0.16;
-            target.height -= burst * 0.1;
-            target.tilt = -0.12 * this.facing - depth * 0.06;
-            target.x = -this.facing * 0.06;
-        } else if (this.state === 'dodge') {
-            const arc = Math.sin(progress * Math.PI);
-            target.width += arc * 0.12;
-            target.height -= arc * 0.16;
-            target.bob = arc * 0.16;
-            target.tilt = Math.sin(progress * Math.PI * 2) * 0.22 * this.facing;
-        } else if (this.state === 'dance') {
-            const cycle = stateTime * 9.5;
-            target.bob = Math.abs(Math.sin(cycle)) * 0.17;
-            target.x = Math.sin(cycle * 0.5) * 0.17;
-            target.tilt = Math.sin(cycle * 0.5) * 0.1;
-            target.width += Math.cos(cycle) * 0.04;
-            target.height -= Math.cos(cycle) * 0.04;
-        } else if (this.state === 'guitar') {
-            const riff = Math.sin(progress * Math.PI);
-            const pulse = Math.sin(stateTime * 14.5);
-            target.bob = Math.abs(pulse) * 0.12 + riff * 0.05;
-            target.x = Math.sin(stateTime * 7.5) * 0.05 * this.facing;
-            target.tilt = (-0.08 * this.facing) + Math.sin(stateTime * 5.5) * 0.05;
-            target.width += riff * 0.08;
-            target.height -= riff * 0.03;
-        } else if (['wave', 'salute'].includes(this.state)) {
-            const cycle = stateTime * 8;
-            target.bob = Math.abs(Math.sin(cycle * 0.5)) * 0.055;
-            target.tilt = Math.sin(cycle) * 0.05 * this.facing;
-            target.x = Math.sin(cycle * 0.5) * 0.035 * this.facing;
-        } else if (this.state === 'spin') {
-            const spin = progress * Math.PI * 4;
-            target.width = Math.max(0.08, Math.abs(Math.cos(spin)));
-            target.height += Math.sin(spin * 0.5) * 0.04;
-            target.bob = Math.abs(Math.sin(spin * 0.5)) * 0.09;
-            target.tilt = Math.sin(spin) * 0.055;
-        } else if (this.state === 'crouch') {
-            const settle = 1 - Math.exp(-stateTime * 10);
-            target.width += 0.1 * settle;
-            target.height -= 0.17 * settle;
-            target.y = -0.08 * settle;
-            target.tilt = -0.025 * this.facing;
-        } else if (this.state === 'laugh') {
-            const cycle = stateTime * 11.5;
-            target.bob = Math.abs(Math.sin(cycle)) * 0.1;
-            target.tilt = Math.sin(cycle * 0.5) * 0.04;
-            target.width += Math.cos(cycle) * 0.04;
-            target.height -= Math.cos(cycle) * 0.04;
-        } else if (this.state === 'pose') {
-            target.bob = Math.sin(stateTime * 3.1) * 0.028;
-            target.width += 0.03;
-            target.height += 0.035;
-            target.tilt = -0.035 * this.facing;
-        } else if (this.state === 'sleep') {
-            const sway = Math.sin(stateTime * 2.05);
-            target.bob = sway * 0.018;
-            target.tilt = (0.09 + sway * 0.025) * this.facing;
-            target.width += sway * 0.012;
-            target.height -= sway * 0.012;
-            target.y = -0.035;
-        } else if (this.state === 'taunt') {
-            const cycle = stateTime * 10.3;
-            target.x = Math.sin(cycle) * 0.08 * this.facing;
-            target.tilt = -Math.sin(cycle) * 0.065 * this.facing;
-            target.bob = Math.abs(Math.sin(cycle * 0.5)) * 0.065;
-            target.width += Math.cos(cycle) * 0.03;
-        }
-
-        return target;
+        return characterPresentationPose({
+            state: this.state,
+            presentationTime: this.presentationTime,
+            stateTime: this.stateTime,
+            progress: this.animator.progress(),
+            direction: this.direction,
+            facing: this.facing,
+            jumpVelocity: this.jumpVelocity,
+            jumpForce: this.jumpForce,
+            velocityX: this.velocity.x,
+            depthMotion: this.depthMotion,
+            horizontalMotion: this.horizontalMotion,
+        });
     }
 
     updatePresentation(deltaTime) {
@@ -959,7 +835,7 @@ export default class SpriteCharacter {
         const time = this.presentationTime;
         const locatorPulse = 1 + Math.sin(time * 5.4) * 0.13;
         this.locator.scale.setScalar(0.46 * this.scaleFactor * locatorPulse);
-        this.locator.position.y = this.baseHeight + 0.42 + Math.sin(time * 3.4) * 0.08;
+        this.locator.position.y = this.bodyWorldHeight + 0.42 + Math.sin(time * 3.4) * 0.08;
         this.locatorMaterial.opacity = 0.72 + Math.sin(time * 5.4) * 0.2;
 
         const ringPulse = 1 + Math.sin(time * 4.2) * 0.07;
@@ -973,13 +849,13 @@ export default class SpriteCharacter {
     focusPoint() {
         return new THREE.Vector3(
             this.group.position.x,
-            this.bodyRoot.position.y + this.baseHeight * 0.52,
+            this.bodyRoot.position.y + this.bodyWorldHeight * 0.52,
             this.group.position.z
         );
     }
 
     visualHeight() {
-        return this.baseHeight;
+        return this.bodyWorldHeight;
     }
 
     speed() {

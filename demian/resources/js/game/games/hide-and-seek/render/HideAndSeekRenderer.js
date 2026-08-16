@@ -1,14 +1,26 @@
+import CanvasCharacterRoster from '../../../characters/runtime/CanvasCharacterRoster.js';
 import CafeGameRenderer2D from '../../../rendering2d/CafeGameRenderer2D.js';
-import { drawPixelActor } from '../../../rendering2d/PixelActorRenderer.js';
+import { drawPixelActor, drawSpriteCharacter } from '../../../rendering2d/PixelActorRenderer.js';
 import { cssColor, PIXEL_PALETTE as P } from '../../../rendering2d/PixelPalette.js';
 
 const ROLE_COLORS = Object.freeze({ player: P.cyan, seeker: P.red, hider: P.purple, eliminated: '#475569' });
+const PARTICIPANT_IDS = Object.freeze(['player', 'npc-a', 'npc-b', 'npc-c']);
 
 export default class HideAndSeekRenderer extends CafeGameRenderer2D {
     constructor(context, map) {
         super(context, map, { follow: true, atmosphere: 'night', zoom: 11 });
         this.activeSpots = new Set();
+        this.characters = new CanvasCharacterRoster(context.services.characterVisuals);
         this.resize();
+    }
+
+    async preloadCharacters() {
+        await this.characters.preload(PARTICIPANT_IDS.map((actorId, index) => ({
+            key: actorId,
+            actorId,
+            player: actorId === 'player',
+            index: Math.max(0, index - 1),
+        })));
     }
 
     setSpotActive(spotId, active) {
@@ -43,6 +55,31 @@ export default class HideAndSeekRenderer extends CafeGameRenderer2D {
         ctx.fill();
     }
 
+    drawParticipant(ctx, participant, { playerId, seekerId, deltaTime }) {
+        const role = participant.id === seekerId ? 'seeker' : participant.id === playerId ? 'player' : 'hider';
+        const avatar = this.characters.sync(participant.id, participant, deltaTime);
+        const hidden = Boolean(participant.hidden || participant.hideSpotId || participant.spotId);
+        const label = role === 'seeker' ? 'SEEKER' : '';
+
+        if (avatar) {
+            drawSpriteCharacter(ctx, this.camera, avatar, {
+                player: participant.id === playerId,
+                eliminated: participant.eliminated,
+                opacity: hidden ? 0.42 : 1,
+                label,
+            });
+            return;
+        }
+
+        drawPixelActor(ctx, this.camera, participant, {
+            color: participant.eliminated ? ROLE_COLORS.eliminated : ROLE_COLORS[role],
+            player: participant.id === playerId,
+            eliminated: participant.eliminated,
+            hidden,
+            label,
+        });
+    }
+
     render(participants, { playerId, seekerId, deltaTime = 0 } = {}) {
         const player = participants.find((entry) => entry.id === playerId) ?? participants[0];
         const seeker = participants.find((entry) => entry.id === seekerId);
@@ -51,19 +88,18 @@ export default class HideAndSeekRenderer extends CafeGameRenderer2D {
         this.drawVisionCone(ctx, seeker);
 
         participants.forEach((participant) => {
-            const role = participant.id === seekerId ? 'seeker' : participant.id === playerId ? 'player' : 'hider';
             this.queue.add({
                 layer: 20,
                 y: participant.position?.z ?? 0,
-                draw: () => drawPixelActor(ctx, this.camera, participant, {
-                    color: participant.eliminated ? ROLE_COLORS.eliminated : ROLE_COLORS[role],
-                    player: participant.id === playerId,
-                    eliminated: participant.eliminated,
-                    hidden: Boolean(participant.hidden || participant.hideSpotId),
-                    label: role === 'seeker' ? 'SEEKER' : '',
-                }),
+                draw: () => this.drawParticipant(ctx, participant, { playerId, seekerId, deltaTime }),
             });
         });
         this.end(ctx);
+    }
+
+    dispose() {
+        this.characters.dispose();
+        this.activeSpots.clear();
+        super.dispose();
     }
 }

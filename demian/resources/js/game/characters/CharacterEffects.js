@@ -242,33 +242,6 @@ export default class CharacterEffects {
     onStateChanged(state, facing) {
         const position = this.owner.group.position.clone();
 
-        if (['attack', 'combo', 'uppercut', 'cast'].includes(state)) {
-            position.x += facing * 0.95;
-            position.y += 1.45;
-            this.spawn('slash', {
-                position,
-                scale: 1.65,
-                life: 0.42,
-                growth: 1.2,
-                spin: -facing * 1.9,
-            });
-
-            const burstCount = state === 'combo' ? 7 : state === 'cast' ? 9 : 4;
-            for (let index = 0; index < burstCount; index += 1) {
-                this.spawn('sparkle', {
-                    position,
-                    scale: 0.18 + index * 0.035,
-                    life: 0.42 + index * 0.05,
-                    velocity: new THREE.Vector3(
-                        facing * (0.8 + Math.random() * 1.2),
-                        0.8 + Math.random() * 1.3,
-                        (Math.random() - 0.5) * 0.7
-                    ),
-                    gravity: 2.2,
-                    spin: (Math.random() - 0.5) * 5,
-                });
-            }
-        }
 
         if (state === 'win' || state === 'celebrate') {
             for (let index = 0; index < 10; index += 1) {

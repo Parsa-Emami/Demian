@@ -635,8 +635,7 @@
                     <p><b class="text-white">WASD</b> 8-way move</p>
                     <p><b class="text-white">Shift</b> sprint</p>
                     <p><b class="text-white">Space</b> jump</p>
-                    <p><b class="text-white">E / J</b> hit / combo</p>
-                    <p><b class="text-white">K / L</b> uppercut / cast</p>
+                    <p><b class="text-white">K / L</b> salute / guitar</p>
                     <p><b class="text-white">X / U</b> dash / dodge</p>
                     <p><b class="text-white">Q / O</b> win / celebrate</p>
                     <p><b class="text-white">C / V</b> dance / wave</p>
@@ -645,7 +644,7 @@
                     <p><b class="text-white">T / Y</b> sleep / taunt</p>
                     <p><b class="text-white">H</b> random speech</p>
                     <p><b class="text-white">Enter</b> interact</p>
-                    <p><b class="text-white">F / R</b> camera</p>
+                    <p><b class="text-white">F / R</b> camera / focus</p>
                     <p><b class="text-white">M</b> world map</p>
                     <p><b class="text-white">F6</b> quick save</p>
                     <p><b class="text-white">Wheel</b> zoom</p>
@@ -675,15 +674,15 @@
                         class="mobile-action-tray"
                         aria-hidden="true"
                     >
-                        <button type="button" data-input-press="combo" class="touch-action touch-action--mini">COMBO</button>
-                        <button type="button" data-input-press="uppercut" class="touch-action touch-action--mini">UPPER</button>
-                        <button type="button" data-input-press="cast" class="touch-action touch-action--mini">MAGIC</button>
+                        <button type="button" data-input-press="guitar" class="touch-action touch-action--mini">GUITAR</button>
+                        <button type="button" data-input-press="salute" class="touch-action touch-action--mini">SALUTE</button>
+                        <button type="button" data-input-press="laugh" class="touch-action touch-action--mini">LAUGH</button>
                         <button type="button" data-input-press="dodge" class="touch-action touch-action--mini">DODGE</button>
                         <button type="button" data-input-press="slide" class="touch-action touch-action--mini">SLIDE</button>
                         <button type="button" data-input-press="win" class="touch-action touch-action--mini">WIN</button>
                         <button type="button" data-input-press="celebrate" class="touch-action touch-action--mini">PARTY</button>
                         <button type="button" data-input-press="dance" class="touch-action touch-action--mini">DANCE</button>
-                        <button type="button" data-input-press="wave" class="touch-action touch-action--mini">WAVE</button>
+                        <button type="button" data-input-press="pose" class="touch-action touch-action--mini">POSE</button>
                         <button type="button" data-input-press="spin" class="touch-action touch-action--mini">SPIN</button>
                         <button type="button" data-input-press="speak" class="touch-action touch-action--mini touch-action--speak">SAY</button>
                         <button type="button" data-input-press="taunt" class="touch-action touch-action--mini">TAUNT</button>
@@ -699,8 +698,8 @@
                         <button type="button" data-input-press="jump" class="touch-action touch-action--jump touch-action--primary">
                             <span>JUMP</span><small>▲</small>
                         </button>
-                        <button type="button" data-input-press="attack" class="touch-action touch-action--attack touch-action--primary">
-                            <span>HIT</span><small>✦</small>
+                        <button type="button" data-input-press="wave" class="touch-action touch-action--emote touch-action--primary">
+                            <span>WAVE</span><small>✦</small>
                         </button>
                         <button type="button" data-input-press="dash" class="touch-action touch-action--dash">
                             <span>DASH</span><small>»</small>
