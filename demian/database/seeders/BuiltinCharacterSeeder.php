@@ -89,6 +89,26 @@ class BuiltinCharacterSeeder extends Seeder
                     ],
                 ]
             );
+
+
+            Character::query()->updateOrCreate(
+                ['slug' => 'mojtaba'],
+                [
+                    'name' => 'MOJTABA / مجتبی',
+                    'sprite_sheet_path' => 'assets/characters/mojtaba/mojtaba-spritesheet-v5-mobile.png',
+                    'atlas_path' => 'assets/characters/mojtaba/mojtaba-atlas-v5-mobile.json',
+                    'is_builtin' => true,
+                    'is_active' => false,
+                    'settings' => [
+                        'walk_speed' => 3.5,
+                        'run_speed' => 6.8,
+                        'sprint_speed' => 7.45,
+                        'jump_force' => 6.7,
+                        'air_control' => 0.57,
+                        'scale' => 1,
+                    ],
+                ]
+            );
         });
     }
 }

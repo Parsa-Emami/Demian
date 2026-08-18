@@ -71,6 +71,20 @@ const BUILTIN_DEFINITIONS = Object.freeze([
             signature_action: 'guitar',
         },
     }),
+    Object.freeze({
+        id: 'builtin-mojtaba',
+        name: 'MOJTABA / مجتبی',
+        slug: 'mojtaba',
+        is_active: false,
+        settings: {
+            walk_speed: 3.5,
+            run_speed: 6.8,
+            sprint_speed: 7.45,
+            jump_force: 6.7,
+            air_control: 0.57,
+            scale: 1,
+        },
+    }),
 ]);
 
 const BUILTIN_SLUGS = new Set(BUILTIN_DEFINITIONS.map((character) => character.slug));
@@ -163,7 +177,7 @@ export default class CharacterManager {
         if (this.lastBootWarning) {
             this.eventBus.emit('character:warning', {
                 message:
-                    'ارتباط دیتابیس برقرار نبود؛ تیام، روناک، امیررضا و پارسا از فایل‌های داخلی اجرا شدند.',
+                    'ارتباط دیتابیس برقرار نبود؛ تیام، روناک، امیررضا، پارسا و مجتبی از فایل‌های داخلی اجرا شدند.',
             });
         }
 
@@ -695,6 +709,7 @@ export default class CharacterManager {
             ronak: '#f472b6',
             amirreza: '#fbbf24',
             parsa: '#ef4444',
+            mojtaba: '#34d399',
         }[record.slug] ?? '#a78bfa';
 
         context.imageSmoothingEnabled = false;

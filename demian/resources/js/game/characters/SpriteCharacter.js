@@ -162,6 +162,7 @@ export default class SpriteCharacter {
         const selectionRingColor = {
             amirreza: 0x67e8f9,
             parsa: 0xfbbf24,
+            mojtaba: 0x34d399,
         }[character.slug] ?? 0xff66d9;
 
         this.ringMaterial = new THREE.MeshBasicMaterial({

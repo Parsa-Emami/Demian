@@ -17,7 +17,7 @@ from typing import Iterable
 from PIL import Image
 
 ROOT = Path(__file__).resolve().parents[1]
-CHARACTERS = ("tiam", "ronak", "amirreza", "parsa")
+CHARACTERS = ("tiam", "ronak", "amirreza", "parsa", "mojtaba")
 COLUMNS = 21
 ROWS = 12
 VARIANTS = {"desktop": 256, "mobile": 192, "compact": 128}

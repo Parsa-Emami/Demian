@@ -10,7 +10,7 @@ from pathlib import Path
 from PIL import Image
 
 ROOT = Path(__file__).resolve().parents[1]
-CHARACTERS = ("tiam", "ronak", "amirreza", "parsa")
+CHARACTERS = ("tiam", "ronak", "amirreza", "parsa", "mojtaba")
 VARIANTS = ("desktop", "mobile", "compact")
 ALPHA_THRESHOLD = 8
 OPAQUE_FRAME_RATIO = 0.94
