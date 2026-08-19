@@ -92,6 +92,29 @@ class BuiltinCharacterSeeder extends Seeder
                 ]
             );
 
+
+            Character::query()->updateOrCreate(
+                ['slug' => 'iman'],
+                [
+                    'name' => 'IMAN / ایمان',
+                    'sprite_sheet_path' => 'assets/characters/iman/iman-spritesheet-v6-mobile.png',
+                    'atlas_path' => 'assets/characters/iman/iman-atlas-v6-mobile.json',
+                    'is_builtin' => true,
+                    'is_active' => false,
+                    'settings' => [
+                        'walk_speed' => 3.75,
+                        'run_speed' => 7.15,
+                        'sprint_speed' => 7.9,
+                        'jump_force' => 6.95,
+                        'air_control' => 0.6,
+                        'scale' => 1,
+                        'role_title' => 'ANCHOR / CORE',
+                        'tagline' => 'Reliable, strong, and team-first',
+                        'signature_action' => 'guard',
+                    ],
+                ]
+            );
+
             Character::query()->updateOrCreate(
                 ['slug' => 'parsa'],
                 [

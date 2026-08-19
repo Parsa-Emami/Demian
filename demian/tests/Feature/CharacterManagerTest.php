@@ -33,6 +33,11 @@ class CharacterManagerTest extends TestCase
                 'slug' => 'darya',
                 'name' => 'DARYA / دریا',
                 'is_builtin' => true,
+            ])
+            ->assertJsonFragment([
+                'slug' => 'iman',
+                'name' => 'IMAN / ایمان',
+                'is_builtin' => true,
             ]);
     }
 
