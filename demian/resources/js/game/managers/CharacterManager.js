@@ -53,25 +53,6 @@ const BUILTIN_DEFINITIONS = Object.freeze([
         },
     }),
     Object.freeze({
-        id: 'builtin-darya',
-        name: 'DARYA / دریا',
-        slug: 'darya',
-        is_active: false,
-        settings: {
-            walk_speed: 3.55,
-            run_speed: 6.9,
-            sprint_speed: 7.6,
-            jump_force: 6.8,
-            air_control: 0.58,
-            scale: 1,
-            role_title: 'CAT COMPANION',
-            tagline: 'Darya + Pishi · always together',
-            signature_action: 'companion',
-            companion: 'pishi',
-            companion_always_visible: true,
-        },
-    }),
-    Object.freeze({
         id: 'builtin-parsa',
         name: 'PARSA / پارسا',
         slug: 'parsa',
@@ -88,6 +69,25 @@ const BUILTIN_DEFINITIONS = Object.freeze([
             speed_rating: 'S+',
             power_rating: 'S+',
             signature_action: 'guitar',
+        },
+    }),
+    Object.freeze({
+        id: 'builtin-uzudi',
+        name: 'UZUDI / اوزودی',
+        slug: 'uzudi',
+        is_active: false,
+        settings: {
+            walk_speed: 3.75,
+            run_speed: 7.1,
+            sprint_speed: 7.85,
+            jump_force: 7.15,
+            air_control: 0.66,
+            scale: 1,
+            role_title: 'DARK ANGEL',
+            tagline: 'Black feathered wings · Night fighter',
+            speed_rating: 'A',
+            power_rating: 'A+',
+            signature_action: 'dark_angel',
         },
     }),
 ]);
@@ -182,7 +182,7 @@ export default class CharacterManager {
         if (this.lastBootWarning) {
             this.eventBus.emit('character:warning', {
                 message:
-                    'ارتباط دیتابیس برقرار نبود؛ تیام، روناک، امیررضا، پارسا و دریا از فایل‌های داخلی اجرا شدند.',
+                    'ارتباط دیتابیس برقرار نبود؛ تیام، روناک، امیررضا، پارسا و اوزودی از فایل‌های داخلی اجرا شدند.',
             });
         }
 
@@ -714,7 +714,7 @@ export default class CharacterManager {
             ronak: '#f472b6',
             amirreza: '#fbbf24',
             parsa: '#ef4444',
-            darya: '#84cc16',
+            uzudi: '#8b5cf6',
         }[record.slug] ?? '#a78bfa';
 
         context.imageSmoothingEnabled = false;

@@ -17,8 +17,8 @@ class BuiltinCharacterSeeder extends Seeder
                 ['slug' => 'tiam'],
                 [
                     'name' => 'TIAM / تیام',
-                    'sprite_sheet_path' => 'assets/characters/tiam/tiam-spritesheet-v6-mobile.png',
-                    'atlas_path' => 'assets/characters/tiam/tiam-atlas-v6-mobile.json',
+                    'sprite_sheet_path' => 'assets/characters/tiam/tiam-spritesheet-v5-mobile.png',
+                    'atlas_path' => 'assets/characters/tiam/tiam-atlas-v5-mobile.json',
                     'is_builtin' => true,
                     'is_active' => true,
                     'settings' => [
@@ -35,8 +35,8 @@ class BuiltinCharacterSeeder extends Seeder
                 ['slug' => 'ronak'],
                 [
                     'name' => 'RONAK / روناک',
-                    'sprite_sheet_path' => 'assets/characters/ronak/ronak-spritesheet-v6-mobile.png',
-                    'atlas_path' => 'assets/characters/ronak/ronak-atlas-v6-mobile.json',
+                    'sprite_sheet_path' => 'assets/characters/ronak/ronak-spritesheet-v5-mobile.png',
+                    'atlas_path' => 'assets/characters/ronak/ronak-atlas-v5-mobile.json',
                     'is_builtin' => true,
                     'is_active' => false,
                     'settings' => [
@@ -53,8 +53,8 @@ class BuiltinCharacterSeeder extends Seeder
                 ['slug' => 'amirreza'],
                 [
                     'name' => 'AMIRREZA / امیررضا',
-                    'sprite_sheet_path' => 'assets/characters/amirreza/amirreza-spritesheet-v6-mobile.png',
-                    'atlas_path' => 'assets/characters/amirreza/amirreza-atlas-v6-mobile.json',
+                    'sprite_sheet_path' => 'assets/characters/amirreza/amirreza-spritesheet-v5-mobile.png',
+                    'atlas_path' => 'assets/characters/amirreza/amirreza-atlas-v5-mobile.json',
                     'is_builtin' => true,
                     'is_active' => false,
                     'settings' => [
@@ -67,60 +67,12 @@ class BuiltinCharacterSeeder extends Seeder
                 ]
             );
 
-
-            Character::query()->updateOrCreate(
-                ['slug' => 'darya'],
-                [
-                    'name' => 'DARYA / دریا',
-                    'sprite_sheet_path' => 'assets/characters/darya/darya-spritesheet-v6-mobile.png',
-                    'atlas_path' => 'assets/characters/darya/darya-atlas-v6-mobile.json',
-                    'is_builtin' => true,
-                    'is_active' => false,
-                    'settings' => [
-                        'walk_speed' => 3.55,
-                        'run_speed' => 6.9,
-                        'sprint_speed' => 7.6,
-                        'jump_force' => 6.8,
-                        'air_control' => 0.58,
-                        'scale' => 1,
-                        'role_title' => 'CAT COMPANION',
-                        'tagline' => 'Darya + Pishi · always together',
-                        'signature_action' => 'companion',
-                        'companion' => 'pishi',
-                        'companion_always_visible' => true,
-                    ],
-                ]
-            );
-
-
-            Character::query()->updateOrCreate(
-                ['slug' => 'iman'],
-                [
-                    'name' => 'IMAN / ایمان',
-                    'sprite_sheet_path' => 'assets/characters/iman/iman-spritesheet-v6-mobile.png',
-                    'atlas_path' => 'assets/characters/iman/iman-atlas-v6-mobile.json',
-                    'is_builtin' => true,
-                    'is_active' => false,
-                    'settings' => [
-                        'walk_speed' => 3.75,
-                        'run_speed' => 7.15,
-                        'sprint_speed' => 7.9,
-                        'jump_force' => 6.95,
-                        'air_control' => 0.6,
-                        'scale' => 1,
-                        'role_title' => 'ANCHOR / CORE',
-                        'tagline' => 'Reliable, strong, and team-first',
-                        'signature_action' => 'guard',
-                    ],
-                ]
-            );
-
             Character::query()->updateOrCreate(
                 ['slug' => 'parsa'],
                 [
                     'name' => 'PARSA / پارسا',
-                    'sprite_sheet_path' => 'assets/characters/parsa/parsa-spritesheet-v6-mobile.png',
-                    'atlas_path' => 'assets/characters/parsa/parsa-atlas-v6-mobile.json',
+                    'sprite_sheet_path' => 'assets/characters/parsa/parsa-spritesheet-v5-mobile.png',
+                    'atlas_path' => 'assets/characters/parsa/parsa-atlas-v5-mobile.json',
                     'is_builtin' => true,
                     'is_active' => false,
                     'settings' => [
@@ -134,6 +86,30 @@ class BuiltinCharacterSeeder extends Seeder
                         'tagline' => 'Black-shadow runner',
                         'speed_rating' => 'S+',
                         'power_rating' => 'S+',
+                    ],
+                ]
+            );
+
+            Character::query()->updateOrCreate(
+                ['slug' => 'uzudi'],
+                [
+                    'name' => 'UZUDI / اوزودی',
+                    'sprite_sheet_path' => 'assets/characters/uzudi/uzudi-spritesheet-v6-mobile.png',
+                    'atlas_path' => 'assets/characters/uzudi/uzudi-atlas-v6-mobile.json',
+                    'is_builtin' => true,
+                    'is_active' => false,
+                    'settings' => [
+                        'walk_speed' => 3.75,
+                        'run_speed' => 7.1,
+                        'sprint_speed' => 7.85,
+                        'jump_force' => 7.15,
+                        'air_control' => 0.66,
+                        'scale' => 1,
+                        'role_title' => 'DARK ANGEL',
+                        'tagline' => 'Black feathered wings · Night fighter',
+                        'speed_rating' => 'A',
+                        'power_rating' => 'A+',
+                        'signature_action' => 'dark_angel',
                     ],
                 ]
             );
