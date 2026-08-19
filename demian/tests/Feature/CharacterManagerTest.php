@@ -30,13 +30,8 @@ class CharacterManagerTest extends TestCase
             ->assertJsonPath('data.0.slug', 'tiam')
             ->assertJsonPath('data.0.is_active', true)
             ->assertJsonFragment([
-                'slug' => 'darya',
-                'name' => 'DARYA / دریا',
-                'is_builtin' => true,
-            ])
-            ->assertJsonFragment([
-                'slug' => 'iman',
-                'name' => 'IMAN / ایمان',
+                'slug' => 'uzudi',
+                'name' => 'UZUDI / اوزودی',
                 'is_builtin' => true,
             ]);
     }
