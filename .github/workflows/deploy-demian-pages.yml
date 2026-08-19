@@ -341,6 +341,11 @@ jobs:
                           f'{pages_base_path}/storage/{relative}'
                       )
 
+          built_in_slugs = sorted({
+              str(character.get('slug')).strip()
+              for character in payload.get('data', [])
+              if character.get('is_builtin') and character.get('slug')
+          })
           characters_path.write_text(
               json.dumps(payload, ensure_ascii=False, indent=2),
               encoding='utf-8',
@@ -391,7 +396,7 @@ jobs:
           # Pages instead of patching TIAM only.
           for asset in (site / 'build').rglob('*.js'):
               source = asset.read_text(encoding='utf-8')
-              for slug in ('tiam', 'ronak', 'amirreza', 'parsa'):
+              for slug in built_in_slugs:
                   source = source.replace(
                       f'/assets/characters/{slug}/',
                       f'{pages_base_path}/assets/characters/{slug}/',
@@ -454,8 +459,8 @@ jobs:
 
           repository_name = os.environ['GITHUB_REPOSITORY'].split('/', 1)[1]
           marker = f'/{repository_name}/'
-          expected_slugs = {'tiam', 'ronak', 'amirreza'}
-          bundled_slugs = expected_slugs | {'parsa'}
+          expected_slugs = {'tiam', 'ronak', 'amirreza', 'parsa', 'darya', 'iman', 'uzudi'}
+          compatibility_slugs = {'tiam', 'ronak', 'amirreza', 'parsa'}
           exported_slugs = {character.get('slug') for character in characters}
           missing_slugs = expected_slugs - exported_slugs
 
@@ -492,7 +497,7 @@ jobs:
 
           # Validate both V5 files and the V4 compatibility filenames. This is
           # what prevents the mobile 404 seen while an older bundle is cached.
-          for slug in sorted(bundled_slugs):
+          for slug in sorted(compatibility_slugs):
               directory = site / 'assets' / 'characters' / slug
               required = (
                   directory / f'{slug}-atlas-v5-mobile.json',

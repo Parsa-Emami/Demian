@@ -9,8 +9,9 @@ from pathlib import Path
 
 from PIL import Image
 
+from character_art_registry import resolve_targets
+
 ROOT = Path(__file__).resolve().parents[1]
-CHARACTERS = ("tiam", "ronak", "amirreza", "parsa", "uzudi")
 VARIANTS = ("desktop", "mobile", "compact")
 ALPHA_THRESHOLD = 8
 OPAQUE_FRAME_RATIO = 0.94
@@ -41,11 +42,9 @@ def audit_pack(character: str, variant: str, write_metadata: bool, pack_version:
     image_path = directory / f"{character}-spritesheet-v{pack_version}-{variant}.png"
     atlas = json.loads(atlas_path.read_text(encoding="utf-8"))
     image = Image.open(image_path).convert("RGBA")
-
     declared = atlas.get("meta", {}).get("size", {})
     if image.size != (declared.get("w"), declared.get("h")):
         raise ValueError(f"{character}/{variant}: atlas size does not match PNG size")
-
     frame_occupancy: list[float] = []
     idle_width_ratios: list[float] = []
     idle_height_ratios: list[float] = []
@@ -61,7 +60,6 @@ def audit_pack(character: str, variant: str, write_metadata: bool, pack_version:
         if name.startswith("idle_") and height_ratio > 0:
             idle_width_ratios.append(width_ratio)
             idle_height_ratios.append(height_ratio)
-
     median_occupancy = statistics.median(frame_occupancy) if frame_occupancy else 0.0
     full_frames = sum(value >= OPAQUE_FRAME_RATIO for value in frame_occupancy)
     invalid_background = bool(frame_occupancy) and (
@@ -72,7 +70,6 @@ def audit_pack(character: str, variant: str, write_metadata: bool, pack_version:
     reference_height_ratio = statistics.median(idle_height_ratios) if idle_height_ratios else 0.86
     reference_width_ratio = min(0.98, max(0.42, reference_width_ratio))
     reference_height_ratio = min(0.98, max(0.62, reference_height_ratio))
-
     atlas.setdefault("render", {})["referenceBodyWidthRatio"] = round(reference_width_ratio, 4)
     atlas.setdefault("render", {})["referenceBodyHeightRatio"] = round(reference_height_ratio, 4)
     atlas.setdefault("meta", {})["artIntegrity"] = "invalid" if invalid_background else "valid"
@@ -80,10 +77,8 @@ def audit_pack(character: str, variant: str, write_metadata: bool, pack_version:
         atlas["meta"]["artIntegrityReason"] = "opaque-or-baked-background-detected"
     else:
         atlas["meta"].pop("artIntegrityReason", None)
-
     if write_metadata:
         atlas_path.write_text(json.dumps(atlas, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-
     return {
         "character": character,
         "variant": variant,
@@ -99,18 +94,27 @@ def audit_pack(character: str, variant: str, write_metadata: bool, pack_version:
 
 def main() -> int:
     parser = argparse.ArgumentParser()
+    parser.add_argument("characters", nargs="*", help="Optional character slugs to audit.")
     parser.add_argument("--write-metadata", action="store_true")
     parser.add_argument("--version", type=int, default=5, help="Character pack version to audit (default: 5).")
     parser.add_argument("--strict", action="store_true", help="Exit non-zero when corrupted art is detected.")
     args = parser.parse_args()
+    characters = resolve_targets(
+        args.characters,
+        (
+            f"{{character}}-spritesheet-v{args.version}-desktop.png",
+            f"{{character}}-atlas-v{args.version}-desktop.json",
+        ),
+    )
+    if not characters:
+        raise SystemExit(f"No V{args.version} character packs were found.")
 
     results = [
         audit_pack(character, variant, args.write_metadata, args.version)
-        for character in CHARACTERS
+        for character in characters
         for variant in VARIANTS
     ]
     invalid = [result for result in results if not result["valid"]]
-
     for result in results:
         status = "OK" if result["valid"] else "INVALID"
         print(
@@ -118,7 +122,6 @@ def main() -> int:
             f"frames={result['frames']:3} occupancy={result['median_occupancy']:.3f} "
             f"body={result['reference_body_width_ratio']:.3f}x{result['reference_body_height_ratio']:.3f}"
         )
-
     if invalid:
         print("\nCorrupted sprite art detected. Runtime will reject packs marked artIntegrity=invalid and use its safe fallback.")
         return 1 if args.strict else 0

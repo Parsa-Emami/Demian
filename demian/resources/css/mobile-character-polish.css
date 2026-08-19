@@ -1,0 +1,192 @@
+/*
+ * Demian character roster + mobile viewport polish.
+ * This file is intentionally imported after app.css so the overrides stay
+ * narrow and can be removed independently from the main visual system.
+ */
+
+.character-card {
+    min-height: 148px;
+    gap: 1rem;
+    border-color: rgba(165, 243, 252, 0.14);
+    background:
+        radial-gradient(circle at 12% 18%, rgba(34, 211, 238, 0.08), transparent 34%),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.045), transparent),
+        rgba(7, 8, 21, 0.9);
+    box-shadow:
+        0 12px 30px rgba(0, 0, 0, 0.2),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.015);
+}
+
+.character-card:hover {
+    border-color: rgba(165, 243, 252, 0.34);
+    box-shadow:
+        0 16px 38px rgba(0, 0, 0, 0.28),
+        0 0 24px rgba(34, 211, 238, 0.08);
+}
+
+.character-card.is-active {
+    border-color: rgba(103, 232, 249, 0.58);
+    box-shadow:
+        0 16px 40px rgba(0, 0, 0, 0.3),
+        0 0 0 1px rgba(103, 232, 249, 0.14) inset,
+        0 0 30px rgba(34, 211, 238, 0.12);
+}
+
+.character-card__preview {
+    width: 6.8rem;
+    min-width: 6.8rem;
+    height: 6.8rem;
+    border-color: rgba(165, 243, 252, 0.18);
+    border-radius: 1.2rem;
+    box-shadow:
+        inset 0 0 20px rgba(0, 0, 0, 0.36),
+        0 10px 24px rgba(0, 0, 0, 0.22);
+}
+
+.character-card__preview img {
+    max-width: none;
+    max-height: none;
+}
+
+.character-card h3.truncate {
+    overflow: visible;
+    text-overflow: clip;
+    white-space: normal;
+    font-size: 0.96rem;
+    line-height: 1.45;
+}
+
+.character-card .arcade-badge {
+    flex: 0 0 auto;
+}
+
+.character-card .arcade-button--small {
+    min-height: 2.35rem;
+    padding-inline: 0.8rem;
+}
+
+@media (hover: none), (pointer: coarse), (max-width: 900px) {
+    html,
+    body,
+    .manager-shell,
+    .manager-stage {
+        width: 100%;
+        height: var(--demian-logical-height, calc(var(--demian-vh, 1vh) * 100));
+        min-height: 0;
+        max-height: var(--demian-logical-height, calc(var(--demian-vh, 1vh) * 100));
+        overflow: hidden;
+    }
+
+    html:not(.demian-forced-landscape) body,
+    html:not(.demian-forced-landscape) .manager-shell,
+    html:not(.demian-forced-landscape) .manager-stage {
+        height: calc(var(--demian-vh, 1vh) * 100);
+        max-height: calc(var(--demian-vh, 1vh) * 100);
+    }
+
+    .manager-stage,
+    .demian-scene,
+    .demian-scene canvas {
+        min-width: 0;
+        min-height: 0;
+        overflow: hidden;
+    }
+
+    .manager-sidebar {
+        max-height: min(calc(var(--demian-vh, 1vh) * 92), 820px);
+    }
+
+    .manager-sidebar__scroll {
+        height: min(calc(var(--demian-vh, 1vh) * 92), 820px);
+        max-height: min(calc(var(--demian-vh, 1vh) * 92), 820px);
+        padding-bottom: max(22px, calc(var(--safe-bottom, 0px) + 16px));
+        overscroll-behavior: contain;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .character-selection-rail {
+        grid-auto-columns: minmax(280px, min(84vw, 360px));
+        scroll-padding-inline: 10px;
+    }
+
+    .character-card {
+        min-height: 164px;
+        align-items: center;
+        padding: 0.9rem;
+        scroll-snap-align: center;
+    }
+
+    .character-card__preview {
+        width: 7.15rem;
+        min-width: 7.15rem;
+        height: 7.15rem;
+    }
+
+    .stage-toolbar__controls > div {
+        scroll-snap-type: x proximity;
+    }
+
+    .stage-toolbar .arcade-button {
+        min-height: 42px;
+        scroll-snap-align: start;
+    }
+}
+
+@media (max-width: 560px) {
+    .character-selection-rail {
+        grid-auto-columns: minmax(0, 88vw);
+        margin-inline: -4px;
+        padding-inline: 4px;
+        scroll-padding-inline: 4px;
+    }
+
+    .character-card {
+        grid-template-columns: 6.35rem minmax(0, 1fr);
+        min-height: 158px;
+        gap: 0.78rem;
+        padding: 0.78rem;
+    }
+
+    .character-card__preview {
+        width: 6.35rem;
+        min-width: 6.35rem;
+        height: 6.35rem;
+        border-radius: 1rem;
+    }
+
+    .character-card h3.truncate {
+        font-size: 0.9rem;
+    }
+
+    .character-card .arcade-button--small {
+        min-height: 2.45rem;
+        padding-inline: 0.72rem;
+    }
+}
+
+@media (max-height: 520px) and (orientation: landscape) {
+    .manager-sidebar,
+    .manager-sidebar__scroll {
+        height: min(calc(var(--demian-vh, 1vh) * 96), 440px);
+        max-height: min(calc(var(--demian-vh, 1vh) * 96), 440px);
+    }
+
+    .character-selection-rail {
+        grid-auto-columns: minmax(290px, 52vw);
+    }
+
+    .character-card {
+        min-height: 142px;
+    }
+
+    .character-card__preview {
+        width: 5.9rem;
+        min-width: 5.9rem;
+        height: 5.9rem;
+    }
+}
+
+html.demian-forced-landscape .manager-sidebar,
+html.demian-forced-landscape .manager-sidebar__scroll {
+    max-height: min(92%, var(--demian-logical-height, 390px));
+}

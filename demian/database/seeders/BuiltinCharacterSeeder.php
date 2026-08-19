@@ -12,7 +12,6 @@ class BuiltinCharacterSeeder extends Seeder
     {
         DB::transaction(function (): void {
             Character::query()->update(['is_active' => false]);
-
             Character::query()->updateOrCreate(
                 ['slug' => 'tiam'],
                 [
@@ -30,7 +29,6 @@ class BuiltinCharacterSeeder extends Seeder
                     ],
                 ]
             );
-
             Character::query()->updateOrCreate(
                 ['slug' => 'ronak'],
                 [
@@ -48,7 +46,6 @@ class BuiltinCharacterSeeder extends Seeder
                     ],
                 ]
             );
-
             Character::query()->updateOrCreate(
                 ['slug' => 'amirreza'],
                 [
@@ -66,7 +63,50 @@ class BuiltinCharacterSeeder extends Seeder
                     ],
                 ]
             );
-
+            Character::query()->updateOrCreate(
+                ['slug' => 'darya'],
+                [
+                    'name' => 'DARYA / دریا',
+                    'sprite_sheet_path' => 'assets/characters/darya/darya-spritesheet-v6-mobile.png',
+                    'atlas_path' => 'assets/characters/darya/darya-atlas-v6-mobile.json',
+                    'is_builtin' => true,
+                    'is_active' => false,
+                    'settings' => [
+                        'walk_speed' => 3.55,
+                        'run_speed' => 6.9,
+                        'sprint_speed' => 7.6,
+                        'jump_force' => 6.8,
+                        'air_control' => 0.58,
+                        'scale' => 1,
+                        'role_title' => 'CAT COMPANION',
+                        'tagline' => 'Darya + Pishi · always together',
+                        'signature_action' => 'companion',
+                        'companion' => 'pishi',
+                        'companion_always_visible' => true,
+                    ],
+                ]
+            );
+            Character::query()->updateOrCreate(
+                ['slug' => 'iman'],
+                [
+                    'name' => 'IMAN / ایمان',
+                    'sprite_sheet_path' => 'assets/characters/iman/iman-spritesheet-v6-mobile.png',
+                    'atlas_path' => 'assets/characters/iman/iman-atlas-v6-mobile.json',
+                    'is_builtin' => true,
+                    'is_active' => false,
+                    'settings' => [
+                        'walk_speed' => 3.75,
+                        'run_speed' => 7.15,
+                        'sprint_speed' => 7.9,
+                        'jump_force' => 6.95,
+                        'air_control' => 0.6,
+                        'scale' => 1,
+                        'role_title' => 'ANCHOR / CORE',
+                        'tagline' => 'Reliable, strong, and team-first',
+                        'signature_action' => 'guard',
+                    ],
+                ]
+            );
             Character::query()->updateOrCreate(
                 ['slug' => 'parsa'],
                 [
@@ -89,7 +129,6 @@ class BuiltinCharacterSeeder extends Seeder
                     ],
                 ]
             );
-
             Character::query()->updateOrCreate(
                 ['slug' => 'uzudi'],
                 [

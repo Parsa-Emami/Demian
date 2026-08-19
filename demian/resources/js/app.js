@@ -1,4 +1,5 @@
 import '../css/app.css';
+import '../css/mobile-character-polish.css';
 import GameApplication from './game/application/GameApplication';
 import CharacterManagerUI from './ui/CharacterManagerUI';
 import SidebarController from './ui/SidebarController';
@@ -7,7 +8,6 @@ import MobileGameUI from './ui/MobileGameUI';
 document.addEventListener('DOMContentLoaded', async () => {
     const sceneContainer = document.querySelector('[data-demian-scene]');
     const managerRoot = document.querySelector('[data-character-manager]');
-
     if (!sceneContainer || !managerRoot) {
         return;
     }
@@ -21,7 +21,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             .querySelector('meta[name="csrf-token"]')
             ?.getAttribute('content'),
     });
-
     managerRoot.addEventListener('sidebar:changed', () => {
         application.handleLayoutChange();
     });
@@ -35,7 +34,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     try {
         await application.boot();
-
         const ui = new CharacterManagerUI({
             root: managerRoot,
             managerProvider: () => application.characterManager,
@@ -48,7 +46,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         window.demianGameApplication = application;
     } catch (error) {
         console.error('Demian Game Platform could not start:', error);
-
         sceneContainer.innerHTML = `
             <div class="flex h-full items-center justify-center p-6">
                 <div class="arcade-error">

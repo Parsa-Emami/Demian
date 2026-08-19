@@ -12,7 +12,6 @@ use Tests\TestCase;
 class CharacterManagerTest extends TestCase
 {
     use RefreshDatabase;
-
     public function test_studio_page_is_available(): void
     {
         $this->withoutExceptionHandling(); // اضافه کردن این خط
@@ -24,11 +23,20 @@ class CharacterManagerTest extends TestCase
     public function test_tiam_can_be_seeded_and_listed(): void
     {
         $this->seed(TiamCharacterSeeder::class);
-
         $this->getJson('/characters')
             ->assertOk()
             ->assertJsonPath('data.0.slug', 'tiam')
             ->assertJsonPath('data.0.is_active', true)
+            ->assertJsonFragment([
+                'slug' => 'darya',
+                'name' => 'DARYA / دریا',
+                'is_builtin' => true,
+            ])
+            ->assertJsonFragment([
+                'slug' => 'iman',
+                'name' => 'IMAN / ایمان',
+                'is_builtin' => true,
+            ])
             ->assertJsonFragment([
                 'slug' => 'uzudi',
                 'name' => 'UZUDI / اوزودی',
@@ -39,7 +47,6 @@ class CharacterManagerTest extends TestCase
     public function test_character_can_be_uploaded(): void
     {
         Storage::fake('public');
-
         $atlas = [
             'meta' => ['size' => ['w' => 256, 'h' => 256]],
             'frames' => [
@@ -54,7 +61,6 @@ class CharacterManagerTest extends TestCase
                 'win' => ['frames' => ['idle_0'], 'fps' => 1, 'loop' => false],
             ],
         ];
-
         $response = $this->post('/characters', [
             'name' => 'Test Character',
             'slug' => 'test-character',
@@ -65,7 +71,6 @@ class CharacterManagerTest extends TestCase
             ),
             'settings' => json_encode(['scale' => 1]),
         ]);
-
         $response
             ->assertCreated()
             ->assertJsonPath('data.slug', 'test-character');
@@ -75,7 +80,6 @@ class CharacterManagerTest extends TestCase
             'sprite_sheet_path' => 'characters/test-character/spritesheet.png',
             'atlas_path' => 'characters/test-character/atlas.json',
         ]);
-
         Storage::disk('public')->assertExists('characters/test-character/spritesheet.png');
         Storage::disk('public')->assertExists('characters/test-character/atlas.json');
     }
@@ -83,7 +87,6 @@ class CharacterManagerTest extends TestCase
     public function test_incomplete_atlas_is_rejected_with_validation_errors(): void
     {
         Storage::fake('public');
-
         $atlas = [
             'meta' => ['size' => ['w' => 256, 'h' => 256]],
             'frames' => [
@@ -93,7 +96,6 @@ class CharacterManagerTest extends TestCase
                 'idle' => ['frames' => ['idle_0'], 'fps' => 1, 'loop' => true],
             ],
         ];
-
         $this->post('/characters', [
             'name' => 'Incomplete Character',
             'slug' => 'incomplete-character',
@@ -105,7 +107,6 @@ class CharacterManagerTest extends TestCase
         ], ['Accept' => 'application/json'])
             ->assertUnprocessable()
             ->assertJsonValidationErrors(['atlas']);
-
         $this->assertDatabaseMissing('characters', [
             'slug' => 'incomplete-character',
         ]);
@@ -120,13 +121,11 @@ class CharacterManagerTest extends TestCase
             ->assertUnprocessable();
     }
 
-
     public function test_custom_character_can_be_updated_without_replacing_assets(): void
     {
         Storage::fake('public');
 
         $character = $this->createCustomCharacter('update-character');
-
         $this->patchJson("/characters/{$character->id}", [
             'name' => 'Updated Character',
             'settings' => json_encode(['scale' => 1.25]),
@@ -138,7 +137,6 @@ class CharacterManagerTest extends TestCase
         Storage::disk('public')->assertExists('characters/update-character/spritesheet.png');
         Storage::disk('public')->assertExists('characters/update-character/atlas.json');
     }
-
     public function test_custom_character_assets_are_deleted_with_character(): void
     {
         Storage::fake('public');
@@ -151,11 +149,9 @@ class CharacterManagerTest extends TestCase
         $this->assertDatabaseMissing('characters', [
             'id' => $character->id,
         ]);
-
         Storage::disk('public')->assertMissing('characters/delete-character/spritesheet.png');
         Storage::disk('public')->assertMissing('characters/delete-character/atlas.json');
     }
-
     private function createCustomCharacter(string $slug): Character
     {
         $atlas = [
@@ -172,7 +168,6 @@ class CharacterManagerTest extends TestCase
                 'win' => ['frames' => ['idle_0'], 'fps' => 1, 'loop' => false],
             ],
         ];
-
         $this->post('/characters', [
             'name' => ucfirst(str_replace('-', ' ', $slug)),
             'slug' => $slug,
