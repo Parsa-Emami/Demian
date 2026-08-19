@@ -9,6 +9,7 @@ far more stable and visually coherent.
 """
 from __future__ import annotations
 
+import sys
 from pathlib import Path
 from PIL import Image, ImageEnhance
 
@@ -60,8 +61,11 @@ def pixelize(path: Path, variant: str) -> None:
 
 
 def main() -> int:
+    requested = {str(value).strip().lower() for value in sys.argv[1:] if str(value).strip()}
     targets = []
     for path in sorted(CHARACTER_ROOT.glob("*/*-spritesheet-v5-*.png")):
+        if requested and path.parent.name.lower() not in requested:
+            continue
         variant = variant_for(path)
         if variant:
             targets.append((path, variant))

@@ -53,6 +53,25 @@ const BUILTIN_DEFINITIONS = Object.freeze([
         },
     }),
     Object.freeze({
+        id: 'builtin-darya',
+        name: 'DARYA / دریا',
+        slug: 'darya',
+        is_active: false,
+        settings: {
+            walk_speed: 3.55,
+            run_speed: 6.9,
+            sprint_speed: 7.6,
+            jump_force: 6.8,
+            air_control: 0.58,
+            scale: 1,
+            role_title: 'CAT COMPANION',
+            tagline: 'Darya + Pishi · always together',
+            signature_action: 'companion',
+            companion: 'pishi',
+            companion_always_visible: true,
+        },
+    }),
+    Object.freeze({
         id: 'builtin-parsa',
         name: 'PARSA / پارسا',
         slug: 'parsa',
@@ -69,20 +88,6 @@ const BUILTIN_DEFINITIONS = Object.freeze([
             speed_rating: 'S+',
             power_rating: 'S+',
             signature_action: 'guitar',
-        },
-    }),
-    Object.freeze({
-        id: 'builtin-mojtaba',
-        name: 'MOJTABA / مجتبی',
-        slug: 'mojtaba',
-        is_active: false,
-        settings: {
-            walk_speed: 3.5,
-            run_speed: 6.8,
-            sprint_speed: 7.45,
-            jump_force: 6.7,
-            air_control: 0.57,
-            scale: 1,
         },
     }),
 ]);
@@ -177,7 +182,7 @@ export default class CharacterManager {
         if (this.lastBootWarning) {
             this.eventBus.emit('character:warning', {
                 message:
-                    'ارتباط دیتابیس برقرار نبود؛ تیام، روناک، امیررضا، پارسا و مجتبی از فایل‌های داخلی اجرا شدند.',
+                    'ارتباط دیتابیس برقرار نبود؛ تیام، روناک، امیررضا، پارسا و دریا از فایل‌های داخلی اجرا شدند.',
             });
         }
 
@@ -709,7 +714,7 @@ export default class CharacterManager {
             ronak: '#f472b6',
             amirreza: '#fbbf24',
             parsa: '#ef4444',
-            mojtaba: '#34d399',
+            darya: '#84cc16',
         }[record.slug] ?? '#a78bfa';
 
         context.imageSmoothingEnabled = false;

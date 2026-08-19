@@ -16,8 +16,9 @@ from typing import Iterable
 
 from PIL import Image
 
+from character_art_registry import character_name, resolve_targets
+
 ROOT = Path(__file__).resolve().parents[1]
-CHARACTERS = ("tiam", "ronak", "amirreza", "parsa", "mojtaba")
 COLUMNS = 21
 ROWS = 12
 VARIANTS = {"desktop": 256, "mobile": 192, "compact": 128}
@@ -231,7 +232,7 @@ def build_atlas(character: str, variant: str, cell: int, names: dict[str, list[s
     speech = source_atlas.get("speech", {"duration": 3.2, "messages": []})
     return {
         "meta": {
-            "name": character.upper(),
+            "name": character_name(character),
             "version": 6,
             "variant": variant,
             "image": f"{character}-spritesheet-v6-{variant}.png",
@@ -259,6 +260,7 @@ def build_atlas(character: str, variant: str, cell: int, names: dict[str, list[s
             "salute": "wave", "guitar": "dance", "guitar_loop": "guitar",
         },
         "speech": speech,
+        "companion": source_atlas.get("companion"),
         "pivot": {"x": 0.5, "y": 0.96},
         "display": {"worldWidth": 3.75, "worldHeight": 3.75},
         "motion": {
@@ -346,8 +348,13 @@ def build_character(character: str) -> None:
 
 
 def main() -> None:
-    requested = tuple(value for value in sys.argv[1:] if value in CHARACTERS)
-    for character in (requested or CHARACTERS):
+    characters = resolve_targets(
+        sys.argv[1:],
+        ("{character}-spritesheet-v5-desktop.png", "{character}-atlas-v5-desktop.json"),
+    )
+    if not characters:
+        raise SystemExit("No V5 desktop character packs were found for V6 generation.")
+    for character in characters:
         build_character(character)
 
 

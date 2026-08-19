@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "slug": "darya",
+  "name": "DARYA / دریا",
+  "style": "demian_arcade_v1",
+  "source": {
+    "sheet": "darya-spritesheet.png",
+    "grid": {"columns": 4, "rows": 3, "cell": 256},
+    "poses": [
+      "idle_0", "idle_1", "walk_e", "walk_w",
+      "run_e", "run_w", "jump_0", "jump_1",
+      "attack_e", "attack_w", "win_0", "win_1"
+    ]
+  },
+  "identity": {
+    "hair": "medium-length shaggy layered dark-brown hair with curtain bangs",
+    "outfit": "oversized dark navy DEMIAN T-shirt, charcoal loose pants, black-and-white sneakers"
+  },
+  "companion": {
+    "id": "pishi",
+    "name": "Pishi / پیشی",
+    "type": "cat",
+    "alwaysVisible": true,
+    "bakedIntoEveryFrame": true,
+    "appearance": "gray-and-white cat with green-yellow eyes"
+  },
+  "gameplay": {
+    "walk_speed": 3.55,
+    "run_speed": 6.9,
+    "sprint_speed": 7.6,
+    "jump_force": 6.8,
+    "air_control": 0.58,
+    "scale": 1,
+    "role_title": "CAT COMPANION",
+    "tagline": "Darya + Pishi · always together",
+    "signature_action": "companion"
+  },
+  "speech": {
+    "duration": 3.2,
+    "messages": [
+      "پیشی، بریم؟",
+      "پیشی همیشه با منه",
+      "آروم و دقیق",
+      "بزن بریم یه دور",
+      "پیشی حواست هست؟",
+      "این مرحله مال ماست",
+      "یه رکورد تازه",
+      "خوبه پیشی!"
+    ]
+  }
+}

@@ -3,11 +3,13 @@
 from __future__ import annotations
 
 import json
+import sys
 from pathlib import Path
 from PIL import Image
 
+from character_art_registry import resolve_targets
+
 ROOT = Path(__file__).resolve().parents[1]
-CHARACTERS = ("tiam", "ronak", "amirreza", "parsa", "mojtaba")
 VARIANTS = {"desktop": 256, "mobile": 192, "compact": 128}
 COLUMNS = 21
 ROWS = 12
@@ -107,8 +109,15 @@ def validate_pack(character: str, variant: str, cell: int) -> list[str]:
 
 
 def main() -> int:
+    characters = resolve_targets(
+        sys.argv[1:],
+        ("{character}-spritesheet-v5-desktop.png", "{character}-atlas-v5-desktop.json"),
+    )
+    if not characters:
+        raise SystemExit("No character packs were found for V6 validation.")
+
     failures: list[str] = []
-    for character in CHARACTERS:
+    for character in characters:
         for variant, cell in VARIANTS.items():
             errors = validate_pack(character, variant, cell)
             if errors:

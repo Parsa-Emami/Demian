@@ -5,7 +5,7 @@ export const BUILTIN_CHARACTER_SLUGS = Object.freeze([
     'ronak',
     'amirreza',
     'parsa',
-    'mojtaba',
+    'darya',
 ]);
 
 export const CHARACTER_SPRITE_VARIANTS = Object.freeze([

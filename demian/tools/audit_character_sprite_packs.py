@@ -9,8 +9,9 @@ from pathlib import Path
 
 from PIL import Image
 
+from character_art_registry import resolve_targets
+
 ROOT = Path(__file__).resolve().parents[1]
-CHARACTERS = ("tiam", "ronak", "amirreza", "parsa", "mojtaba")
 VARIANTS = ("desktop", "mobile", "compact")
 ALPHA_THRESHOLD = 8
 OPAQUE_FRAME_RATIO = 0.94
@@ -102,11 +103,22 @@ def main() -> int:
     parser.add_argument("--write-metadata", action="store_true")
     parser.add_argument("--version", type=int, default=5, help="Character pack version to audit (default: 5).")
     parser.add_argument("--strict", action="store_true", help="Exit non-zero when corrupted art is detected.")
+    parser.add_argument("characters", nargs="*", help="Optional character slugs to audit.")
     args = parser.parse_args()
+
+    characters = resolve_targets(
+        args.characters,
+        (
+            f"{{character}}-spritesheet-v{args.version}-desktop.png",
+            f"{{character}}-atlas-v{args.version}-desktop.json",
+        ),
+    )
+    if not characters:
+        raise SystemExit(f"No V{args.version} character packs were found.")
 
     results = [
         audit_pack(character, variant, args.write_metadata, args.version)
-        for character in CHARACTERS
+        for character in characters
         for variant in VARIANTS
     ]
     invalid = [result for result in results if not result["valid"]]

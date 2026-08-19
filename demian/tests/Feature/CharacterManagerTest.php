@@ -3,7 +3,6 @@
 namespace Tests\Feature;
 
 use App\Models\Character;
-use Database\Seeders\MojtabaCharacterSeeder;
 use Database\Seeders\TiamCharacterSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
@@ -29,19 +28,10 @@ class CharacterManagerTest extends TestCase
         $this->getJson('/characters')
             ->assertOk()
             ->assertJsonPath('data.0.slug', 'tiam')
-            ->assertJsonPath('data.0.is_active', true);
-    }
-
-
-    public function test_mojtaba_can_be_seeded_and_listed_as_builtin(): void
-    {
-        $this->seed(MojtabaCharacterSeeder::class);
-
-        $this->getJson('/characters')
-            ->assertOk()
+            ->assertJsonPath('data.0.is_active', true)
             ->assertJsonFragment([
-                'slug' => 'mojtaba',
-                'name' => 'MOJTABA / مجتبی',
+                'slug' => 'darya',
+                'name' => 'DARYA / دریا',
                 'is_builtin' => true,
             ]);
     }

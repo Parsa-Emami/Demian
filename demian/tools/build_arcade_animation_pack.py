@@ -9,13 +9,15 @@ from __future__ import annotations
 
 import json
 import math
+import sys
 from pathlib import Path
 from typing import Iterable
 
 from PIL import Image
 
+from character_art_registry import character_name, resolve_targets, speech_payload
+
 ROOT = Path(__file__).resolve().parents[1]
-CHARACTERS = ("tiam", "ronak", "amirreza")
 CELL = 256
 COLUMNS = 12
 ROWS = 8
@@ -286,15 +288,9 @@ def build_atlas(character: str, frame_names: list[str]) -> dict[str, object]:
         "hover": animation(jump[2:6], 10, True, motion="hover"),
     }
 
-    speech_messages = {
-        "tiam": ["گی", "کافی فقط بچ کافی", "متالیکا دیگه خز شد", "بریم یه دود بگیریم", "باختم", "صدرا لته آرت تمرین کن", "صدرا بیس تمرین کن", "ستایش بیا اینجا"],
-        "ronak": ["روناک وارد شد", "آرکید یعنی همین", "بزن بریم", "این یکی رو من می‌برم", "حرکت بعدی رو ببین", "فول انرژی", "رکورد تازه", "مرحله بعد کجاست؟"],
-        "amirreza": ["بال بزن بریم", "از همه سریع‌ترم", "الان وقت های‌اسکوره", "پرواز کوتاه، برد بزرگ", "سرعت یعنی امیررضا", "بزن بریم یه دور سریع", "فول اسپید!", "با بال‌ها می‌بریم"],
-    }
-
     return {
         "meta": {
-            "name": character.upper(),
+            "name": character_name(character),
             "version": 4,
             "image": f"{character}-spritesheet-v4.png",
             "size": {"w": SHEET_SIZE[0], "h": SHEET_SIZE[1]},
@@ -316,7 +312,7 @@ def build_atlas(character: str, frame_names: list[str]) -> dict[str, object]:
             "celebrate": "win", "salute": "win", "breathe": "idle", "blink": "idle",
             "ready": "idle", "hover": "jump",
         },
-        "speech": {"duration": 3.2, "messages": speech_messages[character]},
+        "speech": speech_payload(character),
         "pivot": {"x": 0.5, "y": 0.96},
         "display": {"worldWidth": 3.75, "worldHeight": 3.75},
         "motion": {
@@ -329,7 +325,11 @@ def build_atlas(character: str, frame_names: list[str]) -> dict[str, object]:
 
 
 def main() -> None:
-    for character in CHARACTERS:
+    characters = resolve_targets(sys.argv[1:], ("{character}-spritesheet.png",))
+    if not characters:
+        raise SystemExit("No canonical 4x3 character source sheets were found.")
+
+    for character in characters:
         directory = ROOT / "public" / "assets" / "characters" / character
         source_path = directory / f"{character}-spritesheet.png"
         sheet = Image.open(source_path).convert("RGBA")

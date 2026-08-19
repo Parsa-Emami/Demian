@@ -17,8 +17,8 @@ class BuiltinCharacterSeeder extends Seeder
                 ['slug' => 'tiam'],
                 [
                     'name' => 'TIAM / تیام',
-                    'sprite_sheet_path' => 'assets/characters/tiam/tiam-spritesheet-v5-mobile.png',
-                    'atlas_path' => 'assets/characters/tiam/tiam-atlas-v5-mobile.json',
+                    'sprite_sheet_path' => 'assets/characters/tiam/tiam-spritesheet-v6-mobile.png',
+                    'atlas_path' => 'assets/characters/tiam/tiam-atlas-v6-mobile.json',
                     'is_builtin' => true,
                     'is_active' => true,
                     'settings' => [
@@ -35,8 +35,8 @@ class BuiltinCharacterSeeder extends Seeder
                 ['slug' => 'ronak'],
                 [
                     'name' => 'RONAK / روناک',
-                    'sprite_sheet_path' => 'assets/characters/ronak/ronak-spritesheet-v5-mobile.png',
-                    'atlas_path' => 'assets/characters/ronak/ronak-atlas-v5-mobile.json',
+                    'sprite_sheet_path' => 'assets/characters/ronak/ronak-spritesheet-v6-mobile.png',
+                    'atlas_path' => 'assets/characters/ronak/ronak-atlas-v6-mobile.json',
                     'is_builtin' => true,
                     'is_active' => false,
                     'settings' => [
@@ -53,8 +53,8 @@ class BuiltinCharacterSeeder extends Seeder
                 ['slug' => 'amirreza'],
                 [
                     'name' => 'AMIRREZA / امیررضا',
-                    'sprite_sheet_path' => 'assets/characters/amirreza/amirreza-spritesheet-v5-mobile.png',
-                    'atlas_path' => 'assets/characters/amirreza/amirreza-atlas-v5-mobile.json',
+                    'sprite_sheet_path' => 'assets/characters/amirreza/amirreza-spritesheet-v6-mobile.png',
+                    'atlas_path' => 'assets/characters/amirreza/amirreza-atlas-v6-mobile.json',
                     'is_builtin' => true,
                     'is_active' => false,
                     'settings' => [
@@ -67,12 +67,37 @@ class BuiltinCharacterSeeder extends Seeder
                 ]
             );
 
+
+            Character::query()->updateOrCreate(
+                ['slug' => 'darya'],
+                [
+                    'name' => 'DARYA / دریا',
+                    'sprite_sheet_path' => 'assets/characters/darya/darya-spritesheet-v6-mobile.png',
+                    'atlas_path' => 'assets/characters/darya/darya-atlas-v6-mobile.json',
+                    'is_builtin' => true,
+                    'is_active' => false,
+                    'settings' => [
+                        'walk_speed' => 3.55,
+                        'run_speed' => 6.9,
+                        'sprint_speed' => 7.6,
+                        'jump_force' => 6.8,
+                        'air_control' => 0.58,
+                        'scale' => 1,
+                        'role_title' => 'CAT COMPANION',
+                        'tagline' => 'Darya + Pishi · always together',
+                        'signature_action' => 'companion',
+                        'companion' => 'pishi',
+                        'companion_always_visible' => true,
+                    ],
+                ]
+            );
+
             Character::query()->updateOrCreate(
                 ['slug' => 'parsa'],
                 [
                     'name' => 'PARSA / پارسا',
-                    'sprite_sheet_path' => 'assets/characters/parsa/parsa-spritesheet-v5-mobile.png',
-                    'atlas_path' => 'assets/characters/parsa/parsa-atlas-v5-mobile.json',
+                    'sprite_sheet_path' => 'assets/characters/parsa/parsa-spritesheet-v6-mobile.png',
+                    'atlas_path' => 'assets/characters/parsa/parsa-atlas-v6-mobile.json',
                     'is_builtin' => true,
                     'is_active' => false,
                     'settings' => [
@@ -86,26 +111,6 @@ class BuiltinCharacterSeeder extends Seeder
                         'tagline' => 'Black-shadow runner',
                         'speed_rating' => 'S+',
                         'power_rating' => 'S+',
-                    ],
-                ]
-            );
-
-
-            Character::query()->updateOrCreate(
-                ['slug' => 'mojtaba'],
-                [
-                    'name' => 'MOJTABA / مجتبی',
-                    'sprite_sheet_path' => 'assets/characters/mojtaba/mojtaba-spritesheet-v5-mobile.png',
-                    'atlas_path' => 'assets/characters/mojtaba/mojtaba-atlas-v5-mobile.json',
-                    'is_builtin' => true,
-                    'is_active' => false,
-                    'settings' => [
-                        'walk_speed' => 3.5,
-                        'run_speed' => 6.8,
-                        'sprint_speed' => 7.45,
-                        'jump_force' => 6.7,
-                        'air_control' => 0.57,
-                        'scale' => 1,
                     ],
                 ]
             );

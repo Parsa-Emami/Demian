@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
-    CHARACTER_PACK_VERSION,
     BUILTIN_CHARACTER_SLUGS,
+    CHARACTER_PACK_VERSION,
     builtinCharacterAssetPair,
     characterFrameWorldSize,
     isRemovedCombatAnimation,
@@ -16,11 +16,14 @@ test('V6 is the canonical built-in character pack and rejects combat animation n
         assert.equal(sanitizeCharacterAnimation(name), 'idle');
     });
 
-    assert.equal(BUILTIN_CHARACTER_SLUGS.includes('mojtaba'), true);
+    const pair = builtinCharacterAssetPair('tiam', 'compact', 'https://example.test/game/');
+    assert.match(pair.spriteUrl, /tiam-spritesheet-v6-compact\.png$/);
+    assert.match(pair.atlasUrl, /tiam-atlas-v6-compact\.json$/);
 
-    const pair = builtinCharacterAssetPair('mojtaba', 'compact', 'https://example.test/game/');
-    assert.match(pair.spriteUrl, /mojtaba-spritesheet-v6-compact\.png$/);
-    assert.match(pair.atlasUrl, /mojtaba-atlas-v6-compact\.json$/);
+    assert.equal(BUILTIN_CHARACTER_SLUGS.includes('darya'), true);
+    const darya = builtinCharacterAssetPair('darya', 'mobile', 'https://example.test/game/');
+    assert.match(darya.spriteUrl, /darya-spritesheet-v6-mobile\.png$/);
+    assert.match(darya.atlasUrl, /darya-atlas-v6-mobile\.json$/);
 });
 
 test('canonical body footprint compensates source-art occupancy instead of scaling characters arbitrarily', () => {

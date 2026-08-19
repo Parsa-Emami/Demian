@@ -108,7 +108,7 @@ class CharacterAssetService
                 $character = Character::findOrFail($characterId);
 
                 // Uploaded characters have one canonical asset pair. Built-in
-                // characters keep their device-specific V5 asset variants.
+                // characters keep their device-specific V6 asset variants.
                 if (!$character->is_builtin) {
                     return [
                         'id' => $character->id,
@@ -125,8 +125,8 @@ class CharacterAssetService
                     'id' => $character->id,
                     'name' => $charFolder,
                     'slug' => $character->slug,
-                    'atlas' => asset("assets/characters/{$charFolder}/{$charFolder}-atlas-v5-{$deviceType}.json"),
-                    'image' => asset("assets/characters/{$charFolder}/{$charFolder}-spritesheet-v5-{$deviceType}.png"),
+                    'atlas' => asset("assets/characters/{$charFolder}/{$charFolder}-atlas-v6-{$deviceType}.json"),
+                    'image' => asset("assets/characters/{$charFolder}/{$charFolder}-spritesheet-v6-{$deviceType}.png"),
                 ];
             }
         );
