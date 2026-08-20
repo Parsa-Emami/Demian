@@ -201,10 +201,10 @@ html.demian-forced-landscape .manager-sidebar__scroll {
 @media (hover: none), (pointer: coarse), (max-width: 900px) {
     html,
     body,
+    html.demian-forced-landscape 
     .manager-shell {
-        width: 100vw;
-        height: calc(var(--demian-vh, 1vh) * 100);
-        overflow: hidden;
+    width:100vw;
+    height:100vh;
     }
 
     .manager-stage {
