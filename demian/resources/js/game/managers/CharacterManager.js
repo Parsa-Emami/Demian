@@ -7,7 +7,10 @@ import {
     characterRuntimeVariants,
     orderedSpriteVariants,
 } from '../characters/runtime/CharacterRuntimePolicy.js';
-import { builtinCharacterAssetPair } from '../characters/CharacterVisualContract.js';
+import {
+    BUILTIN_CHARACTER_SLUGS,
+    builtinCharacterAssetPair,
+} from '../characters/CharacterVisualContract.js';
 
 const BUILTIN_DEFINITIONS = Object.freeze([
     Object.freeze({
@@ -72,6 +75,42 @@ const BUILTIN_DEFINITIONS = Object.freeze([
         },
     }),
     Object.freeze({
+        id: 'builtin-darya',
+        name: 'DARYA / دریا',
+        slug: 'darya',
+        is_active: false,
+        settings: {
+            walk_speed: 3.55,
+            run_speed: 6.9,
+            sprint_speed: 7.6,
+            jump_force: 6.8,
+            air_control: 0.58,
+            scale: 1,
+            role_title: 'CAT COMPANION',
+            tagline: 'Darya + Pishi · always together',
+            signature_action: 'companion',
+            companion: 'pishi',
+            companion_always_visible: true,
+        },
+    }),
+    Object.freeze({
+        id: 'builtin-iman',
+        name: 'IMAN / ایمان',
+        slug: 'iman',
+        is_active: false,
+        settings: {
+            walk_speed: 3.75,
+            run_speed: 7.15,
+            sprint_speed: 7.9,
+            jump_force: 6.95,
+            air_control: 0.60,
+            scale: 1,
+            role_title: 'ANCHOR / CORE',
+            tagline: 'Reliable, strong, and team-first',
+            signature_action: 'guard',
+        },
+    }),
+    Object.freeze({
         id: 'builtin-uzudi',
         name: 'UZUDI / اوزودی',
         slug: 'uzudi',
@@ -90,9 +129,34 @@ const BUILTIN_DEFINITIONS = Object.freeze([
             signature_action: 'dark_angel',
         },
     }),
+    Object.freeze({
+        id: 'builtin-setayesh',
+        name: 'SETAYESH / ستایش',
+        slug: 'setayesh',
+        is_active: false,
+        settings: {
+            walk_speed: 3.4,
+            run_speed: 6.6,
+            sprint_speed: 7.25,
+            jump_force: 6.7,
+            air_control: 0.55,
+            scale: 1,
+            role_title: 'CURL SPARK',
+            tagline: 'Style · Speed · Spark',
+            speed_rating: 'A-',
+            power_rating: 'B+',
+        },
+    }),
 ]);
 
-const BUILTIN_SLUGS = new Set(BUILTIN_DEFINITIONS.map((character) => character.slug));
+const BUILTIN_SLUGS = new Set(BUILTIN_CHARACTER_SLUGS);
+const BUILTIN_DEFINITION_SLUGS = new Set(BUILTIN_DEFINITIONS.map((character) => character.slug));
+
+for (const slug of BUILTIN_CHARACTER_SLUGS) {
+    if (!BUILTIN_DEFINITION_SLUGS.has(slug)) {
+        throw new Error(`Missing built-in character definition: ${slug}`);
+    }
+}
 
 function builtinAssetPair(slug, variant = 'mobile') {
     return builtinCharacterAssetPair(slug, variant);
@@ -182,7 +246,7 @@ export default class CharacterManager {
         if (this.lastBootWarning) {
             this.eventBus.emit('character:warning', {
                 message:
-                    'ارتباط دیتابیس برقرار نبود؛ تیام، روناک، امیررضا، پارسا و اوزودی از فایل‌های داخلی اجرا شدند.',
+                    'ارتباط دیتابیس برقرار نبود؛ همهٔ کاراکترهای داخلی از فایل‌های بسته‌بندی‌شده اجرا شدند.',
             });
         }
 
@@ -714,7 +778,10 @@ export default class CharacterManager {
             ronak: '#f472b6',
             amirreza: '#fbbf24',
             parsa: '#ef4444',
+            darya: '#fb7185',
+            iman: '#f59e0b',
             uzudi: '#8b5cf6',
+            setayesh: '#f43f5e',
         }[record.slug] ?? '#a78bfa';
 
         context.imageSmoothingEnabled = false;
