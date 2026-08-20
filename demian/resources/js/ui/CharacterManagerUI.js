@@ -1,4 +1,5 @@
 import ScrollSnapRail from './ScrollSnapRail.js';
+import CharacterPreviewRenderer from './CharacterPreviewRenderer.js';
 
 export default class CharacterManagerUI {
     constructor({ root, manager = null, managerProvider = null, eventBus }) {
@@ -6,6 +7,7 @@ export default class CharacterManagerUI {
         this.managerRef = manager;
         this.managerProvider = managerProvider;
         this.eventBus = eventBus;
+        this.previewRenderer = new CharacterPreviewRenderer();
 
         this.listElement = root.querySelector('[data-character-list]');
         this.characterRail = null;
@@ -127,12 +129,13 @@ export default class CharacterManagerUI {
 
             card.innerHTML = `
                 <div class="character-card__preview">
-                    <img
-                        src="${this.escape(character.sprite_url)}"
-                        alt="${this.escape(character.name)}"
-                        loading="lazy"
-                        style="width: ${character.sprite_url.includes('-v6-') ? '2100%' : character.sprite_url.includes('-v5-') ? '1500%' : character.sprite_url.includes('-v4') ? '1200%' : '400%'}"
-                    >
+                    <canvas
+                        class="character-card__preview-canvas"
+                        width="128"
+                        height="128"
+                        data-character-preview
+                        aria-label="${this.escape(character.name)}"
+                    ></canvas>
                 </div>
 
                 <div class="min-w-0 flex-1">
@@ -197,6 +200,10 @@ export default class CharacterManagerUI {
             `;
 
             this.listElement.appendChild(card);
+            const previewCanvas = card.querySelector('[data-character-preview]');
+            if (previewCanvas) {
+                void this.previewRenderer.render(previewCanvas, character);
+            }
         });
 
         const activeCard = this.listElement.querySelector('.character-card.is-active');

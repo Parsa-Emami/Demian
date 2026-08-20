@@ -46,6 +46,15 @@ class CharacterManagerTest extends TestCase
                 'is_builtin' => true,
             ]);
         }
+
+        foreach (['tiam', 'ronak', 'amirreza', 'parsa', 'darya', 'iman', 'uzudi', 'setayesh'] as $slug) {
+            $response
+                ->assertJsonFragment([
+                    'slug' => $slug,
+                    'sprite_url' => asset("assets/characters/{$slug}/{$slug}-spritesheet-v6-mobile.png"),
+                    'atlas_url' => asset("assets/characters/{$slug}/{$slug}-atlas-v6-mobile.json"),
+                ]);
+        }
     }
 
     public function test_character_can_be_uploaded(): void

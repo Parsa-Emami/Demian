@@ -22,12 +22,17 @@ test('V6 is the canonical built-in character pack and rejects combat animation n
 
     assert.equal(BUILTIN_CHARACTER_SLUGS.includes('darya'), true);
     assert.equal(BUILTIN_CHARACTER_SLUGS.includes('iman'), true);
+    assert.equal(BUILTIN_CHARACTER_SLUGS.includes('setayesh'), true);
+    assert.equal(BUILTIN_CHARACTER_SLUGS.length, 8);
     const darya = builtinCharacterAssetPair('darya', 'mobile', 'https://example.test/game/');
     assert.match(darya.spriteUrl, /darya-spritesheet-v6-mobile\.png$/);
     assert.match(darya.atlasUrl, /darya-atlas-v6-mobile\.json$/);
     const iman = builtinCharacterAssetPair('iman', 'desktop', 'https://example.test/game/');
     assert.match(iman.spriteUrl, /iman-spritesheet-v6-desktop\.png$/);
     assert.match(iman.atlasUrl, /iman-atlas-v6-desktop\.json$/);
+    const setayesh = builtinCharacterAssetPair('setayesh', 'mobile', 'https://example.test/game/');
+    assert.match(setayesh.spriteUrl, /setayesh-spritesheet-v6-mobile\.png$/);
+    assert.match(setayesh.atlasUrl, /setayesh-atlas-v6-mobile\.json$/);
 });
 
 test('canonical body footprint compensates source-art occupancy instead of scaling characters arbitrarily', () => {

@@ -17,7 +17,7 @@ class BuiltinCharacterSeeder extends Seeder
                 [
                     'slug' => 'tiam',
                     'name' => 'TIAM / تیام',
-                    'pack_version' => 5,
+                    'pack_version' => 6,
                     'is_active' => true,
                     'settings' => [
                         'walk_speed' => 3.2,
@@ -30,7 +30,7 @@ class BuiltinCharacterSeeder extends Seeder
                 [
                     'slug' => 'ronak',
                     'name' => 'RONAK / روناک',
-                    'pack_version' => 5,
+                    'pack_version' => 6,
                     'is_active' => false,
                     'settings' => [
                         'walk_speed' => 3.25,
@@ -43,7 +43,7 @@ class BuiltinCharacterSeeder extends Seeder
                 [
                     'slug' => 'amirreza',
                     'name' => 'AMIRREZA / امیررضا',
-                    'pack_version' => 5,
+                    'pack_version' => 6,
                     'is_active' => false,
                     'settings' => [
                         'walk_speed' => 4.15,
@@ -56,7 +56,7 @@ class BuiltinCharacterSeeder extends Seeder
                 [
                     'slug' => 'parsa',
                     'name' => 'PARSA / پارسا',
-                    'pack_version' => 5,
+                    'pack_version' => 6,
                     'is_active' => false,
                     'settings' => [
                         'walk_speed' => 4.5,
@@ -74,9 +74,7 @@ class BuiltinCharacterSeeder extends Seeder
                 [
                     'slug' => 'darya',
                     'name' => 'DARYA / دریا',
-                    // Darya V6 was the pack visible in the broken deployment.
-                    // Use the stable V5 pack already committed with Darya.
-                    'pack_version' => 5,
+                    'pack_version' => 6,
                     'is_active' => false,
                     'settings' => [
                         'walk_speed' => 3.55,
@@ -95,8 +93,7 @@ class BuiltinCharacterSeeder extends Seeder
                 [
                     'slug' => 'iman',
                     'name' => 'IMAN / ایمان',
-                    // Keep Iman on the stable V5 pack for production rendering.
-                    'pack_version' => 5,
+                    'pack_version' => 6,
                     'is_active' => false,
                     'settings' => [
                         'walk_speed' => 3.75,
@@ -132,7 +129,7 @@ class BuiltinCharacterSeeder extends Seeder
                 [
                     'slug' => 'setayesh',
                     'name' => 'SETAYESH / ستایش',
-                    'pack_version' => 5,
+                    'pack_version' => 6,
                     'is_active' => false,
                     'settings' => [
                         'walk_speed' => 3.4,

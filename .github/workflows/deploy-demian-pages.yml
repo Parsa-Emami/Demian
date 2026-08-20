@@ -98,7 +98,7 @@ jobs:
           php artisan key:generate --force
           php artisan optimize:clear
           php artisan migrate:fresh --force
-          php artisan db:seed --class=TiamCharacterSeeder --force
+          php artisan db:seed --class=BuiltinCharacterSeeder --force
           php artisan route:list
 
       - name: Verify required Laravel routes
@@ -155,6 +155,13 @@ jobs:
           npm run validate:phase8
           npm run validate:final
 
+      - name: Validate canonical V6 character packs
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm run validate:character-art:strict
+          npm run validate:character-pack:v6
+
       - name: Build one atomic frontend bundle
         shell: bash
         run: |
@@ -177,34 +184,38 @@ jobs:
           from pathlib import Path
 
           root = Path('public/assets/characters')
+          built_in_slugs = (
+              'tiam', 'ronak', 'amirreza', 'parsa',
+              'darya', 'iman', 'uzudi', 'setayesh',
+          )
 
-          for slug in ('tiam', 'ronak', 'amirreza', 'parsa'):
+          for slug in built_in_slugs:
               directory = root / slug
-              v5_atlas = directory / f'{slug}-atlas-v5-mobile.json'
-              v5_sheet = directory / f'{slug}-spritesheet-v5-mobile.png'
+              atlas = directory / f'{slug}-atlas-v6-mobile.json'
+              sheet = directory / f'{slug}-spritesheet-v6-mobile.png'
               legacy_atlas = directory / f'{slug}-atlas.json'
               legacy_sheet = directory / f'{slug}-spritesheet-v4.png'
 
-              if not v5_atlas.is_file() or not v5_sheet.is_file():
+              if not atlas.is_file() or not sheet.is_file():
                   raise SystemExit(
-                      f'ERROR: V5 mobile assets are missing for {slug}: '
-                      f'{v5_atlas} / {v5_sheet}'
+                      f'ERROR: canonical V6 mobile assets are missing for {slug}: '
+                      f'{atlas} / {sheet}'
                   )
 
-              # A cached V4 bundle may still request the legacy filenames for a
-              # short time after deployment. Keep a matching compatibility pair
-              # so that rollout never ends in a 404 or a mixed atlas/sheet pair.
-              if not legacy_atlas.is_file() or not legacy_sheet.is_file():
-                  shutil.copy2(v5_sheet, legacy_sheet)
-                  payload = json.loads(v5_atlas.read_text(encoding='utf-8'))
-                  payload.setdefault('meta', {})['image'] = legacy_sheet.name
-                  payload['meta']['compatibilityAlias'] = True
-                  legacy_atlas.write_text(
-                      json.dumps(payload, ensure_ascii=False, indent=2),
-                      encoding='utf-8',
-                  )
+              # Cached bundles can still request the legacy filenames for a
+              # short time after deployment. Publish an atomically matching V6
+              # alias pair so a stale bundle never mixes atlas and sheet versions.
+              shutil.copy2(sheet, legacy_sheet)
+              payload = json.loads(atlas.read_text(encoding='utf-8'))
+              payload.setdefault('meta', {})['image'] = legacy_sheet.name
+              payload['meta']['compatibilityAlias'] = True
+              payload['meta']['compatibilitySourceVersion'] = 6
+              legacy_atlas.write_text(
+                  json.dumps(payload, ensure_ascii=False, indent=2),
+                  encoding='utf-8',
+              )
 
-              print(f'Character assets ready: {slug}')
+              print(f'Character assets ready: {slug} (V6)')
           PYTHON
 
       - name: Export Laravel as a static GitHub Pages demo
@@ -459,8 +470,8 @@ jobs:
 
           repository_name = os.environ['GITHUB_REPOSITORY'].split('/', 1)[1]
           marker = f'/{repository_name}/'
-          expected_slugs = {'tiam', 'ronak', 'amirreza', 'parsa', 'darya', 'iman', 'uzudi'}
-          compatibility_slugs = {'tiam', 'ronak', 'amirreza', 'parsa'}
+          expected_slugs = {'tiam', 'ronak', 'amirreza', 'parsa', 'darya', 'iman', 'uzudi', 'setayesh'}
+          compatibility_slugs = expected_slugs
           exported_slugs = {character.get('slug') for character in characters}
           missing_slugs = expected_slugs - exported_slugs
 
@@ -495,13 +506,13 @@ jobs:
                           f'{url} -> {target}'
                       )
 
-          # Validate both V5 files and the V4 compatibility filenames. This is
-          # what prevents the mobile 404 seen while an older bundle is cached.
+          # Validate the canonical V6 pair plus V4 compatibility aliases for
+          # every built-in character. This blocks mixed-version Pages deploys.
           for slug in sorted(compatibility_slugs):
               directory = site / 'assets' / 'characters' / slug
               required = (
-                  directory / f'{slug}-atlas-v5-mobile.json',
-                  directory / f'{slug}-spritesheet-v5-mobile.png',
+                  directory / f'{slug}-atlas-v6-mobile.json',
+                  directory / f'{slug}-spritesheet-v6-mobile.png',
                   directory / f'{slug}-atlas.json',
                   directory / f'{slug}-spritesheet-v4.png',
               )
