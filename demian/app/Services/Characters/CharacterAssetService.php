@@ -6,196 +6,101 @@ use App\Models\Character;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
-use RuntimeException;
 
 class CharacterAssetService
 {
-    public function __construct(
-        private readonly AtlasManifest $atlasManifest
-    ) {
-    }
-
     /**
-     * Validate and persist both assets required by a custom character.
-     *
-     * @return array{sprite_sheet_path: string, atlas_path: string}
+     * Store uploaded character files.
      */
-    public function store(
-        string $slug,
-        UploadedFile $spriteSheet,
-        UploadedFile $atlasFile
-    ): array {
-        // Validate the atlas before writing anything so a rejected upload does
-        // not leave an orphaned sprite sheet behind.
-        $manifest = $this->atlasManifest->parseUploadedFile($atlasFile);
-        $directory = $this->directoryForSlug($slug);
+    public function store(string $slug, mixed $fileOrFiles = null): void
+    {
+        $charFolder = strtolower($slug);
 
-        $spritePath = $this->storeSpriteSheet($directory, $spriteSheet);
-        $atlasPath = $directory.'/atlas.json';
-
-        if (!Storage::disk('public')->put($atlasPath, $this->encodeManifest($manifest))) {
-            Storage::disk('public')->delete($spritePath);
-
-            throw new RuntimeException('Unable to store the character atlas.');
+        if ($fileOrFiles instanceof UploadedFile) {
+            $fileOrFiles->storeAs(
+                "public/assets/characters/{$charFolder}",
+                $fileOrFiles->getClientOriginalName()
+            );
+        } elseif (is_array($fileOrFiles)) {
+            foreach ($fileOrFiles as $file) {
+                if ($file instanceof UploadedFile) {
+                    $file->storeAs(
+                        "public/assets/characters/{$charFolder}",
+                        $file->getClientOriginalName()
+                    );
+                }
+            }
         }
 
-        return [
-            'sprite_sheet_path' => $spritePath,
-            'atlas_path' => $atlasPath,
-        ];
+        $character = Character::where('slug', $slug)->orWhere('name', $slug)->first();
+        if ($character) {
+            $this->clearCharacterCache($character->id);
+        }
     }
 
     /**
-     * Replace only the uploaded assets and return the model fields that changed.
-     *
-     * @return array<string, string>
+     * Return the same asset-pack version used by the browser runtime.
      */
-    public function replace(
-        Character $character,
-        ?UploadedFile $spriteSheet,
-        ?UploadedFile $atlasFile
-    ): array {
-        // Parse first. If the new atlas is invalid, no existing file is touched.
-        $manifest = $atlasFile !== null
-            ? $this->atlasManifest->parseUploadedFile($atlasFile)
-            : null;
+    protected function packVersion(Character $character): int
+    {
+        $settings = is_array($character->settings) ? $character->settings : [];
+        $configured = (int) ($settings['asset_pack_version'] ?? 0);
 
-        $updates = [];
-        $directory = $this->directoryForSlug($character->slug);
-
-        if ($spriteSheet !== null) {
-            $oldPath = $character->sprite_sheet_path;
-            $newPath = $this->storeSpriteSheet($directory, $spriteSheet);
-
-            if (!$character->is_builtin && $oldPath !== $newPath) {
-                Storage::disk('public')->delete($oldPath);
-            }
-
-            $updates['sprite_sheet_path'] = $newPath;
+        if ($configured > 0) {
+            return $configured;
         }
 
-        if ($atlasFile !== null && $manifest !== null) {
-            $oldPath = $character->atlas_path;
-            $newPath = $directory.'/atlas.json';
-
-            if (!Storage::disk('public')->put($newPath, $this->encodeManifest($manifest))) {
-                throw new RuntimeException('Unable to store the character atlas.');
-            }
-
-            if (!$character->is_builtin && $oldPath !== $newPath) {
-                Storage::disk('public')->delete($oldPath);
-            }
-
-            $updates['atlas_path'] = $newPath;
-        }
-
-        if ($updates !== []) {
-            $this->clearCharacterCache((int) $character->getKey());
-        }
-
-        return $updates;
+        return match (strtolower((string) $character->slug)) {
+            'uzudi' => 6,
+            default => 5,
+        };
     }
 
     /**
-     * Generate the optimized runtime manifest used by the open-world loader.
+     * Build the optimized startup manifest without mixing atlas/sheet versions.
      */
     public function getOptimizedManifest(int $characterId, string $deviceType = 'desktop'): array
     {
+        $deviceType = in_array($deviceType, ['desktop', 'mobile', 'compact'], true)
+            ? $deviceType
+            : 'mobile';
+
         return Cache::remember(
             "char_manifest_{$characterId}_{$deviceType}",
             3600,
-            function () use ($characterId, $deviceType): array {
+            function () use ($characterId, $deviceType) {
                 $character = Character::findOrFail($characterId);
-
-                // Uploaded characters have one canonical asset pair. Built-in
-                // characters keep their device-specific V6 asset variants.
-                if (!$character->is_builtin) {
-                    return [
-                        'id' => $character->id,
-                        'name' => strtolower($character->slug),
-                        'slug' => $character->slug,
-                        'atlas' => $character->atlasUrl(),
-                        'image' => $character->spriteUrl(),
-                    ];
-                }
-
                 $charFolder = strtolower($character->slug ?? $character->name);
+                $packVersion = $this->packVersion($character);
 
                 return [
                     'id' => $character->id,
                     'name' => $charFolder,
                     'slug' => $character->slug,
-                    'atlas' => asset("assets/characters/{$charFolder}/{$charFolder}-atlas-v6-{$deviceType}.json"),
-                    'image' => asset("assets/characters/{$charFolder}/{$charFolder}-spritesheet-v6-{$deviceType}.png"),
+                    'pack_version' => $packVersion,
+                    'atlas' => asset(
+                        "assets/characters/{$charFolder}/{$charFolder}-atlas-v{$packVersion}-{$deviceType}.json"
+                    ),
+                    'image' => asset(
+                        "assets/characters/{$charFolder}/{$charFolder}-spritesheet-v{$packVersion}-{$deviceType}.png"
+                    ),
                 ];
             }
         );
     }
 
-    /**
-     * Delete persisted assets for a custom character.
-     */
-    public function delete(Character $character): void
+    public function delete(string $slug): void
     {
-        if ($character->is_builtin) {
-            return;
+        $charFolder = strtolower($slug);
+        Storage::deleteDirectory("public/assets/characters/{$charFolder}");
+
+        $character = Character::where('slug', $slug)->orWhere('name', $slug)->first();
+        if ($character) {
+            $this->clearCharacterCache($character->id);
         }
-
-        $disk = Storage::disk('public');
-        $paths = array_values(array_unique(array_filter([
-            $character->sprite_sheet_path,
-            $character->atlas_path,
-        ])));
-
-        if ($paths !== []) {
-            $disk->delete($paths);
-        }
-
-        foreach (array_unique(array_map('dirname', $paths)) as $directory) {
-            if ($directory !== '.' && $directory !== '') {
-                $disk->deleteDirectory($directory);
-            }
-        }
-
-        $this->clearCharacterCache((int) $character->getKey());
     }
 
-    private function storeSpriteSheet(string $directory, UploadedFile $spriteSheet): string
-    {
-        $extension = strtolower($spriteSheet->getClientOriginalExtension() ?: 'png');
-        $path = $spriteSheet->storeAs(
-            $directory,
-            'spritesheet.'.$extension,
-            'public'
-        );
-
-        if (!is_string($path) || $path === '') {
-            throw new RuntimeException('Unable to store the character sprite sheet.');
-        }
-
-        return $path;
-    }
-
-    private function directoryForSlug(string $slug): string
-    {
-        return 'characters/'.strtolower($slug);
-    }
-
-    private function encodeManifest(array $manifest): string
-    {
-        $encoded = json_encode(
-            $manifest,
-            JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT
-        );
-
-        if (!is_string($encoded)) {
-            throw new RuntimeException('Unable to encode the character atlas.');
-        }
-
-        return $encoded;
-    }
-
-    private function clearCharacterCache(int $characterId): void
+    protected function clearCharacterCache(int $characterId): void
     {
         Cache::forget("char_manifest_{$characterId}_desktop");
         Cache::forget("char_manifest_{$characterId}_mobile");

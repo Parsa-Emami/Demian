@@ -12,36 +12,40 @@ use Tests\TestCase;
 class CharacterManagerTest extends TestCase
 {
     use RefreshDatabase;
+
     public function test_studio_page_is_available(): void
     {
-        $this->withoutExceptionHandling(); // اضافه کردن این خط
+        $this->withoutExceptionHandling();
         $this->get('/')
             ->assertOk()
             ->assertSee('Character manager');
     }
 
-    public function test_tiam_can_be_seeded_and_listed(): void
+    public function test_all_builtin_characters_can_be_seeded_and_listed(): void
     {
         $this->seed(TiamCharacterSeeder::class);
-        $this->getJson('/characters')
+
+        $response = $this->getJson('/characters')
             ->assertOk()
             ->assertJsonPath('data.0.slug', 'tiam')
-            ->assertJsonPath('data.0.is_active', true)
-            ->assertJsonFragment([
-                'slug' => 'darya',
-                'name' => 'DARYA / دریا',
-                'is_builtin' => true,
-            ])
-            ->assertJsonFragment([
-                'slug' => 'iman',
-                'name' => 'IMAN / ایمان',
-                'is_builtin' => true,
-            ])
-            ->assertJsonFragment([
-                'slug' => 'uzudi',
-                'name' => 'UZUDI / اوزودی',
+            ->assertJsonPath('data.0.is_active', true);
+
+        foreach ([
+            ['tiam', 'TIAM / تیام'],
+            ['ronak', 'RONAK / روناک'],
+            ['amirreza', 'AMIRREZA / امیررضا'],
+            ['parsa', 'PARSA / پارسا'],
+            ['darya', 'DARYA / دریا'],
+            ['iman', 'IMAN / ایمان'],
+            ['uzudi', 'UZUDI / اوزودی'],
+            ['setayesh', 'SETAYESH / ستایش'],
+        ] as [$slug, $name]) {
+            $response->assertJsonFragment([
+                'slug' => $slug,
+                'name' => $name,
                 'is_builtin' => true,
             ]);
+        }
     }
 
     public function test_character_can_be_uploaded(): void
@@ -61,6 +65,7 @@ class CharacterManagerTest extends TestCase
                 'win' => ['frames' => ['idle_0'], 'fps' => 1, 'loop' => false],
             ],
         ];
+
         $response = $this->post('/characters', [
             'name' => 'Test Character',
             'slug' => 'test-character',
@@ -71,6 +76,7 @@ class CharacterManagerTest extends TestCase
             ),
             'settings' => json_encode(['scale' => 1]),
         ]);
+
         $response
             ->assertCreated()
             ->assertJsonPath('data.slug', 'test-character');
@@ -96,6 +102,7 @@ class CharacterManagerTest extends TestCase
                 'idle' => ['frames' => ['idle_0'], 'fps' => 1, 'loop' => true],
             ],
         ];
+
         $this->post('/characters', [
             'name' => 'Incomplete Character',
             'slug' => 'incomplete-character',
@@ -107,6 +114,7 @@ class CharacterManagerTest extends TestCase
         ], ['Accept' => 'application/json'])
             ->assertUnprocessable()
             ->assertJsonValidationErrors(['atlas']);
+
         $this->assertDatabaseMissing('characters', [
             'slug' => 'incomplete-character',
         ]);
@@ -137,6 +145,7 @@ class CharacterManagerTest extends TestCase
         Storage::disk('public')->assertExists('characters/update-character/spritesheet.png');
         Storage::disk('public')->assertExists('characters/update-character/atlas.json');
     }
+
     public function test_custom_character_assets_are_deleted_with_character(): void
     {
         Storage::fake('public');
@@ -152,6 +161,7 @@ class CharacterManagerTest extends TestCase
         Storage::disk('public')->assertMissing('characters/delete-character/spritesheet.png');
         Storage::disk('public')->assertMissing('characters/delete-character/atlas.json');
     }
+
     private function createCustomCharacter(string $slug): Character
     {
         $atlas = [
@@ -168,6 +178,7 @@ class CharacterManagerTest extends TestCase
                 'win' => ['frames' => ['idle_0'], 'fps' => 1, 'loop' => false],
             ],
         ];
+
         $this->post('/characters', [
             'name' => ucfirst(str_replace('-', ' ', $slug)),
             'slug' => $slug,

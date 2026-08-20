@@ -12,13 +12,12 @@ class BuiltinCharacterSeeder extends Seeder
     {
         DB::transaction(function (): void {
             Character::query()->update(['is_active' => false]);
-            Character::query()->updateOrCreate(
-                ['slug' => 'tiam'],
+
+            $characters = [
                 [
+                    'slug' => 'tiam',
                     'name' => 'TIAM / تیام',
-                    'sprite_sheet_path' => 'assets/characters/tiam/tiam-spritesheet-v5-mobile.png',
-                    'atlas_path' => 'assets/characters/tiam/tiam-atlas-v5-mobile.json',
-                    'is_builtin' => true,
+                    'pack_version' => 5,
                     'is_active' => true,
                     'settings' => [
                         'walk_speed' => 3.2,
@@ -27,15 +26,11 @@ class BuiltinCharacterSeeder extends Seeder
                         'jump_force' => 6.5,
                         'scale' => 1,
                     ],
-                ]
-            );
-            Character::query()->updateOrCreate(
-                ['slug' => 'ronak'],
+                ],
                 [
+                    'slug' => 'ronak',
                     'name' => 'RONAK / روناک',
-                    'sprite_sheet_path' => 'assets/characters/ronak/ronak-spritesheet-v5-mobile.png',
-                    'atlas_path' => 'assets/characters/ronak/ronak-atlas-v5-mobile.json',
-                    'is_builtin' => true,
+                    'pack_version' => 5,
                     'is_active' => false,
                     'settings' => [
                         'walk_speed' => 3.25,
@@ -44,15 +39,11 @@ class BuiltinCharacterSeeder extends Seeder
                         'jump_force' => 6.6,
                         'scale' => 1,
                     ],
-                ]
-            );
-            Character::query()->updateOrCreate(
-                ['slug' => 'amirreza'],
+                ],
                 [
+                    'slug' => 'amirreza',
                     'name' => 'AMIRREZA / امیررضا',
-                    'sprite_sheet_path' => 'assets/characters/amirreza/amirreza-spritesheet-v5-mobile.png',
-                    'atlas_path' => 'assets/characters/amirreza/amirreza-atlas-v5-mobile.json',
-                    'is_builtin' => true,
+                    'pack_version' => 5,
                     'is_active' => false,
                     'settings' => [
                         'walk_speed' => 4.15,
@@ -61,15 +52,31 @@ class BuiltinCharacterSeeder extends Seeder
                         'jump_force' => 6.85,
                         'scale' => 1,
                     ],
-                ]
-            );
-            Character::query()->updateOrCreate(
-                ['slug' => 'darya'],
+                ],
                 [
+                    'slug' => 'parsa',
+                    'name' => 'PARSA / پارسا',
+                    'pack_version' => 5,
+                    'is_active' => false,
+                    'settings' => [
+                        'walk_speed' => 4.5,
+                        'run_speed' => 9.1,
+                        'sprint_speed' => 10.15,
+                        'jump_force' => 7.35,
+                        'air_control' => 0.68,
+                        'scale' => 1,
+                        'role_title' => 'FASTEST / STRONGEST',
+                        'tagline' => 'Black-shadow runner',
+                        'speed_rating' => 'S+',
+                        'power_rating' => 'S+',
+                    ],
+                ],
+                [
+                    'slug' => 'darya',
                     'name' => 'DARYA / دریا',
-                    'sprite_sheet_path' => 'assets/characters/darya/darya-spritesheet-v6-mobile.png',
-                    'atlas_path' => 'assets/characters/darya/darya-atlas-v6-mobile.json',
-                    'is_builtin' => true,
+                    // Darya V6 was the pack visible in the broken deployment.
+                    // Use the stable V5 pack already committed with Darya.
+                    'pack_version' => 5,
                     'is_active' => false,
                     'settings' => [
                         'walk_speed' => 3.55,
@@ -84,58 +91,29 @@ class BuiltinCharacterSeeder extends Seeder
                         'companion' => 'pishi',
                         'companion_always_visible' => true,
                     ],
-                ]
-            );
-            Character::query()->updateOrCreate(
-                ['slug' => 'iman'],
+                ],
                 [
+                    'slug' => 'iman',
                     'name' => 'IMAN / ایمان',
-                    'sprite_sheet_path' => 'assets/characters/iman/iman-spritesheet-v6-mobile.png',
-                    'atlas_path' => 'assets/characters/iman/iman-atlas-v6-mobile.json',
-                    'is_builtin' => true,
+                    // Keep Iman on the stable V5 pack for production rendering.
+                    'pack_version' => 5,
                     'is_active' => false,
                     'settings' => [
                         'walk_speed' => 3.75,
                         'run_speed' => 7.15,
                         'sprint_speed' => 7.9,
                         'jump_force' => 6.95,
-                        'air_control' => 0.6,
+                        'air_control' => 0.60,
                         'scale' => 1,
                         'role_title' => 'ANCHOR / CORE',
                         'tagline' => 'Reliable, strong, and team-first',
                         'signature_action' => 'guard',
                     ],
-                ]
-            );
-            Character::query()->updateOrCreate(
-                ['slug' => 'parsa'],
+                ],
                 [
-                    'name' => 'PARSA / پارسا',
-                    'sprite_sheet_path' => 'assets/characters/parsa/parsa-spritesheet-v5-mobile.png',
-                    'atlas_path' => 'assets/characters/parsa/parsa-atlas-v5-mobile.json',
-                    'is_builtin' => true,
-                    'is_active' => false,
-                    'settings' => [
-                        'walk_speed' => 4.5,
-                        'run_speed' => 9.1,
-                        'sprint_speed' => 10.15,
-                        'jump_force' => 7.35,
-                        'air_control' => 0.68,
-                        'scale' => 1,
-                        'role_title' => 'FASTEST / STRONGEST',
-                        'tagline' => 'Black-shadow runner',
-                        'speed_rating' => 'S+',
-                        'power_rating' => 'S+',
-                    ],
-                ]
-            );
-            Character::query()->updateOrCreate(
-                ['slug' => 'uzudi'],
-                [
+                    'slug' => 'uzudi',
                     'name' => 'UZUDI / اوزودی',
-                    'sprite_sheet_path' => 'assets/characters/uzudi/uzudi-spritesheet-v6-mobile.png',
-                    'atlas_path' => 'assets/characters/uzudi/uzudi-atlas-v6-mobile.json',
-                    'is_builtin' => true,
+                    'pack_version' => 6,
                     'is_active' => false,
                     'settings' => [
                         'walk_speed' => 3.75,
@@ -150,8 +128,45 @@ class BuiltinCharacterSeeder extends Seeder
                         'power_rating' => 'A+',
                         'signature_action' => 'dark_angel',
                     ],
-                ]
-            );
+                ],
+                [
+                    'slug' => 'setayesh',
+                    'name' => 'SETAYESH / ستایش',
+                    'pack_version' => 5,
+                    'is_active' => false,
+                    'settings' => [
+                        'walk_speed' => 3.4,
+                        'run_speed' => 6.6,
+                        'sprint_speed' => 7.25,
+                        'jump_force' => 6.7,
+                        'air_control' => 0.55,
+                        'scale' => 1,
+                        'role_title' => 'CURL SPARK',
+                        'tagline' => 'Style · Speed · Spark',
+                        'speed_rating' => 'A-',
+                        'power_rating' => 'B+',
+                    ],
+                ],
+            ];
+
+            foreach ($characters as $definition) {
+                $slug = $definition['slug'];
+                $packVersion = $definition['pack_version'];
+                $settings = $definition['settings'];
+                $settings['asset_pack_version'] = $packVersion;
+
+                Character::query()->updateOrCreate(
+                    ['slug' => $slug],
+                    [
+                        'name' => $definition['name'],
+                        'sprite_sheet_path' => "assets/characters/{$slug}/{$slug}-spritesheet-v{$packVersion}-mobile.png",
+                        'atlas_path' => "assets/characters/{$slug}/{$slug}-atlas-v{$packVersion}-mobile.json",
+                        'is_builtin' => true,
+                        'is_active' => $definition['is_active'],
+                        'settings' => $settings,
+                    ]
+                );
+            }
         });
     }
 }
