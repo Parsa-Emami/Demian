@@ -14,7 +14,6 @@ export function shouldForceLandscape({
         isMobileDevice
         && physicalPortrait
         && preference === 'landscape'
-        && mode === 'gameplay'
     );
 }
 
@@ -55,6 +54,10 @@ export default class MobileGameUI {
         this.root.dataset.pointerMode = coarse ? 'coarse' : 'fine';
         this.root.dataset.mobileDevice = this.isMobileDevice ? 'true' : 'false';
 
+        if (this.isMobileDevice) {
+            this.lockPreferredOrientation().catch(() => undefined);
+        }
+
         this.actionsToggle?.addEventListener('click', this.onActionsToggle);
         this.actionsTray?.addEventListener('pointerdown', this.onActionPress);
         this.fullscreenButton?.addEventListener('click', this.onFullscreen);
@@ -75,7 +78,7 @@ export default class MobileGameUI {
             this.attributeObserver = new MutationObserver(this.onRootAttributesChanged);
             this.attributeObserver.observe(this.root, {
                 attributes: true,
-                attributeFilter: ['data-session-state', 'data-shell-screen', 'data-sidebar-state'],
+                attributeFilter: ['data-session-state', 'data-shell-screen', 'data-sidebar-state', 'data-game-orientation'],
             });
         }
 

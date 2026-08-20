@@ -195,3 +195,25 @@ html.demian-forced-landscape .manager-sidebar,
 html.demian-forced-landscape .manager-sidebar__scroll {
     max-height: min(92%, var(--demian-logical-height, 390px));
 }
+
+
+/* Initial mobile boot: keep Demian arcade canvas in landscape from first paint. */
+@media (hover: none), (pointer: coarse), (max-width: 900px) {
+    html,
+    body,
+    .manager-shell {
+        width: 100vw;
+        height: calc(var(--demian-vh, 1vh) * 100);
+        overflow: hidden;
+    }
+
+    .manager-stage {
+        width: var(--demian-logical-width, 100vw);
+        height: var(--demian-logical-height, calc(var(--demian-vh, 1vh) * 100));
+    }
+
+    .demian-scene canvas {
+        width: 100% !important;
+        height: 100% !important;
+    }
+}

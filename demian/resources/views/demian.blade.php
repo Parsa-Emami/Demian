@@ -67,6 +67,7 @@
         data-runtime-version="9.1.0-atomic-pixel2d"
         data-deployment-mode="atomic-bundle"
         data-session-state="booting"
+        data-game-orientation="landscape"
         data-shell-screen="boot"
         data-control-layout="none"
         data-hud-visible="true"
