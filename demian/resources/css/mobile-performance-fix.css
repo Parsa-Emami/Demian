@@ -1,0 +1,33 @@
+
+/* Mobile GPU + viewport correction patch */
+html, body {
+    overscroll-behavior: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.demian-scene,
+.demian-scene canvas,
+[data-demian-scene] {
+    width: 100%;
+    height: 100%;
+    touch-action: none;
+}
+
+[data-game-canvas] {
+    transform: translateZ(0);
+    will-change: transform;
+    image-rendering: auto;
+}
+
+@media (max-width: 900px) {
+    html, body {
+        height: var(--demian-real-height, 100dvh);
+    }
+
+    .demian-scene,
+    .manager-stage,
+    .manager-shell {
+        height: var(--demian-real-height, 100dvh) !important;
+        max-height: var(--demian-real-height, 100dvh) !important;
+    }
+}

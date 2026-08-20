@@ -1,11 +1,14 @@
 import '../css/app.css';
 import '../css/mobile-character-polish.css';
+import '../css/mobile-performance-fix.css';
 import GameApplication from './game/application/GameApplication';
 import CharacterManagerUI from './ui/CharacterManagerUI';
 import SidebarController from './ui/SidebarController';
 import MobileGameUI from './ui/MobileGameUI';
+import MobilePerformanceManager from './game/performance/MobilePerformanceManager.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
+    new MobilePerformanceManager().mount();
     const sceneContainer = document.querySelector('[data-demian-scene]');
     const managerRoot = document.querySelector('[data-character-manager]');
     if (!sceneContainer || !managerRoot) {
