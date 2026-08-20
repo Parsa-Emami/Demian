@@ -14,6 +14,7 @@ export function shouldForceLandscape({
         isMobileDevice
         && physicalPortrait
         && preference === 'landscape'
+        && mode === 'gameplay'
     );
 }
 
@@ -54,8 +55,8 @@ export default class MobileGameUI {
         this.root.dataset.pointerMode = coarse ? 'coarse' : 'fine';
         this.root.dataset.mobileDevice = this.isMobileDevice ? 'true' : 'false';
 
-        if (this.isMobileDevice) {
-            this.lockPreferredOrientation().catch(() => undefined);
+        if (this.isMobileDevice && this.gameplayActive()) {
+        this.lockPreferredOrientation().catch(() => undefined);
         }
 
         this.actionsToggle?.addEventListener('click', this.onActionsToggle);
