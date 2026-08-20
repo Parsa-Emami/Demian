@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
 <phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
          bootstrap="vendor/autoload.php"
@@ -8,20 +9,45 @@
         <testsuite name="Unit">
             <directory>tests/Unit</directory>
         </testsuite>
+
         <testsuite name="Feature">
             <directory>tests/Feature</directory>
         </testsuite>
     </testsuites>
+
     <source>
         <include>
             <directory>app</directory>
         </include>
     </source>
+
     <php>
         <env name="APP_URL" value="http://localhost"/>
         <env name="APP_ENV" value="testing"/>
+
+        <!-- Prevent maintenance state from depending on database/cache -->
+        <env name="APP_MAINTENANCE_DRIVER" value="file"/>
+
+        <!-- Faster password hashing during tests -->
+        <env name="BCRYPT_ROUNDS" value="4"/>
+
+        <!-- Disable external / persistent services -->
+        <env name="BROADCAST_CONNECTION" value="null"/>
         <env name="CACHE_STORE" value="array"/>
+        <env name="MAIL_MAILER" value="array"/>
+        <env name="QUEUE_CONNECTION" value="sync"/>
+
+        <!-- In-memory SQLite test database -->
         <env name="DB_CONNECTION" value="sqlite"/>
         <env name="DB_DATABASE" value=":memory:"/>
+        <env name="DB_URL" value=""/>
+
+        <!-- Critical: do not use database sessions in tests -->
+        <env name="SESSION_DRIVER" value="array"/>
+
+        <!-- Disable optional monitoring/debug services in test runs -->
+        <env name="PULSE_ENABLED" value="false"/>
+        <env name="TELESCOPE_ENABLED" value="false"/>
+        <env name="NIGHTWATCH_ENABLED" value="false"/>
     </php>
 </phpunit>
