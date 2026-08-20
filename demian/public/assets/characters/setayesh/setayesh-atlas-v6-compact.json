@@ -1,0 +1,187 @@
+{
+  "meta": {
+    "character": "setayesh",
+    "displayName": "SETAYESH / ستایش",
+    "packVersion": 6,
+    "variant": "compact",
+    "image": "setayesh-spritesheet-v6-compact.png",
+    "size": {
+      "w": 512,
+      "h": 384
+    },
+    "format": "RGBA8888",
+    "pixelArt": true,
+    "artIntegrity": "valid",
+    "sourceGrid": "4x3 canonical Setayesh action atlas"
+  },
+  "render": {
+    "referenceBodyWidthRatio": 0.72,
+    "referenceBodyHeightRatio": 0.9,
+    "canonicalWorldHeight": 3.75
+  },
+  "frames": {
+    "idle_w_0": {
+      "x": 0,
+      "y": 0,
+      "w": 128,
+      "h": 128
+    },
+    "idle_e_0": {
+      "x": 128,
+      "y": 0,
+      "w": 128,
+      "h": 128
+    },
+    "walk_w_0": {
+      "x": 256,
+      "y": 0,
+      "w": 128,
+      "h": 128
+    },
+    "walk_e_0": {
+      "x": 384,
+      "y": 0,
+      "w": 128,
+      "h": 128
+    },
+    "run_w_0": {
+      "x": 0,
+      "y": 128,
+      "w": 128,
+      "h": 128
+    },
+    "run_e_0": {
+      "x": 128,
+      "y": 128,
+      "w": 128,
+      "h": 128
+    },
+    "jump_w_0": {
+      "x": 256,
+      "y": 128,
+      "w": 128,
+      "h": 128
+    },
+    "jump_e_0": {
+      "x": 384,
+      "y": 128,
+      "w": 128,
+      "h": 128
+    },
+    "spark_w_0": {
+      "x": 0,
+      "y": 256,
+      "w": 128,
+      "h": 128
+    },
+    "spark_e_0": {
+      "x": 128,
+      "y": 256,
+      "w": 128,
+      "h": 128
+    },
+    "win_w_0": {
+      "x": 256,
+      "y": 256,
+      "w": 128,
+      "h": 128
+    },
+    "win_e_0": {
+      "x": 384,
+      "y": 256,
+      "w": 128,
+      "h": 128
+    }
+  },
+  "animations": {
+    "idle": {
+      "fps": 4,
+      "loop": true,
+      "framesLeft": [
+        "idle_w_0"
+      ],
+      "framesRight": [
+        "idle_e_0"
+      ]
+    },
+    "walk": {
+      "fps": 7,
+      "loop": true,
+      "framesLeft": [
+        "walk_w_0",
+        "idle_w_0"
+      ],
+      "framesRight": [
+        "walk_e_0",
+        "idle_e_0"
+      ]
+    },
+    "run": {
+      "fps": 10,
+      "loop": true,
+      "framesLeft": [
+        "run_w_0",
+        "walk_w_0"
+      ],
+      "framesRight": [
+        "run_e_0",
+        "walk_e_0"
+      ]
+    },
+    "jump": {
+      "fps": 8,
+      "loop": false,
+      "framesLeft": [
+        "jump_w_0"
+      ],
+      "framesRight": [
+        "jump_e_0"
+      ]
+    },
+    "win": {
+      "fps": 5,
+      "loop": false,
+      "framesLeft": [
+        "win_w_0"
+      ],
+      "framesRight": [
+        "win_e_0"
+      ]
+    },
+    "spark": {
+      "fps": 8,
+      "loop": false,
+      "framesLeft": [
+        "spark_w_0"
+      ],
+      "framesRight": [
+        "spark_e_0"
+      ]
+    }
+  },
+  "fallbacks": {
+    "breathe": "idle",
+    "blink": "idle",
+    "ready": "idle",
+    "tiptoe": "walk",
+    "turn": "walk",
+    "sprint": "run",
+    "skid": "run",
+    "dash": "run",
+    "takeoff": "jump",
+    "hop": "jump",
+    "hover": "jump",
+    "fall": "jump",
+    "land": "jump",
+    "slide": "run",
+    "dodge": "jump",
+    "celebrate": "win",
+    "wave": "win",
+    "salute": "win",
+    "dance": "win",
+    "laugh": "win",
+    "pose": "win",
+    "taunt": "win",
+    "sleep": "idle"
+  }
+}

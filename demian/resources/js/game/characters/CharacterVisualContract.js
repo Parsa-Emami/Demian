@@ -6,6 +6,7 @@ export const BUILTIN_CHARACTER_SLUGS = Object.freeze([
     'amirreza',
     'parsa',
     'uzudi',
+    'setayesh',
 ]);
 
 export const CHARACTER_SPRITE_VARIANTS = Object.freeze([
@@ -70,6 +71,7 @@ export function resolveCharacterAssetUrl(relativePath, baseUrl = globalThis.docu
 
 export function builtinCharacterAssetPair(slug, variant = 'mobile', baseUrl = globalThis.document?.baseURI) {
     const normalizedVariant = normalizeSpriteVariant(variant);
+
     return Object.freeze({
         spriteUrl: resolveCharacterAssetUrl(
             characterAssetRelativePath(slug, normalizedVariant, 'sprite'),
@@ -92,6 +94,7 @@ function clamp(value, min, max, fallback) {
 export function characterFrameWorldSize(atlas, display = CHARACTER_CANONICAL_BODY) {
     const canonicalBodyWidth = Math.max(0.1, Number(display?.worldWidth) || CHARACTER_CANONICAL_BODY.worldWidth);
     const canonicalBodyHeight = Math.max(0.1, Number(display?.worldHeight) || CHARACTER_CANONICAL_BODY.worldHeight);
+
     const render = atlas?.render ?? {};
     const referenceWidthRatio = clamp(
         render.referenceBodyWidthRatio,
