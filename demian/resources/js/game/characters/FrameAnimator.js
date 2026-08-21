@@ -210,5 +210,35 @@ export default class FrameAnimator {
         return frames[this.frameIndex] ?? frames[0] ?? null;
     }
 
+    /**
+     * Sub-frame progress (0..1) toward the next frame of the current
+     * animation, based on elapsed time. Pure read-only math, no side
+     * effects — safe to call every render tick. Used by renderers that
+     * opt into cross-fading two consecutive frames for a smoother look
+     * (see PixelActorRenderer.drawSpriteCharacter + atlas.render.frameBlend).
+     */
+    frameProgress() {
+        if (!this.animation) return 0;
+        const fps = Math.max(Number(this.animation.fps) || 1, 1);
+        const frameDuration = 1 / (fps * this.playbackRate);
+        if (!(frameDuration > 0)) return 0;
+        return Math.min(1, Math.max(0, this.elapsed / frameDuration));
+    }
+
+    /**
+     * Name of the frame that will play right after the current one, honoring
+     * looping/clamping the same way update() does. Returns null when there is
+     * no meaningful "next" frame (single-frame animation).
+     */
+    nextFrameName() {
+        const frames = this.currentFrames();
+        if (frames.length <= 1) return null;
+        let nextIndex = this.frameIndex + 1;
+        if (nextIndex >= frames.length) {
+            nextIndex = this.animation?.loop !== false ? 0 : frames.length - 1;
+        }
+        return frames[nextIndex] ?? null;
+    }
+
     applyCurrentFrame() {}
 }

@@ -136,17 +136,29 @@ export function drawSpriteCharacter(ctx, camera, entity, {
 
     ctx.translate(metrics.anchorX, metrics.anchorY);
     ctx.rotate(metrics.rotation);
-    ctx.drawImage(
-        image,
-        frame.x,
-        frame.y,
-        frame.w,
-        frame.h,
-        -metrics.pivotX * metrics.frameWidth,
-        -metrics.pivotY * metrics.frameHeight,
-        metrics.frameWidth,
-        metrics.frameHeight
-    );
+    const destX = -metrics.pivotX * metrics.frameWidth;
+    const destY = -metrics.pivotY * metrics.frameHeight;
+    ctx.drawImage(image, frame.x, frame.y, frame.w, frame.h, destX, destY, metrics.frameWidth, metrics.frameHeight);
+
+    // Opt-in sub-frame smoothing: characters whose atlas sets
+    // render.frameBlend cross-fade in a sliver of the upcoming frame,
+    // giving perceptibly smoother motion between poses without needing
+    // any extra art. Every other character's atlas has no such flag, so
+    // this block never runs for them and the draw above is unchanged.
+    const blendConfig = entity?.atlas?.render;
+    if (blendConfig?.frameBlend && typeof entity?.animator?.nextFrameName === 'function') {
+        const nextFrameName = entity.animator.nextFrameName();
+        const nextFrame = nextFrameName ? entity?.atlas?.frames?.[nextFrameName] : null;
+        const maxAlpha = Math.min(0.65, Math.max(0, Number(blendConfig.frameBlendMaxAlpha) || 0.3));
+        const progress = typeof entity.animator.frameProgress === 'function' ? entity.animator.frameProgress() : 0;
+        const blendAlpha = nextFrame ? progress * maxAlpha : 0;
+        if (blendAlpha > 0.015) {
+            const baseAlpha = ctx.globalAlpha;
+            ctx.globalAlpha = baseAlpha * blendAlpha;
+            ctx.drawImage(image, nextFrame.x, nextFrame.y, nextFrame.w, nextFrame.h, destX, destY, metrics.frameWidth, metrics.frameHeight);
+            ctx.globalAlpha = baseAlpha;
+        }
+    }
     ctx.restore();
 
     if (label) {

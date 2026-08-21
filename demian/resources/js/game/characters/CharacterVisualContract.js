@@ -1,5 +1,21 @@
 export const CHARACTER_PACK_VERSION = 6;
 
+// Per-character pack version overrides. This lets a single character move to
+// a newer/higher-fidelity asset pack (e.g. an HD re-sample built by
+// tools/build_hd_character_pack.py) independently, without bumping every
+// other built-in character to a version whose files don't exist yet.
+// Add a slug here once its vN pack has been generated and validated
+// (npm run validate:character-art / audit_character_sprite_packs.py); until
+// then every character keeps resolving to CHARACTER_PACK_VERSION as before.
+export const CHARACTER_PACK_VERSION_OVERRIDES = Object.freeze({
+    darya: 7,
+});
+
+export function characterPackVersion(slug) {
+    const normalizedSlug = String(slug ?? '').trim().toLowerCase();
+    return CHARACTER_PACK_VERSION_OVERRIDES[normalizedSlug] ?? CHARACTER_PACK_VERSION;
+}
+
 export const BUILTIN_CHARACTER_SLUGS = Object.freeze([
     'tiam',
     'ronak',
@@ -56,9 +72,10 @@ export function normalizeSpriteVariant(variant = 'mobile') {
 export function characterAssetRelativePath(slug, variant = 'mobile', type = 'sprite') {
     const normalizedSlug = String(slug ?? '').trim().toLowerCase();
     const normalizedVariant = normalizeSpriteVariant(variant);
+    const packVersion = characterPackVersion(normalizedSlug);
     const filename = type === 'atlas'
-        ? `${normalizedSlug}-atlas-v${CHARACTER_PACK_VERSION}-${normalizedVariant}.json`
-        : `${normalizedSlug}-spritesheet-v${CHARACTER_PACK_VERSION}-${normalizedVariant}.png`;
+        ? `${normalizedSlug}-atlas-v${packVersion}-${normalizedVariant}.json`
+        : `${normalizedSlug}-spritesheet-v${packVersion}-${normalizedVariant}.png`;
 
     return `assets/characters/${normalizedSlug}/${filename}`;
 }
