@@ -2773,7 +2773,7 @@
     "transitionSeconds": 0.07
   },
   "render": {
-    "referenceBodyWidthRatio": 0.7188,
-    "referenceBodyHeightRatio": 0.9688
+    "referenceBodyWidthRatio": 0.42,
+    "referenceBodyHeightRatio": 0.62
   }
 }

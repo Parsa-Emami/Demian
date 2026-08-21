@@ -35,10 +35,10 @@
     "sourcePack": 5,
     "normalizedIdleBodyHeightRatio": 0.86,
     "note": "HD pack: v6 frames re-sampled at 1.5x pixel density (edge-aware upscale + unsharp polish + palette quantize + hard alpha snap). Same poses/animations as the source pack; no new art content.",
-    "artIntegrity": "valid",
     "hd": true,
     "upscaleFactor": 1.5,
-    "sourceVersion": 6
+    "sourceVersion": 6,
+    "artIntegrity": "valid"
   },
   "frames": {
     "idle_00": {
@@ -5201,9 +5201,9 @@
     "canonicalBodyWorldHeight": 3.75,
     "normalizedBodyHeightRatio": 0.86,
     "preserveAspectRatio": true,
-    "referenceBodyWidthRatio": 0.6424,
-    "referenceBodyHeightRatio": 0.8698,
     "frameBlend": true,
-    "frameBlendMaxAlpha": 0.32
+    "frameBlendMaxAlpha": 0.32,
+    "referenceBodyWidthRatio": 0.6007,
+    "referenceBodyHeightRatio": 0.8628
   }
 }
