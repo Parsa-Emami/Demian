@@ -3,14 +3,20 @@
   "slug": "darya",
   "name": "DARYA / دریا",
   "style": "demian_arcade_v1",
-  "source": {
-    "sheet": "darya-spritesheet.png",
-    "grid": {"columns": 4, "rows": 3, "cell": 256},
-    "poses": [
-      "idle_0", "idle_1", "walk_e", "walk_w",
-      "run_e", "run_w", "jump_0", "jump_1",
-      "attack_e", "attack_w", "win_0", "win_1"
-    ]
+  "visual": {
+    "version": 7,
+    "atlas": {
+      "desktop": "darya-atlas-v7-desktop.json",
+      "mobile": "darya-atlas-v7-mobile.json",
+      "compact": "darya-atlas-v7-compact.json"
+    },
+    "spritesheets": {
+      "desktop": "darya-spritesheet-v7-desktop.png",
+      "mobile": "darya-spritesheet-v7-mobile.png",
+      "compact": "darya-spritesheet-v7-compact.png"
+    },
+    "frameBlend": true,
+    "smoothAnimation": true
   },
   "identity": {
     "hair": "medium-length shaggy layered dark-brown hair with curtain bangs",
