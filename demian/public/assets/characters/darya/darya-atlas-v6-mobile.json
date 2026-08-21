@@ -34,7 +34,10 @@
     "combatAnimationsRemoved": true,
     "sourcePack": 5,
     "normalizedIdleBodyHeightRatio": 0.86,
-    "note": "Demian V6 252-frame non-combat pack: expanded cute walk/run/jump timing with canonical character dimensions."
+    "note": "Demian V6 252-frame non-combat pack: expanded cute walk/run/jump timing with canonical character dimensions.",
+    "artIntegrity": "valid",
+    "referenceBodyWidthRatio": 0.609,
+    "referenceBodyHeightRatio": 0.87
   },
   "frames": {
     "idle_00": {
