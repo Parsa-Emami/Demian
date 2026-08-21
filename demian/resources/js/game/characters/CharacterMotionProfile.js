@@ -67,19 +67,36 @@ export function characterPresentationPose({
     const horizontal = Number.isFinite(horizontalValue) ? clamp(horizontalValue, -1, 1) : directionHorizontal(direction);
     const target = { width: 1, height: 1, bob: 0, tilt: 0, x: 0, y: 0 };
 
+    // Locomotion cycles (breathing/stepping/striding/floating) are driven by
+    // `framePhase` -- one full 0..2*PI sweep per full loop of the *actual*
+    // baked animation the player is looking at (framePhase = progress, and
+    // progress = frameIndex / (frameCount - 1), which already accounts for
+    // the animation's own fps, its frame count, and the current
+    // characterPlaybackRate()). This keeps the procedural squash/bob/tilt
+    // overlay perfectly phase-locked to the real hand/leg poses in the
+    // sprite sheet no matter how fast the character is moving, and it
+    // re-synchronizes for free every time play({restart:true}) resets the
+    // animation back to frame 0 on a state change. Using an independent
+    // wall-clock timer here (the previous approach) drifts out of phase
+    // with the artwork almost immediately -- e.g. one full walk loop takes
+    // frames/fps = 28/21 = 1.333s, but a fixed "11.4 rad/s" timer covers
+    // 15.2 radians in that same 1.333s, which is not a multiple of 2*PI, so
+    // the bounce and the actual footfall frames were never aligned even at
+    // a single reference speed, let alone across the whole speed range.
+    const framePhase = phase * Math.PI * 2;
+
     if (['idle', 'breathe', 'blink', 'ready'].includes(state)) {
-        const breath = Math.sin(time * 3.2);
-        const tinyBounce = Math.sin(time * 6.4) * 0.006;
+        const breath = Math.sin(framePhase);
+        const tinyBounce = Math.sin(framePhase * 2) * 0.006;
         target.bob = breath * 0.042 + tinyBounce;
         target.width += breath * 0.015;
         target.height -= breath * 0.017;
-        target.tilt = Math.sin(time * 1.55) * 0.014;
+        target.tilt = Math.sin(framePhase * 0.5) * 0.014;
     } else if (state === 'walk' || state === 'tiptoe') {
-        const multiplier = state === 'tiptoe' ? 0.86 : 1;
-        const cycle = localTime * 11.4 * multiplier;
-        const step = Math.sin(cycle);
-        const doubleStep = Math.cos(cycle * 2);
-        target.bob = Math.abs(step) * 0.105 * multiplier;
+        const amplitude = state === 'tiptoe' ? 0.86 : 1;
+        const step = Math.sin(framePhase);
+        const doubleStep = Math.cos(framePhase * 2);
+        target.bob = Math.abs(step) * 0.105 * amplitude;
         target.width += doubleStep * 0.022;
         target.height -= doubleStep * 0.027;
         target.tilt = step * 0.04 * facing - depth * 0.018;
@@ -90,18 +107,24 @@ export function characterPresentationPose({
             target.height += 0.025;
         }
     } else if (state === 'run' || state === 'sprint') {
-        const multiplier = state === 'sprint' ? 1.19 : 1;
-        const cycle = localTime * 15.5 * multiplier;
-        const stride = Math.sin(cycle);
-        const compression = Math.cos(cycle * 2);
-        target.bob = Math.abs(stride) * 0.155 * multiplier;
+        const amplitude = state === 'sprint' ? 1.19 : 1;
+        const stride = Math.sin(framePhase);
+        const compression = Math.cos(framePhase * 2);
+        target.bob = Math.abs(stride) * 0.155 * amplitude;
         target.width += compression * 0.038;
         target.height -= compression * 0.046;
         target.tilt = -0.058 * facing + stride * 0.03 - depth * 0.028;
         target.x = horizontal * (0.03 + stride * 0.018);
     } else if (['takeoff', 'jump', 'hop', 'hover', 'fall'].includes(state)) {
         const verticalRatio = clamp(jumpVelocity / Math.max(Number(jumpForce) || 1, 0.001), -1, 1);
-        const airPulse = Math.sin(localTime * 5.6);
+        // hover/fall loop indefinitely while airborne, so their flutter can
+        // (and should) stay frame-locked the same way idle/walk/run do.
+        // takeoff/jump/hop are short one-shot clips that often finish before
+        // the character actually lands, so their subtle flutter keeps using
+        // a continuous timer -- switching it to `progress` would freeze the
+        // flutter the instant the clip ends while still airborne.
+        const looping = state === 'hover' || state === 'fall';
+        const airPulse = looping ? Math.sin(framePhase) : Math.sin(localTime * 5.6);
         target.width += verticalRatio > 0 ? -0.06 : 0.07;
         target.height += verticalRatio > 0 ? 0.085 : -0.055;
         target.tilt = -Number(velocityX || 0) * 0.009 - depth * 0.022;
@@ -112,7 +135,7 @@ export function characterPresentationPose({
             target.tilt += Math.sin(localTime * 7) * 0.04 * facing;
         }
         if (state === 'hover') {
-            target.bob += Math.sin(localTime * 8) * 0.06;
+            target.bob += Math.sin(framePhase * 1.5) * 0.06;
         }
     } else if (state === 'land') {
         const impact = Math.sin(phase * Math.PI);

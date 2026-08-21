@@ -26,7 +26,7 @@ export default class SpriteAnimator extends FrameAnimator {
         if (!frame) {
             throw new Error(`Frame "${frameName}" is not defined in the atlas.`);
         }
-
+ 
         const width = Number(this.atlas.meta?.size?.w);
         const height = Number(this.atlas.meta?.size?.h);
         if (!width || !height) {

@@ -468,7 +468,7 @@ export default class SpriteCharacter {
 
             const nextDirection = directionFromVector(this.moveDirection, this.direction);
             this.setDirection(nextDirection);
-
+ 
             if (Math.abs(this.moveDirection.x) > 0.12) {
                 this.setFacing(this.moveDirection.x > 0 ? 1 : -1);
             }

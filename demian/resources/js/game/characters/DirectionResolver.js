@@ -25,7 +25,7 @@ export function directionProfile(direction) {
         horizontalSign: direction.includes('w') ? -1 : direction.includes('e') ? 1 : 0,
     };
 }
-
+ 
 export function cameraRelativeDirection(inputX, inputZ, basis) {
     const right = basis?.right?.clone?.() ?? new THREE.Vector3(1, 0, 0);
     const forward = basis?.forward?.clone?.() ?? new THREE.Vector3(0, 0, -1);

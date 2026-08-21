@@ -20,7 +20,7 @@ function damp(current, target, smoothing, deltaTime) {
     const alpha = 1 - Math.exp(-Math.max(0, smoothing) * Math.max(0, deltaTime));
     return current + (target - current) * alpha;
 }
-
+ 
 export default class CanvasCharacterAvatar {
     constructor({ slug, image, atlas, player = false }) {
         this.slug = slug;

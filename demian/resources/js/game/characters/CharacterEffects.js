@@ -22,7 +22,7 @@ export default class CharacterEffects {
             speed: this.createTexture('speed'),
         };
     }
-
+ 
     setIntensity(intensity) {
         this.intensity = THREE.MathUtils.clamp(Number(intensity) || 0, 0, 1);
     }

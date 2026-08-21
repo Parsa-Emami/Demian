@@ -11,6 +11,7 @@ export default class CharacterSpeechBubble {
         this.lastIndex = -1;
         this.texture = null;
 
+        
         this.material = new THREE.SpriteMaterial({
             transparent: true,
             depthWrite: false,
