@@ -169,7 +169,7 @@ class CharacterAssetService
         }
 
         return match (strtolower((string) $character->slug)) {
-            'uzudi' => 6,
+            'amirreza', 'darya', 'iman', 'mojtaba', 'parsa', 'ronak', 'setayesh', 'tiam', 'uzudi' => 7,
             default => 5,
         };
     }
