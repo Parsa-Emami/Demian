@@ -1,9 +1,9 @@
 {
   "meta": {
-    "name": "DARYA / دریا",
+    "name": "AMIRREZA",
     "version": 6,
     "variant": "desktop",
-    "image": "darya-spritesheet-v6-desktop.png",
+    "image": "amirreza-spritesheet-v6-desktop.png",
     "size": {
       "w": 5376,
       "h": 3072
@@ -35,9 +35,7 @@
     "sourcePack": 5,
     "normalizedIdleBodyHeightRatio": 0.86,
     "note": "Demian V6 252-frame non-combat pack: expanded cute walk/run/jump timing with canonical character dimensions.",
-    "artIntegrity": "valid",
-    "referenceBodyWidthRatio": 0.604,
-    "referenceBodyHeightRatio": 0.863
+    "artIntegrity": "valid"
   },
   "frames": {
     "idle_00": {
@@ -5163,23 +5161,15 @@
   "speech": {
     "duration": 3.2,
     "messages": [
-      "پیشی، بریم؟",
-      "پیشی همیشه با منه",
-      "آروم و دقیق",
-      "بزن بریم یه دور",
-      "پیشی حواست هست؟",
-      "این مرحله مال ماست",
-      "یه رکورد تازه",
-      "خوبه پیشی!"
+      "بال بزن بریم",
+      "از همه سریع‌ترم",
+      "الان وقت های‌اسکوره",
+      "پرواز کوتاه، برد بزرگ",
+      "سرعت یعنی امیررضا",
+      "بزن بریم یه دور سریع",
+      "فول اسپید!",
+      "با بال‌ها می‌بریم"
     ]
-  },
-  "companion": {
-    "id": "pishi",
-    "name": "Pishi / پیشی",
-    "type": "cat",
-    "alwaysVisible": true,
-    "bakedIntoEveryFrame": true,
-    "appearance": "gray-and-white cat with green-yellow eyes"
   },
   "pivot": {
     "x": 0.5,
@@ -5200,7 +5190,7 @@
     "canonicalBodyWorldHeight": 3.75,
     "normalizedBodyHeightRatio": 0.86,
     "preserveAspectRatio": true,
-    "referenceBodyWidthRatio": 0.604,
-    "referenceBodyHeightRatio": 0.863
+    "referenceBodyWidthRatio": 0.4316,
+    "referenceBodyHeightRatio": 0.8613
   }
 }

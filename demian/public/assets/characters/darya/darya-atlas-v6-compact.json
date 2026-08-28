@@ -5199,6 +5199,8 @@
     "canonicalBodyWorldWidth": 3.75,
     "canonicalBodyWorldHeight": 3.75,
     "normalizedBodyHeightRatio": 0.86,
-    "preserveAspectRatio": true
+    "preserveAspectRatio": true,
+    "referenceBodyWidthRatio": 0.605,
+    "referenceBodyHeightRatio": 0.867
   }
 }

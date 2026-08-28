@@ -1,9 +1,9 @@
 {
   "meta": {
-    "name": "DARYA / دریا",
+    "name": "UZUDI",
     "version": 6,
     "variant": "desktop",
-    "image": "darya-spritesheet-v6-desktop.png",
+    "image": "uzudi-spritesheet-v6-desktop.png",
     "size": {
       "w": 5376,
       "h": 3072
@@ -34,10 +34,8 @@
     "combatAnimationsRemoved": true,
     "sourcePack": 5,
     "normalizedIdleBodyHeightRatio": 0.86,
-    "note": "Demian V6 252-frame non-combat pack: expanded cute walk/run/jump timing with canonical character dimensions.",
-    "artIntegrity": "valid",
-    "referenceBodyWidthRatio": 0.604,
-    "referenceBodyHeightRatio": 0.863
+    "note": "Demian V6 custom UZUDI dark-angel pack with black feathered wings.",
+    "artIntegrity": "valid"
   },
   "frames": {
     "idle_00": {
@@ -5163,23 +5161,15 @@
   "speech": {
     "duration": 3.2,
     "messages": [
-      "پیشی، بریم؟",
-      "پیشی همیشه با منه",
-      "آروم و دقیق",
-      "بزن بریم یه دور",
-      "پیشی حواست هست؟",
-      "این مرحله مال ماست",
-      "یه رکورد تازه",
-      "خوبه پیشی!"
+      "اوزودی وارد شد",
+      "بال‌های سیاه، دلِ روشن",
+      "سایه‌هارو رد می‌کنیم",
+      "بزن بریم",
+      "حواسم به همه‌چیز هست",
+      "وقت پروازه",
+      "آروم، دقیق، تاریک",
+      "Dark angel mode"
     ]
-  },
-  "companion": {
-    "id": "pishi",
-    "name": "Pishi / پیشی",
-    "type": "cat",
-    "alwaysVisible": true,
-    "bakedIntoEveryFrame": true,
-    "appearance": "gray-and-white cat with green-yellow eyes"
   },
   "pivot": {
     "x": 0.5,
@@ -5200,7 +5190,7 @@
     "canonicalBodyWorldHeight": 3.75,
     "normalizedBodyHeightRatio": 0.86,
     "preserveAspectRatio": true,
-    "referenceBodyWidthRatio": 0.604,
-    "referenceBodyHeightRatio": 0.863
+    "referenceBodyWidthRatio": 0.6211,
+    "referenceBodyHeightRatio": 0.8633
   }
 }
