@@ -10,12 +10,6 @@ use Throwable;
 
 class CharacterAssetService
 {
-    /**
-     * Store a new custom character's two required assets.
-     *
-     * CharacterController::store() expects this method to return an array that
-     * can be unpacked into Character::create([...$paths]).
-     */
     public function store(
         string $slug,
         UploadedFile $spriteSheet,
@@ -32,7 +26,6 @@ class CharacterAssetService
                 throw new \RuntimeException('Character assets could not be stored.');
             }
         } catch (Throwable $exception) {
-            // Do not leave a half-created character asset directory behind.
             $disk->deleteDirectory($directory);
             throw $exception;
         }
@@ -43,11 +36,6 @@ class CharacterAssetService
         ];
     }
 
-    /**
-     * Replace only files that were actually uploaded.
-     *
-     * CharacterController::update() expects an array of changed model fields.
-     */
     public function replace(
         Character $character,
         ?UploadedFile $spriteSheet = null,
@@ -86,9 +74,6 @@ class CharacterAssetService
         return $updates;
     }
 
-    /**
-     * Build a runtime manifest for both bundled and uploaded characters.
-     */
     public function getOptimizedManifest(
         int $characterId,
         string $deviceType = 'desktop'
@@ -132,13 +117,9 @@ class CharacterAssetService
         );
     }
 
-    /**
-     * Delete uploaded assets for a custom character.
-     */
     public function delete(Character $character): void
     {
         $disk = Storage::disk('public');
-
         $directories = collect([
             $character->sprite_sheet_path,
             $character->atlas_path,
@@ -161,6 +142,30 @@ class CharacterAssetService
 
     protected function packVersion(Character $character): int
     {
+        $slug = strtolower((string) $character->slug);
+
+        // These bundled characters are pinned to the canonical-reference v9
+        // art pack so stale asset_pack_version values cannot keep an older
+        // sprite sheet active after this patch is copied into an existing DB.
+        $bundledVersion = match ($slug) {
+            'amirreza',
+            'arsal',
+            'darya',
+            'hossein',
+            'iman',
+            'mojtaba',
+            'parsa',
+            'setayesh',
+            'sorkhi',
+            'taher-db',
+            'uzudi' => 9,
+            default => null,
+        };
+
+        if ($bundledVersion !== null) {
+            return $bundledVersion;
+        }
+
         $settings = is_array($character->settings) ? $character->settings : [];
         $configured = (int) ($settings['asset_pack_version'] ?? 0);
 
@@ -168,9 +173,8 @@ class CharacterAssetService
             return $configured;
         }
 
-        return match (strtolower((string) $character->slug)) {
-            'darya' => 8,
-            'amirreza', 'iman', 'mojtaba', 'parsa', 'ronak', 'setayesh', 'tiam', 'uzudi' => 7,
+        return match ($slug) {
+            'ronak', 'tiam' => 7,
             default => 5,
         };
     }
@@ -183,7 +187,6 @@ class CharacterAssetService
     protected function clearCharacterCache(int $characterId): void
     {
         foreach (['desktop', 'mobile', 'compact'] as $deviceType) {
-            // Clear both keys because older revisions used both prefixes.
             Cache::forget("char_manifest_{$characterId}_{$deviceType}");
             Cache::forget("character_manifest_{$characterId}_{$deviceType}");
         }
