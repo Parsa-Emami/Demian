@@ -197,6 +197,32 @@ export default class SpriteCharacter {
         this.group.add(this.shadow, this.selectionRing, this.bodyRoot);
 
         this.animator = new SpriteAnimator(this.texture, atlas);
+
+        // A second sprite samples the upcoming frame when the atlas opts into
+        // frame blending. This mirrors the 2D canvas renderer's sub-frame blend
+        // path, so Darya remains smooth in both Three.js and pixel-rendered games.
+        this.blendTexture = this.texture.clone();
+        this.blendTexture.wrapS = THREE.ClampToEdgeWrapping;
+        this.blendTexture.wrapT = THREE.ClampToEdgeWrapping;
+        this.blendTexture.magFilter = THREE.NearestFilter;
+        this.blendTexture.minFilter = THREE.NearestFilter;
+        this.blendTexture.generateMipmaps = false;
+        this.blendTexture.colorSpace = THREE.SRGBColorSpace;
+        this.blendMaterial = new THREE.SpriteMaterial({
+            map: this.blendTexture,
+            transparent: true,
+            alphaTest: 0.025,
+            depthWrite: false,
+            toneMapped: false,
+            opacity: 0,
+        });
+        this.blendSprite = new THREE.Sprite(this.blendMaterial);
+        this.blendSprite.center.copy(this.sprite.center);
+        this.blendSprite.scale.copy(this.sprite.scale);
+        this.blendSprite.position.copy(this.sprite.position);
+        this.blendSprite.renderOrder = this.sprite.renderOrder + 1;
+        this.bodyRoot.add(this.blendSprite);
+
         this.effects = new CharacterEffects(scene, this);
         this.speech = new CharacterSpeechBubble(this, atlas.speech ?? {});
         this.animator.play('idle');
@@ -255,6 +281,19 @@ export default class SpriteCharacter {
         this.applyAtlasVisualMetrics(atlas);
 
         this.animator = new SpriteAnimator(this.texture, atlas);
+        if (this.blendTexture) this.blendTexture.dispose();
+        this.blendTexture = this.texture.clone();
+        this.blendTexture.wrapS = THREE.ClampToEdgeWrapping;
+        this.blendTexture.wrapT = THREE.ClampToEdgeWrapping;
+        this.blendTexture.magFilter = THREE.NearestFilter;
+        this.blendTexture.minFilter = THREE.NearestFilter;
+        this.blendTexture.generateMipmaps = false;
+        this.blendTexture.colorSpace = THREE.SRGBColorSpace;
+        if (this.blendMaterial) {
+            this.blendMaterial.map = this.blendTexture;
+            this.blendMaterial.opacity = 0;
+            this.blendMaterial.needsUpdate = true;
+        }
         this.animator.setDirection(direction);
         this.animator.setFacing(facing);
         this.animator.setPlaybackRate(playbackRate);
@@ -530,6 +569,7 @@ export default class SpriteCharacter {
         const movementRatio = THREE.MathUtils.clamp(this.speed() / Math.max(this.runSpeed, 0.01), 0, 1.5);
         this.animator.setPlaybackRate(characterPlaybackRate(this.state, movementRatio));
         this.animator.update(deltaTime);
+        this.updateFrameBlend();
         this.effects.update(deltaTime, this.speed());
         this.speech.update(deltaTime);
         this.updatePresentation(deltaTime);
@@ -781,6 +821,35 @@ export default class SpriteCharacter {
         });
     }
 
+    updateFrameBlend() {
+        if (!this.blendMaterial || !this.blendTexture) return;
+
+        const render = this.atlas?.render ?? {};
+        if (!render.frameBlend) {
+            this.blendMaterial.opacity = 0;
+            return;
+        }
+
+        const nextFrameName = this.animator?.nextFrameName?.();
+        const nextFrame = nextFrameName ? this.atlas?.frames?.[nextFrameName] : null;
+        const width = Number(this.atlas?.meta?.size?.w);
+        const height = Number(this.atlas?.meta?.size?.h);
+        if (!nextFrame || !width || !height) {
+            this.blendMaterial.opacity = 0;
+            return;
+        }
+
+        this.blendTexture.repeat.set(nextFrame.w / width, nextFrame.h / height);
+        this.blendTexture.offset.set(nextFrame.x / width, 1 - (nextFrame.y + nextFrame.h) / height);
+        this.blendTexture.updateMatrix();
+
+        const progress = THREE.MathUtils.clamp(this.animator.frameProgress?.() ?? 0, 0, 1);
+        const maxAlpha = THREE.MathUtils.clamp(Number(render.frameBlendMaxAlpha) || 0.3, 0, 0.65);
+        // Smoothstep removes the visual pop at the start of each frame interval.
+        const eased = progress * progress * (3 - 2 * progress);
+        this.blendMaterial.opacity = eased * maxAlpha;
+    }
+
     updatePresentation(deltaTime) {
         const target = this.targetPresentation();
         const profile = directionProfile(this.direction);
@@ -819,6 +888,12 @@ export default class SpriteCharacter {
         this.sprite.position.x = this.visual.x;
         this.sprite.position.y = 0.02 + this.visual.bob + this.visual.y;
         this.sprite.material.rotation = this.visual.tilt;
+        if (this.blendSprite) {
+            this.blendSprite.center.copy(this.sprite.center);
+            this.blendSprite.scale.copy(this.sprite.scale);
+            this.blendSprite.position.copy(this.sprite.position);
+            this.blendSprite.material.rotation = this.visual.tilt;
+        }
 
         const spawnProgress = THREE.MathUtils.clamp(this.presentationTime / 0.62, 0, 1);
         this.applySpawnPose(spawnProgress);
@@ -869,6 +944,8 @@ export default class SpriteCharacter {
         this.effects.dispose();
         this.texture.dispose();
         this.material.dispose();
+        this.blendTexture?.dispose();
+        this.blendMaterial?.dispose();
         this.shadow.geometry.dispose();
         this.shadowMaterial.dispose();
         this.selectionRing.geometry.dispose();

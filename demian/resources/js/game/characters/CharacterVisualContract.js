@@ -8,14 +8,15 @@ export const CHARACTER_PACK_VERSION = 6;
 // (npm run validate:character-art / audit_character_sprite_packs.py); until
 // then every character keeps resolving to CHARACTER_PACK_VERSION as before.
 export const CHARACTER_PACK_VERSION_OVERRIDES = Object.freeze({
-    // Only characters that actually ship a v7 pack are promoted. Characters
-    // without a supplied reference remain on the existing v6 art untouched.
-    darya: 7,
+    amirreza: 7,
+    darya: 8,
+    iman: 7,
     mojtaba: 7,
-    hossein: 7,
-    arsal: 7,
-    sorkhi: 7,
-    'taher-db': 7,
+    parsa: 7,
+    ronak: 7,
+    setayesh: 7,
+    tiam: 7,
+    uzudi: 7,
 });
 
 export function characterPackVersion(slug) {
@@ -32,11 +33,6 @@ export const BUILTIN_CHARACTER_SLUGS = Object.freeze([
     'iman',
     'uzudi',
     'setayesh',
-    'mojtaba',
-    'hossein',
-    'arsal',
-    'sorkhi',
-    'taher-db',
 ]);
 
 export const CHARACTER_SPRITE_VARIANTS = Object.freeze([

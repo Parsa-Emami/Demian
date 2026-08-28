@@ -4,19 +4,21 @@
   "name": "DARYA / دریا",
   "style": "demian_arcade_v1",
   "visual": {
-    "version": 7,
+    "version": 8,
     "atlas": {
-      "desktop": "darya-atlas-v7-desktop.json",
-      "mobile": "darya-atlas-v7-mobile.json",
-      "compact": "darya-atlas-v7-compact.json"
+      "desktop": "darya-atlas-v8-desktop.json",
+      "mobile": "darya-atlas-v8-mobile.json",
+      "compact": "darya-atlas-v8-compact.json"
     },
     "spritesheets": {
-      "desktop": "darya-spritesheet-v7-desktop.png",
-      "mobile": "darya-spritesheet-v7-mobile.png",
-      "compact": "darya-spritesheet-v7-compact.png"
+      "desktop": "darya-spritesheet-v8-desktop.png",
+      "mobile": "darya-spritesheet-v8-mobile.png",
+      "compact": "darya-spritesheet-v8-compact.png"
     },
     "frameBlend": true,
-    "smoothAnimation": true
+    "smoothAnimation": true,
+    "eightDirectionLocomotion": true,
+    "directionalIdle": true
   },
   "identity": {
     "hair": "medium-length shaggy layered dark-brown hair with curtain bangs",
@@ -28,7 +30,8 @@
     "type": "cat",
     "alwaysVisible": true,
     "bakedIntoEveryFrame": true,
-    "appearance": "gray-and-white cat with green-yellow eyes"
+    "appearance": "gray-and-white cat with green-yellow eyes",
+    "directionSynchronized": true
   },
   "gameplay": {
     "walk_speed": 3.55,
