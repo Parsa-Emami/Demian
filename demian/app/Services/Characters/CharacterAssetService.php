@@ -174,7 +174,7 @@ class CharacterAssetService
         }
 
         return match ($slug) {
-            'ronak', 'tiam' => 7,
+            'ronak', 'tiam' => 6,
             default => 5,
         };
     }
