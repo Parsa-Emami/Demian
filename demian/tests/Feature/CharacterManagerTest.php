@@ -39,6 +39,11 @@ class CharacterManagerTest extends TestCase
             ['iman', 'IMAN / ایمان'],
             ['uzudi', 'UZUDI / اوزودی'],
             ['setayesh', 'SETAYESH / ستایش'],
+            ['mojtaba', 'MOJTABA / مجتبی'],
+            ['hossein', 'HOSSEIN / حسین'],
+            ['arsal', 'ARSAL / ارسل'],
+            ['sorkhi', 'SORKHI / سرخی'],
+            ['taher-db', 'TAHER DB / طاهر DB'],
         ] as [$slug, $name]) {
             $response->assertJsonFragment([
                 'slug' => $slug,
@@ -47,12 +52,28 @@ class CharacterManagerTest extends TestCase
             ]);
         }
 
-        foreach (['tiam', 'ronak', 'amirreza', 'parsa', 'darya', 'iman', 'uzudi', 'setayesh'] as $slug) {
+        $packVersions = [
+            'tiam' => 6,
+            'ronak' => 6,
+            'amirreza' => 6,
+            'parsa' => 6,
+            'darya' => 7,
+            'iman' => 6,
+            'uzudi' => 6,
+            'setayesh' => 6,
+            'mojtaba' => 7,
+            'hossein' => 7,
+            'arsal' => 7,
+            'sorkhi' => 7,
+            'taher-db' => 7,
+        ];
+
+        foreach ($packVersions as $slug => $version) {
             $response
                 ->assertJsonFragment([
                     'slug' => $slug,
-                    'sprite_url' => asset("assets/characters/{$slug}/{$slug}-spritesheet-v6-mobile.png"),
-                    'atlas_url' => asset("assets/characters/{$slug}/{$slug}-atlas-v6-mobile.json"),
+                    'sprite_url' => asset("assets/characters/{$slug}/{$slug}-spritesheet-v{$version}-mobile.png"),
+                    'atlas_url' => asset("assets/characters/{$slug}/{$slug}-atlas-v{$version}-mobile.json"),
                 ]);
         }
     }

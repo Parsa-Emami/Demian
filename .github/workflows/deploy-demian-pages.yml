@@ -177,12 +177,15 @@ jobs:
           npm run validate:phase8
           npm run validate:final
 
-      - name: Validate canonical V6 character packs
+      - name: Validate canonical character packs
         shell: bash
         run: |
           set -euo pipefail
           npm run validate:character-art:strict
           npm run validate:character-pack:v6
+          python3 tools/audit_character_sprite_packs.py \
+            --version 7 --strict \
+            darya mojtaba hossein arsal sorkhi taher-db
 
       - name: Build one atomic frontend bundle
         shell: bash
@@ -206,38 +209,49 @@ jobs:
           from pathlib import Path
 
           root = Path('public/assets/characters')
-          built_in_slugs = (
-              'tiam', 'ronak', 'amirreza', 'parsa',
-              'darya', 'iman', 'uzudi', 'setayesh',
-          )
+          built_in_versions = {
+              'tiam': 6,
+              'ronak': 6,
+              'amirreza': 6,
+              'parsa': 6,
+              'darya': 7,
+              'iman': 6,
+              'uzudi': 6,
+              'setayesh': 6,
+              'mojtaba': 7,
+              'hossein': 7,
+              'arsal': 7,
+              'sorkhi': 7,
+              'taher-db': 7,
+          }
 
-          for slug in built_in_slugs:
+          for slug, pack_version in built_in_versions.items():
               directory = root / slug
-              atlas = directory / f'{slug}-atlas-v6-mobile.json'
-              sheet = directory / f'{slug}-spritesheet-v6-mobile.png'
+              atlas = directory / f'{slug}-atlas-v{pack_version}-mobile.json'
+              sheet = directory / f'{slug}-spritesheet-v{pack_version}-mobile.png'
               legacy_atlas = directory / f'{slug}-atlas.json'
               legacy_sheet = directory / f'{slug}-spritesheet-v4.png'
 
               if not atlas.is_file() or not sheet.is_file():
                   raise SystemExit(
-                      f'ERROR: canonical V6 mobile assets are missing for {slug}: '
+                      f'ERROR: canonical V{pack_version} mobile assets are missing for {slug}: '
                       f'{atlas} / {sheet}'
                   )
 
               # Cached bundles can still request the legacy filenames for a
-              # short time after deployment. Publish an atomically matching V6
-              # alias pair so a stale bundle never mixes atlas and sheet versions.
+              # short time after deployment. Publish an atomically matching
+              # alias pair from the exact canonical pack selected per character.
               shutil.copy2(sheet, legacy_sheet)
               payload = json.loads(atlas.read_text(encoding='utf-8'))
               payload.setdefault('meta', {})['image'] = legacy_sheet.name
               payload['meta']['compatibilityAlias'] = True
-              payload['meta']['compatibilitySourceVersion'] = 6
+              payload['meta']['compatibilitySourceVersion'] = pack_version
               legacy_atlas.write_text(
                   json.dumps(payload, ensure_ascii=False, indent=2),
                   encoding='utf-8',
               )
 
-              print(f'Character assets ready: {slug} (V6)')
+              print(f'Character assets ready: {slug} (V{pack_version})')
           PYTHON
 
       - name: Export Laravel as a static GitHub Pages demo
@@ -492,7 +506,22 @@ jobs:
 
           repository_name = os.environ['GITHUB_REPOSITORY'].split('/', 1)[1]
           marker = f'/{repository_name}/'
-          expected_slugs = {'tiam', 'ronak', 'amirreza', 'parsa', 'darya', 'iman', 'uzudi', 'setayesh'}
+          canonical_versions = {
+              'tiam': 6,
+              'ronak': 6,
+              'amirreza': 6,
+              'parsa': 6,
+              'darya': 7,
+              'iman': 6,
+              'uzudi': 6,
+              'setayesh': 6,
+              'mojtaba': 7,
+              'hossein': 7,
+              'arsal': 7,
+              'sorkhi': 7,
+              'taher-db': 7,
+          }
+          expected_slugs = set(canonical_versions)
           compatibility_slugs = expected_slugs
           exported_slugs = {character.get('slug') for character in characters}
           missing_slugs = expected_slugs - exported_slugs
@@ -528,13 +557,15 @@ jobs:
                           f'{url} -> {target}'
                       )
 
-          # Validate the canonical V6 pair plus V4 compatibility aliases for
-          # every built-in character. This blocks mixed-version Pages deploys.
+          # Validate the canonical per-character pair plus V4 compatibility
+          # aliases. This blocks mixed-version Pages deploys while allowing the
+          # reference-derived V7 characters to coexist with untouched V6 art.
           for slug in sorted(compatibility_slugs):
               directory = site / 'assets' / 'characters' / slug
+              pack_version = canonical_versions[slug]
               required = (
-                  directory / f'{slug}-atlas-v6-mobile.json',
-                  directory / f'{slug}-spritesheet-v6-mobile.png',
+                  directory / f'{slug}-atlas-v{pack_version}-mobile.json',
+                  directory / f'{slug}-spritesheet-v{pack_version}-mobile.png',
                   directory / f'{slug}-atlas.json',
                   directory / f'{slug}-spritesheet-v4.png',
               )
