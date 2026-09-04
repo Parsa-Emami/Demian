@@ -108,6 +108,27 @@ export const INPUT_CONTEXTS = Object.freeze({
         }),
     }),
 
+
+    ARCADE: Object.freeze({
+        axes: Object.freeze({
+            x: axis(['a', 'arrowleft', 'left'], ['d', 'arrowright', 'right']),
+            z: axis(['w', 'arrowup', 'up'], ['s', 'arrowdown', 'down']),
+        }),
+        analog: Object.freeze({
+            xAxis: 'x',
+            zAxis: 'z',
+            autoSprintAction: 'run',
+            autoSprintThreshold: 0.9,
+        }),
+        actions: Object.freeze({
+            run: held('shift', 'run'),
+            jump: pressed('space', 'jump'),
+            dash: pressed('x', 'dash'),
+            interact: pressed('enter', 'e', 'interact'),
+            pause: pressed('escape', 'pause'),
+        }),
+    }),
+
     TETRIS: Object.freeze({
         actions: Object.freeze({
             moveLeft: held('arrowleft', 'a', 'left'),

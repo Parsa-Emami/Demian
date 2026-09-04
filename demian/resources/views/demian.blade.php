@@ -389,7 +389,7 @@
                         </div>
                         <div data-game-grid class="game-grid" tabindex="0" role="list" aria-label="کتابخانه بازی‌های دمیان"></div>
                         <footer class="shell-page__footer">
-                            <span>همه‌ی بازی‌های فازهای ۱ تا ۸ در دسترس‌اند</span>
+                            <span>بازی‌های اصلی + بسته‌ی ۶ مینی‌گیم آرکید در دسترس‌اند</span>
                             <span>ESC · بازگشت</span>
                         </footer>
                     </div>

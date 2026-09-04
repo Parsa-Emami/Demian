@@ -43,7 +43,7 @@ class BuiltinCharacterSeeder extends Seeder
                 [
                     'slug' => 'amirreza',
                     'name' => 'AMIRREZA / امیررضا',
-                    'pack_version' => 6,
+                    'pack_version' => 9,
                     'is_active' => false,
                     'settings' => [
                         'walk_speed' => 4.15,
@@ -56,7 +56,7 @@ class BuiltinCharacterSeeder extends Seeder
                 [
                     'slug' => 'parsa',
                     'name' => 'PARSA / پارسا',
-                    'pack_version' => 6,
+                    'pack_version' => 9,
                     'is_active' => false,
                     'settings' => [
                         'walk_speed' => 4.5,
@@ -74,7 +74,7 @@ class BuiltinCharacterSeeder extends Seeder
                 [
                     'slug' => 'darya',
                     'name' => 'DARYA / دریا',
-                    'pack_version' => 7,
+                    'pack_version' => 9,
                     'is_active' => false,
                     'settings' => [
                         'walk_speed' => 3.55,
@@ -93,7 +93,7 @@ class BuiltinCharacterSeeder extends Seeder
                 [
                     'slug' => 'iman',
                     'name' => 'IMAN / ایمان',
-                    'pack_version' => 6,
+                    'pack_version' => 9,
                     'is_active' => false,
                     'settings' => [
                         'walk_speed' => 3.75,
@@ -110,7 +110,7 @@ class BuiltinCharacterSeeder extends Seeder
                 [
                     'slug' => 'uzudi',
                     'name' => 'UZUDI / اوزودی',
-                    'pack_version' => 6,
+                    'pack_version' => 9,
                     'is_active' => false,
                     'settings' => [
                         'walk_speed' => 3.75,
@@ -129,7 +129,7 @@ class BuiltinCharacterSeeder extends Seeder
                 [
                     'slug' => 'setayesh',
                     'name' => 'SETAYESH / ستایش',
-                    'pack_version' => 6,
+                    'pack_version' => 9,
                     'is_active' => false,
                     'settings' => [
                         'walk_speed' => 3.4,
@@ -147,7 +147,7 @@ class BuiltinCharacterSeeder extends Seeder
                 [
                     'slug' => 'mojtaba',
                     'name' => 'MOJTABA / مجتبی',
-                    'pack_version' => 7,
+                    'pack_version' => 9,
                     'is_active' => false,
                     'settings' => [
                         'walk_speed' => 3.45,
@@ -161,7 +161,7 @@ class BuiltinCharacterSeeder extends Seeder
                 [
                     'slug' => 'hossein',
                     'name' => 'HOSSEIN / حسین',
-                    'pack_version' => 7,
+                    'pack_version' => 9,
                     'is_active' => false,
                     'settings' => [
                         'walk_speed' => 3.45,
@@ -175,7 +175,7 @@ class BuiltinCharacterSeeder extends Seeder
                 [
                     'slug' => 'arsal',
                     'name' => 'ARSAL / ارسل',
-                    'pack_version' => 7,
+                    'pack_version' => 9,
                     'is_active' => false,
                     'settings' => [
                         'walk_speed' => 3.4,
@@ -189,7 +189,7 @@ class BuiltinCharacterSeeder extends Seeder
                 [
                     'slug' => 'sorkhi',
                     'name' => 'SORKHI / سرخی',
-                    'pack_version' => 7,
+                    'pack_version' => 9,
                     'is_active' => false,
                     'settings' => [
                         'walk_speed' => 3.55,
@@ -203,7 +203,7 @@ class BuiltinCharacterSeeder extends Seeder
                 [
                     'slug' => 'taher-db',
                     'name' => 'TAHER DB / طاهر DB',
-                    'pack_version' => 7,
+                    'pack_version' => 9,
                     'is_active' => false,
                     'settings' => [
                         'walk_speed' => 3.5,

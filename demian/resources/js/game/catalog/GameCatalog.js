@@ -1,6 +1,43 @@
 import { CAFE_ENVIRONMENT_ID, CAFE_REFERENCE_ASSET_ROOT } from '../shared/cafe/CafeEnvironmentContract.js';
 
 export const GAME_CATALOG = Object.freeze([
+
+    Object.freeze({
+        id: 'neon-run', title: 'NEON RUN', subtitle: 'Jump · Dash · Survive',
+        description: 'رانر دوبعدی سریع با پرش، دش، Combo و سرعت افزایشی.', icon: '»', phase: 9,
+        status: 'available', available: true, orientation: 'landscape', accent: 'pink',
+        environment: CAFE_ENVIRONMENT_ID, environmentLocked: true, referenceAssets: CAFE_REFERENCE_ASSET_ROOT,
+    }),
+    Object.freeze({
+        id: 'star-catcher', title: 'STAR CATCHER', subtitle: 'Catch Gold · Dodge Red',
+        description: 'ستاره‌های طلایی را جمع کن و از بمب‌های قرمز جاخالی بده.', icon: '★', phase: 9,
+        status: 'available', available: true, orientation: 'landscape', accent: 'amber',
+        environment: CAFE_ENVIRONMENT_ID, environmentLocked: true, referenceAssets: CAFE_REFERENCE_ASSET_ROOT,
+    }),
+    Object.freeze({
+        id: 'cafe-drift', title: 'CAFÉ DRIFT', subtitle: 'Near Miss = Big Score',
+        description: 'دریفت آرکیدی بین موانع؛ هر Near Miss ضریب امتیاز را بالا می‌برد.', icon: '◇', phase: 9,
+        status: 'available', available: true, orientation: 'landscape', accent: 'cyan',
+        environment: CAFE_ENVIRONMENT_ID, environmentLocked: true, referenceAssets: CAFE_REFERENCE_ASSET_ROOT,
+    }),
+    Object.freeze({
+        id: 'shadow-maze', title: 'SHADOW MAZE', subtitle: '5 Keys · One Exit',
+        description: 'هزارتوی دوبعدی، پنج کلید، سایه‌های متحرک و یک خروجی مخفی.', icon: '◆', phase: 9,
+        status: 'available', available: true, orientation: 'landscape', accent: 'violet',
+        environment: CAFE_ENVIRONMENT_ID, environmentLocked: true, referenceAssets: CAFE_REFERENCE_ASSET_ROOT,
+    }),
+    Object.freeze({
+        id: 'sky-hop', title: 'SKY HOP', subtitle: 'Reach 100 Meters',
+        description: 'پلتفرمر عمودی سریع؛ روی سکوها بپر و تا ۱۰۰ متر اوج بگیر.', icon: '▲', phase: 9,
+        status: 'available', available: true, orientation: 'landscape', accent: 'emerald',
+        environment: CAFE_ENVIRONMENT_ID, environmentLocked: true, referenceAssets: CAFE_REFERENCE_ASSET_ROOT,
+    }),
+    Object.freeze({
+        id: 'rhythm-rush', title: 'RHYTHM RUSH', subtitle: 'Jump · Use · Dash',
+        description: 'ریتم سه‌لاین با اکشن‌های خود کاراکتر و Combo مبتنی بر دقت.', icon: '♫', phase: 9,
+        status: 'available', available: true, orientation: 'landscape', accent: 'pink',
+        environment: CAFE_ENVIRONMENT_ID, environmentLocked: true, referenceAssets: CAFE_REFERENCE_ASSET_ROOT,
+    }),
     Object.freeze({
         id: 'tetris',
         title: 'TETRIS',

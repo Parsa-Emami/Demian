@@ -1,6 +1,37 @@
 import { CAFE_ENVIRONMENT_ID, CAFE_REFERENCE_ASSET_ROOT } from '../shared/cafe/CafeEnvironmentContract.js';
 
 export const GAME_DEFINITIONS = Object.freeze({
+
+    'neon-run': Object.freeze({
+        title: 'Neon Run', inputContext: 'ARCADE', orientation: 'landscape',
+        loader: () => import('../games/neon-run/NeonRunGame.js'),
+        metadata: Object.freeze({ phase: 9, status: 'available', supportsResults: true, miniGame: true, arcadePack: 1, renderer: 'shared-canvas2d-pixel', deployment: 'atomic-bundle', environment: CAFE_ENVIRONMENT_ID, environmentLocked: true, referenceAssets: CAFE_REFERENCE_ASSET_ROOT }),
+    }),
+    'star-catcher': Object.freeze({
+        title: 'Star Catcher', inputContext: 'ARCADE', orientation: 'landscape',
+        loader: () => import('../games/star-catcher/StarCatcherGame.js'),
+        metadata: Object.freeze({ phase: 9, status: 'available', supportsResults: true, miniGame: true, arcadePack: 1, renderer: 'shared-canvas2d-pixel', deployment: 'atomic-bundle', environment: CAFE_ENVIRONMENT_ID, environmentLocked: true, referenceAssets: CAFE_REFERENCE_ASSET_ROOT }),
+    }),
+    'cafe-drift': Object.freeze({
+        title: 'Café Drift', inputContext: 'ARCADE', orientation: 'landscape',
+        loader: () => import('../games/cafe-drift/CafeDriftGame.js'),
+        metadata: Object.freeze({ phase: 9, status: 'available', supportsResults: true, miniGame: true, arcadePack: 1, renderer: 'shared-canvas2d-pixel', deployment: 'atomic-bundle', environment: CAFE_ENVIRONMENT_ID, environmentLocked: true, referenceAssets: CAFE_REFERENCE_ASSET_ROOT }),
+    }),
+    'shadow-maze': Object.freeze({
+        title: 'Shadow Maze', inputContext: 'ARCADE', orientation: 'landscape',
+        loader: () => import('../games/shadow-maze/ShadowMazeGame.js'),
+        metadata: Object.freeze({ phase: 9, status: 'available', supportsResults: true, miniGame: true, arcadePack: 1, renderer: 'shared-canvas2d-pixel', deployment: 'atomic-bundle', environment: CAFE_ENVIRONMENT_ID, environmentLocked: true, referenceAssets: CAFE_REFERENCE_ASSET_ROOT }),
+    }),
+    'sky-hop': Object.freeze({
+        title: 'Sky Hop', inputContext: 'ARCADE', orientation: 'landscape',
+        loader: () => import('../games/sky-hop/SkyHopGame.js'),
+        metadata: Object.freeze({ phase: 9, status: 'available', supportsResults: true, miniGame: true, arcadePack: 1, renderer: 'shared-canvas2d-pixel', deployment: 'atomic-bundle', environment: CAFE_ENVIRONMENT_ID, environmentLocked: true, referenceAssets: CAFE_REFERENCE_ASSET_ROOT }),
+    }),
+    'rhythm-rush': Object.freeze({
+        title: 'Rhythm Rush', inputContext: 'ARCADE', orientation: 'landscape',
+        loader: () => import('../games/rhythm-rush/RhythmRushGame.js'),
+        metadata: Object.freeze({ phase: 9, status: 'available', supportsResults: true, miniGame: true, arcadePack: 1, renderer: 'shared-canvas2d-pixel', deployment: 'atomic-bundle', environment: CAFE_ENVIRONMENT_ID, environmentLocked: true, referenceAssets: CAFE_REFERENCE_ASSET_ROOT }),
+    }),
     'role-play': Object.freeze({
         title: 'Role Play',
         inputContext: 'ROLE_PLAY',

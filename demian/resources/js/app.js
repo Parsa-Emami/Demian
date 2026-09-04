@@ -1,6 +1,7 @@
 import '../css/app.css';
 import '../css/mobile-character-polish.css';
 import '../css/mobile-performance-fix.css';
+import '../css/arcade-minigames.css';
 import GameApplication from './game/application/GameApplication';
 import CharacterManagerUI from './ui/CharacterManagerUI';
 import SidebarController from './ui/SidebarController';

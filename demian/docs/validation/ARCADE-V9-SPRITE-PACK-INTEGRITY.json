@@ -1,0 +1,552 @@
+{
+  "pack_version": 9,
+  "required_characters": [
+    "amirreza",
+    "arsal",
+    "darya",
+    "hossein",
+    "iman",
+    "mojtaba",
+    "parsa",
+    "setayesh",
+    "sorkhi",
+    "taher-db",
+    "uzudi"
+  ],
+  "required_variants": [
+    "compact",
+    "desktop",
+    "mobile"
+  ],
+  "all_valid": true,
+  "characters": [
+    {
+      "slug": "amirreza",
+      "runtime_pack_version": 9,
+      "reference": {
+        "path": "public/assets/characters/amirreza/amirreza-character-sheet-reference-v9.jpg",
+        "exists": true,
+        "bytes": 430762
+      },
+      "variants": {
+        "compact": {
+          "spritesheet": "public/assets/characters/amirreza/amirreza-spritesheet-v9-compact.png",
+          "spritesheet_exists": true,
+          "spritesheet_bytes": 2818055,
+          "atlas": "public/assets/characters/amirreza/amirreza-atlas-v9-compact.json",
+          "atlas_exists": true,
+          "atlas_parsed": true,
+          "frame_count": 448,
+          "atlas_meta_image": "amirreza-spritesheet-v9-compact.png",
+          "expected_image": "amirreza-spritesheet-v9-compact.png",
+          "valid": true
+        },
+        "desktop": {
+          "spritesheet": "public/assets/characters/amirreza/amirreza-spritesheet-v9-desktop.png",
+          "spritesheet_exists": true,
+          "spritesheet_bytes": 9272607,
+          "atlas": "public/assets/characters/amirreza/amirreza-atlas-v9-desktop.json",
+          "atlas_exists": true,
+          "atlas_parsed": true,
+          "frame_count": 448,
+          "atlas_meta_image": "amirreza-spritesheet-v9-desktop.png",
+          "expected_image": "amirreza-spritesheet-v9-desktop.png",
+          "valid": true
+        },
+        "mobile": {
+          "spritesheet": "public/assets/characters/amirreza/amirreza-spritesheet-v9-mobile.png",
+          "spritesheet_exists": true,
+          "spritesheet_bytes": 5820864,
+          "atlas": "public/assets/characters/amirreza/amirreza-atlas-v9-mobile.json",
+          "atlas_exists": true,
+          "atlas_parsed": true,
+          "frame_count": 448,
+          "atlas_meta_image": "amirreza-spritesheet-v9-mobile.png",
+          "expected_image": "amirreza-spritesheet-v9-mobile.png",
+          "valid": true
+        }
+      },
+      "valid": true
+    },
+    {
+      "slug": "arsal",
+      "runtime_pack_version": 9,
+      "reference": {
+        "path": "public/assets/characters/arsal/arsal-character-sheet-reference-v9.jpg",
+        "exists": true,
+        "bytes": 366703
+      },
+      "variants": {
+        "compact": {
+          "spritesheet": "public/assets/characters/arsal/arsal-spritesheet-v9-compact.png",
+          "spritesheet_exists": true,
+          "spritesheet_bytes": 1971252,
+          "atlas": "public/assets/characters/arsal/arsal-atlas-v9-compact.json",
+          "atlas_exists": true,
+          "atlas_parsed": true,
+          "frame_count": 448,
+          "atlas_meta_image": "arsal-spritesheet-v9-compact.png",
+          "expected_image": "arsal-spritesheet-v9-compact.png",
+          "valid": true
+        },
+        "desktop": {
+          "spritesheet": "public/assets/characters/arsal/arsal-spritesheet-v9-desktop.png",
+          "spritesheet_exists": true,
+          "spritesheet_bytes": 6393650,
+          "atlas": "public/assets/characters/arsal/arsal-atlas-v9-desktop.json",
+          "atlas_exists": true,
+          "atlas_parsed": true,
+          "frame_count": 448,
+          "atlas_meta_image": "arsal-spritesheet-v9-desktop.png",
+          "expected_image": "arsal-spritesheet-v9-desktop.png",
+          "valid": true
+        },
+        "mobile": {
+          "spritesheet": "public/assets/characters/arsal/arsal-spritesheet-v9-mobile.png",
+          "spritesheet_exists": true,
+          "spritesheet_bytes": 4050641,
+          "atlas": "public/assets/characters/arsal/arsal-atlas-v9-mobile.json",
+          "atlas_exists": true,
+          "atlas_parsed": true,
+          "frame_count": 448,
+          "atlas_meta_image": "arsal-spritesheet-v9-mobile.png",
+          "expected_image": "arsal-spritesheet-v9-mobile.png",
+          "valid": true
+        }
+      },
+      "valid": true
+    },
+    {
+      "slug": "darya",
+      "runtime_pack_version": 9,
+      "reference": {
+        "path": "public/assets/characters/darya/darya-character-sheet-reference-v9.jpg",
+        "exists": true,
+        "bytes": 408413
+      },
+      "variants": {
+        "compact": {
+          "spritesheet": "public/assets/characters/darya/darya-spritesheet-v9-compact.png",
+          "spritesheet_exists": true,
+          "spritesheet_bytes": 2637582,
+          "atlas": "public/assets/characters/darya/darya-atlas-v9-compact.json",
+          "atlas_exists": true,
+          "atlas_parsed": true,
+          "frame_count": 448,
+          "atlas_meta_image": "darya-spritesheet-v9-compact.png",
+          "expected_image": "darya-spritesheet-v9-compact.png",
+          "valid": true
+        },
+        "desktop": {
+          "spritesheet": "public/assets/characters/darya/darya-spritesheet-v9-desktop.png",
+          "spritesheet_exists": true,
+          "spritesheet_bytes": 8829392,
+          "atlas": "public/assets/characters/darya/darya-atlas-v9-desktop.json",
+          "atlas_exists": true,
+          "atlas_parsed": true,
+          "frame_count": 448,
+          "atlas_meta_image": "darya-spritesheet-v9-desktop.png",
+          "expected_image": "darya-spritesheet-v9-desktop.png",
+          "valid": true
+        },
+        "mobile": {
+          "spritesheet": "public/assets/characters/darya/darya-spritesheet-v9-mobile.png",
+          "spritesheet_exists": true,
+          "spritesheet_bytes": 5537534,
+          "atlas": "public/assets/characters/darya/darya-atlas-v9-mobile.json",
+          "atlas_exists": true,
+          "atlas_parsed": true,
+          "frame_count": 448,
+          "atlas_meta_image": "darya-spritesheet-v9-mobile.png",
+          "expected_image": "darya-spritesheet-v9-mobile.png",
+          "valid": true
+        }
+      },
+      "valid": true
+    },
+    {
+      "slug": "hossein",
+      "runtime_pack_version": 9,
+      "reference": {
+        "path": "public/assets/characters/hossein/hossein-character-sheet-reference-v9.jpg",
+        "exists": true,
+        "bytes": 338862
+      },
+      "variants": {
+        "compact": {
+          "spritesheet": "public/assets/characters/hossein/hossein-spritesheet-v9-compact.png",
+          "spritesheet_exists": true,
+          "spritesheet_bytes": 1955872,
+          "atlas": "public/assets/characters/hossein/hossein-atlas-v9-compact.json",
+          "atlas_exists": true,
+          "atlas_parsed": true,
+          "frame_count": 448,
+          "atlas_meta_image": "hossein-spritesheet-v9-compact.png",
+          "expected_image": "hossein-spritesheet-v9-compact.png",
+          "valid": true
+        },
+        "desktop": {
+          "spritesheet": "public/assets/characters/hossein/hossein-spritesheet-v9-desktop.png",
+          "spritesheet_exists": true,
+          "spritesheet_bytes": 6332549,
+          "atlas": "public/assets/characters/hossein/hossein-atlas-v9-desktop.json",
+          "atlas_exists": true,
+          "atlas_parsed": true,
+          "frame_count": 448,
+          "atlas_meta_image": "hossein-spritesheet-v9-desktop.png",
+          "expected_image": "hossein-spritesheet-v9-desktop.png",
+          "valid": true
+        },
+        "mobile": {
+          "spritesheet": "public/assets/characters/hossein/hossein-spritesheet-v9-mobile.png",
+          "spritesheet_exists": true,
+          "spritesheet_bytes": 4020537,
+          "atlas": "public/assets/characters/hossein/hossein-atlas-v9-mobile.json",
+          "atlas_exists": true,
+          "atlas_parsed": true,
+          "frame_count": 448,
+          "atlas_meta_image": "hossein-spritesheet-v9-mobile.png",
+          "expected_image": "hossein-spritesheet-v9-mobile.png",
+          "valid": true
+        }
+      },
+      "valid": true
+    },
+    {
+      "slug": "iman",
+      "runtime_pack_version": 9,
+      "reference": {
+        "path": "public/assets/characters/iman/iman-character-sheet-reference-v9.jpg",
+        "exists": true,
+        "bytes": 355412
+      },
+      "variants": {
+        "compact": {
+          "spritesheet": "public/assets/characters/iman/iman-spritesheet-v9-compact.png",
+          "spritesheet_exists": true,
+          "spritesheet_bytes": 2167333,
+          "atlas": "public/assets/characters/iman/iman-atlas-v9-compact.json",
+          "atlas_exists": true,
+          "atlas_parsed": true,
+          "frame_count": 448,
+          "atlas_meta_image": "iman-spritesheet-v9-compact.png",
+          "expected_image": "iman-spritesheet-v9-compact.png",
+          "valid": true
+        },
+        "desktop": {
+          "spritesheet": "public/assets/characters/iman/iman-spritesheet-v9-desktop.png",
+          "spritesheet_exists": true,
+          "spritesheet_bytes": 6965556,
+          "atlas": "public/assets/characters/iman/iman-atlas-v9-desktop.json",
+          "atlas_exists": true,
+          "atlas_parsed": true,
+          "frame_count": 448,
+          "atlas_meta_image": "iman-spritesheet-v9-desktop.png",
+          "expected_image": "iman-spritesheet-v9-desktop.png",
+          "valid": true
+        },
+        "mobile": {
+          "spritesheet": "public/assets/characters/iman/iman-spritesheet-v9-mobile.png",
+          "spritesheet_exists": true,
+          "spritesheet_bytes": 4436726,
+          "atlas": "public/assets/characters/iman/iman-atlas-v9-mobile.json",
+          "atlas_exists": true,
+          "atlas_parsed": true,
+          "frame_count": 448,
+          "atlas_meta_image": "iman-spritesheet-v9-mobile.png",
+          "expected_image": "iman-spritesheet-v9-mobile.png",
+          "valid": true
+        }
+      },
+      "valid": true
+    },
+    {
+      "slug": "mojtaba",
+      "runtime_pack_version": 9,
+      "reference": {
+        "path": "public/assets/characters/mojtaba/mojtaba-character-sheet-reference-v9.jpg",
+        "exists": true,
+        "bytes": 358490
+      },
+      "variants": {
+        "compact": {
+          "spritesheet": "public/assets/characters/mojtaba/mojtaba-spritesheet-v9-compact.png",
+          "spritesheet_exists": true,
+          "spritesheet_bytes": 1889600,
+          "atlas": "public/assets/characters/mojtaba/mojtaba-atlas-v9-compact.json",
+          "atlas_exists": true,
+          "atlas_parsed": true,
+          "frame_count": 448,
+          "atlas_meta_image": "mojtaba-spritesheet-v9-compact.png",
+          "expected_image": "mojtaba-spritesheet-v9-compact.png",
+          "valid": true
+        },
+        "desktop": {
+          "spritesheet": "public/assets/characters/mojtaba/mojtaba-spritesheet-v9-desktop.png",
+          "spritesheet_exists": true,
+          "spritesheet_bytes": 5988592,
+          "atlas": "public/assets/characters/mojtaba/mojtaba-atlas-v9-desktop.json",
+          "atlas_exists": true,
+          "atlas_parsed": true,
+          "frame_count": 448,
+          "atlas_meta_image": "mojtaba-spritesheet-v9-desktop.png",
+          "expected_image": "mojtaba-spritesheet-v9-desktop.png",
+          "valid": true
+        },
+        "mobile": {
+          "spritesheet": "public/assets/characters/mojtaba/mojtaba-spritesheet-v9-mobile.png",
+          "spritesheet_exists": true,
+          "spritesheet_bytes": 3835248,
+          "atlas": "public/assets/characters/mojtaba/mojtaba-atlas-v9-mobile.json",
+          "atlas_exists": true,
+          "atlas_parsed": true,
+          "frame_count": 448,
+          "atlas_meta_image": "mojtaba-spritesheet-v9-mobile.png",
+          "expected_image": "mojtaba-spritesheet-v9-mobile.png",
+          "valid": true
+        }
+      },
+      "valid": true
+    },
+    {
+      "slug": "parsa",
+      "runtime_pack_version": 9,
+      "reference": {
+        "path": "public/assets/characters/parsa/parsa-character-sheet-reference-v9.jpg",
+        "exists": true,
+        "bytes": 322448
+      },
+      "variants": {
+        "compact": {
+          "spritesheet": "public/assets/characters/parsa/parsa-spritesheet-v9-compact.png",
+          "spritesheet_exists": true,
+          "spritesheet_bytes": 3192188,
+          "atlas": "public/assets/characters/parsa/parsa-atlas-v9-compact.json",
+          "atlas_exists": true,
+          "atlas_parsed": true,
+          "frame_count": 448,
+          "atlas_meta_image": "parsa-spritesheet-v9-compact.png",
+          "expected_image": "parsa-spritesheet-v9-compact.png",
+          "valid": true
+        },
+        "desktop": {
+          "spritesheet": "public/assets/characters/parsa/parsa-spritesheet-v9-desktop.png",
+          "spritesheet_exists": true,
+          "spritesheet_bytes": 9692635,
+          "atlas": "public/assets/characters/parsa/parsa-atlas-v9-desktop.json",
+          "atlas_exists": true,
+          "atlas_parsed": true,
+          "frame_count": 448,
+          "atlas_meta_image": "parsa-spritesheet-v9-desktop.png",
+          "expected_image": "parsa-spritesheet-v9-desktop.png",
+          "valid": true
+        },
+        "mobile": {
+          "spritesheet": "public/assets/characters/parsa/parsa-spritesheet-v9-mobile.png",
+          "spritesheet_exists": true,
+          "spritesheet_bytes": 6370399,
+          "atlas": "public/assets/characters/parsa/parsa-atlas-v9-mobile.json",
+          "atlas_exists": true,
+          "atlas_parsed": true,
+          "frame_count": 448,
+          "atlas_meta_image": "parsa-spritesheet-v9-mobile.png",
+          "expected_image": "parsa-spritesheet-v9-mobile.png",
+          "valid": true
+        }
+      },
+      "valid": true
+    },
+    {
+      "slug": "setayesh",
+      "runtime_pack_version": 9,
+      "reference": {
+        "path": "public/assets/characters/setayesh/setayesh-character-sheet-reference-v9.jpg",
+        "exists": true,
+        "bytes": 410111
+      },
+      "variants": {
+        "compact": {
+          "spritesheet": "public/assets/characters/setayesh/setayesh-spritesheet-v9-compact.png",
+          "spritesheet_exists": true,
+          "spritesheet_bytes": 2512456,
+          "atlas": "public/assets/characters/setayesh/setayesh-atlas-v9-compact.json",
+          "atlas_exists": true,
+          "atlas_parsed": true,
+          "frame_count": 448,
+          "atlas_meta_image": "setayesh-spritesheet-v9-compact.png",
+          "expected_image": "setayesh-spritesheet-v9-compact.png",
+          "valid": true
+        },
+        "desktop": {
+          "spritesheet": "public/assets/characters/setayesh/setayesh-spritesheet-v9-desktop.png",
+          "spritesheet_exists": true,
+          "spritesheet_bytes": 8271826,
+          "atlas": "public/assets/characters/setayesh/setayesh-atlas-v9-desktop.json",
+          "atlas_exists": true,
+          "atlas_parsed": true,
+          "frame_count": 448,
+          "atlas_meta_image": "setayesh-spritesheet-v9-desktop.png",
+          "expected_image": "setayesh-spritesheet-v9-desktop.png",
+          "valid": true
+        },
+        "mobile": {
+          "spritesheet": "public/assets/characters/setayesh/setayesh-spritesheet-v9-mobile.png",
+          "spritesheet_exists": true,
+          "spritesheet_bytes": 5200516,
+          "atlas": "public/assets/characters/setayesh/setayesh-atlas-v9-mobile.json",
+          "atlas_exists": true,
+          "atlas_parsed": true,
+          "frame_count": 448,
+          "atlas_meta_image": "setayesh-spritesheet-v9-mobile.png",
+          "expected_image": "setayesh-spritesheet-v9-mobile.png",
+          "valid": true
+        }
+      },
+      "valid": true
+    },
+    {
+      "slug": "sorkhi",
+      "runtime_pack_version": 9,
+      "reference": {
+        "path": "public/assets/characters/sorkhi/sorkhi-character-sheet-reference-v9.jpg",
+        "exists": true,
+        "bytes": 359658
+      },
+      "variants": {
+        "compact": {
+          "spritesheet": "public/assets/characters/sorkhi/sorkhi-spritesheet-v9-compact.png",
+          "spritesheet_exists": true,
+          "spritesheet_bytes": 2076471,
+          "atlas": "public/assets/characters/sorkhi/sorkhi-atlas-v9-compact.json",
+          "atlas_exists": true,
+          "atlas_parsed": true,
+          "frame_count": 448,
+          "atlas_meta_image": "sorkhi-spritesheet-v9-compact.png",
+          "expected_image": "sorkhi-spritesheet-v9-compact.png",
+          "valid": true
+        },
+        "desktop": {
+          "spritesheet": "public/assets/characters/sorkhi/sorkhi-spritesheet-v9-desktop.png",
+          "spritesheet_exists": true,
+          "spritesheet_bytes": 6773020,
+          "atlas": "public/assets/characters/sorkhi/sorkhi-atlas-v9-desktop.json",
+          "atlas_exists": true,
+          "atlas_parsed": true,
+          "frame_count": 448,
+          "atlas_meta_image": "sorkhi-spritesheet-v9-desktop.png",
+          "expected_image": "sorkhi-spritesheet-v9-desktop.png",
+          "valid": true
+        },
+        "mobile": {
+          "spritesheet": "public/assets/characters/sorkhi/sorkhi-spritesheet-v9-mobile.png",
+          "spritesheet_exists": true,
+          "spritesheet_bytes": 4293705,
+          "atlas": "public/assets/characters/sorkhi/sorkhi-atlas-v9-mobile.json",
+          "atlas_exists": true,
+          "atlas_parsed": true,
+          "frame_count": 448,
+          "atlas_meta_image": "sorkhi-spritesheet-v9-mobile.png",
+          "expected_image": "sorkhi-spritesheet-v9-mobile.png",
+          "valid": true
+        }
+      },
+      "valid": true
+    },
+    {
+      "slug": "taher-db",
+      "runtime_pack_version": 9,
+      "reference": {
+        "path": "public/assets/characters/taher-db/taher-db-character-sheet-reference-v9.jpg",
+        "exists": true,
+        "bytes": 429667
+      },
+      "variants": {
+        "compact": {
+          "spritesheet": "public/assets/characters/taher-db/taher-db-spritesheet-v9-compact.png",
+          "spritesheet_exists": true,
+          "spritesheet_bytes": 2357509,
+          "atlas": "public/assets/characters/taher-db/taher-db-atlas-v9-compact.json",
+          "atlas_exists": true,
+          "atlas_parsed": true,
+          "frame_count": 448,
+          "atlas_meta_image": "taher-db-spritesheet-v9-compact.png",
+          "expected_image": "taher-db-spritesheet-v9-compact.png",
+          "valid": true
+        },
+        "desktop": {
+          "spritesheet": "public/assets/characters/taher-db/taher-db-spritesheet-v9-desktop.png",
+          "spritesheet_exists": true,
+          "spritesheet_bytes": 8124200,
+          "atlas": "public/assets/characters/taher-db/taher-db-atlas-v9-desktop.json",
+          "atlas_exists": true,
+          "atlas_parsed": true,
+          "frame_count": 448,
+          "atlas_meta_image": "taher-db-spritesheet-v9-desktop.png",
+          "expected_image": "taher-db-spritesheet-v9-desktop.png",
+          "valid": true
+        },
+        "mobile": {
+          "spritesheet": "public/assets/characters/taher-db/taher-db-spritesheet-v9-mobile.png",
+          "spritesheet_exists": true,
+          "spritesheet_bytes": 5002202,
+          "atlas": "public/assets/characters/taher-db/taher-db-atlas-v9-mobile.json",
+          "atlas_exists": true,
+          "atlas_parsed": true,
+          "frame_count": 448,
+          "atlas_meta_image": "taher-db-spritesheet-v9-mobile.png",
+          "expected_image": "taher-db-spritesheet-v9-mobile.png",
+          "valid": true
+        }
+      },
+      "valid": true
+    },
+    {
+      "slug": "uzudi",
+      "runtime_pack_version": 9,
+      "reference": {
+        "path": "public/assets/characters/uzudi/uzudi-character-sheet-reference-v9.jpg",
+        "exists": true,
+        "bytes": 389603
+      },
+      "variants": {
+        "compact": {
+          "spritesheet": "public/assets/characters/uzudi/uzudi-spritesheet-v9-compact.png",
+          "spritesheet_exists": true,
+          "spritesheet_bytes": 2471487,
+          "atlas": "public/assets/characters/uzudi/uzudi-atlas-v9-compact.json",
+          "atlas_exists": true,
+          "atlas_parsed": true,
+          "frame_count": 448,
+          "atlas_meta_image": "uzudi-spritesheet-v9-compact.png",
+          "expected_image": "uzudi-spritesheet-v9-compact.png",
+          "valid": true
+        },
+        "desktop": {
+          "spritesheet": "public/assets/characters/uzudi/uzudi-spritesheet-v9-desktop.png",
+          "spritesheet_exists": true,
+          "spritesheet_bytes": 8449981,
+          "atlas": "public/assets/characters/uzudi/uzudi-atlas-v9-desktop.json",
+          "atlas_exists": true,
+          "atlas_parsed": true,
+          "frame_count": 448,
+          "atlas_meta_image": "uzudi-spritesheet-v9-desktop.png",
+          "expected_image": "uzudi-spritesheet-v9-desktop.png",
+          "valid": true
+        },
+        "mobile": {
+          "spritesheet": "public/assets/characters/uzudi/uzudi-spritesheet-v9-mobile.png",
+          "spritesheet_exists": true,
+          "spritesheet_bytes": 5365755,
+          "atlas": "public/assets/characters/uzudi/uzudi-atlas-v9-mobile.json",
+          "atlas_exists": true,
+          "atlas_parsed": true,
+          "frame_count": 448,
+          "atlas_meta_image": "uzudi-spritesheet-v9-mobile.png",
+          "expected_image": "uzudi-spritesheet-v9-mobile.png",
+          "valid": true
+        }
+      },
+      "valid": true
+    }
+  ]
+}

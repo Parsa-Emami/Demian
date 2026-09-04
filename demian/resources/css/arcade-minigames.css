@@ -1,0 +1,93 @@
+.arcade-mini-hud {
+    position: absolute;
+    inset: 0;
+    z-index: 35;
+    pointer-events: none;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    color: #fff4d6;
+}
+.arcade-mini-hud__top {
+    position: absolute;
+    top: max(12px, env(safe-area-inset-top));
+    left: max(12px, env(safe-area-inset-left));
+    right: max(12px, env(safe-area-inset-right));
+    display: grid;
+    grid-template-columns: minmax(150px, 1fr) auto minmax(150px, 1fr);
+    gap: 10px;
+    align-items: start;
+}
+.arcade-mini-hud__brand,
+.arcade-mini-hud__stats,
+.arcade-mini-hud__roster-button,
+.arcade-mini-hud__status {
+    border: 2px solid #36264f;
+    background: rgba(5, 10, 27, .91);
+    box-shadow: 4px 4px 0 rgba(255,111,181,.16), inset 0 0 0 1px rgba(255,209,102,.08);
+}
+.arcade-mini-hud__brand { padding: 9px 12px; }
+.arcade-mini-hud__brand small { display: block; color: #ff6fb5; font-size: 8px; letter-spacing: .08em; }
+.arcade-mini-hud__brand strong { display: block; color: #ffd166; font-size: clamp(14px, 2vw, 22px); line-height: 1; margin-top: 4px; text-shadow: 2px 2px 0 #5a3da6; }
+.arcade-mini-hud__brand span { display: block; color: #aeb8c7; font-size: 8px; margin-top: 4px; }
+.arcade-mini-hud__stats { display: grid; grid-template-columns: repeat(4, minmax(54px, auto)); gap: 1px; overflow: hidden; }
+.arcade-mini-hud__stats span { display: grid; gap: 2px; padding: 8px 10px; min-width: 58px; text-align: center; background: rgba(13,24,51,.84); }
+.arcade-mini-hud__stats small { color: #ff6fb5; font-size: 7px; }
+.arcade-mini-hud__stats b { color: #ffd166; font-size: 10px; }
+.arcade-mini-hud__roster-button { pointer-events: auto; cursor: pointer; padding: 8px 10px; text-align: left; color: inherit; }
+.arcade-mini-hud__roster-button span { display: block; color: #43e6e9; font-size: 7px; }
+.arcade-mini-hud__roster-button b { display: block; margin-top: 4px; color: #fff4d6; font-size: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.arcade-mini-hud__status {
+    position: absolute;
+    left: 50%;
+    bottom: max(12px, env(safe-area-inset-bottom));
+    transform: translateX(-50%);
+    display: grid;
+    min-width: min(520px, 68vw);
+    padding: 7px 12px;
+    text-align: center;
+}
+.arcade-mini-hud__status span { color: #fff4d6; font-size: 9px; font-weight: 800; }
+.arcade-mini-hud__status small { color: #ff6fb5; font-size: 7px; margin-top: 2px; }
+.arcade-character-deck {
+    position: absolute;
+    inset: 9% 7%;
+    z-index: 6;
+    pointer-events: auto;
+    overflow: hidden;
+    border: 3px solid #5a3da6;
+    background: #070d20;
+    box-shadow: 8px 8px 0 rgba(0,0,0,.45), 0 0 0 2px #ff6fb5 inset;
+}
+.arcade-character-deck[hidden] { display: none; }
+.arcade-character-deck header { display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; border-bottom: 2px solid #36264f; background: #0b1430; }
+.arcade-character-deck header small { display: block; color: #ff6fb5; font-size: 7px; }
+.arcade-character-deck header strong { display: block; color: #ffd166; font-size: 15px; }
+.arcade-character-deck header button { width: 34px; height: 34px; border: 2px solid #ff6fb5; background: #111827; color: #fff4d6; font-size: 22px; cursor: pointer; }
+.arcade-character-deck__rail { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(140px, 18vw); gap: 10px; overflow-x: auto; overscroll-behavior-inline: contain; scroll-snap-type: x mandatory; padding: 12px; height: calc(100% - 88px); align-items: start; }
+.arcade-character-card { scroll-snap-align: center; display: grid; gap: 6px; padding: 6px; border: 2px solid #31284f; background: #0d1730; color: #fff4d6; cursor: pointer; text-align: center; }
+.arcade-character-card:hover, .arcade-character-card.is-active { border-color: #ffd166; box-shadow: 0 0 0 2px #ff6fb5 inset; transform: translateY(-2px); }
+.arcade-character-card img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; image-rendering: auto; border: 1px solid #36264f; }
+.arcade-character-card > span:last-child { font-size: 8px; font-weight: 900; }
+.arcade-character-card__fallback { display: grid; place-items: center; width: 100%; aspect-ratio: 4 / 3; background: repeating-linear-gradient(45deg,#0b1020 0 8px,#151f3b 8px 16px); color: #ffd166; font-size: 12px; }
+.arcade-character-deck footer { position: absolute; inset-inline: 0; bottom: 0; padding: 6px 10px; border-top: 1px solid #36264f; background: #0b1430; color: #aeb8c7; font-size: 7px; text-align: center; }
+.arcade-mini-hud.is-paused::after { content: 'PAUSED'; position: absolute; inset: 0; display: grid; place-items: center; background: rgba(3,6,18,.38); color: #ffd166; font-size: clamp(24px, 7vw, 64px); font-weight: 1000; letter-spacing: .08em; text-shadow: 4px 4px 0 #5a3da6; }
+.manager-shell[data-session-state="playing"][data-control-layout="arcade"] [data-control-surface="world"] { display: flex; }
+.manager-shell[data-control-layout="arcade"] [data-control-surface="world"] .mobile-action-tray { display: none !important; }
+.manager-shell[data-control-layout="arcade"] [data-control-surface="world"] .touch-action--emote,
+.manager-shell[data-control-layout="arcade"] [data-control-surface="world"] .touch-action--more { display: none; }
+.manager-shell[data-control-layout="arcade"] [data-control-surface="world"] .touch-controller__actions { grid-template-columns: repeat(4,minmax(0,1fr)); grid-template-areas: "run jump interact dash"; width: min(340px,60vw); }
+.manager-shell[data-control-layout="arcade"] [data-control-surface="world"] .touch-action--interact { grid-area: interact; display: grid; }
+.manager-shell[data-control-layout="arcade"] [data-control-surface="world"] .touch-action--run { grid-area: run; }
+.manager-shell[data-control-layout="arcade"] [data-control-surface="world"] .touch-action--jump { grid-area: jump; }
+.manager-shell[data-control-layout="arcade"] [data-control-surface="world"] .touch-action--dash { grid-area: dash; }
+
+@media (max-width: 780px), (max-height: 520px) {
+    .arcade-mini-hud__top { grid-template-columns: 1fr auto; }
+    .arcade-mini-hud__brand span { display: none; }
+    .arcade-mini-hud__stats { order: 3; grid-column: 1 / -1; justify-self: center; }
+    .arcade-mini-hud__stats span { padding: 5px 7px; }
+    .arcade-mini-hud__roster-button { max-width: 145px; }
+    .arcade-mini-hud__status { bottom: 6px; min-width: 55vw; }
+    .arcade-mini-hud__status small { display: none; }
+    .arcade-character-deck { inset: 5% 3%; }
+    .arcade-character-deck__rail { grid-auto-columns: minmax(120px, 30vw); }
+}

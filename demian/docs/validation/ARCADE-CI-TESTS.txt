@@ -1,0 +1,338 @@
+
+> test:ci
+> node --test tests/js/AtomicDeployment.test.js tests/js/CafeArchitectureBoundary.test.js tests/js/CafeEnvironmentContract.test.js tests/js/CafeEnvironmentIntegration.test.js tests/js/PixelRenderingArchitecture.test.js tests/js/open-world/OpenWorldRendering.test.js tests/js/GameRegistry.test.js tests/js/GameRuntime.test.js tests/js/ScreenManager.test.js tests/js/MobileViewportPolicy.test.js tests/js/ControlLayoutService.test.js tests/js/ScrollSnapRail.test.js tests/js/ui/UiLayer.test.js tests/js/CharacterVisualContract.test.js tests/js/CharacterPreviewRenderer.test.js tests/js/CharacterRenderingRuntime.test.js tests/js/open-world/OpenWorldStartupSafety.test.js
+
+TAP version 13
+# Subtest: production config disables game code splitting with the Vite 8 Rolldown API
+ok 1 - production config disables game code splitting with the Vite 8 Rolldown API
+  ---
+  duration_ms: 1.722028
+  type: 'test'
+  ...
+# Subtest: GitHub Pages deployment validates and publishes one atomic bundle
+ok 2 - GitHub Pages deployment validates and publishes one atomic bundle
+  ---
+  duration_ms: 0.835247
+  type: 'test'
+  ...
+# Subtest: the HTML shell performs a guarded recovery from stale Vite chunks
+ok 3 - the HTML shell performs a guarded recovery from stale Vite chunks
+  ---
+  duration_ms: 0.74941
+  type: 'test'
+  ...
+# Subtest: missing character art falls back without aborting the café simulation
+ok 4 - missing character art falls back without aborting the café simulation
+  ---
+  duration_ms: 0.669557
+  type: 'test'
+  ...
+# Subtest: atomic build validator accepts a single bundle and rejects game chunks
+ok 5 - atomic build validator accepts a single bundle and rejects game chunks
+  ---
+  duration_ms: 441.746397
+  type: 'test'
+  ...
+# Subtest: shared game domain stays renderer-neutral
+ok 6 - shared game domain stays renderer-neutral
+  ---
+  duration_ms: 13.411504
+  type: 'test'
+  ...
+# Subtest: every registered game is hard-locked to the shared reference café
+ok 7 - every registered game is hard-locked to the shared reference café
+  ---
+  duration_ms: 2.777957
+  type: 'test'
+  ...
+# Subtest: current and legacy Open World imports resolve to the same café manifest
+ok 8 - current and legacy Open World imports resolve to the same café manifest
+  ---
+  duration_ms: 1.333221
+  type: 'test'
+  ...
+# Subtest: every playable game declares the shared reference café environment
+ok 9 - every playable game declares the shared reference café environment
+  ---
+  duration_ms: 1.358305
+  type: 'test'
+  ...
+# Subtest: every visible game renderer uses the shared 2D café pipeline and avoids Three imports
+ok 10 - every visible game renderer uses the shared 2D café pipeline and avoids Three imports
+  ---
+  duration_ms: 1.320093
+  type: 'test'
+  ...
+# Subtest: the café pixel renderer is data-driven from the shared collision layout
+ok 11 - the café pixel renderer is data-driven from the shared collision layout
+  ---
+  duration_ms: 0.366848
+  type: 'test'
+  ...
+# Subtest: character preview prefers the east idle frame for directional atlases
+ok 12 - character preview prefers the east idle frame for directional atlases
+  ---
+  duration_ms: 3.778931
+  type: 'test'
+  ...
+# Subtest: character preview supports TexturePacker-style nested frame rectangles
+ok 13 - character preview supports TexturePacker-style nested frame rectangles
+  ---
+  duration_ms: 0.437188
+  type: 'test'
+  ...
+# Subtest: Open World never blocks on desktop-size character sheets
+ok 14 - Open World never blocks on desktop-size character sheets
+  ---
+  duration_ms: 3.60915
+  type: 'test'
+  ...
+# Subtest: CanvasTexture images without HTMLImageElement.complete remain drawable
+ok 15 - CanvasTexture images without HTMLImageElement.complete remain drawable
+  ---
+  duration_ms: 0.449052
+  type: 'test'
+  ...
+# Subtest: sprite drawing is foot-pivot anchored, pixel-snapped and respects presentation offsets
+ok 16 - sprite drawing is foot-pivot anchored, pixel-snapped and respects presentation offsets
+  ---
+  duration_ms: 1.025288
+  type: 'test'
+  ...
+# Subtest: canonical V6 fallback plus exact V9 character packs resolve every Demian roster member
+ok 17 - canonical V6 fallback plus exact V9 character packs resolve every Demian roster member
+  ---
+  duration_ms: 5.130431
+  type: 'test'
+  ...
+# Subtest: canonical body footprint compensates source-art occupancy instead of scaling characters arbitrarily
+ok 18 - canonical body footprint compensates source-art occupancy instead of scaling characters arbitrarily
+  ---
+  duration_ms: 5.870027
+  type: 'test'
+  ...
+# Subtest: ControlLayoutService maps input contexts to isolated mobile layouts
+ok 19 - ControlLayoutService maps input contexts to isolated mobile layouts
+  ---
+  duration_ms: 4.229892
+  type: 'test'
+  ...
+# Subtest: ControlLayoutService accepts future game control surfaces without core changes
+ok 20 - ControlLayoutService accepts future game control surfaces without core changes
+  ---
+  duration_ms: 4.961114
+  type: 'test'
+  ...
+# Subtest: GameRegistry lazily loads a module once and creates fresh instances
+ok 21 - GameRegistry lazily loads a module once and creates fresh instances
+  ---
+  duration_ms: 25.189501
+  type: 'test'
+  ...
+# Subtest: GameRegistry clears failed lazy imports so launch can be retried
+ok 22 - GameRegistry clears failed lazy imports so launch can be retried
+  ---
+  duration_ms: 16.021461
+  type: 'test'
+  ...
+# Subtest: GameRegistry rejects duplicate and unknown game ids
+ok 23 - GameRegistry rejects duplicate and unknown game ids
+  ---
+  duration_ms: 0.583286
+  type: 'test'
+  ...
+# Subtest: GameRuntime advances game logic with a deterministic fixed step
+ok 24 - GameRuntime advances game logic with a deterministic fixed step
+  ---
+  duration_ms: 10.548
+  type: 'test'
+  ...
+# Subtest: GameRuntime keeps transient input queued until a fixed step occurs
+ok 25 - GameRuntime keeps transient input queued until a fixed step occurs
+  ---
+  duration_ms: 0.377573
+  type: 'test'
+  ...
+# Subtest: GameRuntime caps catch-up work and reports dropped simulation time
+ok 26 - GameRuntime caps catch-up work and reports dropped simulation time
+  ---
+  duration_ms: 0.528915
+  type: 'test'
+  ...
+# Subtest: GameRuntime pause and resume notify the active game once
+ok 27 - GameRuntime pause and resume notify the active game once
+  ---
+  duration_ms: 0.397698
+  type: 'test'
+  ...
+# Subtest: GameRuntime keeps requesting frames after a recoverable render error
+ok 28 - GameRuntime keeps requesting frames after a recoverable render error
+  ---
+  duration_ms: 0.726383
+  type: 'test'
+  ...
+# Subtest: mobile viewport mode prioritizes the character sheet over gameplay
+ok 29 - mobile viewport mode prioritizes the character sheet over gameplay
+  ---
+  duration_ms: 3.811616
+  type: 'test'
+  ...
+# Subtest: forced landscape is limited to active gameplay and never blocks character scrolling
+ok 30 - forced landscape is limited to active gameplay and never blocks character scrolling
+  ---
+  duration_ms: 0.377715
+  type: 'test'
+  ...
+# Subtest: pixel camera world and screen transforms round-trip
+ok 31 - pixel camera world and screen transforms round-trip
+  ---
+  duration_ms: 2.063727
+  type: 'test'
+  ...
+# Subtest: reference café manifest fills a four by three streaming grid
+ok 32 - reference café manifest fills a four by three streaming grid
+  ---
+  duration_ms: 0.67665
+  type: 'test'
+  ...
+# Subtest: ScreenManager serializes primary replacement and closes previous screen
+ok 33 - ScreenManager serializes primary replacement and closes previous screen
+  ---
+  duration_ms: 3.541719
+  type: 'test'
+  ...
+# Subtest: ScreenManager keeps modal stack separate from primary navigation
+ok 34 - ScreenManager keeps modal stack separate from primary navigation
+  ---
+  duration_ms: 4.459962
+  type: 'test'
+  ...
+# Subtest: ScreenManager rejects duplicate screen identifiers
+ok 35 - ScreenManager rejects duplicate screen identifiers
+  ---
+  duration_ms: 0.675094
+  type: 'test'
+  ...
+# Subtest: ScreenManager refreshes an already visible screen without duplicating it
+ok 36 - ScreenManager refreshes an already visible screen without duplicating it
+  ---
+  duration_ms: 0.660592
+  type: 'test'
+  ...
+# Subtest: ScrollSnapRail clamps navigation indices for empty and populated rails
+ok 37 - ScrollSnapRail clamps navigation indices for empty and populated rails
+  ---
+  duration_ms: 1.899795
+  type: 'test'
+  ...
+# Subtest: ScrollSnapRail resolves the card nearest the viewport center
+ok 38 - ScrollSnapRail resolves the card nearest the viewport center
+  ---
+  duration_ms: 0.404738
+  type: 'test'
+  ...
+# Subtest: Open World uses the Canvas2D pixel renderer for every visible frame
+ok 39 - Open World uses the Canvas2D pixel renderer for every visible frame
+  ---
+  duration_ms: 19.102335
+  type: 'test'
+  ...
+# Subtest: Open World renders the café before blocking character boot
+ok 40 - Open World renders the café before blocking character boot
+  ---
+  duration_ms: 16.837749
+  type: 'test'
+  ...
+# Subtest: Open World chunk renderer is data-only and never owns GPU resources
+ok 41 - Open World chunk renderer is data-only and never owns GPU resources
+  ---
+  duration_ms: 2.569298
+  type: 'test'
+  ...
+# Subtest: the shared renderer owns a nearest-neighbour logical backbuffer
+ok 42 - the shared renderer owns a nearest-neighbour logical backbuffer
+  ---
+  duration_ms: 2.442539
+  type: 'test'
+  ...
+# Subtest: primary Canvas2D rendering does not request the low-latency compositor by default
+ok 43 - primary Canvas2D rendering does not request the low-latency compositor by default
+  ---
+  duration_ms: 3.664193
+  type: 'test'
+  ...
+# Subtest: Open World studio frame payload satisfies CharacterManagerUI HUD contract
+ok 44 - Open World studio frame payload satisfies CharacterManagerUI HUD contract
+  ---
+  duration_ms: 4.498071
+  type: 'test'
+  ...
+# Subtest: CharacterManagerUI HUD tolerates incomplete telemetry without breaking the game frame
+ok 45 - CharacterManagerUI HUD tolerates incomplete telemetry without breaking the game frame
+  ---
+  duration_ms: 4.317171
+  type: 'test'
+  ...
+# Subtest: V10 renderer presents the logical backbuffer at an integer pixel scale
+ok 46 - V10 renderer presents the logical backbuffer at an integer pixel scale
+  ---
+  duration_ms: 23.417896
+  type: 'test'
+  ...
+# Subtest: Open World applies hard-edged 8-bit scene finishing after actors are drawn
+ok 47 - Open World applies hard-edged 8-bit scene finishing after actors are drawn
+  ---
+  duration_ms: 2.453125
+  type: 'test'
+  ...
+# Subtest: World map derives district labels from chunk centers instead of optional manifest fields
+ok 48 - World map derives district labels from chunk centers instead of optional manifest fields
+  ---
+  duration_ms: 2.102297
+  type: 'test'
+  ...
+# Subtest: Open World enters with only the selected character and hydrates NPCs after the ready frame
+ok 49 - Open World enters with only the selected character and hydrates NPCs after the ready frame
+  ---
+  duration_ms: 9.728297
+  type: 'test'
+  ...
+# Subtest: character startup has network timeouts and serial background hydration
+ok 50 - character startup has network timeouts and serial background hydration
+  ---
+  duration_ms: 2.997604
+  type: 'test'
+  ...
+# Subtest: selected compact NPCs are upgraded without leaking timed-out textures
+ok 51 - selected compact NPCs are upgraded without leaking timed-out textures
+  ---
+  duration_ms: 4.782399
+  type: 'test'
+  ...
+# Subtest: UiLayer exposes unique semantic layer tokens
+ok 52 - UiLayer exposes unique semantic layer tokens
+  ---
+  duration_ms: 1.264172
+  type: 'test'
+  ...
+# Subtest: UiLayer assigns and reads a semantic layer from dataset
+ok 53 - UiLayer assigns and reads a semantic layer from dataset
+  ---
+  duration_ms: 0.282409
+  type: 'test'
+  ...
+# Subtest: UiLayer rejects invalid elements and unknown layer tokens
+ok 54 - UiLayer rejects invalid elements and unknown layer tokens
+  ---
+  duration_ms: 0.659218
+  type: 'test'
+  ...
+1..54
+# tests 54
+# suites 0
+# pass 54
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1790.974501

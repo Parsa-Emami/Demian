@@ -1,4 +1,4 @@
-# Demian Game Platform 9.1
+# Demian Game Platform 9.1 + Arcade Pack 1
 
 نسخه تجمعی فازهای ۱ تا ۸ با رندر دوبعدی پیکسلی، کافه مشترک و استقرار Atomic روی GitHub Pages.
 
@@ -11,6 +11,8 @@
 - Open World با ۱۲ Chunk، چهار District، Mini Map، World Map و Save Point
 - Role Play با Dialogue، Quest، Inventory، Job و Save نسخه‌دار
 - Hide & Seek، Event Framework و Tetris قطعی
+- شش مینی‌گیم دوبعدی جدید: Neon Run، Star Catcher، Café Drift، Shadow Maze، Sky Hop و Rhythm Rush
+- Roster سراسری ۱۳ کاراکتر با انتخاب زنده داخل مینی‌گیم‌ها؛ ۱۱ شخصیت ارسالی روی Asset Pack دقیق v9
 - رابط واکنش‌گرا برای موبایل و دسکتاپ
 - یک Bundle جاوااسکریپت Atomic برای جلوگیری از خطای فایل‌های هش‌شده‌ی حذف‌شده در GitHub Pages
 - Recovery محافظت‌شده برای `vite:preloadError` و Asset Fallback برای کاراکترها
@@ -54,3 +56,4 @@ npm run validate:build
 - `docs/PHASE-8-OPEN-WORLD.fa.md`
 - `docs/GITHUB-PAGES-ATOMIC-DEPLOYMENT.fa.md`
 - `docs/FINAL-INTEGRATION-AND-MOBILE-UX.fa.md`
+- `docs/ARCADE-MINI-GAMES-V1.fa.md`

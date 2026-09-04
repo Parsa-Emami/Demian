@@ -1,0 +1,95 @@
+{
+  "description": "Integrity proof that the 11 supplied character-sheet JPGs are byte-for-byte identical to the project v9 reference assets used by the arcade roster.",
+  "algorithm": "SHA-256",
+  "all_exact_matches": true,
+  "characters": [
+    {
+      "slug": "mojtaba",
+      "project_reference": "public/assets/characters/mojtaba/mojtaba-character-sheet-reference-v9.jpg",
+      "uploaded_sha256": "27d0bedf41d76bc37d6bb2bd7376774c7dc84bdeee9bf3c06a72bf3eda7b7e05",
+      "project_sha256": "27d0bedf41d76bc37d6bb2bd7376774c7dc84bdeee9bf3c06a72bf3eda7b7e05",
+      "exact_match": true,
+      "runtime_pack_version": 9
+    },
+    {
+      "slug": "darya",
+      "project_reference": "public/assets/characters/darya/darya-character-sheet-reference-v9.jpg",
+      "uploaded_sha256": "0f7dd660767c7fcf8c50ca922ff9fbafb7dc3d425791adfbd6473a52c7790a44",
+      "project_sha256": "0f7dd660767c7fcf8c50ca922ff9fbafb7dc3d425791adfbd6473a52c7790a44",
+      "exact_match": true,
+      "runtime_pack_version": 9
+    },
+    {
+      "slug": "uzudi",
+      "project_reference": "public/assets/characters/uzudi/uzudi-character-sheet-reference-v9.jpg",
+      "uploaded_sha256": "69f235770852ae36545d15ff76dcc2d0e61a93f34605f131080bfcb43c7ddaed",
+      "project_sha256": "69f235770852ae36545d15ff76dcc2d0e61a93f34605f131080bfcb43c7ddaed",
+      "exact_match": true,
+      "runtime_pack_version": 9
+    },
+    {
+      "slug": "setayesh",
+      "project_reference": "public/assets/characters/setayesh/setayesh-character-sheet-reference-v9.jpg",
+      "uploaded_sha256": "743165a6e0f6a34fb5b851c2ae1e9d6a2008fe066f8f92fabe9a1486d01607af",
+      "project_sha256": "743165a6e0f6a34fb5b851c2ae1e9d6a2008fe066f8f92fabe9a1486d01607af",
+      "exact_match": true,
+      "runtime_pack_version": 9
+    },
+    {
+      "slug": "hossein",
+      "project_reference": "public/assets/characters/hossein/hossein-character-sheet-reference-v9.jpg",
+      "uploaded_sha256": "4a8ce0686cc7204dccadf621597298d5f5c56c4667577ab6fa73d0570c49e599",
+      "project_sha256": "4a8ce0686cc7204dccadf621597298d5f5c56c4667577ab6fa73d0570c49e599",
+      "exact_match": true,
+      "runtime_pack_version": 9
+    },
+    {
+      "slug": "iman",
+      "project_reference": "public/assets/characters/iman/iman-character-sheet-reference-v9.jpg",
+      "uploaded_sha256": "ef6be87a0ddb96b29ea5872244dcab7cb619876e6560354ea2622b9ecf816c91",
+      "project_sha256": "ef6be87a0ddb96b29ea5872244dcab7cb619876e6560354ea2622b9ecf816c91",
+      "exact_match": true,
+      "runtime_pack_version": 9
+    },
+    {
+      "slug": "taher-db",
+      "project_reference": "public/assets/characters/taher-db/taher-db-character-sheet-reference-v9.jpg",
+      "uploaded_sha256": "e424480ff9e09fe130e8e75650ea700385204397b7a31127bd6f1ed108bdd69a",
+      "project_sha256": "e424480ff9e09fe130e8e75650ea700385204397b7a31127bd6f1ed108bdd69a",
+      "exact_match": true,
+      "runtime_pack_version": 9
+    },
+    {
+      "slug": "sorkhi",
+      "project_reference": "public/assets/characters/sorkhi/sorkhi-character-sheet-reference-v9.jpg",
+      "uploaded_sha256": "771d08215f30a5cbf32b4cce4b6a2176019fcd9641820566865fe85bc3674310",
+      "project_sha256": "771d08215f30a5cbf32b4cce4b6a2176019fcd9641820566865fe85bc3674310",
+      "exact_match": true,
+      "runtime_pack_version": 9
+    },
+    {
+      "slug": "arsal",
+      "project_reference": "public/assets/characters/arsal/arsal-character-sheet-reference-v9.jpg",
+      "uploaded_sha256": "f96983099ed3885d992e1bd971780c304bb227e330c120a43b2e6b2e078fe308",
+      "project_sha256": "f96983099ed3885d992e1bd971780c304bb227e330c120a43b2e6b2e078fe308",
+      "exact_match": true,
+      "runtime_pack_version": 9
+    },
+    {
+      "slug": "parsa",
+      "project_reference": "public/assets/characters/parsa/parsa-character-sheet-reference-v9.jpg",
+      "uploaded_sha256": "e527eb9489325c991afa83a97bc2763acca0ac95a7c964edeb4709d05128b302",
+      "project_sha256": "e527eb9489325c991afa83a97bc2763acca0ac95a7c964edeb4709d05128b302",
+      "exact_match": true,
+      "runtime_pack_version": 9
+    },
+    {
+      "slug": "amirreza",
+      "project_reference": "public/assets/characters/amirreza/amirreza-character-sheet-reference-v9.jpg",
+      "uploaded_sha256": "3cf1022c89bac25c7e184d5c9903b45d40f0a623e5138f1835bcfd240d526bf9",
+      "project_sha256": "3cf1022c89bac25c7e184d5c9903b45d40f0a623e5138f1835bcfd240d526bf9",
+      "exact_match": true,
+      "runtime_pack_version": 9
+    }
+  ]
+}

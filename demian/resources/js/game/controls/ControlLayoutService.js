@@ -5,6 +5,7 @@ export const CONTROL_LAYOUTS = Object.freeze({
     EVENT: Object.freeze({ id: 'event', joystick: true }),
     ROLE_PLAY: Object.freeze({ id: 'role-play', joystick: true }),
     HIDE_AND_SEEK: Object.freeze({ id: 'hide-and-seek', joystick: true }),
+    ARCADE: Object.freeze({ id: 'arcade', joystick: true }),
     TETRIS: Object.freeze({ id: 'tetris', joystick: false }),
 });
 
