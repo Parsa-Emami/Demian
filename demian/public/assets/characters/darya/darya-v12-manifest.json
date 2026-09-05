@@ -1,0 +1,21 @@
+{
+  "character": "darya",
+  "targetVersion": 12,
+  "requiredStates": [
+    "idle",
+    "walk",
+    "run",
+    "jump_air",
+    "attack_cat_swipe",
+    "win_celebration",
+    "hit_reaction",
+    "fail_comic",
+    "tap_interact"
+  ],
+  "variants": [
+    "desktop",
+    "mobile",
+    "compact"
+  ],
+  "note": "Requires runtime atlas assets generated from final sprite sheet."
+}
