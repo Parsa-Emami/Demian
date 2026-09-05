@@ -10,7 +10,7 @@ export const CHARACTER_PACK_VERSION = 6;
 export const CHARACTER_PACK_VERSION_OVERRIDES = Object.freeze({
     amirreza: 9,
     arsal: 9,
-    darya: 12,
+    darya: 9,
     hossein: 9,
     iman: 9,
     mojtaba: 9,
