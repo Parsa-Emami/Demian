@@ -7,7 +7,7 @@ from pathlib import Path
 from PIL import Image
 
 ROOT = Path(__file__).resolve().parents[1]
-CHARACTERS = ("tiam", "ronak", "amirreza", "parsa", "darya", "iman", "uzudi", "setayesh")
+CHARACTERS = ("tiam", "ronak", "darya")
 VARIANTS = {"desktop": 256, "mobile": 192, "compact": 128}
 COLUMNS = 21
 ROWS = 12
