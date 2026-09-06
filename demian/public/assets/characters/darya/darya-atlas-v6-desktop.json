@@ -1,9 +1,17 @@
 {
   "meta": {
-    "name": "DARYA / \u062f\u0631\u06cc\u0627",
+    "name": "DARYA / دریا",
     "version": 6,
     "variant": "desktop",
     "image": "darya-spritesheet-v6-desktop.png",
+    "size": {
+      "w": 5376,
+      "h": 3072
+    },
+    "frameSize": {
+      "w": 256,
+      "h": 256
+    },
     "grid": {
       "columns": 21,
       "rows": 12

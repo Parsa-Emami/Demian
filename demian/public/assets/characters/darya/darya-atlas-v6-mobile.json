@@ -1,9 +1,17 @@
 {
   "meta": {
-    "name": "DARYA / \u062f\u0631\u06cc\u0627",
+    "name": "DARYA / دریا",
     "version": 6,
     "variant": "mobile",
     "image": "darya-spritesheet-v6-mobile.png",
+    "size": {
+      "w": 4032,
+      "h": 2304
+    },
+    "frameSize": {
+      "w": 192,
+      "h": 192
+    },
     "grid": {
       "columns": 21,
       "rows": 12
