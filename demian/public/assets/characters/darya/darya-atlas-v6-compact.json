@@ -15,6 +15,10 @@
     "size": {
       "w": 2688,
       "h": 1536
+    },
+    "frameSize": {
+      "w": 128,
+      "h": 128
     }
   },
   "frames": {
@@ -1916,5 +1920,13 @@
         "frame_011"
       ]
     }
+  },
+  "render": {
+    "canonicalBodyWorldWidth": 3.75,
+    "canonicalBodyWorldHeight": 3.75,
+    "normalizedBodyHeightRatio": 0.86,
+    "preserveAspectRatio": true,
+    "referenceBodyWidthRatio": 0.72,
+    "referenceBodyHeightRatio": 0.86
   }
 }
