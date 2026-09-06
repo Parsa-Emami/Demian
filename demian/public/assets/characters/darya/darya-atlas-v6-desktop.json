@@ -1,6 +1,6 @@
 {
   "meta": {
-    "name": "DARYA / دریا",
+    "name": "DARYA / \u062f\u0631\u06cc\u0627",
     "version": 6,
     "variant": "desktop",
     "image": "darya-spritesheet-v6-desktop.png",
@@ -11,15 +11,7 @@
     "generatedFrameCount": 252,
     "redesign": "v10 Darya companion redesign",
     "combatAnimationsRemoved": true,
-    "artIntegrity": "valid",
-    "size": {
-      "w": 5376,
-      "h": 3072
-    },
-    "frameSize": {
-      "w": 256,
-      "h": 256
-    }
+    "artIntegrity": "valid"
   },
   "frames": {
     "frame_000": {
@@ -1921,11 +1913,11 @@
       ]
     }
   },
+  "display": {
+    "worldWidth": 3.75,
+    "worldHeight": 3.75
+  },
   "render": {
-    "canonicalBodyWorldWidth": 3.75,
-    "canonicalBodyWorldHeight": 3.75,
-    "normalizedBodyHeightRatio": 0.86,
-    "preserveAspectRatio": true,
     "referenceBodyWidthRatio": 0.72,
     "referenceBodyHeightRatio": 0.86
   }
