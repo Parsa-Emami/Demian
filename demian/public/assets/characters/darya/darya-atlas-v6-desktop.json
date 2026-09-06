@@ -11,7 +11,11 @@
     "generatedFrameCount": 252,
     "redesign": "v10 Darya companion redesign",
     "combatAnimationsRemoved": true,
-    "artIntegrity": "valid"
+    "artIntegrity": "valid",
+    "size": {
+      "w": 5376,
+      "h": 3072
+    }
   },
   "frames": {
     "frame_000": {
