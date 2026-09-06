@@ -1,15 +1,17 @@
 {
   "meta": {
     "name": "DARYA / دریا",
-    "version": 10,
+    "version": 6,
     "variant": "mobile",
-    "image": "darya-spritesheet-v10-mobile.png",
+    "image": "darya-spritesheet-v6-mobile.png",
     "grid": {
       "columns": 21,
       "rows": 12
     },
     "generatedFrameCount": 252,
-    "redesign": "v10 Darya companion redesign"
+    "redesign": "v10 Darya companion redesign",
+    "combatAnimationsRemoved": true,
+    "artIntegrity": "valid"
   },
   "frames": {
     "frame_000": {
@@ -1539,138 +1541,376 @@
         "frame_008",
         "frame_009",
         "frame_010",
-        "frame_011",
-        "frame_012",
-        "frame_013",
-        "frame_014",
-        "frame_015"
-      ],
-      "fps": 12,
-      "loop": true
+        "frame_011"
+      ]
     },
     "walk": {
       "frames": [
-        "frame_016",
-        "frame_017",
-        "frame_018",
-        "frame_019",
-        "frame_020",
-        "frame_021",
-        "frame_022",
-        "frame_023",
-        "frame_024",
-        "frame_025",
-        "frame_026",
-        "frame_027",
-        "frame_028",
-        "frame_029",
-        "frame_030",
-        "frame_031",
-        "frame_032",
-        "frame_033",
-        "frame_034",
-        "frame_035",
-        "frame_036",
-        "frame_037",
-        "frame_038",
-        "frame_039",
-        "frame_040",
-        "frame_041",
-        "frame_042",
-        "frame_043"
-      ],
-      "fps": 21,
-      "loop": true
+        "frame_000",
+        "frame_001",
+        "frame_002",
+        "frame_003",
+        "frame_004",
+        "frame_005",
+        "frame_006",
+        "frame_007",
+        "frame_008",
+        "frame_009",
+        "frame_010",
+        "frame_011"
+      ]
     },
     "run": {
       "frames": [
-        "frame_044",
-        "frame_045",
-        "frame_046",
-        "frame_047",
-        "frame_048",
-        "frame_049",
-        "frame_050",
-        "frame_051",
-        "frame_052",
-        "frame_053",
-        "frame_054",
-        "frame_055",
-        "frame_056",
-        "frame_057",
-        "frame_058",
-        "frame_059",
-        "frame_060",
-        "frame_061",
-        "frame_062",
-        "frame_063",
-        "frame_064",
-        "frame_065",
-        "frame_066",
-        "frame_067",
-        "frame_068",
-        "frame_069",
-        "frame_070",
-        "frame_071",
-        "frame_072",
-        "frame_073",
-        "frame_074",
-        "frame_075"
-      ],
-      "fps": 27,
-      "loop": true
+        "frame_000",
+        "frame_001",
+        "frame_002",
+        "frame_003",
+        "frame_004",
+        "frame_005",
+        "frame_006",
+        "frame_007",
+        "frame_008",
+        "frame_009",
+        "frame_010",
+        "frame_011"
+      ]
+    },
+    "sprint": {
+      "frames": [
+        "frame_000",
+        "frame_001",
+        "frame_002",
+        "frame_003",
+        "frame_004",
+        "frame_005",
+        "frame_006",
+        "frame_007",
+        "frame_008",
+        "frame_009",
+        "frame_010",
+        "frame_011"
+      ]
     },
     "jump": {
       "frames": [
-        "frame_076",
-        "frame_077",
-        "frame_078",
-        "frame_079",
-        "frame_080",
-        "frame_081",
-        "frame_082",
-        "frame_083",
-        "frame_084",
-        "frame_085",
-        "frame_086",
-        "frame_087",
-        "frame_088",
-        "frame_089",
-        "frame_090",
-        "frame_091",
-        "frame_092",
-        "frame_093",
-        "frame_094",
-        "frame_095",
-        "frame_096",
-        "frame_097",
-        "frame_098",
-        "frame_099"
-      ],
-      "fps": 22,
-      "loop": false
+        "frame_000",
+        "frame_001",
+        "frame_002",
+        "frame_003",
+        "frame_004",
+        "frame_005",
+        "frame_006",
+        "frame_007",
+        "frame_008",
+        "frame_009",
+        "frame_010",
+        "frame_011"
+      ]
+    },
+    "takeoff": {
+      "frames": [
+        "frame_000",
+        "frame_001",
+        "frame_002",
+        "frame_003",
+        "frame_004",
+        "frame_005",
+        "frame_006",
+        "frame_007",
+        "frame_008",
+        "frame_009",
+        "frame_010",
+        "frame_011"
+      ]
+    },
+    "fall": {
+      "frames": [
+        "frame_000",
+        "frame_001",
+        "frame_002",
+        "frame_003",
+        "frame_004",
+        "frame_005",
+        "frame_006",
+        "frame_007",
+        "frame_008",
+        "frame_009",
+        "frame_010",
+        "frame_011"
+      ]
+    },
+    "land": {
+      "frames": [
+        "frame_000",
+        "frame_001",
+        "frame_002",
+        "frame_003",
+        "frame_004",
+        "frame_005",
+        "frame_006",
+        "frame_007",
+        "frame_008",
+        "frame_009",
+        "frame_010",
+        "frame_011"
+      ]
+    },
+    "hop": {
+      "frames": [
+        "frame_000",
+        "frame_001",
+        "frame_002",
+        "frame_003",
+        "frame_004",
+        "frame_005",
+        "frame_006",
+        "frame_007",
+        "frame_008",
+        "frame_009",
+        "frame_010",
+        "frame_011"
+      ]
+    },
+    "skid": {
+      "frames": [
+        "frame_000",
+        "frame_001",
+        "frame_002",
+        "frame_003",
+        "frame_004",
+        "frame_005",
+        "frame_006",
+        "frame_007",
+        "frame_008",
+        "frame_009",
+        "frame_010",
+        "frame_011"
+      ]
+    },
+    "dash": {
+      "frames": [
+        "frame_000",
+        "frame_001",
+        "frame_002",
+        "frame_003",
+        "frame_004",
+        "frame_005",
+        "frame_006",
+        "frame_007",
+        "frame_008",
+        "frame_009",
+        "frame_010",
+        "frame_011"
+      ]
+    },
+    "slide": {
+      "frames": [
+        "frame_000",
+        "frame_001",
+        "frame_002",
+        "frame_003",
+        "frame_004",
+        "frame_005",
+        "frame_006",
+        "frame_007",
+        "frame_008",
+        "frame_009",
+        "frame_010",
+        "frame_011"
+      ]
+    },
+    "dodge": {
+      "frames": [
+        "frame_000",
+        "frame_001",
+        "frame_002",
+        "frame_003",
+        "frame_004",
+        "frame_005",
+        "frame_006",
+        "frame_007",
+        "frame_008",
+        "frame_009",
+        "frame_010",
+        "frame_011"
+      ]
     },
     "win": {
       "frames": [
-        "frame_100",
-        "frame_101",
-        "frame_102",
-        "frame_103",
-        "frame_104",
-        "frame_105",
-        "frame_106",
-        "frame_107",
-        "frame_108",
-        "frame_109",
-        "frame_110",
-        "frame_111",
-        "frame_112",
-        "frame_113",
-        "frame_114",
-        "frame_115"
-      ],
-      "fps": 17,
-      "loop": true
+        "frame_000",
+        "frame_001",
+        "frame_002",
+        "frame_003",
+        "frame_004",
+        "frame_005",
+        "frame_006",
+        "frame_007",
+        "frame_008",
+        "frame_009",
+        "frame_010",
+        "frame_011"
+      ]
+    },
+    "celebrate": {
+      "frames": [
+        "frame_000",
+        "frame_001",
+        "frame_002",
+        "frame_003",
+        "frame_004",
+        "frame_005",
+        "frame_006",
+        "frame_007",
+        "frame_008",
+        "frame_009",
+        "frame_010",
+        "frame_011"
+      ]
+    },
+    "dance": {
+      "frames": [
+        "frame_000",
+        "frame_001",
+        "frame_002",
+        "frame_003",
+        "frame_004",
+        "frame_005",
+        "frame_006",
+        "frame_007",
+        "frame_008",
+        "frame_009",
+        "frame_010",
+        "frame_011"
+      ]
+    },
+    "wave": {
+      "frames": [
+        "frame_000",
+        "frame_001",
+        "frame_002",
+        "frame_003",
+        "frame_004",
+        "frame_005",
+        "frame_006",
+        "frame_007",
+        "frame_008",
+        "frame_009",
+        "frame_010",
+        "frame_011"
+      ]
+    },
+    "salute": {
+      "frames": [
+        "frame_000",
+        "frame_001",
+        "frame_002",
+        "frame_003",
+        "frame_004",
+        "frame_005",
+        "frame_006",
+        "frame_007",
+        "frame_008",
+        "frame_009",
+        "frame_010",
+        "frame_011"
+      ]
+    },
+    "spin": {
+      "frames": [
+        "frame_000",
+        "frame_001",
+        "frame_002",
+        "frame_003",
+        "frame_004",
+        "frame_005",
+        "frame_006",
+        "frame_007",
+        "frame_008",
+        "frame_009",
+        "frame_010",
+        "frame_011"
+      ]
+    },
+    "crouch": {
+      "frames": [
+        "frame_000",
+        "frame_001",
+        "frame_002",
+        "frame_003",
+        "frame_004",
+        "frame_005",
+        "frame_006",
+        "frame_007",
+        "frame_008",
+        "frame_009",
+        "frame_010",
+        "frame_011"
+      ]
+    },
+    "laugh": {
+      "frames": [
+        "frame_000",
+        "frame_001",
+        "frame_002",
+        "frame_003",
+        "frame_004",
+        "frame_005",
+        "frame_006",
+        "frame_007",
+        "frame_008",
+        "frame_009",
+        "frame_010",
+        "frame_011"
+      ]
+    },
+    "pose": {
+      "frames": [
+        "frame_000",
+        "frame_001",
+        "frame_002",
+        "frame_003",
+        "frame_004",
+        "frame_005",
+        "frame_006",
+        "frame_007",
+        "frame_008",
+        "frame_009",
+        "frame_010",
+        "frame_011"
+      ]
+    },
+    "sleep": {
+      "frames": [
+        "frame_000",
+        "frame_001",
+        "frame_002",
+        "frame_003",
+        "frame_004",
+        "frame_005",
+        "frame_006",
+        "frame_007",
+        "frame_008",
+        "frame_009",
+        "frame_010",
+        "frame_011"
+      ]
+    },
+    "taunt": {
+      "frames": [
+        "frame_000",
+        "frame_001",
+        "frame_002",
+        "frame_003",
+        "frame_004",
+        "frame_005",
+        "frame_006",
+        "frame_007",
+        "frame_008",
+        "frame_009",
+        "frame_010",
+        "frame_011"
+      ]
     }
   }
 }

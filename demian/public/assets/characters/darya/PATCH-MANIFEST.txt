@@ -1,0 +1,2 @@
+Darya V6 missing files hotfix
+Adds required darya V6 atlas/spritesheet files for CI validation.
