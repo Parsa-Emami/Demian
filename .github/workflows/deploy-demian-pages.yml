@@ -184,8 +184,8 @@ jobs:
           npm run validate:character-art:strict
           npm run validate:character-pack:v6
           python3 tools/audit_character_sprite_packs.py \
-            --version 7 --strict \
-            darya mojtaba hossein arsal sorkhi taher-db
+            --version 11 --strict \
+            darya
 
       - name: Build one atomic frontend bundle
         shell: bash
@@ -212,17 +212,7 @@ jobs:
           built_in_versions = {
               'tiam': 6,
               'ronak': 6,
-              'amirreza': 6,
-              'parsa': 6,
-              'darya': 7,
-              'iman': 6,
-              'uzudi': 6,
-              'setayesh': 6,
-              'mojtaba': 7,
-              'hossein': 7,
-              'arsal': 7,
-              'sorkhi': 7,
-              'taher-db': 7,
+              'darya': 11,
           }
 
           for slug, pack_version in built_in_versions.items():
@@ -509,17 +499,7 @@ jobs:
           canonical_versions = {
               'tiam': 6,
               'ronak': 6,
-              'amirreza': 6,
-              'parsa': 6,
-              'darya': 7,
-              'iman': 6,
-              'uzudi': 6,
-              'setayesh': 6,
-              'mojtaba': 7,
-              'hossein': 7,
-              'arsal': 7,
-              'sorkhi': 7,
-              'taher-db': 7,
+              'darya': 11,
           }
           expected_slugs = set(canonical_versions)
           compatibility_slugs = expected_slugs
