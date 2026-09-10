@@ -1,0 +1,7 @@
+The following retired Darya V6 files must not be restored:
+- darya-atlas-v6-desktop.json
+- darya-atlas-v6-mobile.json
+- darya-atlas-v6-compact.json
+- darya-spritesheet-v6-desktop.png
+- darya-spritesheet-v6-mobile.png
+- darya-spritesheet-v6-compact.png

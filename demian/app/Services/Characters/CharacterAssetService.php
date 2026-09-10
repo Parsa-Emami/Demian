@@ -144,13 +144,12 @@ class CharacterAssetService
     {
         $slug = strtolower((string) $character->slug);
 
-        // These bundled characters are pinned to the canonical-reference v9
+        // Bundled characters are pinned to their canonical art pack versions
         // art pack so stale asset_pack_version values cannot keep an older
         // sprite sheet active after this patch is copied into an existing DB.
-        $bundledVersion = match ($slug) {
+        $bundledVersion = $slug === 'darya' ? 11 : match ($slug) {
             'amirreza',
             'arsal',
-            'darya',
             'hossein',
             'iman',
             'mojtaba',

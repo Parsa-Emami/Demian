@@ -1,0 +1,797 @@
+{
+  "meta": {
+    "name": "DARYA / دریا",
+    "version": 11,
+    "variant": "desktop",
+    "image": "darya-spritesheet-v11-desktop.png",
+    "size": {
+      "w": 2048,
+      "h": 1792
+    },
+    "frameSize": {
+      "w": 256,
+      "h": 256
+    },
+    "grid": {
+      "columns": 8,
+      "rows": 7
+    },
+    "generatedFrameCount": 56,
+    "redesign": "v11 complete Darya + Pishi rebuild",
+    "combatAnimationsRemoved": true,
+    "artIntegrity": "valid"
+  },
+  "frames": {
+    "frame_000": {
+      "x": 0,
+      "y": 0,
+      "w": 256,
+      "h": 256
+    },
+    "frame_001": {
+      "x": 256,
+      "y": 0,
+      "w": 256,
+      "h": 256
+    },
+    "frame_002": {
+      "x": 512,
+      "y": 0,
+      "w": 256,
+      "h": 256
+    },
+    "frame_003": {
+      "x": 768,
+      "y": 0,
+      "w": 256,
+      "h": 256
+    },
+    "frame_004": {
+      "x": 1024,
+      "y": 0,
+      "w": 256,
+      "h": 256
+    },
+    "frame_005": {
+      "x": 1280,
+      "y": 0,
+      "w": 256,
+      "h": 256
+    },
+    "frame_006": {
+      "x": 1536,
+      "y": 0,
+      "w": 256,
+      "h": 256
+    },
+    "frame_007": {
+      "x": 1792,
+      "y": 0,
+      "w": 256,
+      "h": 256
+    },
+    "frame_008": {
+      "x": 0,
+      "y": 256,
+      "w": 256,
+      "h": 256
+    },
+    "frame_009": {
+      "x": 256,
+      "y": 256,
+      "w": 256,
+      "h": 256
+    },
+    "frame_010": {
+      "x": 512,
+      "y": 256,
+      "w": 256,
+      "h": 256
+    },
+    "frame_011": {
+      "x": 768,
+      "y": 256,
+      "w": 256,
+      "h": 256
+    },
+    "frame_012": {
+      "x": 1024,
+      "y": 256,
+      "w": 256,
+      "h": 256
+    },
+    "frame_013": {
+      "x": 1280,
+      "y": 256,
+      "w": 256,
+      "h": 256
+    },
+    "frame_014": {
+      "x": 1536,
+      "y": 256,
+      "w": 256,
+      "h": 256
+    },
+    "frame_015": {
+      "x": 1792,
+      "y": 256,
+      "w": 256,
+      "h": 256
+    },
+    "frame_016": {
+      "x": 0,
+      "y": 512,
+      "w": 256,
+      "h": 256
+    },
+    "frame_017": {
+      "x": 256,
+      "y": 512,
+      "w": 256,
+      "h": 256
+    },
+    "frame_018": {
+      "x": 512,
+      "y": 512,
+      "w": 256,
+      "h": 256
+    },
+    "frame_019": {
+      "x": 768,
+      "y": 512,
+      "w": 256,
+      "h": 256
+    },
+    "frame_020": {
+      "x": 1024,
+      "y": 512,
+      "w": 256,
+      "h": 256
+    },
+    "frame_021": {
+      "x": 1280,
+      "y": 512,
+      "w": 256,
+      "h": 256
+    },
+    "frame_022": {
+      "x": 1536,
+      "y": 512,
+      "w": 256,
+      "h": 256
+    },
+    "frame_023": {
+      "x": 1792,
+      "y": 512,
+      "w": 256,
+      "h": 256
+    },
+    "frame_024": {
+      "x": 0,
+      "y": 768,
+      "w": 256,
+      "h": 256
+    },
+    "frame_025": {
+      "x": 256,
+      "y": 768,
+      "w": 256,
+      "h": 256
+    },
+    "frame_026": {
+      "x": 512,
+      "y": 768,
+      "w": 256,
+      "h": 256
+    },
+    "frame_027": {
+      "x": 768,
+      "y": 768,
+      "w": 256,
+      "h": 256
+    },
+    "frame_028": {
+      "x": 1024,
+      "y": 768,
+      "w": 256,
+      "h": 256
+    },
+    "frame_029": {
+      "x": 1280,
+      "y": 768,
+      "w": 256,
+      "h": 256
+    },
+    "frame_030": {
+      "x": 1536,
+      "y": 768,
+      "w": 256,
+      "h": 256
+    },
+    "frame_031": {
+      "x": 1792,
+      "y": 768,
+      "w": 256,
+      "h": 256
+    },
+    "frame_032": {
+      "x": 0,
+      "y": 1024,
+      "w": 256,
+      "h": 256
+    },
+    "frame_033": {
+      "x": 256,
+      "y": 1024,
+      "w": 256,
+      "h": 256
+    },
+    "frame_034": {
+      "x": 512,
+      "y": 1024,
+      "w": 256,
+      "h": 256
+    },
+    "frame_035": {
+      "x": 768,
+      "y": 1024,
+      "w": 256,
+      "h": 256
+    },
+    "frame_036": {
+      "x": 1024,
+      "y": 1024,
+      "w": 256,
+      "h": 256
+    },
+    "frame_037": {
+      "x": 1280,
+      "y": 1024,
+      "w": 256,
+      "h": 256
+    },
+    "frame_038": {
+      "x": 1536,
+      "y": 1024,
+      "w": 256,
+      "h": 256
+    },
+    "frame_039": {
+      "x": 1792,
+      "y": 1024,
+      "w": 256,
+      "h": 256
+    },
+    "frame_040": {
+      "x": 0,
+      "y": 1280,
+      "w": 256,
+      "h": 256
+    },
+    "frame_041": {
+      "x": 256,
+      "y": 1280,
+      "w": 256,
+      "h": 256
+    },
+    "frame_042": {
+      "x": 512,
+      "y": 1280,
+      "w": 256,
+      "h": 256
+    },
+    "frame_043": {
+      "x": 768,
+      "y": 1280,
+      "w": 256,
+      "h": 256
+    },
+    "frame_044": {
+      "x": 1024,
+      "y": 1280,
+      "w": 256,
+      "h": 256
+    },
+    "frame_045": {
+      "x": 1280,
+      "y": 1280,
+      "w": 256,
+      "h": 256
+    },
+    "frame_046": {
+      "x": 1536,
+      "y": 1280,
+      "w": 256,
+      "h": 256
+    },
+    "frame_047": {
+      "x": 1792,
+      "y": 1280,
+      "w": 256,
+      "h": 256
+    },
+    "frame_048": {
+      "x": 0,
+      "y": 1536,
+      "w": 256,
+      "h": 256
+    },
+    "frame_049": {
+      "x": 256,
+      "y": 1536,
+      "w": 256,
+      "h": 256
+    },
+    "frame_050": {
+      "x": 512,
+      "y": 1536,
+      "w": 256,
+      "h": 256
+    },
+    "frame_051": {
+      "x": 768,
+      "y": 1536,
+      "w": 256,
+      "h": 256
+    },
+    "frame_052": {
+      "x": 1024,
+      "y": 1536,
+      "w": 256,
+      "h": 256
+    },
+    "frame_053": {
+      "x": 1280,
+      "y": 1536,
+      "w": 256,
+      "h": 256
+    },
+    "frame_054": {
+      "x": 1536,
+      "y": 1536,
+      "w": 256,
+      "h": 256
+    },
+    "frame_055": {
+      "x": 1792,
+      "y": 1536,
+      "w": 256,
+      "h": 256
+    }
+  },
+  "animations": {
+    "idle": {
+      "frames": [
+        "frame_000",
+        "frame_001",
+        "frame_002",
+        "frame_003",
+        "frame_004",
+        "frame_005",
+        "frame_006",
+        "frame_007"
+      ],
+      "fps": 8,
+      "framesByDirection": {
+        "n": [
+          "frame_048"
+        ],
+        "ne": [
+          "frame_049"
+        ],
+        "e": [
+          "frame_050"
+        ],
+        "se": [
+          "frame_051"
+        ],
+        "s": [
+          "frame_052"
+        ],
+        "sw": [
+          "frame_053"
+        ],
+        "w": [
+          "frame_054"
+        ],
+        "nw": [
+          "frame_055"
+        ]
+      }
+    },
+    "walk": {
+      "frames": [
+        "frame_008",
+        "frame_009",
+        "frame_010",
+        "frame_011",
+        "frame_012",
+        "frame_013",
+        "frame_014",
+        "frame_015"
+      ],
+      "fps": 12,
+      "framesByDirection": {
+        "n": [
+          "frame_048"
+        ],
+        "ne": [
+          "frame_049"
+        ],
+        "e": [
+          "frame_050"
+        ],
+        "se": [
+          "frame_051"
+        ],
+        "s": [
+          "frame_052"
+        ],
+        "sw": [
+          "frame_053"
+        ],
+        "w": [
+          "frame_054"
+        ],
+        "nw": [
+          "frame_055"
+        ]
+      }
+    },
+    "run": {
+      "frames": [
+        "frame_016",
+        "frame_017",
+        "frame_018",
+        "frame_019",
+        "frame_020",
+        "frame_021",
+        "frame_022",
+        "frame_023"
+      ],
+      "fps": 16,
+      "framesByDirection": {
+        "n": [
+          "frame_048"
+        ],
+        "ne": [
+          "frame_049"
+        ],
+        "e": [
+          "frame_050"
+        ],
+        "se": [
+          "frame_051"
+        ],
+        "s": [
+          "frame_052"
+        ],
+        "sw": [
+          "frame_053"
+        ],
+        "w": [
+          "frame_054"
+        ],
+        "nw": [
+          "frame_055"
+        ]
+      }
+    },
+    "sprint": {
+      "frames": [
+        "frame_016",
+        "frame_017",
+        "frame_018",
+        "frame_019",
+        "frame_020",
+        "frame_021",
+        "frame_022",
+        "frame_023"
+      ],
+      "fps": 18,
+      "framesByDirection": {
+        "n": [
+          "frame_048"
+        ],
+        "ne": [
+          "frame_049"
+        ],
+        "e": [
+          "frame_050"
+        ],
+        "se": [
+          "frame_051"
+        ],
+        "s": [
+          "frame_052"
+        ],
+        "sw": [
+          "frame_053"
+        ],
+        "w": [
+          "frame_054"
+        ],
+        "nw": [
+          "frame_055"
+        ]
+      }
+    },
+    "jump": {
+      "frames": [
+        "frame_018",
+        "frame_019",
+        "frame_020",
+        "frame_021",
+        "frame_026",
+        "frame_027",
+        "frame_028",
+        "frame_029"
+      ],
+      "fps": 12,
+      "loop": false
+    },
+    "takeoff": {
+      "frames": [
+        "frame_016",
+        "frame_017",
+        "frame_018",
+        "frame_019"
+      ],
+      "fps": 14,
+      "loop": false
+    },
+    "fall": {
+      "frames": [
+        "frame_020",
+        "frame_021",
+        "frame_022",
+        "frame_023"
+      ],
+      "fps": 12,
+      "loop": false
+    },
+    "land": {
+      "frames": [
+        "frame_022",
+        "frame_023",
+        "frame_000",
+        "frame_001"
+      ],
+      "fps": 12,
+      "loop": false
+    },
+    "hop": {
+      "frames": [
+        "frame_017",
+        "frame_018",
+        "frame_019",
+        "frame_020",
+        "frame_000",
+        "frame_001"
+      ],
+      "fps": 14,
+      "loop": false
+    },
+    "skid": {
+      "frames": [
+        "frame_020",
+        "frame_021",
+        "frame_022",
+        "frame_023"
+      ],
+      "fps": 14,
+      "loop": false
+    },
+    "dash": {
+      "frames": [
+        "frame_016",
+        "frame_017",
+        "frame_018",
+        "frame_019",
+        "frame_020",
+        "frame_021",
+        "frame_022",
+        "frame_023"
+      ],
+      "fps": 20
+    },
+    "slide": {
+      "frames": [
+        "frame_040",
+        "frame_041",
+        "frame_042",
+        "frame_043",
+        "frame_044",
+        "frame_045"
+      ],
+      "fps": 12,
+      "loop": false
+    },
+    "dodge": {
+      "frames": [
+        "frame_021",
+        "frame_022",
+        "frame_023",
+        "frame_040",
+        "frame_041",
+        "frame_042"
+      ],
+      "fps": 16,
+      "loop": false
+    },
+    "win": {
+      "frames": [
+        "frame_032",
+        "frame_033",
+        "frame_034",
+        "frame_035",
+        "frame_036",
+        "frame_037",
+        "frame_038",
+        "frame_039"
+      ],
+      "fps": 10,
+      "loop": false
+    },
+    "celebrate": {
+      "frames": [
+        "frame_032",
+        "frame_033",
+        "frame_034",
+        "frame_035",
+        "frame_036",
+        "frame_037",
+        "frame_038",
+        "frame_039"
+      ],
+      "fps": 10,
+      "loop": false
+    },
+    "dance": {
+      "frames": [
+        "frame_032",
+        "frame_033",
+        "frame_034",
+        "frame_035",
+        "frame_036",
+        "frame_037",
+        "frame_038",
+        "frame_039"
+      ],
+      "fps": 12
+    },
+    "wave": {
+      "frames": [
+        "frame_024",
+        "frame_025",
+        "frame_026",
+        "frame_027",
+        "frame_028",
+        "frame_029",
+        "frame_030",
+        "frame_031"
+      ],
+      "fps": 10,
+      "loop": false
+    },
+    "salute": {
+      "frames": [
+        "frame_026",
+        "frame_027",
+        "frame_028",
+        "frame_029",
+        "frame_030",
+        "frame_031",
+        "frame_024",
+        "frame_025"
+      ],
+      "fps": 10,
+      "loop": false
+    },
+    "spin": {
+      "frames": [
+        "frame_032",
+        "frame_033",
+        "frame_034",
+        "frame_035",
+        "frame_036",
+        "frame_037",
+        "frame_038",
+        "frame_039"
+      ],
+      "fps": 12,
+      "loop": false
+    },
+    "crouch": {
+      "frames": [
+        "frame_040",
+        "frame_041",
+        "frame_042",
+        "frame_043",
+        "frame_044",
+        "frame_045",
+        "frame_046",
+        "frame_047"
+      ],
+      "fps": 8,
+      "loop": false
+    },
+    "laugh": {
+      "frames": [
+        "frame_032",
+        "frame_033",
+        "frame_034",
+        "frame_035",
+        "frame_036",
+        "frame_037"
+      ],
+      "fps": 10,
+      "loop": false
+    },
+    "pose": {
+      "frames": [
+        "frame_024",
+        "frame_025",
+        "frame_026",
+        "frame_027"
+      ],
+      "fps": 8,
+      "loop": false
+    },
+    "sleep": {
+      "frames": [
+        "frame_040",
+        "frame_041",
+        "frame_042",
+        "frame_043",
+        "frame_044",
+        "frame_045",
+        "frame_046",
+        "frame_047"
+      ],
+      "fps": 6
+    },
+    "taunt": {
+      "frames": [
+        "frame_034",
+        "frame_035",
+        "frame_036",
+        "frame_037",
+        "frame_038",
+        "frame_039",
+        "frame_032",
+        "frame_033"
+      ],
+      "fps": 10,
+      "loop": false
+    }
+  },
+  "fallbacks": {
+    "breathe": "idle",
+    "ready": "idle",
+    "turn": "walk",
+    "hover": "jump",
+    "guitar": "dance",
+    "guitar_loop": "dance"
+  },
+  "pivot": {
+    "x": 0.5,
+    "y": 0.96
+  },
+  "display": {
+    "worldWidth": 3.75,
+    "worldHeight": 3.75
+  },
+  "render": {
+    "referenceBodyWidthRatio": 0.72,
+    "referenceBodyHeightRatio": 0.86,
+    "frameBlend": true,
+    "frameBlendMaxAlpha": 0.24
+  },
+  "companion": {
+    "id": "pishi",
+    "name": "Pishi / پیشی",
+    "alwaysVisible": true,
+    "bakedIntoEveryFrame": true
+  }
+}

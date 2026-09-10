@@ -1,2 +1,5 @@
-Darya V6 canonical display contract fix
-Adds atlas.display.worldWidth/worldHeight and atlas.render body ratios required by validate_arcade_animation_pack_v6.py
+Darya V11 canonical character rebuild
+Source: supplied transparent Darya + Pishi sprite sheet
+Grid: 8 columns x 7 rows, 56 square RGBA frames
+Variants: desktop 256px, mobile 192px, compact 128px
+The previous Darya V6 runtime pack was retired; all runtime paths resolve to V11.
