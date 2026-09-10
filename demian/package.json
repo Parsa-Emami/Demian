@@ -14,6 +14,7 @@
         "validate:phase6": "node tools/validate_phase6.mjs",
         "validate:phase7": "node tools/validate_phase7.mjs",
         "validate:phase8": "node tools/validate_phase8.mjs",
+        "validate:phase10": "node tools/validate_phase10.mjs",
         "validate:final": "node tools/validate_final.mjs",
         "validate:build": "node tools/validate_build_bundle.mjs",
         "validate:character-art": "python3 tools/audit_character_sprite_packs.py --version 6",

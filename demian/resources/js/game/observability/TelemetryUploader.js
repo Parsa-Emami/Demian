@@ -1,0 +1,5 @@
+export default class TelemetryUploader {
+  constructor({ transport, maxBatch=32, maxRetries=3, backoff=250 }={}){if(typeof transport!=='function')throw new TypeError('transport is required');this.transport=transport;this.maxBatch=maxBatch;this.maxRetries=maxRetries;this.backoff=backoff;this.queue=[];this.flushing=false}
+  enqueue(events){this.queue.push(...(Array.isArray(events)?events:[events]));return this.queue.length}
+  async flush(){if(this.flushing||!this.queue.length)return {sent:0,remaining:this.queue.length};this.flushing=true;let sent=0;try{while(this.queue.length){const batch=this.queue.slice(0,this.maxBatch);let ok=false;for(let attempt=0;attempt<=this.maxRetries&&!ok;attempt++){try{await this.transport(batch);ok=true}catch(error){if(attempt===this.maxRetries)break;await new Promise(resolve=>setTimeout(resolve,this.backoff*2**attempt))}}if(!ok)break;this.queue.splice(0,batch.length);sent+=batch.length}return {sent,remaining:this.queue.length}}finally{this.flushing=false}}
+}

@@ -1,0 +1,5 @@
+import test from 'node:test';import assert from 'node:assert/strict';
+import ClientPrediction from '../../../resources/js/game/network/ClientPrediction.js';import ReplayIntegrity from '../../../resources/js/game/security/ReplayIntegrity.js';import TelemetryUploader from '../../../resources/js/game/observability/TelemetryUploader.js';
+test('prediction replays only commands newer than authoritative sequence',()=>{const p=new ClientPrediction({simulate:(s,i)=>s+i});p.start(0);p.submit(1,1);p.submit(2,1);assert.equal(p.reconcile({sequence:1,state:10}),true);assert.equal(p.snapshot().state,12)});
+test('replay integrity detects tampering',()=>{const r=new ReplayIntegrity();const sealed=r.seal([{a:1},{a:2}]);assert.equal(r.verify(sealed),true);sealed[1]={...sealed[1],event:{a:9}};assert.equal(r.verify(sealed),false)});
+test('telemetry uploader retries and preserves failed batches',async()=>{let calls=0;const u=new TelemetryUploader({maxRetries:1,backoff:0,transport:async()=>{calls++;if(calls===1)throw new Error('offline')}});u.enqueue([{name:'a'}]);assert.deepEqual(await u.flush(),{sent:1,remaining:0});assert.equal(calls,2)});
