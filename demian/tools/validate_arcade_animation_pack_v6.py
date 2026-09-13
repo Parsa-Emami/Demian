@@ -7,7 +7,12 @@ from pathlib import Path
 from PIL import Image
 
 ROOT = Path(__file__).resolve().parents[1]
-CHARACTERS = ("tiam", "ronak", "darya")
+# Darya was fully migrated to the V12 pack (see tools/build_darya_v12.py and
+# tools/validate_darya_v12.py); her legacy V6 files were intentionally
+# removed as part of that migration, so she is no longer part of the V6
+# roster here. Validating her current pack is done separately via
+# `npm run validate:darya:v12`.
+CHARACTERS = ("tiam", "ronak")
 VARIANTS = {"desktop": 256, "mobile": 192, "compact": 128}
 COLUMNS = 21
 ROWS = 12

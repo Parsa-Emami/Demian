@@ -183,9 +183,7 @@ jobs:
           set -euo pipefail
           npm run validate:character-art:strict
           npm run validate:character-pack:v6
-          python3 tools/audit_character_sprite_packs.py \
-            --version 7 --strict \
-            darya mojtaba hossein arsal sorkhi taher-db
+          npm run validate:darya:v12
 
       - name: Build one atomic frontend bundle
         shell: bash
