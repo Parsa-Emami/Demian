@@ -207,20 +207,19 @@ jobs:
           from pathlib import Path
 
           root = Path('public/assets/characters')
+          # Only characters with an actual, validated sprite/atlas pack
+          # published under public/assets/characters/<slug>/ belong here.
+          # amirreza, parsa, iman, uzudi, setayesh, mojtaba, hossein, arsal,
+          # sorkhi and taher-db are pre-registered future roster slots (see
+          # database/seeders/BuiltinCharacterSeeder.php and
+          # tools/character_art_registry.py's ACTIVE_CHARACTER_ROSTER) whose
+          # art has not been produced yet, so there is nothing on disk for
+          # this step to publish for them. Add a slug here only once its
+          # pack has actually been built and validated.
           built_in_versions = {
               'tiam': 6,
               'ronak': 6,
-              'amirreza': 6,
-              'parsa': 6,
-              'darya': 7,
-              'iman': 6,
-              'uzudi': 6,
-              'setayesh': 6,
-              'mojtaba': 7,
-              'hossein': 7,
-              'arsal': 7,
-              'sorkhi': 7,
-              'taher-db': 7,
+              'darya': 12,
           }
 
           for slug, pack_version in built_in_versions.items():
@@ -504,20 +503,15 @@ jobs:
 
           repository_name = os.environ['GITHUB_REPOSITORY'].split('/', 1)[1]
           marker = f'/{repository_name}/'
+          # Keep this in sync with the "Prepare character asset
+          # compatibility" step above: only characters with a real,
+          # published pack are validated here. See the comment there for
+          # why amirreza/parsa/iman/uzudi/setayesh/mojtaba/hossein/arsal/
+          # sorkhi/taher-db are intentionally absent.
           canonical_versions = {
               'tiam': 6,
               'ronak': 6,
-              'amirreza': 6,
-              'parsa': 6,
-              'darya': 7,
-              'iman': 6,
-              'uzudi': 6,
-              'setayesh': 6,
-              'mojtaba': 7,
-              'hossein': 7,
-              'arsal': 7,
-              'sorkhi': 7,
-              'taher-db': 7,
+              'darya': 12,
           }
           expected_slugs = set(canonical_versions)
           compatibility_slugs = expected_slugs
