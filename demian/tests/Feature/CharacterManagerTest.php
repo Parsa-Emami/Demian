@@ -58,7 +58,7 @@ class CharacterManagerTest extends TestCase
             'ronak' => 6,
             'amirreza' => 9,
             'parsa' => 9,
-            'darya' => 11,
+            'darya' => 12,
             'iman' => 9,
             'uzudi' => 9,
             'setayesh' => 9,

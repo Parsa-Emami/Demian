@@ -26,7 +26,7 @@ export const ARCADE_CHARACTER_ROSTER = Object.freeze(
         slug,
         label: ARCADE_CHARACTER_LABELS[slug] ?? slug.toUpperCase(),
         referenceCard: REFERENCE_CARD_SLUGS.has(slug)
-            ? `/assets/characters/${slug}/${slug}-character-sheet-reference-${slug === 'darya' ? 'v11.png' : 'v9.jpg'}`
+            ? `/assets/characters/${slug}/${slug}-character-sheet-reference-v9.jpg`
             : null,
     }))
 );

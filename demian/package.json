@@ -21,7 +21,9 @@
         "validate:character-art:strict": "python3 tools/audit_character_sprite_packs.py --version 6 --strict",
         "repair:character-art": "npm run build:character-art:v6",
         "build:character-art:v6": "python3 tools/build_arcade_animation_pack_v6.py && python3 tools/audit_character_sprite_packs.py --version 6 --write-metadata --strict && python3 tools/validate_arcade_animation_pack_v6.py",
-        "validate:character-pack:v6": "python3 tools/validate_arcade_animation_pack_v6.py"
+        "validate:character-pack:v6": "python3 tools/validate_arcade_animation_pack_v6.py",
+        "build:darya:v12": "python3 tools/build_darya_v12.py",
+        "validate:darya:v12": "python3 tools/validate_darya_v12.py"
     },
     "devDependencies": {
         "@tailwindcss/vite": "^4.0.0",

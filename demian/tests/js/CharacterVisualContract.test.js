@@ -11,7 +11,7 @@ import {
     sanitizeCharacterAnimation,
 } from '../../resources/js/game/characters/CharacterVisualContract.js';
 
-test('canonical V6 fallback plus exact V9 character packs resolve every Demian roster member', () => {
+test('canonical packs resolve every Demian roster member and Darya uses the rebuilt V12 pack', () => {
     assert.equal(CHARACTER_PACK_VERSION, 6);
     ['attack', 'combo', 'uppercut', 'cast', 'charge', 'hurt', 'hit'].forEach((name) => {
         assert.equal(isRemovedCombatAnimation(name), true);
@@ -27,19 +27,23 @@ test('canonical V6 fallback plus exact V9 character packs resolve every Demian r
         'setayesh', 'mojtaba', 'hossein', 'arsal', 'sorkhi', 'taher-db',
     ]);
 
-    for (const slug of ['amirreza', 'arsal', 'darya', 'hossein', 'iman', 'mojtaba', 'parsa', 'setayesh', 'sorkhi', 'taher-db', 'uzudi']) {
-        const version = slug === 'darya' ? 11 : 9;
-        assert.equal(characterPackVersion(slug), version);
+    assert.equal(characterPackVersion('darya'), 12);
+    const darya = builtinCharacterAssetPair('darya', 'mobile', 'https://example.test/game/');
+    assert.match(darya.spriteUrl, /darya-spritesheet-v12-mobile\.png$/);
+    assert.match(darya.atlasUrl, /darya-atlas-v12-mobile\.json$/);
+
+    for (const slug of ['amirreza', 'arsal', 'hossein', 'iman', 'mojtaba', 'parsa', 'setayesh', 'sorkhi', 'taher-db', 'uzudi']) {
+        assert.equal(characterPackVersion(slug), 9);
         const pair = builtinCharacterAssetPair(slug, 'mobile', 'https://example.test/game/');
-        assert.match(pair.spriteUrl, new RegExp(`${slug}-spritesheet-v${version}-mobile\\.png$`.replace('\\\\.', '\\.')));
-        assert.match(pair.atlasUrl, new RegExp(`${slug}-atlas-v${version}-mobile\\.json$`.replace('\\\\.', '\\.')));
+        assert.match(pair.spriteUrl, new RegExp(`${slug}-spritesheet-v9-mobile\\.png$`.replace('\\\\.', '\\.')));
+        assert.match(pair.atlasUrl, new RegExp(`${slug}-atlas-v9-mobile\\.json$`.replace('\\\\.', '\\.')));
     }
     assert.equal(characterPackVersion('ronak'), 6);
     assert.equal(characterPackVersion('tiam'), 6);
     assert.deepEqual(CHARACTER_PACK_VERSION_OVERRIDES, {
         amirreza: 9,
         arsal: 9,
-        darya: 11,
+        darya: 12,
         hossein: 9,
         iman: 9,
         mojtaba: 9,

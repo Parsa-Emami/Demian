@@ -74,7 +74,7 @@ class BuiltinCharacterSeeder extends Seeder
                 [
                     'slug' => 'darya',
                     'name' => 'DARYA / دریا',
-                    'pack_version' => 11,
+                    'pack_version' => 12,
                     'is_active' => false,
                     'settings' => [
                         'walk_speed' => 3.55,
