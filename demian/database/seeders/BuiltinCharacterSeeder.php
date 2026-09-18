@@ -8,6 +8,22 @@ use Illuminate\Support\Facades\DB;
 
 class BuiltinCharacterSeeder extends Seeder
 {
+    /**
+     * Character Core V4 (see docs/character-standards/CHARACTER_CORE_V4_IMPLEMENTATION.md).
+     *
+     * 'darya' is the game's Character Manifest V4 gold-standard production
+     * character and is therefore the only builtin character seeded as
+     * is_active = true. Every other builtin character is a Legacy Character
+     * per the Master Pack's non-negotiable directive: it stays installed and
+     * playable (so existing saves / selections do not break and the assets
+     * are preserved as an audit fallback), but it is explicitly tagged
+     * production_status = legacy_pending_reference_rebuild and is excluded
+     * from being the default active character until it is rebuilt from a
+     * user-supplied reference image per the new reference-first pipeline.
+     */
+    private const PRODUCTION_STATUS_GOLD_STANDARD = 'gold_standard_production';
+    private const PRODUCTION_STATUS_LEGACY_PENDING = 'legacy_pending_reference_rebuild';
+
     public function run(): void
     {
         DB::transaction(function (): void {
@@ -18,7 +34,8 @@ class BuiltinCharacterSeeder extends Seeder
                     'slug' => 'tiam',
                     'name' => 'TIAM / تیام',
                     'pack_version' => 6,
-                    'is_active' => true,
+                    'is_active' => false,
+                    'production_status' => self::PRODUCTION_STATUS_LEGACY_PENDING,
                     'settings' => [
                         'walk_speed' => 3.2,
                         'run_speed' => 6.2,
@@ -32,6 +49,7 @@ class BuiltinCharacterSeeder extends Seeder
                     'name' => 'RONAK / روناک',
                     'pack_version' => 6,
                     'is_active' => false,
+                    'production_status' => self::PRODUCTION_STATUS_LEGACY_PENDING,
                     'settings' => [
                         'walk_speed' => 3.25,
                         'run_speed' => 6.35,
@@ -45,6 +63,7 @@ class BuiltinCharacterSeeder extends Seeder
                     'name' => 'AMIRREZA / امیررضا',
                     'pack_version' => 9,
                     'is_active' => false,
+                    'production_status' => self::PRODUCTION_STATUS_LEGACY_PENDING,
                     'settings' => [
                         'walk_speed' => 4.15,
                         'run_speed' => 8.4,
@@ -58,6 +77,7 @@ class BuiltinCharacterSeeder extends Seeder
                     'name' => 'PARSA / پارسا',
                     'pack_version' => 9,
                     'is_active' => false,
+                    'production_status' => self::PRODUCTION_STATUS_LEGACY_PENDING,
                     'settings' => [
                         'walk_speed' => 4.5,
                         'run_speed' => 9.1,
@@ -75,7 +95,8 @@ class BuiltinCharacterSeeder extends Seeder
                     'slug' => 'darya',
                     'name' => 'DARYA / دریا',
                     'pack_version' => 12,
-                    'is_active' => false,
+                    'is_active' => true,
+                    'production_status' => self::PRODUCTION_STATUS_GOLD_STANDARD,
                     'settings' => [
                         'walk_speed' => 3.55,
                         'run_speed' => 6.9,
@@ -95,6 +116,7 @@ class BuiltinCharacterSeeder extends Seeder
                     'name' => 'IMAN / ایمان',
                     'pack_version' => 9,
                     'is_active' => false,
+                    'production_status' => self::PRODUCTION_STATUS_LEGACY_PENDING,
                     'settings' => [
                         'walk_speed' => 3.75,
                         'run_speed' => 7.15,
@@ -112,6 +134,7 @@ class BuiltinCharacterSeeder extends Seeder
                     'name' => 'UZUDI / اوزودی',
                     'pack_version' => 9,
                     'is_active' => false,
+                    'production_status' => self::PRODUCTION_STATUS_LEGACY_PENDING,
                     'settings' => [
                         'walk_speed' => 3.75,
                         'run_speed' => 7.1,
@@ -131,6 +154,7 @@ class BuiltinCharacterSeeder extends Seeder
                     'name' => 'SETAYESH / ستایش',
                     'pack_version' => 9,
                     'is_active' => false,
+                    'production_status' => self::PRODUCTION_STATUS_LEGACY_PENDING,
                     'settings' => [
                         'walk_speed' => 3.4,
                         'run_speed' => 6.6,
@@ -149,6 +173,7 @@ class BuiltinCharacterSeeder extends Seeder
                     'name' => 'MOJTABA / مجتبی',
                     'pack_version' => 9,
                     'is_active' => false,
+                    'production_status' => self::PRODUCTION_STATUS_LEGACY_PENDING,
                     'settings' => [
                         'walk_speed' => 3.45,
                         'run_speed' => 6.8,
@@ -163,6 +188,7 @@ class BuiltinCharacterSeeder extends Seeder
                     'name' => 'HOSSEIN / حسین',
                     'pack_version' => 9,
                     'is_active' => false,
+                    'production_status' => self::PRODUCTION_STATUS_LEGACY_PENDING,
                     'settings' => [
                         'walk_speed' => 3.45,
                         'run_speed' => 6.75,
@@ -177,6 +203,7 @@ class BuiltinCharacterSeeder extends Seeder
                     'name' => 'ARSAL / ارسل',
                     'pack_version' => 9,
                     'is_active' => false,
+                    'production_status' => self::PRODUCTION_STATUS_LEGACY_PENDING,
                     'settings' => [
                         'walk_speed' => 3.4,
                         'run_speed' => 6.7,
@@ -191,6 +218,7 @@ class BuiltinCharacterSeeder extends Seeder
                     'name' => 'SORKHI / سرخی',
                     'pack_version' => 9,
                     'is_active' => false,
+                    'production_status' => self::PRODUCTION_STATUS_LEGACY_PENDING,
                     'settings' => [
                         'walk_speed' => 3.55,
                         'run_speed' => 6.9,
@@ -205,6 +233,7 @@ class BuiltinCharacterSeeder extends Seeder
                     'name' => 'TAHER DB / طاهر DB',
                     'pack_version' => 9,
                     'is_active' => false,
+                    'production_status' => self::PRODUCTION_STATUS_LEGACY_PENDING,
                     'settings' => [
                         'walk_speed' => 3.5,
                         'run_speed' => 6.85,
@@ -221,6 +250,7 @@ class BuiltinCharacterSeeder extends Seeder
                 $packVersion = $definition['pack_version'];
                 $settings = $definition['settings'];
                 $settings['asset_pack_version'] = $packVersion;
+                $settings['production_status'] = $definition['production_status'];
 
                 Character::query()->updateOrCreate(
                     ['slug' => $slug],

@@ -10,6 +10,28 @@ use Throwable;
 
 class CharacterAssetService
 {
+    public function __construct(
+        private readonly CharacterIdentityService $identity = new CharacterIdentityService()
+    ) {
+    }
+
+    /**
+     * Character Core V4: production status for a character, driven by
+     * character-manifest-v4.json via CharacterIdentityService. Non-builtin
+     * (user-uploaded) characters are not in that manifest and are reported
+     * as legacy_pending_reference_rebuild by design — the manifest-driven
+     * production pipeline currently only covers builtin characters.
+     */
+    public function getProductionStatus(Character $character): string
+    {
+        return $this->identity->productionStatus((string) $character->slug);
+    }
+
+    public function isProductionReady(Character $character): bool
+    {
+        return $this->identity->isProductionReady((string) $character->slug);
+    }
+
     public function store(
         string $slug,
         UploadedFile $spriteSheet,
@@ -82,8 +104,12 @@ class CharacterAssetService
             ? $deviceType
             : 'mobile';
 
+        // Character Core V4: bumped from "char_manifest_" because this pass
+        // added production_status/is_production_ready to the cached shape;
+        // versioning the key avoids serving stale pre-V4 payloads out of an
+        // existing cache for up to an hour after this deploy.
         return Cache::remember(
-            "char_manifest_{$characterId}_{$deviceType}",
+            "char_manifest_v4_{$characterId}_{$deviceType}",
             3600,
             function () use ($characterId, $deviceType): array {
                 $character = Character::findOrFail($characterId);
@@ -96,6 +122,8 @@ class CharacterAssetService
                         'slug' => $character->slug,
                         'atlas' => Storage::disk('public')->url($character->atlas_path),
                         'image' => Storage::disk('public')->url($character->sprite_sheet_path),
+                        'production_status' => $this->getProductionStatus($character),
+                        'is_production_ready' => $this->isProductionReady($character),
                     ];
                 }
 
@@ -112,6 +140,8 @@ class CharacterAssetService
                     'image' => asset(
                         "assets/characters/{$slug}/{$slug}-spritesheet-v{$packVersion}-{$deviceType}.png"
                     ),
+                    'production_status' => $this->getProductionStatus($character),
+                    'is_production_ready' => $this->isProductionReady($character),
                 ];
             }
         );
@@ -187,6 +217,7 @@ class CharacterAssetService
     protected function clearCharacterCache(int $characterId): void
     {
         foreach (['desktop', 'mobile', 'compact'] as $deviceType) {
+            Cache::forget("char_manifest_v4_{$characterId}_{$deviceType}");
             Cache::forget("char_manifest_{$characterId}_{$deviceType}");
             Cache::forget("character_manifest_{$characterId}_{$deviceType}");
         }

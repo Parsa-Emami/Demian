@@ -1,0 +1,46 @@
+{
+  "character_key": "darya",
+  "qa_report_version": "v1",
+  "generated_by": "Character Core V4 implementation pass",
+  "scope": "This report covers data/wiring QA only (manifest validity, atlas schema conformance, seeder/runtime wiring). It is NOT a substitute for the Darya Build Checklist's human visual sign-off, because no image-generation or visual-inspection tool was available when this pass ran.",
+  "checklist": {
+    "identity_lock": {
+      "main_reference_image_archived": "interim — existing v12 master sheet only, no new user photo received",
+      "fixed_facial_features_documented": true,
+      "hair_silhouette_documented": true,
+      "outfit_documented": true,
+      "cat_companion_documented": true,
+      "palette_approved": "pending human review"
+    },
+    "art_production": {
+      "front_approved": "pending human review",
+      "three_quarter_approved": "pending human review",
+      "side_approved": "pending human review",
+      "back_approved": "pending human review",
+      "turnaround_consistency_approved": "pending human review"
+    },
+    "animation": {
+      "note": "All animation states below exist in the shipped v12 atlas and were verified programmatically (frame/fps/loop extracted from darya-atlas-v12-mobile.json); pixel-level smoothness is not yet human-reviewed.",
+      "idle": true, "walk": true, "run": true, "turn": true,
+      "jump_start": "covered by 'takeoff'", "jump_air": "covered by 'hover'/'fall'", "jump_land": "covered by 'land'",
+      "attack_primary": "not applicable — combatAnimationsRemoved = true in this build",
+      "interact": "not present as a distinct state; closest existing cue is 'ready'",
+      "win": true, "lose": "not present as a distinct state",
+      "emote_hi": "covered by 'wave'", "emote_happy": "covered by 'celebrate'/'laugh'", "emote_think": "not present as a distinct state"
+    },
+    "companion": {
+      "note": "Single combined 'companion' cue exists and was verified programmatically; the six discrete cat_* cues from the Master Pack template do not exist yet and require new art.",
+      "cat_idle": false, "cat_follow": false, "cat_react": false,
+      "cat_attack_support": false, "cat_celebrate": false, "cat_sleep": false
+    },
+    "runtime": {
+      "atlas_packed": true,
+      "json_valid": true,
+      "runtime_registered": true,
+      "motion_profile_tuned": "baseline values ported from BuiltinCharacterSeeder settings; not independently re-tuned",
+      "desktop_tested": "not tested in this session (no browser/runtime available)",
+      "mobile_tested": "not tested in this session (no browser/runtime available)"
+    }
+  },
+  "verdict": "Darya is wired as the Character Core V4 gold-standard production character (manifests, seeder, runtime defaults). Full checklist closure still requires: (1) a human/visual QA pass in an actual running build, and (2) a fresh user-supplied reference photo package if the team wants to move from 'interim source of truth' to 'strict reference fidelity' per the Master Pack."
+}

@@ -1,0 +1,38 @@
+{
+  "$schema": "../../../../../schemas/character_manifest.schema.json",
+  "character_key": "darya",
+  "display_name": "DARYA / دریا",
+  "production_status": "gold_standard_production",
+  "source_of_truth": { "$ref": "darya_reference_manifest.json" },
+  "identity_contract": { "$ref": "darya_identity_contract.yaml" },
+  "animations": [
+    "idle", "breathe", "blink", "ready",
+    "walk", "tiptoe", "run", "sprint", "skid", "dash", "slide", "turn",
+    "jump", "takeoff", "fall", "hover", "land", "hop", "dodge",
+    "win", "celebrate", "dance", "wave", "salute", "spin", "crouch", "laugh", "pose", "sleep", "taunt",
+    "companion"
+  ],
+  "runtime": {
+    "identity_manifest": "darya_identity_contract.yaml",
+    "asset_manifest": "darya_reference_manifest.json",
+    "animation_manifest": "darya_animation_manifest.json",
+    "motion_profile": "darya_motion_profile.json",
+    "ability_profile": "darya_ability_profile.json",
+    "qa_status": "darya_qa_status.json",
+    "atlas_targets": {
+      "desktop": {
+        "atlas": "../darya-atlas-v12-desktop.json",
+        "image": "../darya-spritesheet-v12-desktop.png"
+      },
+      "mobile": {
+        "atlas": "../darya-atlas-v12-mobile.json",
+        "image": "../darya-spritesheet-v12-mobile.png"
+      },
+      "compact": {
+        "atlas": "../darya-atlas-v12-compact.json",
+        "image": "../darya-spritesheet-v12-compact.png"
+      }
+    },
+    "pack_version": 12
+  }
+}

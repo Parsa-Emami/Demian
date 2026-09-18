@@ -1,0 +1,10 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Animation Manifest V4",
+  "type": "object",
+  "required": ["character_key","states"],
+  "properties": {
+    "character_key": {"type":"string"},
+    "states": {"type":"object"}
+  }
+}

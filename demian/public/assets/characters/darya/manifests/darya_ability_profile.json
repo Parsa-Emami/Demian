@@ -1,0 +1,16 @@
+{
+  "character_key": "darya",
+  "ability_profile_version": "v1",
+  "signature_action": "companion",
+  "companion": {
+    "key": "pishi",
+    "species": "cat",
+    "always_visible": true,
+    "supported_cues": ["companion"],
+    "planned_cues": ["cat_idle", "cat_follow", "cat_react", "cat_attack_support", "cat_celebrate", "cat_sleep"]
+  },
+  "combat": {
+    "enabled": false,
+    "note": "Darya's v12 atlas ships with combatAnimationsRemoved = true; no attack/hurt states exist. This intentionally diverges from the Master Pack's aspirational 'attack_primary' animation until/unless combat is reintroduced as a design decision."
+  }
+}

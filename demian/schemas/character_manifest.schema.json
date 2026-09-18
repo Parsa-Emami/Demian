@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Demian Character Manifest V4",
+  "type": "object",
+  "required": [
+    "character_key",
+    "source_of_truth",
+    "identity_contract",
+    "animations",
+    "runtime"
+  ],
+  "properties": {
+    "character_key": {"type":"string"},
+    "source_of_truth": {"type":"object"},
+    "identity_contract": {"type":"object"},
+    "animations": {"type":"array"},
+    "runtime": {"type":"object"}
+  }
+}

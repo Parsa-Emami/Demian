@@ -1,0 +1,19 @@
+{
+  "character_key": "darya",
+  "profile_version": "v2",
+  "moveSpeed": 1.0,
+  "acceleration": 0.18,
+  "deceleration": 0.16,
+  "runMultiplier": 1.35,
+  "jumpForce": 1.0,
+  "airControl": 0.82,
+  "turnResponsiveness": 0.9,
+  "idleVariance": 0.25,
+  "presentationScale": {
+    "bob": 1.0,
+    "tilt": 1.0,
+    "squash": 1.0,
+    "note": "Multipliers applied on top of characterPresentationPose() in CharacterMotionProfile.js. Kept at 1.0 (no change from the existing hand-tuned feel) until gameplay QA requests a per-character deviation."
+  },
+  "notes": "Mirrors the walk/run/sprint/jump values already seeded for darya in BuiltinCharacterSeeder; kept in sync manually until a build step derives one from the other."
+}

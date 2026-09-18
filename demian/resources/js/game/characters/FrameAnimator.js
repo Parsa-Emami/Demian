@@ -161,7 +161,16 @@ export default class FrameAnimator {
 
         const fps = Math.max(Number(this.animation.fps) || 1, 1);
         const frameDuration = 1 / (fps * this.playbackRate);
-        this.elapsed += Math.max(0, Number(deltaTime) || 0);
+        // Character Core V4 stability fix: a stalled tab or long GC pause can
+        // deliver a single huge deltaTime (seconds, not milliseconds). Without
+        // a ceiling, the `while` loop below burns its `safety` budget catching
+        // up and the animation visibly stutters/skips on the next few frames.
+        // Clamping to 250ms means "at most ~a quarter-second of animation
+        // catch-up per update()", which is unnoticeable in normal play
+        // (frame deltas are ~0.016-0.033s) but keeps a resumed tab smooth.
+        const MAX_FRAME_DELTA_SECONDS = 0.25;
+        const safeDeltaTime = Math.min(Math.max(0, Number(deltaTime) || 0), MAX_FRAME_DELTA_SECONDS);
+        this.elapsed += safeDeltaTime;
 
         let safety = 0;
         while (this.elapsed >= frameDuration && safety < 16) {

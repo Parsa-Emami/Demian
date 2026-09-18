@@ -52,7 +52,17 @@ class AtlasManifest
             }
         }
 
-        foreach (['idle', 'walk', 'run', 'jump', 'attack', 'win'] as $requiredAnimation) {
+        // Character Core V4 fix: this list previously required 'attack',
+        // but the shipped production character (Darya, v12 atlas) ships
+        // with combatAnimationsRemoved = true and has no attack animation
+        // at all — nor does StoreCharacterRequest.php (the validator that
+        // actually runs on character upload) require one; see its comment
+        // "Combat animations such as \"attack\" are intentionally not
+        // required." This class had zero consumers anywhere in the app, so
+        // it had silently drifted out of sync with that real contract.
+        // Aligning the two removes a validator that would otherwise reject
+        // the game's own gold-standard production character.
+        foreach (['idle', 'walk', 'run', 'jump', 'win'] as $requiredAnimation) {
             if (!array_key_exists($requiredAnimation, $manifest['animations'] ?? [])) {
                 $errors[] = "Animation الزامی {$requiredAnimation} تعریف نشده است.";
             }

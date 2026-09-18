@@ -57,6 +57,14 @@ export function characterPresentationPose({
     velocityX = 0,
     depthMotion = null,
     horizontalMotion = null,
+    // Character Core V4: optional per-character tuning, e.g. loaded from
+    // public/assets/characters/<slug>/manifests/<slug>_motion_profile.json.
+    // Left `null` (the default) this is a strict no-op — every existing
+    // call site and every case in CharacterMotionProfile.test.js keeps
+    // producing byte-identical output, since multiplying by 1 changes
+    // nothing and the object is only reshaped when a profile is actually
+    // supplied.
+    motionScale = null,
 } = {}) {
     const time = Number(presentationTime) || 0;
     const localTime = Number(stateTime) || 0;
@@ -230,5 +238,27 @@ export function characterPresentationPose({
         target.width += Math.cos(cycle) * 0.032;
     }
 
-    return target;
+    return applyMotionScale(target, motionScale);
+}
+
+/**
+ * Character Core V4 hook: scales bob/tilt/squash amplitude by a per-character
+ * motion profile. `null`/`undefined` (or a profile that is exactly identity,
+ * i.e. every factor is 1) returns `target` untouched by reference so callers
+ * that never pass a profile see zero behavioural or object-identity change.
+ */
+function applyMotionScale(target, motionScale) {
+    if (!motionScale) return target;
+    const bob = Number(motionScale.bob ?? 1);
+    const tilt = Number(motionScale.tilt ?? 1);
+    const squash = Number(motionScale.squash ?? 1);
+    if (bob === 1 && tilt === 1 && squash === 1) return target;
+
+    return {
+        ...target,
+        bob: target.bob * bob,
+        tilt: target.tilt * tilt,
+        width: 1 + (target.width - 1) * squash,
+        height: 1 + (target.height - 1) * squash,
+    };
 }

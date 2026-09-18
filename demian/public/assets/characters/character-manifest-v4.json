@@ -1,0 +1,126 @@
+{
+  "$schema": "../../../schemas/character_manifest.schema.json",
+  "manifest_version": "v4",
+  "generated_note": "Single source of truth for the manifest-driven character roster (Character Core V4). Read by CharacterManifestRegistry.js on the frontend and CharacterIdentityService.php on the backend. Keep in sync with database/seeders/BuiltinCharacterSeeder.php.",
+  "core_mandate": "Purge legacy active character system and rebuild all new characters strictly from reference images.",
+  "production_character": "darya",
+  "characters": [
+    {
+      "slug": "darya",
+      "display_name": "DARYA / دریا",
+      "production_status": "gold_standard_production",
+      "is_default_active": true,
+      "pack_version": 12,
+      "manifest": "darya/manifests/character_manifest_v4.json",
+      "has_shipped_assets": true
+    },
+    {
+      "slug": "tiam",
+      "display_name": "TIAM / تیام",
+      "production_status": "legacy_pending_reference_rebuild",
+      "is_default_active": false,
+      "pack_version": 6,
+      "manifest": "_legacy_archive/tiam/tiam_future_manifest.json",
+      "has_shipped_assets": true
+    },
+    {
+      "slug": "ronak",
+      "display_name": "RONAK / روناک",
+      "production_status": "legacy_pending_reference_rebuild",
+      "is_default_active": false,
+      "pack_version": 6,
+      "manifest": "_legacy_archive/ronak/ronak_future_manifest.json",
+      "has_shipped_assets": true
+    },
+    {
+      "slug": "amirreza",
+      "display_name": "AMIRREZA / امیررضا",
+      "production_status": "legacy_pending_reference_rebuild",
+      "is_default_active": false,
+      "pack_version": 9,
+      "manifest": "_legacy_archive/amirreza/amirreza_future_manifest.json",
+      "has_shipped_assets": false
+    },
+    {
+      "slug": "parsa",
+      "display_name": "PARSA / پارسا",
+      "production_status": "legacy_pending_reference_rebuild",
+      "is_default_active": false,
+      "pack_version": 9,
+      "manifest": "_legacy_archive/parsa/parsa_future_manifest.json",
+      "has_shipped_assets": false
+    },
+    {
+      "slug": "iman",
+      "display_name": "IMAN / ایمان",
+      "production_status": "legacy_pending_reference_rebuild",
+      "is_default_active": false,
+      "pack_version": 9,
+      "manifest": "_legacy_archive/iman/iman_future_manifest.json",
+      "has_shipped_assets": false
+    },
+    {
+      "slug": "uzudi",
+      "display_name": "UZUDI / اوزودی",
+      "production_status": "legacy_pending_reference_rebuild",
+      "is_default_active": false,
+      "pack_version": 9,
+      "manifest": "_legacy_archive/uzudi/uzudi_future_manifest.json",
+      "has_shipped_assets": false
+    },
+    {
+      "slug": "setayesh",
+      "display_name": "SETAYESH / ستایش",
+      "production_status": "legacy_pending_reference_rebuild",
+      "is_default_active": false,
+      "pack_version": 9,
+      "manifest": "_legacy_archive/setayesh/setayesh_future_manifest.json",
+      "has_shipped_assets": false
+    },
+    {
+      "slug": "mojtaba",
+      "display_name": "MOJTABA / مجتبی",
+      "production_status": "legacy_pending_reference_rebuild",
+      "is_default_active": false,
+      "pack_version": 9,
+      "manifest": "_legacy_archive/mojtaba/mojtaba_future_manifest.json",
+      "has_shipped_assets": false
+    },
+    {
+      "slug": "hossein",
+      "display_name": "HOSSEIN / حسین",
+      "production_status": "legacy_pending_reference_rebuild",
+      "is_default_active": false,
+      "pack_version": 9,
+      "manifest": "_legacy_archive/hossein/hossein_future_manifest.json",
+      "has_shipped_assets": false
+    },
+    {
+      "slug": "arsal",
+      "display_name": "ARSAL / ارسل",
+      "production_status": "legacy_pending_reference_rebuild",
+      "is_default_active": false,
+      "pack_version": 9,
+      "manifest": "_legacy_archive/arsal/arsal_future_manifest.json",
+      "has_shipped_assets": false
+    },
+    {
+      "slug": "sorkhi",
+      "display_name": "SORKHI / سرخی",
+      "production_status": "legacy_pending_reference_rebuild",
+      "is_default_active": false,
+      "pack_version": 9,
+      "manifest": "_legacy_archive/sorkhi/sorkhi_future_manifest.json",
+      "has_shipped_assets": false
+    },
+    {
+      "slug": "taher-db",
+      "display_name": "TAHER DB / طاهر DB",
+      "production_status": "legacy_pending_reference_rebuild",
+      "is_default_active": false,
+      "pack_version": 9,
+      "manifest": "_legacy_archive/taher-db/taher-db_future_manifest.json",
+      "has_shipped_assets": false
+    }
+  ]
+}

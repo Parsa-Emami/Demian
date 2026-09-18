@@ -1,0 +1,36 @@
+{
+  "character_key": "darya",
+  "display_name": "DARYA / دریا",
+  "manifest_version": "v4",
+  "production_status": "gold_standard_production",
+  "source_of_truth": {
+    "primary_reference": "public/assets/characters/darya/darya-pishi-v12-master.png",
+    "policy": "strict_reference_fidelity",
+    "status": "interim",
+    "note": "No new user-supplied reference photo was provided when this Character Core V4 pass was generated. The existing shipped v12 master sheet (darya-pishi-v12-master.png) is therefore treated as the interim source of truth so Darya keeps working as the active, gold-standard character. This satisfies 'a reference-driven pipeline' but not yet 'built strictly from a fresh reference photo' in the strictest reading of the Master Pack directive — see pending_upgrades."
+  },
+  "fixed_features": {
+    "face": ["soft cute face", "large dark eyes", "calm/friendly expression"],
+    "hair": ["dark layered medium-long hair", "soft volume", "recognizable silhouette"],
+    "outfit": ["dark oversized shirt", "loose dark-gray pants", "sneakers"],
+    "companion": ["gray-white cat (Pishi)"]
+  },
+  "forbidden_changes": [
+    "alter core face identity",
+    "replace hairstyle",
+    "change outfit silhouette without approval",
+    "remove cat from companion-required identity scenes"
+  ],
+  "export_targets": ["desktop", "mobile", "compact"],
+  "shipped_assets": {
+    "master": "darya-pishi-v12-master.png",
+    "desktop": ["darya-spritesheet-v12-desktop.png", "darya-atlas-v12-desktop.json"],
+    "mobile": ["darya-spritesheet-v12-mobile.png", "darya-atlas-v12-mobile.json"],
+    "compact": ["darya-spritesheet-v12-compact.png", "darya-atlas-v12-compact.json"]
+  },
+  "pending_upgrades": [
+    "Receive an explicit new reference photo package from the user (front / 3-4 / side / back) to fully close out the Darya Build Checklist's 'Identity Lock' and 'Art Production' sections under strict_reference_fidelity.",
+    "Split the single 'companion' animation cue into the Master Pack's dedicated cat_idle / cat_follow / cat_react / cat_attack_support / cat_celebrate / cat_sleep states once new companion art exists.",
+    "Human visual QA sign-off (see darya_qa_status.json) — this pass validated data/wiring only, not pixel-level fidelity, since no image-generation or visual-review tool was available in this session."
+  ]
+}

@@ -1,3 +1,25 @@
+import {
+    PRODUCTION_STATUS,
+    PRODUCTION_CHARACTER_SLUGS,
+    LEGACY_CHARACTER_SLUGS,
+    DEFAULT_ACTIVE_SLUG,
+    characterProductionStatus,
+    isProductionReady,
+} from './manifests/CharacterManifestRegistry.js';
+
+// Character Core V4 re-exports. See manifests/CharacterManifestRegistry.js
+// for the single source of truth this data comes from. Re-exported here so
+// existing call sites can `import { ... } from './CharacterVisualContract.js'`
+// without needing to know the manifest registry exists.
+export {
+    PRODUCTION_STATUS,
+    PRODUCTION_CHARACTER_SLUGS,
+    LEGACY_CHARACTER_SLUGS,
+    DEFAULT_ACTIVE_SLUG,
+    characterProductionStatus,
+    isProductionReady,
+};
+
 export const CHARACTER_PACK_VERSION = 6;
 
 // Per-character pack version overrides. This lets a single character move to

@@ -1,0 +1,48 @@
+character_key: darya
+status: gold_standard_production
+source_of_truth:
+  main_reference_image: darya-pishi-v12-master.png
+  additional_reference_images: []
+  note: interim source of truth; no new user-supplied photo received (see darya_reference_manifest.json.pending_upgrades)
+identity_contract:
+  fixed_features:
+    face:
+      - soft cute face
+      - large dark eyes
+      - calm/friendly expression
+    hair:
+      - dark layered medium-long hair
+      - soft volume
+      - recognizable silhouette
+    outfit:
+      - dark oversized shirt
+      - loose dark-gray pants
+      - sneakers
+    body_proportions:
+      - canonical body world width/height 3.75 (see CHARACTER_CANONICAL_BODY)
+      - referenceBodyWidthRatio 0.82
+      - referenceBodyHeightRatio 0.90
+    accessories: []
+    companion:
+      - gray-white cat (Pishi), always visible alongside Darya
+  forbidden_changes:
+    - alter core face identity
+    - replace hairstyle
+    - change outfit silhouette without approval
+    - remove cat from companion-required identity scenes
+rendering:
+  style: premium_modern_pixel_art
+  frame_base: 192x192
+  export_targets: [desktop, mobile, compact]
+animation_set:
+  locomotion: [idle, breathe, blink, ready, walk, tiptoe, run, sprint, skid, dash, slide, turn]
+  vertical: [jump, takeoff, fall, hover, land, hop, dodge]
+  action: [win, celebrate, dance, wave, salute, spin, crouch, laugh, pose, sleep, taunt]
+  companion: [companion]
+runtime:
+  motion_profile: darya_motion_profile.json (v2)
+  ability_profile: darya_ability_profile.json (v1)
+qa:
+  identity_drift_tolerance: zero
+  approval_required: true
+  status: see darya_qa_status.json

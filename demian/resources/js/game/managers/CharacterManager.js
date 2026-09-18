@@ -17,7 +17,7 @@ const BUILTIN_DEFINITIONS = Object.freeze([
         id: 'builtin-tiam',
         name: 'TIAM / تیام',
         slug: 'tiam',
-        is_active: true,
+        is_active: false,
         settings: {
             walk_speed: 3.4,
             run_speed: 6.55,
@@ -25,6 +25,7 @@ const BUILTIN_DEFINITIONS = Object.freeze([
             jump_force: 6.7,
             air_control: 0.56,
             scale: 1,
+            production_status: 'legacy_pending_reference_rebuild',
         },
     }),
     Object.freeze({
@@ -39,6 +40,7 @@ const BUILTIN_DEFINITIONS = Object.freeze([
             jump_force: 6.75,
             air_control: 0.54,
             scale: 1,
+            production_status: 'legacy_pending_reference_rebuild',
         },
     }),
     Object.freeze({
@@ -53,6 +55,7 @@ const BUILTIN_DEFINITIONS = Object.freeze([
             jump_force: 7.05,
             air_control: 0.62,
             scale: 1,
+            production_status: 'legacy_pending_reference_rebuild',
         },
     }),
     Object.freeze({
@@ -72,13 +75,14 @@ const BUILTIN_DEFINITIONS = Object.freeze([
             speed_rating: 'S+',
             power_rating: 'S+',
             signature_action: 'guitar',
+            production_status: 'legacy_pending_reference_rebuild',
         },
     }),
     Object.freeze({
         id: 'builtin-darya',
         name: 'DARYA / دریا',
         slug: 'darya',
-        is_active: false,
+        is_active: true,
         settings: {
             walk_speed: 3.55,
             run_speed: 6.9,
@@ -91,6 +95,7 @@ const BUILTIN_DEFINITIONS = Object.freeze([
             signature_action: 'companion',
             companion: 'pishi',
             companion_always_visible: true,
+            production_status: 'gold_standard_production',
         },
     }),
     Object.freeze({
@@ -108,6 +113,7 @@ const BUILTIN_DEFINITIONS = Object.freeze([
             role_title: 'ANCHOR / CORE',
             tagline: 'Reliable, strong, and team-first',
             signature_action: 'guard',
+            production_status: 'legacy_pending_reference_rebuild',
         },
     }),
     Object.freeze({
@@ -127,6 +133,7 @@ const BUILTIN_DEFINITIONS = Object.freeze([
             speed_rating: 'A',
             power_rating: 'A+',
             signature_action: 'dark_angel',
+            production_status: 'legacy_pending_reference_rebuild',
         },
     }),
     Object.freeze({
@@ -145,6 +152,7 @@ const BUILTIN_DEFINITIONS = Object.freeze([
             tagline: 'Style · Speed · Spark',
             speed_rating: 'A-',
             power_rating: 'B+',
+            production_status: 'legacy_pending_reference_rebuild',
         },
     }),
     Object.freeze({
@@ -159,6 +167,7 @@ const BUILTIN_DEFINITIONS = Object.freeze([
             jump_force: 6.75,
             air_control: 0.56,
             scale: 1,
+            production_status: 'legacy_pending_reference_rebuild',
         },
     }),
     Object.freeze({
@@ -173,6 +182,7 @@ const BUILTIN_DEFINITIONS = Object.freeze([
             jump_force: 6.8,
             air_control: 0.57,
             scale: 1,
+            production_status: 'legacy_pending_reference_rebuild',
         },
     }),
     Object.freeze({
@@ -187,6 +197,7 @@ const BUILTIN_DEFINITIONS = Object.freeze([
             jump_force: 6.75,
             air_control: 0.55,
             scale: 1,
+            production_status: 'legacy_pending_reference_rebuild',
         },
     }),
     Object.freeze({
@@ -201,6 +212,7 @@ const BUILTIN_DEFINITIONS = Object.freeze([
             jump_force: 6.85,
             air_control: 0.58,
             scale: 1,
+            production_status: 'legacy_pending_reference_rebuild',
         },
     }),
     Object.freeze({
@@ -215,6 +227,7 @@ const BUILTIN_DEFINITIONS = Object.freeze([
             jump_force: 6.85,
             air_control: 0.58,
             scale: 1,
+            production_status: 'legacy_pending_reference_rebuild',
         },
     }),
 ]);

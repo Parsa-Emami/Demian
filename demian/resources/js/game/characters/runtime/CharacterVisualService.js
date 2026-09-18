@@ -1,6 +1,7 @@
 import CanvasCharacterAvatar from '../CanvasCharacterAvatar.js';
 import {
     BUILTIN_CHARACTER_SLUGS,
+    DEFAULT_ACTIVE_SLUG,
     builtinCharacterAssetPair,
     normalizeSpriteVariant,
 } from '../CharacterVisualContract.js';
@@ -31,7 +32,7 @@ export default class CharacterVisualService {
         this.eventBus = eventBus;
         this.performanceProfile = performanceProfile;
         this.storage = storage;
-        this.activeSlug = readStoredSlug(storage) ?? 'tiam';
+        this.activeSlug = readStoredSlug(storage) ?? DEFAULT_ACTIVE_SLUG;
         this.packPromises = new Map();
         this.packCache = new Map();
         this.unsubscribe = [];

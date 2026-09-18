@@ -1,0 +1,59 @@
+{
+  "$schema": "../../../../../schemas/animation_manifest.schema.json",
+  "character_key": "darya",
+  "manifest_version": "v4",
+  "source_atlas": {
+    "pack_version": 12,
+    "files": [
+      "darya-atlas-v12-desktop.json",
+      "darya-atlas-v12-mobile.json",
+      "darya-atlas-v12-compact.json"
+    ],
+    "note": "Frame/fps/loop values below were extracted directly from darya-atlas-v12-mobile.json so this manifest can never silently drift from the shipping atlas. Regenerate this file (see tools/) whenever the atlas is rebuilt."
+  },
+  "frame_base": "192x192",
+  "grid": { "columns": 21, "rows": 12 },
+  "directions": ["s", "sw", "w", "nw", "n", "ne", "e", "se"],
+  "combat_animations_removed": true,
+  "states": {
+    "idle": { "frames": 16, "fps": 10, "loop": true, "directional": true },
+    "breathe": { "frames": 16, "fps": 9, "loop": true, "directional": true, "fallback_of": "idle" },
+    "blink": { "frames": 16, "fps": 8, "loop": true, "directional": true, "fallback_of": "idle" },
+    "ready": { "frames": 16, "fps": 11, "loop": true, "directional": true, "fallback_of": "idle" },
+    "walk": { "frames": 28, "fps": 20, "loop": true, "directional": true },
+    "tiptoe": { "frames": 28, "fps": 16, "loop": true, "directional": true, "fallback_of": "walk" },
+    "run": { "frames": 32, "fps": 27, "loop": true, "directional": true },
+    "sprint": { "frames": 32, "fps": 31, "loop": true, "directional": true, "fallback_of": "run" },
+    "skid": { "frames": 32, "fps": 24, "loop": false, "directional": true, "fallback_of": "run" },
+    "dash": { "frames": 32, "fps": 30, "loop": true, "directional": true, "fallback_of": "run" },
+    "slide": { "frames": 32, "fps": 24, "loop": false, "directional": true, "fallback_of": "skid" },
+    "turn": { "frames": 28, "fps": 18, "loop": false, "directional": true, "fallback_of": "walk" },
+    "jump": { "frames": 24, "fps": 22, "loop": false, "directional": true },
+    "takeoff": { "frames": 24, "fps": 24, "loop": false, "directional": true, "fallback_of": "jump" },
+    "fall": { "frames": 24, "fps": 20, "loop": true, "directional": true, "fallback_of": "jump" },
+    "hover": { "frames": 24, "fps": 18, "loop": true, "directional": true, "fallback_of": "jump" },
+    "land": { "frames": 12, "fps": 24, "loop": false, "directional": true, "fallback_of": "jump" },
+    "hop": { "frames": 6, "fps": 22, "loop": false, "directional": true, "fallback_of": "jump" },
+    "dodge": { "frames": 6, "fps": 24, "loop": false, "directional": true, "fallback_of": "hop" },
+    "win": { "frames": 16, "fps": 17, "loop": true, "directional": false },
+    "celebrate": { "frames": 16, "fps": 19, "loop": true, "directional": false, "fallback_of": "win" },
+    "dance": { "frames": 32, "fps": 20, "loop": true, "directional": false },
+    "wave": { "frames": 8, "fps": 12, "loop": true, "directional": false },
+    "salute": { "frames": 6, "fps": 10, "loop": false, "directional": false, "fallback_of": "wave" },
+    "spin": { "frames": 16, "fps": 20, "loop": true, "directional": false },
+    "crouch": { "frames": 16, "fps": 10, "loop": true, "directional": false },
+    "laugh": { "frames": 16, "fps": 17, "loop": true, "directional": false },
+    "pose": { "frames": 16, "fps": 9, "loop": true, "directional": false },
+    "sleep": { "frames": 16, "fps": 5, "loop": true, "directional": false },
+    "taunt": { "frames": 16, "fps": 15, "loop": true, "directional": false },
+    "companion": {
+      "frames": 32,
+      "fps": 14,
+      "loop": true,
+      "directional": false,
+      "note": "Pishi (the cat companion) is currently baked into a single combined 'companion' cue rather than the Master Pack's separate cat_idle/cat_follow/cat_react/cat_attack_support/cat_celebrate/cat_sleep states. Splitting the cat into standalone states requires new reference-driven art (see darya_reference_manifest.json pending_upgrades) and is out of scope until that art exists."
+    }
+  },
+  "smoothness_priority": "critical",
+  "identity_drift_tolerance": "zero"
+}
