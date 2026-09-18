@@ -27,7 +27,13 @@ class CharacterManagerTest extends TestCase
 
         $response = $this->getJson('/characters')
             ->assertOk()
-            ->assertJsonPath('data.0.slug', 'tiam')
+            // Character Core V4: darya is the seeded gold-standard
+            // production / default-active character (see
+            // database/seeders/BuiltinCharacterSeeder.php and
+            // docs/character-standards/CHARACTER_CORE_V4_IMPLEMENTATION.md).
+            // CharacterController::index() orders by is_active desc first,
+            // so the active character — now darya, not tiam — is data.0.
+            ->assertJsonPath('data.0.slug', 'darya')
             ->assertJsonPath('data.0.is_active', true);
 
         foreach ([

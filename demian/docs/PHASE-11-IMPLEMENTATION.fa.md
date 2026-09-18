@@ -21,3 +21,10 @@ seeder دیتابیس و roster آفلاین `CharacterManager.js`.
 تولید نشده است؛ این فاز صرفاً معماری و سیم‌کشی را می‌سازد، نه Assetهای
 تصویری تازه. جزئیات کامل در
 `docs/character-standards/CHARACTER_CORE_V4_IMPLEMENTATION.md`.
+
+**به‌روزرسانی:** بعد از تحویل اولیه، CI واقعی پروژه (GitHub Actions) یک
+تست قدیمی (`tests/Feature/CharacterManagerTest.php`) را که هنوز فرض
+می‌کرد Tiam کاراکتر فعال پیش‌فرض است، رد کرد. این تست اصلاح شد و این‌بار
+با اجرای واقعی و کامل `composer install` + `php artisan test` (۱۲/۱۲ pass)
++ `npm install` + `npm run test:ci` (۵۴/۵۴ pass) + `vite build` +
+یک درخواست HTTP زنده به `/characters` — نه فقط شبیه‌سازی — تأیید شد.

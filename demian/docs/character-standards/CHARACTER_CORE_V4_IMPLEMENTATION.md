@@ -221,17 +221,81 @@ possible. What *was* actually run:
 - **Every new/modified `.ts` file** was type-stripped/compiled with
   `esbuild` to confirm it's syntactically valid TypeScript.
 
-## 6. What a human team should still do
+## 7. Post-delivery fix: CI failure in tests/Feature/CharacterManagerTest.php
+
+After this pass was first delivered, the person pushed it to their real
+repository and ran their GitHub Actions CI
+(`.github/workflows/deploy-demian-pages.yml`), which runs the full
+`php artisan test` suite via a real `composer install`. This surfaced one
+real regression this pass had missed:
+
+`tests/Feature/CharacterManagerTest.php::test_all_builtin_characters_can_be_seeded_and_listed`
+hardcoded the *old* default-active-character assumption
+(`assertJsonPath('data.0.slug', 'tiam')`). `CharacterController::index()`
+orders results by `is_active` descending first, so once
+`BuiltinCharacterSeeder` was changed to make `darya` the active character
+(exactly what this whole pass was for), she correctly sorts into
+`data.0` instead of `tiam` — the test's expectation was simply stale, not
+the application code.
+
+Fixed by updating the assertion to `'darya'`. The entire PHP test suite
+was re-checked for any other place that assumes which character is
+active/first (`tests/Feature/`, `tests/Unit/`, `tests/Stress/`, six files
+total) — this was the only one.
+
+**This fix was then verified for real**, not just with `php -l` and
+standalone stubs: this sandbox's earlier assumption — that `composer
+install`/`npm install` were impossible because `packagist.org` isn't on
+its allowed-domains list — turned out to be only half true. `composer.lock`
+already pins every one of its 110 packages to an `api.github.com` zipball
+URL, and `github.com`/`api.github.com`/`codeload.github.com` *are*
+reachable, so `composer install --no-scripts` (via a `composer.phar`
+downloaded straight from a GitHub release) resolves and installs the full
+dependency tree — including `laravel/framework` and `phpunit/phpunit` —
+without ever contacting Packagist. With that, this session actually ran,
+for real, against this exact codebase:
+
+- `php artisan test` — **12/12 pass**, including the fixed
+  `all builtin characters can be seeded and listed`.
+- `npm install`, then `npm run test:ci` — **54/54 pass**.
+- `npm run validate:character-art:strict`,
+  `validate:character-pack:v6`, `validate:darya:v12` — all pass; the
+  latter independently confirms "3 variants, 252 frames each, no legacy
+  assets" for Darya, matching this document's §2.2 claims about the v12
+  atlas.
+- `npm run build` (a real `vite build`, not just per-file `esbuild`
+  syntax checks) — succeeds, 211 modules transformed, confirming the
+  whole module graph (including every new/edited `.ts`/`.js` file) links
+  correctly, not just each file in isolation.
+- `npm run validate:build` — passes.
+- A real `php artisan migrate` + `db:seed --class=BuiltinCharacterSeeder`
+  against a file-backed SQLite database, then `php artisan serve` and a
+  live `curl http://127.0.0.1:8123/characters`: `data[0]` is `darya`,
+  `is_active: true`, `settings.production_status:
+  "gold_standard_production"` — the end-to-end behavior this whole pass
+  was meant to produce, observed directly rather than inferred.
+
+`vendor/`, `node_modules/`, `public/build/`, `.env`, and the test SQLite
+file were removed again afterwards — none of them were in the original
+upload or its `.gitignore`, and this delivery stays source-only.
+
+
+
+## 8. What a human team should still do
 
 1. Supply a real reference-photo package for Darya if the goal is to move
    from "interim source of truth" (existing v12 art) to the Master Pack's
    strict `reference_fidelity` policy, and/or for any of the 12 legacy
    characters if/when they're promoted out of
    `legacy_pending_reference_rebuild`.
-2. Run this against a real Laravel + Vite/Phaser environment
-   (`composer install`, `npm install`, `php artisan migrate --seed`,
-   `npm run dev`) and do an actual visual/gameplay QA pass — this
-   environment could not boot the app to verify rendering.
+2. Do an actual **visual/gameplay QA pass in a browser** — §7 confirms
+   `composer install`, `npm install`, `php artisan migrate --seed`,
+   `vite build`, and `php artisan serve` all work and the `/characters`
+   API returns the right data, but nothing in this sandbox can render the
+   Phaser/Three.js canvas or take a screenshot, so no one has visually
+   confirmed Darya's animations/companion actually look right in-game.
+   `npm run dev` + opening the app in a real browser is the remaining
+   step.
 3. Decide whether to physically relocate `tiam`'s/`ronak`'s asset files
    into `_legacy_archive/` (see that folder's `README.md` for exactly what
    three call sites would need to change together if so).
