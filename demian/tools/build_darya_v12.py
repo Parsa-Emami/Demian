@@ -12,7 +12,7 @@ import math
 from pathlib import Path
 
 import numpy as np
-from PIL import Image, ImageChops, ImageEnhance, ImageFilter
+from PIL import Image, ImageEnhance
 from scipy import ndimage
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -41,6 +41,73 @@ COUNTS = {
     "jump_e": 24, "jump_w": 24, "land_e": 12, "land_w": 12,
     "celebrate": 16, "emote": 16, "hop_e": 6, "hop_w": 6,
 }
+
+
+def trim_neighbour_spill(frame: Image.Image) -> Image.Image:
+    """Remove artwork leaking in from adjacent source-grid cells.
+
+    The supplied master is a flattened preview sheet rather than a real atlas:
+    several poses extend a few pixels beyond their visual row/column.  Those
+    fragments used to survive normalisation and were then enlarged into very
+    visible shoes/paws above Darya while walking or running.  Work on a tight
+    RGBA pose here, detect the characteristic top-edge activity valley, and
+    remove only the foreign band before the runtime atlas is generated.
+    """
+    output = frame.copy()
+    alpha = np.asarray(output.getchannel("A")).copy()
+    height, width = alpha.shape
+    if height < 8 or width < 8:
+        return output
+
+    activity = (alpha > 96).sum(axis=1)
+    scan_end = max(8, min(height // 3, 48))
+    edge_activity = float(np.median(activity[: min(3, scan_end)]))
+    valley_index = int(np.argmin(activity[:scan_end]))
+    valley_activity = float(activity[valley_index])
+
+    edge_floor = max(24.0, width * 0.13)
+    has_top_spill = (
+        valley_index > 0
+        and edge_activity >= edge_floor
+        and valley_activity <= edge_activity * 0.72
+    )
+
+    if has_top_spill:
+        valley_limit = valley_activity + max(8.0, width * 0.055)
+        valley_end = valley_index
+        while valley_end + 1 < scan_end and activity[valley_end + 1] <= valley_limit:
+            valley_end += 1
+
+        recovery = activity[valley_end + 1 : min(scan_end, valley_end + 10)]
+        recovered = len(recovery) > 0 and float(np.max(recovery)) >= (
+            valley_limit + max(5.0, width * 0.025)
+        )
+        if recovered:
+            alpha[: valley_end + 1, :] = 0
+
+    # Remove small fragments that still enter through a left/right cell edge.
+    # Interior details (hearts, dust, whiskers) are retained, as are any large
+    # companion components that legitimately reach a cell boundary.
+    labelled, total = ndimage.label(alpha > 16)
+    if total > 1:
+        areas = ndimage.sum(alpha > 16, labelled, range(1, total + 1))
+        largest = float(np.max(areas)) if len(areas) else 0.0
+        keep = np.zeros(alpha.shape, dtype=bool)
+        for component, area in enumerate(areas, start=1):
+            pixels = labelled == component
+            touches_side = pixels[:, :4].any() or pixels[:, -4:].any()
+            substantial = float(area) >= max(96.0, largest * 0.06)
+            if float(area) >= 18 and (float(area) == largest or not touches_side or substantial):
+                keep |= pixels
+
+        # Restore the antialiased fringe around retained components rather
+        # than replacing it with a hard binary mask.
+        keep = ndimage.binary_dilation(keep, structure=np.ones((3, 3)), iterations=2)
+        alpha = np.where(keep, alpha, 0).astype(np.uint8)
+
+    output.putalpha(Image.fromarray(alpha, "L"))
+    bbox = output.getchannel("A").point(lambda value: 255 if value > 16 else 0).getbbox()
+    return output.crop(bbox) if bbox else output
 
 
 def remove_preview_background(image: Image.Image) -> Image.Image:
@@ -83,7 +150,11 @@ def crop_strips(master: Image.Image) -> dict[str, list[Image.Image]]:
             bbox = frame.getchannel("A").point(lambda v: 255 if v > 16 else 0).getbbox()
             if not bbox:
                 raise RuntimeError(f"empty master frame: {name}[{index}]")
-            frames.append(frame.crop(bbox))
+            isolated = trim_neighbour_spill(frame.crop(bbox))
+            isolated_bbox = isolated.getchannel("A").point(lambda v: 255 if v > 16 else 0).getbbox()
+            if not isolated_bbox:
+                raise RuntimeError(f"empty isolated master frame: {name}[{index}]")
+            frames.append(isolated.crop(isolated_bbox))
         poses[name] = frames
     return poses
 

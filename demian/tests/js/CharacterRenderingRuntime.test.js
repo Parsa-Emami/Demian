@@ -47,3 +47,26 @@ test('sprite drawing is foot-pivot anchored, pixel-snapped and respects presenta
     assert.equal(metrics.rotation, 0.12);
     assert.ok(metrics.frameHeight > 40);
 });
+
+test('Canvas 2D sprite drawing applies SpriteCharacter jump height while keeping the ground anchor separate', () => {
+    const camera = {
+        pixelsPerUnit: 10,
+        worldToScreen: () => ({ x: 80, y: 140 }),
+    };
+    const entity = {
+        group: { position: { x: 0, z: 0 } },
+        bodyRoot: { position: { y: 1.75 } },
+        atlas: {
+            pivot: { x: 0.5, y: 0.965 },
+            display: { worldWidth: 3.75, worldHeight: 3.75 },
+            render: { referenceBodyHeightRatio: 0.9 },
+        },
+        visual: { width: 1, height: 1, bob: 0, x: 0, y: 0, tilt: 0 },
+        visualHeight: () => 3.75,
+    };
+
+    const metrics = spriteDrawMetrics(camera, entity, { x: 0, y: 0, w: 192, h: 192 });
+    assert.equal(metrics.jumpHeight, 1.75);
+    assert.equal(metrics.anchorY, 123);
+    assert.ok(metrics.labelY < 100);
+});

@@ -74,7 +74,7 @@ export default class FrameAnimator {
             : Object.keys(this.atlas.animations ?? {})[0];
     }
 
-    play(name, { restart = false } = {}) {
+    play(name, { restart = false, preservePhase = false } = {}) {
         const safeRequestedName = sanitizeCharacterAnimation(name);
         const resolvedName = this.resolveName(safeRequestedName);
 
@@ -90,6 +90,11 @@ export default class FrameAnimator {
             return resolvedName;
         }
 
+        const previousFrames = this.currentFrames();
+        const previousPhase = preservePhase && previousFrames.length > 0
+            ? Math.min(0.999999, Math.max(0, (this.frameIndex + this.frameProgress()) / previousFrames.length))
+            : 0;
+
         this.requestedAnimationName = safeRequestedName;
         this.animationName = resolvedName;
         this.animation = this.atlas.animations[resolvedName];
@@ -97,6 +102,18 @@ export default class FrameAnimator {
         this.elapsed = 0;
         this.finished = false;
         this.frameSerial += 1;
+
+        if (preservePhase && previousFrames.length > 0) {
+            const nextFrames = this.currentFrames();
+            if (nextFrames.length > 0) {
+                const framePosition = previousPhase * nextFrames.length;
+                this.frameIndex = Math.min(nextFrames.length - 1, Math.floor(framePosition));
+                const fps = Math.max(Number(this.animation.fps) || 1, 1);
+                const frameDuration = 1 / (fps * this.playbackRate);
+                this.elapsed = (framePosition - this.frameIndex) * frameDuration;
+            }
+        }
+
         this.applyCurrentFrame();
         return resolvedName;
     }

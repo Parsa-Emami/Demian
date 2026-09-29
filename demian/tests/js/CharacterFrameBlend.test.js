@@ -56,6 +56,22 @@ test('nextFrameName returns null for single-frame (non-loopable) animations', ()
     assert.equal(animator.nextFrameName(), null);
 });
 
+test('FrameAnimator preserves normalized locomotion phase across compatible animation changes', () => {
+    const atlas = makeAtlas();
+    atlas.animations.walk = { frames: ['idle_00', 'idle_01', 'idle_02'], fps: 12, loop: true };
+    atlas.animations.run = { frames: ['idle_00', 'idle_01', 'idle_02', 'idle_00', 'idle_01', 'idle_02'], fps: 24, loop: true };
+    const animator = new FrameAnimator(atlas);
+
+    animator.play('walk');
+    animator.update(0.145);
+    const before = (animator.frameIndex + animator.frameProgress()) / animator.currentFrames().length;
+
+    animator.play('run', { preservePhase: true });
+    const after = (animator.frameIndex + animator.frameProgress()) / animator.currentFrames().length;
+
+    assert.ok(Math.abs(before - after) < 1e-9);
+});
+
 function makeMockCtx() {
     const calls = { drawImage: [], globalAlphaHistory: [] };
     const ctx = {

@@ -56,6 +56,16 @@ const ACTIONS = Object.freeze([
 ]);
 
 const IDLE_VARIANTS = Object.freeze(['blink', 'breathe', 'ready']);
+const LOCOMOTION_PHASE_FAMILIES = Object.freeze([
+    new Set(['walk', 'tiptoe', 'run', 'sprint']),
+    new Set(['takeoff', 'jump', 'hover', 'fall']),
+]);
+
+function sharesLocomotionPhase(previousState, nextState) {
+    return LOCOMOTION_PHASE_FAMILIES.some((family) =>
+        family.has(previousState) && family.has(nextState)
+    );
+}
 
 function damp(current, target, smoothing, deltaTime) {
     return THREE.MathUtils.damp(current, target, smoothing, deltaTime);
@@ -772,10 +782,14 @@ export default class SpriteCharacter {
             return;
         }
 
-        this.previousState = this.state;
+        const previousState = this.state;
+        this.previousState = previousState;
         this.state = state;
         this.stateTime = 0;
-        this.animator.play(state, { restart });
+        this.animator.play(state, {
+            restart,
+            preservePhase: !restart && sharesLocomotionPhase(previousState, state),
+        });
         this.effects.onStateChanged(state, this.facing);
     }
 

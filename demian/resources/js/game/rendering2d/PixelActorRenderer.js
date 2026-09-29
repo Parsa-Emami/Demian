@@ -36,7 +36,12 @@ export function spriteDrawMetrics(camera, entity, frame) {
     const frameWidth = Math.max(1, Math.round(frame.w * scaleX));
     const frameHeight = Math.max(1, Math.round(frame.h * scaleY));
     const worldOffsetX = (Number(visual.x) || 0) * camera.pixelsPerUnit;
-    const worldOffsetY = ((Number(visual.bob) || 0) + (Number(visual.y) || 0)) * camera.pixelsPerUnit;
+    const jumpHeight = Math.max(0, Number(entity?.bodyRoot?.position?.y) || 0);
+    const worldOffsetY = (
+        (Number(visual.bob) || 0)
+        + (Number(visual.y) || 0)
+        + jumpHeight
+    ) * camera.pixelsPerUnit;
 
     return {
         screen,
@@ -48,8 +53,9 @@ export function spriteDrawMetrics(camera, entity, frame) {
         frameHeight,
         anchorX: Math.round(screen.x + worldOffsetX),
         anchorY: Math.round(screen.y - worldOffsetY),
+        jumpHeight,
         rotation: Number(visual.tilt) || 0,
-        labelY: Math.round(screen.y - bodyHeight - 8),
+        labelY: Math.round(screen.y - bodyHeight - worldOffsetY - 8),
     };
 }
 
@@ -151,7 +157,8 @@ export function drawSpriteCharacter(ctx, camera, entity, {
         const nextFrame = nextFrameName ? entity?.atlas?.frames?.[nextFrameName] : null;
         const maxAlpha = Math.min(0.65, Math.max(0, Number(blendConfig.frameBlendMaxAlpha) || 0.3));
         const progress = typeof entity.animator.frameProgress === 'function' ? entity.animator.frameProgress() : 0;
-        const blendAlpha = nextFrame ? progress * maxAlpha : 0;
+        const easedProgress = progress * progress * (3 - 2 * progress);
+        const blendAlpha = nextFrame ? easedProgress * maxAlpha : 0;
         if (blendAlpha > 0.015) {
             const baseAlpha = ctx.globalAlpha;
             ctx.globalAlpha = baseAlpha * blendAlpha;
