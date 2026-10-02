@@ -1,0 +1,32 @@
+{
+  "character_key": "darya",
+  "pack_version": 13,
+  "report_date": "2026-10-02",
+  "scope": "Automated integrity, source-art contact-sheet inspection and Chromium viewport tests. Not an owner or physical-device acceptance.",
+  "atlas": {
+    "variants": 3,
+    "frame_count": 456,
+    "semantic_states": 31,
+    "frame_blend": false,
+    "body_scale_locked": true,
+    "physics_jump": true,
+    "source_row_shoe_clipping_repaired": true,
+    "missing_companion_turn_repaired": true
+  },
+  "checks": {
+    "manifest_versions_synchronized": true,
+    "all_frames_in_bounds": true,
+    "no_empty_frames": true,
+    "fixed_cell_and_pivot": true,
+    "browser_portrait_landscape_desktop": true,
+    "touch_controls": true,
+    "viewport_widths": [
+      320,
+      390,
+      844,
+      768,
+      1440
+    ]
+  },
+  "art_note": "Single-source bounded optical-flow interpolation, not a crossfade. Semantic aliases reuse cycles; side cycles are shared by some directions. Human owner acceptance and physical-device testing remain external to this pass."
+}

@@ -6,7 +6,7 @@
         name="viewport"
         content="width=device-width, initial-scale=1.0, viewport-fit=cover"
     >
-    <meta name="theme-color" content="#050610">
+    <meta name="theme-color" content="#111b19">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
@@ -15,6 +15,7 @@
     <meta name="full-screen" content="yes">
     <meta name="x5-fullscreen" content="true"> --}}
     <link rel="manifest" href="manifest.webmanifest">
+    <link rel="apple-touch-icon" href="icons/demian-192.png">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -64,7 +65,7 @@
         data-event-api-base="{{ url('/api/v1/events') }}"
         data-sidebar-state="collapsed"
         data-mobile-actions="collapsed"
-        data-runtime-version="9.1.0-atomic-pixel2d"
+        data-runtime-version="13.0.0-mobile-runner"
         data-deployment-mode="atomic-bundle"
         data-session-state="booting"
         data-game-orientation="auto"
@@ -93,7 +94,7 @@
                 class="sidebar-edge-toggle"
                 aria-controls="character-manager-sidebar"
                 aria-expanded="false"
-                title="جمع‌کردن مدیریت کاراکترها (M)"
+                title="جمع‌کردن مدیریت کاراکترها (P)"
             >
                 <span data-sidebar-toggle-icon aria-hidden="true">‹</span>
                 <span class="sr-only" data-sidebar-toggle-label>جمع‌کردن</span>
@@ -103,30 +104,31 @@
                 <div class="sidebar-compact" aria-hidden="true">
                     <div class="sidebar-compact__logo">D</div>
                     <span class="sidebar-compact__active-dot"></span>
-                    <span class="sidebar-compact__name">DEMIAN · V5</span>
+                    <span class="sidebar-compact__name">DEMIAN</span>
                     <span class="sidebar-compact__hint">M</span>
                 </div>
 
                 <div class="sidebar-expanded-content">
+                    <button type="button" data-sidebar-toggle class="character-sheet-close" aria-label="بستن انتخاب کاراکتر">×</button>
                     <section class="arcade-panel manager-brand rounded-[28px] p-4">
                         <div class="flex items-start justify-between gap-3">
                             <div>
                                 <p class="arcade-label">Demian mobile arcade engine</p>
                                 <h1 class="arcade-title mt-2 text-3xl font-black" data-active-character-name>
-                                    TIAM / تیام
+                                    DARYA / دریا
                                 </h1>
                                 <p class="mt-1 text-xs text-zinc-400">
-                                    120 Frames · Directional Jump · Adaptive Quality
+                                    کاراکترت را انتخاب کن؛ ماجراجویی از همین‌جا شروع می‌شود.
                                 </p>
                             </div>
 
-                            <span class="arcade-badge">V5</span>
+                            <span class="arcade-badge">13</span>
                         </div>
 
                         <div class="mt-4 manager-brand__chip-row">
-                            <span class="manager-chip manager-chip--pink">34 Animations</span>
-                            <span class="manager-chip manager-chip--cyan">8 Directions</span>
-                            <span class="manager-chip manager-chip--yellow">Mobile First</span>
+                            <span class="manager-chip manager-chip--pink">دریا + پیشی</span>
+                            <span class="manager-chip manager-chip--cyan">حرکت دوبعدی</span>
+                            <span class="manager-chip manager-chip--yellow">مخصوص موبایل</span>
                         </div>
                     </section>
 
@@ -329,13 +331,13 @@
                     <div class="cafe-menu__content">
                         <div data-menu-reveal class="cafe-menu__eyebrow">
                             <span class="arcade-live-dot"></span>
-                            GAME ROOM ONLINE
+                            DEMIAN · PLAY YOUR WAY
                         </div>
                         <div data-menu-reveal>
-                            <p class="shell-kicker">WELCOME TO</p>
-                            <h1 class="cafe-menu__title">CAFÉ<br><b>DEMIAN</b></h1>
+                            <p class="shell-kicker">به دمیان خوش آمدی</p>
+                            <h1 class="cafe-menu__title"><b>DEMIAN</b></h1>
                             <p class="cafe-menu__lead">
-                                یک هسته، چند جهان؛ کاراکترت را انتخاب کن و وارد بازی بعدی شو.
+                                کمی بگرد. کمی بدو. یک رکورد تازه بساز.
                             </p>
                         </div>
                         <div data-menu-reveal class="cafe-menu__actions">
@@ -349,9 +351,10 @@
                                 <span>تنظیمات</span><b aria-hidden="true">⚙</b>
                             </button>
                         </div>
+                        <button type="button" data-sidebar-toggle class="shell-button shell-button--ghost menu-character-button">انتخاب کاراکتر <span aria-hidden="true">◉</span></button>
                         <div data-menu-reveal class="cafe-menu__footer">
-                            <span>PHASE 3</span>
-                            <span>ONE RENDERER · ATOMIC GAMES · FIXED 60HZ</span>
+                            <span>۲ بازی · ۳ کاراکتر</span>
+                            <span>بازی‌های کوچک، ماجراجویی‌های بزرگ</span>
                         </div>
                     </div>
                     <aside class="cafe-menu__cabinet" aria-hidden="true">
@@ -375,12 +378,12 @@
                             <div>
                                 <p class="shell-kicker">CAFÉ DEMIAN / GAME LIBRARY</p>
                                 <h2>یک بازی انتخاب کن</h2>
-                                <p>هر بازی به‌صورت Lazy بارگذاری می‌شود و از همان هسته‌ی مشترک استفاده می‌کند.</p>
+                                <p>کاوش آرام یا یک ران سریع؟ انتخاب با توست.</p>
                             </div>
                             <button type="button" data-shell-action="back-cafe" class="shell-icon-button" aria-label="بازگشت به منوی کافه">×</button>
                         </header>
                         <div class="game-library-toolbar">
-                            <span class="game-library-toolbar__hint">در موبایل برای دیدن بازی‌های بعدی اسکرول کن</span>
+                            <span class="game-library-toolbar__hint">دو تجربه برای شروع</span>
                             <div class="scroll-rail-controls" aria-label="پیمایش کتابخانه بازی">
                                 <button type="button" data-game-scroll-previous class="scroll-rail-button" aria-label="بازی قبلی">›</button>
                                 <output data-game-scroll-status class="scroll-rail-status" aria-live="polite">0 / 0</output>
@@ -389,7 +392,7 @@
                         </div>
                         <div data-game-grid class="game-grid" tabindex="0" role="list" aria-label="کتابخانه بازی‌های دمیان"></div>
                         <footer class="shell-page__footer">
-                            <span>بازی‌های اصلی + بسته‌ی ۶ مینی‌گیم آرکید در دسترس‌اند</span>
+                            <span>بازی‌های تازه، قدم‌به‌قدم اضافه می‌شوند.</span>
                             <span>ESC · بازگشت</span>
                         </footer>
                     </div>
@@ -495,10 +498,10 @@
                     hidden
                 >
                     <div class="results-panel">
-                        <p class="shell-kicker">SESSION COMPLETE</p>
+                        <p class="shell-kicker">پایان بازی</p>
                         <h2 data-results-title>نتیجه‌ی بازی</h2>
                         <p data-results-subtitle>مرحله به پایان رسید.</p>
-                        <div class="results-panel__score"><small>SCORE</small><strong data-results-score>0</strong></div>
+                        <div class="results-panel__score"><small>امتیاز</small><strong data-results-score>0</strong></div>
                         <div data-results-stats class="results-panel__stats"></div>
                         <div class="shell-modal__actions shell-modal__actions--row">
                             <button type="button" data-shell-action="restart" class="shell-button shell-button--primary">دوباره</button>
@@ -534,7 +537,7 @@
                                 class="arcade-button arcade-button--small arcade-button--focus"
                                 title="کاراکتر انتخاب‌شده را وسط تصویر قرار بده"
                             >
-                                <span data-focus-character-label>تمرکز تیام</span>
+                                <span data-focus-character-label>تمرکز دریا</span>
                                 <span class="desktop-key-hint">· R</span>
                             </button>
 
@@ -566,12 +569,11 @@
 
                             <button
                                 type="button"
-                                data-mobile-fullscreen
                                 class="arcade-button arcade-button--small mobile-fullscreen-button"
                                 aria-pressed="false"
                             >
                                 <span aria-hidden="true">⛶</span>
-                                <span data-fullscreen-label>افقی تمام‌صفحه</span>
+                                <span data-fullscreen-label>تمام‌صفحه</span>
                             </button>
                         </div>
                     </div>
@@ -582,7 +584,7 @@
                             <div>
                                 <p class="arcade-label">Player one ready</p>
                                 <h2 class="arcade-title mt-1 text-2xl font-black" data-active-character-name>
-                                    TIAM / تیام
+                                    DARYA / دریا
                                 </h2>
                                 <p class="mt-1 text-xs text-zinc-400">
                                     120-frame motion · Directional jump · Live NPCs
@@ -598,7 +600,7 @@
             </div>
 
             <section data-gameplay-ui data-world-ui data-hud-ui data-ui-layer="hud" class="mobile-status-bar arcade-panel pointer-events-none absolute" aria-label="وضعیت بازی">
-                <span class="mobile-status-bar__player" data-active-character-name>TIAM / تیام</span>
+                <span class="mobile-status-bar__player" data-active-character-name>DARYA / دریا</span>
                 <span class="mobile-status-chip"><small>STATE</small><b data-state-label>IDLE</b></span>
                 <span class="mobile-status-chip"><small>SPD</small><b data-speed-label>0.00</b></span>
                 <span class="mobile-status-chip"><small>NPC</small><b data-npc-label>2</b></span>
@@ -665,7 +667,7 @@
                     <div data-virtual-stick-knob class="virtual-stick__knob">
                         <span aria-hidden="true">✦</span>
                     </div>
-                    <small class="virtual-stick__label">MOVE / SPRINT</small>
+                    <small class="virtual-stick__label">حرکت · تا انتها: دویدن</small>
                 </div>
 
                 <div class="touch-controller__right">
@@ -686,24 +688,25 @@
                         <button type="button" data-input-press="pose" class="touch-action touch-action--mini">POSE</button>
                         <button type="button" data-input-press="spin" class="touch-action touch-action--mini">SPIN</button>
                         <button type="button" data-input-press="speak" class="touch-action touch-action--mini touch-action--speak">SAY</button>
+                        <button type="button" data-input-press="quickSave" class="touch-action touch-action--mini">ذخیره</button>
                         <button type="button" data-input-press="taunt" class="touch-action touch-action--mini">TAUNT</button>
                     </div>
 
                     <div class="touch-controller__actions" aria-label="اکشن‌های اصلی">
                         <button type="button" data-input-press="interact" class="touch-action touch-action--interact touch-action--primary">
-                            <span>USE</span><small>◎</small>
+                            <span>تعامل</span><small>◎</small>
                         </button>
                         <button type="button" data-input-hold="run" class="touch-action touch-action--run">
-                            <span>RUN</span><small>hold</small>
+                            <span>دویدن</span><small>نگه‌دار</small>
                         </button>
                         <button type="button" data-input-press="jump" class="touch-action touch-action--jump touch-action--primary">
-                            <span>JUMP</span><small>▲</small>
+                            <span>پرش</span><small>▲</small>
                         </button>
                         <button type="button" data-input-press="wave" class="touch-action touch-action--emote touch-action--primary">
-                            <span>WAVE</span><small>✦</small>
+                            <span>سلام</span><small>✦</small>
                         </button>
                         <button type="button" data-input-press="dash" class="touch-action touch-action--dash">
-                            <span>DASH</span><small>»</small>
+                            <span>جهش</span><small>»</small>
                         </button>
                         <button
                             type="button"
@@ -716,6 +719,18 @@
                         </button>
                     </div>
                 </div>
+            </section>
+
+            <nav data-gameplay-ui data-ui-layer="controls" class="play-toolbar" aria-label="منوی بازی">
+                <button type="button" data-shell-action="pause" aria-label="توقف بازی">Ⅱ</button>
+                <button type="button" data-sidebar-toggle aria-label="انتخاب کاراکتر">◉ <span>کاراکتر</span></button>
+                <button type="button" data-input-press="map" class="world-map-toggle" aria-label="نقشهٔ کافه">▦</button>
+                <button type="button" data-mobile-fullscreen class="play-fullscreen" aria-label="تمام‌صفحه">⛶</button>
+                <button type="button" data-shell-action="menu" aria-label="بازگشت به منو">⌂</button>
+            </nav>
+            <section data-gameplay-ui data-control-surface="dino-run" data-ui-layer="controls" class="runner-controls" dir="rtl" aria-label="کنترل‌های رانر">
+                <button type="button" data-input-press="jump" data-input-hold="jumpHeld" class="runner-controls__jump"><b aria-hidden="true">↗</b><span>پرش</span><small>نگه‌دار: بلندتر</small></button>
+                <button type="button" data-input-hold="duck" class="runner-controls__duck"><b aria-hidden="true">↓</b><span>خم‌شدن</span></button>
             </section>
 
             <div data-orientation-hint data-ui-layer="stage-system" class="orientation-hint" aria-hidden="true">

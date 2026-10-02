@@ -219,7 +219,7 @@ export default class MobileGameUI {
         const label = this.fullscreenButton?.querySelector('[data-fullscreen-label]');
         if (label) {
             const preference = this.orientationPreference();
-            label.textContent = active ? 'خروج' : preference === 'landscape' ? 'افقی تمام‌صفحه' : 'تمام‌صفحه';
+            label.textContent = active ? 'خروج' : preference === 'landscape' ? 'تمام‌صفحه' : 'تمام‌صفحه';
         }
 
         this.onViewportChange();

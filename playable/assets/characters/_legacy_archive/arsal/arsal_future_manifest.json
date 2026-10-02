@@ -1,0 +1,16 @@
+{
+  "character_key": "arsal",
+  "display_name": "ARSAL / ارسل",
+  "status": "pending_reference_rebuild",
+  "policy": "legacy_character_must_be_rebuilt_from_new_reference_images",
+  "shipped_legacy_assets": "none on disk — BuiltinCharacterSeeder references assets/characters/arsal/arsal-spritesheet-v*.png by convention, but no such file currently exists in this repository. This character has never had real shipped art; it must be built from scratch via the reference-first pipeline.",
+  "required_files": [
+    "reference_manifest.json",
+    "identity_contract.yaml",
+    "animation_manifest.json",
+    "motion_profile.json",
+    "atlas_manifest.json",
+    "qa_report.md"
+  ],
+  "notes": "Do not reactivate from legacy sprite packs. Rebuild only after receiving reference image(s)."
+}

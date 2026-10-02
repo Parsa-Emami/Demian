@@ -94,7 +94,7 @@ class BuiltinCharacterSeeder extends Seeder
                 [
                     'slug' => 'darya',
                     'name' => 'DARYA / دریا',
-                    'pack_version' => 12,
+                    'pack_version' => 13,
                     'is_active' => true,
                     'production_status' => self::PRODUCTION_STATUS_GOLD_STANDARD,
                     'settings' => [
@@ -246,6 +246,7 @@ class BuiltinCharacterSeeder extends Seeder
             ];
 
             foreach ($characters as $definition) {
+                if (!in_array($definition['slug'], ['darya', 'tiam', 'ronak'], true)) continue;
                 $slug = $definition['slug'];
                 $packVersion = $definition['pack_version'];
                 $settings = $definition['settings'];

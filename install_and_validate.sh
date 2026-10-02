@@ -1,11 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
-python3 apply_latest_c938504_hotfix.py
-cd demian
-php artisan optimize:clear
-php artisan migrate:fresh --seed --force
-php artisan test --stop-on-failure
+cd "$(dirname "$0")/demian"
+npm ci
 npm run test:ci
 npm run validate:final
-npm run build
+npm run validate:ui-layers
+python3 -c 'import PIL' || python3 -m pip install Pillow
+npm run validate:darya:v13
+npm run build:static
 npm run validate:build
+echo "Ready: demian/_site — serve this directory over HTTP."
+

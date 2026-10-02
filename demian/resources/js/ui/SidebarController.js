@@ -36,9 +36,11 @@ export default class SidebarController {
     }
 
     onToggle() {
+        if (this.state !== 'expanded') this.lastOpener = document.activeElement;
         this.state = this.state === 'expanded' ? 'collapsed' : 'expanded';
         this.persistState();
         this.applyState({ animate: true });
+        if (this.state === 'expanded') this.sidebar.querySelector('.character-sheet-close')?.focus({ preventScroll: true });
     }
 
     onBackdrop() {
@@ -68,8 +70,16 @@ export default class SidebarController {
     }
 
     onKeyDown(event) {
+        if (event.key === 'Tab' && this.state === 'expanded') {
+            const buttons = [...this.sidebar.querySelectorAll('button, input, select, [tabindex="0"]')].filter(e => !e.disabled && e.getClientRects().length && getComputedStyle(e).visibility !== 'hidden');
+            const first = buttons[0], last = buttons.at(-1);
+            if (first && (!this.sidebar.contains(document.activeElement) || (event.shiftKey && document.activeElement === first) || (!event.shiftKey && document.activeElement === last))) {
+                event.preventDefault(); (event.shiftKey ? last : first).focus({ preventScroll: true });
+            }
+            return;
+        }
         const key = event.key.toLowerCase();
-        if ((key !== 'm' && key !== 'escape') || event.repeat) {
+        if ((key !== 'p' && key !== 'escape') || event.repeat) {
             return;
         }
 
@@ -105,13 +115,15 @@ export default class SidebarController {
         const expanded = this.state === 'expanded';
         const mobile = this.mobileQuery.matches;
         document.body.classList.toggle('has-mobile-sheet', mobile && expanded);
+        const content = this.sidebar.querySelector('.sidebar-expanded-content');
+        if (content) content.inert = !expanded;
         this.backdrop?.setAttribute('aria-hidden', String(!(mobile && expanded)));
-        this.sidebar.setAttribute('aria-hidden', String(mobile && !expanded));
+        this.sidebar.setAttribute('aria-hidden', String(!expanded));
 
         this.toggleButtons.forEach((button) => {
             button.setAttribute('aria-expanded', String(expanded));
             button.setAttribute('aria-label', expanded ? 'بستن مدیریت کاراکترها' : 'بازکردن مدیریت کاراکترها');
-            button.title = expanded ? 'بستن مدیریت کاراکترها (M)' : 'بازکردن مدیریت کاراکترها (M)';
+            button.title = expanded ? 'بستن مدیریت کاراکترها (P)' : 'بازکردن مدیریت کاراکترها (P)';
 
             const icon = button.querySelector('[data-sidebar-toggle-icon]');
             const label = button.querySelector('[data-sidebar-toggle-label]');
@@ -127,14 +139,15 @@ export default class SidebarController {
             detail: { state: this.state, expanded, mobile },
         }));
 
+        if (!expanded && this.lastOpener?.isConnected) this.lastOpener.focus({ preventScroll: true });
         window.setTimeout(() => window.dispatchEvent(new Event('resize')), animate ? 360 : 0);
     }
 
     readDesktopState() {
         try {
-            return window.localStorage.getItem(this.storageKey) === 'collapsed' ? 'collapsed' : 'expanded';
+            return window.localStorage.getItem(this.storageKey) === 'expanded' ? 'expanded' : 'collapsed';
         } catch {
-            return 'expanded';
+            return 'collapsed';
         }
     }
 

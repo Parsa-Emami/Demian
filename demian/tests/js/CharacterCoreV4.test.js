@@ -43,7 +43,7 @@ test('every other builtin slug is legacy_pending_reference_rebuild and excluded 
     assert.equal(LEGACY_CHARACTER_SLUGS.includes('darya'), false);
 });
 
-test('the manifest registry roster and the legacy BUILTIN_CHARACTER_SLUGS contract cover the same 13 characters', () => {
+test('the manifest registry roster and the legacy BUILTIN_CHARACTER_SLUGS contract cover the same installed characters', () => {
     const manifestSlugs = [...ALL_MANIFEST_SLUGS].sort();
     const contractSlugs = [...BUILTIN_CHARACTER_SLUGS].sort();
     assert.deepEqual(manifestSlugs, contractSlugs);
@@ -59,7 +59,7 @@ test('loadRosterManifest() falls back to the embedded snapshot when fetch is una
     const manifest = await loadRosterManifest('http://example.test/');
     assert.equal(manifest.productionCharacter ?? manifest.production_character, 'darya');
     assert.ok(Array.isArray(manifest.characters));
-    assert.ok(manifest.characters.length >= 13);
+    assert.ok(manifest.characters.length === 3);
 });
 
 test('AtlasRegistry stores and retrieves atlases per character+variant independently', () => {
@@ -174,8 +174,8 @@ test('shipped character-manifest-v4.json matches the embedded registry snapshot'
     assert.equal(darya.is_default_active, true);
 });
 
-test("shipped darya animation manifest's frame counts match the real v12 mobile atlas", () => {
-    const animAtlas = readJson('public/assets/characters/darya/darya-atlas-v12-mobile.json');
+test("shipped darya animation manifest's frame counts match the real v13 mobile atlas", () => {
+    const animAtlas = readJson('public/assets/characters/darya/darya-atlas-v13-mobile.json');
     const animManifest = readJson('public/assets/characters/darya/manifests/darya_animation_manifest.json');
 
     for (const [name, animation] of Object.entries(animAtlas.animations)) {

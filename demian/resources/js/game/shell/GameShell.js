@@ -70,7 +70,7 @@ export default class GameShell {
             this.resultsScreen,
         ].forEach((entry) => this.manager.register(entry));
 
-        this.shellRoot.addEventListener('click', this.onClick);
+        this.root.addEventListener('click', this.onClick);
         this.settingsScreen.form?.addEventListener('submit', this.onSettingsSubmit);
         window.addEventListener('keydown', this.onKeyDown);
 
@@ -256,7 +256,7 @@ export default class GameShell {
     }
 
     async dispose() {
-        this.shellRoot?.removeEventListener('click', this.onClick);
+        this.root?.removeEventListener('click', this.onClick);
         this.settingsScreen?.form?.removeEventListener('submit', this.onSettingsSubmit);
         window.removeEventListener('keydown', this.onKeyDown);
         this.unsubscribers.forEach((unsubscribe) => unsubscribe?.());

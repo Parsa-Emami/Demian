@@ -880,6 +880,7 @@ export default class SpriteCharacter {
         target.height *= 1 - profile.depthSign * directionDepthScale * 0.12;
         target.y += profile.depthSign * 0.025;
 
+        if (this.atlas.render?.lockBodyScale) Object.assign(target, { width: 1, height: 1, bob: 0, tilt: 0, x: 0, y: 0 });
         const smoothing = this.state === 'dash' ? 22 : 16;
         this.visual.width = damp(this.visual.width, target.width, smoothing, deltaTime);
         this.visual.height = damp(this.visual.height, target.height, smoothing, deltaTime);

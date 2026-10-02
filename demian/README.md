@@ -1,3 +1,7 @@
+# Demian mobile release 13
+
+See [راهنمای فارسی نسخهٔ جدید](../README.fa.md) for the runnable ZIP, current two-game catalog, commands, character standards and QA. The instructions below describe the original Laravel scaffold.
+
 # Demian Game Platform 9.1 + Arcade Pack 1
 
 نسخه تجمعی فازهای ۱ تا ۸ با رندر دوبعدی پیکسلی، کافه مشترک و استقرار Atomic روی GitHub Pages.

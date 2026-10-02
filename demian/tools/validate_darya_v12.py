@@ -36,9 +36,9 @@ def main() -> None:
                 assert directional
                 assert all(frame in atlas["frames"] for frame in directional)
 
-    actual = {path.name for path in DIR.iterdir() if path.is_file()}
+    actual = {path.name for path in DIR.iterdir() if path.is_file() and "v13" not in path.name}
     assert actual == expected_files, f"stale or missing Darya files: {sorted(actual ^ expected_files)}"
-    print("Darya V12 validation passed: 3 variants, 252 frames each, no legacy assets.")
+    print("Darya V12 validation passed: 3 variants, 252 frames each, legacy compatibility pack intact.")
 
 
 if __name__ == "__main__":

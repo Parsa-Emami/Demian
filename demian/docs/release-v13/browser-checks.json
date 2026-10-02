@@ -1,0 +1,197 @@
+[
+  {
+    "width": 320,
+    "height": 568,
+    "passed": true,
+    "metrics": {
+      "scrollWidth": 320,
+      "scene": {
+        "x": 0,
+        "y": 0,
+        "width": 320,
+        "height": 568,
+        "top": 0,
+        "right": 320,
+        "bottom": 568,
+        "left": 0
+      },
+      "roster": [
+        "darya",
+        "tiam",
+        "ronak"
+      ]
+    },
+    "errors": [],
+    "failed": [],
+    "checks": [
+      "3-character selection",
+      "character persists between games",
+      "controls inside viewport",
+      "touch jump",
+      "pause/resume",
+      "collision/results",
+      "restart",
+      "best score saved",
+      "open-world controls",
+      "multi-touch joystick + run and release",
+      "action tray inside viewport",
+      "sidebar close"
+    ]
+  },
+  {
+    "width": 390,
+    "height": 844,
+    "passed": true,
+    "metrics": {
+      "scrollWidth": 390,
+      "scene": {
+        "x": 0,
+        "y": 0,
+        "width": 390,
+        "height": 844,
+        "top": 0,
+        "right": 390,
+        "bottom": 844,
+        "left": 0
+      },
+      "roster": [
+        "darya",
+        "tiam",
+        "ronak"
+      ]
+    },
+    "errors": [],
+    "failed": [],
+    "checks": [
+      "3-character selection",
+      "character persists between games",
+      "controls inside viewport",
+      "touch jump",
+      "pause/resume",
+      "collision/results",
+      "restart",
+      "best score saved",
+      "open-world controls",
+      "multi-touch joystick + run and release",
+      "action tray inside viewport",
+      "sidebar close"
+    ]
+  },
+  {
+    "width": 844,
+    "height": 390,
+    "passed": true,
+    "metrics": {
+      "scrollWidth": 844,
+      "scene": {
+        "x": 0,
+        "y": 0,
+        "width": 844,
+        "height": 390,
+        "top": 0,
+        "right": 844,
+        "bottom": 390,
+        "left": 0
+      },
+      "roster": [
+        "darya",
+        "tiam",
+        "ronak"
+      ]
+    },
+    "errors": [],
+    "failed": [],
+    "checks": [
+      "3-character selection",
+      "character persists between games",
+      "controls inside viewport",
+      "touch jump",
+      "pause/resume",
+      "collision/results",
+      "restart",
+      "best score saved",
+      "open-world controls",
+      "multi-touch joystick + run and release",
+      "action tray inside viewport",
+      "sidebar close"
+    ]
+  },
+  {
+    "width": 768,
+    "height": 1024,
+    "passed": true,
+    "metrics": {
+      "scrollWidth": 768,
+      "scene": {
+        "x": 0,
+        "y": 0,
+        "width": 768,
+        "height": 1024,
+        "top": 0,
+        "right": 768,
+        "bottom": 1024,
+        "left": 0
+      },
+      "roster": [
+        "darya",
+        "tiam",
+        "ronak"
+      ]
+    },
+    "errors": [],
+    "failed": [],
+    "checks": [
+      "3-character selection",
+      "character persists between games",
+      "controls inside viewport",
+      "touch jump",
+      "pause/resume",
+      "collision/results",
+      "restart",
+      "best score saved",
+      "open-world controls",
+      "multi-touch joystick + run and release",
+      "action tray inside viewport",
+      "sidebar close"
+    ]
+  },
+  {
+    "width": 1440,
+    "height": 900,
+    "passed": true,
+    "metrics": {
+      "scrollWidth": 1440,
+      "scene": {
+        "x": 0,
+        "y": 0,
+        "width": 1440,
+        "height": 900,
+        "top": 0,
+        "right": 1440,
+        "bottom": 900,
+        "left": 0
+      },
+      "roster": [
+        "darya",
+        "tiam",
+        "ronak"
+      ]
+    },
+    "errors": [],
+    "failed": [],
+    "checks": [
+      "3-character selection",
+      "character persists between games",
+      "controls inside viewport",
+      "touch jump",
+      "pause/resume",
+      "collision/results",
+      "restart",
+      "best score saved",
+      "open-world controls",
+      "multi-touch joystick + run and release",
+      "action tray inside viewport",
+      "sidebar close"
+    ]
+  }
+]

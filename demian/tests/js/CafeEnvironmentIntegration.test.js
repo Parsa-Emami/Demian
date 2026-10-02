@@ -9,7 +9,7 @@ const root = resolve(import.meta.dirname, '../..');
 const source = (file) => readFileSync(resolve(root, file), 'utf8');
 
 test('every playable game declares the shared reference café environment', () => {
-    const ids = ['tetris', 'hide-and-seek', 'event', 'role-play', 'open-world'];
+    const ids = ['open-world', 'dino-run'];
     ids.forEach((id) => {
         assert.equal(GAME_DEFINITIONS[id].metadata.environment, 'demian-reference-cafe@2');
         assert.equal(GAME_CATALOG.find((game) => game.id === id)?.environment, 'demian-reference-cafe@2');

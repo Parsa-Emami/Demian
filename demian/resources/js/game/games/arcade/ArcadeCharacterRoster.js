@@ -17,8 +17,7 @@ export const ARCADE_CHARACTER_LABELS = Object.freeze({
 });
 
 const REFERENCE_CARD_SLUGS = new Set([
-    'amirreza', 'arsal', 'darya', 'hossein', 'iman', 'mojtaba',
-    'parsa', 'setayesh', 'sorkhi', 'taher-db', 'uzudi',
+
 ]);
 
 export const ARCADE_CHARACTER_ROSTER = Object.freeze(

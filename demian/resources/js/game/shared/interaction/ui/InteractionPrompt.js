@@ -19,7 +19,7 @@ export default class InteractionPrompt {
         this.element.setAttribute('role', 'status');
         this.element.setAttribute('aria-live', 'polite');
         this.element.innerHTML = `
-            <span class="interaction-prompt__key" aria-hidden="true">ENTER</span>
+            <button type="button" data-input-press="interact" class="interaction-prompt__key" aria-label="تعامل با محیط">تعامل</button>
             <span class="interaction-prompt__copy">
                 <strong data-interaction-label></strong>
                 <small data-interaction-hint></small>
@@ -34,7 +34,7 @@ export default class InteractionPrompt {
         const shouldShow = Boolean(visible && interactable);
         this.element.querySelector('[data-interaction-label]').textContent = interactable?.label ?? '';
         const hint = this.element.querySelector('[data-interaction-hint]');
-        hint.textContent = interactable?.hint ?? '';
+        hint.textContent = (interactable?.hint ?? '').replace(/ENTER\s*[·:]?\s*/gi, '');
         hint.hidden = !interactable?.hint;
 
         if (shouldShow === this.visible) return;

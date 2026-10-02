@@ -1,0 +1,16 @@
+{
+  "character_key": "tiam",
+  "display_name": "TIAM / تیام",
+  "status": "pending_reference_rebuild",
+  "policy": "legacy_character_must_be_rebuilt_from_new_reference_images",
+  "shipped_legacy_assets": "public/assets/characters/tiam/ (kept in place as an audit fallback; NOT moved/deleted so the existing is_active toggle and asset paths keep working if this character is ever manually reactivated before its reference-first rebuild is complete)",
+  "required_files": [
+    "reference_manifest.json",
+    "identity_contract.yaml",
+    "animation_manifest.json",
+    "motion_profile.json",
+    "atlas_manifest.json",
+    "qa_report.md"
+  ],
+  "notes": "Do not reactivate from legacy sprite packs. Rebuild only after receiving reference image(s)."
+}

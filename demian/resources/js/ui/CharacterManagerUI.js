@@ -114,8 +114,8 @@ export default class CharacterManagerUI {
         this.listElement.innerHTML = '';
 
         characters.forEach((character) => {
-            const metaLine = this.renderCharacterMetaLine(character);
-            const badgeLine = this.renderCharacterStatBadges(character);
+            const metaLine = '';
+            const badgeLine = '';
             const card = document.createElement('article');
             card.className = [
                 'character-card',
@@ -152,7 +152,7 @@ export default class CharacterManagerUI {
 
                         ${
                             character.is_active
-                                ? '<span class="arcade-badge">ACTIVE</span>'
+                                ? '<span class="arcade-badge">انتخاب‌شده</span>'
                                 : ''
                         }
                     </div>
@@ -165,7 +165,7 @@ export default class CharacterManagerUI {
                             class="arcade-button arcade-button--small"
                             data-select-character="${character.id}"
                         >
-                            نمایش
+                            انتخاب
                         </button>
 
                         ${
@@ -184,7 +184,7 @@ export default class CharacterManagerUI {
 
                         ${
                             character.is_builtin
-                                ? '<span class="self-center text-[10px] text-fuchsia-300">BUILT-IN</span>'
+                                ? ''
                                 : `
                                     <button
                                         type="button"
@@ -216,6 +216,7 @@ export default class CharacterManagerUI {
                     await this.guard(() =>
                         this.getManager()?.select(button.dataset.selectCharacter)
                     );
+                    this.root.dispatchEvent(new CustomEvent('character-ui:activated', { bubbles: true }));
                     const card = button.closest('[data-character-card]');
                     const index = this.characterRail?.items.indexOf(card) ?? -1;
                     if (index >= 0) this.characterRail?.scrollTo(index, { behavior: 'smooth' });

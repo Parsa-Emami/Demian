@@ -1,116 +1,10 @@
 import { CAFE_ENVIRONMENT_ID, CAFE_REFERENCE_ASSET_ROOT } from '../shared/cafe/CafeEnvironmentContract.js';
 
 export const GAME_DEFINITIONS = Object.freeze({
-
-    'neon-run': Object.freeze({
-        title: 'Neon Run', inputContext: 'ARCADE', orientation: 'landscape',
-        loader: () => import('../games/neon-run/NeonRunGame.js'),
-        metadata: Object.freeze({ phase: 9, status: 'available', supportsResults: true, miniGame: true, arcadePack: 1, renderer: 'shared-canvas2d-pixel', deployment: 'atomic-bundle', environment: CAFE_ENVIRONMENT_ID, environmentLocked: true, referenceAssets: CAFE_REFERENCE_ASSET_ROOT }),
-    }),
-    'star-catcher': Object.freeze({
-        title: 'Star Catcher', inputContext: 'ARCADE', orientation: 'landscape',
-        loader: () => import('../games/star-catcher/StarCatcherGame.js'),
-        metadata: Object.freeze({ phase: 9, status: 'available', supportsResults: true, miniGame: true, arcadePack: 1, renderer: 'shared-canvas2d-pixel', deployment: 'atomic-bundle', environment: CAFE_ENVIRONMENT_ID, environmentLocked: true, referenceAssets: CAFE_REFERENCE_ASSET_ROOT }),
-    }),
-    'cafe-drift': Object.freeze({
-        title: 'Café Drift', inputContext: 'ARCADE', orientation: 'landscape',
-        loader: () => import('../games/cafe-drift/CafeDriftGame.js'),
-        metadata: Object.freeze({ phase: 9, status: 'available', supportsResults: true, miniGame: true, arcadePack: 1, renderer: 'shared-canvas2d-pixel', deployment: 'atomic-bundle', environment: CAFE_ENVIRONMENT_ID, environmentLocked: true, referenceAssets: CAFE_REFERENCE_ASSET_ROOT }),
-    }),
-    'shadow-maze': Object.freeze({
-        title: 'Shadow Maze', inputContext: 'ARCADE', orientation: 'landscape',
-        loader: () => import('../games/shadow-maze/ShadowMazeGame.js'),
-        metadata: Object.freeze({ phase: 9, status: 'available', supportsResults: true, miniGame: true, arcadePack: 1, renderer: 'shared-canvas2d-pixel', deployment: 'atomic-bundle', environment: CAFE_ENVIRONMENT_ID, environmentLocked: true, referenceAssets: CAFE_REFERENCE_ASSET_ROOT }),
-    }),
-    'sky-hop': Object.freeze({
-        title: 'Sky Hop', inputContext: 'ARCADE', orientation: 'landscape',
-        loader: () => import('../games/sky-hop/SkyHopGame.js'),
-        metadata: Object.freeze({ phase: 9, status: 'available', supportsResults: true, miniGame: true, arcadePack: 1, renderer: 'shared-canvas2d-pixel', deployment: 'atomic-bundle', environment: CAFE_ENVIRONMENT_ID, environmentLocked: true, referenceAssets: CAFE_REFERENCE_ASSET_ROOT }),
-    }),
-    'rhythm-rush': Object.freeze({
-        title: 'Rhythm Rush', inputContext: 'ARCADE', orientation: 'landscape',
-        loader: () => import('../games/rhythm-rush/RhythmRushGame.js'),
-        metadata: Object.freeze({ phase: 9, status: 'available', supportsResults: true, miniGame: true, arcadePack: 1, renderer: 'shared-canvas2d-pixel', deployment: 'atomic-bundle', environment: CAFE_ENVIRONMENT_ID, environmentLocked: true, referenceAssets: CAFE_REFERENCE_ASSET_ROOT }),
-    }),
-    'role-play': Object.freeze({
-        title: 'Role Play',
-        inputContext: 'ROLE_PLAY',
-        orientation: 'landscape',
-        // Kept asynchronous for the registry API; Vite production inlines this
-        // module into Demian's single atomic JavaScript bundle.
-        loader: () => import('../games/role-play/RolePlayGame.js'),
-        metadata: Object.freeze({
-            phase: 7,
-            status: 'available',
-            supportsResults: false,
-            dataDrivenDialogue: true,
-            persistentProgress: true,
-            sharedWorldServices: true,
-            renderer: 'shared-canvas2d-pixel',
-            deployment: 'atomic-bundle',
-            environment: CAFE_ENVIRONMENT_ID,
-            environmentLocked: true,
-            referenceAssets: CAFE_REFERENCE_ASSET_ROOT,
-        }),
-    }),
-    event: Object.freeze({
-        title: 'Event',
-        inputContext: 'EVENT',
-        orientation: 'landscape',
-        loader: () => import('../games/event/EventGame.js'),
-        metadata: Object.freeze({
-            phase: 6,
-            status: 'available',
-            supportsResults: true,
-            dataDriven: true,
-            deterministicDirector: true,
-            remoteDefinitionsReady: true,
-            renderer: 'shared-canvas2d-pixel',
-            deployment: 'atomic-bundle',
-            environment: CAFE_ENVIRONMENT_ID,
-            environmentLocked: true,
-            referenceAssets: CAFE_REFERENCE_ASSET_ROOT,
-        }),
-    }),
-    'hide-and-seek': Object.freeze({
-        title: 'Hide and Seek',
-        inputContext: 'HIDE_AND_SEEK',
-        orientation: 'landscape',
-        loader: () => import('../games/hide-and-seek/HideAndSeekGame.js'),
-        metadata: Object.freeze({
-            phase: 5,
-            status: 'available',
-            supportsResults: true,
-            deterministicMatch: true,
-            networkReady: true,
-            renderer: 'shared-canvas2d-pixel',
-            deployment: 'atomic-bundle',
-            environment: CAFE_ENVIRONMENT_ID,
-            environmentLocked: true,
-            referenceAssets: CAFE_REFERENCE_ASSET_ROOT,
-        }),
-    }),
-    tetris: Object.freeze({
-        title: 'Tetris',
-        inputContext: 'TETRIS',
-        orientation: 'portrait',
-        loader: () => import('../games/tetris/TetrisGame.js'),
-        metadata: Object.freeze({
-            phase: 3,
-            status: 'available',
-            supportsResults: true,
-            deterministic: true,
-            renderer: 'shared-canvas2d-pixel',
-            deployment: 'atomic-bundle',
-            environment: CAFE_ENVIRONMENT_ID,
-            environmentLocked: true,
-            referenceAssets: CAFE_REFERENCE_ASSET_ROOT,
-        }),
-    }),
     'open-world': Object.freeze({
         title: 'Open World',
         inputContext: 'OPEN_WORLD',
-        orientation: 'landscape',
+        orientation: 'any',
         loader: () => import('../games/open-world/OpenWorldGame.js'),
         metadata: Object.freeze({
             phase: 8,
@@ -129,5 +23,12 @@ export const GAME_DEFINITIONS = Object.freeze({
             environmentLocked: true,
             referenceAssets: CAFE_REFERENCE_ASSET_ROOT,
         }),
+    }),
+    'dino-run': Object.freeze({
+        title: 'Dino Run', inputContext: 'DINO_RUN', orientation: 'any',
+        loader: () => import('../games/dino-run/DinoRunGame.js'),
+        metadata: Object.freeze({ phase: 12, status: 'available', supportsResults: true, endless: true,
+            renderer: 'shared-canvas2d-pixel', deployment: 'atomic-bundle',
+            environment: CAFE_ENVIRONMENT_ID, environmentLocked: true, referenceAssets: CAFE_REFERENCE_ASSET_ROOT }),
     }),
 });

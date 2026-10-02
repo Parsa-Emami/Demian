@@ -11,7 +11,7 @@ import {
     sanitizeCharacterAnimation,
 } from '../../resources/js/game/characters/CharacterVisualContract.js';
 
-test('canonical packs resolve every Demian roster member and Darya uses the rebuilt V12 pack', () => {
+test('canonical packs resolve every Demian roster member and Darya uses the rebuilt V13 pack', () => {
     assert.equal(CHARACTER_PACK_VERSION, 6);
     ['attack', 'combo', 'uppercut', 'cast', 'charge', 'hurt', 'hit'].forEach((name) => {
         assert.equal(isRemovedCombatAnimation(name), true);
@@ -22,15 +22,13 @@ test('canonical packs resolve every Demian roster member and Darya uses the rebu
     assert.match(tiam.spriteUrl, /tiam-spritesheet-v6-compact\.png$/);
     assert.match(tiam.atlasUrl, /tiam-atlas-v6-compact\.json$/);
 
-    assert.deepEqual(BUILTIN_CHARACTER_SLUGS, [
-        'tiam', 'ronak', 'amirreza', 'parsa', 'darya', 'iman', 'uzudi',
-        'setayesh', 'mojtaba', 'hossein', 'arsal', 'sorkhi', 'taher-db',
-    ]);
+    assert.deepEqual(BUILTIN_CHARACTER_SLUGS, ['darya', 'tiam', 'ronak']);
 
-    assert.equal(characterPackVersion('darya'), 12);
+
+    assert.equal(characterPackVersion('darya'), 13);
     const darya = builtinCharacterAssetPair('darya', 'mobile', 'https://example.test/game/');
-    assert.match(darya.spriteUrl, /darya-spritesheet-v12-mobile\.png$/);
-    assert.match(darya.atlasUrl, /darya-atlas-v12-mobile\.json$/);
+    assert.match(darya.spriteUrl, /darya-spritesheet-v13-mobile\.png$/);
+    assert.match(darya.atlasUrl, /darya-atlas-v13-mobile\.json$/);
 
     for (const slug of ['amirreza', 'arsal', 'hossein', 'iman', 'mojtaba', 'parsa', 'setayesh', 'sorkhi', 'taher-db', 'uzudi']) {
         assert.equal(characterPackVersion(slug), 9);
@@ -43,7 +41,7 @@ test('canonical packs resolve every Demian roster member and Darya uses the rebu
     assert.deepEqual(CHARACTER_PACK_VERSION_OVERRIDES, {
         amirreza: 9,
         arsal: 9,
-        darya: 12,
+        darya: 13,
         hossein: 9,
         iman: 9,
         mojtaba: 9,

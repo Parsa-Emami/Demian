@@ -145,7 +145,12 @@ export default class OpenWorldGame extends BaseGame {
         });
 
         this.bindCameraControls();
+        const preferredSlug = context.services.characterVisuals.activeSlug;
         await this.characterManager.boot();
+        const preferred = this.characterManager.characters.find((record) => record.slug === preferredSlug);
+        if (preferred && preferred.slug !== this.characterManager.activeRecord?.slug) {
+            await this.characterManager.select(preferred.id, { hydrateRoster: false });
+        }
         this.characterManager.setPosition(this.manifest.spawn);
         this.registerWorldInteractions();
         this.mountUi();
@@ -248,6 +253,7 @@ export default class OpenWorldGame extends BaseGame {
     registerWorldInteractions() {
         this.world.cabinets.forEach((cabinet) => {
             const game = findGameCatalogEntry(cabinet.gameId);
+            if (!game?.available) return;
             const collider = this.collisionScope.get(cabinet.id);
             this.interactionScope.register({
                 id: cabinet.id,
@@ -457,7 +463,7 @@ export default class OpenWorldGame extends BaseGame {
             this.context.app.shell.toast('پیشرفت Open World ذخیره شد.', 'success');
         }
         const basis = this.cameraController.movementBasis();
-        const gameplayInput = this.context?.app?.sessionState === 'playing' && !this.mapOpen ? input : {};
+        const gameplayInput = this.context?.app?.sessionState === 'playing' && this.context.root.dataset.sidebarState !== 'expanded' && !this.mapOpen ? input : {};
         this.characterManager.update(deltaTime, gameplayInput, basis);
         this.updateInteraction(gameplayInput);
         this.updateStreaming();

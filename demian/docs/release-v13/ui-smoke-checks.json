@@ -1,0 +1,302 @@
+[
+  {
+    "name": "portrait",
+    "shell": {
+      "width": 390,
+      "height": 844,
+      "characters": [
+        "darya",
+        "tiam",
+        "ronak"
+      ],
+      "errors": 0
+    },
+    "runner": {
+      "trackWidth": 420,
+      "orientation": "h-full",
+      "controls": [
+        {
+          "x": 260,
+          "y": 726,
+          "w": 112,
+          "h": 100
+        },
+        {
+          "x": 18,
+          "y": 743.5,
+          "w": 90,
+          "h": 82.5
+        }
+      ]
+    },
+    "geometry": [
+      {
+        "s": ".manager-shell",
+        "x": 0,
+        "y": 0,
+        "w": 390,
+        "h": 844,
+        "display": "block",
+        "position": "fixed",
+        "inset": "0px",
+        "transform": "none",
+        "margin": "0px",
+        "grid": "1fr"
+      },
+      {
+        "s": ".manager-stage",
+        "x": 0,
+        "y": 0,
+        "w": 390,
+        "h": 844,
+        "display": "block",
+        "position": "absolute",
+        "inset": "0px",
+        "transform": "none",
+        "margin": "0px",
+        "grid": "none"
+      },
+      {
+        "s": "[data-demian-scene]",
+        "x": 0,
+        "y": 0,
+        "w": 390,
+        "h": 844,
+        "display": "block",
+        "position": "absolute",
+        "inset": "0px",
+        "transform": "none",
+        "margin": "0px",
+        "grid": "none"
+      },
+      {
+        "s": ".runner-controls",
+        "x": 18,
+        "y": 726,
+        "w": 354,
+        "h": 100,
+        "display": "flex",
+        "position": "absolute",
+        "inset": "726px 18px 18px",
+        "transform": "none",
+        "margin": "0px",
+        "grid": "none"
+      },
+      {
+        "s": ".game-hud-host",
+        "x": 0,
+        "y": 0,
+        "w": 390,
+        "h": 844,
+        "display": "block",
+        "position": "absolute",
+        "inset": "0px",
+        "transform": "none",
+        "margin": "0px",
+        "grid": "none"
+      }
+    ],
+    "errors": [],
+    "failed": []
+  },
+  {
+    "name": "landscape",
+    "shell": {
+      "width": 844,
+      "height": 390,
+      "characters": [
+        "darya",
+        "tiam",
+        "ronak"
+      ],
+      "errors": 0
+    },
+    "runner": {
+      "trackWidth": 930.5641025641027,
+      "orientation": "h-full",
+      "controls": [
+        {
+          "x": 732,
+          "y": 289,
+          "w": 94,
+          "h": 83
+        },
+        {
+          "x": 18,
+          "y": 306.5,
+          "w": 90,
+          "h": 65.5
+        }
+      ]
+    },
+    "geometry": [
+      {
+        "s": ".manager-shell",
+        "x": 0,
+        "y": 0,
+        "w": 844,
+        "h": 390,
+        "display": "block",
+        "position": "fixed",
+        "inset": "0px",
+        "transform": "none",
+        "margin": "0px",
+        "grid": "1fr"
+      },
+      {
+        "s": ".manager-stage",
+        "x": 0,
+        "y": 0,
+        "w": 844,
+        "h": 390,
+        "display": "block",
+        "position": "absolute",
+        "inset": "0px",
+        "transform": "none",
+        "margin": "0px",
+        "grid": "none"
+      },
+      {
+        "s": "[data-demian-scene]",
+        "x": 0,
+        "y": 0,
+        "w": 844,
+        "h": 390,
+        "display": "block",
+        "position": "absolute",
+        "inset": "0px",
+        "transform": "none",
+        "margin": "0px",
+        "grid": "none"
+      },
+      {
+        "s": ".runner-controls",
+        "x": 18,
+        "y": 289,
+        "w": 808,
+        "h": 83,
+        "display": "flex",
+        "position": "absolute",
+        "inset": "289px 18px 18px",
+        "transform": "none",
+        "margin": "0px",
+        "grid": "none"
+      },
+      {
+        "s": ".game-hud-host",
+        "x": 0,
+        "y": 0,
+        "w": 844,
+        "h": 390,
+        "display": "block",
+        "position": "absolute",
+        "inset": "0px",
+        "transform": "none",
+        "margin": "0px",
+        "grid": "none"
+      }
+    ],
+    "errors": [],
+    "failed": []
+  },
+  {
+    "name": "desktop",
+    "shell": {
+      "width": 1440,
+      "height": 900,
+      "characters": [
+        "darya",
+        "tiam",
+        "ronak"
+      ],
+      "errors": 0
+    },
+    "runner": {
+      "trackWidth": 688,
+      "orientation": "h-full",
+      "controls": [
+        {
+          "x": 1310,
+          "y": 782,
+          "w": 112,
+          "h": 100
+        },
+        {
+          "x": 18,
+          "y": 799.5,
+          "w": 90,
+          "h": 82.5
+        }
+      ]
+    },
+    "geometry": [
+      {
+        "s": ".manager-shell",
+        "x": 0,
+        "y": 0,
+        "w": 1440,
+        "h": 900,
+        "display": "block",
+        "position": "fixed",
+        "inset": "0px",
+        "transform": "none",
+        "margin": "0px",
+        "grid": "70px minmax(0px, 1fr)"
+      },
+      {
+        "s": ".manager-stage",
+        "x": 0,
+        "y": 0,
+        "w": 1440,
+        "h": 900,
+        "display": "block",
+        "position": "absolute",
+        "inset": "0px",
+        "transform": "none",
+        "margin": "0px",
+        "grid": "none"
+      },
+      {
+        "s": "[data-demian-scene]",
+        "x": 0,
+        "y": 0,
+        "w": 1440,
+        "h": 900,
+        "display": "block",
+        "position": "absolute",
+        "inset": "0px",
+        "transform": "none",
+        "margin": "0px",
+        "grid": "none"
+      },
+      {
+        "s": ".runner-controls",
+        "x": 18,
+        "y": 782,
+        "w": 1404,
+        "h": 100,
+        "display": "flex",
+        "position": "absolute",
+        "inset": "782px 18px 18px",
+        "transform": "none",
+        "margin": "0px",
+        "grid": "none"
+      },
+      {
+        "s": ".game-hud-host",
+        "x": 0,
+        "y": 0,
+        "w": 1440,
+        "h": 900,
+        "display": "block",
+        "position": "absolute",
+        "inset": "0px",
+        "transform": "none",
+        "margin": "0px",
+        "grid": "none"
+      }
+    ],
+    "errors": [],
+    "failed": []
+  }
+]

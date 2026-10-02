@@ -73,6 +73,10 @@ export default class OpenWorldPixelRenderer {
 
     render({ characterManager, loadedChunks, activeChunkIds, discovery, deltaTime = 0 }) {
         const logical = this.context.renderer.logicalDimensions();
+        const scale = this.camera.targetPixelsPerUnit;
+        const padX = this.mode === 'FOLLOW' ? logical.width * .15 / scale : 0;
+        const padZ = this.mode === 'FOLLOW' ? logical.height * .30 / scale : 0;
+        this.camera.bounds = { minX: this.manifest.bounds.minX - padX, maxX: this.manifest.bounds.maxX + padX, minZ: this.manifest.bounds.minZ - padZ, maxZ: this.manifest.bounds.maxZ + padZ };
         this.camera.resize(logical.width, logical.height);
         const focus = characterManager?.position?.() ?? this.manifest.spawn;
         if (this.mode === 'FOLLOW') this.camera.follow(focus);
@@ -80,7 +84,7 @@ export default class OpenWorldPixelRenderer {
 
         const ctx = this.context.renderer.beginFrame(P.voidBlue);
         this.cafe.draw(ctx, this.camera, { atmosphere: 'day' });
-        this.drawChunks(ctx, loadedChunks, activeChunkIds);
+        if (this.context.app?.options?.debug) this.drawChunks(ctx, loadedChunks, activeChunkIds);
         this.drawSavePoints(ctx, discovery);
 
         for (const [id, entity] of characterManager?.entities ?? []) {
@@ -97,9 +101,9 @@ export default class OpenWorldPixelRenderer {
         }
         this.queue.flush(ctx);
         drawPixelSceneEffects(ctx, logical.width, logical.height, {
-            scanlines: true,
-            frame: true,
-            vignette: true,
+            scanlines: false,
+            frame: false,
+            vignette: false,
         });
         return this.context.renderer.present();
     }

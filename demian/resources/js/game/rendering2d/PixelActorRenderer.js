@@ -19,7 +19,7 @@ export function spriteDrawMetrics(camera, entity, frame) {
     const atlas = entity?.atlas ?? {};
     const pivot = atlas.pivot ?? { x: 0.5, y: 0.96 };
     const display = atlas.display ?? {};
-    const visual = entity?.visual ?? {};
+    const visual = atlas.render?.lockBodyScale ? {} : (entity?.visual ?? {});
     const worldMetrics = characterFrameWorldSize(atlas, {
         worldWidth: Number(display.worldWidth) || 3.75,
         worldHeight: Number(display.worldHeight) || Number(entity?.visualHeight?.()) || 3.75,

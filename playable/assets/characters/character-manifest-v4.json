@@ -1,0 +1,37 @@
+{
+  "$schema": "../../../schemas/character_manifest.schema.json",
+  "manifest_version": "v4",
+  "generated_note": "Single source of truth for the manifest-driven character roster (Character Core V4). Read by CharacterManifestRegistry.js on the frontend and CharacterIdentityService.php on the backend. Keep in sync with database/seeders/BuiltinCharacterSeeder.php.",
+  "core_mandate": "Purge legacy active character system and rebuild all new characters strictly from reference images.",
+  "production_character": "darya",
+  "characters": [
+    {
+      "slug": "darya",
+      "display_name": "DARYA / دریا",
+      "production_status": "gold_standard_production",
+      "is_default_active": true,
+      "pack_version": 13,
+      "manifest": "darya/manifests/character_manifest_v4.json",
+      "has_shipped_assets": true
+    },
+    {
+      "slug": "tiam",
+      "display_name": "TIAM / تیام",
+      "production_status": "legacy_pending_reference_rebuild",
+      "is_default_active": false,
+      "pack_version": 6,
+      "manifest": "_legacy_archive/tiam/tiam_future_manifest.json",
+      "has_shipped_assets": true
+    },
+    {
+      "slug": "ronak",
+      "display_name": "RONAK / روناک",
+      "production_status": "legacy_pending_reference_rebuild",
+      "is_default_active": false,
+      "pack_version": 6,
+      "manifest": "_legacy_archive/ronak/ronak_future_manifest.json",
+      "has_shipped_assets": true
+    }
+  ],
+  "release": "mobile-runner-v13"
+}

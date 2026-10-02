@@ -1,0 +1,182 @@
+@font-face { font-family: 'Vazirmatn'; font-style: normal; font-display: swap; font-weight: 400; src: url('../fonts/vazirmatn-arabic-400-normal.woff2') format('woff2'); unicode-range: U+0600-06FF,U+0750-077F,U+08A0-08FF,U+200C-200E,U+FB50-FDFF,U+FE70-FEFF; }
+@font-face { font-family: 'Vazirmatn'; font-style: normal; font-display: swap; font-weight: 400; src: url('../fonts/vazirmatn-latin-400-normal.woff2') format('woff2'); unicode-range: U+0000-00FF,U+2000-206F,U+2191,U+2193; }
+@font-face { font-family: 'Vazirmatn'; font-style: normal; font-display: swap; font-weight: 700; src: url('../fonts/vazirmatn-arabic-700-normal.woff2') format('woff2'); unicode-range: U+0600-06FF,U+0750-077F,U+08A0-08FF,U+200C-200E,U+FB50-FDFF,U+FE70-FEFF; }
+@font-face { font-family: 'Vazirmatn'; font-style: normal; font-display: swap; font-weight: 700; src: url('../fonts/vazirmatn-latin-700-normal.woff2') format('woff2'); unicode-range: U+0000-00FF,U+2000-206F,U+2191,U+2193; }
+@font-face { font-family: 'Vazirmatn'; font-style: normal; font-display: swap; font-weight: 900; src: url('../fonts/vazirmatn-arabic-900-normal.woff2') format('woff2'); unicode-range: U+0600-06FF,U+0750-077F,U+08A0-08FF,U+200C-200E,U+FB50-FDFF,U+FE70-FEFF; }
+@font-face { font-family: 'Vazirmatn'; font-style: normal; font-display: swap; font-weight: 900; src: url('../fonts/vazirmatn-latin-900-normal.woff2') format('woff2'); unicode-range: U+0000-00FF,U+2000-206F,U+2191,U+2193; }
+/* MIT — mobile release. One thumb zone per hand; gameplay remains unobstructed. */
+:root { --release-bg: #111b19; --release-panel: #1c2824; --release-ink: #f2efe4; --release-accent: #d7e8a2; }
+body { background: var(--release-bg); }
+.manager-shell { background: var(--release-bg); }
+.manager-stage { border: 0; border-radius: 0; }
+.manager-stage::before, .manager-stage::after, .arcade-screen-bezel { display: none; }
+.manager-shell .stage-toolbar, .manager-shell .arcade-stage-brand, .manager-shell .hud-panel,
+.manager-shell .help-panel, .manager-shell .mobile-status-bar,
+.manager-shell .open-world-streaming-hud, .manager-shell .open-world-minimap { display: none !important; }
+.manager-shell [data-sidebar-state="collapsed"] .sidebar-compact, .manager-shell .sidebar-compact { display: none; }
+.manager-shell[data-sidebar-state="collapsed"] .manager-sidebar { width: 0; min-width: 0; border: 0; }
+.manager-shell .sidebar-edge-toggle { display: none; }
+.manager-shell .manager-sidebar { background: #17221f; border-color: #435347; }
+.manager-shell .arcade-panel, .manager-shell .character-card { background: #1c2824; border-color: #435347; box-shadow: none; }
+.manager-shell .manager-brand { padding: 20px; }
+.manager-shell .manager-brand .arcade-label { color: #b5c1a7; }
+.manager-shell .manager-brand h1 { font-size: 22px; }
+.manager-shell .manager-brand__chip-row, .manager-shell .manager-brand .arcade-badge,
+.manager-shell .manager-details, .manager-shell .scroll-rail-hint { display: none; }
+.manager-shell .arcade-button, .manager-shell .scroll-rail-button { background: #293b30; color: #f2efe4; border-color: #596a4c; box-shadow: none; }
+.manager-shell .arcade-badge { background: #d7e8a2; border: 0; color: #213120; }
+.manager-shell .character-card.is-active { border: 2px solid #d7e8a2; box-shadow: none; }
+.manager-shell .character-card__preview { border: 0; background: #d8ddca; box-shadow: none; width: 112px; height: 112px; }
+.manager-shell .character-selection-rail { display: grid; grid-template-columns: 1fr; gap: 12px; overflow-y: auto; overflow-x: hidden; max-height: none; }
+.manager-shell .character-card { min-height: 144px; width: 100%; max-width: 100%; flex: initial; }
+.manager-shell .character-card [data-activate-character] { display: none; }
+.manager-shell .character-card p.font-mono { display: none; }
+.manager-shell .character-selection__header .scroll-rail-controls { display: none; }
+.manager-shell .cafe-menu__ambient, .manager-shell .cafe-menu__cabinet { display: none; }
+.manager-shell .shell-screen--cafe { background: linear-gradient(160deg, rgba(17,27,25,.96), rgba(17,27,25,.88)); }
+.manager-shell .cafe-menu__content { width: min(100%, 540px); margin: auto; padding: 32px; background: none; text-align: right; }
+.manager-shell .cafe-menu__title { font-family: ui-sans-serif, system-ui, sans-serif; font-size: clamp(48px, 10vw, 88px); line-height: 1.08; letter-spacing: -.065em; color: #f2efe4; text-shadow: none; }
+.manager-shell .cafe-menu__title b { color: #d7e8a2; }
+.manager-shell .cafe-menu__eyebrow { color: #aebfa7; letter-spacing: .15em; font-size: 10px; }
+.manager-shell .cafe-menu__lead { font-size: 14px; line-height: 1.8; color: #bec7b7; }
+.manager-shell .shell-kicker { color: #b9c4b1; letter-spacing: .04em; }
+.manager-shell .shell-button { min-height: 48px; background: #293b30; color: #f2efe4; border: 1px solid #435347; border-radius: 16px; box-shadow: none; }
+.manager-shell .shell-button--primary { background: #d7e8a2; color: #213120; border-color: #d7e8a2; }
+.manager-shell .shell-button--ghost { background: transparent; }
+.manager-shell .menu-character-button { width: 100%; margin-top: 12px; }
+.manager-shell .cafe-menu__footer { color: #899c89; font-size: 10px; }
+.manager-shell .shell-page, .manager-shell .shell-modal, .manager-shell .results-panel { background: #17221f; border: 1px solid #435347; border-radius: 24px; box-shadow: none; }
+.manager-shell .shell-page { width: min(820px, 100%); overflow-y: auto; }
+.manager-shell .shell-page__header h2 { font-size: 26px; color: #f2efe4; }
+.manager-shell .shell-page__header p { font-size: 12px; color: #adbaa7; }
+.manager-shell .game-grid { display: grid !important; grid-template-columns: repeat(2, minmax(0, 1fr)) !important; gap: 14px; overflow: visible; max-height: none; margin-top: 20px; }
+.manager-shell .game-card { width: auto; min-width: 0; min-height: 270px; padding: 20px; background: #26382e; border: 1px solid #536b49; border-radius: 20px; box-shadow: none; }
+.manager-shell .game-card--amber { background: #3b3527; border-color: #726548; }
+.manager-shell .game-card__glow { display: none; }
+.manager-shell .game-card__icon { font-size: 30px; background: #d7e8a2; color: #26382e; border-radius: 14px; box-shadow: none; }
+.manager-shell .game-card--amber .game-card__icon { background: #ebd3a8; color: #3b3527; }
+.manager-shell .game-card h3 { color: #f2efe4; font-size: 22px; letter-spacing: -.04em; }
+.manager-shell .game-card__subtitle { color: #d7e8a2; font-size: 13px; }
+.manager-shell .game-card__description { display: block; color: #c3caba; font-size: 12px; line-height: 1.8; }
+.manager-shell .game-card__action { border: 0; border-radius: 12px; background: #d7e8a2; color: #213120; min-height: 46px; }
+.manager-shell .game-library-toolbar, .manager-shell .shell-page__footer { display: none; }
+.manager-shell .game-card__status { color: #c4ccba; font-size: 9px; }
+.play-toolbar { position: absolute; top: max(12px, env(safe-area-inset-top)); left: max(12px, env(safe-area-inset-left)); display: flex; gap: 6px; pointer-events: auto; }
+.play-toolbar button { background: #17251fec; color: #f2efe4; border: 1px solid #657358; border-radius: 14px; min-width: 44px; height: 44px; padding: 0 12px; font: 700 14px system-ui; touch-action: manipulation; }
+.play-toolbar button span { font-size: 11px; }
+.runner-hud { position: absolute; top: max(16px, env(safe-area-inset-top)); right: max(16px, env(safe-area-inset-right)); color: #30412f; display: flex; align-items: center; gap: 24px; }
+.runner-hud__title { display: none; }
+.runner-hud__score { display: flex; gap: 16px; }
+.runner-hud__score span { display: grid; gap: 4px; text-align: right; }
+.runner-hud__score small { font-size: 10px; }
+.runner-hud__score b { font: 700 18px ui-monospace, monospace; font-variant-numeric: tabular-nums; letter-spacing: .06em; }
+.runner-ready { position: absolute; top: 22%; left: 50%; transform: translateX(-50%); width: min(340px, calc(100% - 40px)); color: #30412f; text-align: center; pointer-events: auto; }
+.runner-ready[hidden] { display: none !important; }
+.runner-ready > span { font-size: 12px; color: #607357; }
+.runner-ready h2 { margin: 12px 0; font-size: 24px; font-weight: 800; }
+.runner-ready p { font-size: 12px; line-height: 1.9; }
+.runner-ready button { display: flex; align-items: center; justify-content: space-between; width: 100%; margin: 16px 0 12px; padding: 14px 20px; border-radius: 16px; background: #314833; color: #f4efdf; min-height: 52px; font-weight: 800; }
+.runner-ready small { font-size: 10px; }
+.runner-controls { position: absolute; left: max(18px, env(safe-area-inset-left)); right: max(18px, env(safe-area-inset-right)); bottom: max(18px, env(safe-area-inset-bottom)); justify-content: space-between; align-items: flex-end; pointer-events: none; }
+.manager-shell[data-session-state="playing"][data-control-layout="dino-run"] .runner-controls { display: flex; }
+.runner-controls button { pointer-events: auto; touch-action: none; user-select: none; border: 1px solid #4b6542; border-radius: 24px; background: #30482fee; color: #f6f0df; min-width: 112px; min-height: 90px; display: grid; justify-items: center; padding: 12px 20px; gap: 4px; }
+.runner-controls button b { font: 700 28px system-ui; }
+.runner-controls button span { font-size: 13px; font-weight: 800; }
+.runner-controls button small { font-size: 9px; opacity: .8; }
+.runner-controls .runner-controls__duck { background: #eee9dce6; color: #30412f; min-width: 90px; min-height: 76px; }
+.runner-controls button.is-pressed, .touch-action.is-pressed { transform: translateY(2px); background: #597249; }
+.manager-shell .touch-controller { padding: 0 max(18px, env(safe-area-inset-right)) max(20px, env(safe-area-inset-bottom)) max(18px, env(safe-area-inset-left)); }
+.manager-shell .virtual-stick { width: 116px; height: 116px; background: #18251fcc; border: 2px solid #96ab75; box-shadow: none; }
+.manager-shell .virtual-stick__knob { background: #d7e8a2; border: 1px solid #a1b57c; box-shadow: 0 3px 10px #0004; color: #26382e; width: 50px; height: 50px; }
+.manager-shell .virtual-stick__arrows { opacity: .35; }
+.manager-shell .virtual-stick__label { color: #edf2df; font-size: 8px; bottom: -15px; }
+.manager-shell .touch-controller__actions { display: grid; grid-template-areas: 'run jump' 'interact more'; grid-template-columns: 58px 70px; gap: 8px; }
+.manager-shell .touch-action { width: 100%; min-width: 0; height: 56px; min-height: 0; background: #263b2ded; border: 1px solid #93a97a; border-radius: 18px; box-shadow: none; color: #f2efe4; }
+.manager-shell .touch-action span { font-size: 10px; }
+.manager-shell .touch-action small { font-size: 11px; }
+.manager-shell .touch-action--jump { background: #d7e8a2; color: #26382e; }
+.manager-shell .touch-action--interact { grid-area: interact; }
+.manager-shell .touch-controller__actions .touch-action--dash,
+.manager-shell .touch-controller__actions .touch-action--emote { display: none; }
+.manager-shell .mobile-action-tray { background: #17251ff5; border: 1px solid #738760; width: min(290px, calc(100vw - 36px)); max-height: 170px; overflow-y: auto; border-radius: 20px; box-shadow: none; }
+.manager-shell[data-active-game="dino-run"] [data-world-ui],
+.manager-shell[data-active-game="dino-run"] [data-control-surface="world"] { display: none !important; }
+.manager-shell[data-sidebar-state="expanded"] .play-toolbar, .manager-shell[data-sidebar-state="expanded"] [data-control-surface] { visibility: hidden; }
+@media (max-width: 640px) {
+    .manager-shell .cafe-menu__content { padding: 28px; }
+    .manager-shell .cafe-menu__title { font-size: 62px; }
+    .manager-shell .game-grid { grid-template-columns: 1fr !important; }
+    .manager-shell .game-card { min-height: 215px; padding: 18px; }
+    .manager-shell .shell-page { padding: 18px; max-height: calc(100dvh - 32px); }
+    .manager-shell .shell-page__header h2 { font-size: 22px; }
+    .manager-shell .game-card h3 { font-size: 20px; }
+    .manager-shell .manager-sidebar { width: min(100%, 420px); max-height: 88dvh; border-radius: 28px 28px 0 0; }
+    .manager-shell .character-card { gap: 12px; }
+    .play-toolbar { top: max(12px, env(safe-area-inset-top)); }
+    .play-toolbar button { padding: 0 10px; }
+    .play-toolbar button span { display: none; }
+}
+@media (max-height: 500px) and (min-width: 641px) {
+    .manager-shell .cafe-menu__content { padding: 16px 26px; display: grid; grid-template-columns: 1fr 1fr; column-gap: 28px; width: min(760px, 100%); }
+    .manager-shell .cafe-menu__eyebrow, .manager-shell .cafe-menu__footer { grid-column: 1 / -1; margin: 6px 0; }
+    .manager-shell .cafe-menu__title { font-size: 54px; }
+    .manager-shell .cafe-menu__actions { margin-top: 0; grid-column: 2; grid-row: 2; }
+    .manager-shell .menu-character-button { grid-column: 2; margin: 6px 0 0; }
+    .manager-shell .game-card { min-height: 225px; padding: 16px; }
+    .manager-shell .shell-page { padding: 16px; max-height: calc(100dvh - 20px); }
+    .manager-shell .shell-page__header h2 { font-size: 22px; }
+    .runner-ready { top: 20%; width: 300px; }
+    .runner-ready h2 { font-size: 20px; margin: 8px 0; }
+    .runner-ready p { margin: 0; }
+    .runner-ready button { min-height: 44px; padding: 10px 16px; margin: 10px 0; }
+    .runner-controls button { min-width: 94px; min-height: 64px; padding: 8px 18px; border-radius: 20px; }
+    .runner-controls .runner-controls__duck { min-height: 58px; }
+    .runner-controls button b { font-size: 20px; }
+    .manager-shell .virtual-stick { width: 94px; height: 94px; }
+    .manager-shell .touch-action { height: 44px; border-radius: 14px; }
+}
+@media (prefers-reduced-motion: reduce) { .manager-shell * { scroll-behavior: auto; } }
+/* Reset obsolete multi-column shell/scroll-rail geometry on every viewport. */
+html, body { width: 100%; height: 100%; overflow: hidden; }
+.manager-shell[data-manager-shell] { position: fixed; inset: 0; display: block !important; width: 100%; height: 100dvh; min-height: 0; padding: 0; gap: 0; }
+.manager-shell[data-manager-shell] .manager-stage { position: absolute; inset: 0; width: 100% !important; height: 100% !important; min-height: 0; margin: 0; }
+.manager-shell[data-manager-shell] .manager-sidebar { position: absolute; left: 0; top: 0; bottom: 0; width: 380px; max-width: 100%; height: 100%; max-height: 100%; border-radius: 0; }
+.manager-shell[data-manager-shell][data-sidebar-state="collapsed"] .manager-sidebar { width: 0; visibility: hidden; }
+.manager-shell[data-manager-shell] .game-grid { grid-auto-flow: row !important; grid-auto-columns: auto !important; grid-auto-rows: auto !important; grid-template-rows: none !important; height: auto !important; width: 100%; padding: 0; scroll-snap-type: none; }
+.manager-shell[data-manager-shell] .game-card { height: auto !important; max-height: none; min-width: 0; scroll-snap-align: none; grid-template-rows: auto 1fr auto; gap: 18px; }
+.manager-shell[data-manager-shell] .character-selection-rail { grid-auto-flow: row; grid-auto-columns: auto; grid-auto-rows: auto; grid-template-rows: none; scroll-snap-type: none; }
+.manager-shell .cafe-menu__content [data-menu-reveal] { opacity: 1; }
+@media (max-width: 1023px) {
+    .manager-shell[data-manager-shell] .manager-sidebar { left: 50%; top: auto; bottom: 0; width: min(100%, 440px); height: 88dvh; max-height: 88dvh; border-radius: 26px 26px 0 0; transform: translateX(-50%); }
+    .manager-shell[data-manager-shell][data-sidebar-state="expanded"] .manager-sidebar { transform: translateX(-50%); }
+}
+body, .manager-shell { font-family: 'Vazirmatn', system-ui, sans-serif; }
+.character-sheet-close { display: block; width: 44px; height: 44px; margin: 0 0 12px auto; border: 1px solid #617352; border-radius: 14px; background: #293b30; color: #f2efe4; font: 24px system-ui; }
+.manager-shell[data-active-game="dino-run"] .world-map-toggle { display: none; }
+.manager-shell .open-world-minimap { display: none !important; }
+@media (max-width: 420px) { .play-fullscreen { display: none; } }
+
+html, body { margin: 0; padding: 0; min-width: 0; display: block; }
+.manager-shell .cafe-menu__title b { -webkit-text-stroke: 0; text-shadow: none; }
+.runner-hud__score { background: #eee9dcee; padding: 8px 12px; border-radius: 14px; color: #30412f; }
+@media (max-width: 360px) { .manager-shell .game-card { min-height: 180px; gap: 10px; } .manager-shell .game-card__description { font-size: 11px; } .runner-ready { top: 24%; } }
+
+.manager-shell .manager-brand { display: none; }
+.manager-shell .character-selection__header .arcade-label { display: none; }
+.manager-shell .sidebar-expanded-content > section { margin-top: 0; }
+@media (max-width: 420px) { .manager-shell .character-card { min-height: 120px; padding: 10px; } .manager-shell .character-card__preview { width: 96px; height: 96px; } }
+
+.manager-shell .touch-controller { box-sizing: border-box; width: 100%; left: 0; right: 0; display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; }
+.manager-shell .touch-controller__right { width: 136px; max-width: 136px; flex: 0 0 136px; }
+.manager-shell .touch-controller__actions { width: 136px; max-width: 136px; justify-content: start; }
+.manager-shell .touch-controller__right { grid-template-columns: minmax(0, 1fr); }
+.manager-shell .mobile-action-tray { position: absolute; bottom: calc(100% + 12px); right: 0; display: none; }
+.manager-shell[data-mobile-actions="expanded"] .mobile-action-tray { display: grid; transform: none; visibility: visible; opacity: 1; }
+.manager-shell:not([data-session-state="playing"]) .touch-controller { display: none !important; }
+
+.manager-shell:not([data-session-state="playing"]) .play-toolbar, .manager-shell:not([data-session-state="playing"]) .runner-hud, .manager-shell:not([data-session-state="playing"]) .runner-ready { display: none !important; }
+.manager-shell .interaction-prompt { background: #1c2824f0; border: 1px solid #738760; box-shadow: 0 6px 20px #0003; border-radius: 16px; max-width: min(300px, calc(100% - 32px)); }
+.manager-shell .interaction-prompt__key { min-width: 44px; min-height: 44px; color: #d7e8a2; border-color: #738760; background: #293b30; font-family: inherit; touch-action: manipulation; }
+.manager-shell .interaction-prompt__copy small { color: #b9c8ad; }
+
+.manager-shell .results-panel__score small, .manager-shell .results-panel__stats span { color: #b9c8ad; }

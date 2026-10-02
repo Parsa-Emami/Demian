@@ -341,7 +341,7 @@ export default class CharacterManager {
             this.characters.map((character) => [character.slug, character])
         );
 
-        const builtins = BUILTIN_DEFINITIONS.map((definition) => {
+        const builtins = BUILTIN_DEFINITIONS.filter((definition) => BUILTIN_SLUGS.has(definition.slug)).map((definition) => {
             const builtin = cloneBuiltin(definition, this.spriteVariant);
             const existing = existingBySlug.get(builtin.slug);
 
@@ -366,9 +366,10 @@ export default class CharacterManager {
         });
 
         const customCharacters = this.characters.filter(
-            (character) => !BUILTIN_SLUGS.has(character.slug)
+            (character) => !BUILTIN_DEFINITION_SLUGS.has(character.slug) && character.sprite_url && character.atlas_url
         );
 
+        builtins.sort((a, b) => BUILTIN_CHARACTER_SLUGS.indexOf(a.slug) - BUILTIN_CHARACTER_SLUGS.indexOf(b.slug));
         this.characters = [...builtins, ...customCharacters];
     }
 

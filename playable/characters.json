@@ -1,0 +1,49 @@
+{
+  "data": [
+    {
+      "id": "builtin-darya",
+      "name": "DARYA / دریا",
+      "slug": "darya",
+      "is_builtin": true,
+      "is_active": true,
+      "sprite_url": "assets/characters/darya/darya-spritesheet-v13-mobile.png",
+      "atlas_url": "assets/characters/darya/darya-atlas-v13-mobile.json",
+      "settings": {
+        "scale": 1,
+        "walk_speed": 3.55,
+        "run_speed": 6.9,
+        "jump_force": 6.8
+      }
+    },
+    {
+      "id": "builtin-tiam",
+      "name": "TIAM / تیام",
+      "slug": "tiam",
+      "is_builtin": true,
+      "is_active": false,
+      "sprite_url": "assets/characters/tiam/tiam-spritesheet-v6-mobile.png",
+      "atlas_url": "assets/characters/tiam/tiam-atlas-v6-mobile.json",
+      "settings": {
+        "scale": 1,
+        "walk_speed": 3.55,
+        "run_speed": 6.9,
+        "jump_force": 6.8
+      }
+    },
+    {
+      "id": "builtin-ronak",
+      "name": "RONAK / روناک",
+      "slug": "ronak",
+      "is_builtin": true,
+      "is_active": false,
+      "sprite_url": "assets/characters/ronak/ronak-spritesheet-v6-mobile.png",
+      "atlas_url": "assets/characters/ronak/ronak-atlas-v6-mobile.json",
+      "settings": {
+        "scale": 1,
+        "walk_speed": 3.55,
+        "run_speed": 6.9,
+        "jump_force": 6.8
+      }
+    }
+  ]
+}

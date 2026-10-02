@@ -1,4 +1,3 @@
-const ANIME_ESM_URL = 'https://cdn.jsdelivr.net/npm/animejs@4.5.0/+esm';
 
 function resolveTargets(targets) {
     if (typeof targets === 'string') {
@@ -30,13 +29,7 @@ function toKeyframes(parameters) {
     return [from, to];
 }
 
-/**
- * Central Anime.js facade for shell and HUD motion.
- *
- * Anime.js is loaded from the pinned ESM CDN documented by Anime.js. A tiny
- * WAAPI fallback keeps the game usable if the animation CDN is unavailable.
- * Game-domain logic never imports an animation engine directly.
- */
+/** Local Web Animations API facade for shell and HUD motion. */
 export default class AnimationService {
     constructor({ reducedMotion = false } = {}) {
         this.reducedMotion = reducedMotion;
@@ -64,19 +57,8 @@ export default class AnimationService {
     }
 
     async boot() {
-        if (!this.loadPromise) {
-            this.loadPromise = import(/* @vite-ignore */ ANIME_ESM_URL)
-                .then((module) => {
-                    this.module = module;
-                    return module;
-                })
-                .catch((error) => {
-                    console.warn('Anime.js CDN was unavailable; WAAPI fallback is active.', error);
-                    return null;
-                });
-        }
-
-        return this.loadPromise;
+        // Native WAAPI keeps transitions local, including offline/static builds.
+        return null;
     }
 
     track(instance) {

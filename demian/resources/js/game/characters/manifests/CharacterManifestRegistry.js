@@ -12,13 +12,7 @@
  *     "new character onboarding" flow should read from this registry
  *     rather than from ad hoc hardcoded arrays.
  *
- * `CharacterVisualContract.js` keeps `BUILTIN_CHARACTER_SLUGS` as-is for
- * full backward compatibility with its existing consumers (SpriteCharacter,
- * FrameAnimator, ArcadeCharacterRoster, CharacterManager, PixelActorRenderer,
- * CharacterVisualService — see grep results in
- * docs/character-standards/CHARACTER_CORE_V4_IMPLEMENTATION.md), and layers
- * the production/legacy distinction on top via this registry instead of
- * removing anything those files depend on.
+ * The active roster includes only Darya, Tiam and Ronak: packs shipped in this release.
  */
 
 const MANIFEST_URL_PATH = 'assets/characters/character-manifest-v4.json';
@@ -35,19 +29,9 @@ const EMBEDDED_ROSTER_SNAPSHOT = Object.freeze({
     manifestVersion: 'v4',
     productionCharacter: 'darya',
     characters: Object.freeze([
-        Object.freeze({ slug: 'darya', productionStatus: 'gold_standard_production', isDefaultActive: true, packVersion: 12 }),
+        Object.freeze({ slug: 'darya', productionStatus: 'gold_standard_production', isDefaultActive: true, packVersion: 13 }),
         Object.freeze({ slug: 'tiam', productionStatus: 'legacy_pending_reference_rebuild', isDefaultActive: false, packVersion: 6 }),
         Object.freeze({ slug: 'ronak', productionStatus: 'legacy_pending_reference_rebuild', isDefaultActive: false, packVersion: 6 }),
-        Object.freeze({ slug: 'amirreza', productionStatus: 'legacy_pending_reference_rebuild', isDefaultActive: false, packVersion: 9 }),
-        Object.freeze({ slug: 'parsa', productionStatus: 'legacy_pending_reference_rebuild', isDefaultActive: false, packVersion: 9 }),
-        Object.freeze({ slug: 'iman', productionStatus: 'legacy_pending_reference_rebuild', isDefaultActive: false, packVersion: 9 }),
-        Object.freeze({ slug: 'uzudi', productionStatus: 'legacy_pending_reference_rebuild', isDefaultActive: false, packVersion: 9 }),
-        Object.freeze({ slug: 'setayesh', productionStatus: 'legacy_pending_reference_rebuild', isDefaultActive: false, packVersion: 9 }),
-        Object.freeze({ slug: 'mojtaba', productionStatus: 'legacy_pending_reference_rebuild', isDefaultActive: false, packVersion: 9 }),
-        Object.freeze({ slug: 'hossein', productionStatus: 'legacy_pending_reference_rebuild', isDefaultActive: false, packVersion: 9 }),
-        Object.freeze({ slug: 'arsal', productionStatus: 'legacy_pending_reference_rebuild', isDefaultActive: false, packVersion: 9 }),
-        Object.freeze({ slug: 'sorkhi', productionStatus: 'legacy_pending_reference_rebuild', isDefaultActive: false, packVersion: 9 }),
-        Object.freeze({ slug: 'taher-db', productionStatus: 'legacy_pending_reference_rebuild', isDefaultActive: false, packVersion: 9 }),
     ]),
 });
 

@@ -32,7 +32,7 @@ export const CHARACTER_PACK_VERSION = 6;
 export const CHARACTER_PACK_VERSION_OVERRIDES = Object.freeze({
     amirreza: 9,
     arsal: 9,
-    darya: 12,
+    darya: 13,
     hossein: 9,
     iman: 9,
     mojtaba: 9,
@@ -48,22 +48,8 @@ export function characterPackVersion(slug) {
     return CHARACTER_PACK_VERSION_OVERRIDES[normalizedSlug] ?? CHARACTER_PACK_VERSION;
 }
 
-export const BUILTIN_CHARACTER_SLUGS = Object.freeze([
-    'tiam',
-    'ronak',
-    'amirreza',
-    'parsa',
-    'darya',
-    'iman',
-    'uzudi',
-    'setayesh',
-    'mojtaba',
-    'hossein',
-    'arsal',
-    'sorkhi',
-    'taher-db',
-]);
-
+// Only installed, validated packs are playable. Future slots are not roster entries.
+export const BUILTIN_CHARACTER_SLUGS = Object.freeze(['darya', 'tiam', 'ronak']);
 export const CHARACTER_SPRITE_VARIANTS = Object.freeze([
     'desktop',
     'mobile',

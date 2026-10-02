@@ -13,7 +13,7 @@ test('legacy OpenWorld manifest creates deterministic café-only spatial data', 
     assert.deepEqual(first, second);
     assert.equal(first.length, 14);
     assert.equal(new Set(first.map((cabinet) => cabinet.id)).size, first.length);
-    assert.ok(first.some((cabinet) => cabinet.gameId === 'tetris'));
+    assert.deepEqual([...new Set(first.map(c => c.gameId))].sort(), ['dino-run','open-world']);
     const manifest = createOpenWorldCollisionManifest(first);
     assert.equal(manifest.staticColliders.length, CAFE_STATIC_COLLIDERS.length + first.length);
     assert.equal(manifest.triggers.length, OPEN_WORLD_DISTRICTS.length);

@@ -129,6 +129,15 @@ export const INPUT_CONTEXTS = Object.freeze({
         }),
     }),
 
+    DINO_RUN: Object.freeze({
+        actions: Object.freeze({
+            jump: pressed('space', 'arrowup', 'w', 'jump'),
+            jumpHeld: held('space', 'arrowup', 'w', 'jumpHeld'),
+            duck: held('arrowdown', 's', 'duck'),
+            pause: pressed('escape', 'pause'),
+        }),
+    }),
+
     TETRIS: Object.freeze({
         actions: Object.freeze({
             moveLeft: held('arrowleft', 'a', 'left'),
