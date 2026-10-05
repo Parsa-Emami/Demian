@@ -1,0 +1,20 @@
+{
+  "character_key": "uzudi",
+  "pack_version": 14,
+  "status": "validated_in_emulated_browser",
+  "checks": {
+    "asset_geometry": "passed",
+    "all_variants": true,
+    "packed_frames_per_variant": 672,
+    "runtime_selection": "passed",
+    "touch_slide_under_bird": "passed",
+    "keyboard_jump": "passed",
+    "shared_game_selection": "passed"
+  },
+  "evidence": "../../../../../docs/release-v14/QA.fa.md",
+  "limitations": [
+    "Physical phone GPU/FPS/battery not measured",
+    "Laravel runtime tests not executed; static PHP syntax checked"
+  ],
+  "date": "2026-10-04"
+}

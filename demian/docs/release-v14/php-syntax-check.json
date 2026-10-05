@@ -1,0 +1,8 @@
+{
+  "check": "PHP static syntax parser",
+  "parserVersion": "3.7.0",
+  "files": 57,
+  "status": "passed",
+  "failures": [],
+  "runtimeTests": "not run: PHP executable unavailable"
+}

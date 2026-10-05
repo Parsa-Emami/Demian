@@ -1,6 +1,6 @@
 /** MIT — deterministic, renderer-independent endless runner. All units are logical pixels. */
 export const RUNNER_CONFIG = Object.freeze({ playerX: 86, bodyWidth: 28, bodyHeight: 58,
-    duckHeight: 25, gravity: 1750, jumpSpeed: 650, startSpeed: 245, maxSpeed: 480 });
+    duckHeight: 35, birdAltitude: 46, gravity: 1750, jumpSpeed: 650, startSpeed: 245, maxSpeed: 480 });
 export function seededRandom(seed = 1) {
     let value = Number(seed) >>> 0;
     return () => { value = (Math.imul(value, 1664525) + 1013904223) >>> 0; return value / 4294967296; };
@@ -28,7 +28,7 @@ export default class DinoRunModel {
         const h = bird ? 22 : tall ? 52 : 36;
         this.obstacles.push({ id: this.nextId++, type: bird ? 'bird' : 'cactus',
             x: this.width + 65, previousX: this.width + 65,
-            y: bird ? 34 : 0, w: bird ? 40 : tall ? 26 : 21, h, scored: false });
+            y: bird ? RUNNER_CONFIG.birdAltitude : 0, w: bird ? 40 : tall ? 26 : 21, h, scored: false });
         // At top speed the player still has over one complete jump cycle between obstacles.
         this.spawnIn = 1.05 + this.random() * .72;
     }
@@ -43,7 +43,7 @@ export default class DinoRunModel {
         }
         if (input.jump) this.jumpBuffer = .13;
         else this.jumpBuffer = Math.max(0, this.jumpBuffer - dt);
-        this.duck = Boolean(input.duck) && this.y === 0;
+        this.duck = Boolean(input.duck || input.slide) && this.y === 0;
         this.landingTime = Math.max(0, this.landingTime - dt);
         if (this.jumpBuffer > 0 && this.y === 0 && !this.duck) {
             this.vy = RUNNER_CONFIG.jumpSpeed; this.jumpBuffer = 0; this.landingTime = 0;
@@ -52,7 +52,10 @@ export default class DinoRunModel {
             const extraGravity = this.vy > 0 && !input.jumpHeld ? 1350 : 0;
             this.vy -= (RUNNER_CONFIG.gravity + extraGravity) * dt;
             this.y += this.vy * dt;
-            if (this.y <= 0) { this.y = 0; this.vy = 0; this.landingTime = .16; }
+            if (this.y <= 0) {
+                this.y = 0; this.vy = 0; this.landingTime = .16;
+                this.duck = Boolean(input.duck || input.slide);
+            }
         }
         this.time += dt;
         this.speed = Math.min(RUNNER_CONFIG.maxSpeed, RUNNER_CONFIG.startSpeed + this.time * 3);

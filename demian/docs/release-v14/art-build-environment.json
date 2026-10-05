@@ -1,0 +1,10 @@
+{
+  "Python": "3.12.14",
+  "Pillow": "12.3.0",
+  "numpy": "2.3.5",
+  "scipy": "1.17.0",
+  "opencv-python-headless": "5.0.0",
+  "workCell": 224,
+  "flowThreads": 4,
+  "artBuild": "offline from shipped RGBA masters"
+}

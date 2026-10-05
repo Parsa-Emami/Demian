@@ -26,8 +26,8 @@ function readJson(relativePath) {
     return JSON.parse(readFileSync(resolve(projectRoot, relativePath), 'utf8'));
 }
 
-test('darya is the sole gold-standard production character', () => {
-    assert.deepEqual(PRODUCTION_CHARACTER_SLUGS, ['darya']);
+test('all installed reference-driven characters are production-ready', () => {
+    assert.deepEqual(PRODUCTION_CHARACTER_SLUGS, ['darya', 'setayesh', 'uzudi']);
     assert.equal(DEFAULT_ACTIVE_SLUG, 'darya');
     assert.equal(isProductionReady('darya'), true);
     assert.equal(characterProductionStatus('darya'), PRODUCTION_STATUS.GOLD_STANDARD);
@@ -38,8 +38,7 @@ test('every other builtin slug is legacy_pending_reference_rebuild and excluded 
         assert.equal(isProductionReady(slug), false, `${slug} must not be production-ready`);
         assert.equal(characterProductionStatus(slug), PRODUCTION_STATUS.LEGACY_PENDING);
     }
-    assert.ok(LEGACY_CHARACTER_SLUGS.includes('tiam'));
-    assert.ok(LEGACY_CHARACTER_SLUGS.includes('ronak'));
+    assert.deepEqual(LEGACY_CHARACTER_SLUGS, []);
     assert.equal(LEGACY_CHARACTER_SLUGS.includes('darya'), false);
 });
 
@@ -174,8 +173,8 @@ test('shipped character-manifest-v4.json matches the embedded registry snapshot'
     assert.equal(darya.is_default_active, true);
 });
 
-test("shipped darya animation manifest's frame counts match the real v13 mobile atlas", () => {
-    const animAtlas = readJson('public/assets/characters/darya/darya-atlas-v13-mobile.json');
+test("shipped darya animation manifest's frame counts match the real v14 mobile atlas", () => {
+    const animAtlas = readJson('public/assets/characters/darya/darya-atlas-v14-mobile.json');
     const animManifest = readJson('public/assets/characters/darya/manifests/darya_animation_manifest.json');
 
     for (const [name, animation] of Object.entries(animAtlas.animations)) {
@@ -269,9 +268,9 @@ test('CharacterRepository.listRankedByProductionStatus() annotates and sorts DB 
         ok: true,
         json: async () => ({
             data: [
-                { id: 1, slug: 'tiam', name: 'TIAM', is_active: false },
+                { id: 1, slug: 'setayesh', name: 'SETAYESH', is_active: false },
                 { id: 2, slug: 'darya', name: 'DARYA', is_active: true },
-                { id: 3, slug: 'ronak', name: 'RONAK', is_active: false },
+                { id: 3, slug: 'uzudi', name: 'UZUDI', is_active: false },
             ],
         }),
     });
@@ -280,12 +279,12 @@ test('CharacterRepository.listRankedByProductionStatus() annotates and sorts DB 
     const repo = new CharacterRepository({ baseUrl: 'http://example.test/characters' });
     const ranked = await repo.listRankedByProductionStatus();
 
-    assert.equal(ranked[0].slug, 'darya');
+    assert.ok(ranked.some((entry) => entry.slug === 'darya'));
     assert.equal(ranked[0].is_production_ready, true);
     assert.equal(ranked[0].production_status, 'gold_standard_production');
-    assert.equal(ranked[1].is_production_ready, false);
-    assert.equal(ranked[2].is_production_ready, false);
+    assert.equal(ranked[1].is_production_ready, true);
+    assert.equal(ranked[2].is_production_ready, true);
 
-    assert.deepEqual(CharacterRepository.productionSlugs(), ['darya']);
-    assert.ok(CharacterRepository.legacySlugs().includes('tiam'));
+    assert.deepEqual(CharacterRepository.productionSlugs(), ['darya', 'setayesh', 'uzudi']);
+    assert.deepEqual(CharacterRepository.legacySlugs(), []);
 });

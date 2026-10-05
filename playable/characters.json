@@ -6,8 +6,8 @@
       "slug": "darya",
       "is_builtin": true,
       "is_active": true,
-      "sprite_url": "assets/characters/darya/darya-spritesheet-v13-mobile.png",
-      "atlas_url": "assets/characters/darya/darya-atlas-v13-mobile.json",
+      "sprite_url": "assets/characters/darya/darya-spritesheet-v14-mobile.png",
+      "atlas_url": "assets/characters/darya/darya-atlas-v14-mobile.json",
       "settings": {
         "scale": 1,
         "walk_speed": 3.55,
@@ -16,13 +16,13 @@
       }
     },
     {
-      "id": "builtin-tiam",
-      "name": "TIAM / تیام",
-      "slug": "tiam",
+      "id": "builtin-setayesh",
+      "name": "SETAYESH / ستایش",
+      "slug": "setayesh",
       "is_builtin": true,
       "is_active": false,
-      "sprite_url": "assets/characters/tiam/tiam-spritesheet-v6-mobile.png",
-      "atlas_url": "assets/characters/tiam/tiam-atlas-v6-mobile.json",
+      "sprite_url": "assets/characters/setayesh/setayesh-spritesheet-v14-mobile.png",
+      "atlas_url": "assets/characters/setayesh/setayesh-atlas-v14-mobile.json",
       "settings": {
         "scale": 1,
         "walk_speed": 3.55,
@@ -31,13 +31,13 @@
       }
     },
     {
-      "id": "builtin-ronak",
-      "name": "RONAK / روناک",
-      "slug": "ronak",
+      "id": "builtin-uzudi",
+      "name": "UZUDI / اوزودی",
+      "slug": "uzudi",
       "is_builtin": true,
       "is_active": false,
-      "sprite_url": "assets/characters/ronak/ronak-spritesheet-v6-mobile.png",
-      "atlas_url": "assets/characters/ronak/ronak-atlas-v6-mobile.json",
+      "sprite_url": "assets/characters/uzudi/uzudi-spritesheet-v14-mobile.png",
+      "atlas_url": "assets/characters/uzudi/uzudi-atlas-v14-mobile.json",
       "settings": {
         "scale": 1,
         "walk_speed": 3.55,

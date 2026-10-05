@@ -1,0 +1,8 @@
+{
+  "status": "passed",
+  "tests": 254,
+  "passed": 254,
+  "failed": 0,
+  "skipped": 0,
+  "command": "npm run test:js"
+}

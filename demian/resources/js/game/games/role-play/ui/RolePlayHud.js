@@ -94,7 +94,7 @@ export default class RolePlayHud {
         this.refs.time.textContent = snapshot.session.timeLabel;
         this.refs.coins.textContent = String(snapshot.inventory.coins);
         this.refs.count.textContent = String(snapshot.quests.active.length);
-        this.refs.rel.textContent = (snapshot.relationships.ranks.tiam ?? 'neutral').toUpperCase();
+        this.refs.rel.textContent = (snapshot.relationships.ranks.setayesh ?? 'neutral').toUpperCase();
         const quest = snapshot.quests.active[0];
         const objective = quest?.objectives.find((item) => item.unlocked && !item.complete);
         this.refs.objective.textContent = objective?.title ?? 'آزادانه کافه را کشف کن.';

@@ -32,15 +32,15 @@ export const CHARACTER_PACK_VERSION = 6;
 export const CHARACTER_PACK_VERSION_OVERRIDES = Object.freeze({
     amirreza: 9,
     arsal: 9,
-    darya: 13,
+    darya: 14,
     hossein: 9,
     iman: 9,
     mojtaba: 9,
     parsa: 9,
-    setayesh: 9,
+    setayesh: 14,
     sorkhi: 9,
     'taher-db': 9,
-    uzudi: 9,
+    uzudi: 14,
 });
 
 export function characterPackVersion(slug) {
@@ -49,7 +49,12 @@ export function characterPackVersion(slug) {
 }
 
 // Only installed, validated packs are playable. Future slots are not roster entries.
-export const BUILTIN_CHARACTER_SLUGS = Object.freeze(['darya', 'tiam', 'ronak']);
+export const BUILTIN_CHARACTER_SLUGS = Object.freeze(['darya', 'setayesh', 'uzudi']);
+// Retired save/API entries must never re-enter the playable roster.
+export const RETIRED_CHARACTER_SLUGS = Object.freeze(['tiam', 'ronak']);
+export function isRetiredCharacter(slug) {
+    return RETIRED_CHARACTER_SLUGS.includes(String(slug ?? '').trim().toLowerCase());
+}
 export const CHARACTER_SPRITE_VARIANTS = Object.freeze([
     'desktop',
     'mobile',
@@ -125,6 +130,10 @@ export function builtinCharacterAssetPair(slug, variant = 'mobile', baseUrl = gl
         ),
         variant: normalizedVariant,
     });
+}
+
+export function builtinCharacterPreviewUrl(slug, baseUrl = globalThis.document?.baseURI) {
+    return resolveCharacterAssetUrl(`assets/characters/${slug}/${slug}-preview-v${characterPackVersion(slug)}.png`, baseUrl);
 }
 
 function clamp(value, min, max, fallback) {

@@ -3,7 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Character;
-use Database\Seeders\TiamCharacterSeeder;
+use Database\Seeders\BuiltinCharacterSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -23,7 +23,7 @@ class CharacterManagerTest extends TestCase
 
     public function test_all_builtin_characters_can_be_seeded_and_listed(): void
     {
-        $this->seed(TiamCharacterSeeder::class);
+        $this->seed(BuiltinCharacterSeeder::class);
 
         $response = $this->getJson('/characters')
             ->assertOk()
@@ -32,24 +32,14 @@ class CharacterManagerTest extends TestCase
             // database/seeders/BuiltinCharacterSeeder.php and
             // docs/character-standards/CHARACTER_CORE_V4_IMPLEMENTATION.md).
             // CharacterController::index() orders by is_active desc first,
-            // so the active character — now darya, not tiam — is data.0.
+            // so the active character — Darya — is data.0.
             ->assertJsonPath('data.0.slug', 'darya')
             ->assertJsonPath('data.0.is_active', true);
 
         foreach ([
-            ['tiam', 'TIAM / تیام'],
-            ['ronak', 'RONAK / روناک'],
-            ['amirreza', 'AMIRREZA / امیررضا'],
-            ['parsa', 'PARSA / پارسا'],
             ['darya', 'DARYA / دریا'],
-            ['iman', 'IMAN / ایمان'],
-            ['uzudi', 'UZUDI / اوزودی'],
             ['setayesh', 'SETAYESH / ستایش'],
-            ['mojtaba', 'MOJTABA / مجتبی'],
-            ['hossein', 'HOSSEIN / حسین'],
-            ['arsal', 'ARSAL / ارسل'],
-            ['sorkhi', 'SORKHI / سرخی'],
-            ['taher-db', 'TAHER DB / طاهر DB'],
+            ['uzudi', 'UZUDI / اوزودی'],
         ] as [$slug, $name]) {
             $response->assertJsonFragment([
                 'slug' => $slug,
@@ -59,21 +49,7 @@ class CharacterManagerTest extends TestCase
         }
 
         // Updated asset pack versions
-        $packVersions = [
-            'tiam' => 6,
-            'ronak' => 6,
-            'amirreza' => 9,
-            'parsa' => 9,
-            'darya' => 12,
-            'iman' => 9,
-            'uzudi' => 9,
-            'setayesh' => 9,
-            'mojtaba' => 9,
-            'hossein' => 9,
-            'arsal' => 9,
-            'sorkhi' => 9,
-            'taher-db' => 9,
-        ];
+        $packVersions = ['darya' => 14, 'setayesh' => 14, 'uzudi' => 14];
 
         foreach ($packVersions as $slug => $version) {
             $response->assertJsonFragment([

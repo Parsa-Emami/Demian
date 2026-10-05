@@ -29,17 +29,29 @@ class Character extends Model
         ];
     }
 
+    private function bundledPath(string $kind): ?string
+    {
+        if (!$this->is_builtin) return null;
+        $entry = (new \App\Services\Characters\CharacterIdentityService())->characterEntry((string) $this->slug);
+        if ($entry === null) return null;
+        $slug = $entry['slug'];
+        $version = (int) $entry['pack_version'];
+        return $kind === 'atlas'
+            ? "assets/characters/{$slug}/{$slug}-atlas-v{$version}-mobile.json"
+            : "assets/characters/{$slug}/{$slug}-spritesheet-v{$version}-mobile.png";
+    }
+
     public function spriteUrl(): string
     {
         return $this->is_builtin
-            ? asset($this->sprite_sheet_path)
+            ? asset($this->bundledPath('sprite') ?? $this->sprite_sheet_path)
             : Storage::disk('public')->url($this->sprite_sheet_path);
     }
 
     public function atlasUrl(): string
     {
         return $this->is_builtin
-            ? asset($this->atlas_path)
+            ? asset($this->bundledPath('atlas') ?? $this->atlas_path)
             : Storage::disk('public')->url($this->atlas_path);
     }
 

@@ -109,7 +109,7 @@ class CharacterAssetService
         // versioning the key avoids serving stale pre-V4 payloads out of an
         // existing cache for up to an hour after this deploy.
         return Cache::remember(
-            "char_manifest_v4_{$characterId}_{$deviceType}",
+            "char_manifest_v14_{$characterId}_{$deviceType}",
             3600,
             function () use ($characterId, $deviceType): array {
                 $character = Character::findOrFail($characterId);
@@ -178,17 +178,15 @@ class CharacterAssetService
         // art pack so stale asset_pack_version values cannot keep an older
         // sprite sheet active after this patch is copied into an existing DB.
         $bundledVersion = match ($slug) {
-            'darya' => 12,
+            'darya', 'setayesh', 'uzudi' => 14,
             'amirreza',
             'arsal',
             'hossein',
             'iman',
             'mojtaba',
             'parsa',
-            'setayesh',
             'sorkhi',
-            'taher-db',
-            'uzudi' => 9,
+            'taher-db' => 9,
             default => null,
         };
 
@@ -203,10 +201,7 @@ class CharacterAssetService
             return $configured;
         }
 
-        return match ($slug) {
-            'ronak', 'tiam' => 6,
-            default => 5,
-        };
+        return 5;
     }
 
     protected function customDirectory(string $slug): string
@@ -217,6 +212,7 @@ class CharacterAssetService
     protected function clearCharacterCache(int $characterId): void
     {
         foreach (['desktop', 'mobile', 'compact'] as $deviceType) {
+            Cache::forget("char_manifest_v14_{$characterId}_{$deviceType}");
             Cache::forget("char_manifest_v4_{$characterId}_{$deviceType}");
             Cache::forget("char_manifest_{$characterId}_{$deviceType}");
             Cache::forget("character_manifest_{$characterId}_{$deviceType}");

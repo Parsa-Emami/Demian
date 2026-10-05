@@ -49,7 +49,7 @@
     </script>
 
     <link rel="stylesheet" href="build/assets/app-Bvs4DIL4.css">
-<script type="module" src="build/assets/app-Th7PG4yR.js"></script>
+<script type="module" src="build/assets/app-WAH-cJs5.js"></script>
 </head>
 
 <body class="min-h-full bg-[#050610] text-white">
@@ -61,7 +61,7 @@
         data-event-api-base="api/v1/events"
         data-sidebar-state="collapsed"
         data-mobile-actions="collapsed"
-        data-runtime-version="13.0.0-mobile-runner"
+        data-runtime-version="14.0.0-mobile-runner"
         data-deployment-mode="atomic-bundle"
         data-session-state="booting"
         data-game-orientation="auto"
@@ -118,7 +118,7 @@
                                 </p>
                             </div>
 
-                            <span class="arcade-badge">13</span>
+                            <span class="arcade-badge">14</span>
                         </div>
 
                         <div class="mt-4 manager-brand__chip-row">
@@ -634,13 +634,8 @@
                     <p><b class="text-white">WASD</b> 8-way move</p>
                     <p><b class="text-white">Shift</b> sprint</p>
                     <p><b class="text-white">Space</b> jump</p>
-                    <p><b class="text-white">K / L</b> salute / guitar</p>
-                    <p><b class="text-white">X / U</b> dash / dodge</p>
-                    <p><b class="text-white">Q / O</b> win / celebrate</p>
-                    <p><b class="text-white">C / V</b> dance / wave</p>
-                    <p><b class="text-white">Z / G</b> spin / crouch</p>
-                    <p><b class="text-white">B / N</b> laugh / pose</p>
-                    <p><b class="text-white">T / Y</b> sleep / taunt</p>
+                    <p><b class="text-white">↓ / G</b> slide</p>
+                    <p><b class="text-white">O / V</b> celebrate / wave</p>
                     <p><b class="text-white">H</b> random speech</p>
                     <p><b class="text-white">Enter</b> interact</p>
                     <p><b class="text-white">F / R</b> camera / focus</p>
@@ -673,19 +668,10 @@
                         class="mobile-action-tray"
                         aria-hidden="true"
                     >
-                        <button type="button" data-input-press="guitar" class="touch-action touch-action--mini">GUITAR</button>
-                        <button type="button" data-input-press="salute" class="touch-action touch-action--mini">SALUTE</button>
-                        <button type="button" data-input-press="laugh" class="touch-action touch-action--mini">LAUGH</button>
-                        <button type="button" data-input-press="dodge" class="touch-action touch-action--mini">DODGE</button>
-                        <button type="button" data-input-press="slide" class="touch-action touch-action--mini">SLIDE</button>
-                        <button type="button" data-input-press="win" class="touch-action touch-action--mini">WIN</button>
-                        <button type="button" data-input-press="celebrate" class="touch-action touch-action--mini">PARTY</button>
-                        <button type="button" data-input-press="dance" class="touch-action touch-action--mini">DANCE</button>
-                        <button type="button" data-input-press="pose" class="touch-action touch-action--mini">POSE</button>
-                        <button type="button" data-input-press="spin" class="touch-action touch-action--mini">SPIN</button>
-                        <button type="button" data-input-press="speak" class="touch-action touch-action--mini touch-action--speak">SAY</button>
+                        <button type="button" data-input-press="slide" class="touch-action touch-action--mini">اسلاید</button>
+                        <button type="button" data-input-press="celebrate" class="touch-action touch-action--mini">شادی</button>
+                        <button type="button" data-input-press="speak" class="touch-action touch-action--mini touch-action--speak">گفتگو</button>
                         <button type="button" data-input-press="quickSave" class="touch-action touch-action--mini">ذخیره</button>
-                        <button type="button" data-input-press="taunt" class="touch-action touch-action--mini">TAUNT</button>
                     </div>
 
                     <div class="touch-controller__actions" aria-label="اکشن‌های اصلی">
@@ -700,9 +686,6 @@
                         </button>
                         <button type="button" data-input-press="wave" class="touch-action touch-action--emote touch-action--primary">
                             <span>سلام</span><small>✦</small>
-                        </button>
-                        <button type="button" data-input-press="dash" class="touch-action touch-action--dash">
-                            <span>جهش</span><small>»</small>
                         </button>
                         <button
                             type="button"
@@ -726,7 +709,7 @@
             </nav>
             <section data-gameplay-ui data-control-surface="dino-run" data-ui-layer="controls" class="runner-controls" dir="rtl" aria-label="کنترل‌های رانر">
                 <button type="button" data-input-press="jump" data-input-hold="jumpHeld" class="runner-controls__jump"><b aria-hidden="true">↗</b><span>پرش</span><small>نگه‌دار: بلندتر</small></button>
-                <button type="button" data-input-hold="duck" class="runner-controls__duck"><b aria-hidden="true">↓</b><span>خم‌شدن</span></button>
+                <button type="button" data-input-hold="duck" class="runner-controls__duck"><b aria-hidden="true">↓</b><span>اسلاید</span></button>
             </section>
 
             <div data-orientation-hint data-ui-layer="stage-system" class="orientation-hint" aria-hidden="true">

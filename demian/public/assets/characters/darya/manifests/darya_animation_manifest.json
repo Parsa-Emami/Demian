@@ -1,204 +1,122 @@
 {
-  "$schema": "../../../../../schemas/animation_manifest.schema.json",
   "character_key": "darya",
-  "manifest_version": "v4",
+  "pack_version": 14,
   "source_atlas": {
-    "pack_version": 13,
+    "pack_version": 14,
     "files": [
-      "darya-atlas-v13-desktop.json",
-      "darya-atlas-v13-mobile.json",
-      "darya-atlas-v13-compact.json"
-    ],
-    "note": "Generated together with V13; 456 packed frames, some semantic states share cycles."
+      "darya-atlas-v14-desktop.json",
+      "darya-atlas-v14-mobile.json",
+      "darya-atlas-v14-compact.json"
+    ]
   },
-  "frame_base": "192x192",
   "grid": {
     "columns": 24,
-    "rows": 19
+    "rows": 28
   },
-  "directions": [
-    "s",
-    "sw",
-    "w",
-    "nw",
-    "n",
-    "ne",
-    "e",
-    "se"
-  ],
-  "combat_animations_removed": true,
+  "variant_frame_size": {
+    "desktop": {
+      "w": 144,
+      "h": 144
+    },
+    "mobile": {
+      "w": 112,
+      "h": 112
+    },
+    "compact": {
+      "w": 80,
+      "h": 80
+    }
+  },
   "states": {
     "idle": {
-      "frames": 32,
-      "fps": 32,
+      "frames": 40,
+      "fps": 24,
       "loop": true
     },
     "breathe": {
-      "frames": 32,
-      "fps": 32,
+      "frames": 40,
+      "fps": 24,
       "loop": true
     },
     "blink": {
-      "frames": 32,
-      "fps": 32,
+      "frames": 40,
+      "fps": 24,
       "loop": true
     },
     "ready": {
-      "frames": 32,
-      "fps": 32,
+      "frames": 40,
+      "fps": 24,
       "loop": true
     },
     "walk": {
-      "frames": 48,
-      "fps": 48,
-      "loop": true
-    },
-    "tiptoe": {
-      "frames": 48,
-      "fps": 36,
+      "frames": 64,
+      "fps": 72,
       "loop": true
     },
     "run": {
-      "frames": 64,
-      "fps": 64,
+      "frames": 80,
+      "fps": 96,
       "loop": true
     },
     "sprint": {
-      "frames": 64,
-      "fps": 72,
+      "frames": 80,
+      "fps": 112,
       "loop": true
     },
-    "jump": {
-      "frames": 32,
-      "fps": 60,
+    "takeoff": {
+      "frames": 16,
+      "fps": 96,
       "loop": false
     },
-    "takeoff": {
-      "frames": 32,
-      "fps": 72,
+    "jump": {
+      "frames": 16,
+      "fps": 32,
       "loop": false
     },
     "fall": {
-      "frames": 32,
-      "fps": 48,
-      "loop": true
-    },
-    "hover": {
-      "frames": 32,
-      "fps": 40,
-      "loop": true
+      "frames": 16,
+      "fps": 64,
+      "loop": false
     },
     "land": {
-      "frames": 16,
-      "fps": 60,
-      "loop": false
-    },
-    "hop": {
-      "frames": 16,
-      "fps": 60,
-      "loop": false
-    },
-    "dash": {
-      "frames": 64,
-      "fps": 80,
-      "loop": true
-    },
-    "skid": {
-      "frames": 64,
-      "fps": 48,
+      "frames": 24,
+      "fps": 150,
       "loop": false
     },
     "slide": {
       "frames": 64,
-      "fps": 48,
-      "loop": false
+      "fps": 80,
+      "loop": true
     },
-    "dodge": {
-      "frames": 16,
-      "fps": 60,
+    "crouch": {
+      "frames": 1,
+      "fps": 1,
       "loop": false
     },
     "turn": {
       "frames": 8,
-      "fps": 24,
+      "fps": 12,
       "loop": false
-    },
-    "win": {
-      "frames": 32,
-      "fps": 32,
-      "loop": true
-    },
-    "celebrate": {
-      "frames": 32,
-      "fps": 40,
-      "loop": true
-    },
-    "dance": {
-      "frames": 32,
-      "fps": 48,
-      "loop": true
     },
     "wave": {
       "frames": 32,
       "fps": 32,
-      "loop": true
-    },
-    "salute": {
-      "frames": 32,
-      "fps": 32,
       "loop": false
     },
-    "laugh": {
-      "frames": 32,
-      "fps": 32,
-      "loop": true
+    "celebrate": {
+      "frames": 64,
+      "fps": 64,
+      "loop": false
     },
-    "pose": {
-      "frames": 32,
-      "fps": 32,
-      "loop": true
-    },
-    "crouch": {
-      "frames": 32,
-      "fps": 32,
-      "loop": true
-    },
-    "spin": {
-      "frames": 32,
-      "fps": 32,
-      "loop": true
-    },
-    "sleep": {
-      "frames": 32,
-      "fps": 16,
-      "loop": true
-    },
-    "taunt": {
-      "frames": 32,
-      "fps": 32,
-      "loop": true
+    "win": {
+      "frames": 64,
+      "fps": 48,
+      "loop": false
     },
     "companion": {
-      "frames": 32,
-      "fps": 32,
+      "frames": 40,
+      "fps": 24,
       "loop": true
-    }
-  },
-  "smoothness_priority": "critical",
-  "identity_drift_tolerance": "zero",
-  "pack_version": 13,
-  "variant_frame_size": {
-    "desktop": {
-      "w": 192,
-      "h": 192
-    },
-    "mobile": {
-      "w": 128,
-      "h": 128
-    },
-    "compact": {
-      "w": 96,
-      "h": 96
     }
   }
 }

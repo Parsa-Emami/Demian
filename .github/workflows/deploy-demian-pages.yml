@@ -31,7 +31,7 @@ jobs:
       - run: npm run test:ci
       - run: npm run validate:final
       - run: npm run validate:ui-layers
-      - run: npm run validate:darya:v13
+      - run: npm run validate:characters:v14
       - run: npm run build:static
       # Expected one atomic JavaScript bundle; bundle_mode: atomic
       - run: npm run validate:build

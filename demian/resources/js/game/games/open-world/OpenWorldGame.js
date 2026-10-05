@@ -542,6 +542,7 @@ export default class OpenWorldGame extends BaseGame {
 
     resize({ reframe = true } = {}) {
         if (!this.context?.renderer || !this.cameraController) return { width: 1, height: 1 };
+        this.context.renderer.setPresentationMode('smooth', { maxPixelRatio: this.maxPixelRatio });
         const { width, height } = this.context.renderer.resize(this.pixelRatio);
         this.cameraController.resize(width, height);
         this.pixelRenderer?.resize();

@@ -1,56 +1,60 @@
-[
-  {
-    "cmd": "php -l demian/database/seeders/BuiltinCharacterSeeder.php",
-    "returncode": 0,
-    "stdout": "No syntax errors detected in demian/database/seeders/BuiltinCharacterSeeder.php\n",
-    "stderr": ""
+{
+  "release": "14.0.0-mobile-runner",
+  "date": "2026-10-04",
+  "status": "passed_with_documented_runtime_limits",
+  "checks": {
+    "javascript": {
+      "status": "passed",
+      "tests": 254,
+      "passed": 254,
+      "failed": 0,
+      "skipped": 0,
+      "command": "npm run test:js"
+    },
+    "character_assets": {
+      "status": "passed",
+      "variants": 9,
+      "packed_frames": 6048
+    },
+    "browser": {
+      "status": "passed",
+      "viewport_count": 5,
+      "runtime_errors": 0,
+      "failed_requests": 0
+    },
+    "build": {
+      "status": "passed",
+      "mode": "atomic",
+      "javascript_bundle_count": 1
+    },
+    "release_contract": {
+      "status": "passed",
+      "javascript_files": 313,
+      "active_games": 2,
+      "installed_characters": 3
+    },
+    "ui_layers": {
+      "status": "passed",
+      "tokens": 21,
+      "layers": 21,
+      "source_files": 212
+    },
+    "php_syntax": {
+      "check": "PHP static syntax parser",
+      "parserVersion": "3.7.0",
+      "files": 57,
+      "status": "passed",
+      "failures": [],
+      "runtimeTests": "not run: PHP executable unavailable"
+    },
+    "protected_configuration": {
+      "status": "passed",
+      "files_checked": 6,
+      "environment_migrations_identical_to_input": true
+    }
   },
-  {
-    "cmd": "php -l demian/database/seeders/DatabaseSeeder.php",
-    "returncode": 0,
-    "stdout": "No syntax errors detected in demian/database/seeders/DatabaseSeeder.php\n",
-    "stderr": ""
-  },
-  {
-    "cmd": "php -l demian/database/seeders/SetayeshCharacterSeeder.php",
-    "returncode": 0,
-    "stdout": "No syntax errors detected in demian/database/seeders/SetayeshCharacterSeeder.php\n",
-    "stderr": ""
-  },
-  {
-    "cmd": "php -l demian/app/Services/Characters/CharacterAssetService.php",
-    "returncode": 0,
-    "stdout": "No syntax errors detected in demian/app/Services/Characters/CharacterAssetService.php\n",
-    "stderr": ""
-  },
-  {
-    "cmd": "php -l demian/tests/Feature/CharacterManagerTest.php",
-    "returncode": 0,
-    "stdout": "No syntax errors detected in demian/tests/Feature/CharacterManagerTest.php\n",
-    "stderr": ""
-  },
-  {
-    "cmd": "node --check demian/resources/js/game/characters/CharacterVisualContract.js",
-    "returncode": 0,
-    "stdout": "",
-    "stderr": ""
-  },
-  {
-    "cmd": "/opt/pyvenv/bin/python -m py_compile apply_latest_c938504_hotfix.py",
-    "returncode": 0,
-    "stdout": "",
-    "stderr": "Spreadsheet runtime warmup failed during python startup\nTraceback (most recent call last):\n  File \"/tmp/tmp.L2TH2Y5coc/artifact_tool_v2-2.8.22/artifact_tool/patches/warm_spreadsheet_runtime_on_startup.py\", line 26, in warm_spreadsheet_runtime_on_startup\n  File \"/tmp/tmp.L2TH2Y5coc/artifact_tool_v2-2.8.22/artifact_tool/spreadsheet_warmup.py\", line 785, in warm_spreadsheet_runtime\n  File \"/tmp/tmp.L2TH2Y5coc/artifact_tool_v2-2.8.22/artifact_tool/spreadsheet_warmup.py\", line 720, in _warm_feature_flows\n  File \"/tmp/tmp.L2TH2Y5coc/artifact_tool_v2-2.8.22/artifact_tool/spreadsheet_warmup.py\", line 704, in _warm_collaboration_flows\n  File \"/tmp/tmp.L2TH2Y5coc/artifact_tool_v2-2.8.22/artifact_tool/generated/interface/models.py\", line 32317, in hydrate_crdt_from_proto\n  File \"/tmp/tmp.L2TH2Y5coc/artifact_tool_v2-2.8.22/artifact_tool/rpc/remote.py\", line 749, in __call__\n  File \"/tmp/tmp.L2TH2Y5coc/artifact_tool_v2-2.8.22/artifact_tool/rpc/client.py\", line 150, in call\nartifact_tool.rpc.client.RemoteError: hydrateCrdtFromProto requires an empty collaborative document.\n"
-  },
-  {
-    "cmd": "/opt/pyvenv/bin/python -m py_compile demian/tools/audit_character_sprite_packs.py",
-    "returncode": 0,
-    "stdout": "",
-    "stderr": "Spreadsheet runtime warmup failed during python startup\nTraceback (most recent call last):\n  File \"/tmp/tmp.L2TH2Y5coc/artifact_tool_v2-2.8.22/artifact_tool/patches/warm_spreadsheet_runtime_on_startup.py\", line 26, in warm_spreadsheet_runtime_on_startup\n  File \"/tmp/tmp.L2TH2Y5coc/artifact_tool_v2-2.8.22/artifact_tool/spreadsheet_warmup.py\", line 785, in warm_spreadsheet_runtime\n  File \"/tmp/tmp.L2TH2Y5coc/artifact_tool_v2-2.8.22/artifact_tool/spreadsheet_warmup.py\", line 720, in _warm_feature_flows\n  File \"/tmp/tmp.L2TH2Y5coc/artifact_tool_v2-2.8.22/artifact_tool/spreadsheet_warmup.py\", line 704, in _warm_collaboration_flows\n  File \"/tmp/tmp.L2TH2Y5coc/artifact_tool_v2-2.8.22/artifact_tool/generated/interface/models.py\", line 32317, in hydrate_crdt_from_proto\n  File \"/tmp/tmp.L2TH2Y5coc/artifact_tool_v2-2.8.22/artifact_tool/rpc/remote.py\", line 749, in __call__\n  File \"/tmp/tmp.L2TH2Y5coc/artifact_tool_v2-2.8.22/artifact_tool/rpc/client.py\", line 150, in call\nartifact_tool.rpc.client.RemoteError: hydrateCrdtFromProto requires an empty collaborative document.\n"
-  },
-  {
-    "cmd": "/opt/pyvenv/bin/python -m py_compile validate_hotfix_assets.py",
-    "returncode": 0,
-    "stdout": "",
-    "stderr": "Spreadsheet runtime warmup failed during python startup\nTraceback (most recent call last):\n  File \"/tmp/tmp.L2TH2Y5coc/artifact_tool_v2-2.8.22/artifact_tool/patches/warm_spreadsheet_runtime_on_startup.py\", line 26, in warm_spreadsheet_runtime_on_startup\n  File \"/tmp/tmp.L2TH2Y5coc/artifact_tool_v2-2.8.22/artifact_tool/spreadsheet_warmup.py\", line 785, in warm_spreadsheet_runtime\n  File \"/tmp/tmp.L2TH2Y5coc/artifact_tool_v2-2.8.22/artifact_tool/spreadsheet_warmup.py\", line 720, in _warm_feature_flows\n  File \"/tmp/tmp.L2TH2Y5coc/artifact_tool_v2-2.8.22/artifact_tool/spreadsheet_warmup.py\", line 704, in _warm_collaboration_flows\n  File \"/tmp/tmp.L2TH2Y5coc/artifact_tool_v2-2.8.22/artifact_tool/generated/interface/models.py\", line 32317, in hydrate_crdt_from_proto\n  File \"/tmp/tmp.L2TH2Y5coc/artifact_tool_v2-2.8.22/artifact_tool/rpc/remote.py\", line 749, in __call__\n  File \"/tmp/tmp.L2TH2Y5coc/artifact_tool_v2-2.8.22/artifact_tool/rpc/client.py\", line 150, in call\nartifact_tool.rpc.client.RemoteError: hydrateCrdtFromProto requires an empty collaborative document.\n"
-  }
-]
+  "limits": [
+    "Physical phone FPS/GPU/battery not measured",
+    "PHP/Laravel runtime tests not executed; PHP executable absent"
+  ]
+}

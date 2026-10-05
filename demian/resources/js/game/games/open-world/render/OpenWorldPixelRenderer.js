@@ -27,7 +27,7 @@ export default class OpenWorldPixelRenderer {
     setMode(mode, target, { immediate = false } = {}) {
         this.mode = mode === 'FOLLOW' ? 'FOLLOW' : 'OVERVIEW';
         if (this.mode === 'FOLLOW') {
-            this.camera.setZoom(15, { immediate });
+            this.camera.setZoom(this.followZoom(), { immediate });
             this.camera.follow(target, { immediate });
         } else {
             const logical = this.context.renderer.logicalDimensions();
@@ -40,6 +40,14 @@ export default class OpenWorldPixelRenderer {
         const logical = this.context.renderer.logicalDimensions();
         this.camera.resize(logical.width, logical.height);
         if (this.mode === 'OVERVIEW') this.camera.fitBounds(this.manifest.bounds, 10);
+        else this.camera.setZoom(this.followZoom(), { immediate: true });
+    }
+
+    followZoom() {
+        const logical = this.context.renderer.logicalDimensions();
+        const css = this.context.renderer.dimensions();
+        // Keep a 90 CSS-pixel body at every canvas density and orientation.
+        return 24 * logical.width / Math.max(1, css.width);
     }
 
     drawChunks(ctx, loadedChunks = new Map(), activeChunkIds = []) {

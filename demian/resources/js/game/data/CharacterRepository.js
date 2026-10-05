@@ -4,6 +4,7 @@ import {
     characterProductionStatus,
     isProductionReady,
 } from '../characters/manifests/CharacterManifestRegistry.js';
+import { isRetiredCharacter } from '../characters/CharacterVisualContract.js';
 
 const REQUEST_TIMEOUT_MS = 4500;
 
@@ -15,7 +16,7 @@ export default class CharacterRepository {
 
     async list() {
         const response = await this.request(this.baseUrl);
-        return response.data;
+        return response.data.filter((character) => !isRetiredCharacter(character.slug));
     }
 
     /**

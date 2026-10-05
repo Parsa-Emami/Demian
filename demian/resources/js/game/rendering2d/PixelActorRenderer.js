@@ -124,7 +124,8 @@ export function drawSpriteCharacter(ctx, camera, entity, {
     const shadowHeight = Math.max(2, metrics.frameHeight * 0.055);
 
     ctx.save();
-    ctx.imageSmoothingEnabled = false;
+    ctx.imageSmoothingEnabled = Boolean(entity?.atlas?.render?.smoothSampling);
+    ctx.imageSmoothingQuality = 'high';
     ctx.globalAlpha = Math.min(1, Math.max(0.08, Number(opacity) || 0));
     if (eliminated) ctx.globalAlpha *= 0.48;
     ctx.fillStyle = 'rgba(20, 14, 12, 0.34)';

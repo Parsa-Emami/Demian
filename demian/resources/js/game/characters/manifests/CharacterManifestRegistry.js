@@ -6,13 +6,12 @@
  * Full Game Rebuild Master Pack's non-negotiable directive:
  *
  *   - Every character has a `production_status` of either
- *     `gold_standard_production` (only `darya`, for now) or
- *     `legacy_pending_reference_rebuild` (everyone else).
+ *     `gold_standard_production` for the three shipped V14 characters.
  *   - The active/default character resolution, roster ordering, and any
  *     "new character onboarding" flow should read from this registry
  *     rather than from ad hoc hardcoded arrays.
  *
- * The active roster includes only Darya, Tiam and Ronak: packs shipped in this release.
+ * The active roster includes Darya, Setayesh and Uzudi, all rebuilt from references.
  */
 
 const MANIFEST_URL_PATH = 'assets/characters/character-manifest-v4.json';
@@ -29,9 +28,9 @@ const EMBEDDED_ROSTER_SNAPSHOT = Object.freeze({
     manifestVersion: 'v4',
     productionCharacter: 'darya',
     characters: Object.freeze([
-        Object.freeze({ slug: 'darya', productionStatus: 'gold_standard_production', isDefaultActive: true, packVersion: 13 }),
-        Object.freeze({ slug: 'tiam', productionStatus: 'legacy_pending_reference_rebuild', isDefaultActive: false, packVersion: 6 }),
-        Object.freeze({ slug: 'ronak', productionStatus: 'legacy_pending_reference_rebuild', isDefaultActive: false, packVersion: 6 }),
+        Object.freeze({ slug: 'darya', productionStatus: 'gold_standard_production', isDefaultActive: true, packVersion: 14 }),
+        Object.freeze({ slug: 'setayesh', productionStatus: 'gold_standard_production', isDefaultActive: false, packVersion: 14 }),
+        Object.freeze({ slug: 'uzudi', productionStatus: 'gold_standard_production', isDefaultActive: false, packVersion: 14 }),
     ]),
 });
 
@@ -48,10 +47,10 @@ function slugsWithStatus(status) {
     );
 }
 
-/** Characters that are fully reference-driven, gold-standard production characters. Currently just Darya. */
+/** Reference-driven production characters: Darya, Setayesh and Uzudi. */
 export const PRODUCTION_CHARACTER_SLUGS = slugsWithStatus(PRODUCTION_STATUS.GOLD_STANDARD);
 
-/** Every other builtin character: kept installed/playable, but excluded from default selection. */
+/** Reserved for future manifests; no legacy characters are playable in V14. */
 export const LEGACY_CHARACTER_SLUGS = slugsWithStatus(PRODUCTION_STATUS.LEGACY_PENDING);
 
 /** All builtin character slugs known to the manifest, production first. */

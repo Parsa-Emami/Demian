@@ -17,16 +17,18 @@
         "validate:phase10": "node tools/validate_phase10.mjs",
         "validate:final": "node tools/validate_final.mjs",
         "validate:build": "node tools/validate_build_bundle.mjs",
-        "validate:character-art": "python3 tools/audit_character_sprite_packs.py --version 6",
-        "validate:character-art:strict": "python3 tools/audit_character_sprite_packs.py --version 6 --strict",
-        "repair:character-art": "npm run build:character-art:v6",
+        "validate:character-art": "npm run validate:characters:v14",
+        "validate:character-art:strict": "npm run validate:characters:v14",
+        "repair:character-art": "npm run build:characters:v14",
         "build:character-art:v6": "python3 tools/build_arcade_animation_pack_v6.py && python3 tools/audit_character_sprite_packs.py --version 6 --write-metadata --strict && python3 tools/validate_arcade_animation_pack_v6.py",
         "validate:character-pack:v6": "python3 tools/validate_arcade_animation_pack_v6.py",
         "build:darya:v12": "python3 tools/build_darya_v12.py",
         "validate:darya:v12": "python3 tools/validate_darya_v12.py",
         "build:static": "npm run build && node tools/export_static.mjs",
         "build:darya:v13": "python3 tools/build_darya_v13.py",
-        "validate:darya:v13": "python3 tools/validate_darya_v13.py"
+        "validate:darya:v13": "python3 tools/validate_darya_v13.py",
+        "build:characters:v14": "python3 tools/build_character_pack_v14.py",
+        "validate:characters:v14": "python3 tools/validate_character_pack_v14.py"
     },
     "devDependencies": {
         "@tailwindcss/vite": "^4.0.0",
@@ -38,5 +40,5 @@
     "dependencies": {
         "three": "^0.185.1"
     },
-    "version": "13.0.0"
+    "version": "14.0.0"
 }

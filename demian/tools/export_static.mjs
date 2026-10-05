@@ -1,7 +1,7 @@
 /** MIT. Build a portable static release without PHP or a database. */
 import { mkdirSync, readFileSync, writeFileSync, cpSync, rmSync, existsSync } from 'node:fs';
 import { resolve, join } from 'node:path';
-import { BUILTIN_CHARACTER_SLUGS, characterPackVersion } from '../resources/js/game/characters/CharacterVisualContract.js';
+import { BUILTIN_CHARACTER_SLUGS, RETIRED_CHARACTER_SLUGS, characterPackVersion } from '../resources/js/game/characters/CharacterVisualContract.js';
 const root = resolve(import.meta.dirname, '..');
 const out = resolve(root, process.argv.find((a) => a.startsWith('--out='))?.slice(6) ?? '_site');
 if (out === root || out === join(root, 'public')) throw new Error('Output must be a separate release folder.');
@@ -9,6 +9,13 @@ const entry = JSON.parse(readFileSync(join(root, 'public/build/manifest.json'), 
 if (!entry?.file) throw new Error('Run npm run build first.');
 mkdirSync(out, { recursive: true });
 cpSync(join(root, 'public/assets'), join(out, 'assets'), { recursive: true });
+for (const slug of RETIRED_CHARACTER_SLUGS) {
+    rmSync(join(out, 'assets/characters', slug), { recursive: true, force: true });
+    rmSync(join(out, 'assets/characters/_legacy_archive', slug), { recursive: true, force: true });
+}
+for (const slug of BUILTIN_CHARACTER_SLUGS) {
+    rmSync(join(out, 'assets/characters/_legacy_archive', slug), { recursive: true, force: true });
+}
 // Only this build owns the bundle directory. Do not remove unrelated user files.
 rmSync(join(out, 'build'), { recursive: true, force: true });
 cpSync(join(root, 'public/build'), join(out, 'build'), { recursive: true });
@@ -24,7 +31,7 @@ html = html.replace(/\{\{--[\s\S]*?--\}\}/g, '')
     .replace(/\{\{\s*url\('\/api\/v1\/events'\)\s*\}\}/g, 'api/v1/events');
 if (/@(?:vite|php|foreach|if)|\{\{/.test(html)) throw new Error('Unsupported template directive in static export.');
 writeFileSync(join(out, 'index.html'), html);
-const labels = { darya: 'DARYA / دریا', tiam: 'TIAM / تیام', ronak: 'RONAK / روناک' };
+const labels = { darya: 'DARYA / دریا', setayesh: 'SETAYESH / ستایش', uzudi: 'UZUDI / اوزودی' };
 writeFileSync(join(out, 'characters.json'), JSON.stringify({ data: BUILTIN_CHARACTER_SLUGS.map((slug) => ({
     id: `builtin-${slug}`, name: labels[slug], slug, is_builtin: true, is_active: slug === 'darya',
     sprite_url: `assets/characters/${slug}/${slug}-spritesheet-v${characterPackVersion(slug)}-mobile.png`,

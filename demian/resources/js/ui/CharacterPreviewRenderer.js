@@ -83,6 +83,15 @@ export default class CharacterPreviewRenderer {
         this.clear(canvas);
 
         try {
+            // Cards use one tiny poster, not another decoded 672-frame sheet.
+            if (character.preview_url) {
+                const image = await this.loadImage(resolveUrl(character.preview_url));
+                if (canvas.dataset.previewRenderId !== renderId) return;
+                this.prepareCanvas(canvas);
+                this.drawFrame(canvas, image, { x: 0, y: 0, w: image.naturalWidth || image.width, h: image.naturalHeight || image.height });
+                canvas.dataset.previewState = 'ready';
+                return;
+            }
             const atlasUrl = resolveUrl(character.atlas_url);
             if (!atlasUrl || !this.fetchImpl) {
                 throw new Error('Character preview atlas URL is unavailable.');

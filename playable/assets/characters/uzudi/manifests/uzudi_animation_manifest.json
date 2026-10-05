@@ -1,0 +1,117 @@
+{
+  "character_key": "uzudi",
+  "pack_version": 14,
+  "source_atlas": {
+    "pack_version": 14,
+    "files": [
+      "uzudi-atlas-v14-desktop.json",
+      "uzudi-atlas-v14-mobile.json",
+      "uzudi-atlas-v14-compact.json"
+    ]
+  },
+  "grid": {
+    "columns": 24,
+    "rows": 28
+  },
+  "variant_frame_size": {
+    "desktop": {
+      "w": 144,
+      "h": 144
+    },
+    "mobile": {
+      "w": 112,
+      "h": 112
+    },
+    "compact": {
+      "w": 80,
+      "h": 80
+    }
+  },
+  "states": {
+    "idle": {
+      "frames": 40,
+      "fps": 24,
+      "loop": true
+    },
+    "breathe": {
+      "frames": 40,
+      "fps": 24,
+      "loop": true
+    },
+    "blink": {
+      "frames": 40,
+      "fps": 24,
+      "loop": true
+    },
+    "ready": {
+      "frames": 40,
+      "fps": 24,
+      "loop": true
+    },
+    "walk": {
+      "frames": 64,
+      "fps": 72,
+      "loop": true
+    },
+    "run": {
+      "frames": 80,
+      "fps": 96,
+      "loop": true
+    },
+    "sprint": {
+      "frames": 80,
+      "fps": 112,
+      "loop": true
+    },
+    "takeoff": {
+      "frames": 16,
+      "fps": 96,
+      "loop": false
+    },
+    "jump": {
+      "frames": 16,
+      "fps": 32,
+      "loop": false
+    },
+    "fall": {
+      "frames": 16,
+      "fps": 64,
+      "loop": false
+    },
+    "land": {
+      "frames": 24,
+      "fps": 150,
+      "loop": false
+    },
+    "slide": {
+      "frames": 64,
+      "fps": 80,
+      "loop": true
+    },
+    "crouch": {
+      "frames": 1,
+      "fps": 1,
+      "loop": false
+    },
+    "turn": {
+      "frames": 8,
+      "fps": 12,
+      "loop": false
+    },
+    "wave": {
+      "frames": 32,
+      "fps": 32,
+      "loop": false
+    },
+    "celebrate": {
+      "frames": 64,
+      "fps": 64,
+      "loop": false
+    },
+    "win": {
+      "frames": 64,
+      "fps": 48,
+      "loop": false
+    }
+  }
+}

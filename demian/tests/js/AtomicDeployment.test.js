@@ -58,7 +58,7 @@ test('the HTML shell performs a guarded recovery from stale Vite chunks', () => 
     assert.match(blade, /vite:preloadError/);
     assert.match(blade, /unhandledrejection/);
     assert.match(blade, /__demian_refresh/);
-    assert.match(blade, /data-runtime-version="13\.0\.0-mobile-runner"/);
+    assert.match(blade, /data-runtime-version="14\.0\.0-mobile-runner"/);
     assert.match(blade, /data-deployment-mode="atomic-bundle"/);
 });
 

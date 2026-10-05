@@ -1,0 +1,16 @@
+{
+  "character_key": "uzudi",
+  "pack_version": 14,
+  "physics_owns_jump_height": true,
+  "dedicated_slide": true,
+  "uniform_body_scale": true,
+  "style": "wing-assisted",
+  "wing_powered_states": [
+    "run",
+    "sprint",
+    "takeoff",
+    "jump",
+    "fall",
+    "slide"
+  ]
+}

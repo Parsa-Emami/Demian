@@ -48,8 +48,8 @@ export const CAFE_STATIC_COLLIDERS = Object.freeze([
 ]);
 
 export const ROLE_PLAY_NPCS = Object.freeze([
-    Object.freeze({ id: 'tiam', name: 'تیام', dialogueId: 'tiam-intro', position: point(-12.8, 5.0), color: 0x22d3ee }),
-    Object.freeze({ id: 'ronak', name: 'روناک', dialogueId: 'ronak-shift', position: point(8.8, 4.0), color: 0xf472b6 }),
+    Object.freeze({ id: 'setayesh', name: 'ستایش', dialogueId: 'setayesh-intro', position: point(-12.8, 5.0), color: 0x22d3ee }),
+    Object.freeze({ id: 'uzudi', name: 'اوزودی', dialogueId: 'uzudi-shift', position: point(8.8, 4.0), color: 0xf472b6 }),
     Object.freeze({ id: 'amirreza', name: 'امیررضا', dialogueId: 'amirreza-arcade', position: point(8.8, -9.1), color: 0xfbbf24 }),
 ]);
 

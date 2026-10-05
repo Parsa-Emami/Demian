@@ -29,6 +29,13 @@ function createCanvas() {
     return canvas;
 }
 
+export function smoothPresentationGrid(width, height, deviceRatio = 1, maxPixelRatio = 1.35, budget = 1250000) {
+    const w = Math.max(1, Number(width) || 1), h = Math.max(1, Number(height) || 1);
+    const density = Math.min(Math.max(1, Number(deviceRatio) || 1), Math.max(1, Number(maxPixelRatio) || 1),
+        Math.sqrt(Math.max(1, budget) / (w * h)));
+    return { logicalWidth: Math.max(1, Math.floor(w * density)), logicalHeight: Math.max(1, Math.floor(h * density)) };
+}
+
 /**
  * Shared deterministic HTML5 Canvas renderer.
  *
@@ -36,7 +43,9 @@ function createCanvas() {
  * every logical pixel expands to an exact N×N block of physical pixels. That
  * removes uneven nearest-neighbour resampling, keeps character silhouettes
  * stable while moving, and gives the whole project a genuinely crisp 8-bit
- * presentation on both standard and HiDPI displays.
+ * presentation on both standard and HiDPI displays. V14's active games use
+ * the bounded smooth mode to preserve their detailed raster faces. Pixel mode
+ * remains available to older game modules without changing their coordinates.
  */
 export default class RendererService {
     constructor(container, { referenceHeight = DEFAULT_REFERENCE_HEIGHT, lowLatency = false } = {}) {
@@ -67,6 +76,8 @@ export default class RendererService {
             MAX_LOGICAL_HEIGHT
         );
         this.pixelRatio = 1;
+        this.presentationMode = 'pixel';
+        this.smoothMaxPixelRatio = 1.35;
         this.deviceRatio = 1;
         this.presentationScale = 1;
         this.lastWidth = 0;
@@ -109,6 +120,13 @@ export default class RendererService {
         };
     }
 
+    setPresentationMode(mode = 'pixel', { maxPixelRatio = 1.35 } = {}) {
+        this.presentationMode = mode === 'smooth' ? 'smooth' : 'pixel';
+        this.smoothMaxPixelRatio = clamp(Number(maxPixelRatio) || 1.35, 1, 1.5);
+        this.canvas.style.imageRendering = this.presentationMode === 'smooth' ? 'auto' : 'pixelated';
+        this.container.dataset.presentationMode = this.presentationMode;
+    }
+
     choosePixelGrid(physicalWidth, physicalHeight) {
         // Higher quality requests target a denser logical image, but the final
         // presentation scale is always an integer. This creates stable pixels
@@ -136,9 +154,11 @@ export default class RendererService {
         this.deviceRatio = clamp(globalThis.devicePixelRatio || 1, 1, 2);
         const physicalWidth = Math.max(1, Math.round(width * this.deviceRatio));
         const physicalHeight = Math.max(1, Math.round(height * this.deviceRatio));
-        const grid = this.choosePixelGrid(physicalWidth, physicalHeight);
+        const grid = this.presentationMode === 'smooth'
+            ? { ...smoothPresentationGrid(width, height, this.deviceRatio, Math.min(this.smoothMaxPixelRatio, this.pixelRatio)), scale: null }
+            : this.choosePixelGrid(physicalWidth, physicalHeight);
 
-        this.presentationScale = grid.scale;
+        this.presentationScale = grid.scale ?? physicalWidth / grid.logicalWidth;
         this.logicalWidth = grid.logicalWidth;
         this.logicalHeight = grid.logicalHeight;
         this.canvas.width = physicalWidth;
@@ -160,7 +180,8 @@ export default class RendererService {
     }
 
     configureContext(context) {
-        context.imageSmoothingEnabled = false;
+        context.imageSmoothingEnabled = this.presentationMode === 'smooth';
+        context.imageSmoothingQuality = 'high';
         context.textBaseline = 'middle';
         context.lineJoin = 'miter';
         context.lineCap = 'butt';
@@ -220,8 +241,8 @@ export default class RendererService {
         const ctx = this.context2d;
         const width = this.canvas.width;
         const height = this.canvas.height;
-        const drawWidth = this.logicalWidth * this.presentationScale;
-        const drawHeight = this.logicalHeight * this.presentationScale;
+        const drawWidth = this.presentationMode === 'smooth' ? width : this.logicalWidth * this.presentationScale;
+        const drawHeight = this.presentationMode === 'smooth' ? height : this.logicalHeight * this.presentationScale;
         const offsetX = Math.floor((width - drawWidth) / 2);
         const offsetY = Math.floor((height - drawHeight) / 2);
 

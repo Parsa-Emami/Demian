@@ -10,227 +10,18 @@ import {
 import {
     BUILTIN_CHARACTER_SLUGS,
     builtinCharacterAssetPair,
+    isRetiredCharacter,
 } from '../characters/CharacterVisualContract.js';
 
-const BUILTIN_DEFINITIONS = Object.freeze([
-    Object.freeze({
-        id: 'builtin-tiam',
-        name: 'TIAM / تیام',
-        slug: 'tiam',
-        is_active: false,
-        settings: {
-            walk_speed: 3.4,
-            run_speed: 6.55,
-            sprint_speed: 7.25,
-            jump_force: 6.7,
-            air_control: 0.56,
-            scale: 1,
-            production_status: 'legacy_pending_reference_rebuild',
-        },
-    }),
-    Object.freeze({
-        id: 'builtin-ronak',
-        name: 'RONAK / روناک',
-        slug: 'ronak',
-        is_active: false,
-        settings: {
-            walk_speed: 3.45,
-            run_speed: 6.7,
-            sprint_speed: 7.35,
-            jump_force: 6.75,
-            air_control: 0.54,
-            scale: 1,
-            production_status: 'legacy_pending_reference_rebuild',
-        },
-    }),
-    Object.freeze({
-        id: 'builtin-amirreza',
-        name: 'AMIRREZA / امیررضا',
-        slug: 'amirreza',
-        is_active: false,
-        settings: {
-            walk_speed: 4.25,
-            run_speed: 8.55,
-            sprint_speed: 9.5,
-            jump_force: 7.05,
-            air_control: 0.62,
-            scale: 1,
-            production_status: 'legacy_pending_reference_rebuild',
-        },
-    }),
-    Object.freeze({
-        id: 'builtin-parsa',
-        name: 'PARSA / پارسا',
-        slug: 'parsa',
-        is_active: false,
-        settings: {
-            walk_speed: 4.5,
-            run_speed: 9.1,
-            sprint_speed: 10.15,
-            jump_force: 7.35,
-            air_control: 0.68,
-            scale: 1,
-            role_title: 'FASTEST / STRONGEST',
-            tagline: 'Black-shadow runner · Red guitar solo',
-            speed_rating: 'S+',
-            power_rating: 'S+',
-            signature_action: 'guitar',
-            production_status: 'legacy_pending_reference_rebuild',
-        },
-    }),
-    Object.freeze({
-        id: 'builtin-darya',
-        name: 'DARYA / دریا',
-        slug: 'darya',
-        is_active: true,
-        settings: {
-            walk_speed: 3.55,
-            run_speed: 6.9,
-            sprint_speed: 7.6,
-            jump_force: 6.8,
-            air_control: 0.58,
-            scale: 1,
-            role_title: 'CAT COMPANION',
-            tagline: 'Darya + Pishi · always together',
-            signature_action: 'companion',
-            companion: 'pishi',
-            companion_always_visible: true,
-            production_status: 'gold_standard_production',
-        },
-    }),
-    Object.freeze({
-        id: 'builtin-iman',
-        name: 'IMAN / ایمان',
-        slug: 'iman',
-        is_active: false,
-        settings: {
-            walk_speed: 3.75,
-            run_speed: 7.15,
-            sprint_speed: 7.9,
-            jump_force: 6.95,
-            air_control: 0.60,
-            scale: 1,
-            role_title: 'ANCHOR / CORE',
-            tagline: 'Reliable, strong, and team-first',
-            signature_action: 'guard',
-            production_status: 'legacy_pending_reference_rebuild',
-        },
-    }),
-    Object.freeze({
-        id: 'builtin-uzudi',
-        name: 'UZUDI / اوزودی',
-        slug: 'uzudi',
-        is_active: false,
-        settings: {
-            walk_speed: 3.75,
-            run_speed: 7.1,
-            sprint_speed: 7.85,
-            jump_force: 7.15,
-            air_control: 0.66,
-            scale: 1,
-            role_title: 'DARK ANGEL',
-            tagline: 'Black feathered wings · Night fighter',
-            speed_rating: 'A',
-            power_rating: 'A+',
-            signature_action: 'dark_angel',
-            production_status: 'legacy_pending_reference_rebuild',
-        },
-    }),
-    Object.freeze({
-        id: 'builtin-setayesh',
-        name: 'SETAYESH / ستایش',
-        slug: 'setayesh',
-        is_active: false,
-        settings: {
-            walk_speed: 3.4,
-            run_speed: 6.6,
-            sprint_speed: 7.25,
-            jump_force: 6.7,
-            air_control: 0.55,
-            scale: 1,
-            role_title: 'CURL SPARK',
-            tagline: 'Style · Speed · Spark',
-            speed_rating: 'A-',
-            power_rating: 'B+',
-            production_status: 'legacy_pending_reference_rebuild',
-        },
-    }),
-    Object.freeze({
-        id: 'builtin-mojtaba',
-        name: 'MOJTABA / مجتبی',
-        slug: 'mojtaba',
-        is_active: false,
-        settings: {
-            walk_speed: 3.45,
-            run_speed: 6.8,
-            sprint_speed: 7.45,
-            jump_force: 6.75,
-            air_control: 0.56,
-            scale: 1,
-            production_status: 'legacy_pending_reference_rebuild',
-        },
-    }),
-    Object.freeze({
-        id: 'builtin-hossein',
-        name: 'HOSSEIN / حسین',
-        slug: 'hossein',
-        is_active: false,
-        settings: {
-            walk_speed: 3.45,
-            run_speed: 6.75,
-            sprint_speed: 7.4,
-            jump_force: 6.8,
-            air_control: 0.57,
-            scale: 1,
-            production_status: 'legacy_pending_reference_rebuild',
-        },
-    }),
-    Object.freeze({
-        id: 'builtin-arsal',
-        name: 'ARSAL / ارسل',
-        slug: 'arsal',
-        is_active: false,
-        settings: {
-            walk_speed: 3.4,
-            run_speed: 6.7,
-            sprint_speed: 7.35,
-            jump_force: 6.75,
-            air_control: 0.55,
-            scale: 1,
-            production_status: 'legacy_pending_reference_rebuild',
-        },
-    }),
-    Object.freeze({
-        id: 'builtin-sorkhi',
-        name: 'SORKHI / سرخی',
-        slug: 'sorkhi',
-        is_active: false,
-        settings: {
-            walk_speed: 3.55,
-            run_speed: 6.9,
-            sprint_speed: 7.55,
-            jump_force: 6.85,
-            air_control: 0.58,
-            scale: 1,
-            production_status: 'legacy_pending_reference_rebuild',
-        },
-    }),
-    Object.freeze({
-        id: 'builtin-taher-db',
-        name: 'TAHER DB / طاهر DB',
-        slug: 'taher-db',
-        is_active: false,
-        settings: {
-            walk_speed: 3.5,
-            run_speed: 6.85,
-            sprint_speed: 7.5,
-            jump_force: 6.85,
-            air_control: 0.58,
-            scale: 1,
-            production_status: 'legacy_pending_reference_rebuild',
-        },
-    }),
-]);
+const LABELS = Object.freeze({ darya: 'DARYA / دریا', setayesh: 'SETAYESH / ستایش', uzudi: 'UZUDI / اوزودی' });
+const BUILTIN_DEFINITIONS = Object.freeze(BUILTIN_CHARACTER_SLUGS.map((slug) => Object.freeze({
+    id: `builtin-${slug}`, name: LABELS[slug], slug, is_active: slug === 'darya',
+    settings: { walk_speed: 3.55, run_speed: 6.9, sprint_speed: 7.6, jump_force: 6.8,
+        air_control: .58, scale: 1, asset_pack_version: 14, production_status: 'gold_standard_production',
+        ...(slug === 'darya' ? { companion: 'pishi', companion_always_visible: true } : {}),
+        ...(slug === 'uzudi' ? { locomotion_style: 'wing-assisted', signature_action: 'slide' } : {}),
+    },
+})));
 
 const BUILTIN_SLUGS = new Set(BUILTIN_CHARACTER_SLUGS);
 const BUILTIN_DEFINITION_SLUGS = new Set(BUILTIN_DEFINITIONS.map((character) => character.slug));
@@ -366,7 +157,7 @@ export default class CharacterManager {
         });
 
         const customCharacters = this.characters.filter(
-            (character) => !BUILTIN_DEFINITION_SLUGS.has(character.slug) && character.sprite_url && character.atlas_url
+            (character) => !character.is_builtin && !isRetiredCharacter(character.slug) && !BUILTIN_DEFINITION_SLUGS.has(character.slug) && character.sprite_url && character.atlas_url
         );
 
         builtins.sort((a, b) => BUILTIN_CHARACTER_SLUGS.indexOf(a.slug) - BUILTIN_CHARACTER_SLUGS.indexOf(b.slug));
@@ -858,8 +649,6 @@ export default class CharacterManager {
         canvas.height = 64;
         const context = canvas.getContext('2d');
         const accent = {
-            tiam: '#22d3ee',
-            ronak: '#f472b6',
             amirreza: '#fbbf24',
             parsa: '#ef4444',
             darya: '#fb7185',

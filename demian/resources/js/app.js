@@ -56,7 +56,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <div class="arcade-error">
                     <strong>موتور بازی اجرا نشد</strong>
                     <span>${error.message ?? 'خطای ناشناخته'}</span>
-                    <small>فایل‌های public/assets/characters/tiam را بررسی کن.</small>
+                    <small>فایل‌های public/assets/characters/darya را بررسی کن.</small>
                 </div>
             </div>
         `;

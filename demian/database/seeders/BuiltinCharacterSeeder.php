@@ -3,267 +3,40 @@
 namespace Database\Seeders;
 
 use App\Models\Character;
+use App\Services\Characters\CharacterIdentityService;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
+/** Installs the shipped roster without changing the database schema. */
 class BuiltinCharacterSeeder extends Seeder
 {
-    /**
-     * Character Core V4 (see docs/character-standards/CHARACTER_CORE_V4_IMPLEMENTATION.md).
-     *
-     * 'darya' is the game's Character Manifest V4 gold-standard production
-     * character and is therefore the only builtin character seeded as
-     * is_active = true. Every other builtin character is a Legacy Character
-     * per the Master Pack's non-negotiable directive: it stays installed and
-     * playable (so existing saves / selections do not break and the assets
-     * are preserved as an audit fallback), but it is explicitly tagged
-     * production_status = legacy_pending_reference_rebuild and is excluded
-     * from being the default active character until it is rebuilt from a
-     * user-supplied reference image per the new reference-first pipeline.
-     */
-    private const PRODUCTION_STATUS_GOLD_STANDARD = 'gold_standard_production';
-    private const PRODUCTION_STATUS_LEGACY_PENDING = 'legacy_pending_reference_rebuild';
-
     public function run(): void
     {
-        DB::transaction(function (): void {
+        $entries = (new CharacterIdentityService())->roster()['characters'] ?? [];
+        if ($entries === []) {
+            throw new \RuntimeException('The shipped character roster is missing.');
+        }
+        DB::transaction(function () use ($entries): void {
+            Character::query()->where('is_builtin', true)->whereIn('slug', ['tiam', 'ronak'])->delete();
             Character::query()->update(['is_active' => false]);
-
-            $characters = [
-                [
-                    'slug' => 'tiam',
-                    'name' => 'TIAM / تیام',
-                    'pack_version' => 6,
-                    'is_active' => false,
-                    'production_status' => self::PRODUCTION_STATUS_LEGACY_PENDING,
+            foreach ($entries as $entry) {
+                $slug = $entry['slug'];
+                $version = (int) $entry['pack_version'];
+                Character::query()->updateOrCreate(['slug' => $slug], [
+                    'name' => $entry['display_name'],
+                    'sprite_sheet_path' => "assets/characters/{$slug}/{$slug}-spritesheet-v{$version}-mobile.png",
+                    'atlas_path' => "assets/characters/{$slug}/{$slug}-atlas-v{$version}-mobile.json",
+                    'is_builtin' => true,
+                    'is_active' => (bool) ($entry['is_default_active'] ?? false),
                     'settings' => [
-                        'walk_speed' => 3.2,
-                        'run_speed' => 6.2,
-                        'sprint_speed' => 6.85,
-                        'jump_force' => 6.5,
-                        'scale' => 1,
+                        'walk_speed' => 3.55, 'run_speed' => 6.9, 'sprint_speed' => 7.6,
+                        'jump_force' => 6.8, 'air_control' => .58, 'scale' => 1,
+                        'asset_pack_version' => $version,
+                        'production_status' => $entry['production_status'],
+                        'locomotion_style' => $slug === 'uzudi' ? 'wing-assisted' : 'ground-runner',
+                        'companion' => $slug === 'darya' ? 'pishi' : null,
                     ],
-                ],
-                [
-                    'slug' => 'ronak',
-                    'name' => 'RONAK / روناک',
-                    'pack_version' => 6,
-                    'is_active' => false,
-                    'production_status' => self::PRODUCTION_STATUS_LEGACY_PENDING,
-                    'settings' => [
-                        'walk_speed' => 3.25,
-                        'run_speed' => 6.35,
-                        'sprint_speed' => 7.0,
-                        'jump_force' => 6.6,
-                        'scale' => 1,
-                    ],
-                ],
-                [
-                    'slug' => 'amirreza',
-                    'name' => 'AMIRREZA / امیررضا',
-                    'pack_version' => 9,
-                    'is_active' => false,
-                    'production_status' => self::PRODUCTION_STATUS_LEGACY_PENDING,
-                    'settings' => [
-                        'walk_speed' => 4.15,
-                        'run_speed' => 8.4,
-                        'sprint_speed' => 9.35,
-                        'jump_force' => 6.85,
-                        'scale' => 1,
-                    ],
-                ],
-                [
-                    'slug' => 'parsa',
-                    'name' => 'PARSA / پارسا',
-                    'pack_version' => 9,
-                    'is_active' => false,
-                    'production_status' => self::PRODUCTION_STATUS_LEGACY_PENDING,
-                    'settings' => [
-                        'walk_speed' => 4.5,
-                        'run_speed' => 9.1,
-                        'sprint_speed' => 10.15,
-                        'jump_force' => 7.35,
-                        'air_control' => 0.68,
-                        'scale' => 1,
-                        'role_title' => 'FASTEST / STRONGEST',
-                        'tagline' => 'Black-shadow runner',
-                        'speed_rating' => 'S+',
-                        'power_rating' => 'S+',
-                    ],
-                ],
-                [
-                    'slug' => 'darya',
-                    'name' => 'DARYA / دریا',
-                    'pack_version' => 13,
-                    'is_active' => true,
-                    'production_status' => self::PRODUCTION_STATUS_GOLD_STANDARD,
-                    'settings' => [
-                        'walk_speed' => 3.55,
-                        'run_speed' => 6.9,
-                        'sprint_speed' => 7.6,
-                        'jump_force' => 6.8,
-                        'air_control' => 0.58,
-                        'scale' => 1,
-                        'role_title' => 'CAT COMPANION',
-                        'tagline' => 'Darya + Pishi · always together',
-                        'signature_action' => 'companion',
-                        'companion' => 'pishi',
-                        'companion_always_visible' => true,
-                    ],
-                ],
-                [
-                    'slug' => 'iman',
-                    'name' => 'IMAN / ایمان',
-                    'pack_version' => 9,
-                    'is_active' => false,
-                    'production_status' => self::PRODUCTION_STATUS_LEGACY_PENDING,
-                    'settings' => [
-                        'walk_speed' => 3.75,
-                        'run_speed' => 7.15,
-                        'sprint_speed' => 7.9,
-                        'jump_force' => 6.95,
-                        'air_control' => 0.60,
-                        'scale' => 1,
-                        'role_title' => 'ANCHOR / CORE',
-                        'tagline' => 'Reliable, strong, and team-first',
-                        'signature_action' => 'guard',
-                    ],
-                ],
-                [
-                    'slug' => 'uzudi',
-                    'name' => 'UZUDI / اوزودی',
-                    'pack_version' => 9,
-                    'is_active' => false,
-                    'production_status' => self::PRODUCTION_STATUS_LEGACY_PENDING,
-                    'settings' => [
-                        'walk_speed' => 3.75,
-                        'run_speed' => 7.1,
-                        'sprint_speed' => 7.85,
-                        'jump_force' => 7.15,
-                        'air_control' => 0.66,
-                        'scale' => 1,
-                        'role_title' => 'DARK ANGEL',
-                        'tagline' => 'Black feathered wings · Night fighter',
-                        'speed_rating' => 'A',
-                        'power_rating' => 'A+',
-                        'signature_action' => 'dark_angel',
-                    ],
-                ],
-                [
-                    'slug' => 'setayesh',
-                    'name' => 'SETAYESH / ستایش',
-                    'pack_version' => 9,
-                    'is_active' => false,
-                    'production_status' => self::PRODUCTION_STATUS_LEGACY_PENDING,
-                    'settings' => [
-                        'walk_speed' => 3.4,
-                        'run_speed' => 6.6,
-                        'sprint_speed' => 7.25,
-                        'jump_force' => 6.7,
-                        'air_control' => 0.55,
-                        'scale' => 1,
-                        'role_title' => 'CURL SPARK',
-                        'tagline' => 'Style · Speed · Spark',
-                        'speed_rating' => 'A-',
-                        'power_rating' => 'B+',
-                    ],
-                ],
-                [
-                    'slug' => 'mojtaba',
-                    'name' => 'MOJTABA / مجتبی',
-                    'pack_version' => 9,
-                    'is_active' => false,
-                    'production_status' => self::PRODUCTION_STATUS_LEGACY_PENDING,
-                    'settings' => [
-                        'walk_speed' => 3.45,
-                        'run_speed' => 6.8,
-                        'sprint_speed' => 7.45,
-                        'jump_force' => 6.75,
-                        'air_control' => 0.56,
-                        'scale' => 1,
-                    ],
-                ],
-                [
-                    'slug' => 'hossein',
-                    'name' => 'HOSSEIN / حسین',
-                    'pack_version' => 9,
-                    'is_active' => false,
-                    'production_status' => self::PRODUCTION_STATUS_LEGACY_PENDING,
-                    'settings' => [
-                        'walk_speed' => 3.45,
-                        'run_speed' => 6.75,
-                        'sprint_speed' => 7.4,
-                        'jump_force' => 6.8,
-                        'air_control' => 0.57,
-                        'scale' => 1,
-                    ],
-                ],
-                [
-                    'slug' => 'arsal',
-                    'name' => 'ARSAL / ارسل',
-                    'pack_version' => 9,
-                    'is_active' => false,
-                    'production_status' => self::PRODUCTION_STATUS_LEGACY_PENDING,
-                    'settings' => [
-                        'walk_speed' => 3.4,
-                        'run_speed' => 6.7,
-                        'sprint_speed' => 7.35,
-                        'jump_force' => 6.75,
-                        'air_control' => 0.55,
-                        'scale' => 1,
-                    ],
-                ],
-                [
-                    'slug' => 'sorkhi',
-                    'name' => 'SORKHI / سرخی',
-                    'pack_version' => 9,
-                    'is_active' => false,
-                    'production_status' => self::PRODUCTION_STATUS_LEGACY_PENDING,
-                    'settings' => [
-                        'walk_speed' => 3.55,
-                        'run_speed' => 6.9,
-                        'sprint_speed' => 7.55,
-                        'jump_force' => 6.85,
-                        'air_control' => 0.58,
-                        'scale' => 1,
-                    ],
-                ],
-                [
-                    'slug' => 'taher-db',
-                    'name' => 'TAHER DB / طاهر DB',
-                    'pack_version' => 9,
-                    'is_active' => false,
-                    'production_status' => self::PRODUCTION_STATUS_LEGACY_PENDING,
-                    'settings' => [
-                        'walk_speed' => 3.5,
-                        'run_speed' => 6.85,
-                        'sprint_speed' => 7.5,
-                        'jump_force' => 6.85,
-                        'air_control' => 0.58,
-                        'scale' => 1,
-                    ],
-                ],
-            ];
-
-            foreach ($characters as $definition) {
-                if (!in_array($definition['slug'], ['darya', 'tiam', 'ronak'], true)) continue;
-                $slug = $definition['slug'];
-                $packVersion = $definition['pack_version'];
-                $settings = $definition['settings'];
-                $settings['asset_pack_version'] = $packVersion;
-                $settings['production_status'] = $definition['production_status'];
-
-                Character::query()->updateOrCreate(
-                    ['slug' => $slug],
-                    [
-                        'name' => $definition['name'],
-                        'sprite_sheet_path' => "assets/characters/{$slug}/{$slug}-spritesheet-v{$packVersion}-mobile.png",
-                        'atlas_path' => "assets/characters/{$slug}/{$slug}-atlas-v{$packVersion}-mobile.json",
-                        'is_builtin' => true,
-                        'is_active' => $definition['is_active'],
-                        'settings' => $settings,
-                    ]
-                );
+                ]);
             }
         });
     }

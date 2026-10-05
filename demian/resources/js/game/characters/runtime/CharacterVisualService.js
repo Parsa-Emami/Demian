@@ -9,6 +9,13 @@ import { orderedSpriteVariants } from './CharacterRuntimePolicy.js';
 
 const STORAGE_KEY = 'demian.character.slug.v1';
 const LOAD_TIMEOUT_MS = 7000;
+const PACK_CACHE_BUDGET = 72 * 1024 * 1024;
+
+function packBytes(pack) {
+    const width = pack.image?.naturalWidth || pack.image?.width || pack.atlas?.meta?.size?.w || 0;
+    const height = pack.image?.naturalHeight || pack.image?.height || pack.atlas?.meta?.size?.h || 0;
+    return width * height * 4;
+}
 
 function safeStorage() {
     try {
@@ -86,7 +93,12 @@ export default class CharacterVisualService {
 
         for (const variant of variants) {
             const key = `${normalizedSlug}:${variant}`;
-            if (this.packCache.has(key)) return this.packCache.get(key);
+            if (this.packCache.has(key)) {
+                const pack = this.packCache.get(key);
+                this.packCache.delete(key);
+                this.packCache.set(key, pack);
+                return pack;
+            }
             try {
                 let pending = this.packPromises.get(key);
                 if (!pending) {
@@ -95,6 +107,7 @@ export default class CharacterVisualService {
                 }
                 const pack = await pending;
                 this.packCache.set(key, pack);
+                this.trimPackCache();
                 this.packPromises.delete(key);
                 return pack;
             } catch (error) {
@@ -104,6 +117,17 @@ export default class CharacterVisualService {
         }
 
         throw lastError ?? new Error(`Character sprite pack could not be loaded for ${normalizedSlug}.`);
+    }
+
+    trimPackCache() {
+        let bytes = [...this.packCache.values()].reduce((sum, pack) => sum + packBytes(pack), 0);
+        for (const [key, pack] of this.packCache) {
+            if (bytes <= PACK_CACHE_BUDGET || this.packCache.size <= 1) break;
+            this.packCache.delete(key);
+            bytes -= packBytes(pack);
+            // Existing avatars keep their image. Dropping this cache reference
+            // permits collection after the last game using that image exits.
+        }
     }
 
     async loadPair(slug, variant) {

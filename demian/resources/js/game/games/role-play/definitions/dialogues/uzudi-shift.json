@@ -1,0 +1,10 @@
+{
+  "id":"uzudi-shift","speaker":"uzudi","start":"hello","nodes":{
+    "hello":{"speaker":"اوزودی","text":"شیفت اول همیشه شلوغه، ولی نگران نباش. فنجان‌ها کنار کانتر آماده‌ان.","actions":[{"type":"emit","event":"quest-event","payload":{"type":"talk","target":"uzudi"}}],"choices":[
+      {"id":"tips","text":"نکته‌ای برای بهتر کار کردن؟","next":"tip"},
+      {"id":"ready","text":"آماده‌ام.","next":"ready"}
+    ]},
+    "tip":{"speaker":"اوزودی","text":"اول سفارش رو کامل کن، بعد تحویل بده. عجله بدون دقت امتیاز رابطه رو کم می‌کنه.","actions":[{"type":"relationship","npcId":"uzudi","amount":3,"reason":"asked-advice"}],"end":true},
+    "ready":{"speaker":"اوزودی","text":"پس شروع کنیم. سه فنجان بردار و به میز شماره چهار ببر.","end":true}
+  }
+}

@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import test from 'node:test';
+import OpenWorldPixelRenderer from '../../../resources/js/game/games/open-world/render/OpenWorldPixelRenderer.js';
 
 const url = (path) => new URL(`../../../${path}`, import.meta.url);
 
@@ -26,11 +27,11 @@ test('Open World chunk renderer is data-only and never owns GPU resources', asyn
     assert.match(source, /this\.handles\.clear\(\)/);
 });
 
-test('the shared renderer owns a nearest-neighbour logical backbuffer', async () => {
+test('the shared Canvas2D renderer supports smooth and legacy pixel backbuffers', async () => {
     const source = await readFile(url('resources/js/game/services/RendererService.js'), 'utf8');
     assert.match(source, /getContext\('2d'/);
     assert.match(source, /bufferCanvas/);
-    assert.match(source, /imageSmoothingEnabled = false/);
+    assert.match(source, /imageSmoothingEnabled = this\.presentationMode === 'smooth'/);
     assert.match(source, /imageRendering: 'pixelated'/);
     assert.doesNotMatch(source, /WebGLRenderer/);
     assert.match(source, /lowLatency = false/);
@@ -75,12 +76,23 @@ test('V10 renderer presents the logical backbuffer at an integer pixel scale', a
     assert.match(source, /data(?:set)?\.pixelGrid|dataset\.pixelGrid/);
 });
 
-test('Open World applies hard-edged 8-bit scene finishing after actors are drawn', async () => {
+test('Open World finishes the scene after actors and uses a density-aware follow camera', async () => {
     const source = await readFile(url('resources/js/game/games/open-world/render/OpenWorldPixelRenderer.js'), 'utf8');
     const queue = source.indexOf('this.queue.flush(ctx)');
     const effects = source.indexOf('drawPixelSceneEffects(ctx');
     assert.ok(queue >= 0 && effects > queue);
-    assert.match(source, /setZoom\(15/);
+    assert.match(source, /setZoom\(this\.followZoom\(\)/);
+});
+
+test('the follow camera preserves character screen size across backbuffer densities', () => {
+    const renderer = Object.create(OpenWorldPixelRenderer.prototype);
+    for (const density of [.5, 1, 1.35, 1.5, 2]) {
+        renderer.context = { renderer: {
+            logicalDimensions: () => ({ width: 390 * density }),
+            dimensions: () => ({ width: 390 }),
+        } };
+        assert.ok(Math.abs(renderer.followZoom() * 3.75 / density - 90) < .01);
+    }
 });
 
 test('World map derives district labels from chunk centers instead of optional manifest fields', async () => {

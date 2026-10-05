@@ -1,0 +1,9 @@
+{
+  "character_key": "setayesh",
+  "pack_version": 14,
+  "physics_owns_jump_height": true,
+  "dedicated_slide": true,
+  "uniform_body_scale": true,
+  "style": "ground-runner",
+  "wing_powered_states": []
+}

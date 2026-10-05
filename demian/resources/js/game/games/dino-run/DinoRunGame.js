@@ -1,5 +1,6 @@
 import BaseGame from '../../contracts/BaseGame.js';
 import DinoRunModel, { RUNNER_CONFIG } from './DinoRunModel.js';
+import DinoRunEnvironment from './DinoRunEnvironment.js';
 import { BUILTIN_CHARACTER_SLUGS, builtinCharacterAssetPair } from '../../characters/CharacterVisualContract.js';
 import { arcadeCharacterLabel } from '../arcade/ArcadeCharacterRoster.js';
 import { UI_LAYER, assignUiLayer } from '../../ui/UiLayer.js';
@@ -16,6 +17,7 @@ export default class DinoRunGame extends BaseGame {
     }
     async enter(context) {
         this.context = context;
+        this.environment = new DinoRunEnvironment(context.services.performanceProfile);
         this.actor = { position: { x: RUNNER_CONFIG.playerX, z: 0 }, forward: { x: 1, z: 0 },
             speed: 0, grounded: true, airborne: false, jumpVelocity: 0, motionState: 'idle' };
         // Same sidebar works in both games; selection loads before committing the change.
@@ -28,7 +30,7 @@ export default class DinoRunGame extends BaseGame {
         context.root.querySelector('[data-game-hud-host]')?.append(this.hud);
         this.ready = assignUiLayer(document.createElement('div'), UI_LAYER.LOCAL_BASE);
         this.ready.className = 'runner-ready'; this.ready.dir = 'rtl';
-        this.ready.innerHTML = '<span>یک پرش دیگر…</span><h2>تا کجا می‌توانی بدوی؟</h2><p>از کاکتوس‌ها بپر. برای عبور از پرنده‌ها خم شو.</p><button type="button" data-input-press="jump" data-input-hold="jumpHeld">شروع و پرش <b>↗</b></button><small>نگه‌دار: پرش بلندتر · Space / ↑ · ↓ برای خم‌شدن</small>';
+        this.ready.innerHTML = '<span>یک پرش دیگر…</span><h2>تا کجا می‌توانی بدوی؟</h2><p>از کاکتوس‌ها بپر. برای عبور از پرنده‌ها اسلاید برو.</p><button type="button" data-input-press="jump" data-input-hold="jumpHeld">شروع و پرش <b>↗</b></button><small>نگه‌دار: پرش بلندتر · Space / ↑ · ↓ برای اسلاید</small>';
         context.root.querySelector('[data-game-hud-host]')?.append(this.ready);
         this.scoreNode = this.hud.querySelector('[data-run-score]'); this.bestNode = this.hud.querySelector('[data-run-best]');
         this.resize();
@@ -63,7 +65,7 @@ export default class DinoRunGame extends BaseGame {
         this.actor.speed = model.status === 'ready' ? 0 : 6;
         this.actor.airborne = model.y > 0; this.actor.grounded = !this.actor.airborne;
         this.actor.jumpVelocity = model.vy / 100;
-        this.actor.motionState = model.duck ? 'crouch' : model.landingTime > 0 ? 'land' : null;
+        this.actor.motionState = model.duck ? 'slide' : model.landingTime > 0 ? 'land' : null;
         this.avatar.sync(this.actor, dt);
         if (model.status === 'over') this.finish();
     }
@@ -88,7 +90,9 @@ export default class DinoRunGame extends BaseGame {
     }
     resize() {
         if (!this.context) return;
-        this.context.renderer.resize(1);
+        const ratio = this.context.services.performanceProfile?.maxPixelRatio ?? 1.35;
+        this.context.renderer.setPresentationMode('smooth', { maxPixelRatio: ratio });
+        this.context.renderer.resize(ratio);
         const { width, height } = this.context.renderer.logicalDimensions();
         this.width = width; this.height = height;
         this.scale = Math.min(height / 430, width / 420);
@@ -101,58 +105,19 @@ export default class DinoRunGame extends BaseGame {
         const ctx = this.context.renderer.beginFrame('#eee9dc');
         const { width: w, height: h, scale: s, ground: ground } = this;
         const frame = this.model.snapshot(alpha); const distance = frame.distance;
-        const night = Math.floor(this.model.score / 450) % 2 === 1;
-        const sky = night ? '#202b32' : '#eee9dc', ink = night ? '#ced8c8' : '#3e5140';
-        ctx.fillStyle = sky; ctx.fillRect(0, 0, w, h);
-        // All scenery is original source-drawn Canvas art; no external images or network calls.
-        ctx.fillStyle = night ? '#d7ddce' : '#ce9d66';
-        ctx.beginPath(); ctx.arc(w * .79, h * .25, 20 * s, 0, Math.PI * 2); ctx.fill();
-        if (night) { ctx.fillStyle = sky; ctx.beginPath(); ctx.arc(w * .79 + 8 * s, h * .25 - 4 * s, 18 * s, 0, Math.PI * 2); ctx.fill(); }
-        const cloudWidth = 300 * s;
-        ctx.fillStyle = night ? '#34434a' : '#faf7ee';
-        for (let i = -1; i < w / cloudWidth + 2; i += 1) {
-            const x = i * cloudWidth - (distance * s * .12 % cloudWidth);
-            const y = h * .27 + (i % 2) * 18 * s;
-            ctx.beginPath(); ctx.ellipse(x, y, 35 * s, 9 * s, 0, 0, Math.PI * 2); ctx.fill();
-        }
-        ctx.fillStyle = night ? '#30443e' : '#d8ddc8';
-        const hillWidth = 230 * s;
-        for (let i = -1; i < w / hillWidth + 2; i += 1) {
-            const x = i * hillWidth - (distance * s * .22 % hillWidth);
-            ctx.beginPath(); ctx.moveTo(x, ground); ctx.lineTo(x + hillWidth * .5, ground - 50 * s);
-            ctx.lineTo(x + hillWidth, ground); ctx.fill();
-        }
-        ctx.fillStyle = night ? '#192720' : '#dce0cb'; ctx.fillRect(0, ground + 1, w, h - ground);
-        ctx.strokeStyle = ink; ctx.lineWidth = Math.max(1, s); ctx.beginPath(); ctx.moveTo(0, ground); ctx.lineTo(w, ground); ctx.stroke();
-        ctx.fillStyle = night ? '#536256' : '#a2ad93';
-        for (let i = 0; i < 25; i += 1) {
-            const x = ((i * 97 - distance * s) % (w + 90) + w + 90) % (w + 90);
-            ctx.fillRect(x, ground + (8 + i % 4 * 7) * s, (i % 3 + 2) * s, s);
-        }
-        ctx.save(); ctx.translate(0, ground); ctx.scale(s, -s);
-        for (const o of frame.obstacles) {
-            ctx.fillStyle = ink;
-            if (o.type === 'cactus') {
-                ctx.fillRect(o.x + o.w * .4, 0, o.w * .3, o.h);
-                ctx.fillRect(o.x, o.h * .35, o.w, 7); ctx.fillRect(o.x, o.h * .35, 6, o.h * .4);
-                ctx.fillRect(o.x + o.w - 6, o.h * .35, 6, o.h * .27);
-            } else {
-                const wing = Math.sin(this.model.time * 18) * 9;
-                ctx.fillRect(o.x + 8, o.y + 5, 24, 10); ctx.fillRect(o.x + 30, o.y + 10, 10, 7);
-                ctx.beginPath(); ctx.moveTo(o.x + 15, o.y + 9); ctx.lineTo(o.x + 9, o.y + 18 + wing);
-                ctx.lineTo(o.x + 26, o.y + 9); ctx.fill();
-            }
-        }
-        ctx.restore();
+        const light = this.environment.draw(ctx, { width: w, height: h, ground, scale: s, distance, time: this.model.time });
+        this.environment.drawObstacles(ctx, frame.obstacles, { ground, scale: s, time: this.model.time, night: light.night });
+        this.environment.drawDust(ctx, { x: RUNNER_CONFIG.playerX * s, ground, scale: s, time: this.model.time,
+            sliding: this.model.duck, running: this.model.status === 'running' && this.model.y === 0 });
         const avatar = this.avatar, sprite = avatar.atlas.frames[avatar.animator.currentFrameName()];
         if (sprite) {
             const ratio = avatar.atlas.render?.referenceBodyHeightRatio ?? .9;
-            const spriteSize = 74 / ratio * s;
+            const spriteSize = RUNNER_CONFIG.bodyHeight / ratio * s;
             const x = RUNNER_CONFIG.playerX * s, y = ground - frame.y * s;
             ctx.fillStyle = 'rgba(35,48,32,.16)'; ctx.beginPath(); ctx.ellipse(x, ground, 25 * s, 3 * s, 0, 0, Math.PI * 2); ctx.fill();
             ctx.save(); ctx.translate(x, y);
-            // Duck lowers the body, without changing the standing/walking/jumping scale.
-            if (this.model.duck) ctx.scale(1.18, .55);
+            // Sliding is a real low pose in the atlas. Keep face/body proportions at one uniform scale.
+            ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
             ctx.drawImage(avatar.texture.image, sprite.x, sprite.y, sprite.w, sprite.h,
                 -spriteSize * (avatar.atlas.pivot?.x ?? .5), -spriteSize * (avatar.atlas.pivot?.y ?? .965), spriteSize, spriteSize);
             ctx.restore();
@@ -161,5 +126,5 @@ export default class DinoRunGame extends BaseGame {
     }
     pause() {} resume() {} applySettings() { this.resize(); }
     async exit() {}
-    dispose() { this.hud?.remove(); this.ready?.remove(); this.hud = null; this.context = null; this.avatar = null; }
+    dispose() { this.hud?.remove(); this.ready?.remove(); this.environment?.dispose(); this.environment = null; this.hud = null; this.context = null; this.avatar = null; }
 }

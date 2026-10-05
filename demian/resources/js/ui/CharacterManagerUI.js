@@ -1,5 +1,6 @@
 import ScrollSnapRail from './ScrollSnapRail.js';
 import CharacterPreviewRenderer from './CharacterPreviewRenderer.js';
+import { BUILTIN_CHARACTER_SLUGS, builtinCharacterPreviewUrl } from '../game/characters/CharacterVisualContract.js';
 
 export default class CharacterManagerUI {
     constructor({ root, manager = null, managerProvider = null, eventBus }) {
@@ -202,7 +203,9 @@ export default class CharacterManagerUI {
             this.listElement.appendChild(card);
             const previewCanvas = card.querySelector('[data-character-preview]');
             if (previewCanvas) {
-                void this.previewRenderer.render(previewCanvas, character);
+                void this.previewRenderer.render(previewCanvas, BUILTIN_CHARACTER_SLUGS.includes(character.slug)
+                    ? { ...character, preview_url: builtinCharacterPreviewUrl(character.slug) }
+                    : character);
             }
         });
 

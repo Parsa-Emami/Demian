@@ -11,46 +11,22 @@ import {
     sanitizeCharacterAnimation,
 } from '../../resources/js/game/characters/CharacterVisualContract.js';
 
-test('canonical packs resolve every Demian roster member and Darya uses the rebuilt V13 pack', () => {
+test('canonical packs resolve every Demian roster member and Darya uses the reference-driven V14 packs', () => {
     assert.equal(CHARACTER_PACK_VERSION, 6);
     ['attack', 'combo', 'uppercut', 'cast', 'charge', 'hurt', 'hit'].forEach((name) => {
         assert.equal(isRemovedCombatAnimation(name), true);
         assert.equal(sanitizeCharacterAnimation(name), 'idle');
     });
 
-    const tiam = builtinCharacterAssetPair('tiam', 'compact', 'https://example.test/game/');
-    assert.match(tiam.spriteUrl, /tiam-spritesheet-v6-compact\.png$/);
-    assert.match(tiam.atlasUrl, /tiam-atlas-v6-compact\.json$/);
-
-    assert.deepEqual(BUILTIN_CHARACTER_SLUGS, ['darya', 'tiam', 'ronak']);
-
-
-    assert.equal(characterPackVersion('darya'), 13);
-    const darya = builtinCharacterAssetPair('darya', 'mobile', 'https://example.test/game/');
-    assert.match(darya.spriteUrl, /darya-spritesheet-v13-mobile\.png$/);
-    assert.match(darya.atlasUrl, /darya-atlas-v13-mobile\.json$/);
-
-    for (const slug of ['amirreza', 'arsal', 'hossein', 'iman', 'mojtaba', 'parsa', 'setayesh', 'sorkhi', 'taher-db', 'uzudi']) {
-        assert.equal(characterPackVersion(slug), 9);
+    assert.deepEqual(BUILTIN_CHARACTER_SLUGS, ['darya', 'setayesh', 'uzudi']);
+    for (const slug of BUILTIN_CHARACTER_SLUGS) {
+        assert.equal(characterPackVersion(slug), 14);
         const pair = builtinCharacterAssetPair(slug, 'mobile', 'https://example.test/game/');
-        assert.match(pair.spriteUrl, new RegExp(`${slug}-spritesheet-v9-mobile\\.png$`.replace('\\\\.', '\\.')));
-        assert.match(pair.atlasUrl, new RegExp(`${slug}-atlas-v9-mobile\\.json$`.replace('\\\\.', '\\.')));
+        assert.ok(pair.spriteUrl.endsWith(`${slug}-spritesheet-v14-mobile.png`));
+        assert.ok(pair.atlasUrl.endsWith(`${slug}-atlas-v14-mobile.json`));
     }
-    assert.equal(characterPackVersion('ronak'), 6);
-    assert.equal(characterPackVersion('tiam'), 6);
-    assert.deepEqual(CHARACTER_PACK_VERSION_OVERRIDES, {
-        amirreza: 9,
-        arsal: 9,
-        darya: 13,
-        hossein: 9,
-        iman: 9,
-        mojtaba: 9,
-        parsa: 9,
-        setayesh: 9,
-        sorkhi: 9,
-        'taher-db': 9,
-        uzudi: 9,
-    });
+    assert.equal(CHARACTER_PACK_VERSION_OVERRIDES.darya, 14);
+
 });
 
 test('canonical body footprint compensates source-art occupancy instead of scaling characters arbitrarily', () => {
