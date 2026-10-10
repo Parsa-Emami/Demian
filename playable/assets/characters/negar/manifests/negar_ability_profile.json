@@ -1,0 +1,24 @@
+{
+  "character_key": "negar",
+  "pack_version": 14,
+  "runner_physics": "shared",
+  "combat": false,
+  "companion_collision_independent": false,
+  "abilities": [
+    {
+      "id": "smile-bloom",
+      "label": "شکوفهٔ لبخند",
+      "name": "Smile Bloom",
+      "animation": "smile_bloom",
+      "duration": 1.6,
+      "cooldown": 6,
+      "effect": "smile-bloom",
+      "particleCount": 14,
+      "contexts": [
+        "OPEN_WORLD"
+      ],
+      "cosmetic": true,
+      "description": "Palm on cheek, wink and finger-heart with a small ring of hearts and flower petals."
+    }
+  ]
+}

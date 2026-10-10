@@ -94,8 +94,8 @@ test('chunk manager aborts obsolete in-flight loads after a long-distance move',
         maxLoadedChunks: 1,
         concurrency: 1,
     });
-    manager.update({ x: -6, z: -60 });
-    manager.update({ x: 6, z: 12 });
+    manager.update({ x: -12, z: -120 });
+    manager.update({ x: 12, z: 24 });
     await manager.whenIdle();
     assert.ok(aborted >= 1);
     assert.equal(manager.stats().currentChunkId, 'cafe-1-6');

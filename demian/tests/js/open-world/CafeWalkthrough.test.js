@@ -3,14 +3,14 @@ import assert from 'node:assert/strict';
 import manifest from '../../../resources/js/game/games/open-world/data/DemianReferenceCafeManifest.js';
 import { CAFE_STATIC_COLLIDERS, ROLE_PLAY_NPCS } from '../../../resources/js/game/shared/cafe/CafeReferenceLayout.js';
 import {
-    CAFE_ROOMS, CAFE_WALKTHROUGH_ROUTE, CAFE_CHARACTER_SPAWNS, cafeRoomAt,
+    CAFE_ROOMS, CAFE_WALKTHROUGH_ROUTE, CAFE_CHARACTER_SPAWNS, cafeRoomAt, cafePoint,
 } from '../../../resources/js/game/shared/cafe/CafeWalkthroughScene.js';
 import Collider from '../../../resources/js/game/shared/collision/Collider.js';
 import { circleIntersectsAabb } from '../../../resources/js/game/shared/collision/CollisionMath.js';
 import NavigationGrid from '../../../resources/js/game/shared/navigation/NavigationGrid.js';
 import PixelCamera2D from '../../../resources/js/game/rendering2d/PixelCamera2D.js';
 import WorldDiscovery from '../../../resources/js/game/games/open-world/world/WorldDiscovery.js';
-import { safeCafeTravelPosition, reconcileCafeDiscovery } from '../../../resources/js/game/games/open-world/world/CafeTravelSafety.js';
+import { safeCafeTravelPosition, reconcileCafeDiscovery, cafeRestorePlan } from '../../../resources/js/game/games/open-world/world/CafeTravelSafety.js';
 import { cafeMapCamera } from '../../../resources/js/game/games/open-world/ui/CafeMapProjection.js';
 
 const obstacles = CAFE_STATIC_COLLIDERS.map((d) => new Collider({ ...d, type: 'static', shape: 'aabb' }));
@@ -53,7 +53,7 @@ test('all spawn, save and staff positions are reachable and not silently snapped
 
 test('unseen adjoining rooms are blocked instead of being rendered as an invented café floor', () => {
     const grid = navigation();
-    for (const p of [{ x: -7, z: -56 }, { x: 9, z: -49 }]) {
+    for (const p of [cafePoint(-7, -56), cafePoint(9, -49)]) {
         assert.equal(cafeRoomAt(p), null);
         const cell = grid.worldToCell(p);
         assert.equal(grid.isWalkable(cell.x, cell.z), false);
@@ -78,6 +78,21 @@ test('travel repairs stored positions inside a table, outside the footprint, or 
         assert.ok(cafeRoomAt(resolved));
         assert.ok(grid.isWalkable(cell.x, cell.z));
     }
+});
+
+test('V3 saves scale their location into V4 and preserve discovery instead of resetting progress', () => {
+    const state = { worldVersion: 3, position: { x: 3.3, z: -53 },
+        discoveredChunks: ['cafe-0-0', 'cafe-1-6'], unlockedSavePoints: ['save-lounge'] };
+    const plan = cafeRestorePlan(state, manifest);
+    assert.equal(plan.legacyLayout, false);
+    assert.deepEqual(plan.requested, { x: 6.6, z: -106 });
+    const discovery = new WorldDiscovery(state);
+    reconcileCafeDiscovery(discovery, manifest, plan);
+    assert.ok(discovery.isChunkDiscovered('cafe-0-0'));
+    assert.ok(discovery.isChunkDiscovered('cafe-1-6'));
+    assert.ok(discovery.isSavePointUnlocked('save-lounge'));
+    const target = safeCafeTravelPosition(plan.requested, navigation(), manifest.spawn);
+    assert.deepEqual(target, plan.requested);
 });
 
 test('floorplan projections keep the WC above the entrance and preserve distances in both axes', () => {

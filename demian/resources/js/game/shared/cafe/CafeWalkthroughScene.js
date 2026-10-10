@@ -19,19 +19,32 @@ const wall = (id, x, z, halfX, halfZ, options = {}) => item(id, 'wall', x, z, ha
 const chair = (id, x, z, facing = 'north', style = 'dining') => item(id, 'chair', x, z, .68, .7, { facing, style, height: .9 });
 const plant = (id, x, z, style = 'leaf', size = .55) => item(id, 'plant', x, z, size, size, { style, height: 1.7 });
 
-export const CAFE_LAYOUT_VERSION = 3;
-export const CAFE_BOUNDS = freezeCafe({ minX: -12, maxX: 12, minZ: -66, maxZ: 18 });
-export const CAFE_RENDER_BOUNDS = freezeCafe({ minX: -13, maxX: 13, minZ: -71, maxZ: 24 });
-export const CAFE_FLOOR = freezeCafe({ width: 24, depth: 84, color: 0xc7c7c1 });
+// V4 doubles both axes, creating four times the playable floor area. One
+// transform keeps room apertures, furniture, collision and route points aligned.
+export const CAFE_GAMEPLAY_SCALE = 2;
+export const cafePoint = (x, z) => Object.freeze({ x: x * CAFE_GAMEPLAY_SCALE, z: z * CAFE_GAMEPLAY_SCALE });
+const spatialKeys = new Set(['x', 'z', 'minX', 'maxX', 'minZ', 'maxZ', 'width', 'depth']);
+export function cafeGeometry(value) {
+    if (Array.isArray(value)) return freezeCafe(value.map(cafeGeometry));
+    if (value && typeof value === 'object') return freezeCafe(Object.fromEntries(
+        Object.entries(value).map(([key, item]) => [key,
+            typeof item === 'number' && spatialKeys.has(key) ? item * CAFE_GAMEPLAY_SCALE : cafeGeometry(item)]),
+    ));
+    return value;
+}
+export const CAFE_LAYOUT_VERSION = 4;
+export const CAFE_BOUNDS = cafeGeometry({ minX: -12, maxX: 12, minZ: -66, maxZ: 18 });
+export const CAFE_RENDER_BOUNDS = cafeGeometry({ minX: -13, maxX: 13, minZ: -71, maxZ: 24 });
+export const CAFE_FLOOR = cafeGeometry({ width: 24, depth: 84, color: 0xc7c7c1 });
 
-export const CAFE_ROOMS = freezeCafe([
+export const CAFE_ROOMS = cafeGeometry([
     { id: 'main-hall', label: 'سالن اصلی', bounds: { minX: -12, maxX: 12, minZ: -8, maxZ: 18 }, floor: 'stone', source: 'video-1' },
     { id: 'rear-hall', label: 'سالن پشتی', bounds: { minX: -12, maxX: 12, minZ: -44, maxZ: -8 }, floor: 'stone', source: 'video-2' },
     { id: 'washroom', label: 'روشویی', bounds: { minX: -1, maxX: 6, minZ: -66, maxZ: -44 }, floor: 'charcoal-stone', source: 'video-3' },
     { id: 'wc-cubicle', label: 'WC', bounds: { minX: 6, maxX: 12, minZ: -66, maxZ: -56 }, floor: 'light-stone', source: 'video-3' },
 ]);
 
-export const CAFE_WALLS = freezeCafe([
+export const CAFE_WALLS = cafeGeometry([
     wall('wall-main-west', -11.8, -13, .2, 30.8),
     wall('wall-main-east', 11.8, -13, .2, 30.8),
     wall('wall-south-left', -6.9, 17.8, 4.9, .2, { material: 'glass' }),
@@ -116,9 +129,9 @@ for (const [index, z] of [-15, -28.5].entries()) {
         chair(`rear-chair-${index}-south-2`, -5.55, z + 2.65, 'north', 'cane'),
     );
 }
-export const CAFE_FIXTURES = freezeCafe(fixtures);
+export const CAFE_FIXTURES = cafeGeometry(fixtures);
 
-export const CAFE_RUGS = freezeCafe([
+export const CAFE_RUGS = cafeGeometry([
     item('entry-mat', 'rug', 0, 16.0, 1.4, .75, { style: 'burgundy', pattern: 'persian' }),
     item('main-rug', 'rug', -7, -1.8, 4.3, 3.9, { style: 'burgundy', pattern: 'persian' }),
     item('lounge-rug-1', 'rug', 6.7, -17.2, 4.4, 5.3, { style: 'burgundy', pattern: 'persian' }),
@@ -126,13 +139,13 @@ export const CAFE_RUGS = freezeCafe([
     item('wc-door-mat', 'rug', 3.3, -42.8, 1.5, .8, { style: 'burgundy', pattern: 'plain' }),
 ]);
 
-export const CAFE_DOORS = freezeCafe([
+export const CAFE_DOORS = cafeGeometry([
     item('front-glass', 'glass-door', 0, 17.8, 2, .12, { label: 'ورودی', style: 'black-glass', state: 'open' }),
     item('washroom-door', 'panel-door', 3.3, -44, 2, .12, { label: 'WC', style: 'white-panel', state: 'open' }),
     item('cubicle-door', 'panel-door', 6, -61, .12, 2.4, { style: 'charcoal', state: 'open', axis: 'z' }),
 ]);
 
-export const CAFE_DECOR = freezeCafe([
+export const CAFE_DECOR = cafeGeometry([
     item('green-bar-backsplash', 'tile-panel', 11.3, 3.6, .3, 7.5, { material: 'green-tile' }),
     item('bar-bottle-shelf', 'bottle-shelf', 10.7, 3.6, .35, 7.5),
     item('espresso-machine', 'espresso', 10.35, .3, .55, 1.15),
@@ -158,7 +171,7 @@ export const CAFE_DECOR = freezeCafe([
     item('wc-sign', 'wc-sign', 5.8, -43.3, .5, .15),
 ]);
 
-export const CAFE_LIGHTS = freezeCafe([
+export const CAFE_LIGHTS = cafeGeometry([
     item('main-track-light', 'linear-light', 1.2, 5.3, .07, 10.0, { ceiling: 'acoustic-grid' }),
     item('bar-track-light', 'track-light', 8.8, 4.0, .06, 7.5, { ceiling: 'acoustic-grid' }),
     ...[-14.5, -29.0, -38.2].flatMap((z, i) => [
@@ -172,14 +185,14 @@ export const CAFE_LIGHTS = freezeCafe([
 
 export const CAFE_CEILING = freezeCafe([
     { id: 'main-ceiling', bounds: CAFE_ROOMS[0].bounds, material: 'white-acoustic-grid', tileSize: 1.4, tracks: ['main-track-light', 'bar-track-light'] },
-    { id: 'rear-ceiling', bounds: CAFE_ROOMS[1].bounds, material: 'white-plaster', fixtures: 'warm-wall-sconces', flag: { x: 1.2, z: -9.5, colors: ['#292725', '#e9c754', '#bd4235'] } },
+    { id: 'rear-ceiling', bounds: CAFE_ROOMS[1].bounds, material: 'white-plaster', fixtures: 'warm-wall-sconces', flag: { ...cafePoint(1.2, -9.5), colors: ['#292725', '#e9c754', '#bd4235'] } },
     { id: 'washroom-ceiling', bounds: CAFE_ROOMS[2].bounds, material: 'charcoal', fixtures: 'downlights' },
 ]);
 
-export const CAFE_CHARACTER_SPAWNS = freezeCafe([
+export const CAFE_CHARACTER_SPAWNS = cafeGeometry([
     { x: 0, z: 14.2 }, { x: -.2, z: 5 }, { x: 2, z: -11 }, { x: -.2, z: -26 }, { x: 2, z: -40 },
 ]);
-export const CAFE_WALKTHROUGH_ROUTE = freezeCafe([
+export const CAFE_WALKTHROUGH_ROUTE = cafeGeometry([
     { id: 'entrance', x: 0, z: 14.2 },
     { id: 'front-aisle', x: 0, z: 5.5 },
     { id: 'main-hall', x: 0, z: -2 },
@@ -200,6 +213,7 @@ export function cafeRoomAt(position, margin = 0) {
 
 export const CAFE_SURVEY = freezeCafe({
     date: '2026-10-09', layoutVersion: CAFE_LAYOUT_VERSION, units: 'gameplay-units', measured: false,
+    gameplayScale: CAFE_GAMEPLAY_SCALE, areaMultiplier: 4, runtimeDetail: 'simple',
     videos: [
         { id: 'video-1', file: '20261009_112412_1.mp4', duration: 50.028889, areas: ['glazing', 'books', 'merch', 'counter', 'main-hall'] },
         { id: 'video-2', file: '20261009_112412_2.mp4', duration: 50.539022, areas: ['radio', 'rear-dining', 'lounge', 'record-sideboard', 'wc-entry'] },

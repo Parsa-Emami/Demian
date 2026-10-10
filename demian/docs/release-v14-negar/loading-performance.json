@@ -1,0 +1,75 @@
+{
+  "browser": "153.0.8010.0",
+  "physicalPhoneMeasured": false,
+  "cases": [
+    {
+      "scenario": "slow-phone",
+      "coldBootMs": 9616,
+      "sessionStartMs": 1614,
+      "state": {
+        "slug": "negar",
+        "variant": "lite",
+        "ability": "smile-bloom",
+        "bounds": {
+          "minX": -24,
+          "maxX": 24,
+          "minZ": -132,
+          "maxZ": 36
+        },
+        "entities": 3,
+        "decodedCacheBytes": 10223616
+      },
+      "sheets": [
+        "/assets/characters/negar/negar-spritesheet-v14-lite.png",
+        "/assets/characters/darya/darya-spritesheet-v14-lite.png",
+        "/assets/characters/setayesh/setayesh-spritesheet-v14-lite.png"
+      ],
+      "errors": [],
+      "cpuThrottle": 4,
+      "network": "200 KiB/s, 120 ms latency, cold browser cache"
+    },
+    {
+      "scenario": "failed-runtime-image",
+      "coldBootMs": 1076,
+      "sessionStartMs": 955,
+      "state": {
+        "slug": "negar",
+        "variant": "lite",
+        "ability": "smile-bloom",
+        "bounds": {
+          "minX": -24,
+          "maxX": 24,
+          "minZ": -132,
+          "maxZ": 36
+        },
+        "entities": 4,
+        "decodedCacheBytes": 13631488
+      },
+      "sheets": [
+        "/assets/characters/negar/negar-spritesheet-v14-runtime.png",
+        "/assets/characters/negar/negar-spritesheet-v14-lite.png",
+        "/assets/characters/darya/darya-spritesheet-v14-lite.png",
+        "/assets/characters/setayesh/setayesh-spritesheet-v14-lite.png",
+        "/assets/characters/uzudi/uzudi-spritesheet-v14-lite.png",
+        "/assets/characters/uzudi/uzudi-spritesheet-v14-runtime.png",
+        "/assets/characters/setayesh/setayesh-spritesheet-v14-runtime.png"
+      ],
+      "errors": [],
+      "overlappingSelection": "uzudi",
+      "cache": {
+        "before": {
+          "builds": 2,
+          "hits": 88,
+          "bytes": 3822632
+        },
+        "after": {
+          "builds": 2,
+          "hits": 208,
+          "bytes": 3822632
+        },
+        "renderMs": 125.90000000037253,
+        "frames": 120
+      }
+    }
+  ]
+}

@@ -10,9 +10,10 @@ import {
 } from '../../resources/js/game/rendering2d/PixelActorRenderer.js';
 
 test('Open World never blocks on desktop-size character sheets', () => {
-    assert.deepEqual(characterRuntimeVariants({ tier: 'high' }), { active: 'mobile', npc: 'compact' });
-    assert.deepEqual(characterRuntimeVariants({ tier: 'performance' }), { active: 'compact', npc: 'compact' });
-    assert.deepEqual(orderedSpriteVariants('compact'), ['compact', 'mobile', 'desktop']);
+    assert.deepEqual(characterRuntimeVariants({ tier: 'high' }), { active: 'runtime', npc: 'lite' });
+    assert.deepEqual(characterRuntimeVariants({ tier: 'performance' }), { active: 'lite', npc: 'lite' });
+    assert.deepEqual(orderedSpriteVariants('runtime'), ['runtime', 'lite', 'compact', 'mobile']);
+    assert.ok(!orderedSpriteVariants('lite').includes('desktop'));
 });
 
 test('CanvasTexture images without HTMLImageElement.complete remain drawable', () => {

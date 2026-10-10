@@ -1,0 +1,74 @@
+[
+  {
+    "slug": "darya",
+    "variant": "runtime",
+    "physicalFrames": 254,
+    "animationFrameNames": 672,
+    "decodedBytes": 9437184,
+    "downloadBytes": 2337879,
+    "sourceDecodedBytes": 33718272
+  },
+  {
+    "slug": "darya",
+    "variant": "lite",
+    "physicalFrames": 201,
+    "animationFrameNames": 672,
+    "decodedBytes": 3407872,
+    "downloadBytes": 912242,
+    "sourceDecodedBytes": 33718272
+  },
+  {
+    "slug": "setayesh",
+    "variant": "runtime",
+    "physicalFrames": 254,
+    "animationFrameNames": 672,
+    "decodedBytes": 9437184,
+    "downloadBytes": 1833124,
+    "sourceDecodedBytes": 33718272
+  },
+  {
+    "slug": "setayesh",
+    "variant": "lite",
+    "physicalFrames": 201,
+    "animationFrameNames": 672,
+    "decodedBytes": 3407872,
+    "downloadBytes": 714431,
+    "sourceDecodedBytes": 33718272
+  },
+  {
+    "slug": "uzudi",
+    "variant": "runtime",
+    "physicalFrames": 254,
+    "animationFrameNames": 672,
+    "decodedBytes": 9437184,
+    "downloadBytes": 2017308,
+    "sourceDecodedBytes": 33718272
+  },
+  {
+    "slug": "uzudi",
+    "variant": "lite",
+    "physicalFrames": 201,
+    "animationFrameNames": 672,
+    "decodedBytes": 3407872,
+    "downloadBytes": 792304,
+    "sourceDecodedBytes": 33718272
+  },
+  {
+    "slug": "negar",
+    "variant": "runtime",
+    "physicalFrames": 254,
+    "animationFrameNames": 672,
+    "decodedBytes": 9437184,
+    "downloadBytes": 1822933,
+    "sourceDecodedBytes": 33718272
+  },
+  {
+    "slug": "negar",
+    "variant": "lite",
+    "physicalFrames": 201,
+    "animationFrameNames": 672,
+    "decodedBytes": 3407872,
+    "downloadBytes": 725734,
+    "sourceDecodedBytes": 33718272
+  }
+]

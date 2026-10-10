@@ -242,6 +242,18 @@ export default class CharacterEffects {
     onStateChanged(state, facing) {
         const position = this.owner.group.position.clone();
 
+        const ability = this.owner.abilityController?.active;
+        if (ability?.animation === state && ability.effect === 'smile-bloom') {
+            for (let index = 0; index < 14; index += 1) {
+                const angle = Math.PI * 2 * index / 14;
+                this.spawn(index % 3 === 0 ? 'heart' : 'star', {
+                    position, y: 2, scale: .22, life: ability.duration,
+                    velocity: new THREE.Vector3(Math.cos(angle) * 1.1, .8, Math.sin(angle) * .7),
+                    gravity: .35, spin: .6,
+                });
+            }
+        }
+
 
         if (state === 'win' || state === 'celebrate') {
             for (let index = 0; index < 10; index += 1) {

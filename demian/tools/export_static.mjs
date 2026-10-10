@@ -2,6 +2,7 @@
 import { mkdirSync, readFileSync, writeFileSync, cpSync, rmSync, existsSync } from 'node:fs';
 import { resolve, join } from 'node:path';
 import { BUILTIN_CHARACTER_SLUGS, RETIRED_CHARACTER_SLUGS, characterPackVersion } from '../resources/js/game/characters/CharacterVisualContract.js';
+import { BUILTIN_CHARACTER_LABELS as labels } from '../resources/js/game/characters/manifests/CharacterManifestRegistry.js';
 const root = resolve(import.meta.dirname, '..');
 const out = resolve(root, process.argv.find((a) => a.startsWith('--out='))?.slice(6) ?? '_site');
 if (out === root || out === join(root, 'public')) throw new Error('Output must be a separate release folder.');
@@ -31,7 +32,6 @@ html = html.replace(/\{\{--[\s\S]*?--\}\}/g, '')
     .replace(/\{\{\s*url\('\/api\/v1\/events'\)\s*\}\}/g, 'api/v1/events');
 if (/@(?:vite|php|foreach|if)|\{\{/.test(html)) throw new Error('Unsupported template directive in static export.');
 writeFileSync(join(out, 'index.html'), html);
-const labels = { darya: 'DARYA / دریا', setayesh: 'SETAYESH / ستایش', uzudi: 'UZUDI / اوزودی' };
 writeFileSync(join(out, 'characters.json'), JSON.stringify({ data: BUILTIN_CHARACTER_SLUGS.map((slug) => ({
     id: `builtin-${slug}`, name: labels[slug], slug, is_builtin: true, is_active: slug === 'darya',
     sprite_url: `assets/characters/${slug}/${slug}-spritesheet-v${characterPackVersion(slug)}-mobile.png`,

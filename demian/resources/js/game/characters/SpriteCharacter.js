@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import SpriteAnimator from './SpriteAnimator';
 import CharacterEffects from './CharacterEffects';
 import CharacterSpeechBubble from './CharacterSpeechBubble';
+import CharacterAbilityController from './abilities/CharacterAbilityController.js';
 import {
     cameraRelativeDirection,
     directionFromVector,
@@ -76,6 +77,7 @@ export default class SpriteCharacter {
         this.scene = scene;
         this.character = character;
         this.atlas = atlas;
+        this.abilityController = new CharacterAbilityController(atlas);
         this.group = new THREE.Group();
         this.group.name = `Character:${character.slug}`;
         this.bodyRoot = new THREE.Group();
@@ -459,6 +461,7 @@ export default class SpriteCharacter {
 
 
     update(deltaTime, input, movementBasis) {
+        this.abilityController.update(deltaTime);
         this.stateLock = Math.max(0, this.stateLock - deltaTime);
         this.dashCooldown = Math.max(0, this.dashCooldown - deltaTime);
         this.jumpBufferTimer = Math.max(0, this.jumpBufferTimer - deltaTime);
@@ -483,7 +486,7 @@ export default class SpriteCharacter {
         const rawMove = cameraRelativeDirection(input.x, input.z, movementBasis);
         const inputMagnitude = THREE.MathUtils.clamp(rawMove.length(), 0, 1);
         const hasMovement = inputMagnitude > 0.06;
-        const hasAction = ACTIONS.some(({ name }) => Boolean(input[name]));
+        const hasAction = Boolean(input.ability) || ACTIONS.some(({ name }) => Boolean(input[name]));
 
         if (hasMovement || hasAction || input.jump) {
             this.introActive = false;
@@ -506,7 +509,8 @@ export default class SpriteCharacter {
             this.handleActionInput(input);
         }
 
-        const actionBlocksMovement = this.stateLock > 0 && LOCKED_ACTIONS.has(this.state);
+        const actionBlocksMovement = this.stateLock > 0 && (LOCKED_ACTIONS.has(this.state)
+            || this.abilityController.active?.animation === this.state);
         const impulseAction = actionBlocksMovement && ['dash', 'dodge', 'slide'].includes(this.state);
 
         if (hasMovement && !actionBlocksMovement) {
@@ -661,6 +665,14 @@ export default class SpriteCharacter {
     }
 
     handleActionInput(input) {
+        if (input.ability) {
+            const ability = this.abilityController.activate({ grounded: this.grounded, locked: this.stateLock > 0 });
+            if (ability) {
+                this.velocity.set(0, 0, 0);
+                this.playLocked(ability.animation, ability.duration);
+                return;
+            }
+        }
         const action = ACTIONS.find(({ name }) => Boolean(input[name]));
         if (!action) {
             return;
@@ -954,6 +966,7 @@ export default class SpriteCharacter {
     }
 
     dispose() {
+        this.abilityController.cancel();
         this.movementResolver = null;
         this.speech.dispose();
         this.effects.dispose();

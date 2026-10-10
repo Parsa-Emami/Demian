@@ -27,8 +27,12 @@
         "build:static": "npm run build && node tools/export_static.mjs",
         "build:darya:v13": "python3 tools/build_darya_v13.py",
         "validate:darya:v13": "python3 tools/validate_darya_v13.py",
-        "build:characters:v14": "python3 tools/build_character_pack_v14.py",
-        "validate:characters:v14": "python3 tools/validate_character_pack_v14.py"
+        "build:characters:v14": "python3 tools/build_character_pack_v14.py && python3 tools/build_runtime_character_packs.py",
+        "validate:characters:v14": "python3 tools/validate_character_pack_v14.py",
+        "build:negar:v14": "python3 tools/build_character_pack_v14.py --characters negar && python3 tools/build_runtime_character_packs.py",
+        "build:characters:runtime": "python3 tools/build_runtime_character_packs.py",
+        "test:negar:browser": "node tools/check_negar_v14.mjs",
+        "test:loading:browser": "node tools/check_loading_performance_v14.mjs"
     },
     "devDependencies": {
         "@tailwindcss/vite": "^4.0.0",

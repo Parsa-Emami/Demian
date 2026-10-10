@@ -1,9 +1,9 @@
 import {
-    CAFE_BOUNDS, CAFE_FLOOR, CAFE_WALLS, CAFE_FIXTURES, freezeCafe,
+    CAFE_BOUNDS, CAFE_FLOOR, CAFE_WALLS, CAFE_FIXTURES, freezeCafe, cafePoint,
 } from './CafeWalkthroughScene.js';
 export { CAFE_BOUNDS, CAFE_FLOOR } from './CafeWalkthroughScene.js';
 
-const point = (x, z) => Object.freeze({ x, z });
+const point = cafePoint;
 
 // Geometry is authored once. Painting and collision consume the same objects;
 // rugs, mirrors mounted on a wall, lamps and table-top props add no phantom walls.

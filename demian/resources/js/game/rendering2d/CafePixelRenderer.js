@@ -1,10 +1,11 @@
 import { CAFE_BOUNDS, CAFE_STATIC_COLLIDERS } from '../shared/cafe/CafeReferenceLayout.js';
 import {
     CAFE_ROOMS, CAFE_WALLS, CAFE_FIXTURES, CAFE_RUGS, CAFE_DECOR, CAFE_DOORS,
-    CAFE_LIGHTS, CAFE_CEILING,
+    CAFE_LIGHTS, CAFE_CEILING, CAFE_GAMEPLAY_SCALE,
 } from '../shared/cafe/CafeWalkthroughScene.js';
 import { CAFE_MATERIALS as M } from './CafeWalkthroughPalette.js';
 import { paintCafeItem } from './CafeWalkthroughPainter.js';
+import { paintSimpleCafeItem } from './SimpleCafePainter.js';
 
 const visualById = new Map([...CAFE_WALLS, ...CAFE_FIXTURES].map((entry) => [entry.id, entry]));
 function rectangle(camera, bounds) {
@@ -24,9 +25,25 @@ export default class CafePixelRenderer {
         this.colliders = colliders;
         this.items = colliders.map((entry) => ({ ...entry, ...(visualById.get(entry.id) ?? {}) }))
             .sort((a, b) => a.position.z - b.position.z || a.id.localeCompare(b.id));
+        this.simpleItems = [...CAFE_RUGS, ...this.items, ...CAFE_DECOR, ...CAFE_DOORS];
     }
 
-    draw(ctx, camera, { atmosphere = 'day', grid = true, detail = true, ceiling = false } = {}) {
+    draw(ctx, camera, { atmosphere = 'day', grid = false, detail = false, ceiling = false, simple = true } = {}) {
+        if (simple) {
+            ctx.save();
+            this.drawFloor(ctx, camera, { grid: false });
+            for (const entry of this.simpleItems) paintSimpleCafeItem(ctx, camera, entry);
+            this.drawStructure(ctx, camera);
+            if (ceiling) this.drawCeiling(ctx, camera);
+            if (atmosphere === 'night') {
+                ctx.fillStyle = 'rgba(17,24,31,.18)';
+                for (const room of CAFE_ROOMS) {
+                    const r = rectangle(camera, room.bounds); ctx.fillRect(r.x, r.y, r.width, r.height);
+                }
+            }
+            ctx.restore();
+            return;
+        }
         ctx.save();
         this.drawExterior(ctx, camera);
         this.drawFloor(ctx, camera, { grid });
@@ -106,7 +123,8 @@ export default class CafePixelRenderer {
     }
 
     drawExterior(ctx, camera) {
-        const r = rectangle(camera, { minX: -12, maxX: 12, minZ: 18, maxZ: 23 });
+        const scale = CAFE_GAMEPLAY_SCALE;
+        const r = rectangle(camera, { minX: -12 * scale, maxX: 12 * scale, minZ: 18 * scale, maxZ: 23 * scale });
         if (r.y > camera.viewportHeight || r.y + r.height < 0) return;
         fill(ctx, r, '#b3b5a9');
         ctx.save(); ctx.beginPath(); ctx.rect(r.x, r.y, r.width, r.height); ctx.clip();
@@ -127,7 +145,8 @@ export default class CafePixelRenderer {
     }
 
     drawStructure(ctx, camera) {
-        const beam = camera.worldRect({ x: 0, z: -7.85 }, { x: 11.6, z: .12 });
+        const s = CAFE_GAMEPLAY_SCALE;
+        const beam = camera.worldRect({ x: 0, z: -7.85 * s }, { x: 11.6 * s, z: .12 * s });
         if (beam.y + 10 >= 0 && beam.y < camera.viewportHeight) {
             ctx.fillStyle = 'rgba(93,96,92,.12)'; ctx.fillRect(beam.x, beam.y, beam.width, Math.max(1, beam.height));
         }

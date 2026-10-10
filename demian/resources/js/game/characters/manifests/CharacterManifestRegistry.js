@@ -6,12 +6,12 @@
  * Full Game Rebuild Master Pack's non-negotiable directive:
  *
  *   - Every character has a `production_status` of either
- *     `gold_standard_production` for the three shipped V14 characters.
+ *     `gold_standard_production` for the shipped V14 characters.
  *   - The active/default character resolution, roster ordering, and any
  *     "new character onboarding" flow should read from this registry
  *     rather than from ad hoc hardcoded arrays.
  *
- * The active roster includes Darya, Setayesh and Uzudi, all rebuilt from references.
+ * The active roster includes Darya, Setayesh, Uzudi and Negar, rebuilt from references.
  */
 
 const MANIFEST_URL_PATH = 'assets/characters/character-manifest-v4.json';
@@ -28,9 +28,10 @@ const EMBEDDED_ROSTER_SNAPSHOT = Object.freeze({
     manifestVersion: 'v4',
     productionCharacter: 'darya',
     characters: Object.freeze([
-        Object.freeze({ slug: 'darya', productionStatus: 'gold_standard_production', isDefaultActive: true, packVersion: 14 }),
-        Object.freeze({ slug: 'setayesh', productionStatus: 'gold_standard_production', isDefaultActive: false, packVersion: 14 }),
-        Object.freeze({ slug: 'uzudi', productionStatus: 'gold_standard_production', isDefaultActive: false, packVersion: 14 }),
+        Object.freeze({ slug: 'darya', displayName: 'DARYA / دریا', productionStatus: 'gold_standard_production', isDefaultActive: true, packVersion: 14 }),
+        Object.freeze({ slug: 'setayesh', displayName: 'SETAYESH / ستایش', productionStatus: 'gold_standard_production', isDefaultActive: false, packVersion: 14 }),
+        Object.freeze({ slug: 'uzudi', displayName: 'UZUDI / اوزودی', productionStatus: 'gold_standard_production', isDefaultActive: false, packVersion: 14 }),
+        Object.freeze({ slug: 'negar', displayName: 'NEGAR / نگار', productionStatus: 'gold_standard_production', isDefaultActive: false, packVersion: 14 }),
     ]),
 });
 
@@ -58,6 +59,10 @@ export const ALL_MANIFEST_SLUGS = Object.freeze([
     ...PRODUCTION_CHARACTER_SLUGS,
     ...LEGACY_CHARACTER_SLUGS,
 ]);
+
+export const BUILTIN_CHARACTER_LABELS = Object.freeze(Object.fromEntries(
+    EMBEDDED_ROSTER_SNAPSHOT.characters.map((entry) => [entry.slug, entry.displayName])
+));
 
 /** The slug that should be treated as the default/active character absent any other signal. */
 export const DEFAULT_ACTIVE_SLUG = EMBEDDED_ROSTER_SNAPSHOT.characters.find((c) => c.isDefaultActive)?.slug

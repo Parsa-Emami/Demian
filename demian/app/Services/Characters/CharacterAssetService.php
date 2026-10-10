@@ -178,7 +178,7 @@ class CharacterAssetService
         // art pack so stale asset_pack_version values cannot keep an older
         // sprite sheet active after this patch is copied into an existing DB.
         $bundledVersion = match ($slug) {
-            'darya', 'setayesh', 'uzudi' => 14,
+            'darya', 'setayesh', 'uzudi', 'negar' => 14,
             'amirreza',
             'arsal',
             'hossein',

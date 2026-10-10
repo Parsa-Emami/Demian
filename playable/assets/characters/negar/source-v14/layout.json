@@ -1,0 +1,62 @@
+{
+  "mainRowBounds": [
+    0,
+    179,
+    358,
+    537,
+    717,
+    896,
+    1075,
+    1254
+  ],
+  "motionColumns": 4,
+  "motionRowBounds": [
+    0,
+    512,
+    1024
+  ],
+  "faceSampleHeightRatio": 0.6,
+  "identity": [
+    "short dark brown bob",
+    "side-swept bangs",
+    "warm brown eyes",
+    "pale cream/lilac scarf with dusty pink floral pattern",
+    "lemon yellow open collared short-sleeve shirt over yellow top",
+    "fine gold necklace",
+    "black wristwatch on anatomical left wrist",
+    "charcoal relaxed trousers",
+    "black/cream sneakers"
+  ],
+  "inferredDetails": [
+    "Trousers and shoes are an artistic completion: the supplied portrait does not show the lower body."
+  ],
+  "signatureAbility": {
+    "id": "smile-bloom",
+    "label": "شکوفهٔ لبخند",
+    "name": "Smile Bloom",
+    "animation": "smile_bloom",
+    "duration": 1.6,
+    "cooldown": 6,
+    "effect": "smile-bloom",
+    "particleCount": 14,
+    "contexts": [
+      "OPEN_WORLD"
+    ],
+    "cosmetic": true,
+    "description": "Palm on cheek, wink and finger-heart with a small ring of hearts and flower petals."
+  },
+  "faceSkinRedGreenRatio": 1.3,
+  "slideRows": [
+    1
+  ],
+  "turnMirrorFrom": {
+    "ne": "nw",
+    "e": "w",
+    "se": "sw"
+  },
+  "packingNotes": [
+    "Use the four lowest slide poses in source row two; row one is seated entry reference.",
+    "Mirror west-facing turnaround views for east, northeast and southeast, as locomotion cycles are mirrored.",
+    "Exclude lemon-yellow clothing from skin calibration so sprint and slide keep the idle facial scale."
+  ]
+}

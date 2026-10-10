@@ -1,5 +1,6 @@
 import { characterFrameWorldSize } from '../characters/CharacterVisualContract.js';
 import { cssColor, PIXEL_PALETTE as P } from './PixelPalette.js';
+import { drawCharacterAbility } from '../characters/abilities/CharacterAbilityRenderer.js';
 
 function actorPosition(actor) {
     const position = actor?.position ?? actor?.group?.position ?? actor;
@@ -168,6 +169,8 @@ export function drawSpriteCharacter(ctx, camera, entity, {
         }
     }
     ctx.restore();
+
+    drawCharacterAbility(ctx, metrics, entity?.abilityController?.visualState?.());
 
     if (label) {
         ctx.save();

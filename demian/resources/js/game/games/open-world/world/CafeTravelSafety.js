@@ -1,4 +1,15 @@
-import { cafeRoomAt } from '../../../shared/cafe/CafeWalkthroughScene.js';
+import { cafeRoomAt, cafePoint } from '../../../shared/cafe/CafeWalkthroughScene.js';
+
+export function cafeRestorePlan(state, manifest) {
+    const oldVersion = Number(state.worldVersion ?? 1);
+    const expanded = oldVersion === 3 && manifest.version === 4;
+    const legacyLayout = oldVersion < manifest.version && !expanded;
+    const requested = expanded
+        ? cafePoint(state.position?.x, state.position?.z)
+        : legacyLayout ? (manifest.savePoint(state.lastSavePointId)?.position ?? manifest.spawn)
+            : state.position ?? manifest.spawn;
+    return { legacyLayout, requested };
+}
 
 /** Resolve a stored/fast-travel position to the current, actually walkable floor. */
 export function safeCafeTravelPosition(requested, grid, fallback) {

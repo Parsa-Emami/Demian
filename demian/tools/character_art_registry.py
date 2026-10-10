@@ -15,7 +15,7 @@ from typing import Iterable
 ROOT = Path(__file__).resolve().parents[1]
 CHARACTER_ROOT = ROOT / "public" / "assets" / "characters"
 
-ACTIVE_CHARACTER_ROSTER = ("darya", "setayesh", "uzudi")
+ACTIVE_CHARACTER_ROSTER = ("darya", "setayesh", "uzudi", "negar")
 
 LEGACY_SPEECH: dict[str, list[str]] = {
     "amirreza": ["بال بزن بریم", "از همه سریع‌ترم", "الان وقت های‌اسکوره", "پرواز کوتاه، برد بزرگ", "سرعت یعنی امیررضا", "بزن بریم یه دور سریع", "فول اسپید!", "با بال‌ها می‌بریم"],

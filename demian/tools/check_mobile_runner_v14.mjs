@@ -6,14 +6,17 @@ import { createServer } from 'node:http';
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { resolve, extname } from 'node:path';
 import { pathToFileURL } from 'node:url';
+import { tmpdir } from 'node:os';
 const root = resolve(import.meta.dirname, '../..');
-const out = resolve(root, 'demian/docs/release-v14');
+const out = resolve(root, 'demian/docs/release-v14-negar');
+const screenshotDir = resolve(process.env.DEMIAN_QA_SCREENSHOT_DIR ?? resolve(tmpdir(), 'demian-negar-v14-runner'));
 const playable = resolve(root, 'playable');
 const modulePath = process.env.DEMIAN_PLAYWRIGHT_MODULE;
 const { chromium } = await import(modulePath ? pathToFileURL(modulePath).href : 'playwright');
 const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json',
     '.png': 'image/png', '.jpg': 'image/jpeg', '.woff2': 'font/woff2', '.ico': 'image/x-icon', '.webmanifest': 'application/manifest+json' };
 await mkdir(out, { recursive: true });
+await mkdir(screenshotDir, { recursive: true });
 const server = createServer(async (request, response) => {
     try {
         let pathname = decodeURIComponent(new URL(request.url, 'http://localhost').pathname);
@@ -42,11 +45,11 @@ try {
         await page.waitForFunction(() => window.demianGameApplication?.sessionState === 'menu', null, { timeout: 45000 });
         await page.evaluate(() => document.fonts.ready);
         const roster = await page.evaluate(() => window.demianGameApplication.characterManager.characters.map((c) => c.slug));
-        assert.deepEqual(roster.sort(), ['darya', 'setayesh', 'uzudi']);
+        assert.deepEqual(roster.sort(), ['darya', 'negar', 'setayesh', 'uzudi']);
         await page.locator('.menu-character-button').click();
-        await page.waitForFunction(() => [...document.querySelectorAll('[data-character-preview]')].length === 3
+        await page.waitForFunction(() => [...document.querySelectorAll('[data-character-preview]')].length === 4
             && [...document.querySelectorAll('[data-character-preview]')].every((e) => e.dataset.previewState === 'ready'));
-        if (width === 390) await page.screenshot({ path: resolve(out, 'characters-390.png') });
+        if (width === 390) await page.screenshot({ path: resolve(screenshotDir, 'characters-390.png') });
         await page.locator('.character-sheet-close').click();
         await page.waitForFunction(() => document.querySelector('[data-character-manager]').dataset.sidebarState === 'collapsed');
         await page.evaluate(() => window.demianGameApplication.launchGame('dino-run', { seed: 127 }));
@@ -71,7 +74,7 @@ try {
             await page.evaluate(() => { const m = window.demianGameApplication.activeGame.model; m.spawnIn = 999; m.obstacles = []; });
             await page.waitForFunction(() => window.demianGameApplication.activeGame.model.y === 0);
             const touch = await context.newCDPSession(page);
-            for (const slug of ['darya', 'setayesh', 'uzudi']) {
+            for (const slug of ['darya', 'setayesh', 'uzudi', 'negar']) {
                 await page.locator('.play-toolbar [data-sidebar-toggle]').click();
                 await page.waitForFunction(() => document.querySelector('[data-character-manager]').dataset.sidebarState === 'expanded');
                 await page.locator(`[data-select-character="${slug}"]`).click();
@@ -96,7 +99,7 @@ try {
                 await page.evaluate(() => { const a = window.demianGameApplication; a.runtime.pause(); const m = a.activeGame.model;
                     m.time=10; m.y=0; m.previous.y=0; m.obstacles=[{id:1,type:'bird',x:80,previousX:80,y:46,w:40,h:22,scored:false}];
                     a.activeGame.updateHud(); a.activeGame.render(1); });
-                await page.screenshot({ path: resolve(out, `${slug}-slide-390.png`) });
+                await page.screenshot({ path: resolve(screenshotDir, `${slug}-slide-390.png`) });
                 await page.evaluate(() => { const a = window.demianGameApplication; a.activeGame.model.obstacles=[]; a.runtime.resume(); });
                 await touch.send('Input.dispatchTouchEvent', { type:'touchEnd',touchPoints:[] });
                 await page.waitForFunction(() => !window.demianGameApplication.activeGame.model.duck);
@@ -108,19 +111,50 @@ try {
                 results.functional.push({ character:slug, selectedViaUi:true, nativeTouchSlide:'passed', birdCleared:'passed', keyboardJump:'passed' });
             }
             await page.evaluate(() => { const a=window.demianGameApplication;a.runtime.pause();const g=a.activeGame;g.model.time=48;g.model.obstacles=[];g.render(1); });
-            await page.screenshot({ path: resolve(out, 'night-390.png') });
+            await page.screenshot({ path: resolve(screenshotDir, 'night-390.png') });
             await page.evaluate(() => { const a=window.demianGameApplication; const g=a.activeGame;g.model.time=32;g.render(1); });
-            await page.screenshot({ path: resolve(out, 'sunset-390.png') });
+            await page.screenshot({ path: resolve(screenshotDir, 'sunset-390.png') });
             await page.evaluate(() => window.demianGameApplication.launchGame('open-world'));
             await page.waitForFunction(() => window.demianGameApplication.activeGameId==='open-world' && window.demianGameApplication.sessionState==='playing');
             const world = await page.evaluate(() => ({ slug: window.demianGameApplication.characterManager.activeRecord.slug,
                 slugs: window.demianGameApplication.characterManager.characters.map(c=>c.slug),
                 actions: [...document.querySelectorAll('[data-mobile-actions-tray] [data-input-press]')].map(b=>b.dataset.inputPress) }));
-            assert.equal(world.slug, 'uzudi'); assert.deepEqual(world.slugs.sort(), ['darya','setayesh','uzudi']);
-            assert.deepEqual(world.actions, ['slide','celebrate','speak','quickSave']);
-            await page.waitForTimeout(400); await page.screenshot({path:resolve(out,'world-390.png')});
+            assert.equal(world.slug, 'negar'); assert.deepEqual(world.slugs.sort(), ['darya','negar','setayesh','uzudi']);
+            assert.deepEqual(world.actions, ['slide','celebrate','ability','speak','quickSave']);
+            await page.waitForTimeout(400); await page.screenshot({path:resolve(screenshotDir,'world-390.png')});
             results.functional.push({sharedSelectionAcrossGames:'passed',relevantActionPicker:'passed'});
-        } else await page.screenshot({path:resolve(out,`runner-${width}x${height}.png`)});
+            await page.waitForFunction(() => {
+                const e=window.demianGameApplication.characterManager.activeEntity;
+                return e.grounded && e.stateLock<=0;
+            });
+            await page.evaluate(() => window.demianGameApplication.activeGame.focusCharacter({close:true}));
+            await page.keyboard.press('q');
+            await page.waitForFunction(() => window.demianGameApplication.characterManager.activeEntity.state==='smile_bloom');
+            const before = await page.evaluate(() => window.demianGameApplication.characterManager.activeEntity.abilityController.remaining());
+            await page.keyboard.press('q');
+            const after = await page.evaluate(() => window.demianGameApplication.characterManager.activeEntity.abilityController.remaining());
+            assert.ok(after <= before, 'Repeated Q must not restart the cooldown');
+            await page.waitForTimeout(350);
+            await page.screenshot({path:resolve(screenshotDir,'negar-smile-bloom-390.png')});
+            await page.waitForFunction(() => !document.querySelector('[data-character-ability]').disabled, null, {timeout:12000});
+            await page.locator('[data-mobile-actions-toggle]').tap();
+            const abilityRect = await page.locator('[data-character-ability]').boundingBox();
+            assert.ok(abilityRect && abilityRect.x>=0 && abilityRect.y>=0 && abilityRect.x+abilityRect.width<=width+1 && abilityRect.y+abilityRect.height<=height+1);
+            await page.locator('[data-character-ability]').tap();
+            await page.waitForFunction(() => window.demianGameApplication.characterManager.activeEntity.state==='smile_bloom');
+            assert.equal(await page.locator('[data-character-ability]').isDisabled(), true);
+            await page.waitForTimeout(250);
+            await page.screenshot({path:resolve(screenshotDir,'negar-ability-touch-390.png')});
+            await page.locator('.play-toolbar [data-sidebar-toggle]').click();
+            await page.locator('[data-select-character="builtin-darya"]').click();
+            await page.waitForFunction(() => window.demianGameApplication.characterManager.activeRecord.slug==='darya');
+            await page.waitForFunction(() => document.querySelector('[data-character-ability]').hidden);
+            assert.equal(await page.locator('[data-character-ability]').isVisible(), false);
+            await page.keyboard.press('q');
+            assert.equal(await page.evaluate(() => window.demianGameApplication.characterManager.activeEntity.abilityController.primary), null);
+            results.functional.push({character:'negar',keyboardAbility:'passed',nativeTouchAbility:'passed',cooldownPreventsStacking:'passed',otherCharactersKeepControls:'passed'});
+
+        } else await page.screenshot({path:resolve(screenshotDir,`runner-${width}x${height}.png`)});
         assert.deepEqual(pageErrors, []); assert.deepEqual(failedRequests, []);
         results.viewports.push({width,height,...geometry,roster, runtimeErrors:pageErrors, failedRequests});
         await context.close(); console.log(`Browser QA passed: ${width}x${height}`);
@@ -129,7 +163,7 @@ try {
 } catch (error) {
     results.status='failed';results.errors.push(error.stack);
     for (const context of browser.contexts()) for (const page of context.pages()) {
-        await page.screenshot({path:resolve(out,'failure.png')}).catch(()=>{});
+        await page.screenshot({path:resolve(screenshotDir,'failure.png')}).catch(()=>{});
         results.failureState=await page.evaluate(()=>({session:window.demianGameApplication?.sessionState,
             runtimePaused:window.demianGameApplication?.runtime.paused,
             inputContext:window.demianGameApplication?.input.contextName,

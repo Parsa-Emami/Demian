@@ -10,7 +10,7 @@ const read=p=>readFileSync(join(root,p),'utf8');
 assert.deepEqual(GAME_CATALOG.map(g=>g.id),['open-world','dino-run']);
 assert(GAME_CATALOG.every(g=>g.orientation==='any'));
 const entries=JSON.parse(read('public/assets/characters/character-manifest-v4.json')).characters;
-assert.deepEqual(entries.map(c=>c.slug).sort(),['darya','setayesh','uzudi']);
+assert.deepEqual(entries.map(c=>c.slug).sort(),['darya','negar','setayesh','uzudi']);
 assert.equal(entries.find(c=>c.slug==='darya').pack_version,14);
 assert.equal(JSON.parse(read('package.json')).version,'14.0.0');
 assert.equal(read('FINAL-VERSION.txt').trim(),'14.0.0');
@@ -28,5 +28,5 @@ for(const file of files){
         assert([base,base+'.js',base+'.mjs',base+'.json',join(base,'index.js')].some(existsSync),file+': missing '+specifier);
     }
 }
-console.log('Release 14 validation passed: '+files.length+' JS files, 2 games, 3 installed characters.');
+console.log('Release 14 validation passed: '+files.length+' JS files, 2 games, '+entries.length+' installed characters.');
 

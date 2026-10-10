@@ -7,7 +7,7 @@ const managerUrl = new URL('../../../resources/js/game/managers/CharacterManager
 
 test('Open World enters with only the selected character and hydrates NPCs after the ready frame', async () => {
     const source = await readFile(sourceUrl, 'utf8');
-    const boot = source.indexOf('await this.characterManager.boot()');
+    const boot = source.indexOf('await this.characterManager.boot(');
     const readyFrame = source.indexOf("renderScene({ phase: 'ready'");
     const backgroundHydration = source.indexOf('this.characterManager.startBackgroundHydration()');
 

@@ -13,7 +13,8 @@ test('legacy Demian City manifest resolves to the immutable reference café', ()
     assert.equal(manifest.savePoints.length, 5);
     assert.ok(Object.isFrozen(manifest.serialize()));
     assert.ok(manifest.chunks.every((chunk) => chunk.theme === 'cafe'));
-    assert.equal(manifest.version, 3);
+    assert.equal(manifest.version, 4);
+    assert.deepEqual(manifest.bounds, { minX: -24, maxX: 24, minZ: -132, maxZ: 36 });
     for (const point of manifest.savePoints) {
         assert.equal(manifest.chunk(point.chunkId)?.id, point.chunkId);
         assert.equal(manifest.district(point.districtId)?.id, point.districtId);

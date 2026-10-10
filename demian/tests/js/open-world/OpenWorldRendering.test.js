@@ -16,7 +16,7 @@ test('Open World uses the Canvas2D pixel renderer for every visible frame', asyn
 test('Open World renders the café before blocking character boot', async () => {
     const source = await readFile(url('resources/js/game/games/open-world/OpenWorldGame.js'), 'utf8');
     const bootstrapFrame = source.indexOf("renderScene({ phase: 'bootstrap'");
-    const characterBoot = source.indexOf('await this.characterManager.boot()');
+    const characterBoot = source.indexOf('await this.characterManager.boot(');
     assert.ok(bootstrapFrame >= 0 && characterBoot >= 0 && bootstrapFrame < characterBoot);
 });
 

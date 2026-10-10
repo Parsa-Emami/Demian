@@ -1,0 +1,161 @@
+{
+  "status": "passed",
+  "variants": [
+    {
+      "character": "darya",
+      "variant": "desktop",
+      "frames": 672,
+      "image": "darya-spritesheet-v14-desktop.png",
+      "dimensions": [
+        3456,
+        4032
+      ],
+      "decodedMiB": 53.16,
+      "maxSlideHeight": 41.43,
+      "geometry": "passed"
+    },
+    {
+      "character": "darya",
+      "variant": "mobile",
+      "frames": 672,
+      "image": "darya-spritesheet-v14-mobile.png",
+      "dimensions": [
+        2688,
+        3136
+      ],
+      "decodedMiB": 32.16,
+      "maxSlideHeight": 41.43,
+      "geometry": "passed"
+    },
+    {
+      "character": "darya",
+      "variant": "compact",
+      "frames": 672,
+      "image": "darya-spritesheet-v14-compact.png",
+      "dimensions": [
+        1920,
+        2240
+      ],
+      "decodedMiB": 16.41,
+      "maxSlideHeight": 41.43,
+      "geometry": "passed"
+    },
+    {
+      "character": "setayesh",
+      "variant": "desktop",
+      "frames": 672,
+      "image": "setayesh-spritesheet-v14-desktop.png",
+      "dimensions": [
+        3456,
+        4032
+      ],
+      "decodedMiB": 53.16,
+      "maxSlideHeight": 42.0,
+      "geometry": "passed"
+    },
+    {
+      "character": "setayesh",
+      "variant": "mobile",
+      "frames": 672,
+      "image": "setayesh-spritesheet-v14-mobile.png",
+      "dimensions": [
+        2688,
+        3136
+      ],
+      "decodedMiB": 32.16,
+      "maxSlideHeight": 42.17,
+      "geometry": "passed"
+    },
+    {
+      "character": "setayesh",
+      "variant": "compact",
+      "frames": 672,
+      "image": "setayesh-spritesheet-v14-compact.png",
+      "dimensions": [
+        1920,
+        2240
+      ],
+      "decodedMiB": 16.41,
+      "maxSlideHeight": 42.46,
+      "geometry": "passed"
+    },
+    {
+      "character": "uzudi",
+      "variant": "desktop",
+      "frames": 672,
+      "image": "uzudi-spritesheet-v14-desktop.png",
+      "dimensions": [
+        3456,
+        4032
+      ],
+      "decodedMiB": 53.16,
+      "maxSlideHeight": 43.15,
+      "geometry": "passed"
+    },
+    {
+      "character": "uzudi",
+      "variant": "mobile",
+      "frames": 672,
+      "image": "uzudi-spritesheet-v14-mobile.png",
+      "dimensions": [
+        2688,
+        3136
+      ],
+      "decodedMiB": 32.16,
+      "maxSlideHeight": 42.91,
+      "geometry": "passed"
+    },
+    {
+      "character": "uzudi",
+      "variant": "compact",
+      "frames": 672,
+      "image": "uzudi-spritesheet-v14-compact.png",
+      "dimensions": [
+        1920,
+        2240
+      ],
+      "decodedMiB": 16.41,
+      "maxSlideHeight": 43.5,
+      "geometry": "passed"
+    },
+    {
+      "character": "negar",
+      "variant": "desktop",
+      "frames": 672,
+      "image": "negar-spritesheet-v14-desktop.png",
+      "dimensions": [
+        3456,
+        4032
+      ],
+      "decodedMiB": 53.16,
+      "maxSlideHeight": 42.58,
+      "geometry": "passed"
+    },
+    {
+      "character": "negar",
+      "variant": "mobile",
+      "frames": 672,
+      "image": "negar-spritesheet-v14-mobile.png",
+      "dimensions": [
+        2688,
+        3136
+      ],
+      "decodedMiB": 32.16,
+      "maxSlideHeight": 42.91,
+      "geometry": "passed"
+    },
+    {
+      "character": "negar",
+      "variant": "compact",
+      "frames": 672,
+      "image": "negar-spritesheet-v14-compact.png",
+      "dimensions": [
+        1920,
+        2240
+      ],
+      "decodedMiB": 16.41,
+      "maxSlideHeight": 43.5,
+      "geometry": "passed"
+    }
+  ]
+}

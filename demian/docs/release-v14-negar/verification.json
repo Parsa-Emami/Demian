@@ -1,0 +1,382 @@
+{
+  "status": "passed",
+  "baseRepository": "https://github.com/Parsa-Emami/Demian",
+  "baseBranch": "main",
+  "baseCommit": "b7afcdde4abed30de7ee6e2944e993b66c375b52",
+  "date": "2026-10-10",
+  "javascriptTests": {
+    "total": 270,
+    "passed": 270,
+    "failed": 0
+  },
+  "sourceValidation": {
+    "javascriptFiles": 330,
+    "gameCount": 2,
+    "installedCharacters": 4
+  },
+  "assetValidation": {
+    "characters": 4,
+    "atlasVariants": 20,
+    "animationFrameNames": 13440,
+    "fullQualityPackedFrames": 8064,
+    "runtimePhysicalFramesPerCharacter": 254,
+    "litePhysicalFramesPerCharacter": 201,
+    "alphaGeometry": "passed"
+  },
+  "negar": {
+    "sourceKeyPosesConsumed": 60,
+    "packedFramesPerVariant": 672,
+    "ability": "smile-bloom",
+    "durationSeconds": 1.6,
+    "cooldownSeconds": 6,
+    "contexts": [
+      "OPEN_WORLD"
+    ],
+    "sharedCelebrationFrames": true
+  },
+  "browserValidation": {
+    "browser": "153.0.8010.0",
+    "mode": "headless software Chromium; device dimensions emulated",
+    "viewports": [
+      {
+        "width": 320,
+        "height": 568,
+        "overflow": false,
+        "backbuffer": [
+          432,
+          766
+        ],
+        "presentationMode": "smooth",
+        "canvasCss": [
+          320,
+          568
+        ],
+        "controls": [
+          {
+            "x": 190,
+            "y": 450,
+            "w": 112,
+            "h": 100,
+            "visible": true
+          },
+          {
+            "x": 18,
+            "y": 467.5,
+            "w": 90,
+            "h": 82.5,
+            "visible": true
+          }
+        ],
+        "roster": [
+          "darya",
+          "negar",
+          "setayesh",
+          "uzudi"
+        ],
+        "runtimeErrors": [],
+        "failedRequests": []
+      },
+      {
+        "width": 390,
+        "height": 844,
+        "overflow": false,
+        "backbuffer": [
+          526,
+          1139
+        ],
+        "presentationMode": "smooth",
+        "canvasCss": [
+          390,
+          844
+        ],
+        "controls": [
+          {
+            "x": 260,
+            "y": 726,
+            "w": 112,
+            "h": 100,
+            "visible": true
+          },
+          {
+            "x": 18,
+            "y": 743.5,
+            "w": 90,
+            "h": 82.5,
+            "visible": true
+          }
+        ],
+        "roster": [
+          "darya",
+          "negar",
+          "setayesh",
+          "uzudi"
+        ],
+        "runtimeErrors": [],
+        "failedRequests": []
+      },
+      {
+        "width": 844,
+        "height": 390,
+        "overflow": false,
+        "backbuffer": [
+          1139,
+          526
+        ],
+        "presentationMode": "smooth",
+        "canvasCss": [
+          844,
+          390
+        ],
+        "controls": [
+          {
+            "x": 732,
+            "y": 289,
+            "w": 94,
+            "h": 83,
+            "visible": true
+          },
+          {
+            "x": 18,
+            "y": 306.5,
+            "w": 90,
+            "h": 65.5,
+            "visible": true
+          }
+        ],
+        "roster": [
+          "darya",
+          "negar",
+          "setayesh",
+          "uzudi"
+        ],
+        "runtimeErrors": [],
+        "failedRequests": []
+      },
+      {
+        "width": 768,
+        "height": 1024,
+        "overflow": false,
+        "backbuffer": [
+          968,
+          1290
+        ],
+        "presentationMode": "smooth",
+        "canvasCss": [
+          768,
+          1024
+        ],
+        "controls": [
+          {
+            "x": 638,
+            "y": 906,
+            "w": 112,
+            "h": 100,
+            "visible": true
+          },
+          {
+            "x": 18,
+            "y": 923.5,
+            "w": 90,
+            "h": 82.5,
+            "visible": true
+          }
+        ],
+        "roster": [
+          "darya",
+          "negar",
+          "setayesh",
+          "uzudi"
+        ],
+        "runtimeErrors": [],
+        "failedRequests": []
+      },
+      {
+        "width": 1440,
+        "height": 900,
+        "overflow": false,
+        "backbuffer": [
+          1414,
+          883
+        ],
+        "presentationMode": "smooth",
+        "canvasCss": [
+          1440,
+          900
+        ],
+        "controls": [
+          {
+            "x": 1310,
+            "y": 782,
+            "w": 112,
+            "h": 100,
+            "visible": true
+          },
+          {
+            "x": 18,
+            "y": 799.5,
+            "w": 90,
+            "h": 82.5,
+            "visible": true
+          }
+        ],
+        "roster": [
+          "darya",
+          "negar",
+          "setayesh",
+          "uzudi"
+        ],
+        "runtimeErrors": [],
+        "failedRequests": []
+      }
+    ],
+    "functional": [
+      {
+        "character": "darya",
+        "selectedViaUi": true,
+        "nativeTouchSlide": "passed",
+        "birdCleared": "passed",
+        "keyboardJump": "passed"
+      },
+      {
+        "character": "setayesh",
+        "selectedViaUi": true,
+        "nativeTouchSlide": "passed",
+        "birdCleared": "passed",
+        "keyboardJump": "passed"
+      },
+      {
+        "character": "uzudi",
+        "selectedViaUi": true,
+        "nativeTouchSlide": "passed",
+        "birdCleared": "passed",
+        "keyboardJump": "passed"
+      },
+      {
+        "character": "negar",
+        "selectedViaUi": true,
+        "nativeTouchSlide": "passed",
+        "birdCleared": "passed",
+        "keyboardJump": "passed"
+      },
+      {
+        "sharedSelectionAcrossGames": "passed",
+        "relevantActionPicker": "passed"
+      },
+      {
+        "character": "negar",
+        "keyboardAbility": "passed",
+        "nativeTouchAbility": "passed",
+        "cooldownPreventsStacking": "passed",
+        "otherCharactersKeepControls": "passed"
+      }
+    ],
+    "errors": [],
+    "physicalPhoneMeasured": false,
+    "status": "passed"
+  },
+  "build": {
+    "status": "passed",
+    "atomicBundle": true,
+    "staticOutput": "playable"
+  },
+  "laravelExecutionTested": false,
+  "commitMessage": "feat(game): add Negar and optimize character loading and cafe rendering",
+  "protectedFilesVerifiedUnchanged": [
+    "demian/.env.example",
+    "demian/database/migrations/0001_01_01_000000_create_users_table.php",
+    "demian/database/migrations/0001_01_01_000001_create_cache_table.php",
+    "demian/database/migrations/0001_01_01_000002_create_jobs_table.php",
+    "demian/database/migrations/2026_07_24_000000_create_characters_table.php",
+    "demian/database/migrations/2026_07_29_000100_create_event_sessions_table.php"
+  ],
+  "map": {
+    "layoutVersion": 4,
+    "width": 48,
+    "depth": 168,
+    "areaMultiplier": 4,
+    "renderDetail": "simple",
+    "staticCachePixelBudget": 2200000,
+    "v3SaveMigration": "passed",
+    "videosReviewed": [
+      "20261009_112412_1.mp4",
+      "20261009_112412_2.mp4",
+      "20261009_112412_3.mp4"
+    ]
+  },
+  "loadingPerformance": {
+    "browser": "153.0.8010.0",
+    "physicalPhoneMeasured": false,
+    "cases": [
+      {
+        "scenario": "slow-phone",
+        "coldBootMs": 9616,
+        "sessionStartMs": 1614,
+        "state": {
+          "slug": "negar",
+          "variant": "lite",
+          "ability": "smile-bloom",
+          "bounds": {
+            "minX": -24,
+            "maxX": 24,
+            "minZ": -132,
+            "maxZ": 36
+          },
+          "entities": 3,
+          "decodedCacheBytes": 10223616
+        },
+        "sheets": [
+          "/assets/characters/negar/negar-spritesheet-v14-lite.png",
+          "/assets/characters/darya/darya-spritesheet-v14-lite.png",
+          "/assets/characters/setayesh/setayesh-spritesheet-v14-lite.png"
+        ],
+        "errors": [],
+        "cpuThrottle": 4,
+        "network": "200 KiB/s, 120 ms latency, cold browser cache"
+      },
+      {
+        "scenario": "failed-runtime-image",
+        "coldBootMs": 1076,
+        "sessionStartMs": 955,
+        "state": {
+          "slug": "negar",
+          "variant": "lite",
+          "ability": "smile-bloom",
+          "bounds": {
+            "minX": -24,
+            "maxX": 24,
+            "minZ": -132,
+            "maxZ": 36
+          },
+          "entities": 4,
+          "decodedCacheBytes": 13631488
+        },
+        "sheets": [
+          "/assets/characters/negar/negar-spritesheet-v14-runtime.png",
+          "/assets/characters/negar/negar-spritesheet-v14-lite.png",
+          "/assets/characters/darya/darya-spritesheet-v14-lite.png",
+          "/assets/characters/setayesh/setayesh-spritesheet-v14-lite.png",
+          "/assets/characters/uzudi/uzudi-spritesheet-v14-lite.png",
+          "/assets/characters/uzudi/uzudi-spritesheet-v14-runtime.png",
+          "/assets/characters/setayesh/setayesh-spritesheet-v14-runtime.png"
+        ],
+        "errors": [],
+        "overlappingSelection": "uzudi",
+        "cache": {
+          "before": {
+            "builds": 2,
+            "hits": 88,
+            "bytes": 3822632
+          },
+          "after": {
+            "builds": 2,
+            "hits": 208,
+            "bytes": 3822632
+          },
+          "renderMs": 125.90000000037253,
+          "frames": 120
+        }
+      }
+    ]
+  },
+  "directCommitRequested": true
+}

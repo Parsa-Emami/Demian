@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""MIT. Build the three reference-driven V14 packs from shipped RGBA masters.
+"""MIT. Build reference-driven V14 packs from shipped RGBA masters.
 
 Artwork is generated once, not at runtime. This deterministic packaging step
 cuts real poses, calibrates one uniform body scale, and bakes motion in-betweens.
@@ -8,6 +8,7 @@ Install tools/requirements-character-art.txt before rebuilding.
 """
 from __future__ import annotations
 
+import argparse
 import json
 from pathlib import Path
 import cv2
@@ -20,7 +21,7 @@ CHARACTERS = ROOT / 'public/assets/characters'
 VERSION, COLS, ROWS, WORK = 14, 24, 28, 224
 VARIANTS = {'desktop': 144, 'mobile': 112, 'compact': 80}
 DIRECTIONS = ('s', 'sw', 'w', 'nw', 'n', 'ne', 'e', 'se')
-LABELS = {'darya': 'DARYA / دریا', 'setayesh': 'SETAYESH / ستایش', 'uzudi': 'UZUDI / اوزودی'}
+LABELS = {'darya': 'DARYA / دریا', 'setayesh': 'SETAYESH / ستایش', 'uzudi': 'UZUDI / اوزودی', 'negar': 'NEGAR / نگار'}
 COUNTS = {'idle': 40, 'walk': 64, 'run': 80, 'jump': 48, 'slide': 64, 'land': 24, 'celebrate': 64}
 BODY_RATIO, FOOT_PIVOT = .70, .94
 GUTTER = 12  # > maximum in-between displacement (14 * 0.5) + downsample filter
@@ -91,11 +92,11 @@ def extract(master, y_bounds, columns=8):
     return rows
 
 
-def face_geometry(pose):
+def face_geometry(pose, head_fraction=.65, skin_ratio=1.12):
     p = np.asarray(pose)
     r, g, b, a = [p[:, :, i].astype(float) for i in range(4)]
-    skin = (a > 160) & (r > 155) & (g > 80) & (b < 195) & (r > g * 1.12) & (g > b * 1.03)
-    skin[round(pose.height * .65):] = False
+    skin = (a > 160) & (r > 155) & (g > 80) & (b < 195) & (r > g * skin_ratio) & (g > b * 1.03)
+    skin[round(pose.height * head_fraction):] = False
     labels, count = ndimage.label(ndimage.binary_closing(skin, iterations=2))
     sizes = np.bincount(labels.ravel()); sizes[0] = 0
     if not count or sizes.max() < 24:
@@ -104,9 +105,9 @@ def face_geometry(pose):
     return float(xs.max() - xs.min() + 1), float(xs.mean())
 
 
-def normalized(pose, scale):
+def normalized(pose, scale, head_fraction=.65, skin_ratio=1.12):
     # Scale uniformly using the identity's face calibration, never per-pose height.
-    _, face_x = face_geometry(pose)
+    _, face_x = face_geometry(pose, head_fraction, skin_ratio)
     w, h = max(1, round(pose.width * scale)), max(1, round(pose.height * scale))
     resized = pose.resize((w, h), Image.Resampling.LANCZOS)
     x, y = round(WORK * .5 - face_x * scale), round(WORK * FOOT_PIVOT - h)
@@ -126,9 +127,9 @@ def grey(pixels):
     return cv2.cvtColor(rgb, cv2.COLOR_RGB2GRAY)
 
 
-def dense(poses, count, scale, loop=True):
+def dense(poses, count, scale, loop=True, head_fraction=.65, skin_ratio=1.12):
     """Single-owner optical-flow in-betweens, so there is no double face/limb."""
-    source = [normalized(p, scale) for p in poses]
+    source = [normalized(p, scale, head_fraction, skin_ratio) for p in poses]
     pairs = len(source) if loop else len(source) - 1
     fields = []
     for i in range(pairs):
@@ -161,21 +162,30 @@ def build_character(slug):
     slides = Image.open(directory / 'source-v14/slides.png').convert('RGBA')
     assert np.asarray(main)[:, :, 3].min() == 0 and np.asarray(motion)[:, :, 3].min() == 0
     main_rows = extract(main, layout['mainRowBounds'])
-    top = motion.crop((0, 0, motion.width, round(motion.height * .62)))
-    run_poses = extract(top, [0, top.height])[0]
+    if layout.get('motionColumns'):
+        run_poses = sum(extract(motion, layout['motionRowBounds'], columns=layout['motionColumns']), [])
+    else:
+        top = motion.crop((0, 0, motion.width, round(motion.height * .62)))
+        run_poses = extract(top, [0, top.height])[0]
     slide_rows = extract(slides, [0, round(slides.height * .5), slides.height], columns=4)
     poses = dict(zip(('turn', 'idle', 'walk', 'jump', 'crouch', 'land', 'celebrate'), main_rows))
     poses.update(run=run_poses, slide=slide_rows[0] + slide_rows[1])
+    if layout.get('slideRows'):
+        poses['slide'] = sum([slide_rows[i] for i in layout['slideRows']], [])
+    for target, source in layout.get('turnMirrorFrom', {}).items():
+        poses['turn'][DIRECTIONS.index(target)] = poses['turn'][DIRECTIONS.index(source)].transpose(Image.Transpose.FLIP_LEFT_RIGHT)
     if slug == 'darya':
         # The first row is a seated entry gesture. The second row is the
         # authored low slide; only this low cycle can clear the runner birds.
         # Keep its face and cat at the same scale instead of shrinking the body.
         poses['slide'] = slide_rows[1]
     base_scale = WORK * BODY_RATIO / np.median([p.height for p in poses['idle']])
-    main_face = np.median([face_geometry(p)[0] for p in poses['idle']])
-    motion_face = np.median([face_geometry(p)[0] for p in poses['run']])
+    head_fraction = layout.get('faceSampleHeightRatio', .65)
+    skin_ratio = layout.get('faceSkinRedGreenRatio', 1.12)
+    main_face = np.median([face_geometry(p, head_fraction, skin_ratio)[0] for p in poses['idle']])
+    motion_face = np.median([face_geometry(p, head_fraction, skin_ratio)[0] for p in poses['run']])
     motion_scale = base_scale * main_face / motion_face
-    slide_scale = base_scale * main_face / np.median([face_geometry(p)[0] for p in poses['slide']])
+    slide_scale = base_scale * main_face / np.median([face_geometry(p, head_fraction, skin_ratio)[0] for p in poses['slide']])
     # Whole-sequence width cap keeps long wings/extended slide legs inside gutters.
     def cap_scale(keys, factor):
         selected = [p for key in keys for p in poses[key]]
@@ -184,13 +194,13 @@ def build_character(slug):
     motion_scale = cap_scale(('run',), motion_scale)
     slide_scale = cap_scale(('slide',), slide_scale)
     body_ratio = float(np.median([p.height * base_scale for p in poses['idle']]) / WORK)
-    sequences = {'idle': dense(poses['idle'], COUNTS['idle'], base_scale)}
+    sequences = {'idle': dense(poses['idle'], COUNTS['idle'], base_scale, head_fraction=head_fraction, skin_ratio=skin_ratio)}
     for key in ('walk', 'run', 'jump', 'slide', 'land'):
-        sequence = dense(poses[key], COUNTS[key], slide_scale if key == 'slide' else motion_scale if key == 'run' else base_scale, key not in ('jump', 'land'))
+        sequence = dense(poses[key], COUNTS[key], slide_scale if key == 'slide' else motion_scale if key == 'run' else base_scale, key not in ('jump', 'land'), head_fraction, skin_ratio)
         sequences[key + '_e'] = sequence
         sequences[key + '_w'] = [p.transpose(Image.Transpose.FLIP_LEFT_RIGHT) for p in sequence]
-    sequences['celebrate'] = dense(poses['celebrate'], COUNTS['celebrate'], base_scale)
-    sequences['turn'] = [Image.fromarray(normalized(p, base_scale)) for p in poses['turn']]
+    sequences['celebrate'] = dense(poses['celebrate'], COUNTS['celebrate'], base_scale, head_fraction=head_fraction, skin_ratio=skin_ratio)
+    sequences['turn'] = [Image.fromarray(normalized(p, base_scale, head_fraction, skin_ratio)) for p in poses['turn']]
     assert sum(map(len, sequences.values())) == COLS * ROWS == 672
     names = {key: [f'{key}_{i:03}' for i in range(len(frames))] for key, frames in sequences.items()}
     sequences['turn'][0].save(directory / f'{slug}-preview-v14.png', optimize=True)
@@ -217,6 +227,12 @@ def build_character(slug):
     }
     if slug == 'darya':
         animations['companion'] = anim(names['idle'], 24)
+    signature = layout.get('signatureAbility')
+    if signature:
+        # Negar's authored cheek / finger-heart sequence is also her celebration.
+        # This semantic state shares those real frames; it is not counted twice.
+        animations[signature['animation']] = anim(names['celebrate'],
+            len(names['celebrate']) / signature['duration'], False, sharedFrameSource='celebrate')
     for variant, cell in VARIANTS.items():
         sheet = Image.new('RGBA', (COLS * cell, ROWS * cell)); frames = {}; index = 0
         for key, sequence in sequences.items():
@@ -244,6 +260,8 @@ def build_character(slug):
         }
         if slug == 'darya':
             atlas['companion'] = {'id': 'pishi', 'alwaysVisible': True, 'bakedIntoEveryFrame': True, 'collisionIndependent': True}
+        if signature:
+            atlas['abilities'] = [signature]
         sheet.save(directory / image_name, optimize=True)
         write_json(directory / f'{slug}-atlas-v14-{variant}.json', atlas)
         print(f'{slug} / {variant}: {len(frames)} frames, {sheet.width}x{sheet.height}', flush=True)
@@ -271,12 +289,17 @@ def build_character(slug):
         'physics_owns_jump_height': True, 'dedicated_slide': True, 'uniform_body_scale': True,
         'style': atlas['movement']['style'], 'wing_powered_states': atlas['movement']['wingPoweredStates']})
     write_json(md / f'{slug}_ability_profile.json', {'character_key': slug, 'pack_version': VERSION,
-        'runner_physics': 'shared', 'combat': False, 'companion_collision_independent': slug == 'darya'})
+        'runner_physics': 'shared', 'combat': False, 'companion_collision_independent': slug == 'darya',
+        **({'abilities': [signature]} if signature else {})})
 
 
 def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--characters', nargs='+', choices=tuple(LABELS), default=list(LABELS),
+        help='Build only selected packs; always keep the full shipped roster manifest.')
+    args = parser.parse_args()
     cv2.setNumThreads(4)
-    for slug in LABELS:
+    for slug in args.characters:
         build_character(slug)
     write_json(CHARACTERS / 'character-manifest-v4.json', {'manifest_version': 'v4',
         'production_character': 'darya', 'release': 'mobile-runner-v14',

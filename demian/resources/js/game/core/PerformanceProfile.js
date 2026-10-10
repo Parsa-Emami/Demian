@@ -31,10 +31,6 @@ export default class PerformanceProfile {
     }
 
     spriteVariant() {
-        if (this.useCompactSprites) {
-            return 'compact';
-        }
-
-        return this.useHighResolutionSprites ? 'desktop' : 'mobile';
+        return this.useCompactSprites ? 'lite' : 'runtime';
     }
 }

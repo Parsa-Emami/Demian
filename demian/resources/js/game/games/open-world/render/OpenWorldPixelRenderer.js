@@ -1,5 +1,6 @@
 import PixelCamera2D from '../../../rendering2d/PixelCamera2D.js';
 import CafePixelRenderer from '../../../rendering2d/CafePixelRenderer.js';
+import StaticSceneCache from '../../../rendering2d/StaticSceneCache.js';
 import PixelRenderQueue from '../../../rendering2d/PixelRenderQueue.js';
 import { drawSpriteCharacter } from '../../../rendering2d/PixelActorRenderer.js';
 import { PIXEL_PALETTE as P } from '../../../rendering2d/PixelPalette.js';
@@ -20,6 +21,7 @@ export default class OpenWorldPixelRenderer {
             smoothing: 8,
         });
         this.cafe = new CafePixelRenderer({ bounds: manifest.bounds, colliders: CAFE_STATIC_COLLIDERS });
+        this.sceneCache = new StaticSceneCache((ctx, camera, atmosphere) => this.cafe.draw(ctx, camera, { atmosphere }));
         this.queue = new PixelRenderQueue();
         this.mode = 'OVERVIEW';
         this.camera.fitBounds(CAFE_RENDER_BOUNDS, 10);
@@ -93,7 +95,7 @@ export default class OpenWorldPixelRenderer {
         this.camera.update(deltaTime);
 
         const ctx = this.context.renderer.beginFrame(P.voidBlue);
-        this.cafe.draw(ctx, this.camera, { atmosphere: 'day' });
+        this.sceneCache.draw(ctx, this.camera, 'day');
         if (this.context.app?.options?.debug) this.drawChunks(ctx, loadedChunks, activeChunkIds);
         this.drawSavePoints(ctx, discovery);
 
@@ -118,5 +120,5 @@ export default class OpenWorldPixelRenderer {
         return this.context.renderer.present();
     }
 
-    dispose() { this.queue.items.length = 0; }
+    dispose() { this.sceneCache.dispose(); this.queue.items.length = 0; }
 }

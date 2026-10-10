@@ -7,9 +7,9 @@ const partition = new WorldPartition(manifest);
 
 test('world partition maps positions to chunks with manifest origin', () => {
     assert.equal(partition.chunkAt({ x: 0, z: 0 }).id, 'cafe-1-5');
-    assert.equal(partition.chunkAt({ x: -6, z: -60 }).id, 'cafe-0-0');
+    assert.equal(partition.chunkAt({ x: -12, z: -120 }).id, 'cafe-0-0');
     const center = partition.gridToWorld({ x: 1, z: 0 });
-    assert.deepEqual(center, { x: 6, z: -60 });
+    assert.deepEqual(center, { x: 12, z: -120 });
     assert.deepEqual(partition.worldToGrid(center), { x: 1, z: 0 });
 });
 

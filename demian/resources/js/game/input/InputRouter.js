@@ -7,6 +7,7 @@ const ACTION_HAPTICS = new Set([
     'dodge',
     'win',
     'celebrate',
+    'ability',
     'guitar',
     'hardDrop',
     'interact',
@@ -150,6 +151,8 @@ export default class InputRouter {
         if (!button) {
             return;
         }
+
+        if (button.disabled || button.hidden || button.getAttribute('aria-disabled') === 'true') return;
 
         event.preventDefault();
         event.stopPropagation();

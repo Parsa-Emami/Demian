@@ -640,6 +640,7 @@
                     <p><b class="text-white">Space</b> jump</p>
                     <p><b class="text-white">↓ / G</b> slide</p>
                     <p><b class="text-white">O / V</b> celebrate / wave</p>
+                    <p data-character-ability-hint hidden><b class="text-white">Q</b> Smile Bloom</p>
                     <p><b class="text-white">H</b> random speech</p>
                     <p><b class="text-white">Enter</b> interact</p>
                     <p><b class="text-white">F / R</b> camera / focus</p>
@@ -674,6 +675,7 @@
                     >
                         <button type="button" data-input-press="slide" class="touch-action touch-action--mini">اسلاید</button>
                         <button type="button" data-input-press="celebrate" class="touch-action touch-action--mini">شادی</button>
+                        <button type="button" data-input-press="ability" data-character-ability hidden class="touch-action touch-action--mini" aria-label="ابیلیتی کاراکتر">شکوفهٔ لبخند</button>
                         <button type="button" data-input-press="speak" class="touch-action touch-action--mini touch-action--speak">گفتگو</button>
                         <button type="button" data-input-press="quickSave" class="touch-action touch-action--mini">ذخیره</button>
                     </div>

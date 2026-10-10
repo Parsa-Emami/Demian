@@ -4830,3 +4830,8 @@ body {
 .demian-scene[data-open-world-render-state="error"]::after {
     content: "رندر دوبعدی موقتاً متوقف شد؛ بازی در حال بازیابی فریم بعدی است.";
 }
+
+/* Authored character abilities reuse the existing world action tray. */
+[data-character-ability][hidden], [data-character-ability-hint][hidden] { display: none !important; }
+[data-character-ability] { border-color: #f2cc64; color: #ffe8a3; }
+[data-character-ability]:disabled { opacity: .55; cursor: wait; }

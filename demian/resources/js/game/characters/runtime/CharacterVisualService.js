@@ -5,11 +5,11 @@ import {
     builtinCharacterAssetPair,
     normalizeSpriteVariant,
 } from '../CharacterVisualContract.js';
-import { orderedSpriteVariants } from './CharacterRuntimePolicy.js';
+import { orderedSpriteVariants, characterRuntimeVariants, CHARACTER_ASSET_TIMEOUT_MS } from './CharacterRuntimePolicy.js';
 
 const STORAGE_KEY = 'demian.character.slug.v1';
-const LOAD_TIMEOUT_MS = 7000;
-const PACK_CACHE_BUDGET = 72 * 1024 * 1024;
+const LOAD_TIMEOUT_MS = CHARACTER_ASSET_TIMEOUT_MS;
+const PACK_CACHE_BUDGET = 24 * 1024 * 1024;
 
 function packBytes(pack) {
     const width = pack.image?.naturalWidth || pack.image?.width || pack.atlas?.meta?.size?.w || 0;
@@ -42,6 +42,7 @@ export default class CharacterVisualService {
         this.activeSlug = readStoredSlug(storage) ?? DEFAULT_ACTIVE_SLUG;
         this.packPromises = new Map();
         this.packCache = new Map();
+        this.failedPairs = new Map();
         this.unsubscribe = [];
 
         if (eventBus?.on) {
@@ -81,22 +82,24 @@ export default class CharacterVisualService {
     }
 
     runtimeVariant({ player = false } = {}) {
-        const tier = this.performanceProfile?.tier ?? 'balanced';
-        if (player) return tier === 'performance' ? 'compact' : 'mobile';
-        return 'compact';
+        const variants = characterRuntimeVariants(this.performanceProfile);
+        return player ? variants.active : variants.npc;
     }
 
-    async loadPack(slug, preferredVariant = 'mobile') {
+    async loadPack(slug, preferredVariant = this.runtimeVariant({ player: true })) {
         const normalizedSlug = BUILTIN_CHARACTER_SLUGS.includes(slug) ? slug : this.activeSlug;
         const variants = orderedSpriteVariants(normalizeSpriteVariant(preferredVariant));
         let lastError = null;
 
         for (const variant of variants) {
             const key = `${normalizedSlug}:${variant}`;
+            const failure = this.failedPairs.get(key);
+            if (failure && failure.retryAfter > Date.now()) { lastError = failure.error; continue; }
             if (this.packCache.has(key)) {
                 const pack = this.packCache.get(key);
                 this.packCache.delete(key);
                 this.packCache.set(key, pack);
+                this.failedPairs.delete(key);
                 return pack;
             }
             try {
@@ -108,11 +111,12 @@ export default class CharacterVisualService {
                 const pack = await pending;
                 this.packCache.set(key, pack);
                 this.trimPackCache();
-                this.packPromises.delete(key);
+                if (this.packPromises.get(key) === pending) this.packPromises.delete(key);
                 return pack;
             } catch (error) {
                 this.packPromises.delete(key);
                 lastError = error;
+                this.failedPairs.set(key, { error, retryAfter: Date.now() + 30000 });
             }
         }
 
@@ -170,10 +174,18 @@ export default class CharacterVisualService {
                 image.onerror = null;
                 callback(value);
             };
-            const onAbort = () => finish(reject, new Error(`Sprite load aborted (${url})`));
+            const onAbort = () => {
+                finish(reject, new Error(`Sprite load aborted (${url})`));
+                image.src = '';
+            };
             image.decoding = 'async';
-            image.onload = () => finish(resolve, image);
+            image.onload = () => {
+                if (typeof image.decode !== 'function') { finish(resolve, image); return; }
+                image.decode().then(() => finish(resolve, image),
+                    () => finish(reject, new Error(`Sprite decode failed (${url})`)));
+            };
             image.onerror = () => finish(reject, new Error(`Sprite load failed (${url})`));
+            if (signal?.aborted) { onAbort(); return; }
             signal?.addEventListener?.('abort', onAbort, { once: true });
             image.src = url;
         });
@@ -195,5 +207,6 @@ export default class CharacterVisualService {
         this.unsubscribe = [];
         this.packPromises.clear();
         this.packCache.clear();
+        this.failedPairs.clear();
     }
 }

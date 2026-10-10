@@ -11,9 +11,10 @@ import {
     BUILTIN_CHARACTER_SLUGS,
     builtinCharacterAssetPair,
     isRetiredCharacter,
+    normalizeSpriteVariant,
 } from '../characters/CharacterVisualContract.js';
 
-const LABELS = Object.freeze({ darya: 'DARYA / دریا', setayesh: 'SETAYESH / ستایش', uzudi: 'UZUDI / اوزودی' });
+import { BUILTIN_CHARACTER_LABELS as LABELS } from '../characters/manifests/CharacterManifestRegistry.js';
 const BUILTIN_DEFINITIONS = Object.freeze(BUILTIN_CHARACTER_SLUGS.map((slug) => Object.freeze({
     id: `builtin-${slug}`, name: LABELS[slug], slug, is_active: slug === 'darya',
     settings: { walk_speed: 3.55, run_speed: 6.9, sprint_speed: 7.6, jump_force: 6.8,
@@ -37,9 +38,7 @@ function builtinAssetPair(slug, variant = 'mobile') {
 }
 
 function cloneBuiltin(character, spriteVariant = 'mobile') {
-    const suffix = ['desktop', 'mobile', 'compact'].includes(spriteVariant)
-        ? spriteVariant
-        : 'mobile';
+    const suffix = normalizeSpriteVariant(spriteVariant);
 
     const pair = builtinAssetPair(character.slug, suffix);
 
@@ -58,6 +57,7 @@ export default class CharacterManager {
         repository,
         eventBus,
         performanceProfile = null,
+        visualService = null,
         collisionScope = null,
         navigationGrid = null,
         worldBounds = WORLD_CONFIG.bounds,
@@ -68,6 +68,8 @@ export default class CharacterManager {
         this.repository = repository;
         this.eventBus = eventBus;
         this.performanceProfile = performanceProfile;
+        this.visualService = visualService;
+        this.selectionGeneration = 0;
         this.collisionScope = collisionScope;
         this.navigationGrid = navigationGrid;
         this.worldBounds = Object.freeze('minX' in worldBounds ? { ...worldBounds } : { minX: -worldBounds.x, maxX: worldBounds.x, minZ: -worldBounds.z, maxZ: worldBounds.z });
@@ -91,7 +93,7 @@ export default class CharacterManager {
         this.npcLimit = Math.max(2, Number(performanceProfile?.npcCount ?? 3));
     }
 
-    async boot() {
+    async boot({ preferredSlug = null } = {}) {
         try {
             this.characters = await this.repository.list();
         } catch (error) {
@@ -106,6 +108,7 @@ export default class CharacterManager {
         this.ensureBuiltinCharacters();
 
         const active =
+            this.characters.find((character) => character.slug === preferredSlug) ??
             this.characters.find((character) => character.is_active) ??
             this.characters[0];
 
@@ -263,12 +266,13 @@ export default class CharacterManager {
     }
 
     variantRank(variant) {
-        return { compact: 1, mobile: 2, desktop: 3, custom: 3 }[variant] ?? 0;
+        return { lite: 1, compact: 2, runtime: 3, mobile: 4, desktop: 5, custom: 5 }[variant] ?? 0;
     }
 
     async ensureEntityVariant(record, entity, variant) {
         const currentVariant = entity.runtimeSpriteVariant ?? 'compact';
-        if (this.variantRank(variant) <= this.variantRank(currentVariant)) {
+        const downgradeNpc = variant === 'lite' && entity !== this.activeEntity && !entity.isPlayerControlled;
+        if (currentVariant === variant || (!downgradeNpc && this.variantRank(variant) <= this.variantRank(currentVariant))) {
             return entity;
         }
 
@@ -285,7 +289,7 @@ export default class CharacterManager {
             return entity;
         }
 
-        if (this.disposed || this.entities.get(String(record.id)) !== entity) {
+        if (this.disposed || this.entities.get(String(record.id)) !== entity || (variant === 'lite' && entity.isPlayerControlled)) {
             assets.texture?.dispose?.();
             return entity;
         }
@@ -379,6 +383,7 @@ export default class CharacterManager {
     }
 
     async select(id, { preservePosition = true, hydrateRoster = true } = {}) {
+        const generation = ++this.selectionGeneration;
         const record = this.characters.find(
             (character) => String(character.id) === String(id)
         );
@@ -390,6 +395,7 @@ export default class CharacterManager {
         this.eventBus.emit('character:loading', record);
 
         const nextEntity = await this.ensureEntity(record, this.entities.size, { variant: this.runtimeVariants.active });
+        if (this.disposed || generation !== this.selectionGeneration) return null;
         const previousEntity = this.activeEntity;
         const previousPosition = previousEntity?.group.position.clone();
         const nextNpcPosition = nextEntity.group.position.clone();
@@ -655,6 +661,7 @@ export default class CharacterManager {
             iman: '#f59e0b',
             uzudi: '#8b5cf6',
             setayesh: '#f43f5e',
+            negar: '#e6bc45',
         }[record.slug] ?? '#a78bfa';
 
         context.imageSmoothingEnabled = false;
@@ -733,6 +740,19 @@ export default class CharacterManager {
     }
 
     async loadCharacterAssets(record, { preferredVariant = this.runtimeVariants.active } = {}) {
+        if (this.visualService && BUILTIN_SLUGS.has(record.slug)) {
+            // The runner and world share decoded image packs; each entity owns
+            // only its cheap texture view, so disposing it cannot break another.
+            const pack = await this.visualService.loadPack(record.slug, preferredVariant);
+            const texture = new THREE.Texture(pack.image);
+            texture.colorSpace = THREE.SRGBColorSpace;
+            texture.magFilter = THREE.NearestFilter;
+            texture.minFilter = THREE.NearestFilter;
+            texture.generateMipmaps = false;
+            texture.needsUpdate = true;
+            return { texture, atlas: pack.atlas, spriteUrl: pack.spriteUrl,
+                atlasUrl: pack.atlasUrl, variant: pack.variant };
+        }
         const failures = [];
 
         for (const pair of this.characterAssetPairs(record, preferredVariant)) {
@@ -784,7 +804,6 @@ export default class CharacterManager {
         try {
             const response = await fetch(url, {
                 headers: { Accept: 'application/json' },
-                cache: 'no-cache',
                 signal: controller.signal,
             });
 
@@ -866,6 +885,7 @@ export default class CharacterManager {
 
     dispose() {
         this.disposed = true;
+        this.selectionGeneration += 1;
         this.hydrationGeneration += 1;
         this.assetPromises.clear();
         this.entityPromises.clear();

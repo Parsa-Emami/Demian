@@ -61,15 +61,15 @@ test('switching characters evicts older decoded sheets while retaining recent an
     let loads = 0;
     service.loadPair = async (slug, variant) => {
         loads += 1;
-        return { slug, variant, image: { naturalWidth: 2688, naturalHeight: 3136 } };
+        return { slug, variant, image: { naturalWidth: 1536, naturalHeight: 1536 } };
     };
     const darya = await service.loadPack('darya');
     await service.loadPack('setayesh');
     assert.equal(await service.loadPack('darya'), darya);
     await service.loadPack('uzudi');
     assert.equal(service.packCache.size, 2);
-    assert.equal(service.packCache.has('setayesh:mobile'), false);
-    assert.equal(darya.image.naturalWidth, 2688);
+    assert.equal(service.packCache.has('setayesh:runtime'), false);
+    assert.equal(darya.image.naturalWidth, 1536);
     assert.equal(loads, 3);
     await service.loadPack('setayesh');
     assert.equal(loads, 4);

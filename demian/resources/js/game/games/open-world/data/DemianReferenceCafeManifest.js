@@ -1,9 +1,9 @@
 import WorldManifest from '../world/WorldManifest.js';
 import { CAFE_BOUNDS, CAFE_STATIC_COLLIDERS } from '../../../shared/cafe/CafeReferenceLayout.js';
-import { CAFE_LAYOUT_VERSION, CAFE_CHARACTER_SPAWNS, CAFE_SURVEY } from '../../../shared/cafe/CafeWalkthroughScene.js';
+import { CAFE_LAYOUT_VERSION, CAFE_CHARACTER_SPAWNS, CAFE_SURVEY, CAFE_GAMEPLAY_SCALE, cafePoint } from '../../../shared/cafe/CafeWalkthroughScene.js';
 import { CAFE_ENVIRONMENT_ID } from '../../../shared/cafe/CafeEnvironmentContract.js';
 
-const CHUNK_SIZE = 12;
+const CHUNK_SIZE = 12 * CAFE_GAMEPLAY_SCALE;
 const ORIGIN = Object.freeze({ x: CAFE_BOUNDS.minX, z: CAFE_BOUNDS.minZ });
 const COLUMNS = Math.ceil((CAFE_BOUNDS.maxX - CAFE_BOUNDS.minX) / CHUNK_SIZE);
 const ROWS = Math.ceil((CAFE_BOUNDS.maxZ - CAFE_BOUNDS.minZ) / CHUNK_SIZE);
@@ -38,6 +38,7 @@ const CHUNKS = Object.freeze(Array.from({ length: ROWS }, (_, z) =>
     }))
 ).flat());
 function savePoint(id, label, x, z) {
+    ({ x, z } = cafePoint(x, z));
     const gx = Math.floor((x - ORIGIN.x) / CHUNK_SIZE), gz = Math.floor((z - ORIGIN.z) / CHUNK_SIZE);
     return Object.freeze({ id, label, chunkId: `cafe-${gx}-${gz}`, districtId: districtFor(gx, gz), position: Object.freeze({ x, z }) });
 }

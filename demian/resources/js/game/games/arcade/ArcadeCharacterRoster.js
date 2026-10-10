@@ -1,6 +1,8 @@
 import { BUILTIN_CHARACTER_SLUGS } from '../../characters/CharacterVisualContract.js';
+import { BUILTIN_CHARACTER_LABELS } from '../../characters/manifests/CharacterManifestRegistry.js';
 
 export const ARCADE_CHARACTER_LABELS = Object.freeze({
+    ...BUILTIN_CHARACTER_LABELS,
     amirreza: 'AMIRREZA / امیررضا',
     parsa: 'PARSA / پارسا',
     darya: 'DARYA / دریا',
