@@ -8,11 +8,12 @@ import manifest, { DEMIAN_CITY_MANIFEST_DEFINITION } from '../../../resources/js
 test('legacy Demian City manifest resolves to the immutable reference café', () => {
     assert.equal(validateWorldManifest(DEMIAN_CITY_MANIFEST_DEFINITION).length, 0);
     assert.equal(manifest.id, 'demian-reference-cafe');
-    assert.equal(manifest.chunks.length, 12);
-    assert.equal(manifest.districts.length, 4);
-    assert.equal(manifest.savePoints.length, 4);
+    assert.equal(manifest.chunks.length, 14);
+    assert.equal(manifest.districts.length, 5);
+    assert.equal(manifest.savePoints.length, 5);
     assert.ok(Object.isFrozen(manifest.serialize()));
-    assert.equal(JSON.stringify(manifest.serialize()).toLowerCase().includes('neon'), false);
+    assert.ok(manifest.chunks.every((chunk) => chunk.theme === 'cafe'));
+    assert.equal(manifest.version, 3);
     for (const point of manifest.savePoints) {
         assert.equal(manifest.chunk(point.chunkId)?.id, point.chunkId);
         assert.equal(manifest.district(point.districtId)?.id, point.districtId);

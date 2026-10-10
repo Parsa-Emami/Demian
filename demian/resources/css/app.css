@@ -2595,6 +2595,13 @@ html.demian-forced-landscape .manager-sidebar__scroll {
     pointer-events: none;
 }
 
+/* The café map must stay above gameplay controls, including on small phones. */
+.game-overlay-host {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+}
+
 .manager-shell[data-active-game="tetris"] [data-world-ui] {
     display: none !important;
 }

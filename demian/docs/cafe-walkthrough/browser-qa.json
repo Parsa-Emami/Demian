@@ -1,0 +1,145 @@
+{
+  "browser": "Chromium 153, software rendering",
+  "cases": [
+    {
+      "name": "desktop",
+      "width": 1440,
+      "height": 1000,
+      "deviceScaleFactor": 1,
+      "game": "open-world",
+      "worldVersion": 3,
+      "roster": [
+        "darya",
+        "setayesh",
+        "uzudi"
+      ],
+      "renderFailures": 0,
+      "position": {
+        "x": 3.3,
+        "z": -55
+      },
+      "overflow": false,
+      "keyboardDistance": 0.6617534813774988,
+      "mapMovement": 0,
+      "errors": [],
+      "failed": []
+    },
+    {
+      "name": "phone-390",
+      "width": 390,
+      "height": 844,
+      "deviceScaleFactor": 2,
+      "game": "open-world",
+      "worldVersion": 3,
+      "roster": [
+        "darya",
+        "setayesh",
+        "uzudi"
+      ],
+      "renderFailures": 0,
+      "position": {
+        "x": 3.3,
+        "z": -55
+      },
+      "overflow": false,
+      "keyboardDistance": 0.6034740530060443,
+      "mapMovement": 0,
+      "errors": [],
+      "failed": []
+    },
+    {
+      "name": "landscape",
+      "width": 844,
+      "height": 390,
+      "deviceScaleFactor": 2,
+      "game": "open-world",
+      "worldVersion": 3,
+      "roster": [
+        "darya",
+        "setayesh",
+        "uzudi"
+      ],
+      "renderFailures": 0,
+      "position": {
+        "x": 3.3,
+        "z": -55
+      },
+      "overflow": false,
+      "keyboardDistance": 0.6034740530060443,
+      "mapMovement": 0,
+      "errors": [],
+      "failed": []
+    },
+    {
+      "name": "phone-360",
+      "width": 360,
+      "height": 800,
+      "deviceScaleFactor": 1,
+      "game": "open-world",
+      "worldVersion": 3,
+      "roster": [
+        "darya",
+        "setayesh",
+        "uzudi"
+      ],
+      "renderFailures": 0,
+      "position": {
+        "x": 3.3,
+        "z": -55
+      },
+      "overflow": false,
+      "keyboardDistance": 0.6034740530060443,
+      "mapMovement": 0,
+      "errors": [],
+      "failed": []
+    },
+    {
+      "name": "tablet",
+      "width": 768,
+      "height": 1024,
+      "deviceScaleFactor": 1,
+      "game": "open-world",
+      "worldVersion": 3,
+      "roster": [
+        "darya",
+        "setayesh",
+        "uzudi"
+      ],
+      "renderFailures": 0,
+      "position": {
+        "x": 3.3,
+        "z": -55
+      },
+      "overflow": false,
+      "keyboardDistance": 0.6617534813774988,
+      "mapMovement": 0,
+      "errors": [],
+      "failed": []
+    }
+  ],
+  "referenceArt": [
+    "/assets/reference/cafe/walkthrough/portrait-1.jpg",
+    "/assets/reference/cafe/walkthrough/portrait-2.jpg",
+    "/assets/reference/cafe/walkthrough/portrait-3.jpg",
+    "/assets/reference/cafe/walkthrough/corridor-portrait.jpg"
+  ],
+  "route": {
+    "reached": [
+      "front-aisle",
+      "main-hall",
+      "rear-transition",
+      "rear-dining",
+      "rear-lounge",
+      "wc-approach",
+      "wc-door",
+      "washroom",
+      "red-mirror",
+      "cubicle"
+    ],
+    "end": {
+      "x": 7.92391091348146,
+      "z": -60.848297016870326
+    },
+    "actualCollisionRadius": 0.72
+  }
+}

@@ -33,7 +33,7 @@ export default class OpenWorldHud {
         const districtLabel = this.root?.querySelector('[data-world-district]');
         if (chunks) chunks.textContent = `${chunkStats?.active ?? 0}/${chunkStats?.loaded ?? 0}`;
         if (ai) ai.textContent = String(aiStats?.frameUpdates ?? 0);
-        if (districtLabel) districtLabel.textContent = district?.label ?? 'حاشیه شهر';
+        if (districtLabel) districtLabel.textContent = district?.label ?? 'حاشیه کافه';
         this.miniMap.update({ position, forward, activeChunkIds });
         if (this.worldMap.isOpen()) {
             this.worldMap.playerPosition = this.lastPosition;

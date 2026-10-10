@@ -29,5 +29,5 @@ test('every registered game is hard-locked to the shared reference café', () =>
 test('current and legacy Open World imports resolve to the same café manifest', () => {
     assert.equal(assertCafeWorldManifest(manifest), true);
     assert.equal(legacyManifest, manifest);
-    assert.equal(JSON.stringify(manifest.serialize()).toLowerCase().includes('neon'), false);
+    assert.ok(manifest.chunks.every((chunk) => chunk.theme === 'cafe'));
 });

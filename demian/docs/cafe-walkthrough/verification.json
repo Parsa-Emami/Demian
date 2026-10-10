@@ -1,0 +1,72 @@
+{
+  "date": "2026-10-10",
+  "layout_version": 3,
+  "base_project_version": "14.0.0",
+  "units": "gameplay-units",
+  "measured_dimensions": false,
+  "survey": {
+    "videos": 3,
+    "rooms": 4,
+    "walls_and_unobserved_footprint_blockers": 17,
+    "fixtures": 68,
+    "decor": 21,
+    "lights": 16,
+    "rugs": 5,
+    "doors": 3
+  },
+  "javascript_tests": {
+    "tests": 261,
+    "passed": 261,
+    "failed": 0,
+    "skipped": 0,
+    "command": "npm run test:ci"
+  },
+  "validation": {
+    "final": "passed: 319 JS files, 2 games, 3 characters",
+    "ui_layers": "passed: 21 tokens, 21 layers, 217 UI sources",
+    "production_build": "passed: one atomic JavaScript bundle"
+  },
+  "production_entry": "assets/app-7QvVh6-X.js",
+  "browser": {
+    "report": "browser-qa.json",
+    "engine": "Chromium 153, software rendering",
+    "viewports": 5,
+    "render_failures": 0,
+    "page_or_console_errors": 0,
+    "missing_assets": 0,
+    "horizontal_overflow": false,
+    "movement_blocked_while_map_open": true,
+    "ceiling_control_clickable": true,
+    "runner_transition_and_cafe_overlay_cleanup": true,
+    "source_portraits_loaded": 4,
+    "all_three_characters_selected": true
+  },
+  "route": {
+    "method": "Actual character fixedUpdate with existing collision system in Chromium; each leg found with the current navigation grid",
+    "waypoints_reached": [
+      "front-aisle",
+      "main-hall",
+      "rear-transition",
+      "rear-dining",
+      "rear-lounge",
+      "wc-approach",
+      "wc-door",
+      "washroom",
+      "red-mirror",
+      "cubicle"
+    ],
+    "character_radius": 0.72,
+    "navigation_test_sampling_interval": 0.15
+  },
+  "protected_base_files": {
+    "checked": 20,
+    "unchanged": true
+  },
+  "limitations": [
+    "Room dimensions and exact spacing inferred from video, not surveyed metres",
+    "Existing 2D Canvas style retained",
+    "Unseen adjoining spaces not surveyed",
+    "Real-phone frame rate, battery and temperature not measured",
+    "No PHP changes; Laravel runtime not tested"
+  ]
+}

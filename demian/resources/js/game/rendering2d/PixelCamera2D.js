@@ -21,8 +21,8 @@ export default class PixelCamera2D {
         return this;
     }
 
-    setZoom(pixelsPerUnit, { immediate = false } = {}) {
-        this.targetPixelsPerUnit = clamp(Number(pixelsPerUnit) || 10, 4, 32);
+    setZoom(pixelsPerUnit, { immediate = false, minimum = 4 } = {}) {
+        this.targetPixelsPerUnit = clamp(Number(pixelsPerUnit) || 10, Math.max(.25, minimum), 32);
         if (immediate) this.pixelsPerUnit = this.targetPixelsPerUnit;
         this.clampTarget();
         return this;
@@ -33,7 +33,7 @@ export default class PixelCamera2D {
         const worldHeight = Math.max(1, bounds.maxZ - bounds.minZ);
         const scaleX = (this.viewportWidth - padding * 2) / worldWidth;
         const scaleY = (this.viewportHeight - padding * 2) / worldHeight;
-        this.setZoom(Math.max(4, Math.min(scaleX, scaleY)), { immediate: true });
+        this.setZoom(Math.max(.25, Math.min(scaleX, scaleY)), { immediate: true, minimum: .25 });
         this.jumpTo({ x: (bounds.minX + bounds.maxX) / 2, z: (bounds.minZ + bounds.maxZ) / 2 });
         return this;
     }

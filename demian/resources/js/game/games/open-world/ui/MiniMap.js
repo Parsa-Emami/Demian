@@ -1,5 +1,7 @@
 import { UI_LAYER, assignUiLayer } from '../../../ui/UiLayer.js';
 import { PIXEL_PALETTE as P } from '../../../rendering2d/PixelPalette.js';
+import CafePixelRenderer from '../../../rendering2d/CafePixelRenderer.js';
+import { cafeMapCamera } from './CafeMapProjection.js';
 
 function canvasSize(canvas) {
     const dpr = Math.min(globalThis.devicePixelRatio || 1, 2);
@@ -26,6 +28,8 @@ export default class MiniMap {
         this.context = null;
         this.player = { x: 0, z: 0, forward: { x: 0, z: 1 } };
         this.activeChunks = new Set();
+        this.cafe = new CafePixelRenderer({ bounds: manifest.bounds });
+        this.sceneCanvas = null;
         this.onClick = () => this.onOpenMap?.();
     }
 
@@ -58,11 +62,7 @@ export default class MiniMap {
     }
 
     project(point, width, height) {
-        const bounds = this.manifest.bounds;
-        return {
-            x: ((point.x - bounds.minX) / (bounds.maxX - bounds.minX)) * width,
-            y: height - ((point.z - bounds.minZ) / (bounds.maxZ - bounds.minZ)) * height,
-        };
+        return cafeMapCamera(this.manifest.bounds, width, height, 7).worldToScreen(point);
     }
 
     draw() {
@@ -73,15 +73,23 @@ export default class MiniMap {
         context.fillStyle = P.void;
         context.fillRect(0, 0, width, height);
 
-        // Hard 8-bit grid behind chunks.
+        if (!this.sceneCanvas || this.sceneCanvas.width !== width || this.sceneCanvas.height !== height) {
+            this.sceneCanvas = document.createElement('canvas');
+            this.sceneCanvas.width = width; this.sceneCanvas.height = height;
+            const scene = this.sceneCanvas.getContext('2d');
+            this.cafe.draw(scene, cafeMapCamera(this.manifest.bounds, width, height, 7), { grid: false, detail: false });
+        }
+        context.drawImage(this.sceneCanvas, 0, 0);
+
+        // Discovery remains an overlay; the miniature shares the real floorplan.
         context.fillStyle = 'rgba(67,230,233,.05)';
         const grid = Math.max(8, Math.round(width / 8));
         for (let x = 0; x < width; x += grid) context.fillRect(x, 0, 1, height);
         for (let y = 0; y < height; y += grid) context.fillRect(0, y, width, 1);
 
         for (const chunk of this.manifest.chunks) {
-            const topLeft = this.project({ x: chunk.bounds.minX, z: chunk.bounds.maxZ }, width, height);
-            const bottomRight = this.project({ x: chunk.bounds.maxX, z: chunk.bounds.minZ }, width, height);
+            const topLeft = this.project({ x: chunk.bounds.minX, z: chunk.bounds.minZ }, width, height);
+            const bottomRight = this.project({ x: chunk.bounds.maxX, z: chunk.bounds.maxZ }, width, height);
             const discovered = this.discovery.isChunkDiscovered(chunk.id);
             const active = this.activeChunks.has(chunk.id);
             const x = pixel(topLeft.x) + 1;
@@ -90,8 +98,8 @@ export default class MiniMap {
             const h = Math.max(1, pixel(bottomRight.y - topLeft.y) - 2);
 
             context.fillStyle = discovered
-                ? (active ? '#164c5a' : '#202b3f')
-                : '#05070d';
+                ? (active ? 'rgba(165,210,184,.12)' : 'rgba(16,29,32,.1)')
+                : 'rgba(5,7,13,.82)';
             context.fillRect(x, y, w, h);
             context.strokeStyle = discovered
                 ? (active ? P.cyan : '#52627a')
@@ -119,7 +127,7 @@ export default class MiniMap {
         const fx = Number(this.player.forward?.x) || 0;
         const fz = Number(this.player.forward?.z) || 0;
         const stepX = Math.sign(fx);
-        const stepY = -Math.sign(fz);
+        const stepY = Math.sign(fz);
         const marker = Math.max(3, pixel(width * 0.022));
 
         context.fillStyle = P.pinkDark;
@@ -144,6 +152,7 @@ export default class MiniMap {
         this.root = null;
         this.canvas = null;
         this.context = null;
+        this.sceneCanvas = null;
         this.host = null;
     }
 }

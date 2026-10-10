@@ -1,5 +1,8 @@
 import { UI_LAYER, assignUiLayer } from '../../../ui/UiLayer.js';
 import { PIXEL_PALETTE as P } from '../../../rendering2d/PixelPalette.js';
+import CafePixelRenderer from '../../../rendering2d/CafePixelRenderer.js';
+import { cafeMapCamera } from './CafeMapProjection.js';
+import { cafeArtRevision } from '../../../rendering2d/CafeWalkthroughPainter.js';
 
 function setText(element, value) {
     if (element) element.textContent = String(value ?? '');
@@ -22,6 +25,10 @@ export default class WorldMap {
         this.canvas = null;
         this.context = null;
         this.selectedId = null;
+        this.cafe = new CafePixelRenderer({ bounds: manifest.bounds });
+        this.showCeiling = false;
+        this.sceneCanvas = null;
+        this.sceneKey = null;
         this.playerPosition = { x: 0, z: 0 };
         this.boundClick = (event) => this.selectFromPointer(event);
         this.boundKey = (event) => { if (event.key === 'Escape') this.close(); };
@@ -35,14 +42,20 @@ export default class WorldMap {
         this.root.hidden = true;
         this.root.setAttribute('aria-hidden', 'true');
         this.root.innerHTML = `
-            <div class="open-world-map__panel" role="dialog" aria-modal="true" aria-label="نقشه شهر دمیان">
-                <header><div><small>DEMIAN // WORLD GRID</small><h2>نقشه جهان</h2></div><button type="button" data-map-close>×</button></header>
+            <div class="open-world-map__panel" role="dialog" aria-modal="true" aria-label="نقشه کافه دمیان">
+                <header><div><small>DEMIAN // CAFÉ</small><h2>نقشه کافه</h2></div><button type="button" data-map-ceiling aria-label="نمایش شبکه سقف" aria-pressed="false">سقف</button><button type="button" data-map-close aria-label="بستن نقشه">×</button></header>
                 <div class="open-world-map__canvas-wrap"><canvas></canvas></div>
                 <footer><div><strong data-map-selection>یک Save Point را انتخاب کن</strong><small data-map-status>نقاط کشف‌شده برای سفر سریع فعال‌اند.</small></div><button type="button" data-map-travel disabled>سفر سریع</button></footer>
             </div>`;
         this.canvas = this.root.querySelector('canvas');
         this.context = this.canvas.getContext('2d', { alpha: false });
         if (this.context) this.context.imageSmoothingEnabled = false;
+        this.ceilingButton = this.root.querySelector('[data-map-ceiling]');
+        this.ceilingButton.addEventListener('click', () => {
+            this.showCeiling = !this.showCeiling;
+            this.ceilingButton.setAttribute('aria-pressed', String(this.showCeiling));
+            this.draw();
+        });
         this.closeButton = this.root.querySelector('[data-map-close]');
         this.travelButton = this.root.querySelector('[data-map-travel]');
         this.selectionLabel = this.root.querySelector('[data-map-selection]');
@@ -74,12 +87,8 @@ export default class WorldMap {
     isOpen() { return Boolean(this.root && !this.root.hidden); }
 
     project(point = {}, width, height) {
-        const bounds = this.manifest.bounds;
-        const padding = Math.max(24, Math.round(Math.min(width, height) * 0.055));
-        return {
-            x: padding + (((Number(point.x) || 0) - bounds.minX) / (bounds.maxX - bounds.minX)) * (width - padding * 2),
-            y: height - padding - (((Number(point.z) || 0) - bounds.minZ) / (bounds.maxZ - bounds.minZ)) * (height - padding * 2),
-        };
+        return cafeMapCamera(this.manifest.bounds, width, height,
+            Math.max(24, Math.round(Math.min(width, height) * .055))).worldToScreen(point);
     }
 
     districtCenter(districtId) {
@@ -119,10 +128,20 @@ export default class WorldMap {
         context.imageSmoothingEnabled = false;
         context.textBaseline = 'middle';
         this.drawBackdrop(context, width, height);
+        const mapCamera = cafeMapCamera(this.manifest.bounds, width, height,
+            Math.max(24, Math.round(Math.min(width, height) * .055)));
+        const sceneKey = `${width}:${height}:${this.showCeiling}:${cafeArtRevision()}`;
+        if (!this.sceneCanvas || this.sceneKey !== sceneKey) {
+            this.sceneCanvas = document.createElement('canvas');
+            this.sceneCanvas.width = width; this.sceneCanvas.height = height;
+            this.cafe.draw(this.sceneCanvas.getContext('2d'), mapCamera, { ceiling: this.showCeiling });
+            this.sceneKey = sceneKey;
+        }
+        context.drawImage(this.sceneCanvas, 0, 0);
 
         for (const chunk of this.manifest.chunks) {
-            const a = this.project({ x: chunk.bounds.minX, z: chunk.bounds.maxZ }, width, height);
-            const b = this.project({ x: chunk.bounds.maxX, z: chunk.bounds.minZ }, width, height);
+            const a = this.project({ x: chunk.bounds.minX, z: chunk.bounds.minZ }, width, height);
+            const b = this.project({ x: chunk.bounds.maxX, z: chunk.bounds.maxZ }, width, height);
             const discovered = this.discovery.isChunkDiscovered(chunk.id);
             const district = this.manifest.district(chunk.districtId);
             const x = pixel(a.x);
@@ -130,9 +149,9 @@ export default class WorldMap {
             const w = Math.max(1, pixel(b.x - a.x));
             const h = Math.max(1, pixel(b.y - a.y));
 
-            context.fillStyle = discovered ? withAlpha(district?.color, '52') : '#03050b';
+            context.fillStyle = discovered ? withAlpha(district?.color, '08') : 'rgba(3,5,11,.84)';
             context.fillRect(x + 2, y + 2, Math.max(1, w - 4), Math.max(1, h - 4));
-            context.strokeStyle = discovered ? (district?.color ?? '#64748b') : '#1b2436';
+            context.strokeStyle = discovered ? withAlpha(district?.color, '45') : '#1b2436';
             context.lineWidth = discovered ? 2 : 1;
             context.strokeRect(x + 0.5, y + 0.5, Math.max(1, w - 1), Math.max(1, h - 1));
 
@@ -148,12 +167,17 @@ export default class WorldMap {
             const discovered = this.manifest.chunks.some(
                 (chunk) => chunk.districtId === district.id && this.discovery.isChunkDiscovered(chunk.id)
             );
-            const fontSize = Math.max(11, Math.round(width * 0.017));
-            context.font = `800 ${fontSize}px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace`;
+            const cssScale = width / Math.max(1, this.canvas.getBoundingClientRect().width);
+            const fontSize = Math.max(Math.round(12 * cssScale), Math.round(width * 0.017));
+            context.font = `800 ${fontSize}px Vazirmatn, sans-serif`;
             context.fillStyle = '#050816';
-            context.fillText(district.label, pixel(point.x) + 2, pixel(point.y) + 2);
+            const side = this.districtCenter(district.id).x < 0 ? -1 : 1;
+            const labelX = width / 2 + side * (mapCamera.pixelsPerUnit * 12 + fontSize * 1.2);
+            const labelWidth = Math.max(fontSize, side < 0 ? labelX - 16 * cssScale : width - labelX - 16 * cssScale);
+            context.textAlign = side < 0 ? 'right' : 'left';
+            context.fillText(district.label, pixel(labelX) + 2, pixel(point.y) + 2, labelWidth);
             context.fillStyle = discovered ? P.white : '#46536b';
-            context.fillText(district.label, pixel(point.x), pixel(point.y));
+            context.fillText(district.label, pixel(labelX), pixel(point.y), labelWidth);
         }
 
         for (const point of this.manifest.savePoints) {
@@ -227,6 +251,7 @@ export default class WorldMap {
     dispose() {
         document.removeEventListener('keydown', this.boundKey);
         this.canvas?.removeEventListener('click', this.boundClick);
+        this.sceneCanvas = null;
         this.root?.remove();
         this.root = null;
         this.canvas = null;

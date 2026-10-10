@@ -13,7 +13,7 @@ export default class ArcadeWorld {
         this.bounds = CAFE_BOUNDS;
         this.colliders = CAFE_STATIC_COLLIDERS;
         this.cabinets = [
-            { id: 'arcade-cabinet', gameId: 'tetris', position: { x: 17.8, y: 0, z: -9.4 }, interaction: { x: 16.2, z: -9.4, radius: 2.4 }, userData: { gameId: 'tetris' } },
+            { id: 'merch-shelf', gameId: 'dino-run', position: { x: 10.65, y: 0, z: 14.5 }, interaction: { x: 7.0, z: 13.4, radius: 2.4 }, userData: { gameId: 'dino-run' } },
         ];
         this.elapsed = 0;
     }

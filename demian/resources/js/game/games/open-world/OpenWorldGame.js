@@ -8,6 +8,8 @@ import { findGameCatalogEntry } from '../../catalog/GameCatalog.js';
 import InteractionPrompt from '../../shared/interaction/ui/InteractionPrompt.js';
 import { COLLISION_LAYERS } from '../../shared/collision/CollisionLayers.js';
 import { CAFE_STATIC_COLLIDERS } from '../../shared/cafe/CafeReferenceLayout.js';
+import { CAFE_CHARACTER_SPAWNS } from '../../shared/cafe/CafeWalkthroughScene.js';
+import { safeCafeTravelPosition, reconcileCafeDiscovery } from './world/CafeTravelSafety.js';
 import DEMIAN_REFERENCE_CAFE_MANIFEST from './data/DemianReferenceCafeManifest.js';
 import WorldPartition from './world/WorldPartition.js';
 import EnvironmentSystem from './world/EnvironmentSystem.js';
@@ -23,15 +25,6 @@ import SavePointSystem from './persistence/SavePointSystem.js';
 import OpenWorldHud from './ui/OpenWorldHud.js';
 import { assertCafeWorldManifest } from '../../shared/cafe/CafeEnvironmentContract.js';
 
-function worldSpawnPoints(manifest) {
-    return [
-        manifest.spawn,
-        { x: -12, z: 8 },
-        { x: 14, z: 6 },
-        { x: -15, z: -9 },
-        { x: 7, z: -3 },
-    ];
-}
 
 export default class OpenWorldGame extends BaseGame {
     constructor() {
@@ -133,7 +126,7 @@ export default class OpenWorldGame extends BaseGame {
             collisionScope: this.collisionScope,
             navigationGrid: this.navigationGrid,
             worldBounds: this.manifest.bounds,
-            spawnPoints: worldSpawnPoints(this.manifest),
+            spawnPoints: CAFE_CHARACTER_SPAWNS,
             aiBudget: this.aiBudget,
         });
         this.savePoints = new SavePointSystem({
@@ -215,7 +208,7 @@ export default class OpenWorldGame extends BaseGame {
 
         this.navigationGrid = this.navigationScope.createGrid('demian-reference-cafe', {
             ...bounds,
-            cellSize: 1.5,
+            cellSize: .72,
             allowDiagonal: true,
         });
         this.navigationGrid.rasterizeColliders(this.staticColliders, { padding: 0.68 });
@@ -321,8 +314,9 @@ export default class OpenWorldGame extends BaseGame {
 
     async fastTravel(point) {
         if (!this.discovery.isSavePointUnlocked(point.id)) return false;
-        await this.chunkManager.ensureAround(point.position);
-        this.characterManager.setPosition(point.position);
+        const target = safeCafeTravelPosition(point.position, this.navigationGrid, this.manifest.spawn);
+        await this.chunkManager.ensureAround(target);
+        this.characterManager.setPosition(target);
         this.updateStreaming(true);
         this.focusCharacter({ close: true, follow: true });
         this.savePoints.lastSavePointId = point.id;
@@ -355,7 +349,12 @@ export default class OpenWorldGame extends BaseGame {
         if (state.characterId && this.characterManager.characters.some((record) => String(record.id) === String(state.characterId))) {
             await this.characterManager.select(state.characterId).catch(() => undefined);
         }
-        const target = this.partition.clampPosition(state.position ?? this.manifest.spawn);
+        const legacyLayout = Number(state.worldVersion ?? 1) < this.manifest.version;
+        reconcileCafeDiscovery(this.discovery, this.manifest, { legacyLayout });
+        const requested = legacyLayout
+            ? (this.manifest.savePoint(state.lastSavePointId)?.position ?? this.manifest.spawn)
+            : this.partition.clampPosition(state.position ?? this.manifest.spawn);
+        const target = safeCafeTravelPosition(requested, this.navigationGrid, this.manifest.spawn);
         await this.chunkManager.ensureAround(target);
         this.characterManager.setPosition(target);
         this.updateStreaming(true);
@@ -458,6 +457,7 @@ export default class OpenWorldGame extends BaseGame {
             this.hud.toggleMap();
             this.mapOpen = this.hud.isMapOpen();
         }
+        this.mapOpen = this.hud?.isMapOpen() ?? this.mapOpen;
         if (input.quickSave && this.context?.app?.sessionState === 'playing') {
             this.savePoints.save({ reason: 'quick-save' });
             this.context.app.shell.toast('پیشرفت Open World ذخیره شد.', 'success');
@@ -599,8 +599,8 @@ export default class OpenWorldGame extends BaseGame {
         this.cameraToggleButton?.removeEventListener('click', this.onCameraToggle);
         this.cameraResetButton?.removeEventListener('click', this.onCameraReset);
         globalThis.removeEventListener('keydown', this.onKeyboardShortcut);
-        this.interactionPrompt?.unmount();
-        this.hud?.unmount();
+        this.interactionPrompt?.dispose();
+        this.hud?.dispose();
         this.chunkManager?.dispose();
         this.cameraController?.dispose();
         this.pixelRenderer?.dispose();

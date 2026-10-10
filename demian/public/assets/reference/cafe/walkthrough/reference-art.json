@@ -1,0 +1,50 @@
+{
+  "source": "Supplied 2026-10-09 walkthrough videos, no generated portraits",
+  "extraction": "Art-only rectangular crops of locally decoded reference frames; no visitors included",
+  "art": [
+    {
+      "file": "portrait-1.jpg",
+      "source_video": "20261009_112412_1.mp4",
+      "decoded_frame": "video_1/frame_013.jpg",
+      "crop": [
+        469,
+        339,
+        500,
+        419
+      ]
+    },
+    {
+      "file": "portrait-2.jpg",
+      "source_video": "20261009_112412_1.mp4",
+      "decoded_frame": "video_1/frame_016.jpg",
+      "crop": [
+        92,
+        222,
+        177,
+        357
+      ]
+    },
+    {
+      "file": "portrait-3.jpg",
+      "source_video": "20261009_112412_1.mp4",
+      "decoded_frame": "video_1/frame_016.jpg",
+      "crop": [
+        239,
+        250,
+        301,
+        363
+      ]
+    },
+    {
+      "file": "corridor-portrait.jpg",
+      "source_video": "20261009_112412_2.mp4",
+      "decoded_frame": "corridor-source.jpg",
+      "crop": [
+        97,
+        554,
+        179,
+        744
+      ]
+    }
+  ]
+}

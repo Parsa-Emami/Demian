@@ -5,6 +5,7 @@ import { drawSpriteCharacter } from '../../../rendering2d/PixelActorRenderer.js'
 import { PIXEL_PALETTE as P } from '../../../rendering2d/PixelPalette.js';
 import { drawPixelSceneEffects } from '../../../rendering2d/PixelSceneEffects.js';
 import { CAFE_STATIC_COLLIDERS } from '../../../shared/cafe/CafeReferenceLayout.js';
+import { CAFE_RENDER_BOUNDS } from '../../../shared/cafe/CafeWalkthroughScene.js';
 
 export default class OpenWorldPixelRenderer {
     constructor(context, manifest) {
@@ -21,7 +22,7 @@ export default class OpenWorldPixelRenderer {
         this.cafe = new CafePixelRenderer({ bounds: manifest.bounds, colliders: CAFE_STATIC_COLLIDERS });
         this.queue = new PixelRenderQueue();
         this.mode = 'OVERVIEW';
-        this.camera.fitBounds(manifest.bounds, 10);
+        this.camera.fitBounds(CAFE_RENDER_BOUNDS, 10);
     }
 
     setMode(mode, target, { immediate = false } = {}) {
@@ -31,7 +32,7 @@ export default class OpenWorldPixelRenderer {
             this.camera.follow(target, { immediate });
         } else {
             const logical = this.context.renderer.logicalDimensions();
-            this.camera.resize(logical.width, logical.height).fitBounds(this.manifest.bounds, 10);
+            this.camera.resize(logical.width, logical.height).fitBounds(CAFE_RENDER_BOUNDS, 10);
         }
         return this.mode;
     }
@@ -39,7 +40,7 @@ export default class OpenWorldPixelRenderer {
     resize() {
         const logical = this.context.renderer.logicalDimensions();
         this.camera.resize(logical.width, logical.height);
-        if (this.mode === 'OVERVIEW') this.camera.fitBounds(this.manifest.bounds, 10);
+        if (this.mode === 'OVERVIEW') this.camera.fitBounds(CAFE_RENDER_BOUNDS, 10);
         else this.camera.setZoom(this.followZoom(), { immediate: true });
     }
 
@@ -84,7 +85,8 @@ export default class OpenWorldPixelRenderer {
         const scale = this.camera.targetPixelsPerUnit;
         const padX = this.mode === 'FOLLOW' ? logical.width * .15 / scale : 0;
         const padZ = this.mode === 'FOLLOW' ? logical.height * .30 / scale : 0;
-        this.camera.bounds = { minX: this.manifest.bounds.minX - padX, maxX: this.manifest.bounds.maxX + padX, minZ: this.manifest.bounds.minZ - padZ, maxZ: this.manifest.bounds.maxZ + padZ };
+        const b = this.mode === 'OVERVIEW' ? CAFE_RENDER_BOUNDS : this.manifest.bounds;
+        this.camera.bounds = { minX: b.minX - padX, maxX: b.maxX + padX, minZ: b.minZ - padZ, maxZ: b.maxZ + padZ };
         this.camera.resize(logical.width, logical.height);
         const focus = characterManager?.position?.() ?? this.manifest.spawn;
         if (this.mode === 'FOLLOW') this.camera.follow(focus);
