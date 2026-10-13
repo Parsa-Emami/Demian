@@ -104,15 +104,15 @@ class CharacterAssetService
             ? $deviceType
             : 'mobile';
 
-        // Character Core V4: bumped from "char_manifest_" because this pass
-        // added production_status/is_production_ready to the cached shape;
-        // versioning the key avoids serving stale pre-V4 payloads out of an
-        // existing cache for up to an hour after this deploy.
+        $character = Character::findOrFail($characterId);
+        $packVersion = $character->is_builtin ? $this->packVersion($character) : 0;
+
+        // Include the shipped pack version so a reference rebuild cannot reuse
+        // a cached legacy URL or pending status from the previous release.
         return Cache::remember(
-            "char_manifest_v14_{$characterId}_{$deviceType}",
+            "char_manifest_v14_{$characterId}_{$deviceType}_pack{$packVersion}",
             3600,
-            function () use ($characterId, $deviceType): array {
-                $character = Character::findOrFail($characterId);
+            function () use ($character, $deviceType, $packVersion): array {
                 $slug = strtolower((string) ($character->slug ?: $character->name));
 
                 if (!$character->is_builtin) {
@@ -126,8 +126,6 @@ class CharacterAssetService
                         'is_production_ready' => $this->isProductionReady($character),
                     ];
                 }
-
-                $packVersion = $this->packVersion($character);
 
                 return [
                     'id' => $character->id,
@@ -174,11 +172,13 @@ class CharacterAssetService
     {
         $slug = strtolower((string) $character->slug);
 
-        // These bundled characters are pinned to the canonical-reference v9
-        // art pack so stale asset_pack_version values cannot keep an older
-        // sprite sheet active after this patch is copied into an existing DB.
+        // Installed packs come from the shared roster, overriding stale DB
+        // settings. Remaining archived characters retain their legacy fallback.
+        $shippedVersion = (int) ($this->identity->characterEntry($slug)['pack_version'] ?? 0);
+        if ($shippedVersion > 0) {
+            return $shippedVersion;
+        }
         $bundledVersion = match ($slug) {
-            'darya', 'setayesh', 'uzudi', 'negar', 'tiam' => 14,
             'amirreza',
             'arsal',
             'hossein',
@@ -211,7 +211,10 @@ class CharacterAssetService
 
     protected function clearCharacterCache(int $characterId): void
     {
+        $character = Character::find($characterId);
+        $packVersion = $character?->is_builtin ? $this->packVersion($character) : 0;
         foreach (['desktop', 'mobile', 'compact'] as $deviceType) {
+            Cache::forget("char_manifest_v14_{$characterId}_{$deviceType}_pack{$packVersion}");
             Cache::forget("char_manifest_v14_{$characterId}_{$deviceType}");
             Cache::forget("char_manifest_v4_{$characterId}_{$deviceType}");
             Cache::forget("char_manifest_{$characterId}_{$deviceType}");

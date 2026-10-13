@@ -11,7 +11,7 @@
  *     "new character onboarding" flow should read from this registry
  *     rather than from ad hoc hardcoded arrays.
  *
- * The active roster includes Darya, Setayesh, Uzudi, Negar and Tiam, rebuilt from references.
+ * The active roster includes Darya, Setayesh, Uzudi, Negar, Tiam and AmirReza, rebuilt from references.
  */
 
 const MANIFEST_URL_PATH = 'assets/characters/character-manifest-v4.json';
@@ -30,9 +30,10 @@ const EMBEDDED_ROSTER_SNAPSHOT = Object.freeze({
     characters: Object.freeze([
         Object.freeze({ slug: 'darya', displayName: 'DARYA / دریا', productionStatus: 'gold_standard_production', isDefaultActive: true, packVersion: 14 }),
         Object.freeze({ slug: 'setayesh', displayName: 'SETAYESH / ستایش', productionStatus: 'gold_standard_production', isDefaultActive: false, packVersion: 14 }),
-        Object.freeze({ slug: 'uzudi', displayName: 'UZUDI / اوزودی', productionStatus: 'gold_standard_production', isDefaultActive: false, packVersion: 14 }),
+        Object.freeze({ slug: 'uzudi', displayName: 'UZUDI / اوزودی', productionStatus: 'gold_standard_production', isDefaultActive: false, packVersion: 14, locomotionStyle: 'wing-assisted' }),
         Object.freeze({ slug: 'negar', displayName: 'NEGAR / نگار', productionStatus: 'gold_standard_production', isDefaultActive: false, packVersion: 14 }),
         Object.freeze({ slug: 'tiam', displayName: 'TIAM / تیام', productionStatus: 'gold_standard_production', isDefaultActive: false, packVersion: 14 }),
+        Object.freeze({ slug: 'amirreza', displayName: 'AMIRREZA / امیررضا', productionStatus: 'gold_standard_production', isDefaultActive: false, packVersion: 14, locomotionStyle: 'wing-assisted' }),
     ]),
 });
 
@@ -49,7 +50,7 @@ function slugsWithStatus(status) {
     );
 }
 
-/** Reference-driven production characters: Darya, Setayesh and Uzudi. */
+/** Reference-driven characters with installed production assets. */
 export const PRODUCTION_CHARACTER_SLUGS = slugsWithStatus(PRODUCTION_STATUS.GOLD_STANDARD);
 
 /** Reserved for future manifests; no legacy characters are playable in V14. */

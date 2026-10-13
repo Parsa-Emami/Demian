@@ -14,14 +14,16 @@ import {
     normalizeSpriteVariant,
 } from '../characters/CharacterVisualContract.js';
 
-import { BUILTIN_CHARACTER_LABELS as LABELS } from '../characters/manifests/CharacterManifestRegistry.js';
+import { BUILTIN_CHARACTER_LABELS as LABELS, characterManifestEntry } from '../characters/manifests/CharacterManifestRegistry.js';
 const BUILTIN_DEFINITIONS = Object.freeze(BUILTIN_CHARACTER_SLUGS.map((slug) => Object.freeze({
     id: `builtin-${slug}`, name: LABELS[slug], slug, is_active: slug === 'darya',
     settings: { walk_speed: 3.55, run_speed: 6.9, sprint_speed: 7.6, jump_force: 6.8,
-        air_control: .58, scale: 1, asset_pack_version: 14, production_status: 'gold_standard_production',
+        air_control: .58, scale: 1, asset_pack_version: characterManifestEntry(slug).packVersion,
+        production_status: characterManifestEntry(slug).productionStatus,
+        locomotion_style: characterManifestEntry(slug).locomotionStyle ?? 'ground-runner',
         ...(slug === 'darya' ? { companion: 'pishi', companion_always_visible: true } : {}),
         ...(slug === 'tiam' ? { companion: 'homayoun', companion_always_visible: true } : {}),
-        ...(slug === 'uzudi' ? { locomotion_style: 'wing-assisted', signature_action: 'slide' } : {}),
+        ...(characterManifestEntry(slug).locomotionStyle === 'wing-assisted' ? { signature_action: 'slide' } : {}),
     },
 })));
 
@@ -156,6 +158,9 @@ export default class CharacterManager {
                     ...(existing.settings ?? {}),
                     // Built-in characters always share one canonical world size.
                     scale: 1,
+                    asset_pack_version: builtin.settings.asset_pack_version,
+                    production_status: builtin.settings.production_status,
+                    locomotion_style: builtin.settings.locomotion_style,
                 },
             };
         });

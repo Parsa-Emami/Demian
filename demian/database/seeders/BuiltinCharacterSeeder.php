@@ -33,7 +33,7 @@ class BuiltinCharacterSeeder extends Seeder
                         'jump_force' => 6.8, 'air_control' => .58, 'scale' => 1,
                         'asset_pack_version' => $version,
                         'production_status' => $entry['production_status'],
-                        'locomotion_style' => $slug === 'uzudi' ? 'wing-assisted' : 'ground-runner',
+                        'locomotion_style' => $entry['locomotion_style'] ?? 'ground-runner',
                         'companion' => match ($slug) {
                             'darya' => 'pishi',
                             'tiam' => 'homayoun',

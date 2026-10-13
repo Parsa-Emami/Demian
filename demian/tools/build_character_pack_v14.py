@@ -16,13 +16,14 @@ import numpy as np
 from PIL import Image
 from scipy import ndimage
 from character_animation_timing import apply_animation_timing
+from character_art_registry import ACTIVE_CHARACTER_DEFINITIONS
 
 ROOT = Path(__file__).resolve().parents[1]
 CHARACTERS = ROOT / 'public/assets/characters'
 VERSION, COLS, ROWS, WORK = 14, 24, 28, 224
 VARIANTS = {'desktop': 144, 'mobile': 112, 'compact': 80}
 DIRECTIONS = ('s', 'sw', 'w', 'nw', 'n', 'ne', 'e', 'se')
-LABELS = {'darya': 'DARYA / دریا', 'setayesh': 'SETAYESH / ستایش', 'uzudi': 'UZUDI / اوزودی', 'negar': 'NEGAR / نگار', 'tiam': 'TIAM / تیام'}
+LABELS = {slug: entry['display_name'] for slug, entry in ACTIVE_CHARACTER_DEFINITIONS.items()}
 COUNTS = {'idle': 40, 'walk': 64, 'run': 80, 'jump': 48, 'slide': 64, 'land': 24, 'celebrate': 64}
 BODY_RATIO, FOOT_PIVOT = .70, .94
 GUTTER = 12  # > maximum in-between displacement (14 * 0.5) + downsample filter
@@ -158,6 +159,10 @@ def anim(frames, fps, loop=True, **extra):
 def build_character(slug):
     directory = CHARACTERS / slug
     layout = read_json(directory / 'source-v14/layout.json')
+    movement_style = layout.get('movementStyle', ACTIVE_CHARACTER_DEFINITIONS[slug]['locomotion_style'])
+    if movement_style not in ('ground-runner', 'wing-assisted'):
+        raise ValueError(f'Unsupported locomotion style: {movement_style}')
+    wing_states = ['run', 'sprint', 'takeoff', 'jump', 'fall', 'slide'] if movement_style == 'wing-assisted' else []
     main = Image.open(directory / 'source-v14/master.png').convert('RGBA')
     motion = Image.open(directory / 'source-v14/runner-motion.png').convert('RGBA')
     slides = Image.open(directory / 'source-v14/slides.png').convert('RGBA')
@@ -229,7 +234,7 @@ def build_character(slug):
         east, west = names[key + '_e'][start:end], names[key + '_w'][start:end]
         return anim(east, fps, loop, framesRight=east, framesLeft=west,
             framesByDirection={d: west if 'w' in d else east for d in DIRECTIONS}, motion=key,
-            locomotionStyle='wing-assisted' if slug == 'uzudi' else 'ground-runner')
+            locomotionStyle=movement_style)
     idle_map = {d: names['idle'] if d in ('e', 'se') else [names['turn'][i]] * COUNTS['idle'] for i, d in enumerate(DIRECTIONS)}
     animations = {
         'idle': anim(names['idle'], 24, framesByDirection=idle_map),
@@ -280,8 +285,7 @@ def build_character(slug):
             'render': {'referenceBodyHeightRatio': body_ratio, 'referenceBodyWidthRatio': .78,
                 'preserveAspectRatio': True, 'frameBlend': False, 'lockBodyScale': True,
                 'singleSilhouette': True, 'physicsOwnsJumpHeight': True, 'dedicatedSlide': True, 'smoothSampling': True},
-            'movement': {'style': 'wing-assisted' if slug == 'uzudi' else 'ground-runner',
-                'wingPoweredStates': ['run', 'sprint', 'takeoff', 'jump', 'fall', 'slide'] if slug == 'uzudi' else []},
+            'movement': {'style': movement_style, 'wingPoweredStates': wing_states},
         }
         if slug == 'darya':
             atlas['companion'] = {'id': 'pishi', 'alwaysVisible': True, 'bakedIntoEveryFrame': True, 'collisionIndependent': True}
@@ -340,6 +344,7 @@ def main():
         'production_character': 'darya', 'release': 'mobile-runner-v14',
         'characters': [{'slug': slug, 'display_name': label, 'production_status': 'gold_standard_production',
             'is_default_active': slug == 'darya', 'pack_version': VERSION,
+            'locomotion_style': ACTIVE_CHARACTER_DEFINITIONS[slug]['locomotion_style'],
             'manifest': f'{slug}/manifests/character_manifest_v4.json', 'has_shipped_assets': True}
             for slug, label in LABELS.items()]})
 

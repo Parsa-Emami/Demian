@@ -6,6 +6,7 @@ import DinoRunModel, { RUNNER_CONFIG } from '../../../resources/js/game/games/di
 import DinoRunGame from '../../../resources/js/game/games/dino-run/DinoRunGame.js';
 import { runnerLighting } from '../../../resources/js/game/games/dino-run/DinoRunEnvironment.js';
 import { BUILTIN_CHARACTER_SLUGS } from '../../../resources/js/game/characters/CharacterVisualContract.js';
+import { characterManifestEntry } from '../../../resources/js/game/characters/manifests/CharacterManifestRegistry.js';
 import CharacterVisualService from '../../../resources/js/game/characters/runtime/CharacterVisualService.js';
 import { smoothPresentationGrid } from '../../../resources/js/game/services/RendererService.js';
 
@@ -41,7 +42,7 @@ test('each installed character has a dense, independent low slide cycle and corr
         assert.ok(atlas.animations.slide.frames.every((f) => !running.has(f) && atlas.frames[f]));
         assert.equal(atlas.render.dedicatedSlide, true);
         assert.equal(atlas.render.frameBlend, false);
-        if (slug === 'uzudi') assert.deepEqual(atlas.movement.wingPoweredStates,
+        if (characterManifestEntry(slug).locomotionStyle === 'wing-assisted') assert.deepEqual(atlas.movement.wingPoweredStates,
             ['run', 'sprint', 'takeoff', 'jump', 'fall', 'slide']);
     }
 });
@@ -56,6 +57,8 @@ test('old character selections recover to Darya while the new characters persist
     assert.equal(new CharacterVisualService({ storage }).activeSlug, 'uzudi');
     service.setActiveSlug('tiam'); assert.equal(value, 'tiam');
     assert.equal(new CharacterVisualService({ storage }).activeSlug, 'tiam');
+    service.setActiveSlug('amirreza'); assert.equal(value, 'amirreza');
+    assert.equal(new CharacterVisualService({ storage }).activeSlug, 'amirreza');
 });
 
 test('switching characters evicts older decoded sheets while retaining recent and in-use images', async () => {

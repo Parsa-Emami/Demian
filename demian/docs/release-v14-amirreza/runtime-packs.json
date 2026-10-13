@@ -1,0 +1,20 @@
+[
+  {
+    "slug": "amirreza",
+    "variant": "runtime",
+    "physicalFrames": 254,
+    "animationFrameNames": 672,
+    "decodedBytes": 9437184,
+    "downloadBytes": 2062241,
+    "sourceDecodedBytes": 33718272
+  },
+  {
+    "slug": "amirreza",
+    "variant": "lite",
+    "physicalFrames": 203,
+    "animationFrameNames": 672,
+    "decodedBytes": 3407872,
+    "downloadBytes": 817092,
+    "sourceDecodedBytes": 33718272
+  }
+]

@@ -3,10 +3,13 @@
 namespace Tests\Feature;
 
 use App\Models\Character;
+use App\Services\Characters\CharacterAssetService;
+use Database\Seeders\AmirRezaCharacterSeeder;
 use Database\Seeders\BuiltinCharacterSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Cache;
 use Tests\TestCase;
 
 class CharacterManagerTest extends TestCase
@@ -42,6 +45,7 @@ class CharacterManagerTest extends TestCase
             ['uzudi', 'UZUDI / اوزودی'],
             ['negar', 'NEGAR / نگار'],
             ['tiam', 'TIAM / تیام'],
+            ['amirreza', 'AMIRREZA / امیررضا'],
         ] as [$slug, $name]) {
             $response->assertJsonFragment([
                 'slug' => $slug,
@@ -51,7 +55,7 @@ class CharacterManagerTest extends TestCase
         }
 
         // Updated asset pack versions
-        $packVersions = ['darya' => 14, 'setayesh' => 14, 'uzudi' => 14, 'negar' => 14, 'tiam' => 14];
+        $packVersions = ['darya' => 14, 'setayesh' => 14, 'uzudi' => 14, 'negar' => 14, 'tiam' => 14, 'amirreza' => 14];
 
         foreach ($packVersions as $slug => $version) {
             $response->assertJsonFragment([
@@ -77,6 +81,36 @@ class CharacterManagerTest extends TestCase
             ->assertJsonPath('data.slug', 'tiam')
             ->assertJsonPath('data.is_active', true);
         $this->getJson('/characters')->assertOk()->assertJsonPath('data.0.slug', 'tiam');
+        $this->assertSame(1, Character::query()->where('is_active', true)->count());
+    }
+
+    public function test_legacy_amirreza_upgrades_in_place_and_can_be_selected_with_the_wing_assisted_pack(): void
+    {
+        $amirreza = Character::query()->create([
+            'name' => 'Legacy AmirReza', 'slug' => 'amirreza', 'is_builtin' => true, 'is_active' => false,
+            'sprite_sheet_path' => 'assets/characters/amirreza/amirreza-spritesheet-v9-mobile.png',
+            'atlas_path' => 'assets/characters/amirreza/amirreza-atlas-v9-mobile.json',
+            'settings' => ['asset_pack_version' => 9, 'locomotion_style' => 'ground-runner'],
+        ]);
+        $id = $amirreza->id;
+        Cache::put("char_manifest_v14_{$id}_mobile", ['pack_version' => 9], 3600);
+        $manifest = app(CharacterAssetService::class)->getOptimizedManifest($id, 'mobile');
+        $this->assertSame(14, $manifest['pack_version']);
+        $this->assertTrue($manifest['is_production_ready']);
+        $this->assertStringEndsWith('amirreza-atlas-v14-mobile.json', $manifest['atlas']);
+
+        $this->seed(AmirRezaCharacterSeeder::class);
+        $this->seed(AmirRezaCharacterSeeder::class);
+        $amirreza = Character::query()->where('slug', 'amirreza')->firstOrFail();
+        $this->assertSame($id, $amirreza->id);
+        $this->assertSame(14, $amirreza->settings['asset_pack_version']);
+        $this->assertSame('wing-assisted', $amirreza->settings['locomotion_style']);
+        $this->assertSame('wing-assisted', Character::query()->where('slug', 'uzudi')->firstOrFail()->settings['locomotion_style']);
+        $this->assertSame('darya', Character::query()->where('is_active', true)->firstOrFail()->slug);
+
+        $this->postJson("/characters/{$id}/activate")
+            ->assertOk()->assertJsonPath('data.slug', 'amirreza')->assertJsonPath('data.is_active', true);
+        $this->getJson('/characters')->assertOk()->assertJsonPath('data.0.slug', 'amirreza');
         $this->assertSame(1, Character::query()->where('is_active', true)->count());
     }
 }

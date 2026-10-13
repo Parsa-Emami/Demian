@@ -6,6 +6,7 @@ import {
     characterProductionStatus,
     isProductionReady,
     ALL_MANIFEST_SLUGS,
+    characterManifestEntry,
 } from './manifests/CharacterManifestRegistry.js';
 
 // Character Core V4 re-exports. See manifests/CharacterManifestRegistry.js
@@ -31,7 +32,7 @@ export const CHARACTER_PACK_VERSION = 6;
 // (npm run validate:character-art / audit_character_sprite_packs.py); until
 // then every character keeps resolving to CHARACTER_PACK_VERSION as before.
 export const CHARACTER_PACK_VERSION_OVERRIDES = Object.freeze({
-    amirreza: 9,
+    amirreza: 14,
     arsal: 9,
     darya: 14,
     hossein: 9,
@@ -48,7 +49,8 @@ export const CHARACTER_PACK_VERSION_OVERRIDES = Object.freeze({
 
 export function characterPackVersion(slug) {
     const normalizedSlug = String(slug ?? '').trim().toLowerCase();
-    return CHARACTER_PACK_VERSION_OVERRIDES[normalizedSlug] ?? CHARACTER_PACK_VERSION;
+    return characterManifestEntry(normalizedSlug)?.packVersion
+        ?? CHARACTER_PACK_VERSION_OVERRIDES[normalizedSlug] ?? CHARACTER_PACK_VERSION;
 }
 
 // Only installed, validated packs are playable. Future slots are not roster entries.

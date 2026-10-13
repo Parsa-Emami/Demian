@@ -1,0 +1,31 @@
+{
+  "character_key": "amirreza",
+  "pack_version": 14,
+  "status": "validated_in_emulated_browser",
+  "checks": {
+    "asset_geometry": "passed",
+    "all_variants": true,
+    "packed_frames_per_full_variant": 672,
+    "runtime_physical_cells": 254,
+    "lite_physical_cells": 203,
+    "semantic_animation_states": 24,
+    "source_key_poses": 60,
+    "runtime_selection": "passed",
+    "touch_slide_under_bird": "passed",
+    "keyboard_jump": "passed",
+    "shared_game_selection": "passed",
+    "open_world_movement": "passed",
+    "open_world_jump": "passed",
+    "open_world_celebrate": "passed",
+    "wing_assisted_structure_matches_uzudi": "passed",
+    "natural_locomotion": "passed",
+    "js_tests_passed": 280,
+    "php_tests_passed": 14,
+    "php_assertions": 109
+  },
+  "evidence": "../../../../../docs/release-v14-amirreza/README.fa.md",
+  "limitations": [
+    "Physical phone GPU/FPS/battery not measured"
+  ],
+  "date": "2026-10-13"
+}

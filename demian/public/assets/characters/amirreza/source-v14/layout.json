@@ -1,0 +1,81 @@
+{
+  "movementStyle": "wing-assisted",
+  "locomotionCycleCounts": {
+    "walk": 1,
+    "run": 1,
+    "sprint": 1
+  },
+  "mainStates": [
+    "turn",
+    "idle",
+    "walk",
+    "jump",
+    "crouch",
+    "celebrate"
+  ],
+  "mainRowBounds": [
+    0,
+    181,
+    362,
+    543,
+    724,
+    905,
+    1086
+  ],
+  "motionColumns": 8,
+  "motionRowBounds": [
+    0,
+    444,
+    887
+  ],
+  "motionRowStates": [
+    "run",
+    "land"
+  ],
+  "turnMirrorFrom": {
+    "e": "w"
+  },
+  "referenceAsset": "../amirreza-preview-v14.png",
+  "referenceInputs": [
+    {
+      "name": "photo_5782787355554025224_w(2).jpg",
+      "role": "identity-outfit-and-white-wings",
+      "sha256": "3cf1022c89bac25c7e184d5c9903b45d40f0a623e5138f1835bcfd240d526bf9"
+    },
+    {
+      "name": "master.png",
+      "role": "wing-assisted-structure-and-game-style",
+      "sha256": "78aab7d901f6d04bd227b20f1328819a692a11eb5deb297cfa8e9441c5ee002f"
+    }
+  ],
+  "identity": [
+    "short black curly hair",
+    "dark eyes and thick eyebrows",
+    "warm olive skin",
+    "short moustache and beard stubble",
+    "royal cobalt blue open collar button-down shirt with rolled sleeves",
+    "white buttons and untucked shirt",
+    "small white star emblem on upper back",
+    "dark navy trousers",
+    "black sneakers with cream laces and soles",
+    "black and silver watch on anatomical left wrist",
+    "one pair of white feathered wings attached to the back in every pose"
+  ],
+  "animationAliases": {
+    "tiptoe": "walk",
+    "hop": "jump",
+    "hover": "jump",
+    "skid": "run",
+    "dash": "run",
+    "dodge": "slide",
+    "salute": "wave"
+  },
+  "poseSelections": {
+    "slide": [
+      2,
+      3,
+      4,
+      5
+    ]
+  }
+}

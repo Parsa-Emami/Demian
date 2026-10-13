@@ -9,6 +9,7 @@
       "production_status": "gold_standard_production",
       "is_default_active": true,
       "pack_version": 14,
+      "locomotion_style": "ground-runner",
       "manifest": "darya/manifests/character_manifest_v4.json",
       "has_shipped_assets": true
     },
@@ -18,6 +19,7 @@
       "production_status": "gold_standard_production",
       "is_default_active": false,
       "pack_version": 14,
+      "locomotion_style": "ground-runner",
       "manifest": "setayesh/manifests/character_manifest_v4.json",
       "has_shipped_assets": true
     },
@@ -27,6 +29,7 @@
       "production_status": "gold_standard_production",
       "is_default_active": false,
       "pack_version": 14,
+      "locomotion_style": "wing-assisted",
       "manifest": "uzudi/manifests/character_manifest_v4.json",
       "has_shipped_assets": true
     },
@@ -36,6 +39,7 @@
       "production_status": "gold_standard_production",
       "is_default_active": false,
       "pack_version": 14,
+      "locomotion_style": "ground-runner",
       "manifest": "negar/manifests/character_manifest_v4.json",
       "has_shipped_assets": true
     },
@@ -45,7 +49,18 @@
       "production_status": "gold_standard_production",
       "is_default_active": false,
       "pack_version": 14,
+      "locomotion_style": "ground-runner",
       "manifest": "tiam/manifests/character_manifest_v4.json",
+      "has_shipped_assets": true
+    },
+    {
+      "slug": "amirreza",
+      "display_name": "AMIRREZA / امیررضا",
+      "production_status": "gold_standard_production",
+      "is_default_active": false,
+      "pack_version": 14,
+      "locomotion_style": "wing-assisted",
+      "manifest": "amirreza/manifests/character_manifest_v4.json",
       "has_shipped_assets": true
     }
   ]

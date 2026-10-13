@@ -15,7 +15,15 @@ from typing import Iterable
 ROOT = Path(__file__).resolve().parents[1]
 CHARACTER_ROOT = ROOT / "public" / "assets" / "characters"
 
-ACTIVE_CHARACTER_ROSTER = ("darya", "setayesh", "uzudi", "negar", "tiam")
+ACTIVE_CHARACTER_DEFINITIONS = {
+    "darya": {"display_name": "DARYA / دریا", "locomotion_style": "ground-runner"},
+    "setayesh": {"display_name": "SETAYESH / ستایش", "locomotion_style": "ground-runner"},
+    "uzudi": {"display_name": "UZUDI / اوزودی", "locomotion_style": "wing-assisted"},
+    "negar": {"display_name": "NEGAR / نگار", "locomotion_style": "ground-runner"},
+    "tiam": {"display_name": "TIAM / تیام", "locomotion_style": "ground-runner"},
+    "amirreza": {"display_name": "AMIRREZA / امیررضا", "locomotion_style": "wing-assisted"},
+}
+ACTIVE_CHARACTER_ROSTER = tuple(ACTIVE_CHARACTER_DEFINITIONS)
 
 LEGACY_SPEECH: dict[str, list[str]] = {
     "amirreza": ["بال بزن بریم", "از همه سریع‌ترم", "الان وقت های‌اسکوره", "پرواز کوتاه، برد بزرگ", "سرعت یعنی امیررضا", "بزن بریم یه دور سریع", "فول اسپید!", "با بال‌ها می‌بریم"],

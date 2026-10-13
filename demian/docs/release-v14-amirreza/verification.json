@@ -1,0 +1,170 @@
+{
+  "status": "passed",
+  "base_commit": "d2f3382e7fe37ccdc4fe3075437384025deae197",
+  "date": "2026-10-13",
+  "characters": 6,
+  "games": [
+    "open-world",
+    "dino-run"
+  ],
+  "javascript": {
+    "tests": 280,
+    "failed": 0,
+    "evidence": "js-tests.txt"
+  },
+  "php": {
+    "tool": "phpunit",
+    "result": "passed",
+    "tests": 14,
+    "passed": 14,
+    "assertions": 109,
+    "duration_ms": 374,
+    "evidence": "php-tests.txt"
+  },
+  "geometry": {
+    "atlas_variants": 30,
+    "amirreza": [
+      {
+        "character": "amirreza",
+        "variant": "desktop",
+        "frames": 672,
+        "image": "amirreza-spritesheet-v14-desktop.png",
+        "dimensions": [
+          3456,
+          4032
+        ],
+        "decodedMiB": 53.16,
+        "maxSlideHeight": 43.73,
+        "geometry": "passed"
+      },
+      {
+        "character": "amirreza",
+        "variant": "mobile",
+        "frames": 672,
+        "image": "amirreza-spritesheet-v14-mobile.png",
+        "dimensions": [
+          2688,
+          3136
+        ],
+        "decodedMiB": 32.16,
+        "maxSlideHeight": 44.39,
+        "geometry": "passed"
+      },
+      {
+        "character": "amirreza",
+        "variant": "compact",
+        "frames": 672,
+        "image": "amirreza-spritesheet-v14-compact.png",
+        "dimensions": [
+          1920,
+          2240
+        ],
+        "decodedMiB": 16.41,
+        "maxSlideHeight": 44.54,
+        "geometry": "passed"
+      },
+      {
+        "character": "amirreza",
+        "variant": "runtime",
+        "frames": 672,
+        "image": "amirreza-spritesheet-v14-runtime.png",
+        "dimensions": [
+          1536,
+          1536
+        ],
+        "decodedMiB": 9.0,
+        "maxSlideHeight": 44.88,
+        "geometry": "passed"
+      },
+      {
+        "character": "amirreza",
+        "variant": "lite",
+        "frames": 672,
+        "image": "amirreza-spritesheet-v14-lite.png",
+        "dimensions": [
+          1024,
+          832
+        ],
+        "decodedMiB": 3.25,
+        "maxSlideHeight": 45.31,
+        "geometry": "passed"
+      }
+    ],
+    "evidence": "../release-v14/asset-validation.json"
+  },
+  "browser": {
+    "version": "153.0.8010.0",
+    "mode": "headless software Chromium; device dimensions emulated",
+    "viewports": [
+      [
+        320,
+        568
+      ],
+      [
+        390,
+        844
+      ],
+      [
+        844,
+        390
+      ],
+      [
+        768,
+        1024
+      ],
+      [
+        1440,
+        900
+      ]
+    ],
+    "errors": [],
+    "functional": [
+      {
+        "character": "amirreza",
+        "selectedViaUi": true,
+        "nativeTouchSlide": "passed",
+        "birdCleared": "passed",
+        "keyboardJump": "passed",
+        "cadence": {
+          "playbackRate": 0.9846153846153847,
+          "cycleCount": 1,
+          "strideHz": 1.1815384615384616
+        },
+        "jump": {
+          "states": [
+            "takeoff",
+            "jump",
+            "fall"
+          ],
+          "distinctFrames": 22
+        }
+      },
+      {
+        "character": "amirreza",
+        "openWorldMovement": "passed",
+        "openWorldJump": "passed",
+        "openWorldCelebrate": "passed",
+        "wingAssistedMetadata": "passed"
+      }
+    ],
+    "physicalPhoneMeasured": false,
+    "evidence": "browser-checks.json"
+  },
+  "build": "Vite build and atomic bundle validation passed",
+  "ui_layers": "passed",
+  "protected_files_modified": [],
+  "source_assets": [
+    {
+      "path": "public/assets/characters/amirreza/source-v14/master.png",
+      "sha256": "00429f9d87297ef715d3cd9d00c0324138c8d82456504397060a96c295311fe5"
+    },
+    {
+      "path": "public/assets/characters/amirreza/source-v14/runner-motion.png",
+      "sha256": "39531a3449b0b9255d74618d2f3a9cf644b3a94316031a7bb443e2f2f00e8a46"
+    },
+    {
+      "path": "public/assets/characters/amirreza/source-v14/slides.png",
+      "sha256": "07b0daf3dd64d161a0ad21d3e3f1422d2e6d0047a74d79c779525db8d0ac3dc3"
+    }
+  ]
+}

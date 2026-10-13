@@ -3,9 +3,10 @@
 import json
 from pathlib import Path
 from PIL import Image
+from character_art_registry import ACTIVE_CHARACTER_ROSTER, ACTIVE_CHARACTER_DEFINITIONS
 
 ROOT = Path(__file__).resolve().parents[1]
-SLUGS = ('darya', 'setayesh', 'uzudi', 'negar', 'tiam')
+SLUGS = ACTIVE_CHARACTER_ROSTER
 VARIANTS = {'desktop': 144, 'mobile': 112, 'compact': 80, 'runtime': 96, 'lite': 64}
 
 
@@ -63,7 +64,12 @@ def main():
                 assert atlas['companion']['id'] == 'homayoun'
                 assert atlas['companion']['anchor'] == 'shoulder'
                 assert atlas['companion']['bakedIntoEveryFrame'] and atlas['companion']['collisionIndependent']
-            if slug == 'uzudi': assert 'slide' in atlas['movement']['wingPoweredStates']
+            expected_style = ACTIVE_CHARACTER_DEFINITIONS[slug]['locomotion_style']
+            assert atlas['movement']['style'] == expected_style
+            if expected_style == 'wing-assisted':
+                assert atlas['movement']['wingPoweredStates'] == ['run', 'sprint', 'takeoff', 'jump', 'fall', 'slide']
+                assert all(atlas['animations'][state]['locomotionStyle'] == expected_style
+                    for state in atlas['movement']['wingPoweredStates'])
             if slug == 'negar':
                 ability = atlas['abilities'][0]
                 assert ability['id'] == 'smile-bloom' and ability['cooldown'] >= ability['duration']

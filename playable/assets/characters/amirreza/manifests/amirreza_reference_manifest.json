@@ -1,0 +1,20 @@
+{
+  "character_key": "amirreza",
+  "pack_version": 14,
+  "reference": "../amirreza-preview-v14.png",
+  "master": "../source-v14/master.png",
+  "runner_motion": "../source-v14/runner-motion.png",
+  "slide_master": "../source-v14/slides.png",
+  "inputs": [
+    {
+      "name": "photo_5782787355554025224_w(2).jpg",
+      "role": "identity-outfit-and-white-wings",
+      "sha256": "3cf1022c89bac25c7e184d5c9903b45d40f0a623e5138f1835bcfd240d526bf9"
+    },
+    {
+      "name": "master.png",
+      "role": "wing-assisted-structure-and-game-style",
+      "sha256": "78aab7d901f6d04bd227b20f1328819a692a11eb5deb297cfa8e9441c5ee002f"
+    }
+  ]
+}

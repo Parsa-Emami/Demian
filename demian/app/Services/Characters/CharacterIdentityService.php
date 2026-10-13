@@ -11,8 +11,8 @@ namespace App\Services\Characters;
  *
  * Per the Demian Full Game Rebuild Master Pack's non-negotiable directive,
  * every builtin character has a production_status of either:
- *   - gold_standard_production (Darya, Setayesh and Uzudi in V14), or
- *   - legacy_pending_reference_rebuild (every other builtin character).
+ *   - gold_standard_production for installed reference-built packs, or
+ *   - legacy_pending_reference_rebuild for unshipped character slots.
  *
  * Builtin character assets (see CharacterAssetService::packVersion() and
  * BuiltinCharacterSeeder) live directly under the public/ webroot and are
