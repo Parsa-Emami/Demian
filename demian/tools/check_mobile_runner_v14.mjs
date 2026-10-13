@@ -103,12 +103,40 @@ try {
                 await page.evaluate(() => { const a = window.demianGameApplication; a.activeGame.model.obstacles=[]; a.runtime.resume(); });
                 await touch.send('Input.dispatchTouchEvent', { type:'touchEnd',touchPoints:[] });
                 await page.waitForFunction(() => !window.demianGameApplication.activeGame.model.duck);
+                const cadence = await page.evaluate(() => {
+                    const avatar = window.demianGameApplication.activeGame.avatar;
+                    const animation = avatar.animator.animation;
+                    const result = {playbackRate:avatar.animator.playbackRate,cycleCount:animation.cycleCount,
+                        strideHz:animation.cycleCount * animation.fps * avatar.animator.playbackRate / animation.frames.length};
+                    avatar.qaJumpSamples = [];
+                    avatar.qaOriginalSync = avatar.sync.bind(avatar);
+                    avatar.sync = (actor, dt) => {
+                        const value = avatar.qaOriginalSync(actor, dt);
+                        if (actor.airborne) avatar.qaJumpSamples.push({state:avatar.state,frame:avatar.animator.currentFrameName()});
+                        return value;
+                    };
+                    return result;
+                });
+                assert.ok(cadence.strideHz > 0 && cadence.strideHz < 1.7);
+                if (slug === 'tiam') assert.ok(cadence.playbackRate < .55);
                 await page.keyboard.down('Space');
                 await page.waitForFunction(() => window.demianGameApplication.activeGame.model.y > 8);
                 assert.ok(['takeoff','jump','fall'].includes(await page.evaluate(()=>window.demianGameApplication.activeGame.avatar.state)));
                 await page.keyboard.up('Space');
                 await page.waitForFunction(() => window.demianGameApplication.activeGame.model.y === 0);
-                results.functional.push({ character:slug, selectedViaUi:true, nativeTouchSlide:'passed', birdCleared:'passed', keyboardJump:'passed' });
+                const jump = await page.evaluate(() => {
+                    const avatar = window.demianGameApplication.activeGame.avatar;
+                    const samples = avatar.qaJumpSamples;
+                    avatar.sync = avatar.qaOriginalSync;
+                    return {states:[...new Set(samples.map(s=>s.state))],
+                        distinctFrames:new Set(samples.map(s=>s.frame)).size,
+                        sources:samples.map(s=>Number(s.frame.split('_').at(-1)))};
+                });
+                assert.deepEqual(jump.states, ['takeoff','jump','fall']);
+                assert.ok(jump.distinctFrames >= 10, 'Arms and legs must move throughout the real jump');
+                assert.ok(jump.sources.every((n,i)=>i===0||n>=jump.sources[i-1]), 'Airborne poses must not restart');
+                results.functional.push({ character:slug, selectedViaUi:true, nativeTouchSlide:'passed', birdCleared:'passed',
+                    keyboardJump:'passed',cadence,jump:{states:jump.states,distinctFrames:jump.distinctFrames} });
             }
             await page.evaluate(() => { const a=window.demianGameApplication;a.runtime.pause();const g=a.activeGame;g.model.time=48;g.model.obstacles=[];g.render(1); });
             await page.screenshot({ path: resolve(screenshotDir, 'night-390.png') });

@@ -34,15 +34,49 @@ export const CHARACTER_LOCOMOTION_STATES = Object.freeze([
     'turn',
 ]);
 
-export function characterPlaybackRate(state, movementRatio = 0) {
+export function characterPlaybackRate(state, movementRatio = 0, animation = null) {
     const ratio = clamp(movementRatio, 0, 1.6);
+    let rate = 1;
     if (state === 'walk' || state === 'tiptoe') {
-        return 0.82 + Math.min(1, ratio) * 0.52;
+        rate = 0.78 + Math.min(1, ratio) * 0.26;
+    } else if (state === 'run') {
+        rate = 0.8 + Math.min(1.2, ratio) * 0.2;
+    } else if (state === 'sprint') {
+        rate = 0.88 + Math.min(1.2, ratio) * 0.2;
     }
-    if (state === 'run' || state === 'sprint') {
-        return 0.88 + Math.min(1.2, ratio) * 0.38;
+    // Some source clips contain two full strides. Match strides per second,
+    // rather than making every clip finish in the same amount of time.
+    const cycles = clamp(animation?.cycleCount ?? 1, 1, 4);
+    return rate / cycles;
+}
+
+export function sharesLocomotionPhase(previous, next) {
+    const ground = ['walk', 'tiptoe', 'run', 'sprint'];
+    return ground.includes(previous) && ground.includes(next);
+}
+
+export function characterJumpPose(jumpVelocity = 0, jumpForce = 6.5) {
+    const force = Number(jumpForce) > 0 ? Number(jumpForce) : 6.5;
+    const ratio = clamp(Number(jumpVelocity) / force, -1, 1);
+    const apex = 0.18;
+    if (ratio > apex) return { state: 'takeoff', progress: (1 - ratio) / (1 - apex) };
+    if (ratio < -apex) return { state: 'fall', progress: (-ratio - apex) / (1 - apex) };
+    return { state: 'jump', progress: (apex - ratio) / (apex * 2) };
+}
+
+export function advanceCharacterAnimation(animator, {
+    state, movementRatio = 0, deltaTime = 0, jumpVelocity = 0, jumpForce = 6.5,
+    physicsOwnsJumpHeight = false,
+} = {}) {
+    animator.setPlaybackRate(characterPlaybackRate(state, movementRatio, animator.animation));
+    if (physicsOwnsJumpHeight && ['takeoff', 'jump', 'fall'].includes(state)) {
+        const phase = characterJumpPose(jumpVelocity, jumpForce);
+        if (phase.state === state) {
+            animator.seek(phase.progress);
+            return;
+        }
     }
-    return 1;
+    animator.update(deltaTime);
 }
 
 export function characterPresentationPose({

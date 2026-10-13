@@ -6336,7 +6336,8 @@
         ]
       },
       "motion": "walk",
-      "locomotionStyle": "ground-runner"
+      "locomotionStyle": "ground-runner",
+      "cycleCount": 1
     },
     "run": {
       "frames": [
@@ -7246,7 +7247,8 @@
         ]
       },
       "motion": "run",
-      "locomotionStyle": "ground-runner"
+      "locomotionStyle": "ground-runner",
+      "cycleCount": 1
     },
     "sprint": {
       "frames": [
@@ -8156,216 +8158,15 @@
         ]
       },
       "motion": "run",
-      "locomotionStyle": "ground-runner"
+      "locomotionStyle": "ground-runner",
+      "cycleCount": 1
     },
     "takeoff": {
       "frames": [
-        "jump_e_000",
-        "jump_e_001",
-        "jump_e_002",
-        "jump_e_003",
-        "jump_e_004",
-        "jump_e_005",
-        "jump_e_006",
-        "jump_e_007",
-        "jump_e_008",
-        "jump_e_009",
-        "jump_e_010",
-        "jump_e_011",
         "jump_e_012",
         "jump_e_013",
         "jump_e_014",
-        "jump_e_015"
-      ],
-      "fps": 96,
-      "loop": false,
-      "framesRight": [
-        "jump_e_000",
-        "jump_e_001",
-        "jump_e_002",
-        "jump_e_003",
-        "jump_e_004",
-        "jump_e_005",
-        "jump_e_006",
-        "jump_e_007",
-        "jump_e_008",
-        "jump_e_009",
-        "jump_e_010",
-        "jump_e_011",
-        "jump_e_012",
-        "jump_e_013",
-        "jump_e_014",
-        "jump_e_015"
-      ],
-      "framesLeft": [
-        "jump_w_000",
-        "jump_w_001",
-        "jump_w_002",
-        "jump_w_003",
-        "jump_w_004",
-        "jump_w_005",
-        "jump_w_006",
-        "jump_w_007",
-        "jump_w_008",
-        "jump_w_009",
-        "jump_w_010",
-        "jump_w_011",
-        "jump_w_012",
-        "jump_w_013",
-        "jump_w_014",
-        "jump_w_015"
-      ],
-      "framesByDirection": {
-        "s": [
-          "jump_e_000",
-          "jump_e_001",
-          "jump_e_002",
-          "jump_e_003",
-          "jump_e_004",
-          "jump_e_005",
-          "jump_e_006",
-          "jump_e_007",
-          "jump_e_008",
-          "jump_e_009",
-          "jump_e_010",
-          "jump_e_011",
-          "jump_e_012",
-          "jump_e_013",
-          "jump_e_014",
-          "jump_e_015"
-        ],
-        "sw": [
-          "jump_w_000",
-          "jump_w_001",
-          "jump_w_002",
-          "jump_w_003",
-          "jump_w_004",
-          "jump_w_005",
-          "jump_w_006",
-          "jump_w_007",
-          "jump_w_008",
-          "jump_w_009",
-          "jump_w_010",
-          "jump_w_011",
-          "jump_w_012",
-          "jump_w_013",
-          "jump_w_014",
-          "jump_w_015"
-        ],
-        "w": [
-          "jump_w_000",
-          "jump_w_001",
-          "jump_w_002",
-          "jump_w_003",
-          "jump_w_004",
-          "jump_w_005",
-          "jump_w_006",
-          "jump_w_007",
-          "jump_w_008",
-          "jump_w_009",
-          "jump_w_010",
-          "jump_w_011",
-          "jump_w_012",
-          "jump_w_013",
-          "jump_w_014",
-          "jump_w_015"
-        ],
-        "nw": [
-          "jump_w_000",
-          "jump_w_001",
-          "jump_w_002",
-          "jump_w_003",
-          "jump_w_004",
-          "jump_w_005",
-          "jump_w_006",
-          "jump_w_007",
-          "jump_w_008",
-          "jump_w_009",
-          "jump_w_010",
-          "jump_w_011",
-          "jump_w_012",
-          "jump_w_013",
-          "jump_w_014",
-          "jump_w_015"
-        ],
-        "n": [
-          "jump_e_000",
-          "jump_e_001",
-          "jump_e_002",
-          "jump_e_003",
-          "jump_e_004",
-          "jump_e_005",
-          "jump_e_006",
-          "jump_e_007",
-          "jump_e_008",
-          "jump_e_009",
-          "jump_e_010",
-          "jump_e_011",
-          "jump_e_012",
-          "jump_e_013",
-          "jump_e_014",
-          "jump_e_015"
-        ],
-        "ne": [
-          "jump_e_000",
-          "jump_e_001",
-          "jump_e_002",
-          "jump_e_003",
-          "jump_e_004",
-          "jump_e_005",
-          "jump_e_006",
-          "jump_e_007",
-          "jump_e_008",
-          "jump_e_009",
-          "jump_e_010",
-          "jump_e_011",
-          "jump_e_012",
-          "jump_e_013",
-          "jump_e_014",
-          "jump_e_015"
-        ],
-        "e": [
-          "jump_e_000",
-          "jump_e_001",
-          "jump_e_002",
-          "jump_e_003",
-          "jump_e_004",
-          "jump_e_005",
-          "jump_e_006",
-          "jump_e_007",
-          "jump_e_008",
-          "jump_e_009",
-          "jump_e_010",
-          "jump_e_011",
-          "jump_e_012",
-          "jump_e_013",
-          "jump_e_014",
-          "jump_e_015"
-        ],
-        "se": [
-          "jump_e_000",
-          "jump_e_001",
-          "jump_e_002",
-          "jump_e_003",
-          "jump_e_004",
-          "jump_e_005",
-          "jump_e_006",
-          "jump_e_007",
-          "jump_e_008",
-          "jump_e_009",
-          "jump_e_010",
-          "jump_e_011",
-          "jump_e_012",
-          "jump_e_013",
-          "jump_e_014",
-          "jump_e_015"
-        ]
-      },
-      "motion": "jump",
-      "locomotionStyle": "ground-runner"
-    },
-    "jump": {
-      "frames": [
+        "jump_e_015",
         "jump_e_016",
         "jump_e_017",
         "jump_e_018",
@@ -8373,7 +8174,158 @@
         "jump_e_020",
         "jump_e_021",
         "jump_e_022",
-        "jump_e_023",
+        "jump_e_023"
+      ],
+      "fps": 72,
+      "loop": false,
+      "framesRight": [
+        "jump_e_012",
+        "jump_e_013",
+        "jump_e_014",
+        "jump_e_015",
+        "jump_e_016",
+        "jump_e_017",
+        "jump_e_018",
+        "jump_e_019",
+        "jump_e_020",
+        "jump_e_021",
+        "jump_e_022",
+        "jump_e_023"
+      ],
+      "framesLeft": [
+        "jump_w_012",
+        "jump_w_013",
+        "jump_w_014",
+        "jump_w_015",
+        "jump_w_016",
+        "jump_w_017",
+        "jump_w_018",
+        "jump_w_019",
+        "jump_w_020",
+        "jump_w_021",
+        "jump_w_022",
+        "jump_w_023"
+      ],
+      "framesByDirection": {
+        "s": [
+          "jump_e_012",
+          "jump_e_013",
+          "jump_e_014",
+          "jump_e_015",
+          "jump_e_016",
+          "jump_e_017",
+          "jump_e_018",
+          "jump_e_019",
+          "jump_e_020",
+          "jump_e_021",
+          "jump_e_022",
+          "jump_e_023"
+        ],
+        "sw": [
+          "jump_w_012",
+          "jump_w_013",
+          "jump_w_014",
+          "jump_w_015",
+          "jump_w_016",
+          "jump_w_017",
+          "jump_w_018",
+          "jump_w_019",
+          "jump_w_020",
+          "jump_w_021",
+          "jump_w_022",
+          "jump_w_023"
+        ],
+        "w": [
+          "jump_w_012",
+          "jump_w_013",
+          "jump_w_014",
+          "jump_w_015",
+          "jump_w_016",
+          "jump_w_017",
+          "jump_w_018",
+          "jump_w_019",
+          "jump_w_020",
+          "jump_w_021",
+          "jump_w_022",
+          "jump_w_023"
+        ],
+        "nw": [
+          "jump_w_012",
+          "jump_w_013",
+          "jump_w_014",
+          "jump_w_015",
+          "jump_w_016",
+          "jump_w_017",
+          "jump_w_018",
+          "jump_w_019",
+          "jump_w_020",
+          "jump_w_021",
+          "jump_w_022",
+          "jump_w_023"
+        ],
+        "n": [
+          "jump_e_012",
+          "jump_e_013",
+          "jump_e_014",
+          "jump_e_015",
+          "jump_e_016",
+          "jump_e_017",
+          "jump_e_018",
+          "jump_e_019",
+          "jump_e_020",
+          "jump_e_021",
+          "jump_e_022",
+          "jump_e_023"
+        ],
+        "ne": [
+          "jump_e_012",
+          "jump_e_013",
+          "jump_e_014",
+          "jump_e_015",
+          "jump_e_016",
+          "jump_e_017",
+          "jump_e_018",
+          "jump_e_019",
+          "jump_e_020",
+          "jump_e_021",
+          "jump_e_022",
+          "jump_e_023"
+        ],
+        "e": [
+          "jump_e_012",
+          "jump_e_013",
+          "jump_e_014",
+          "jump_e_015",
+          "jump_e_016",
+          "jump_e_017",
+          "jump_e_018",
+          "jump_e_019",
+          "jump_e_020",
+          "jump_e_021",
+          "jump_e_022",
+          "jump_e_023"
+        ],
+        "se": [
+          "jump_e_012",
+          "jump_e_013",
+          "jump_e_014",
+          "jump_e_015",
+          "jump_e_016",
+          "jump_e_017",
+          "jump_e_018",
+          "jump_e_019",
+          "jump_e_020",
+          "jump_e_021",
+          "jump_e_022",
+          "jump_e_023"
+        ]
+      },
+      "motion": "jump",
+      "locomotionStyle": "ground-runner",
+      "progressDriver": "vertical-velocity"
+    },
+    "jump": {
+      "frames": [
         "jump_e_024",
         "jump_e_025",
         "jump_e_026",
@@ -8386,14 +8338,6 @@
       "fps": 32,
       "loop": false,
       "framesRight": [
-        "jump_e_016",
-        "jump_e_017",
-        "jump_e_018",
-        "jump_e_019",
-        "jump_e_020",
-        "jump_e_021",
-        "jump_e_022",
-        "jump_e_023",
         "jump_e_024",
         "jump_e_025",
         "jump_e_026",
@@ -8404,14 +8348,6 @@
         "jump_e_031"
       ],
       "framesLeft": [
-        "jump_w_016",
-        "jump_w_017",
-        "jump_w_018",
-        "jump_w_019",
-        "jump_w_020",
-        "jump_w_021",
-        "jump_w_022",
-        "jump_w_023",
         "jump_w_024",
         "jump_w_025",
         "jump_w_026",
@@ -8423,14 +8359,6 @@
       ],
       "framesByDirection": {
         "s": [
-          "jump_e_016",
-          "jump_e_017",
-          "jump_e_018",
-          "jump_e_019",
-          "jump_e_020",
-          "jump_e_021",
-          "jump_e_022",
-          "jump_e_023",
           "jump_e_024",
           "jump_e_025",
           "jump_e_026",
@@ -8441,14 +8369,6 @@
           "jump_e_031"
         ],
         "sw": [
-          "jump_w_016",
-          "jump_w_017",
-          "jump_w_018",
-          "jump_w_019",
-          "jump_w_020",
-          "jump_w_021",
-          "jump_w_022",
-          "jump_w_023",
           "jump_w_024",
           "jump_w_025",
           "jump_w_026",
@@ -8459,14 +8379,6 @@
           "jump_w_031"
         ],
         "w": [
-          "jump_w_016",
-          "jump_w_017",
-          "jump_w_018",
-          "jump_w_019",
-          "jump_w_020",
-          "jump_w_021",
-          "jump_w_022",
-          "jump_w_023",
           "jump_w_024",
           "jump_w_025",
           "jump_w_026",
@@ -8477,14 +8389,6 @@
           "jump_w_031"
         ],
         "nw": [
-          "jump_w_016",
-          "jump_w_017",
-          "jump_w_018",
-          "jump_w_019",
-          "jump_w_020",
-          "jump_w_021",
-          "jump_w_022",
-          "jump_w_023",
           "jump_w_024",
           "jump_w_025",
           "jump_w_026",
@@ -8495,14 +8399,6 @@
           "jump_w_031"
         ],
         "n": [
-          "jump_e_016",
-          "jump_e_017",
-          "jump_e_018",
-          "jump_e_019",
-          "jump_e_020",
-          "jump_e_021",
-          "jump_e_022",
-          "jump_e_023",
           "jump_e_024",
           "jump_e_025",
           "jump_e_026",
@@ -8513,14 +8409,6 @@
           "jump_e_031"
         ],
         "ne": [
-          "jump_e_016",
-          "jump_e_017",
-          "jump_e_018",
-          "jump_e_019",
-          "jump_e_020",
-          "jump_e_021",
-          "jump_e_022",
-          "jump_e_023",
           "jump_e_024",
           "jump_e_025",
           "jump_e_026",
@@ -8531,14 +8419,6 @@
           "jump_e_031"
         ],
         "e": [
-          "jump_e_016",
-          "jump_e_017",
-          "jump_e_018",
-          "jump_e_019",
-          "jump_e_020",
-          "jump_e_021",
-          "jump_e_022",
-          "jump_e_023",
           "jump_e_024",
           "jump_e_025",
           "jump_e_026",
@@ -8549,14 +8429,6 @@
           "jump_e_031"
         ],
         "se": [
-          "jump_e_016",
-          "jump_e_017",
-          "jump_e_018",
-          "jump_e_019",
-          "jump_e_020",
-          "jump_e_021",
-          "jump_e_022",
-          "jump_e_023",
           "jump_e_024",
           "jump_e_025",
           "jump_e_026",
@@ -8568,7 +8440,8 @@
         ]
       },
       "motion": "jump",
-      "locomotionStyle": "ground-runner"
+      "locomotionStyle": "ground-runner",
+      "progressDriver": "vertical-velocity"
     },
     "fall": {
       "frames": [
@@ -8582,14 +8455,9 @@
         "jump_e_039",
         "jump_e_040",
         "jump_e_041",
-        "jump_e_042",
-        "jump_e_043",
-        "jump_e_044",
-        "jump_e_045",
-        "jump_e_046",
-        "jump_e_047"
+        "jump_e_042"
       ],
-      "fps": 64,
+      "fps": 44,
       "loop": false,
       "framesRight": [
         "jump_e_032",
@@ -8602,12 +8470,7 @@
         "jump_e_039",
         "jump_e_040",
         "jump_e_041",
-        "jump_e_042",
-        "jump_e_043",
-        "jump_e_044",
-        "jump_e_045",
-        "jump_e_046",
-        "jump_e_047"
+        "jump_e_042"
       ],
       "framesLeft": [
         "jump_w_032",
@@ -8620,12 +8483,7 @@
         "jump_w_039",
         "jump_w_040",
         "jump_w_041",
-        "jump_w_042",
-        "jump_w_043",
-        "jump_w_044",
-        "jump_w_045",
-        "jump_w_046",
-        "jump_w_047"
+        "jump_w_042"
       ],
       "framesByDirection": {
         "s": [
@@ -8639,12 +8497,7 @@
           "jump_e_039",
           "jump_e_040",
           "jump_e_041",
-          "jump_e_042",
-          "jump_e_043",
-          "jump_e_044",
-          "jump_e_045",
-          "jump_e_046",
-          "jump_e_047"
+          "jump_e_042"
         ],
         "sw": [
           "jump_w_032",
@@ -8657,12 +8510,7 @@
           "jump_w_039",
           "jump_w_040",
           "jump_w_041",
-          "jump_w_042",
-          "jump_w_043",
-          "jump_w_044",
-          "jump_w_045",
-          "jump_w_046",
-          "jump_w_047"
+          "jump_w_042"
         ],
         "w": [
           "jump_w_032",
@@ -8675,12 +8523,7 @@
           "jump_w_039",
           "jump_w_040",
           "jump_w_041",
-          "jump_w_042",
-          "jump_w_043",
-          "jump_w_044",
-          "jump_w_045",
-          "jump_w_046",
-          "jump_w_047"
+          "jump_w_042"
         ],
         "nw": [
           "jump_w_032",
@@ -8693,12 +8536,7 @@
           "jump_w_039",
           "jump_w_040",
           "jump_w_041",
-          "jump_w_042",
-          "jump_w_043",
-          "jump_w_044",
-          "jump_w_045",
-          "jump_w_046",
-          "jump_w_047"
+          "jump_w_042"
         ],
         "n": [
           "jump_e_032",
@@ -8711,12 +8549,7 @@
           "jump_e_039",
           "jump_e_040",
           "jump_e_041",
-          "jump_e_042",
-          "jump_e_043",
-          "jump_e_044",
-          "jump_e_045",
-          "jump_e_046",
-          "jump_e_047"
+          "jump_e_042"
         ],
         "ne": [
           "jump_e_032",
@@ -8729,12 +8562,7 @@
           "jump_e_039",
           "jump_e_040",
           "jump_e_041",
-          "jump_e_042",
-          "jump_e_043",
-          "jump_e_044",
-          "jump_e_045",
-          "jump_e_046",
-          "jump_e_047"
+          "jump_e_042"
         ],
         "e": [
           "jump_e_032",
@@ -8747,12 +8575,7 @@
           "jump_e_039",
           "jump_e_040",
           "jump_e_041",
-          "jump_e_042",
-          "jump_e_043",
-          "jump_e_044",
-          "jump_e_045",
-          "jump_e_046",
-          "jump_e_047"
+          "jump_e_042"
         ],
         "se": [
           "jump_e_032",
@@ -8765,16 +8588,12 @@
           "jump_e_039",
           "jump_e_040",
           "jump_e_041",
-          "jump_e_042",
-          "jump_e_043",
-          "jump_e_044",
-          "jump_e_045",
-          "jump_e_046",
-          "jump_e_047"
+          "jump_e_042"
         ]
       },
       "motion": "jump",
-      "locomotionStyle": "ground-runner"
+      "locomotionStyle": "ground-runner",
+      "progressDriver": "vertical-velocity"
     },
     "land": {
       "frames": [
@@ -10127,7 +9946,9 @@
   "motion": {
     "directionDepthScale": 0,
     "northSouthScale": 1,
-    "diagonalScale": 1
+    "diagonalScale": 1,
+    "timingVersion": "natural-locomotion-v1",
+    "jumpProgressDriver": "vertical-velocity"
   },
   "render": {
     "referenceBodyHeightRatio": 0.7,

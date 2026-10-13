@@ -1,6 +1,8 @@
 import FrameAnimator from './FrameAnimator.js';
 import {
-    characterPlaybackRate,
+    advanceCharacterAnimation,
+    characterJumpPose,
+    sharesLocomotionPhase,
     characterPresentationPose,
 } from './CharacterMotionProfile.js';
 import { CHARACTER_CANONICAL_BODY } from './CharacterVisualContract.js';
@@ -45,10 +47,7 @@ export default class CanvasCharacterAvatar {
 
     chooseLocomotionState(actor, speed) {
         if (actor?.airborne === true || actor?.grounded === false) {
-            const vertical = Number(actor?.jumpVelocity ?? actor?.velocityY ?? 0);
-            if (vertical > 0.8) return 'takeoff';
-            if (vertical < -0.8) return 'fall';
-            return 'jump';
+            return characterJumpPose(actor?.jumpVelocity ?? actor?.velocityY ?? 0, actor?.jumpForce ?? 6.5).state;
         }
         if (actor?.motionState && this.animator.has(actor.motionState)) {
             return actor.motionState;
@@ -95,14 +94,20 @@ export default class CanvasCharacterAvatar {
             this.previousState = this.state;
             this.state = nextState;
             this.stateTime = 0;
-            this.animator.play(nextState, { restart: true });
+            this.animator.play(nextState, {
+                preservePhase: sharesLocomotionPhase(this.previousState, nextState),
+            });
         }
 
         this.stateTime += dt;
         this.presentationTime += dt;
         const movementRatio = Math.min(1.6, this.speedValue / 6.5);
-        this.animator.setPlaybackRate(characterPlaybackRate(this.state, movementRatio));
-        this.animator.update(dt);
+        advanceCharacterAnimation(this.animator, {
+            state: this.state, movementRatio, deltaTime: dt,
+            jumpVelocity: actor.jumpVelocity ?? actor.velocityY ?? 0,
+            jumpForce: actor.jumpForce ?? 6.5,
+            physicsOwnsJumpHeight: Boolean(this.atlas.render?.physicsOwnsJumpHeight),
+        });
 
         const target = characterPresentationPose({
             state: this.state,
@@ -115,6 +120,10 @@ export default class CanvasCharacterAvatar {
             jumpForce: Number(actor.jumpForce ?? 6.5),
             velocityX: Number(actor.velocity?.x) || 0,
         });
+
+        if (this.atlas.render?.lockBodyScale) {
+            Object.assign(target, { width: 1, height: 1, bob: 0, tilt: 0, x: 0, y: 0 });
+        }
 
         this.visual.width = damp(this.visual.width, target.width, 16, dt);
         this.visual.height = damp(this.visual.height, target.height, 16, dt);

@@ -51,31 +51,34 @@
     "walk": {
       "frames": 64,
       "fps": 72,
-      "loop": true
+      "loop": true,
+      "cycleCount": 1
     },
     "run": {
       "frames": 80,
       "fps": 96,
-      "loop": true
+      "loop": true,
+      "cycleCount": 2
     },
     "sprint": {
       "frames": 80,
       "fps": 112,
-      "loop": true
+      "loop": true,
+      "cycleCount": 2
     },
     "takeoff": {
-      "frames": 16,
-      "fps": 96,
+      "frames": 12,
+      "fps": 72,
       "loop": false
     },
     "jump": {
-      "frames": 16,
+      "frames": 8,
       "fps": 32,
       "loop": false
     },
     "fall": {
-      "frames": 16,
-      "fps": 64,
+      "frames": 11,
+      "fps": 44,
       "loop": false
     },
     "land": {
@@ -116,27 +119,30 @@
     "tiptoe": {
       "frames": 64,
       "fps": 72,
-      "loop": true
+      "loop": true,
+      "cycleCount": 1
     },
     "hop": {
-      "frames": 16,
+      "frames": 8,
       "fps": 32,
       "loop": false
     },
     "hover": {
-      "frames": 16,
+      "frames": 8,
       "fps": 32,
       "loop": false
     },
     "skid": {
       "frames": 80,
       "fps": 96,
-      "loop": true
+      "loop": true,
+      "cycleCount": 2
     },
     "dash": {
       "frames": 80,
       "fps": 96,
-      "loop": true
+      "loop": true,
+      "cycleCount": 2
     },
     "dodge": {
       "frames": 64,
@@ -148,5 +154,6 @@
       "fps": 32,
       "loop": false
     }
-  }
+  },
+  "timingVersion": "natural-locomotion-v1"
 }

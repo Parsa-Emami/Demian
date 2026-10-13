@@ -1,4 +1,5 @@
 {
+  "locomotionCycleCounts": {"run": 2, "sprint": 2},
   "mainStates": [
     "turn",
     "idle",

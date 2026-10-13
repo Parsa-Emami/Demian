@@ -1,0 +1,324 @@
+{
+  "browser": "134.0.6998.35",
+  "mode": "headless software Chromium; device dimensions emulated",
+  "viewports": [
+    {
+      "width": 320,
+      "height": 568,
+      "overflow": false,
+      "backbuffer": [
+        432,
+        766
+      ],
+      "presentationMode": "smooth",
+      "canvasCss": [
+        320,
+        568
+      ],
+      "controls": [
+        {
+          "x": 190,
+          "y": 450,
+          "w": 112,
+          "h": 100,
+          "visible": true
+        },
+        {
+          "x": 18,
+          "y": 467.5,
+          "w": 90,
+          "h": 82.5,
+          "visible": true
+        }
+      ],
+      "roster": [
+        "darya",
+        "negar",
+        "setayesh",
+        "tiam",
+        "uzudi"
+      ],
+      "runtimeErrors": [],
+      "failedRequests": []
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "overflow": false,
+      "backbuffer": [
+        526,
+        1139
+      ],
+      "presentationMode": "smooth",
+      "canvasCss": [
+        390,
+        844
+      ],
+      "controls": [
+        {
+          "x": 260,
+          "y": 726,
+          "w": 112,
+          "h": 100,
+          "visible": true
+        },
+        {
+          "x": 18,
+          "y": 743.5,
+          "w": 90,
+          "h": 82.5,
+          "visible": true
+        }
+      ],
+      "roster": [
+        "darya",
+        "negar",
+        "setayesh",
+        "tiam",
+        "uzudi"
+      ],
+      "runtimeErrors": [],
+      "failedRequests": []
+    },
+    {
+      "width": 844,
+      "height": 390,
+      "overflow": false,
+      "backbuffer": [
+        1139,
+        526
+      ],
+      "presentationMode": "smooth",
+      "canvasCss": [
+        844,
+        390
+      ],
+      "controls": [
+        {
+          "x": 732,
+          "y": 289,
+          "w": 94,
+          "h": 83,
+          "visible": true
+        },
+        {
+          "x": 18,
+          "y": 306.5,
+          "w": 90,
+          "h": 65.5,
+          "visible": true
+        }
+      ],
+      "roster": [
+        "darya",
+        "negar",
+        "setayesh",
+        "tiam",
+        "uzudi"
+      ],
+      "runtimeErrors": [],
+      "failedRequests": []
+    },
+    {
+      "width": 768,
+      "height": 1024,
+      "overflow": false,
+      "backbuffer": [
+        968,
+        1290
+      ],
+      "presentationMode": "smooth",
+      "canvasCss": [
+        768,
+        1024
+      ],
+      "controls": [
+        {
+          "x": 638,
+          "y": 906,
+          "w": 112,
+          "h": 100,
+          "visible": true
+        },
+        {
+          "x": 18,
+          "y": 923.5,
+          "w": 90,
+          "h": 82.5,
+          "visible": true
+        }
+      ],
+      "roster": [
+        "darya",
+        "negar",
+        "setayesh",
+        "tiam",
+        "uzudi"
+      ],
+      "runtimeErrors": [],
+      "failedRequests": []
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "overflow": false,
+      "backbuffer": [
+        1414,
+        883
+      ],
+      "presentationMode": "smooth",
+      "canvasCss": [
+        1440,
+        900
+      ],
+      "controls": [
+        {
+          "x": 1310,
+          "y": 782,
+          "w": 112,
+          "h": 100,
+          "visible": true
+        },
+        {
+          "x": 18,
+          "y": 799.5,
+          "w": 90,
+          "h": 82.5,
+          "visible": true
+        }
+      ],
+      "roster": [
+        "darya",
+        "negar",
+        "setayesh",
+        "tiam",
+        "uzudi"
+      ],
+      "runtimeErrors": [],
+      "failedRequests": []
+    }
+  ],
+  "functional": [
+    {
+      "character": "darya",
+      "selectedViaUi": true,
+      "nativeTouchSlide": "passed",
+      "birdCleared": "passed",
+      "keyboardJump": "passed",
+      "cadence": {
+        "playbackRate": 0.9846153846153847,
+        "cycleCount": 1,
+        "strideHz": 1.1815384615384616
+      },
+      "jump": {
+        "states": [
+          "takeoff",
+          "jump",
+          "fall"
+        ],
+        "distinctFrames": 24
+      }
+    },
+    {
+      "character": "setayesh",
+      "selectedViaUi": true,
+      "nativeTouchSlide": "passed",
+      "birdCleared": "passed",
+      "keyboardJump": "passed",
+      "cadence": {
+        "playbackRate": 0.9846153846153847,
+        "cycleCount": 1,
+        "strideHz": 1.1815384615384616
+      },
+      "jump": {
+        "states": [
+          "takeoff",
+          "jump",
+          "fall"
+        ],
+        "distinctFrames": 25
+      }
+    },
+    {
+      "character": "uzudi",
+      "selectedViaUi": true,
+      "nativeTouchSlide": "passed",
+      "birdCleared": "passed",
+      "keyboardJump": "passed",
+      "cadence": {
+        "playbackRate": 0.9846153846153847,
+        "cycleCount": 1,
+        "strideHz": 1.1815384615384616
+      },
+      "jump": {
+        "states": [
+          "takeoff",
+          "jump",
+          "fall"
+        ],
+        "distinctFrames": 24
+      }
+    },
+    {
+      "character": "negar",
+      "selectedViaUi": true,
+      "nativeTouchSlide": "passed",
+      "birdCleared": "passed",
+      "keyboardJump": "passed",
+      "cadence": {
+        "playbackRate": 0.9846153846153847,
+        "cycleCount": 1,
+        "strideHz": 1.1815384615384616
+      },
+      "jump": {
+        "states": [
+          "takeoff",
+          "jump",
+          "fall"
+        ],
+        "distinctFrames": 24
+      }
+    },
+    {
+      "character": "tiam",
+      "selectedViaUi": true,
+      "nativeTouchSlide": "passed",
+      "birdCleared": "passed",
+      "keyboardJump": "passed",
+      "cadence": {
+        "playbackRate": 0.49230769230769234,
+        "cycleCount": 2,
+        "strideHz": 1.1815384615384616
+      },
+      "jump": {
+        "states": [
+          "takeoff",
+          "jump",
+          "fall"
+        ],
+        "distinctFrames": 24
+      }
+    },
+    {
+      "sharedSelectionAcrossGames": "passed",
+      "relevantActionPicker": "passed"
+    },
+    {
+      "character": "tiam",
+      "openWorldMovement": "passed",
+      "openWorldJump": "passed",
+      "openWorldCelebrate": "passed",
+      "homayoun": "shoulder companion loaded"
+    },
+    {
+      "character": "negar",
+      "keyboardAbility": "passed",
+      "nativeTouchAbility": "passed",
+      "cooldownPreventsStacking": "passed",
+      "otherCharactersKeepControls": "passed"
+    }
+  ],
+  "errors": [],
+  "physicalPhoneMeasured": false,
+  "status": "passed"
+}

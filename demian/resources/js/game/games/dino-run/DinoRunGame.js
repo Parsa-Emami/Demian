@@ -19,7 +19,8 @@ export default class DinoRunGame extends BaseGame {
         this.context = context;
         this.environment = new DinoRunEnvironment(context.services.performanceProfile);
         this.actor = { position: { x: RUNNER_CONFIG.playerX, z: 0 }, forward: { x: 1, z: 0 },
-            speed: 0, grounded: true, airborne: false, jumpVelocity: 0, motionState: 'idle' };
+            speed: 0, grounded: true, airborne: false, jumpVelocity: 0,
+            jumpForce: RUNNER_CONFIG.jumpSpeed / 100, motionState: 'idle' };
         // Same sidebar works in both games; selection loads before committing the change.
         this.characterManager = { characters: [], activeRecord: null,
             select: (id) => this.selectCharacter(id), activate: (id) => this.selectCharacter(id) };

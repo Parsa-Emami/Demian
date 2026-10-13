@@ -140,6 +140,7 @@ export default class CharacterVisualService {
         const timeout = globalThis.setTimeout(() => controller.abort(), LOAD_TIMEOUT_MS);
         try {
             const response = await fetch(pair.atlasUrl, {
+                cache: 'no-cache',
                 credentials: 'same-origin',
                 headers: { Accept: 'application/json' },
                 signal: controller.signal,

@@ -94,6 +94,7 @@ export default class FrameAnimator {
         const previousPhase = preservePhase && previousFrames.length > 0
             ? Math.min(0.999999, Math.max(0, (this.frameIndex + this.frameProgress()) / previousFrames.length))
             : 0;
+        const previousCycles = Math.max(1, Number(this.animation?.cycleCount) || 1);
 
         this.requestedAnimationName = safeRequestedName;
         this.animationName = resolvedName;
@@ -106,7 +107,10 @@ export default class FrameAnimator {
         if (preservePhase && previousFrames.length > 0) {
             const nextFrames = this.currentFrames();
             if (nextFrames.length > 0) {
-                const framePosition = previousPhase * nextFrames.length;
+                const nextCycles = Math.max(1, Number(this.animation.cycleCount) || 1);
+                const phase = previousCycles === nextCycles ? previousPhase
+                    : ((previousPhase * previousCycles) % 1) / nextCycles;
+                const framePosition = phase * nextFrames.length;
                 this.frameIndex = Math.min(nextFrames.length - 1, Math.floor(framePosition));
                 const fps = Math.max(Number(this.animation.fps) || 1, 1);
                 const frameDuration = 1 / (fps * this.playbackRate);
@@ -134,7 +138,25 @@ export default class FrameAnimator {
     }
 
     setPlaybackRate(rate) {
-        this.playbackRate = Math.min(3.25, Math.max(0.25, Number(rate) || 1));
+        const next = Math.min(3.25, Math.max(0.25, Number(rate) || 1));
+        if (next === this.playbackRate) return;
+        const progress = this.frameProgress();
+        this.playbackRate = next;
+        if (this.animation) this.elapsed = progress / (Math.max(1, Number(this.animation.fps) || 1) * next);
+    }
+
+    /** Sample a one-shot pose by physical progress, including after a held endpoint. */
+    seek(progress) {
+        const frames = this.currentFrames();
+        if (!this.animation || frames.length === 0) return;
+        const phase = Math.min(1, Math.max(0, Number(progress) || 0));
+        const position = phase * (frames.length - 1);
+        const index = Math.floor(position);
+        if (index !== this.frameIndex) this.frameSerial += 1;
+        this.frameIndex = index;
+        this.elapsed = (position - index) / (Math.max(1, Number(this.animation.fps) || 1) * this.playbackRate);
+        this.finished = this.animation.loop === false && phase === 1;
+        this.applyCurrentFrame();
     }
 
     clampFrameIndex() {

@@ -11,7 +11,9 @@ import {
 import { WORLD_CONFIG } from '../world/WorldConfig';
 import { characterFrameWorldSize } from './CharacterVisualContract.js';
 import {
-    characterPlaybackRate,
+    advanceCharacterAnimation,
+    characterJumpPose,
+    sharesLocomotionPhase,
     characterPresentationPose,
 } from './CharacterMotionProfile.js';
 
@@ -57,17 +59,6 @@ const ACTIONS = Object.freeze([
 ]);
 
 const IDLE_VARIANTS = Object.freeze(['blink', 'breathe', 'ready']);
-const LOCOMOTION_PHASE_FAMILIES = Object.freeze([
-    new Set(['walk', 'tiptoe', 'run', 'sprint']),
-    new Set(['takeoff', 'jump', 'hover', 'fall']),
-]);
-
-function sharesLocomotionPhase(previousState, nextState) {
-    return LOCOMOTION_PHASE_FAMILIES.some((family) =>
-        family.has(previousState) && family.has(nextState)
-    );
-}
-
 function damp(current, target, smoothing, deltaTime) {
     return THREE.MathUtils.damp(current, target, smoothing, deltaTime);
 }
@@ -581,8 +572,11 @@ export default class SpriteCharacter {
         }
 
         const movementRatio = THREE.MathUtils.clamp(this.speed() / Math.max(this.runSpeed, 0.01), 0, 1.5);
-        this.animator.setPlaybackRate(characterPlaybackRate(this.state, movementRatio));
-        this.animator.update(deltaTime);
+        advanceCharacterAnimation(this.animator, {
+            state: this.state, movementRatio, deltaTime,
+            jumpVelocity: this.jumpVelocity, jumpForce: this.jumpForce,
+            physicsOwnsJumpHeight: Boolean(this.atlas.render?.physicsOwnsJumpHeight),
+        });
         this.updateFrameBlend();
         this.effects.update(deltaTime, this.speed());
         this.speech.update(deltaTime);
@@ -627,13 +621,7 @@ export default class SpriteCharacter {
 
     selectLocomotionState(input, inputMagnitude, deltaTime) {
         if (!this.grounded) {
-            this.setState(
-                this.jumpVelocity > 1.1
-                    ? 'takeoff'
-                    : this.jumpVelocity < -0.9
-                        ? 'fall'
-                        : 'jump'
-            );
+            this.setState(characterJumpPose(this.jumpVelocity, this.jumpForce).state);
             return;
         }
 

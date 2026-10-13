@@ -804,6 +804,7 @@ export default class CharacterManager {
         const timeout = globalThis.setTimeout(() => controller.abort(), CHARACTER_ASSET_TIMEOUT_MS);
         try {
             const response = await fetch(url, {
+                cache: 'no-cache',
                 headers: { Accept: 'application/json' },
                 signal: controller.signal,
             });

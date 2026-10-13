@@ -15,6 +15,7 @@ import cv2
 import numpy as np
 from PIL import Image
 from scipy import ndimage
+from character_animation_timing import apply_animation_timing
 
 ROOT = Path(__file__).resolve().parents[1]
 CHARACTERS = ROOT / 'public/assets/characters'
@@ -289,6 +290,8 @@ def build_character(slug):
                 'bakedIntoEveryFrame': True, 'collisionIndependent': True}
         if signature:
             atlas['abilities'] = [signature]
+        apply_animation_timing(atlas, layout.get('locomotionCycleCounts'))
+        animations = atlas['animations']
         sheet.save(directory / image_name, optimize=True)
         write_json(directory / f'{slug}-atlas-v14-{variant}.json', atlas)
         print(f'{slug} / {variant}: {len(frames)} frames, {sheet.width}x{sheet.height}', flush=True)
@@ -296,7 +299,9 @@ def build_character(slug):
         'source_atlas': {'pack_version': VERSION, 'files': [f'{slug}-atlas-v14-{v}.json' for v in VARIANTS]},
         'grid': {'columns': COLS, 'rows': ROWS},
         'variant_frame_size': {v: {'w': c, 'h': c} for v, c in VARIANTS.items()},
-        'states': {key: {'frames': len(a['frames']), 'fps': a['fps'], 'loop': a['loop']} for key, a in animations.items()}}
+        'timingVersion': atlas['motion']['timingVersion'],
+        'states': {key: {'frames': len(a['frames']), 'fps': a['fps'], 'loop': a['loop'],
+            **({'cycleCount': a['cycleCount']} if 'cycleCount' in a else {})} for key, a in animations.items()}}
     manifest = {'character_key': slug, 'display_name': LABELS[slug], 'production_status': 'gold_standard_production',
         'pack_version': VERSION, 'source_of_truth': {'reference_manifest': f'{slug}_reference_manifest.json'},
         'identity_contract': f'{slug}_identity_contract.json', 'animations': list(animations),

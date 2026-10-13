@@ -1,0 +1,112 @@
+{
+  "date": "2026-10-13",
+  "status": "passed",
+  "javascript_tests": 277,
+  "asset_variants_validated": 25,
+  "viewports": 5,
+  "running_and_jump_samples": [
+    {
+      "character": "darya",
+      "selectedViaUi": true,
+      "nativeTouchSlide": "passed",
+      "birdCleared": "passed",
+      "keyboardJump": "passed",
+      "cadence": {
+        "playbackRate": 0.9846153846153847,
+        "cycleCount": 1,
+        "strideHz": 1.1815384615384616
+      },
+      "jump": {
+        "states": [
+          "takeoff",
+          "jump",
+          "fall"
+        ],
+        "distinctFrames": 24
+      }
+    },
+    {
+      "character": "setayesh",
+      "selectedViaUi": true,
+      "nativeTouchSlide": "passed",
+      "birdCleared": "passed",
+      "keyboardJump": "passed",
+      "cadence": {
+        "playbackRate": 0.9846153846153847,
+        "cycleCount": 1,
+        "strideHz": 1.1815384615384616
+      },
+      "jump": {
+        "states": [
+          "takeoff",
+          "jump",
+          "fall"
+        ],
+        "distinctFrames": 25
+      }
+    },
+    {
+      "character": "uzudi",
+      "selectedViaUi": true,
+      "nativeTouchSlide": "passed",
+      "birdCleared": "passed",
+      "keyboardJump": "passed",
+      "cadence": {
+        "playbackRate": 0.9846153846153847,
+        "cycleCount": 1,
+        "strideHz": 1.1815384615384616
+      },
+      "jump": {
+        "states": [
+          "takeoff",
+          "jump",
+          "fall"
+        ],
+        "distinctFrames": 24
+      }
+    },
+    {
+      "character": "negar",
+      "selectedViaUi": true,
+      "nativeTouchSlide": "passed",
+      "birdCleared": "passed",
+      "keyboardJump": "passed",
+      "cadence": {
+        "playbackRate": 0.9846153846153847,
+        "cycleCount": 1,
+        "strideHz": 1.1815384615384616
+      },
+      "jump": {
+        "states": [
+          "takeoff",
+          "jump",
+          "fall"
+        ],
+        "distinctFrames": 24
+      }
+    },
+    {
+      "character": "tiam",
+      "selectedViaUi": true,
+      "nativeTouchSlide": "passed",
+      "birdCleared": "passed",
+      "keyboardJump": "passed",
+      "cadence": {
+        "playbackRate": 0.49230769230769234,
+        "cycleCount": 2,
+        "strideHz": 1.1815384615384616
+      },
+      "jump": {
+        "states": [
+          "takeoff",
+          "jump",
+          "fall"
+        ],
+        "distinctFrames": 24
+      }
+    }
+  ],
+  "jump_progress_driver": "vertical-velocity",
+  "artwork_changed": false,
+  "physics_rules_changed": false
+}
