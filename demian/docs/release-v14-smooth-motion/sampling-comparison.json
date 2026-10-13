@@ -1,0 +1,554 @@
+[
+  {
+    "character": "darya",
+    "variant": "runtime",
+    "beforePhysicalCells": 254,
+    "afterPhysicalCells": 316,
+    "beforeDecodedMiB": 9.0,
+    "afterDecodedMiB": 11.25,
+    "samples": {
+      "idle": {
+        "before": 21,
+        "after": 21
+      },
+      "walk": {
+        "before": 22,
+        "after": 33
+      },
+      "run": {
+        "before": 28,
+        "after": 41
+      },
+      "takeoff": {
+        "before": 6,
+        "after": 7
+      },
+      "jump": {
+        "before": 4,
+        "after": 5
+      },
+      "fall": {
+        "before": 5,
+        "after": 6
+      },
+      "land": {
+        "before": 9,
+        "after": 9
+      },
+      "slide": {
+        "before": 22,
+        "after": 22
+      },
+      "celebrate": {
+        "before": 23,
+        "after": 23
+      }
+    }
+  },
+  {
+    "character": "darya",
+    "variant": "lite",
+    "beforePhysicalCells": 201,
+    "afterPhysicalCells": 239,
+    "beforeDecodedMiB": 3.25,
+    "afterDecodedMiB": 3.75,
+    "samples": {
+      "idle": {
+        "before": 21,
+        "after": 21
+      },
+      "walk": {
+        "before": 17,
+        "after": 22
+      },
+      "run": {
+        "before": 21,
+        "after": 28
+      },
+      "takeoff": {
+        "before": 5,
+        "after": 5
+      },
+      "jump": {
+        "before": 3,
+        "after": 4
+      },
+      "fall": {
+        "before": 3,
+        "after": 5
+      },
+      "land": {
+        "before": 7,
+        "after": 9
+      },
+      "slide": {
+        "before": 17,
+        "after": 17
+      },
+      "celebrate": {
+        "before": 18,
+        "after": 18
+      }
+    }
+  },
+  {
+    "character": "setayesh",
+    "variant": "runtime",
+    "beforePhysicalCells": 254,
+    "afterPhysicalCells": 316,
+    "beforeDecodedMiB": 9.0,
+    "afterDecodedMiB": 11.25,
+    "samples": {
+      "idle": {
+        "before": 21,
+        "after": 21
+      },
+      "walk": {
+        "before": 22,
+        "after": 33
+      },
+      "run": {
+        "before": 28,
+        "after": 41
+      },
+      "takeoff": {
+        "before": 6,
+        "after": 7
+      },
+      "jump": {
+        "before": 4,
+        "after": 5
+      },
+      "fall": {
+        "before": 5,
+        "after": 6
+      },
+      "land": {
+        "before": 9,
+        "after": 9
+      },
+      "slide": {
+        "before": 22,
+        "after": 22
+      },
+      "celebrate": {
+        "before": 23,
+        "after": 23
+      }
+    }
+  },
+  {
+    "character": "setayesh",
+    "variant": "lite",
+    "beforePhysicalCells": 201,
+    "afterPhysicalCells": 239,
+    "beforeDecodedMiB": 3.25,
+    "afterDecodedMiB": 3.75,
+    "samples": {
+      "idle": {
+        "before": 21,
+        "after": 21
+      },
+      "walk": {
+        "before": 17,
+        "after": 22
+      },
+      "run": {
+        "before": 21,
+        "after": 28
+      },
+      "takeoff": {
+        "before": 5,
+        "after": 5
+      },
+      "jump": {
+        "before": 3,
+        "after": 4
+      },
+      "fall": {
+        "before": 3,
+        "after": 5
+      },
+      "land": {
+        "before": 7,
+        "after": 9
+      },
+      "slide": {
+        "before": 17,
+        "after": 17
+      },
+      "celebrate": {
+        "before": 18,
+        "after": 18
+      }
+    }
+  },
+  {
+    "character": "uzudi",
+    "variant": "runtime",
+    "beforePhysicalCells": 254,
+    "afterPhysicalCells": 316,
+    "beforeDecodedMiB": 9.0,
+    "afterDecodedMiB": 11.25,
+    "samples": {
+      "idle": {
+        "before": 21,
+        "after": 21
+      },
+      "walk": {
+        "before": 22,
+        "after": 33
+      },
+      "run": {
+        "before": 28,
+        "after": 41
+      },
+      "takeoff": {
+        "before": 6,
+        "after": 7
+      },
+      "jump": {
+        "before": 4,
+        "after": 5
+      },
+      "fall": {
+        "before": 5,
+        "after": 6
+      },
+      "land": {
+        "before": 9,
+        "after": 9
+      },
+      "slide": {
+        "before": 22,
+        "after": 22
+      },
+      "celebrate": {
+        "before": 23,
+        "after": 23
+      }
+    }
+  },
+  {
+    "character": "uzudi",
+    "variant": "lite",
+    "beforePhysicalCells": 201,
+    "afterPhysicalCells": 239,
+    "beforeDecodedMiB": 3.25,
+    "afterDecodedMiB": 3.75,
+    "samples": {
+      "idle": {
+        "before": 21,
+        "after": 21
+      },
+      "walk": {
+        "before": 17,
+        "after": 22
+      },
+      "run": {
+        "before": 21,
+        "after": 28
+      },
+      "takeoff": {
+        "before": 5,
+        "after": 5
+      },
+      "jump": {
+        "before": 3,
+        "after": 4
+      },
+      "fall": {
+        "before": 3,
+        "after": 5
+      },
+      "land": {
+        "before": 7,
+        "after": 9
+      },
+      "slide": {
+        "before": 17,
+        "after": 17
+      },
+      "celebrate": {
+        "before": 18,
+        "after": 18
+      }
+    }
+  },
+  {
+    "character": "negar",
+    "variant": "runtime",
+    "beforePhysicalCells": 254,
+    "afterPhysicalCells": 316,
+    "beforeDecodedMiB": 9.0,
+    "afterDecodedMiB": 11.25,
+    "samples": {
+      "idle": {
+        "before": 21,
+        "after": 21
+      },
+      "walk": {
+        "before": 22,
+        "after": 33
+      },
+      "run": {
+        "before": 28,
+        "after": 41
+      },
+      "takeoff": {
+        "before": 6,
+        "after": 7
+      },
+      "jump": {
+        "before": 4,
+        "after": 5
+      },
+      "fall": {
+        "before": 5,
+        "after": 6
+      },
+      "land": {
+        "before": 9,
+        "after": 9
+      },
+      "slide": {
+        "before": 22,
+        "after": 22
+      },
+      "celebrate": {
+        "before": 23,
+        "after": 23
+      }
+    }
+  },
+  {
+    "character": "negar",
+    "variant": "lite",
+    "beforePhysicalCells": 201,
+    "afterPhysicalCells": 239,
+    "beforeDecodedMiB": 3.25,
+    "afterDecodedMiB": 3.75,
+    "samples": {
+      "idle": {
+        "before": 21,
+        "after": 21
+      },
+      "walk": {
+        "before": 17,
+        "after": 22
+      },
+      "run": {
+        "before": 21,
+        "after": 28
+      },
+      "takeoff": {
+        "before": 5,
+        "after": 5
+      },
+      "jump": {
+        "before": 3,
+        "after": 4
+      },
+      "fall": {
+        "before": 3,
+        "after": 5
+      },
+      "land": {
+        "before": 7,
+        "after": 9
+      },
+      "slide": {
+        "before": 17,
+        "after": 17
+      },
+      "celebrate": {
+        "before": 18,
+        "after": 18
+      }
+    }
+  },
+  {
+    "character": "tiam",
+    "variant": "runtime",
+    "beforePhysicalCells": 254,
+    "afterPhysicalCells": 316,
+    "beforeDecodedMiB": 9.0,
+    "afterDecodedMiB": 11.25,
+    "samples": {
+      "idle": {
+        "before": 21,
+        "after": 21
+      },
+      "walk": {
+        "before": 22,
+        "after": 33
+      },
+      "run": {
+        "before": 28,
+        "after": 41
+      },
+      "takeoff": {
+        "before": 6,
+        "after": 7
+      },
+      "jump": {
+        "before": 4,
+        "after": 5
+      },
+      "fall": {
+        "before": 5,
+        "after": 6
+      },
+      "land": {
+        "before": 9,
+        "after": 9
+      },
+      "slide": {
+        "before": 22,
+        "after": 22
+      },
+      "celebrate": {
+        "before": 23,
+        "after": 23
+      }
+    }
+  },
+  {
+    "character": "tiam",
+    "variant": "lite",
+    "beforePhysicalCells": 201,
+    "afterPhysicalCells": 239,
+    "beforeDecodedMiB": 3.25,
+    "afterDecodedMiB": 3.75,
+    "samples": {
+      "idle": {
+        "before": 21,
+        "after": 21
+      },
+      "walk": {
+        "before": 17,
+        "after": 22
+      },
+      "run": {
+        "before": 21,
+        "after": 28
+      },
+      "takeoff": {
+        "before": 5,
+        "after": 5
+      },
+      "jump": {
+        "before": 3,
+        "after": 4
+      },
+      "fall": {
+        "before": 3,
+        "after": 5
+      },
+      "land": {
+        "before": 7,
+        "after": 9
+      },
+      "slide": {
+        "before": 17,
+        "after": 17
+      },
+      "celebrate": {
+        "before": 18,
+        "after": 18
+      }
+    }
+  },
+  {
+    "character": "amirreza",
+    "variant": "runtime",
+    "beforePhysicalCells": 254,
+    "afterPhysicalCells": 316,
+    "beforeDecodedMiB": 9.0,
+    "afterDecodedMiB": 11.25,
+    "samples": {
+      "idle": {
+        "before": 21,
+        "after": 21
+      },
+      "walk": {
+        "before": 22,
+        "after": 33
+      },
+      "run": {
+        "before": 28,
+        "after": 41
+      },
+      "takeoff": {
+        "before": 5,
+        "after": 7
+      },
+      "jump": {
+        "before": 4,
+        "after": 5
+      },
+      "fall": {
+        "before": 5,
+        "after": 6
+      },
+      "land": {
+        "before": 9,
+        "after": 9
+      },
+      "slide": {
+        "before": 22,
+        "after": 22
+      },
+      "celebrate": {
+        "before": 23,
+        "after": 23
+      }
+    }
+  },
+  {
+    "character": "amirreza",
+    "variant": "lite",
+    "beforePhysicalCells": 203,
+    "afterPhysicalCells": 239,
+    "beforeDecodedMiB": 3.25,
+    "afterDecodedMiB": 3.75,
+    "samples": {
+      "idle": {
+        "before": 21,
+        "after": 21
+      },
+      "walk": {
+        "before": 17,
+        "after": 22
+      },
+      "run": {
+        "before": 21,
+        "after": 28
+      },
+      "takeoff": {
+        "before": 4,
+        "after": 5
+      },
+      "jump": {
+        "before": 3,
+        "after": 4
+      },
+      "fall": {
+        "before": 4,
+        "after": 5
+      },
+      "land": {
+        "before": 7,
+        "after": 9
+      },
+      "slide": {
+        "before": 17,
+        "after": 17
+      },
+      "celebrate": {
+        "before": 18,
+        "after": 18
+      }
+    }
+  }
+]

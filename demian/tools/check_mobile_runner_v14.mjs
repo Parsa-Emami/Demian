@@ -109,7 +109,9 @@ try {
                     const avatar = window.demianGameApplication.activeGame.avatar;
                     const animation = avatar.animator.animation;
                     const result = {playbackRate:avatar.animator.playbackRate,cycleCount:animation.cycleCount,
-                        strideHz:animation.cycleCount * animation.fps * avatar.animator.playbackRate / animation.frames.length};
+                        strideHz:animation.cycleCount * animation.fps * avatar.animator.playbackRate / animation.frames.length,
+                        expectedImageRevision:avatar.atlas.meta.imageRevision,
+                        imageRevision:new URL(avatar.texture.image.src).searchParams.get('sprite_rev')};
                     avatar.qaJumpSamples = [];
                     avatar.qaOriginalSync = avatar.sync.bind(avatar);
                     avatar.sync = (actor, dt) => {
@@ -120,6 +122,7 @@ try {
                     return result;
                 });
                 assert.ok(cadence.strideHz > 0 && cadence.strideHz < 1.7);
+                assert.equal(cadence.imageRevision,cadence.expectedImageRevision,'Cached sprites must match the new atlas');
                 if (slug === 'tiam') assert.ok(cadence.playbackRate < .55);
                 await page.keyboard.down('Space');
                 await page.waitForFunction(() => window.demianGameApplication.activeGame.model.y > 8);
@@ -262,6 +265,90 @@ try {
             await page.keyboard.press('q');
             assert.equal(await page.evaluate(() => window.demianGameApplication.characterManager.activeEntity.abilityController.primary), null);
             results.functional.push({character:'negar',keyboardAbility:'passed',nativeTouchAbility:'passed',cooldownPreventsStacking:'passed',otherCharactersKeepControls:'passed'});
+
+            for (const slug of BUILTIN_CHARACTER_SLUGS) {
+                await page.evaluate(async (expected) => {
+                    const app=window.demianGameApplication;
+                    await app.characterManager.select(app.characterManager.characters.find(c=>c.slug===expected).id);
+                    app.activeGame.focusCharacter({close:true});
+                },slug);
+                await page.waitForFunction(() => {
+                    const e=window.demianGameApplication.characterManager.activeEntity;
+                    return e.grounded && e.stateLock<=0;
+                });
+                let gait;
+                // Selection preserves the player's position; after several
+                // characters a wall can block one direction. Verify real travel
+                // in an available direction rather than accepting an idle pose.
+                for (const key of ['d','a','w','s']) {
+                    const before=await page.evaluate(() => {
+                        const p=window.demianGameApplication.characterManager.activeEntity.group.position;
+                        return {x:p.x,z:p.z};
+                    });
+                    await page.keyboard.down(key); await page.keyboard.down('Shift');
+                    await page.waitForTimeout(220);
+                    gait=await page.evaluate((start) => {
+                        const e=window.demianGameApplication.characterManager.activeEntity;
+                        return {state:e.state,phase:e.animator.locomotionPhase,frequency:e.animator.locomotionFrequency,
+                            profile:e.atlas.motion.locomotionProfile.id,
+                            distance:Math.hypot(e.group.position.x-start.x,e.group.position.z-start.z)};
+                    },before);
+                    await page.keyboard.up(key); await page.keyboard.up('Shift');
+                    if (gait.distance>.08 && gait.frequency>.1 && ['walk','run','sprint'].includes(gait.state)) break;
+                    await page.waitForTimeout(250);
+                }
+                assert.ok(gait.distance>.08 && gait.frequency>.1 && gait.frequency<=1.55,`${slug} must actually move`);
+                await page.waitForFunction(() => {
+                    const e=window.demianGameApplication.characterManager.activeEntity;
+                    return e.grounded && e.stateLock<=0 && e.speed()<.015;
+                });
+                await page.evaluate(() => {
+                    const e=window.demianGameApplication.characterManager.activeEntity;
+                    e.qaMotion={firstPeak:0,secondPeak:0,rebounds:0,stage:0,samples:[[],[]],
+                        start:{x:e.group.position.x,z:e.group.position.z}};
+                    e.qaMotionUpdate=e.update.bind(e);
+                    e.update=(dt,input,basis)=>{
+                        const falling=!e.grounded && e.jumpVelocity<0;
+                        e.qaMotionUpdate(dt,input,basis);
+                        const t=e.qaMotion;
+                        if (falling && !e.grounded && e.jumpVelocity>=e.jumpForce*.95) {t.rebounds++;t.stage=1;}
+                        if (!e.grounded) {
+                            const peak=t.stage===0?'firstPeak':'secondPeak';
+                            t[peak]=Math.max(t[peak],e.bodyRoot.position.y);
+                            t.samples[t.stage].push({state:e.state,frame:e.animator.currentFrameName()});
+                        }
+                    };
+                });
+                await page.keyboard.down('Space');
+                await page.waitForFunction(() => {
+                    const e=window.demianGameApplication.characterManager.activeEntity;
+                    return !e.grounded && e.jumpVelocity < -4.5 && e.bodyRoot.position.y < .35;
+                });
+                await page.keyboard.up('Space'); await page.keyboard.down('Space');
+                await page.waitForFunction(() => window.demianGameApplication.characterManager.activeEntity.qaMotion.rebounds===1);
+                await page.keyboard.up('Space');
+                await page.waitForFunction(() => {
+                    const e=window.demianGameApplication.characterManager.activeEntity;
+                    return e.grounded && e.stateLock<=0;
+                });
+                const motion=await page.evaluate(() => {
+                    const e=window.demianGameApplication.characterManager.activeEntity,t=e.qaMotion;
+                    e.update=e.qaMotionUpdate;
+                    return {firstPeak:t.firstPeak,secondPeak:t.secondPeak,rebounds:t.rebounds,
+                        neutralJumpDrift:Math.hypot(e.group.position.x-t.start.x,e.group.position.z-t.start.z),
+                        jumps:t.samples.map(samples=>({states:[...new Set(samples.map(s=>s.state))],
+                            distinctFrames:new Set(samples.map(s=>s.frame)).size,
+                            monotonic:samples.every((s,i)=>!i||Number(s.frame.split('_').at(-1))>=Number(samples[i-1].frame.split('_').at(-1)))}))};
+                });
+                assert.equal(motion.rebounds,1,'The queued jump must start on the landing tick');
+                assert.ok(motion.neutralJumpDrift<.03,'A neutral jump must not inject forward movement');
+                assert.ok(motion.firstPeak>motion.secondPeak+.12,'Holding jump must reach higher than a short press');
+                for(const jump of motion.jumps) {
+                    assert.deepEqual(jump.states,['takeoff','jump','fall']);
+                    assert.ok(jump.distinctFrames>=10 && jump.monotonic);
+                }
+                results.functional.push({character:slug,smoothWorldLocomotion:gait,bufferedLandingJump:'passed',heldJumpHeight:'passed',motion});
+            }
 
         } else await page.screenshot({path:resolve(screenshotDir,`runner-${width}x${height}.png`)});
         assert.deepEqual(pageErrors, []); assert.deepEqual(failedRequests, []);

@@ -46,6 +46,9 @@ export default class FrameAnimator {
         this.direction = 'e';
         this.playbackRate = 1;
         this.frameSerial = 0;
+        this.locomotionPhase = 0;
+        this.locomotionFrequency = 0;
+        this.motionState = null;
     }
 
     has(name) {
@@ -164,6 +167,19 @@ export default class FrameAnimator {
         this.frameIndex = Math.min(this.frameIndex, Math.max(frames.length - 1, 0));
     }
 
+    /** Continuous loop sampling keeps the fractional supporting-foot phase. */
+    seekLoop(progress) {
+        const frames = this.currentFrames();
+        if (!this.animation || frames.length === 0) return;
+        const phase = ((Number(progress) || 0) % 1 + 1) % 1;
+        const position = phase * frames.length, index = Math.floor(position);
+        if (index !== this.frameIndex) this.frameSerial += 1;
+        this.frameIndex = index;
+        this.elapsed = (position - index) / (Math.max(1, Number(this.animation.fps) || 1) * this.playbackRate);
+        this.finished = false;
+        this.applyCurrentFrame();
+    }
+
     framesForDirection(animation, direction) {
         const map = animation?.framesByDirection;
         if (!map || typeof map !== 'object') return null;
@@ -211,23 +227,18 @@ export default class FrameAnimator {
         const safeDeltaTime = Math.min(Math.max(0, Number(deltaTime) || 0), MAX_FRAME_DELTA_SECONDS);
         this.elapsed += safeDeltaTime;
 
-        let safety = 0;
-        while (this.elapsed >= frameDuration && safety < 16) {
-            this.elapsed -= frameDuration;
-            this.frameIndex += 1;
-            safety += 1;
-
-            if (this.frameIndex >= frames.length) {
-                if (this.animation.loop !== false) {
-                    this.frameIndex = 0;
-                } else {
-                    this.frameIndex = frames.length - 1;
-                    this.finished = true;
-                }
-            }
-            this.frameSerial += 1;
-            this.applyCurrentFrame();
+        const steps = Math.floor(this.elapsed / frameDuration);
+        if (steps === 0) return;
+        this.elapsed -= steps * frameDuration;
+        const next = this.frameIndex + steps;
+        if (this.animation.loop !== false) this.frameIndex = next % frames.length;
+        else {
+            this.frameIndex = Math.min(next, frames.length - 1);
+            this.finished = next >= frames.length;
+            if (this.finished) this.elapsed = 0;
         }
+        this.frameSerial += steps;
+        this.applyCurrentFrame();
     }
 
     duration(name) {

@@ -687,7 +687,7 @@
                         <button type="button" data-input-hold="run" class="touch-action touch-action--run">
                             <span>دویدن</span><small>نگه‌دار</small>
                         </button>
-                        <button type="button" data-input-press="jump" class="touch-action touch-action--jump touch-action--primary">
+                        <button type="button" data-input-press="jump" data-input-hold="jumpHeld" class="touch-action touch-action--jump touch-action--primary">
                             <span>پرش</span><small>▲</small>
                         </button>
                         <button type="button" data-input-press="wave" class="touch-action touch-action--emote touch-action--primary">

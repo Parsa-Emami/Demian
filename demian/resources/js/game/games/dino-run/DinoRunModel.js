@@ -1,4 +1,5 @@
 /** MIT — deterministic, renderer-independent endless runner. All units are logical pixels. */
+import { CHARACTER_JUMP_TUNING, characterGravity } from '../../characters/CharacterLocomotionModel.js';
 export const RUNNER_CONFIG = Object.freeze({ playerX: 86, bodyWidth: 28, bodyHeight: 58,
     duckHeight: 35, birdAltitude: 46, gravity: 1750, jumpSpeed: 650, startSpeed: 245, maxSpeed: 480 });
 export function seededRandom(seed = 1) {
@@ -41,7 +42,7 @@ export default class DinoRunModel {
             if (!input.jump) return;
             this.status = 'running';
         }
-        if (input.jump) this.jumpBuffer = .13;
+        if (input.jump) this.jumpBuffer = CHARACTER_JUMP_TUNING.bufferSeconds;
         else this.jumpBuffer = Math.max(0, this.jumpBuffer - dt);
         this.duck = Boolean(input.duck || input.slide) && this.y === 0;
         this.landingTime = Math.max(0, this.landingTime - dt);
@@ -49,12 +50,14 @@ export default class DinoRunModel {
             this.vy = RUNNER_CONFIG.jumpSpeed; this.jumpBuffer = 0; this.landingTime = 0;
         }
         if (this.y > 0 || this.vy > 0) {
-            const extraGravity = this.vy > 0 && !input.jumpHeld ? 1350 : 0;
-            this.vy -= (RUNNER_CONFIG.gravity + extraGravity) * dt;
+            this.vy -= characterGravity(this.vy, RUNNER_CONFIG.jumpSpeed, RUNNER_CONFIG.gravity, Boolean(input.jumpHeld)) * dt;
             this.y += this.vy * dt;
             if (this.y <= 0) {
                 this.y = 0; this.vy = 0; this.landingTime = .16;
                 this.duck = Boolean(input.duck || input.slide);
+                if (this.jumpBuffer > 0 && !this.duck) {
+                    this.vy = RUNNER_CONFIG.jumpSpeed; this.jumpBuffer = 0; this.landingTime = 0;
+                }
             }
         }
         this.time += dt;

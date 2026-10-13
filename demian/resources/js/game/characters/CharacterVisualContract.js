@@ -143,6 +143,20 @@ export function builtinCharacterPreviewUrl(slug, baseUrl = globalThis.document?.
     return resolveCharacterAssetUrl(`assets/characters/${slug}/${slug}-preview-v${characterPackVersion(slug)}.png`, baseUrl);
 }
 
+/** Match a newly packed atlas to its exact image even when the PNG URL is cached. */
+export function characterSpriteRevisionUrl(url, atlas) {
+    const revision = atlas?.meta?.imageRevision;
+    if (!/^[a-f0-9]{64}$/i.test(revision ?? '')) return url;
+    const source = String(url), fragmentAt = source.indexOf('#');
+    const fragment = fragmentAt < 0 ? '' : source.slice(fragmentAt);
+    const resource = fragmentAt < 0 ? source : source.slice(0, fragmentAt);
+    const queryAt = resource.indexOf('?');
+    const path = queryAt < 0 ? resource : resource.slice(0, queryAt);
+    const query = new URLSearchParams(queryAt < 0 ? '' : resource.slice(queryAt + 1));
+    query.set('sprite_rev', revision);
+    return `${path}?${query.toString()}${fragment}`;
+}
+
 function clamp(value, min, max, fallback) {
     const number = Number(value);
     if (!Number.isFinite(number)) return fallback;

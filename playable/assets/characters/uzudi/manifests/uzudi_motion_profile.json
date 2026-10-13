@@ -12,5 +12,22 @@
     "jump",
     "fall",
     "slide"
-  ]
+  ],
+  "locomotion_profile": {
+    "id": "uzudi-wing-assisted-v2",
+    "referenceCharacter": "uzudi",
+    "phaseDriver": "travelled-distance",
+    "strideLengths": {
+      "walk": 3.4,
+      "run": 6,
+      "sprint": 6.4
+    },
+    "maxStrideHz": 1.55,
+    "landingSeconds": 0.16,
+    "jumpBufferSeconds": 0.14,
+    "coyoteSeconds": 0.11,
+    "heldApexGravity": 0.65,
+    "releasedRiseGravity": 1.65,
+    "recoveryInterruptible": true
+  }
 }

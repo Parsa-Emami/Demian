@@ -1,3 +1,5 @@
+import { CHARACTER_STRIDE_LENGTHS } from './CharacterLocomotionModel.js';
+
 function clamp(value, min, max) {
     return Math.min(max, Math.max(min, Number(value) || 0));
 }
@@ -66,8 +68,11 @@ export function characterJumpPose(jumpVelocity = 0, jumpForce = 6.5) {
 
 export function advanceCharacterAnimation(animator, {
     state, movementRatio = 0, deltaTime = 0, jumpVelocity = 0, jumpForce = 6.5,
-    physicsOwnsJumpHeight = false,
+    physicsOwnsJumpHeight = false, movementSpeed = null, travelledDistance = null, stateTime = 0,
 } = {}) {
+    const previousState = animator.motionState;
+    animator.motionState = state;
+    animator.locomotionFrequency = 0;
     animator.setPlaybackRate(characterPlaybackRate(state, movementRatio, animator.animation));
     if (physicsOwnsJumpHeight && ['takeoff', 'jump', 'fall'].includes(state)) {
         const phase = characterJumpPose(jumpVelocity, jumpForce);
@@ -75,6 +80,30 @@ export function advanceCharacterAnimation(animator, {
             animator.seek(phase.progress);
             return;
         }
+    }
+    const profile = animator.atlas.motion?.locomotionProfile;
+    if (profile && Number.isFinite(movementSpeed) && ['walk', 'tiptoe', 'run', 'sprint', 'skid'].includes(state)) {
+        // One phase follows travelled distance, surviving walk/run/sprint changes
+        // and the two authored cycles in Tiam's run. Stopped feet do not flutter.
+        if (previousState && !sharesLocomotionPhase(previousState, state) && previousState !== 'skid') {
+            animator.locomotionPhase = Math.round(animator.locomotionPhase * 2) / 2;
+        }
+        const family = ['walk', 'tiptoe'].includes(state) ? 'walk' : state === 'sprint' ? 'sprint' : 'run';
+        const stride = profile.strideLengths?.[family] ?? CHARACTER_STRIDE_LENGTHS[family];
+        const dt = clamp(deltaTime, 0, .25), maximum = profile.maxStrideHz ?? 1.55;
+        const speed = Math.max(0, movementSpeed);
+        const frequency = Math.min(maximum, speed / stride);
+        const distance = Number.isFinite(travelledDistance) ? Math.max(0, travelledDistance) : speed * dt;
+        animator.locomotionPhase = (animator.locomotionPhase + Math.min(distance / stride, maximum * dt)) % 8;
+        animator.locomotionFrequency = frequency;
+        const cycles = Math.max(1, Number(animator.animation.cycleCount) || 1);
+        animator.setPlaybackRate(Math.max(.25, frequency * animator.currentFrames().length / (animator.animation.fps * cycles)));
+        animator.seekLoop(animator.locomotionPhase / cycles);
+        return;
+    }
+    if (profile && state === 'land') {
+        animator.seek(stateTime / (profile.landingSeconds ?? .16));
+        return;
     }
     animator.update(deltaTime);
 }

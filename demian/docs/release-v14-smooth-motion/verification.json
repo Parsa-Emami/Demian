@@ -1,0 +1,982 @@
+{
+  "status": "passed",
+  "base_commit": "11e9dd373a0e93c3a951d60e6290926776a991bf",
+  "date": "2026-10-13",
+  "javascript": {
+    "tests": 290,
+    "failed": 0,
+    "evidence": "js-tests.txt"
+  },
+  "php": {
+    "tool": "phpunit",
+    "result": "passed",
+    "tests": 14,
+    "passed": 14,
+    "assertions": 109,
+    "duration_ms": 406,
+    "evidence": "php-tests.txt"
+  },
+  "geometry": {
+    "variants": 30,
+    "evidence": "../release-v14/asset-validation.json"
+  },
+  "browser": {
+    "version": "153.0.8010.0",
+    "mode": "headless software Chromium; device dimensions emulated",
+    "viewports": [
+      [
+        320,
+        568
+      ],
+      [
+        390,
+        844
+      ],
+      [
+        844,
+        390
+      ],
+      [
+        768,
+        1024
+      ],
+      [
+        1440,
+        900
+      ]
+    ],
+    "errors": [],
+    "world": [
+      {
+        "character": "darya",
+        "smoothWorldLocomotion": {
+          "state": "sprint",
+          "phase": 0.23225362913794279,
+          "frequency": 1.1516406071859941,
+          "profile": "shared-ground-v2",
+          "distance": 1.340830967175168
+        },
+        "bufferedLandingJump": "passed",
+        "heldJumpHeight": "passed",
+        "motion": {
+          "firstPeak": 1.2685018604151244,
+          "secondPeak": 0.7444791666666662,
+          "rebounds": 1,
+          "neutralJumpDrift": 0,
+          "jumps": [
+            {
+              "states": [
+                "takeoff",
+                "jump",
+                "fall"
+              ],
+              "distinctFrames": 28,
+              "monotonic": true
+            },
+            {
+              "states": [
+                "takeoff",
+                "jump",
+                "fall"
+              ],
+              "distinctFrames": 24,
+              "monotonic": true
+            }
+          ]
+        }
+      },
+      {
+        "character": "setayesh",
+        "smoothWorldLocomotion": {
+          "state": "sprint",
+          "phase": 0.25580390673972364,
+          "frequency": 1.1352501895793239,
+          "profile": "shared-ground-v2",
+          "distance": 1.282786945910824
+        },
+        "bufferedLandingJump": "passed",
+        "heldJumpHeight": "passed",
+        "motion": {
+          "firstPeak": 1.2685018604151244,
+          "secondPeak": 0.7887152777777774,
+          "rebounds": 1,
+          "neutralJumpDrift": 0,
+          "jumps": [
+            {
+              "states": [
+                "takeoff",
+                "jump",
+                "fall"
+              ],
+              "distinctFrames": 28,
+              "monotonic": true
+            },
+            {
+              "states": [
+                "takeoff",
+                "jump",
+                "fall"
+              ],
+              "distinctFrames": 24,
+              "monotonic": true
+            }
+          ]
+        }
+      },
+      {
+        "character": "uzudi",
+        "smoothWorldLocomotion": {
+          "state": "sprint",
+          "phase": 0.21305961901817594,
+          "frequency": 1.1414556281998334,
+          "profile": "uzudi-wing-assisted-v2",
+          "distance": 1.217989302408661
+        },
+        "bufferedLandingJump": "passed",
+        "heldJumpHeight": "passed",
+        "motion": {
+          "firstPeak": 1.2685018604151244,
+          "secondPeak": 0.7887152777777774,
+          "rebounds": 1,
+          "neutralJumpDrift": 0,
+          "jumps": [
+            {
+              "states": [
+                "takeoff",
+                "jump",
+                "fall"
+              ],
+              "distinctFrames": 28,
+              "monotonic": true
+            },
+            {
+              "states": [
+                "takeoff",
+                "jump",
+                "fall"
+              ],
+              "distinctFrames": 24,
+              "monotonic": true
+            }
+          ]
+        }
+      },
+      {
+        "character": "negar",
+        "smoothWorldLocomotion": {
+          "state": "sprint",
+          "phase": 0.23036175710875684,
+          "frequency": 1.1443333102467608,
+          "profile": "shared-ground-v2",
+          "distance": 1.2587070176963355
+        },
+        "bufferedLandingJump": "passed",
+        "heldJumpHeight": "passed",
+        "motion": {
+          "firstPeak": 1.2685018604151244,
+          "secondPeak": 0.8297916666666662,
+          "rebounds": 1,
+          "neutralJumpDrift": 0,
+          "jumps": [
+            {
+              "states": [
+                "takeoff",
+                "jump",
+                "fall"
+              ],
+              "distinctFrames": 28,
+              "monotonic": true
+            },
+            {
+              "states": [
+                "takeoff",
+                "jump",
+                "fall"
+              ],
+              "distinctFrames": 24,
+              "monotonic": true
+            }
+          ]
+        }
+      },
+      {
+        "character": "tiam",
+        "smoothWorldLocomotion": {
+          "state": "walk",
+          "phase": 0.007360432022318209,
+          "frequency": 0.44162592133909256,
+          "profile": "shared-ground-v2",
+          "distance": 0.26554059966175464
+        },
+        "bufferedLandingJump": "passed",
+        "heldJumpHeight": "passed",
+        "motion": {
+          "firstPeak": 1.2685018604151244,
+          "secondPeak": 0.8297916666666662,
+          "rebounds": 1,
+          "neutralJumpDrift": 0.012334607316659996,
+          "jumps": [
+            {
+              "states": [
+                "takeoff",
+                "jump",
+                "fall"
+              ],
+              "distinctFrames": 28,
+              "monotonic": true
+            },
+            {
+              "states": [
+                "takeoff",
+                "jump",
+                "fall"
+              ],
+              "distinctFrames": 24,
+              "monotonic": true
+            }
+          ]
+        }
+      },
+      {
+        "character": "amirreza",
+        "smoothWorldLocomotion": {
+          "state": "sprint",
+          "phase": 0.2123896325112361,
+          "frequency": 1.1414556281998334,
+          "profile": "uzudi-wing-assisted-v2",
+          "distance": 1.2128016688477299
+        },
+        "bufferedLandingJump": "passed",
+        "heldJumpHeight": "passed",
+        "motion": {
+          "firstPeak": 1.2685018604151244,
+          "secondPeak": 0.7887152777777774,
+          "rebounds": 1,
+          "neutralJumpDrift": 3.487958366577004e-09,
+          "jumps": [
+            {
+              "states": [
+                "takeoff",
+                "jump",
+                "fall"
+              ],
+              "distinctFrames": 28,
+              "monotonic": true
+            },
+            {
+              "states": [
+                "takeoff",
+                "jump",
+                "fall"
+              ],
+              "distinctFrames": 24,
+              "monotonic": true
+            }
+          ]
+        }
+      }
+    ],
+    "runner": [
+      {
+        "character": "darya",
+        "selectedViaUi": true,
+        "nativeTouchSlide": "passed",
+        "birdCleared": "passed",
+        "keyboardJump": "passed",
+        "cadence": {
+          "playbackRate": 0.7517766034985423,
+          "cycleCount": 1,
+          "strideHz": 1.0524872448979592,
+          "expectedImageRevision": "b34254ebd886bf8bd50ae27d0a44c34f3e025db7eba86bd3361c8ac7a790e002",
+          "imageRevision": "b34254ebd886bf8bd50ae27d0a44c34f3e025db7eba86bd3361c8ac7a790e002"
+        },
+        "jump": {
+          "states": [
+            "takeoff",
+            "jump",
+            "fall"
+          ],
+          "distinctFrames": 24
+        }
+      },
+      {
+        "character": "setayesh",
+        "selectedViaUi": true,
+        "nativeTouchSlide": "passed",
+        "birdCleared": "passed",
+        "keyboardJump": "passed",
+        "cadence": {
+          "playbackRate": 0.7517766034985423,
+          "cycleCount": 1,
+          "strideHz": 1.0524872448979592,
+          "expectedImageRevision": "231894ec4bd825832c5ff4f073172b18899180a0c7abf9dd4503b6667a00f270",
+          "imageRevision": "231894ec4bd825832c5ff4f073172b18899180a0c7abf9dd4503b6667a00f270"
+        },
+        "jump": {
+          "states": [
+            "takeoff",
+            "jump",
+            "fall"
+          ],
+          "distinctFrames": 24
+        }
+      },
+      {
+        "character": "uzudi",
+        "selectedViaUi": true,
+        "nativeTouchSlide": "passed",
+        "birdCleared": "passed",
+        "keyboardJump": "passed",
+        "cadence": {
+          "playbackRate": 0.7517766034985423,
+          "cycleCount": 1,
+          "strideHz": 1.0524872448979592,
+          "expectedImageRevision": "5569061a38a366d9b10ba155ec388877e6db6fb9781e80a93064623614120f0b",
+          "imageRevision": "5569061a38a366d9b10ba155ec388877e6db6fb9781e80a93064623614120f0b"
+        },
+        "jump": {
+          "states": [
+            "takeoff",
+            "jump",
+            "fall"
+          ],
+          "distinctFrames": 24
+        }
+      },
+      {
+        "character": "negar",
+        "selectedViaUi": true,
+        "nativeTouchSlide": "passed",
+        "birdCleared": "passed",
+        "keyboardJump": "passed",
+        "cadence": {
+          "playbackRate": 0.7517766034985423,
+          "cycleCount": 1,
+          "strideHz": 1.0524872448979592,
+          "expectedImageRevision": "578a0a804e328d2c974d801e7b8920ee165575dfc315357ad0ede5989b7724a4",
+          "imageRevision": "578a0a804e328d2c974d801e7b8920ee165575dfc315357ad0ede5989b7724a4"
+        },
+        "jump": {
+          "states": [
+            "takeoff",
+            "jump",
+            "fall"
+          ],
+          "distinctFrames": 25
+        }
+      },
+      {
+        "character": "tiam",
+        "selectedViaUi": true,
+        "nativeTouchSlide": "passed",
+        "birdCleared": "passed",
+        "keyboardJump": "passed",
+        "cadence": {
+          "playbackRate": 0.3758883017492711,
+          "cycleCount": 2,
+          "strideHz": 1.0524872448979592,
+          "expectedImageRevision": "d9c54bb291e7706ea81fda21a3ca9b08a1d95bfc8603065187de67398c0564c7",
+          "imageRevision": "d9c54bb291e7706ea81fda21a3ca9b08a1d95bfc8603065187de67398c0564c7"
+        },
+        "jump": {
+          "states": [
+            "takeoff",
+            "jump",
+            "fall"
+          ],
+          "distinctFrames": 25
+        }
+      },
+      {
+        "character": "amirreza",
+        "selectedViaUi": true,
+        "nativeTouchSlide": "passed",
+        "birdCleared": "passed",
+        "keyboardJump": "passed",
+        "cadence": {
+          "playbackRate": 0.7517766034985423,
+          "cycleCount": 1,
+          "strideHz": 1.0524872448979592,
+          "expectedImageRevision": "c2366ee84eba4219960df48296e1c833e48a467fd93409454917407458a692ad",
+          "imageRevision": "c2366ee84eba4219960df48296e1c833e48a467fd93409454917407458a692ad"
+        },
+        "jump": {
+          "states": [
+            "takeoff",
+            "jump",
+            "fall"
+          ],
+          "distinctFrames": 24
+        }
+      }
+    ],
+    "evidence": "browser-checks.json",
+    "physicalPhoneMeasured": false
+  },
+  "sampling": [
+    {
+      "character": "darya",
+      "variant": "runtime",
+      "beforePhysicalCells": 254,
+      "afterPhysicalCells": 316,
+      "beforeDecodedMiB": 9.0,
+      "afterDecodedMiB": 11.25,
+      "samples": {
+        "idle": {
+          "before": 21,
+          "after": 21
+        },
+        "walk": {
+          "before": 22,
+          "after": 33
+        },
+        "run": {
+          "before": 28,
+          "after": 41
+        },
+        "takeoff": {
+          "before": 6,
+          "after": 7
+        },
+        "jump": {
+          "before": 4,
+          "after": 5
+        },
+        "fall": {
+          "before": 5,
+          "after": 6
+        },
+        "land": {
+          "before": 9,
+          "after": 9
+        },
+        "slide": {
+          "before": 22,
+          "after": 22
+        },
+        "celebrate": {
+          "before": 23,
+          "after": 23
+        }
+      }
+    },
+    {
+      "character": "darya",
+      "variant": "lite",
+      "beforePhysicalCells": 201,
+      "afterPhysicalCells": 239,
+      "beforeDecodedMiB": 3.25,
+      "afterDecodedMiB": 3.75,
+      "samples": {
+        "idle": {
+          "before": 21,
+          "after": 21
+        },
+        "walk": {
+          "before": 17,
+          "after": 22
+        },
+        "run": {
+          "before": 21,
+          "after": 28
+        },
+        "takeoff": {
+          "before": 5,
+          "after": 5
+        },
+        "jump": {
+          "before": 3,
+          "after": 4
+        },
+        "fall": {
+          "before": 3,
+          "after": 5
+        },
+        "land": {
+          "before": 7,
+          "after": 9
+        },
+        "slide": {
+          "before": 17,
+          "after": 17
+        },
+        "celebrate": {
+          "before": 18,
+          "after": 18
+        }
+      }
+    },
+    {
+      "character": "setayesh",
+      "variant": "runtime",
+      "beforePhysicalCells": 254,
+      "afterPhysicalCells": 316,
+      "beforeDecodedMiB": 9.0,
+      "afterDecodedMiB": 11.25,
+      "samples": {
+        "idle": {
+          "before": 21,
+          "after": 21
+        },
+        "walk": {
+          "before": 22,
+          "after": 33
+        },
+        "run": {
+          "before": 28,
+          "after": 41
+        },
+        "takeoff": {
+          "before": 6,
+          "after": 7
+        },
+        "jump": {
+          "before": 4,
+          "after": 5
+        },
+        "fall": {
+          "before": 5,
+          "after": 6
+        },
+        "land": {
+          "before": 9,
+          "after": 9
+        },
+        "slide": {
+          "before": 22,
+          "after": 22
+        },
+        "celebrate": {
+          "before": 23,
+          "after": 23
+        }
+      }
+    },
+    {
+      "character": "setayesh",
+      "variant": "lite",
+      "beforePhysicalCells": 201,
+      "afterPhysicalCells": 239,
+      "beforeDecodedMiB": 3.25,
+      "afterDecodedMiB": 3.75,
+      "samples": {
+        "idle": {
+          "before": 21,
+          "after": 21
+        },
+        "walk": {
+          "before": 17,
+          "after": 22
+        },
+        "run": {
+          "before": 21,
+          "after": 28
+        },
+        "takeoff": {
+          "before": 5,
+          "after": 5
+        },
+        "jump": {
+          "before": 3,
+          "after": 4
+        },
+        "fall": {
+          "before": 3,
+          "after": 5
+        },
+        "land": {
+          "before": 7,
+          "after": 9
+        },
+        "slide": {
+          "before": 17,
+          "after": 17
+        },
+        "celebrate": {
+          "before": 18,
+          "after": 18
+        }
+      }
+    },
+    {
+      "character": "uzudi",
+      "variant": "runtime",
+      "beforePhysicalCells": 254,
+      "afterPhysicalCells": 316,
+      "beforeDecodedMiB": 9.0,
+      "afterDecodedMiB": 11.25,
+      "samples": {
+        "idle": {
+          "before": 21,
+          "after": 21
+        },
+        "walk": {
+          "before": 22,
+          "after": 33
+        },
+        "run": {
+          "before": 28,
+          "after": 41
+        },
+        "takeoff": {
+          "before": 6,
+          "after": 7
+        },
+        "jump": {
+          "before": 4,
+          "after": 5
+        },
+        "fall": {
+          "before": 5,
+          "after": 6
+        },
+        "land": {
+          "before": 9,
+          "after": 9
+        },
+        "slide": {
+          "before": 22,
+          "after": 22
+        },
+        "celebrate": {
+          "before": 23,
+          "after": 23
+        }
+      }
+    },
+    {
+      "character": "uzudi",
+      "variant": "lite",
+      "beforePhysicalCells": 201,
+      "afterPhysicalCells": 239,
+      "beforeDecodedMiB": 3.25,
+      "afterDecodedMiB": 3.75,
+      "samples": {
+        "idle": {
+          "before": 21,
+          "after": 21
+        },
+        "walk": {
+          "before": 17,
+          "after": 22
+        },
+        "run": {
+          "before": 21,
+          "after": 28
+        },
+        "takeoff": {
+          "before": 5,
+          "after": 5
+        },
+        "jump": {
+          "before": 3,
+          "after": 4
+        },
+        "fall": {
+          "before": 3,
+          "after": 5
+        },
+        "land": {
+          "before": 7,
+          "after": 9
+        },
+        "slide": {
+          "before": 17,
+          "after": 17
+        },
+        "celebrate": {
+          "before": 18,
+          "after": 18
+        }
+      }
+    },
+    {
+      "character": "negar",
+      "variant": "runtime",
+      "beforePhysicalCells": 254,
+      "afterPhysicalCells": 316,
+      "beforeDecodedMiB": 9.0,
+      "afterDecodedMiB": 11.25,
+      "samples": {
+        "idle": {
+          "before": 21,
+          "after": 21
+        },
+        "walk": {
+          "before": 22,
+          "after": 33
+        },
+        "run": {
+          "before": 28,
+          "after": 41
+        },
+        "takeoff": {
+          "before": 6,
+          "after": 7
+        },
+        "jump": {
+          "before": 4,
+          "after": 5
+        },
+        "fall": {
+          "before": 5,
+          "after": 6
+        },
+        "land": {
+          "before": 9,
+          "after": 9
+        },
+        "slide": {
+          "before": 22,
+          "after": 22
+        },
+        "celebrate": {
+          "before": 23,
+          "after": 23
+        }
+      }
+    },
+    {
+      "character": "negar",
+      "variant": "lite",
+      "beforePhysicalCells": 201,
+      "afterPhysicalCells": 239,
+      "beforeDecodedMiB": 3.25,
+      "afterDecodedMiB": 3.75,
+      "samples": {
+        "idle": {
+          "before": 21,
+          "after": 21
+        },
+        "walk": {
+          "before": 17,
+          "after": 22
+        },
+        "run": {
+          "before": 21,
+          "after": 28
+        },
+        "takeoff": {
+          "before": 5,
+          "after": 5
+        },
+        "jump": {
+          "before": 3,
+          "after": 4
+        },
+        "fall": {
+          "before": 3,
+          "after": 5
+        },
+        "land": {
+          "before": 7,
+          "after": 9
+        },
+        "slide": {
+          "before": 17,
+          "after": 17
+        },
+        "celebrate": {
+          "before": 18,
+          "after": 18
+        }
+      }
+    },
+    {
+      "character": "tiam",
+      "variant": "runtime",
+      "beforePhysicalCells": 254,
+      "afterPhysicalCells": 316,
+      "beforeDecodedMiB": 9.0,
+      "afterDecodedMiB": 11.25,
+      "samples": {
+        "idle": {
+          "before": 21,
+          "after": 21
+        },
+        "walk": {
+          "before": 22,
+          "after": 33
+        },
+        "run": {
+          "before": 28,
+          "after": 41
+        },
+        "takeoff": {
+          "before": 6,
+          "after": 7
+        },
+        "jump": {
+          "before": 4,
+          "after": 5
+        },
+        "fall": {
+          "before": 5,
+          "after": 6
+        },
+        "land": {
+          "before": 9,
+          "after": 9
+        },
+        "slide": {
+          "before": 22,
+          "after": 22
+        },
+        "celebrate": {
+          "before": 23,
+          "after": 23
+        }
+      }
+    },
+    {
+      "character": "tiam",
+      "variant": "lite",
+      "beforePhysicalCells": 201,
+      "afterPhysicalCells": 239,
+      "beforeDecodedMiB": 3.25,
+      "afterDecodedMiB": 3.75,
+      "samples": {
+        "idle": {
+          "before": 21,
+          "after": 21
+        },
+        "walk": {
+          "before": 17,
+          "after": 22
+        },
+        "run": {
+          "before": 21,
+          "after": 28
+        },
+        "takeoff": {
+          "before": 5,
+          "after": 5
+        },
+        "jump": {
+          "before": 3,
+          "after": 4
+        },
+        "fall": {
+          "before": 3,
+          "after": 5
+        },
+        "land": {
+          "before": 7,
+          "after": 9
+        },
+        "slide": {
+          "before": 17,
+          "after": 17
+        },
+        "celebrate": {
+          "before": 18,
+          "after": 18
+        }
+      }
+    },
+    {
+      "character": "amirreza",
+      "variant": "runtime",
+      "beforePhysicalCells": 254,
+      "afterPhysicalCells": 316,
+      "beforeDecodedMiB": 9.0,
+      "afterDecodedMiB": 11.25,
+      "samples": {
+        "idle": {
+          "before": 21,
+          "after": 21
+        },
+        "walk": {
+          "before": 22,
+          "after": 33
+        },
+        "run": {
+          "before": 28,
+          "after": 41
+        },
+        "takeoff": {
+          "before": 5,
+          "after": 7
+        },
+        "jump": {
+          "before": 4,
+          "after": 5
+        },
+        "fall": {
+          "before": 5,
+          "after": 6
+        },
+        "land": {
+          "before": 9,
+          "after": 9
+        },
+        "slide": {
+          "before": 22,
+          "after": 22
+        },
+        "celebrate": {
+          "before": 23,
+          "after": 23
+        }
+      }
+    },
+    {
+      "character": "amirreza",
+      "variant": "lite",
+      "beforePhysicalCells": 203,
+      "afterPhysicalCells": 239,
+      "beforeDecodedMiB": 3.25,
+      "afterDecodedMiB": 3.75,
+      "samples": {
+        "idle": {
+          "before": 21,
+          "after": 21
+        },
+        "walk": {
+          "before": 17,
+          "after": 22
+        },
+        "run": {
+          "before": 21,
+          "after": 28
+        },
+        "takeoff": {
+          "before": 4,
+          "after": 5
+        },
+        "jump": {
+          "before": 3,
+          "after": 4
+        },
+        "fall": {
+          "before": 4,
+          "after": 5
+        },
+        "land": {
+          "before": 7,
+          "after": 9
+        },
+        "slide": {
+          "before": 17,
+          "after": 17
+        },
+        "celebrate": {
+          "before": 18,
+          "after": 18
+        }
+      }
+    }
+  ],
+  "build": "Vite build and atomic production/static bundles passed",
+  "sources": [
+    "https://www.mattmakesgames.com/articles/celeste_and_forgiveness/index.html",
+    "https://www.naughtydog.com/blog/uncharted_4_a_thiefs_end_the_5_year_anniversary_retrospective"
+  ],
+  "protected_files_modified": [],
+  "imagegen": {
+    "mode": "built-in",
+    "prompt": "imagegen-retarget.json",
+    "asset": "../../public/assets/characters/amirreza/source-v14/runner-motion.png",
+    "sha256": "6fe722a7c5261bdd02dd417c936f79a5610578b3a4e89d512672c2ebb0918829"
+  }
+}

@@ -4,6 +4,7 @@ import {
     DEFAULT_ACTIVE_SLUG,
     builtinCharacterAssetPair,
     normalizeSpriteVariant,
+    characterSpriteRevisionUrl,
 } from '../CharacterVisualContract.js';
 import { orderedSpriteVariants, characterRuntimeVariants, CHARACTER_ASSET_TIMEOUT_MS } from './CharacterRuntimePolicy.js';
 
@@ -152,8 +153,9 @@ export default class CharacterVisualService {
             if (atlas?.meta?.artIntegrity === 'invalid') {
                 throw new Error(`Character art integrity rejected for ${slug}/${variant}.`);
             }
-            const image = await this.loadImage(pair.spriteUrl, controller.signal);
-            return Object.freeze({ slug, variant, atlas, image, ...pair });
+            const spriteUrl = characterSpriteRevisionUrl(pair.spriteUrl, atlas);
+            const image = await this.loadImage(spriteUrl, controller.signal);
+            return Object.freeze({ slug, variant, atlas, image, ...pair, spriteUrl });
         } finally {
             globalThis.clearTimeout(timeout);
         }

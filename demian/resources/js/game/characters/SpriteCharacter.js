@@ -10,6 +10,7 @@ import {
 } from './DirectionResolver';
 import { WORLD_CONFIG } from '../world/WorldConfig';
 import { characterFrameWorldSize } from './CharacterVisualContract.js';
+import { CHARACTER_JUMP_TUNING, characterGravity, groundLocomotionState, isInterruptibleRecovery } from './CharacterLocomotionModel.js';
 import {
     advanceCharacterAnimation,
     characterJumpPose,
@@ -461,13 +462,13 @@ export default class SpriteCharacter {
         this.wasGrounded = this.grounded;
 
         if (this.grounded) {
-            this.coyoteTimer = 0.11;
+            this.coyoteTimer = CHARACTER_JUMP_TUNING.coyoteSeconds;
         } else {
             this.coyoteTimer = Math.max(0, this.coyoteTimer - deltaTime);
         }
 
         if (input.jump) {
-            this.jumpBufferTimer = 0.14;
+            this.jumpBufferTimer = CHARACTER_JUMP_TUNING.bufferSeconds;
         }
 
         if (input.speak) {
@@ -480,21 +481,18 @@ export default class SpriteCharacter {
         const hasAction = Boolean(input.ability) || ACTIONS.some(({ name }) => Boolean(input[name]));
 
         if (hasMovement || hasAction || input.jump) {
+            if (this.introActive) this.stateLock = 0;
             this.introActive = false;
+        }
+        if ((hasMovement || this.jumpBufferTimer > 0) && isInterruptibleRecovery(this.state)) {
+            this.stateLock = 0;
         }
 
         if (this.introActive) {
             this.updateIntro(deltaTime);
         }
 
-        if (
-            this.jumpBufferTimer > 0 &&
-            this.coyoteTimer > 0 &&
-            this.stateLock <= 0
-        ) {
-            this.performJump(rawMove, inputMagnitude);
-            this.jumpBufferTimer = 0;
-        }
+        this.consumeBufferedJump(rawMove, inputMagnitude);
 
         if (this.grounded && this.stateLock <= 0) {
             this.handleActionInput(input);
@@ -563,8 +561,14 @@ export default class SpriteCharacter {
         this.horizontalMotion = damp(this.horizontalMotion, this.lastMoveDirection.x, 12, deltaTime);
         this.depthMotion = damp(this.depthMotion, this.lastMoveDirection.z, 12, deltaTime);
 
+        const previousX = this.group.position.x, previousZ = this.group.position.z;
         this.applyHorizontalMovement(deltaTime);
-        this.updateJumpPhysics(deltaTime);
+        const travelledDistance = Math.hypot(this.group.position.x - previousX, this.group.position.z - previousZ);
+        this.updateJumpPhysics(deltaTime, input.jumpHeld);
+        // A buffered press is consumed on the landing tick, before the recovery
+        // clip can lock it out and let the short input buffer expire.
+        this.consumeBufferedJump(rawMove, inputMagnitude);
+        if (hasMovement && isInterruptibleRecovery(this.state)) this.stateLock = 0;
 
         if (this.stateLock <= 0) {
             this.selectLocomotionState(input, inputMagnitude, deltaTime);
@@ -576,6 +580,8 @@ export default class SpriteCharacter {
             state: this.state, movementRatio, deltaTime,
             jumpVelocity: this.jumpVelocity, jumpForce: this.jumpForce,
             physicsOwnsJumpHeight: Boolean(this.atlas.render?.physicsOwnsJumpHeight),
+            movementSpeed: deltaTime > 0 ? travelledDistance / deltaTime : 0,
+            travelledDistance, stateTime: this.stateTime,
         });
         this.updateFrameBlend();
         this.effects.update(deltaTime, this.speed());
@@ -598,12 +604,21 @@ export default class SpriteCharacter {
         }
     }
 
-    updateJumpPhysics(deltaTime) {
+    consumeBufferedJump(rawMove, inputMagnitude) {
+        if (this.jumpBufferTimer <= 0 || this.coyoteTimer <= 0) return false;
+        if (isInterruptibleRecovery(this.state)) this.stateLock = 0;
+        if (this.stateLock > 0) return false;
+        this.performJump(rawMove, inputMagnitude);
+        this.jumpBufferTimer = 0;
+        return true;
+    }
+
+    updateJumpPhysics(deltaTime, held = true) {
         if (this.grounded) {
             return;
         }
 
-        this.jumpVelocity -= this.gravity * deltaTime;
+        this.jumpVelocity -= characterGravity(this.jumpVelocity, this.jumpForce, this.gravity, held) * deltaTime;
         this.bodyRoot.position.y += this.jumpVelocity * deltaTime;
 
         if (this.bodyRoot.position.y > 0) {
@@ -614,7 +629,7 @@ export default class SpriteCharacter {
         this.bodyRoot.position.y = 0;
         this.jumpVelocity = 0;
         this.grounded = true;
-        this.coyoteTimer = 0.11;
+        this.coyoteTimer = CHARACTER_JUMP_TUNING.coyoteSeconds;
         this.effects.landing(impact);
         this.playLocked('land', impact > this.jumpForce * 1.25 ? 0.28 : 0.18);
     }
@@ -626,20 +641,12 @@ export default class SpriteCharacter {
         }
 
         const planarSpeed = this.speed();
-        if (input.run && inputMagnitude > 0.9 && planarSpeed > this.runSpeed * 0.82) {
-            this.setState('sprint');
-            return;
-        }
-        if (planarSpeed > this.walkSpeed * 1.32) {
-            this.setState('run');
-            return;
-        }
-        if (planarSpeed > 0.16) {
-            this.setState('walk');
-            return;
-        }
-
-        this.setState('idle');
+        const gait = groundLocomotionState(planarSpeed, this.state, {
+            walkSpeed: this.walkSpeed, runSpeed: this.runSpeed,
+            sprintAllowed: Boolean(input.run) && inputMagnitude > .9,
+        });
+        this.setState(gait);
+        if (gait !== 'idle') return;
         this.idleVariantTimer -= deltaTime;
 
         if (this.idleVariantTimer <= 0) {
@@ -756,11 +763,11 @@ export default class SpriteCharacter {
         }
 
         const existingSpeed = this.speed();
-        const requestedSpeed = THREE.MathUtils.lerp(
+        const requestedSpeed = inputMagnitude > .06 ? THREE.MathUtils.lerp(
             this.minimumJumpSpeed,
             this.runSpeed,
             THREE.MathUtils.clamp(inputMagnitude, 0, 1)
-        );
+        ) : 0;
         const carrySpeed = Math.max(existingSpeed, requestedSpeed);
         this.velocity.x = requestedDirection.x * carrySpeed;
         this.velocity.z = requestedDirection.z * carrySpeed;

@@ -1,0 +1,29 @@
+{
+  "character_key": "negar",
+  "pack_version": 14,
+  "status": "validated_in_emulated_browser",
+  "evidence": "../../../../../docs/release-v14-smooth-motion/README.fa.md",
+  "date": "2026-10-13",
+  "motion_version": "natural-locomotion-v2",
+  "checks": {
+    "asset_geometry": "passed",
+    "all_variants": true,
+    "runtime_physical_cells": 316,
+    "lite_physical_cells": 239,
+    "natural_locomotion": "passed",
+    "same_gait_phase_at_30_60_120_hz": "passed",
+    "buffered_jump_on_landing_tick": "passed",
+    "held_jump_height": "passed",
+    "neutral_jump_no_forced_drift": "passed",
+    "js_tests_passed": 290,
+    "php_tests_passed": 14,
+    "php_assertions": 109,
+    "locomotion_profile": "shared-ground-v2",
+    "atlas_image_revision_matches_loaded_png": "passed",
+    "runtime_decoded_mib": 11.25,
+    "lite_decoded_mib": 3.75
+  },
+  "limitations": [
+    "Physical phone GPU/FPS/battery not measured"
+  ]
+}

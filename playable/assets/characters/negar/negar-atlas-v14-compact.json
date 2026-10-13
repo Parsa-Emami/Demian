@@ -31,7 +31,8 @@
     "artIntegrity": "valid",
     "interpolation": "single-owner-optical-flow",
     "sourceKeyPoseCount": 60,
-    "license": "MIT"
+    "license": "MIT",
+    "imageRevision": "52098d07eebaca66ba420402c7ab114741164599d88489203ef4f75f6a73bfbd"
   },
   "frames": {
     "idle_000": {
@@ -9947,8 +9948,25 @@
     "directionDepthScale": 0,
     "northSouthScale": 1,
     "diagonalScale": 1,
-    "timingVersion": "natural-locomotion-v1",
-    "jumpProgressDriver": "vertical-velocity"
+    "timingVersion": "natural-locomotion-v2",
+    "jumpProgressDriver": "vertical-velocity",
+    "locomotionProfile": {
+      "id": "shared-ground-v2",
+      "referenceCharacter": null,
+      "phaseDriver": "travelled-distance",
+      "strideLengths": {
+        "walk": 3.4,
+        "run": 6,
+        "sprint": 6.4
+      },
+      "maxStrideHz": 1.55,
+      "landingSeconds": 0.16,
+      "jumpBufferSeconds": 0.14,
+      "coyoteSeconds": 0.11,
+      "heldApexGravity": 0.65,
+      "releasedRiseGravity": 1.65,
+      "recoveryInterruptible": true
+    }
   },
   "render": {
     "referenceBodyHeightRatio": 0.7,

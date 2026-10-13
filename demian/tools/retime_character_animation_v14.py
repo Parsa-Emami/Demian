@@ -1,5 +1,6 @@
 """Update existing V14 motion metadata without regenerating sprite artwork."""
 import json
+import hashlib
 from pathlib import Path
 from character_art_registry import ACTIVE_CHARACTER_ROSTER
 from character_animation_timing import apply_animation_timing
@@ -21,6 +22,7 @@ def main():
         for variant in VARIANTS:
             path = directory / f'{slug}-atlas-v14-{variant}.json'
             atlas = apply_animation_timing(json.loads(path.read_text()), counts)
+            atlas['meta']['imageRevision'] = hashlib.sha256((directory / atlas['meta']['image']).read_bytes()).hexdigest()
             write(path, atlas, compact=variant in ('runtime', 'lite'))
         path = directory / 'manifests' / f'{slug}_animation_manifest.json'
         manifest = json.loads(path.read_text())
@@ -29,6 +31,10 @@ def main():
                               for name, a in atlas['animations'].items()}
         manifest['timingVersion'] = atlas['motion']['timingVersion']
         write(path, manifest)
+        path = directory / 'manifests' / f'{slug}_motion_profile.json'
+        profile = json.loads(path.read_text())
+        profile['locomotion_profile'] = atlas['motion']['locomotionProfile']
+        write(path, profile)
         print(f'{slug}: {len(VARIANTS)} atlas variants retimed')
 
 

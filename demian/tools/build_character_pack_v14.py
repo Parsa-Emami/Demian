@@ -9,6 +9,7 @@ Install tools/requirements-character-art.txt before rebuilding.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 from pathlib import Path
 import cv2
@@ -297,6 +298,7 @@ def build_character(slug):
         apply_animation_timing(atlas, layout.get('locomotionCycleCounts'))
         animations = atlas['animations']
         sheet.save(directory / image_name, optimize=True)
+        atlas['meta']['imageRevision'] = hashlib.sha256((directory / image_name).read_bytes()).hexdigest()
         write_json(directory / f'{slug}-atlas-v14-{variant}.json', atlas)
         print(f'{slug} / {variant}: {len(frames)} frames, {sheet.width}x{sheet.height}', flush=True)
     animation_manifest = {'character_key': slug, 'pack_version': VERSION,
@@ -322,10 +324,12 @@ def build_character(slug):
         'invariants': layout['identity'], 'pack_version': VERSION})
     write_json(md / f'{slug}_reference_manifest.json', {'character_key': slug, 'pack_version': VERSION,
         'reference': reference, 'master': '../source-v14/master.png', 'runner_motion': '../source-v14/runner-motion.png', 'slide_master': '../source-v14/slides.png',
+        **({'locomotion_reference': layout['locomotionReference']} if layout.get('locomotionReference') else {}),
         **({'inputs': layout['referenceInputs']} if layout.get('referenceInputs') else {})})
     write_json(md / f'{slug}_motion_profile.json', {'character_key': slug, 'pack_version': VERSION,
         'physics_owns_jump_height': True, 'dedicated_slide': True, 'uniform_body_scale': True,
-        'style': atlas['movement']['style'], 'wing_powered_states': atlas['movement']['wingPoweredStates']})
+        'style': atlas['movement']['style'], 'wing_powered_states': atlas['movement']['wingPoweredStates'],
+        'locomotion_profile': atlas['motion']['locomotionProfile']})
     write_json(md / f'{slug}_ability_profile.json', {'character_key': slug, 'pack_version': VERSION,
         'runner_physics': 'shared', 'combat': False, 'companion_collision_independent': slug == 'darya' or bool(layout.get('companion')),
         **({'companion': atlas['companion']} if layout.get('companion') else {}),

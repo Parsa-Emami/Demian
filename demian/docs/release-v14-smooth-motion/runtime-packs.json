@@ -1,0 +1,230 @@
+[
+  {
+    "slug": "darya",
+    "variant": "runtime",
+    "physicalFrames": 316,
+    "animationFrameNames": 672,
+    "decodedBytes": 11796480,
+    "downloadBytes": 2927628,
+    "samplingByFamily": {
+      "turn": 1,
+      "idle": 2,
+      "walk": 2,
+      "run": 2,
+      "jump": 2,
+      "land": 3,
+      "slide": 3,
+      "celebrate": 3
+    },
+    "sourceDecodedBytes": 33718272
+  },
+  {
+    "slug": "darya",
+    "variant": "lite",
+    "physicalFrames": 239,
+    "animationFrameNames": 672,
+    "decodedBytes": 3932160,
+    "downloadBytes": 1089795,
+    "samplingByFamily": {
+      "turn": 1,
+      "idle": 2,
+      "walk": 3,
+      "run": 3,
+      "jump": 3,
+      "land": 3,
+      "slide": 4,
+      "celebrate": 4
+    },
+    "sourceDecodedBytes": 33718272
+  },
+  {
+    "slug": "setayesh",
+    "variant": "runtime",
+    "physicalFrames": 316,
+    "animationFrameNames": 672,
+    "decodedBytes": 11796480,
+    "downloadBytes": 2296551,
+    "samplingByFamily": {
+      "turn": 1,
+      "idle": 2,
+      "walk": 2,
+      "run": 2,
+      "jump": 2,
+      "land": 3,
+      "slide": 3,
+      "celebrate": 3
+    },
+    "sourceDecodedBytes": 33718272
+  },
+  {
+    "slug": "setayesh",
+    "variant": "lite",
+    "physicalFrames": 239,
+    "animationFrameNames": 672,
+    "decodedBytes": 3932160,
+    "downloadBytes": 849625,
+    "samplingByFamily": {
+      "turn": 1,
+      "idle": 2,
+      "walk": 3,
+      "run": 3,
+      "jump": 3,
+      "land": 3,
+      "slide": 4,
+      "celebrate": 4
+    },
+    "sourceDecodedBytes": 33718272
+  },
+  {
+    "slug": "uzudi",
+    "variant": "runtime",
+    "physicalFrames": 316,
+    "animationFrameNames": 672,
+    "decodedBytes": 11796480,
+    "downloadBytes": 2530383,
+    "samplingByFamily": {
+      "turn": 1,
+      "idle": 2,
+      "walk": 2,
+      "run": 2,
+      "jump": 2,
+      "land": 3,
+      "slide": 3,
+      "celebrate": 3
+    },
+    "sourceDecodedBytes": 33718272
+  },
+  {
+    "slug": "uzudi",
+    "variant": "lite",
+    "physicalFrames": 239,
+    "animationFrameNames": 672,
+    "decodedBytes": 3932160,
+    "downloadBytes": 942465,
+    "samplingByFamily": {
+      "turn": 1,
+      "idle": 2,
+      "walk": 3,
+      "run": 3,
+      "jump": 3,
+      "land": 3,
+      "slide": 4,
+      "celebrate": 4
+    },
+    "sourceDecodedBytes": 33718272
+  },
+  {
+    "slug": "negar",
+    "variant": "runtime",
+    "physicalFrames": 316,
+    "animationFrameNames": 672,
+    "decodedBytes": 11796480,
+    "downloadBytes": 2268439,
+    "samplingByFamily": {
+      "turn": 1,
+      "idle": 2,
+      "walk": 2,
+      "run": 2,
+      "jump": 2,
+      "land": 3,
+      "slide": 3,
+      "celebrate": 3
+    },
+    "sourceDecodedBytes": 33718272
+  },
+  {
+    "slug": "negar",
+    "variant": "lite",
+    "physicalFrames": 239,
+    "animationFrameNames": 672,
+    "decodedBytes": 3932160,
+    "downloadBytes": 859656,
+    "samplingByFamily": {
+      "turn": 1,
+      "idle": 2,
+      "walk": 3,
+      "run": 3,
+      "jump": 3,
+      "land": 3,
+      "slide": 4,
+      "celebrate": 4
+    },
+    "sourceDecodedBytes": 33718272
+  },
+  {
+    "slug": "tiam",
+    "variant": "runtime",
+    "physicalFrames": 316,
+    "animationFrameNames": 672,
+    "decodedBytes": 11796480,
+    "downloadBytes": 2364525,
+    "samplingByFamily": {
+      "turn": 1,
+      "idle": 2,
+      "walk": 2,
+      "run": 2,
+      "jump": 2,
+      "land": 3,
+      "slide": 3,
+      "celebrate": 3
+    },
+    "sourceDecodedBytes": 33718272
+  },
+  {
+    "slug": "tiam",
+    "variant": "lite",
+    "physicalFrames": 239,
+    "animationFrameNames": 672,
+    "decodedBytes": 3932160,
+    "downloadBytes": 887595,
+    "samplingByFamily": {
+      "turn": 1,
+      "idle": 2,
+      "walk": 3,
+      "run": 3,
+      "jump": 3,
+      "land": 3,
+      "slide": 4,
+      "celebrate": 4
+    },
+    "sourceDecodedBytes": 33718272
+  },
+  {
+    "slug": "amirreza",
+    "variant": "runtime",
+    "physicalFrames": 316,
+    "animationFrameNames": 672,
+    "decodedBytes": 11796480,
+    "downloadBytes": 2512556,
+    "samplingByFamily": {
+      "turn": 1,
+      "idle": 2,
+      "walk": 2,
+      "run": 2,
+      "jump": 2,
+      "land": 3,
+      "slide": 3,
+      "celebrate": 3
+    },
+    "sourceDecodedBytes": 33718272
+  },
+  {
+    "slug": "amirreza",
+    "variant": "lite",
+    "physicalFrames": 239,
+    "animationFrameNames": 672,
+    "decodedBytes": 3932160,
+    "downloadBytes": 934282,
+    "samplingByFamily": {
+      "turn": 1,
+      "idle": 2,
+      "walk": 3,
+      "run": 3,
+      "jump": 3,
+      "land": 3,
+      "slide": 4,
+      "celebrate": 4
+    },
+    "sourceDecodedBytes": 33718272
+  }
+]

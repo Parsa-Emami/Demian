@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import SpriteCharacter from '../characters/SpriteCharacter';
 import NpcBrain from '../npc/NpcBrain';
 import { WORLD_CONFIG } from '../world/WorldConfig';
+import { CHARACTER_MOVEMENT_SETTINGS } from '../characters/CharacterLocomotionModel.js';
 import {
     CHARACTER_ASSET_TIMEOUT_MS,
     characterRuntimeVariants,
@@ -12,13 +13,13 @@ import {
     builtinCharacterAssetPair,
     isRetiredCharacter,
     normalizeSpriteVariant,
+    characterSpriteRevisionUrl,
 } from '../characters/CharacterVisualContract.js';
 
 import { BUILTIN_CHARACTER_LABELS as LABELS, characterManifestEntry } from '../characters/manifests/CharacterManifestRegistry.js';
 const BUILTIN_DEFINITIONS = Object.freeze(BUILTIN_CHARACTER_SLUGS.map((slug) => Object.freeze({
     id: `builtin-${slug}`, name: LABELS[slug], slug, is_active: slug === 'darya',
-    settings: { walk_speed: 3.55, run_speed: 6.9, sprint_speed: 7.6, jump_force: 6.8,
-        air_control: .58, scale: 1, asset_pack_version: characterManifestEntry(slug).packVersion,
+    settings: { ...CHARACTER_MOVEMENT_SETTINGS, asset_pack_version: characterManifestEntry(slug).packVersion,
         production_status: characterManifestEntry(slug).productionStatus,
         locomotion_style: characterManifestEntry(slug).locomotionStyle ?? 'ground-runner',
         ...(slug === 'darya' ? { companion: 'pishi', companion_always_visible: true } : {}),
@@ -157,7 +158,7 @@ export default class CharacterManager {
                     ...builtin.settings,
                     ...(existing.settings ?? {}),
                     // Built-in characters always share one canonical world size.
-                    scale: 1,
+                    ...CHARACTER_MOVEMENT_SETTINGS,
                     asset_pack_version: builtin.settings.asset_pack_version,
                     production_status: builtin.settings.production_status,
                     locomotion_style: builtin.settings.locomotion_style,
@@ -797,9 +798,10 @@ export default class CharacterManager {
             throw new Error(`Character art failed integrity validation (${pair.atlasUrl})`);
         }
         const atlasImage = atlas?.meta?.image;
-        const spriteUrl = atlasImage
+        const imageUrl = atlasImage
             ? new URL(atlasImage, pair.atlasUrl).toString()
             : pair.spriteUrl;
+        const spriteUrl = characterSpriteRevisionUrl(imageUrl, atlas);
         const texture = await this.loadTexture(spriteUrl);
         return { texture, atlas, spriteUrl, atlasUrl: pair.atlasUrl, variant: pair.variant };
     }

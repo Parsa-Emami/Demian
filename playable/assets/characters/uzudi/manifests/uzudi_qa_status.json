@@ -9,12 +9,26 @@
     "runtime_selection": "passed",
     "touch_slide_under_bird": "passed",
     "keyboard_jump": "passed",
-    "shared_game_selection": "passed"
+    "shared_game_selection": "passed",
+    "runtime_physical_cells": 316,
+    "lite_physical_cells": 239,
+    "natural_locomotion": "passed",
+    "same_gait_phase_at_30_60_120_hz": "passed",
+    "buffered_jump_on_landing_tick": "passed",
+    "held_jump_height": "passed",
+    "neutral_jump_no_forced_drift": "passed",
+    "js_tests_passed": 290,
+    "php_tests_passed": 14,
+    "php_assertions": 109,
+    "locomotion_profile": "uzudi-wing-assisted-v2",
+    "atlas_image_revision_matches_loaded_png": "passed",
+    "runtime_decoded_mib": 11.25,
+    "lite_decoded_mib": 3.75
   },
-  "evidence": "../../../../../docs/release-v14/QA.fa.md",
+  "evidence": "../../../../../docs/release-v14-smooth-motion/README.fa.md",
   "limitations": [
-    "Physical phone GPU/FPS/battery not measured",
-    "Laravel runtime tests not executed; static PHP syntax checked"
+    "Physical phone GPU/FPS/battery not measured"
   ],
-  "date": "2026-10-04"
+  "date": "2026-10-13",
+  "motion_version": "natural-locomotion-v2"
 }

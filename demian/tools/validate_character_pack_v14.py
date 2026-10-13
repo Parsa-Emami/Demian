@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Validate the shipped runtime contract and alpha geometry without art-build dependencies."""
 import json
+import hashlib
 from pathlib import Path
 from PIL import Image
 from character_art_registry import ACTIVE_CHARACTER_ROSTER, ACTIVE_CHARACTER_DEFINITIONS
@@ -22,17 +23,21 @@ def main():
         for variant, cell in VARIANTS.items():
             atlas = json.loads((directory / f'{slug}-atlas-v14-{variant}.json').read_text())
             image = Image.open(directory / atlas['meta']['image'])
+            assert atlas['meta']['imageRevision'] == hashlib.sha256((directory / atlas['meta']['image']).read_bytes()).hexdigest()
             grid = atlas['meta']['grid']
             assert image.mode == 'RGBA' and image.size == (grid['columns'] * cell, grid['rows'] * cell)
             if variant in ('runtime', 'lite'):
                 assert atlas['meta']['decodedBytes'] == image.width * image.height * 4
-                assert atlas['meta']['packedPhysicalFrameCount'] < 270
+                assert atlas['meta']['packedPhysicalFrameCount'] <= (320 if variant == 'runtime' else 256)
+                assert atlas['meta']['decodedBytes'] <= (12 if variant == 'runtime' else 4) * 1024**2
                 assert atlas['animations'] == json.loads((directory / f'{slug}-atlas-v14-mobile.json').read_text())['animations']
             else:
                 assert grid == {'columns': 24, 'rows': 28}
             assert max(image.size) <= 4096
             assert len(atlas['frames']) == atlas['meta']['generatedFrameCount'] == 672
             assert atlas['meta']['version'] == 14 and atlas['render']['dedicatedSlide']
+            assert atlas['motion']['timingVersion'] == 'natural-locomotion-v2'
+            assert atlas['motion']['locomotionProfile']['phaseDriver'] == 'travelled-distance'
             assert atlas['render']['lockBodyScale'] and not atlas['render']['frameBlend']
             assert atlas['pivot'] == {'x': .5, 'y': .94}
             for name, frame in atlas['frames'].items():

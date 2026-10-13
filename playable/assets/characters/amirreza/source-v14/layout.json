@@ -25,11 +25,15 @@
   "motionColumns": 8,
   "motionRowBounds": [
     0,
+    222,
     444,
+    665,
     887
   ],
   "motionRowStates": [
+    "walk",
     "run",
+    "jump",
     "land"
   ],
   "turnMirrorFrom": {
@@ -46,6 +50,11 @@
       "name": "master.png",
       "role": "wing-assisted-structure-and-game-style",
       "sha256": "78aab7d901f6d04bd227b20f1328819a692a11eb5deb297cfa8e9441c5ee002f"
+    },
+    {
+      "name": "uzudi-motion-guide.png",
+      "role": "pose-for-pose-locomotion-reference",
+      "sha256": "39cd6d90140ff2cc102316b7c3280aa8be2c8502a79a48d237f93be0fcc471c3"
     }
   ],
   "identity": [
@@ -77,5 +86,16 @@
       4,
       5
     ]
+  },
+  "locomotionReference": {
+    "character": "uzudi",
+    "states": [
+      "walk",
+      "run",
+      "jump",
+      "land"
+    ],
+    "pose_order": "same guide row/column order",
+    "guide": "../source-v14/uzudi-motion-guide.png"
   }
 }

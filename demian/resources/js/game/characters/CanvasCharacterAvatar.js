@@ -6,6 +6,7 @@ import {
     characterPresentationPose,
 } from './CharacterMotionProfile.js';
 import { CHARACTER_CANONICAL_BODY } from './CharacterVisualContract.js';
+import { groundLocomotionState } from './CharacterLocomotionModel.js';
 
 const DIRECTIONS = Object.freeze(['e', 'se', 's', 'sw', 'w', 'nw', 'n', 'ne']);
 
@@ -52,10 +53,9 @@ export default class CanvasCharacterAvatar {
         if (actor?.motionState && this.animator.has(actor.motionState)) {
             return actor.motionState;
         }
-        if (speed > 6.4 && this.animator.has('sprint')) return 'sprint';
-        if (speed > 3.1 && this.animator.has('run')) return 'run';
-        if (speed > 0.12 && this.animator.has('walk')) return 'walk';
-        return 'idle';
+        return groundLocomotionState(speed, this.state, {
+            sprintAllowed: speed > (this.state === 'sprint' ? 6 : 6.6),
+        });
     }
 
     sync(actor, deltaTime = 0) {
@@ -67,13 +67,14 @@ export default class CanvasCharacterAvatar {
         this.position = { x, z };
         this.group.position = this.position;
 
-        let speed = Number(actor.speed);
+        const explicitSpeed = Number.isFinite(Number(actor.speed));
+        let speed = explicitSpeed ? Number(actor.speed) : NaN;
         if (!Number.isFinite(speed)) {
             const vx = Number(actor.velocity?.x) || 0;
             const vz = Number(actor.velocity?.z) || 0;
             speed = Math.hypot(vx, vz);
         }
-        if ((!Number.isFinite(speed) || speed <= 0) && this.lastPosition && dt > 0.0001) {
+        if (!explicitSpeed && (!Number.isFinite(speed) || speed <= 0) && this.lastPosition && dt > 0.0001) {
             speed = Math.hypot(x - this.lastPosition.x, z - this.lastPosition.z) / dt;
         }
         this.speedValue = Number.isFinite(speed) ? speed : 0;
@@ -107,6 +108,8 @@ export default class CanvasCharacterAvatar {
             jumpVelocity: actor.jumpVelocity ?? actor.velocityY ?? 0,
             jumpForce: actor.jumpForce ?? 6.5,
             physicsOwnsJumpHeight: Boolean(this.atlas.render?.physicsOwnsJumpHeight),
+            movementSpeed: this.speedValue, travelledDistance: actor.travelledDistance ?? null,
+            stateTime: this.stateTime,
         });
 
         const target = characterPresentationPose({

@@ -47,9 +47,9 @@
       "image": "darya-spritesheet-v14-runtime.png",
       "dimensions": [
         1536,
-        1536
+        1920
       ],
-      "decodedMiB": 9.0,
+      "decodedMiB": 11.25,
       "maxSlideHeight": 41.43,
       "geometry": "passed"
     },
@@ -60,9 +60,9 @@
       "image": "darya-spritesheet-v14-lite.png",
       "dimensions": [
         1024,
-        832
+        960
       ],
-      "decodedMiB": 3.25,
+      "decodedMiB": 3.75,
       "maxSlideHeight": 41.43,
       "geometry": "passed"
     },
@@ -112,9 +112,9 @@
       "image": "setayesh-spritesheet-v14-runtime.png",
       "dimensions": [
         1536,
-        1536
+        1920
       ],
-      "decodedMiB": 9.0,
+      "decodedMiB": 11.25,
       "maxSlideHeight": 42.29,
       "geometry": "passed"
     },
@@ -125,9 +125,9 @@
       "image": "setayesh-spritesheet-v14-lite.png",
       "dimensions": [
         1024,
-        832
+        960
       ],
-      "decodedMiB": 3.25,
+      "decodedMiB": 3.75,
       "maxSlideHeight": 42.72,
       "geometry": "passed"
     },
@@ -177,9 +177,9 @@
       "image": "uzudi-spritesheet-v14-runtime.png",
       "dimensions": [
         1536,
-        1536
+        1920
       ],
-      "decodedMiB": 9.0,
+      "decodedMiB": 11.25,
       "maxSlideHeight": 43.15,
       "geometry": "passed"
     },
@@ -190,9 +190,9 @@
       "image": "uzudi-spritesheet-v14-lite.png",
       "dimensions": [
         1024,
-        832
+        960
       ],
-      "decodedMiB": 3.25,
+      "decodedMiB": 3.75,
       "maxSlideHeight": 44.02,
       "geometry": "passed"
     },
@@ -242,9 +242,9 @@
       "image": "negar-spritesheet-v14-runtime.png",
       "dimensions": [
         1536,
-        1536
+        1920
       ],
-      "decodedMiB": 9.0,
+      "decodedMiB": 11.25,
       "maxSlideHeight": 43.15,
       "geometry": "passed"
     },
@@ -255,9 +255,9 @@
       "image": "negar-spritesheet-v14-lite.png",
       "dimensions": [
         1024,
-        832
+        960
       ],
-      "decodedMiB": 3.25,
+      "decodedMiB": 3.75,
       "maxSlideHeight": 44.02,
       "geometry": "passed"
     },
@@ -307,9 +307,9 @@
       "image": "tiam-spritesheet-v14-runtime.png",
       "dimensions": [
         1536,
-        1536
+        1920
       ],
-      "decodedMiB": 9.0,
+      "decodedMiB": 11.25,
       "maxSlideHeight": 42.29,
       "geometry": "passed"
     },
@@ -320,9 +320,9 @@
       "image": "tiam-spritesheet-v14-lite.png",
       "dimensions": [
         1024,
-        832
+        960
       ],
-      "decodedMiB": 3.25,
+      "decodedMiB": 3.75,
       "maxSlideHeight": 42.72,
       "geometry": "passed"
     },
@@ -372,9 +372,9 @@
       "image": "amirreza-spritesheet-v14-runtime.png",
       "dimensions": [
         1536,
-        1536
+        1920
       ],
-      "decodedMiB": 9.0,
+      "decodedMiB": 11.25,
       "maxSlideHeight": 44.88,
       "geometry": "passed"
     },
@@ -385,9 +385,9 @@
       "image": "amirreza-spritesheet-v14-lite.png",
       "dimensions": [
         1024,
-        832
+        960
       ],
-      "decodedMiB": 3.25,
+      "decodedMiB": 3.75,
       "maxSlideHeight": 45.31,
       "geometry": "passed"
     }

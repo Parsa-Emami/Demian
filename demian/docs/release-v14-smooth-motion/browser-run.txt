@@ -1,0 +1,5 @@
+Browser QA passed: 320x568
+Browser QA passed: 390x844
+Browser QA passed: 844x390
+Browser QA passed: 768x1024
+Browser QA passed: 1440x900

@@ -27,6 +27,17 @@ def apply_animation_timing(atlas, cycle_counts=None):
         source = animation.get('sharedFrameSource')
         if source in ('walk', 'run', 'jump'):
             animations[name] = {**deepcopy(animations[source]), 'sharedFrameSource': source}
-    atlas['motion']['timingVersion'] = 'natural-locomotion-v1'
+    atlas['motion']['timingVersion'] = 'natural-locomotion-v2'
     atlas['motion']['jumpProgressDriver'] = 'vertical-velocity'
+    winged = atlas.get('movement', {}).get('style') == 'wing-assisted'
+    atlas['motion']['locomotionProfile'] = {
+        'id': 'uzudi-wing-assisted-v2' if winged else 'shared-ground-v2',
+        'referenceCharacter': 'uzudi' if winged else None,
+        'phaseDriver': 'travelled-distance',
+        'strideLengths': {'walk': 3.4, 'run': 6, 'sprint': 6.4},
+        'maxStrideHz': 1.55, 'landingSeconds': .16,
+        'jumpBufferSeconds': .14, 'coyoteSeconds': .11,
+        'heldApexGravity': .65, 'releasedRiseGravity': 1.65,
+        'recoveryInterruptible': True,
+    }
     return atlas

@@ -27,6 +27,7 @@ export const INPUT_CONTEXTS = Object.freeze({
         actions: Object.freeze({
             run: held('shift', 'run'),
             jump: pressed('space', 'jump'),
+            jumpHeld: held('space', 'jumpHeld'),
             celebrate: pressed('o', 'celebrate'),
             ability: pressed('q', 'ability'),
             slide: pressed('arrowdown', 'g', 'slide'),

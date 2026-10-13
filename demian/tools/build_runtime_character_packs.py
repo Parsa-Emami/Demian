@@ -2,11 +2,13 @@
 
 Every original frame name, animation duration, direction and foot pivot survives.
 Consecutive interpolated names share a physical cell, avoiding 672 decoded cells.
-Run/sprint remain at least 24 distinct poses per second in the lite pack.
+Walk/run/jump use denser samples than idle and celebrations. Both variants
+preserve all action endpoints and have bounded decoded image budgets.
 """
 from collections import defaultdict
 from copy import deepcopy
 import argparse
+import hashlib
 import json
 import math
 from pathlib import Path
@@ -15,7 +17,12 @@ from character_art_registry import ACTIVE_CHARACTER_ROSTER
 
 ROOT = Path(__file__).resolve().parents[1]
 ASSETS = ROOT / 'public/assets/characters'
-VARIANTS = {'runtime': (96, 3), 'lite': (64, 4)}
+VARIANTS = {'runtime': (96, 2), 'lite': (64, 3)}
+FAMILY_SAMPLING = {
+    'runtime': {'turn': 1, 'idle': 2, 'walk': 2, 'run': 2, 'jump': 2, 'land': 3, 'slide': 3, 'celebrate': 3},
+    'lite': {'turn': 1, 'idle': 2, 'walk': 3, 'run': 3, 'jump': 3, 'land': 3, 'slide': 4, 'celebrate': 4},
+}
+DECODED_BUDGETS = {'runtime': 12 * 1024**2, 'lite': 4 * 1024**2}
 
 
 def build(slug, variant, cell, stride):
@@ -28,7 +35,7 @@ def build(slug, variant, cell, stride):
         families[name.rsplit('_', 1)[0]].append(name)
     aliases, selected = {}, []
     for family, names in families.items():
-        step = 1 if family == 'turn' else 2 if family == 'idle' else stride
+        step = FAMILY_SAMPLING[variant].get(family.split('_')[0], stride)
         indices = set(range(0, len(names), step)) | {len(names) - 1}
         # Preserve action phase endpoints, especially takeoff/jump/fall.
         for animation in source['animations'].values():
@@ -44,6 +51,8 @@ def build(slug, variant, cell, stride):
             aliases[name] = names[nearest]
     columns = 16
     rows = math.ceil(len(selected) / columns)
+    if columns * rows * cell * cell * 4 > DECODED_BUDGETS[variant]:
+        raise ValueError(f'{slug}/{variant} exceeds the decoded image budget')
     sheet = Image.new('RGBA', (columns * cell, rows * cell))
     rectangles = {}
     with Image.open(directory / source['meta']['image']) as image:
@@ -60,8 +69,10 @@ def build(slug, variant, cell, stride):
     temporary.replace(directory / filename)
     atlas['frames'] = {name: rectangles[target] for name, target in aliases.items()}
     atlas['meta'].update(variant=variant, image=filename, size={'w': sheet.width, 'h': sheet.height},
+        imageRevision=hashlib.sha256((directory / filename).read_bytes()).hexdigest(),
         frameSize={'w': cell, 'h': cell}, grid={'columns': columns, 'rows': rows},
         packedPhysicalFrameCount=len(selected), runtimeSamplingStride=stride,
+        runtimeFamilySampling=FAMILY_SAMPLING[variant],
         decodedBytes=sheet.width * sheet.height * 4,
         runtimeSource=source_path.name)
     atlas_path = directory / f'{slug}-atlas-v14-{variant}.json'
@@ -71,6 +82,7 @@ def build(slug, variant, cell, stride):
     return {'slug': slug, 'variant': variant, 'physicalFrames': len(selected),
         'animationFrameNames': len(aliases), 'decodedBytes': sheet.width * sheet.height * 4,
         'downloadBytes': (directory / filename).stat().st_size,
+        'samplingByFamily': FAMILY_SAMPLING[variant],
         'sourceDecodedBytes': source['meta']['size']['w'] * source['meta']['size']['h'] * 4}
 
 

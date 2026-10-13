@@ -27,7 +27,7 @@
       "h": 80
     }
   },
-  "timingVersion": "natural-locomotion-v1",
+  "timingVersion": "natural-locomotion-v2",
   "states": {
     "idle": {
       "frames": 40,
