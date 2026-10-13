@@ -10,7 +10,7 @@ const read=p=>readFileSync(join(root,p),'utf8');
 assert.deepEqual(GAME_CATALOG.map(g=>g.id),['open-world','dino-run']);
 assert(GAME_CATALOG.every(g=>g.orientation==='any'));
 const entries=JSON.parse(read('public/assets/characters/character-manifest-v4.json')).characters;
-assert.deepEqual(entries.map(c=>c.slug).sort(),['darya','negar','setayesh','uzudi']);
+assert.deepEqual(entries.map(c=>c.slug).sort(),['darya','negar','setayesh','tiam','uzudi']);
 assert.equal(entries.find(c=>c.slug==='darya').pack_version,14);
 assert.equal(JSON.parse(read('package.json')).version,'14.0.0');
 assert.equal(read('FINAL-VERSION.txt').trim(),'14.0.0');

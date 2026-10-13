@@ -5,7 +5,7 @@ from pathlib import Path
 from PIL import Image
 
 ROOT = Path(__file__).resolve().parents[1]
-SLUGS = ('darya', 'setayesh', 'uzudi', 'negar')
+SLUGS = ('darya', 'setayesh', 'uzudi', 'negar', 'tiam')
 VARIANTS = {'desktop': 144, 'mobile': 112, 'compact': 80, 'runtime': 96, 'lite': 64}
 
 
@@ -59,6 +59,10 @@ def main():
                 slide_heights.append((box[3] - box[1]) / cell / atlas['render']['referenceBodyHeightRatio'] * 58)
             assert max(slide_heights) < 46, f'{slug}: slide visually reaches the bird at {max(slide_heights):.2f}px'
             if slug == 'darya': assert atlas['companion']['bakedIntoEveryFrame']
+            if slug == 'tiam':
+                assert atlas['companion']['id'] == 'homayoun'
+                assert atlas['companion']['anchor'] == 'shoulder'
+                assert atlas['companion']['bakedIntoEveryFrame'] and atlas['companion']['collisionIndependent']
             if slug == 'uzudi': assert 'slide' in atlas['movement']['wingPoweredStates']
             if slug == 'negar':
                 ability = atlas['abilities'][0]
@@ -69,7 +73,7 @@ def main():
                 'dimensions': list(image.size), 'decodedMiB': round(image.width * image.height * 4 / 2**20, 2),
                 'maxSlideHeight': round(max(slide_heights), 2), 'geometry': 'passed'})
         assert (directory / f'{slug}-preview-v14.png').is_file()
-    for slug in ('tiam', 'ronak'):
+    for slug in ('ronak',):
         assert not (base / slug).exists() and not (base / '_legacy_archive' / slug).exists()
     out = ROOT / 'docs/release-v14'
     out.mkdir(parents=True, exist_ok=True)

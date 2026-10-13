@@ -1,0 +1,7 @@
+Use case: precise-object-edit. Edit target: provided TIAM RGBA sprite sheet.
+Keep all 48 existing full-body key poses, same faces, same black wavy hair, navy shirt, magenta-black plaid trousers, cream sneakers and pixel-art style. Keep EXACTLY 8 columns and 6 rows with those same poses in the same order.
+Necessary corrections:
+1. Give EVERY sprite generous transparent gutters: uniformly shrink all figures about 18 percent within their own cell and recenter them, so heads/feet/hair/bug never overlap or touch another cell's figure. Each figure must be completely isolated. Especially the jumping pose in ROW 4 COLUMN 5 must be separated from the walking sprite above it. Do not cut limbs or hair.
+2. The bottom celebration row (ROW 6), COLUMN 2 and COLUMN 5 are missing Homayoun. Add ONE clearly visible identical cute orange-brown cockroach with two expressive eyes, six little legs and two antennae on the SHOULDER just outside the hair near the shirt collar in those two sprites. Keep one Homayoun securely on a shoulder in ALL 48 sprites; no hand-held bug, no duplicates.
+3. In every front or side view, keep BLACK RECTANGULAR EYEGLASS FRAMES visibly present even when eyes blink or close. In particular ROW 6 COLUMN 5, the happy closed-eye celebration MUST still wear Tiam's glasses.
+Output: clean square production sprite source, genuine transparent alpha with transparent gaps. No floor, no background color, no glow, no poster, no labels, no lines. Same exact 8x6 pose order, same art identity.

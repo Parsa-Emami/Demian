@@ -38,6 +38,15 @@
       "pack_version": 14,
       "manifest": "negar/manifests/character_manifest_v4.json",
       "has_shipped_assets": true
+    },
+    {
+      "slug": "tiam",
+      "display_name": "TIAM / تیام",
+      "production_status": "gold_standard_production",
+      "is_default_active": false,
+      "pack_version": 14,
+      "manifest": "tiam/manifests/character_manifest_v4.json",
+      "has_shipped_assets": true
     }
   ]
 }

@@ -20,6 +20,7 @@ const BUILTIN_DEFINITIONS = Object.freeze(BUILTIN_CHARACTER_SLUGS.map((slug) => 
     settings: { walk_speed: 3.55, run_speed: 6.9, sprint_speed: 7.6, jump_force: 6.8,
         air_control: .58, scale: 1, asset_pack_version: 14, production_status: 'gold_standard_production',
         ...(slug === 'darya' ? { companion: 'pishi', companion_always_visible: true } : {}),
+        ...(slug === 'tiam' ? { companion: 'homayoun', companion_always_visible: true } : {}),
         ...(slug === 'uzudi' ? { locomotion_style: 'wing-assisted', signature_action: 'slide' } : {}),
     },
 })));

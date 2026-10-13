@@ -1,0 +1,26 @@
+{
+  "character_key": "tiam",
+  "pack_version": 14,
+  "status": "validated_in_emulated_browser",
+  "checks": {
+    "asset_geometry": "passed",
+    "all_variants": true,
+    "packed_frames_per_full_variant": 672,
+    "runtime_physical_cells": 254,
+    "lite_physical_cells": 201,
+    "runtime_selection": "passed",
+    "touch_slide_under_bird": "passed",
+    "keyboard_jump": "passed",
+    "shared_game_selection": "passed",
+    "open_world_movement": "passed",
+    "open_world_jump": "passed",
+    "open_world_celebrate": "passed",
+    "js_tests_passed": 273,
+    "php_tests_passed": 13
+  },
+  "evidence": "../../../../../docs/release-v14-tiam/README.fa.md",
+  "limitations": [
+    "Physical phone GPU/FPS/battery not measured"
+  ],
+  "date": "2026-10-13"
+}

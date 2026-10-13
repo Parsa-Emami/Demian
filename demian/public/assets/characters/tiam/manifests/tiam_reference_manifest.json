@@ -1,0 +1,25 @@
+{
+  "character_key": "tiam",
+  "pack_version": 14,
+  "reference": "../tiam-preview-v14.png",
+  "master": "../source-v14/master.png",
+  "runner_motion": "../source-v14/runner-motion.png",
+  "slide_master": "../source-v14/slides.png",
+  "inputs": [
+    {
+      "name": "image(20261013-050855).png",
+      "role": "identity-and-clothing",
+      "sha256": "b71dbaed1c6a0b2924f6fc6f33645c8db45d399ceaa6677b11ded03df7d0bfb7"
+    },
+    {
+      "name": "photo_5778503039776919837_w(2).jpg",
+      "role": "setayesh-style",
+      "sha256": "743165a6e0f6a34fb5b851c2ae1e9d6a2008fe066f8f92fabe9a1486d01607af"
+    },
+    {
+      "name": "photo_5778503039776919720_w(2).jpg",
+      "role": "darya-style",
+      "sha256": "0f7dd660767c7fcf8c50ca922ff9fbafb7dc3d425791adfbd6473a52c7790a44"
+    }
+  ]
+}

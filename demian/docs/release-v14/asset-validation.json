@@ -260,6 +260,71 @@
       "decodedMiB": 3.25,
       "maxSlideHeight": 44.02,
       "geometry": "passed"
+    },
+    {
+      "character": "tiam",
+      "variant": "desktop",
+      "frames": 672,
+      "image": "tiam-spritesheet-v14-desktop.png",
+      "dimensions": [
+        3456,
+        4032
+      ],
+      "decodedMiB": 53.16,
+      "maxSlideHeight": 42.0,
+      "geometry": "passed"
+    },
+    {
+      "character": "tiam",
+      "variant": "mobile",
+      "frames": 672,
+      "image": "tiam-spritesheet-v14-mobile.png",
+      "dimensions": [
+        2688,
+        3136
+      ],
+      "decodedMiB": 32.16,
+      "maxSlideHeight": 42.17,
+      "geometry": "passed"
+    },
+    {
+      "character": "tiam",
+      "variant": "compact",
+      "frames": 672,
+      "image": "tiam-spritesheet-v14-compact.png",
+      "dimensions": [
+        1920,
+        2240
+      ],
+      "decodedMiB": 16.41,
+      "maxSlideHeight": 42.46,
+      "geometry": "passed"
+    },
+    {
+      "character": "tiam",
+      "variant": "runtime",
+      "frames": 672,
+      "image": "tiam-spritesheet-v14-runtime.png",
+      "dimensions": [
+        1536,
+        1536
+      ],
+      "decodedMiB": 9.0,
+      "maxSlideHeight": 42.29,
+      "geometry": "passed"
+    },
+    {
+      "character": "tiam",
+      "variant": "lite",
+      "frames": 672,
+      "image": "tiam-spritesheet-v14-lite.png",
+      "dimensions": [
+        1024,
+        832
+      ],
+      "decodedMiB": 3.25,
+      "maxSlideHeight": 42.72,
+      "geometry": "passed"
     }
   ]
 }

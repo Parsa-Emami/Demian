@@ -47,13 +47,15 @@ test('each installed character has a dense, independent low slide cycle and corr
 });
 
 test('old character selections recover to Darya while the new characters persist across games', () => {
-    let value = 'tiam';
+    let value = 'ronak';
     const storage = { getItem: () => value, setItem: (_key, next) => { value = next; } };
     const service = new CharacterVisualService({ storage });
     assert.equal(service.activeSlug, 'darya');
     service.setActiveSlug('uzudi'); assert.equal(value, 'uzudi');
     service.setActiveSlug('ronak'); assert.equal(service.activeSlug, 'uzudi');
     assert.equal(new CharacterVisualService({ storage }).activeSlug, 'uzudi');
+    service.setActiveSlug('tiam'); assert.equal(value, 'tiam');
+    assert.equal(new CharacterVisualService({ storage }).activeSlug, 'tiam');
 });
 
 test('switching characters evicts older decoded sheets while retaining recent and in-use images', async () => {

@@ -1,0 +1,178 @@
+{
+  "date": "2026-10-13",
+  "status": "passed",
+  "generator": "built-in image_gen",
+  "authored_source_poses": 80,
+  "retained_source_poses": 71,
+  "full_atlas_frames": 672,
+  "semantic_animations": 24,
+  "variants": [
+    "desktop",
+    "mobile",
+    "compact",
+    "runtime",
+    "lite"
+  ],
+  "all_asset_variants_checked": 25,
+  "tiam_geometry": [
+    {
+      "character": "tiam",
+      "variant": "desktop",
+      "frames": 672,
+      "image": "tiam-spritesheet-v14-desktop.png",
+      "dimensions": [
+        3456,
+        4032
+      ],
+      "decodedMiB": 53.16,
+      "maxSlideHeight": 42.0,
+      "geometry": "passed"
+    },
+    {
+      "character": "tiam",
+      "variant": "mobile",
+      "frames": 672,
+      "image": "tiam-spritesheet-v14-mobile.png",
+      "dimensions": [
+        2688,
+        3136
+      ],
+      "decodedMiB": 32.16,
+      "maxSlideHeight": 42.17,
+      "geometry": "passed"
+    },
+    {
+      "character": "tiam",
+      "variant": "compact",
+      "frames": 672,
+      "image": "tiam-spritesheet-v14-compact.png",
+      "dimensions": [
+        1920,
+        2240
+      ],
+      "decodedMiB": 16.41,
+      "maxSlideHeight": 42.46,
+      "geometry": "passed"
+    },
+    {
+      "character": "tiam",
+      "variant": "runtime",
+      "frames": 672,
+      "image": "tiam-spritesheet-v14-runtime.png",
+      "dimensions": [
+        1536,
+        1536
+      ],
+      "decodedMiB": 9.0,
+      "maxSlideHeight": 42.29,
+      "geometry": "passed"
+    },
+    {
+      "character": "tiam",
+      "variant": "lite",
+      "frames": 672,
+      "image": "tiam-spritesheet-v14-lite.png",
+      "dimensions": [
+        1024,
+        832
+      ],
+      "decodedMiB": 3.25,
+      "maxSlideHeight": 42.72,
+      "geometry": "passed"
+    }
+  ],
+  "javascript": {
+    "tests": 273,
+    "passed": 273,
+    "failed": 0
+  },
+  "php": {
+    "tool": "phpunit",
+    "result": "passed",
+    "tests": 13,
+    "passed": 13,
+    "assertions": 89,
+    "duration_ms": 273
+  },
+  "browser": {
+    "status": "passed",
+    "viewports": [
+      {
+        "width": 320,
+        "height": 568
+      },
+      {
+        "width": 390,
+        "height": 844
+      },
+      {
+        "width": 844,
+        "height": 390
+      },
+      {
+        "width": 768,
+        "height": 1024
+      },
+      {
+        "width": 1440,
+        "height": 900
+      }
+    ],
+    "functional": [
+      {
+        "character": "darya",
+        "selectedViaUi": true,
+        "nativeTouchSlide": "passed",
+        "birdCleared": "passed",
+        "keyboardJump": "passed"
+      },
+      {
+        "character": "setayesh",
+        "selectedViaUi": true,
+        "nativeTouchSlide": "passed",
+        "birdCleared": "passed",
+        "keyboardJump": "passed"
+      },
+      {
+        "character": "uzudi",
+        "selectedViaUi": true,
+        "nativeTouchSlide": "passed",
+        "birdCleared": "passed",
+        "keyboardJump": "passed"
+      },
+      {
+        "character": "negar",
+        "selectedViaUi": true,
+        "nativeTouchSlide": "passed",
+        "birdCleared": "passed",
+        "keyboardJump": "passed"
+      },
+      {
+        "character": "tiam",
+        "selectedViaUi": true,
+        "nativeTouchSlide": "passed",
+        "birdCleared": "passed",
+        "keyboardJump": "passed"
+      },
+      {
+        "sharedSelectionAcrossGames": "passed",
+        "relevantActionPicker": "passed"
+      },
+      {
+        "character": "tiam",
+        "openWorldMovement": "passed",
+        "openWorldJump": "passed",
+        "openWorldCelebrate": "passed",
+        "homayoun": "shoulder companion loaded"
+      },
+      {
+        "character": "negar",
+        "keyboardAbility": "passed",
+        "nativeTouchAbility": "passed",
+        "cooldownPreventsStacking": "passed",
+        "otherCharactersKeepControls": "passed"
+      }
+    ]
+  },
+  "protected_files_changed": []
+}

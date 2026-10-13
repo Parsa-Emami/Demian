@@ -21,7 +21,7 @@ CHARACTERS = ROOT / 'public/assets/characters'
 VERSION, COLS, ROWS, WORK = 14, 24, 28, 224
 VARIANTS = {'desktop': 144, 'mobile': 112, 'compact': 80}
 DIRECTIONS = ('s', 'sw', 'w', 'nw', 'n', 'ne', 'e', 'se')
-LABELS = {'darya': 'DARYA / دریا', 'setayesh': 'SETAYESH / ستایش', 'uzudi': 'UZUDI / اوزودی', 'negar': 'NEGAR / نگار'}
+LABELS = {'darya': 'DARYA / دریا', 'setayesh': 'SETAYESH / ستایش', 'uzudi': 'UZUDI / اوزودی', 'negar': 'NEGAR / نگار', 'tiam': 'TIAM / تیام'}
 COUNTS = {'idle': 40, 'walk': 64, 'run': 80, 'jump': 48, 'slide': 64, 'land': 24, 'celebrate': 64}
 BODY_RATIO, FOOT_PIVOT = .70, .94
 GUTTER = 12  # > maximum in-between displacement (14 * 0.5) + downsample filter
@@ -162,16 +162,36 @@ def build_character(slug):
     slides = Image.open(directory / 'source-v14/slides.png').convert('RGBA')
     assert np.asarray(main)[:, :, 3].min() == 0 and np.asarray(motion)[:, :, 3].min() == 0
     main_rows = extract(main, layout['mainRowBounds'])
-    if layout.get('motionColumns'):
+    motion_keys = {'run'}
+    extra_motion = {}
+    if layout.get('motionRowStates'):
+        motion_rows = extract(motion, layout['motionRowBounds'], columns=layout.get('motionColumns', 8))
+        if len(motion_rows) != len(layout['motionRowStates']):
+            raise ValueError('Every motion source row must declare its animation state')
+        for state, row in zip(layout['motionRowStates'], motion_rows):
+            extra_motion.setdefault(state, []).extend(row)
+        run_poses = extra_motion.pop('run')
+        motion_keys.update(extra_motion)
+    elif layout.get('motionColumns'):
         run_poses = sum(extract(motion, layout['motionRowBounds'], columns=layout['motionColumns']), [])
     else:
         top = motion.crop((0, 0, motion.width, round(motion.height * .62)))
         run_poses = extract(top, [0, top.height])[0]
     slide_rows = extract(slides, [0, round(slides.height * .5), slides.height], columns=4)
-    poses = dict(zip(('turn', 'idle', 'walk', 'jump', 'crouch', 'land', 'celebrate'), main_rows))
+    main_states = layout.get('mainStates', ('turn', 'idle', 'walk', 'jump', 'crouch', 'land', 'celebrate'))
+    if len(main_states) != len(main_rows):
+        raise ValueError('Every main source row must declare its animation state')
+    poses = dict(zip(main_states, main_rows))
     poses.update(run=run_poses, slide=slide_rows[0] + slide_rows[1])
+    poses.update(extra_motion)
     if layout.get('slideRows'):
         poses['slide'] = sum([slide_rows[i] for i in layout['slideRows']], [])
+    # A curated source may exclude a pose whose shoulder is occluded. Selection
+    # happens before interpolation, and the source pose count stays accurate.
+    for state, indices in layout.get('poseSelections', {}).items():
+        if not indices or any(not isinstance(i, int) or i < 0 or i >= len(poses[state]) for i in indices):
+            raise ValueError(f'Invalid authored pose selection for {state}')
+        poses[state] = [poses[state][i] for i in indices]
     for target, source in layout.get('turnMirrorFrom', {}).items():
         poses['turn'][DIRECTIONS.index(target)] = poses['turn'][DIRECTIONS.index(source)].transpose(Image.Transpose.FLIP_LEFT_RIGHT)
     if slug == 'darya':
@@ -190,13 +210,13 @@ def build_character(slug):
     def cap_scale(keys, factor):
         selected = [p for key in keys for p in poses[key]]
         return min(factor, (WORK - GUTTER * 2) / max(p.width for p in selected), (WORK * FOOT_PIVOT - GUTTER) / max(p.height for p in selected))
-    base_scale = cap_scale(('turn', 'idle', 'walk', 'jump', 'land', 'celebrate'), base_scale)
-    motion_scale = cap_scale(('run',), motion_scale)
+    base_scale = cap_scale(tuple(key for key in ('turn', 'idle', 'walk', 'jump', 'land', 'celebrate') if key not in motion_keys), base_scale)
+    motion_scale = cap_scale(tuple(motion_keys), motion_scale)
     slide_scale = cap_scale(('slide',), slide_scale)
     body_ratio = float(np.median([p.height * base_scale for p in poses['idle']]) / WORK)
     sequences = {'idle': dense(poses['idle'], COUNTS['idle'], base_scale, head_fraction=head_fraction, skin_ratio=skin_ratio)}
     for key in ('walk', 'run', 'jump', 'slide', 'land'):
-        sequence = dense(poses[key], COUNTS[key], slide_scale if key == 'slide' else motion_scale if key == 'run' else base_scale, key not in ('jump', 'land'), head_fraction, skin_ratio)
+        sequence = dense(poses[key], COUNTS[key], slide_scale if key == 'slide' else motion_scale if key in motion_keys else base_scale, key not in ('jump', 'land'), head_fraction, skin_ratio)
         sequences[key + '_e'] = sequence
         sequences[key + '_w'] = [p.transpose(Image.Transpose.FLIP_LEFT_RIGHT) for p in sequence]
     sequences['celebrate'] = dense(poses['celebrate'], COUNTS['celebrate'], base_scale, head_fraction=head_fraction, skin_ratio=skin_ratio)
@@ -225,6 +245,10 @@ def build_character(slug):
         'wave': anim(names['celebrate'][:32], 32, False),
         'celebrate': anim(names['celebrate'], 64, False), 'win': anim(names['celebrate'], 48, False),
     }
+    # Optional semantic aliases use existing authored clips without claiming
+    # extra physical frames or changing the other characters' animation sets.
+    for alias, target in layout.get('animationAliases', {}).items():
+        animations[alias] = {**animations[target], 'sharedFrameSource': target}
     if slug == 'darya':
         animations['companion'] = anim(names['idle'], 24)
     signature = layout.get('signatureAbility')
@@ -260,6 +284,9 @@ def build_character(slug):
         }
         if slug == 'darya':
             atlas['companion'] = {'id': 'pishi', 'alwaysVisible': True, 'bakedIntoEveryFrame': True, 'collisionIndependent': True}
+        if layout.get('companion'):
+            atlas['companion'] = {**layout['companion'], 'alwaysVisible': True,
+                'bakedIntoEveryFrame': True, 'collisionIndependent': True}
         if signature:
             atlas['abilities'] = [signature]
         sheet.save(directory / image_name, optimize=True)
@@ -281,15 +308,18 @@ def build_character(slug):
     md = directory / 'manifests'
     write_json(md / 'character_manifest_v4.json', manifest)
     write_json(md / f'{slug}_animation_manifest.json', animation_manifest)
-    write_json(md / f'{slug}_identity_contract.json', {'character_key': slug, 'reference': '../source-v14/reference.jpg',
+    reference = layout.get('referenceAsset', '../source-v14/reference.jpg')
+    write_json(md / f'{slug}_identity_contract.json', {'character_key': slug, 'reference': reference,
         'invariants': layout['identity'], 'pack_version': VERSION})
     write_json(md / f'{slug}_reference_manifest.json', {'character_key': slug, 'pack_version': VERSION,
-        'reference': '../source-v14/reference.jpg', 'master': '../source-v14/master.png', 'runner_motion': '../source-v14/runner-motion.png', 'slide_master': '../source-v14/slides.png'})
+        'reference': reference, 'master': '../source-v14/master.png', 'runner_motion': '../source-v14/runner-motion.png', 'slide_master': '../source-v14/slides.png',
+        **({'inputs': layout['referenceInputs']} if layout.get('referenceInputs') else {})})
     write_json(md / f'{slug}_motion_profile.json', {'character_key': slug, 'pack_version': VERSION,
         'physics_owns_jump_height': True, 'dedicated_slide': True, 'uniform_body_scale': True,
         'style': atlas['movement']['style'], 'wing_powered_states': atlas['movement']['wingPoweredStates']})
     write_json(md / f'{slug}_ability_profile.json', {'character_key': slug, 'pack_version': VERSION,
-        'runner_physics': 'shared', 'combat': False, 'companion_collision_independent': slug == 'darya',
+        'runner_physics': 'shared', 'combat': False, 'companion_collision_independent': slug == 'darya' or bool(layout.get('companion')),
+        **({'companion': atlas['companion']} if layout.get('companion') else {}),
         **({'abilities': [signature]} if signature else {})})
 
 

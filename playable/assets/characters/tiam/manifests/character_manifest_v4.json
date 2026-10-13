@@ -1,0 +1,58 @@
+{
+  "character_key": "tiam",
+  "display_name": "TIAM / تیام",
+  "production_status": "gold_standard_production",
+  "pack_version": 14,
+  "source_of_truth": {
+    "reference_manifest": "tiam_reference_manifest.json"
+  },
+  "identity_contract": "tiam_identity_contract.json",
+  "animations": [
+    "idle",
+    "breathe",
+    "blink",
+    "ready",
+    "walk",
+    "run",
+    "sprint",
+    "takeoff",
+    "jump",
+    "fall",
+    "land",
+    "slide",
+    "crouch",
+    "turn",
+    "wave",
+    "celebrate",
+    "win",
+    "tiptoe",
+    "hop",
+    "hover",
+    "skid",
+    "dash",
+    "dodge",
+    "salute"
+  ],
+  "runtime": {
+    "identity_manifest": "tiam_identity_contract.json",
+    "asset_manifest": "character_manifest_v4.json",
+    "animation_manifest": "tiam_animation_manifest.json",
+    "motion_profile": "tiam_motion_profile.json",
+    "ability_profile": "tiam_ability_profile.json",
+    "qa_status": "tiam_qa_status.json",
+    "atlas_targets": {
+      "desktop": {
+        "atlas": "../tiam-atlas-v14-desktop.json",
+        "image": "../tiam-spritesheet-v14-desktop.png"
+      },
+      "mobile": {
+        "atlas": "../tiam-atlas-v14-mobile.json",
+        "image": "../tiam-spritesheet-v14-mobile.png"
+      },
+      "compact": {
+        "atlas": "../tiam-atlas-v14-compact.json",
+        "image": "../tiam-spritesheet-v14-compact.png"
+      }
+    }
+  }
+}

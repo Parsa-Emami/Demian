@@ -40,6 +40,8 @@ class CharacterManagerTest extends TestCase
             ['darya', 'DARYA / دریا'],
             ['setayesh', 'SETAYESH / ستایش'],
             ['uzudi', 'UZUDI / اوزودی'],
+            ['negar', 'NEGAR / نگار'],
+            ['tiam', 'TIAM / تیام'],
         ] as [$slug, $name]) {
             $response->assertJsonFragment([
                 'slug' => $slug,
@@ -49,7 +51,7 @@ class CharacterManagerTest extends TestCase
         }
 
         // Updated asset pack versions
-        $packVersions = ['darya' => 14, 'setayesh' => 14, 'uzudi' => 14];
+        $packVersions = ['darya' => 14, 'setayesh' => 14, 'uzudi' => 14, 'negar' => 14, 'tiam' => 14];
 
         foreach ($packVersions as $slug => $version) {
             $response->assertJsonFragment([
@@ -58,5 +60,23 @@ class CharacterManagerTest extends TestCase
                 'atlas_url' => asset("assets/characters/{$slug}/{$slug}-atlas-v{$version}-mobile.json"),
             ]);
         }
+    }
+
+    public function test_tiam_survives_reseeding_and_can_be_activated_with_homayoun(): void
+    {
+        $this->seed(BuiltinCharacterSeeder::class);
+        $tiam = Character::query()->where('slug', 'tiam')->firstOrFail();
+        $id = $tiam->id;
+
+        $this->seed(BuiltinCharacterSeeder::class);
+        $this->assertSame($id, Character::query()->where('slug', 'tiam')->firstOrFail()->id);
+        $this->assertSame('homayoun', $tiam->fresh()->settings['companion']);
+
+        $this->postJson("/characters/{$id}/activate")
+            ->assertOk()
+            ->assertJsonPath('data.slug', 'tiam')
+            ->assertJsonPath('data.is_active', true);
+        $this->getJson('/characters')->assertOk()->assertJsonPath('data.0.slug', 'tiam');
+        $this->assertSame(1, Character::query()->where('is_active', true)->count());
     }
 }

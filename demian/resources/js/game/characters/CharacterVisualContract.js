@@ -40,6 +40,7 @@ export const CHARACTER_PACK_VERSION_OVERRIDES = Object.freeze({
     parsa: 9,
     setayesh: 14,
     negar: 14,
+    tiam: 14,
     sorkhi: 9,
     'taher-db': 9,
     uzudi: 14,
@@ -53,7 +54,7 @@ export function characterPackVersion(slug) {
 // Only installed, validated packs are playable. Future slots are not roster entries.
 export const BUILTIN_CHARACTER_SLUGS = ALL_MANIFEST_SLUGS;
 // Retired save/API entries must never re-enter the playable roster.
-export const RETIRED_CHARACTER_SLUGS = Object.freeze(['tiam', 'ronak']);
+export const RETIRED_CHARACTER_SLUGS = Object.freeze(['ronak']);
 export function isRetiredCharacter(slug) {
     return RETIRED_CHARACTER_SLUGS.includes(String(slug ?? '').trim().toLowerCase());
 }

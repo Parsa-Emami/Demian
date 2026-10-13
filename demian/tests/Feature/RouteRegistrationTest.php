@@ -26,13 +26,14 @@ class RouteRegistrationTest extends TestCase
 
     public function test_required_routes_are_reachable_through_the_http_kernel(): void
     {
+        $version = json_decode(file_get_contents(base_path('package.json')), true)['version'];
         $this->get('/')
             ->assertOk()
             ->assertViewIs('demian')
             ->assertSee('Character manager')
             ->assertSee('data-character-manager', false)
             ->assertSee('data-demian-scene', false)
-            ->assertSee('data-runtime-version="9.1.0-atomic-pixel2d"', false);
+            ->assertSee('data-runtime-version="' . $version . '-mobile-runner"', false);
 
         $this->getJson('/api/v1/events/active')
             ->assertOk()

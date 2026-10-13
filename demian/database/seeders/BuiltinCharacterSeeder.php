@@ -17,7 +17,7 @@ class BuiltinCharacterSeeder extends Seeder
             throw new \RuntimeException('The shipped character roster is missing.');
         }
         DB::transaction(function () use ($entries): void {
-            Character::query()->where('is_builtin', true)->whereIn('slug', ['tiam', 'ronak'])->delete();
+            Character::query()->where('is_builtin', true)->whereIn('slug', ['ronak'])->delete();
             Character::query()->update(['is_active' => false]);
             foreach ($entries as $entry) {
                 $slug = $entry['slug'];
@@ -34,7 +34,11 @@ class BuiltinCharacterSeeder extends Seeder
                         'asset_pack_version' => $version,
                         'production_status' => $entry['production_status'],
                         'locomotion_style' => $slug === 'uzudi' ? 'wing-assisted' : 'ground-runner',
-                        'companion' => $slug === 'darya' ? 'pishi' : null,
+                        'companion' => match ($slug) {
+                            'darya' => 'pishi',
+                            'tiam' => 'homayoun',
+                            default => null,
+                        },
                     ],
                 ]);
             }

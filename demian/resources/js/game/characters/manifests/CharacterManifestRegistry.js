@@ -11,7 +11,7 @@
  *     "new character onboarding" flow should read from this registry
  *     rather than from ad hoc hardcoded arrays.
  *
- * The active roster includes Darya, Setayesh, Uzudi and Negar, rebuilt from references.
+ * The active roster includes Darya, Setayesh, Uzudi, Negar and Tiam, rebuilt from references.
  */
 
 const MANIFEST_URL_PATH = 'assets/characters/character-manifest-v4.json';
@@ -32,6 +32,7 @@ const EMBEDDED_ROSTER_SNAPSHOT = Object.freeze({
         Object.freeze({ slug: 'setayesh', displayName: 'SETAYESH / ستایش', productionStatus: 'gold_standard_production', isDefaultActive: false, packVersion: 14 }),
         Object.freeze({ slug: 'uzudi', displayName: 'UZUDI / اوزودی', productionStatus: 'gold_standard_production', isDefaultActive: false, packVersion: 14 }),
         Object.freeze({ slug: 'negar', displayName: 'NEGAR / نگار', productionStatus: 'gold_standard_production', isDefaultActive: false, packVersion: 14 }),
+        Object.freeze({ slug: 'tiam', displayName: 'TIAM / تیام', productionStatus: 'gold_standard_production', isDefaultActive: false, packVersion: 14 }),
     ]),
 });
 

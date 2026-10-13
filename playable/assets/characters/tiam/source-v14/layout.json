@@ -1,0 +1,83 @@
+{
+  "mainStates": [
+    "turn",
+    "idle",
+    "walk",
+    "jump",
+    "crouch",
+    "celebrate"
+  ],
+  "mainRowBounds": [
+    0,
+    209,
+    418,
+    627,
+    836,
+    1045,
+    1254
+  ],
+  "motionColumns": 8,
+  "motionRowBounds": [
+    0,
+    341,
+    683,
+    1024
+  ],
+  "motionRowStates": [
+    "run",
+    "run",
+    "land"
+  ],
+  "referenceAsset": "../tiam-preview-v14.png",
+  "referenceInputs": [
+    {
+      "name": "image(20261013-050855).png",
+      "role": "identity-and-clothing",
+      "sha256": "b71dbaed1c6a0b2924f6fc6f33645c8db45d399ceaa6677b11ded03df7d0bfb7"
+    },
+    {
+      "name": "photo_5778503039776919837_w(2).jpg",
+      "role": "setayesh-style",
+      "sha256": "743165a6e0f6a34fb5b851c2ae1e9d6a2008fe066f8f92fabe9a1486d01607af"
+    },
+    {
+      "name": "photo_5778503039776919720_w(2).jpg",
+      "role": "darya-style",
+      "sha256": "0f7dd660767c7fcf8c50ca922ff9fbafb7dc3d425791adfbd6473a52c7790a44"
+    }
+  ],
+  "identity": [
+    "shoulder-length center-parted wavy dark hair",
+    "black rectangular eyeglasses",
+    "dark navy Demian shirt",
+    "magenta and black plaid wide-leg trousers",
+    "cream canvas sneakers",
+    "small cute cockroach Homayoun perched on the shoulder"
+  ],
+  "companion": {
+    "id": "homayoun",
+    "displayName": "همایون",
+    "species": "cockroach",
+    "anchor": "shoulder"
+  },
+  "animationAliases": {
+    "tiptoe": "walk",
+    "hop": "jump",
+    "hover": "jump",
+    "skid": "run",
+    "dash": "run",
+    "dodge": "slide",
+    "salute": "wave"
+  },
+  "poseSelections": {
+    "celebrate": [
+      0,
+      1,
+      2,
+      3,
+      5,
+      6,
+      7
+    ]
+  }
+}

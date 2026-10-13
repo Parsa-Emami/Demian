@@ -8,7 +8,7 @@ import { resolve, extname } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { tmpdir } from 'node:os';
 const root = resolve(import.meta.dirname, '../..');
-const out = resolve(root, 'demian/docs/release-v14-negar');
+const out = resolve(process.env.DEMIAN_QA_REPORT_DIR ?? resolve(root, 'demian/docs/release-v14-negar'));
 const screenshotDir = resolve(process.env.DEMIAN_QA_SCREENSHOT_DIR ?? resolve(tmpdir(), 'demian-negar-v14-runner'));
 const playable = resolve(root, 'playable');
 const modulePath = process.env.DEMIAN_PLAYWRIGHT_MODULE;
@@ -45,9 +45,9 @@ try {
         await page.waitForFunction(() => window.demianGameApplication?.sessionState === 'menu', null, { timeout: 45000 });
         await page.evaluate(() => document.fonts.ready);
         const roster = await page.evaluate(() => window.demianGameApplication.characterManager.characters.map((c) => c.slug));
-        assert.deepEqual(roster.sort(), ['darya', 'negar', 'setayesh', 'uzudi']);
+        assert.deepEqual(roster.sort(), ['darya', 'negar', 'setayesh', 'tiam', 'uzudi']);
         await page.locator('.menu-character-button').click();
-        await page.waitForFunction(() => [...document.querySelectorAll('[data-character-preview]')].length === 4
+        await page.waitForFunction(() => [...document.querySelectorAll('[data-character-preview]')].length === 5
             && [...document.querySelectorAll('[data-character-preview]')].every((e) => e.dataset.previewState === 'ready'));
         if (width === 390) await page.screenshot({ path: resolve(screenshotDir, 'characters-390.png') });
         await page.locator('.character-sheet-close').click();
@@ -74,7 +74,7 @@ try {
             await page.evaluate(() => { const m = window.demianGameApplication.activeGame.model; m.spawnIn = 999; m.obstacles = []; });
             await page.waitForFunction(() => window.demianGameApplication.activeGame.model.y === 0);
             const touch = await context.newCDPSession(page);
-            for (const slug of ['darya', 'setayesh', 'uzudi', 'negar']) {
+            for (const slug of ['darya', 'setayesh', 'uzudi', 'negar', 'tiam']) {
                 await page.locator('.play-toolbar [data-sidebar-toggle]').click();
                 await page.waitForFunction(() => document.querySelector('[data-character-manager]').dataset.sidebarState === 'expanded');
                 await page.locator(`[data-select-character="${slug}"]`).click();
@@ -114,15 +114,57 @@ try {
             await page.screenshot({ path: resolve(screenshotDir, 'night-390.png') });
             await page.evaluate(() => { const a=window.demianGameApplication; const g=a.activeGame;g.model.time=32;g.render(1); });
             await page.screenshot({ path: resolve(screenshotDir, 'sunset-390.png') });
-            await page.evaluate(() => window.demianGameApplication.launchGame('open-world'));
+            await page.evaluate(async () => {
+                const app = window.demianGameApplication;
+                await app.characterManager.select(app.characterManager.characters.find(c => c.slug === 'negar').id);
+                await app.launchGame('open-world');
+            });
             await page.waitForFunction(() => window.demianGameApplication.activeGameId==='open-world' && window.demianGameApplication.sessionState==='playing');
             const world = await page.evaluate(() => ({ slug: window.demianGameApplication.characterManager.activeRecord.slug,
                 slugs: window.demianGameApplication.characterManager.characters.map(c=>c.slug),
                 actions: [...document.querySelectorAll('[data-mobile-actions-tray] [data-input-press]')].map(b=>b.dataset.inputPress) }));
-            assert.equal(world.slug, 'negar'); assert.deepEqual(world.slugs.sort(), ['darya','negar','setayesh','uzudi']);
+            assert.equal(world.slug, 'negar'); assert.deepEqual(world.slugs.sort(), ['darya','negar','setayesh','tiam','uzudi']);
             assert.deepEqual(world.actions, ['slide','celebrate','ability','speak','quickSave']);
             await page.waitForTimeout(400); await page.screenshot({path:resolve(screenshotDir,'world-390.png')});
             results.functional.push({sharedSelectionAcrossGames:'passed',relevantActionPicker:'passed'});
+            await page.evaluate(async () => {
+                const app = window.demianGameApplication;
+                await app.characterManager.select(app.characterManager.characters.find(c => c.slug === 'tiam').id);
+                app.activeGame.focusCharacter({close:true});
+            });
+            await page.waitForFunction(() => {
+                const e = window.demianGameApplication.characterManager.activeEntity;
+                return e.character.slug === 'tiam' && e.grounded && e.stateLock <= 0;
+            });
+            const startX = await page.evaluate(() => window.demianGameApplication.characterManager.activeEntity.group.position.x);
+            await page.keyboard.down('d'); await page.keyboard.down('Shift');
+            await page.waitForTimeout(300);
+            assert.ok((await page.evaluate(() => window.demianGameApplication.characterManager.activeEntity.group.position.x)) > startX + .03);
+            await page.keyboard.up('d'); await page.keyboard.up('Shift');
+            await page.waitForFunction(() => {
+                const e = window.demianGameApplication.characterManager.activeEntity;
+                return e.grounded && e.stateLock <= 0;
+            });
+            await page.keyboard.down('Space');
+            await page.waitForFunction(() => !window.demianGameApplication.characterManager.activeEntity.grounded);
+            await page.keyboard.up('Space');
+            await page.waitForFunction(() => {
+                const e = window.demianGameApplication.characterManager.activeEntity;
+                return e.grounded && e.stateLock <= 0;
+            });
+            await page.keyboard.press('o');
+            await page.waitForFunction(() => window.demianGameApplication.characterManager.activeEntity.state === 'celebrate');
+            const tiam = await page.evaluate(() => {
+                const e = window.demianGameApplication.characterManager.activeEntity;
+                return {slug:e.character.slug,version:e.atlas.meta.version,companion:e.atlas.companion.id};
+            });
+            assert.deepEqual(tiam, {slug:'tiam',version:14,companion:'homayoun'});
+            await page.screenshot({path:resolve(screenshotDir,'tiam-world-390.png')});
+            results.functional.push({character:'tiam',openWorldMovement:'passed',openWorldJump:'passed',openWorldCelebrate:'passed',homayoun:'shoulder companion loaded'});
+            await page.evaluate(async () => {
+                const app = window.demianGameApplication;
+                await app.characterManager.select(app.characterManager.characters.find(c => c.slug === 'negar').id);
+            });
             await page.waitForFunction(() => {
                 const e=window.demianGameApplication.characterManager.activeEntity;
                 return e.grounded && e.stateLock<=0;

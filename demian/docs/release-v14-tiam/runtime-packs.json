@@ -1,0 +1,20 @@
+[
+  {
+    "slug": "tiam",
+    "variant": "runtime",
+    "physicalFrames": 254,
+    "animationFrameNames": 672,
+    "decodedBytes": 9437184,
+    "downloadBytes": 1894706,
+    "sourceDecodedBytes": 33718272
+  },
+  {
+    "slug": "tiam",
+    "variant": "lite",
+    "physicalFrames": 201,
+    "animationFrameNames": 672,
+    "decodedBytes": 3407872,
+    "downloadBytes": 745275,
+    "sourceDecodedBytes": 33718272
+  }
+]

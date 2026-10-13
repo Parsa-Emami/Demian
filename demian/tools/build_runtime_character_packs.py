@@ -6,6 +6,7 @@ Run/sprint remain at least 24 distinct poses per second in the lite pack.
 """
 from collections import defaultdict
 from copy import deepcopy
+import argparse
 import json
 import math
 from pathlib import Path
@@ -74,8 +75,12 @@ def build(slug, variant, cell, stride):
 
 
 if __name__ == '__main__':
-    reports = [build(slug, variant, *settings) for slug in ACTIVE_CHARACTER_ROSTER for variant, settings in VARIANTS.items()]
-    output = ROOT / 'docs/release-v14-negar/runtime-packs.json'
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--characters', nargs='+', choices=ACTIVE_CHARACTER_ROSTER, default=list(ACTIVE_CHARACTER_ROSTER))
+    parser.add_argument('--report', default='docs/release-v14-negar/runtime-packs.json')
+    args = parser.parse_args()
+    reports = [build(slug, variant, *settings) for slug in args.characters for variant, settings in VARIANTS.items()]
+    output = ROOT / args.report
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(json.dumps(reports, ensure_ascii=False, indent=2) + '\n')
     for item in reports:

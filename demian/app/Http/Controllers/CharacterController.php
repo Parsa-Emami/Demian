@@ -21,7 +21,7 @@ class CharacterController extends Controller
     {
         $installed = array_column((new \App\Services\Characters\CharacterIdentityService())->roster()['characters'] ?? [], 'slug');
         $characters = Character::query()
-            ->whereNotIn('slug', ['tiam', 'ronak'])
+            ->whereNotIn('slug', ['ronak'])
             ->where(fn ($query) => $query->where('is_builtin', false)->orWhereIn('slug', $installed))
             ->orderByDesc('is_active')
             ->orderByDesc('is_builtin')
@@ -109,7 +109,7 @@ class CharacterController extends Controller
 
     public function activate(Character $character): JsonResponse
     {
-        abort_if(in_array($character->slug, ['tiam', 'ronak'], true), 404);
+        abort_if(in_array($character->slug, ['ronak'], true), 404);
         abort_if($character->is_builtin && (new \App\Services\Characters\CharacterIdentityService())->characterEntry($character->slug) === null, 404);
         DB::transaction(function () use ($character): void {
             Character::query()
