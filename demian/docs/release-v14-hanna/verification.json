@@ -1,0 +1,144 @@
+{
+  "status": "passed",
+  "base_commit": "aeee646cee8fef46f9edccba64302483f35811c6",
+  "date": "2026-10-14",
+  "javascript": {
+    "tests": 294,
+    "failed": 0,
+    "evidence": "js-tests.txt"
+  },
+  "php": {
+    "tool": "phpunit",
+    "result": "passed",
+    "tests": 15,
+    "passed": 15,
+    "assertions": 134,
+    "duration_ms": 374,
+    "evidence": "php-tests.txt"
+  },
+  "geometry": {
+    "characters": 7,
+    "variants": 35,
+    "evidence": "../release-v14/asset-validation.json"
+  },
+  "browser": {
+    "version": "153.0.8010.0",
+    "mode": "headless software Chromium; device dimensions emulated",
+    "viewports": [
+      [
+        320,
+        568
+      ],
+      [
+        390,
+        844
+      ],
+      [
+        844,
+        390
+      ],
+      [
+        768,
+        1024
+      ],
+      [
+        1440,
+        900
+      ]
+    ],
+    "hanna": [
+      {
+        "character": "hanna",
+        "selectedViaUi": true,
+        "nativeTouchSlide": "passed",
+        "birdCleared": "passed",
+        "keyboardJump": "passed",
+        "cadence": {
+          "playbackRate": 0.6501851705933338,
+          "cycleCount": 1,
+          "strideHz": 0.9102592388306674,
+          "expectedImageRevision": "4291ec6dc0f09c3f238ee2a4fd044da8789b0e183aa33ad3e95d2f3ccb7e9912",
+          "imageRevision": "4291ec6dc0f09c3f238ee2a4fd044da8789b0e183aa33ad3e95d2f3ccb7e9912"
+        },
+        "jump": {
+          "states": [
+            "takeoff",
+            "jump",
+            "fall"
+          ],
+          "distinctFrames": 24
+        }
+      },
+      {
+        "character": "hanna",
+        "smoothWorldLocomotion": {
+          "state": "sprint",
+          "phase": 0.18353652469172982,
+          "frequency": 0.9872048676322739,
+          "profile": "hanna-elegant-v2",
+          "distance": 1.2179893024086628
+        },
+        "bufferedLandingJump": "passed",
+        "heldJumpHeight": "passed",
+        "motion": {
+          "firstPeak": 1.2685018604151244,
+          "secondPeak": 0.7444791666666662,
+          "rebounds": 1,
+          "neutralJumpDrift": 5.43107958606015e-09,
+          "jumps": [
+            {
+              "states": [
+                "takeoff",
+                "jump",
+                "fall"
+              ],
+              "distinctFrames": 28,
+              "monotonic": true
+            },
+            {
+              "states": [
+                "takeoff",
+                "jump",
+                "fall"
+              ],
+              "distinctFrames": 24,
+              "monotonic": true
+            }
+          ]
+        }
+      }
+    ],
+    "errors": [],
+    "physicalPhoneMeasured": false,
+    "evidence": "browser-checks.json"
+  },
+  "build": {
+    "status": "passed",
+    "bundle": "app-BGJksTsx.js",
+    "evidence": "build.txt"
+  },
+  "hanna": {
+    "source_art_poses": 80,
+    "selected_key_poses": 60,
+    "animation_frame_names": 672,
+    "semantic_states": 24,
+    "variants": 5,
+    "locomotion_profile": "hanna-elegant-v2",
+    "sources": [
+      {
+        "asset": "master.png",
+        "sha256": "726aa2864c9f3bebb78f4dbdfff4045dab6691a0f918a5672e9d0b2d6b07fc00"
+      },
+      {
+        "asset": "runner-motion.png",
+        "sha256": "01cb6dc623cfe188d036a4917aedc811f8be4770672e05f002bfb088029886ec"
+      },
+      {
+        "asset": "slides.png",
+        "sha256": "d29de2a6b4994ea2418284c9ac47bb76ed1d53def2573022dc59cbcbf06c4fa5"
+      }
+    ],
+    "prompts": "imagegen-prompts.json"
+  },
+  "protected_files_modified": []
+}

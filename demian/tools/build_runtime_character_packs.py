@@ -79,6 +79,16 @@ def build(slug, variant, cell, stride):
     temporary = atlas_path.with_suffix('.json.tmp')
     temporary.write_text(json.dumps(atlas, ensure_ascii=False, separators=(',', ':')) + '\n')
     temporary.replace(atlas_path)
+    # Keep onboarding manifests complete: runtime/lite are shipped targets too,
+    # while the animation manifest still points at the full authored source.
+    manifest_path = directory / 'manifests/character_manifest_v4.json'
+    if manifest_path.is_file():
+        manifest = json.loads(manifest_path.read_text())
+        manifest['runtime']['atlas_targets'][variant] = {
+            'atlas': f'../{slug}-atlas-v14-{variant}.json',
+            'image': f'../{filename}',
+        }
+        manifest_path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + '\n')
     return {'slug': slug, 'variant': variant, 'physicalFrames': len(selected),
         'animationFrameNames': len(aliases), 'decodedBytes': sheet.width * sheet.height * 4,
         'downloadBytes': (directory / filename).stat().st_size,

@@ -1,0 +1,26 @@
+{
+  "character_key": "hanna",
+  "pack_version": 14,
+  "physics_owns_jump_height": true,
+  "dedicated_slide": true,
+  "uniform_body_scale": true,
+  "style": "ground-runner",
+  "wing_powered_states": [],
+  "locomotion_profile": {
+    "id": "hanna-elegant-v2",
+    "referenceCharacter": null,
+    "phaseDriver": "travelled-distance",
+    "strideLengths": {
+      "walk": 4.1,
+      "run": 6.8,
+      "sprint": 7.4
+    },
+    "maxStrideHz": 1.3,
+    "landingSeconds": 0.16,
+    "jumpBufferSeconds": 0.14,
+    "coyoteSeconds": 0.11,
+    "heldApexGravity": 0.65,
+    "releasedRiseGravity": 1.65,
+    "recoveryInterruptible": true
+  }
+}

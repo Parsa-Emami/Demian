@@ -1,0 +1,5 @@
+hanna / desktop: 672 frames, 3456x4032
+hanna / mobile: 672 frames, 2688x3136
+hanna / compact: 672 frames, 1920x2240
+hanna/runtime: 316 cells, 11.25 MiB decoded, 1.74 MiB transfer
+hanna/lite: 239 cells, 3.75 MiB decoded, 0.66 MiB transfer

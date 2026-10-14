@@ -1,0 +1,33 @@
+{
+  "character_key": "hanna",
+  "pack_version": 14,
+  "motion_version": "natural-locomotion-v2",
+  "status": "validated_in_emulated_browser",
+  "date": "2026-10-14",
+  "checks": {
+    "asset_geometry": "passed",
+    "all_variants": true,
+    "source_key_poses": 60,
+    "animation_frame_names": 672,
+    "semantic_animation_states": 24,
+    "runtime_physical_cells": 316,
+    "lite_physical_cells": 239,
+    "js_tests_passed": 294,
+    "php_tests_passed": 15,
+    "php_assertions": 134,
+    "locomotion_profile": "hanna-elegant-v2",
+    "browser": "passed",
+    "native_touch_slide": "passed",
+    "runner_bird_cleared": "passed",
+    "keyboard_jump": "passed",
+    "open_world_movement": "passed",
+    "buffered_landing_jump": "passed",
+    "held_jump_height": "passed",
+    "neutral_jump_no_forced_drift": "passed",
+    "atlas_image_revision_matches_loaded_png": "passed"
+  },
+  "evidence": "../../../../../docs/release-v14-hanna/README.fa.md",
+  "limitations": [
+    "Physical phone GPU/FPS/battery not measured"
+  ]
+}

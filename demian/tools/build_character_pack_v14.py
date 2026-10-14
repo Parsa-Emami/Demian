@@ -226,7 +226,8 @@ def build_character(slug):
         sequence = dense(poses[key], COUNTS[key], slide_scale if key == 'slide' else motion_scale if key in motion_keys else base_scale, key not in ('jump', 'land'), head_fraction, skin_ratio)
         sequences[key + '_e'] = sequence
         sequences[key + '_w'] = [p.transpose(Image.Transpose.FLIP_LEFT_RIGHT) for p in sequence]
-    sequences['celebrate'] = dense(poses['celebrate'], COUNTS['celebrate'], base_scale, head_fraction=head_fraction, skin_ratio=skin_ratio)
+    sequences['celebrate'] = dense(poses['celebrate'], COUNTS['celebrate'],
+        motion_scale if 'celebrate' in motion_keys else base_scale, head_fraction=head_fraction, skin_ratio=skin_ratio)
     sequences['turn'] = [Image.fromarray(normalized(p, base_scale, head_fraction, skin_ratio)) for p in poses['turn']]
     assert sum(map(len, sequences.values())) == COLS * ROWS == 672
     names = {key: [f'{key}_{i:03}' for i in range(len(frames))] for key, frames in sequences.items()}
@@ -295,7 +296,7 @@ def build_character(slug):
                 'bakedIntoEveryFrame': True, 'collisionIndependent': True}
         if signature:
             atlas['abilities'] = [signature]
-        apply_animation_timing(atlas, layout.get('locomotionCycleCounts'))
+        apply_animation_timing(atlas, layout.get('locomotionCycleCounts'), layout.get('locomotionProfile'))
         animations = atlas['animations']
         sheet.save(directory / image_name, optimize=True)
         atlas['meta']['imageRevision'] = hashlib.sha256((directory / image_name).read_bytes()).hexdigest()

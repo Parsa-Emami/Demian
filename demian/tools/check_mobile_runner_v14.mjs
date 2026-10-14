@@ -124,6 +124,7 @@ try {
                 assert.ok(cadence.strideHz > 0 && cadence.strideHz < 1.7);
                 assert.equal(cadence.imageRevision,cadence.expectedImageRevision,'Cached sprites must match the new atlas');
                 if (slug === 'tiam') assert.ok(cadence.playbackRate < .55);
+                if (slug === 'hanna') assert.ok(cadence.strideHz <= 1.3, 'Hanna retains her elegant stride cadence');
                 await page.keyboard.down('Space');
                 await page.waitForFunction(() => window.demianGameApplication.activeGame.model.y > 8);
                 assert.ok(['takeoff','jump','fall'].includes(await page.evaluate(()=>window.demianGameApplication.activeGame.avatar.state)));
@@ -298,6 +299,10 @@ try {
                     await page.waitForTimeout(250);
                 }
                 assert.ok(gait.distance>.08 && gait.frequency>.1 && gait.frequency<=1.55,`${slug} must actually move`);
+                if (slug === 'hanna') {
+                    assert.equal(gait.profile, 'hanna-elegant-v2');
+                    assert.ok(gait.frequency<=1.3);
+                }
                 await page.waitForFunction(() => {
                     const e=window.demianGameApplication.characterManager.activeEntity;
                     return e.grounded && e.stateLock<=0 && e.speed()<.015;
@@ -348,6 +353,12 @@ try {
                     assert.ok(jump.distinctFrames>=10 && jump.monotonic);
                 }
                 results.functional.push({character:slug,smoothWorldLocomotion:gait,bufferedLandingJump:'passed',heldJumpHeight:'passed',motion});
+                if (slug === 'hanna') {
+                    await page.keyboard.press('o');
+                    await page.waitForFunction(() => window.demianGameApplication.characterManager.activeEntity.state === 'celebrate');
+                    await page.waitForTimeout(180);
+                    await page.screenshot({path:resolve(screenshotDir,'hanna-world-390.png')});
+                }
             }
 
         } else await page.screenshot({path:resolve(screenshotDir,`runner-${width}x${height}.png`)});

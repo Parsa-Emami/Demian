@@ -21,7 +21,7 @@ def main():
         counts = layout.get('locomotionCycleCounts', {})
         for variant in VARIANTS:
             path = directory / f'{slug}-atlas-v14-{variant}.json'
-            atlas = apply_animation_timing(json.loads(path.read_text()), counts)
+            atlas = apply_animation_timing(json.loads(path.read_text()), counts, layout.get('locomotionProfile'))
             atlas['meta']['imageRevision'] = hashlib.sha256((directory / atlas['meta']['image']).read_bytes()).hexdigest()
             write(path, atlas, compact=variant in ('runtime', 'lite'))
         path = directory / 'manifests' / f'{slug}_animation_manifest.json'

@@ -165,6 +165,7 @@ export default class SpriteCharacter {
 
         const selectionRingColor = {
             amirreza: 0x67e8f9,
+            hanna: 0xd6ab67,
             parsa: 0xfbbf24,
             uzudi: 0x8b5cf6,
         }[character.slug] ?? 0xff66d9;

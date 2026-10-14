@@ -62,6 +62,16 @@
       "locomotion_style": "wing-assisted",
       "manifest": "amirreza/manifests/character_manifest_v4.json",
       "has_shipped_assets": true
+    },
+    {
+      "slug": "hanna",
+      "display_name": "HANNA / حنا",
+      "production_status": "gold_standard_production",
+      "is_default_active": false,
+      "pack_version": 14,
+      "locomotion_style": "ground-runner",
+      "manifest": "hanna/manifests/character_manifest_v4.json",
+      "has_shipped_assets": true
     }
   ]
 }

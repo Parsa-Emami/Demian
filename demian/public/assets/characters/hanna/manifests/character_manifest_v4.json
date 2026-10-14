@@ -1,0 +1,66 @@
+{
+  "character_key": "hanna",
+  "display_name": "HANNA / حنا",
+  "production_status": "gold_standard_production",
+  "pack_version": 14,
+  "source_of_truth": {
+    "reference_manifest": "hanna_reference_manifest.json"
+  },
+  "identity_contract": "hanna_identity_contract.json",
+  "animations": [
+    "idle",
+    "breathe",
+    "blink",
+    "ready",
+    "walk",
+    "run",
+    "sprint",
+    "takeoff",
+    "jump",
+    "fall",
+    "land",
+    "slide",
+    "crouch",
+    "turn",
+    "wave",
+    "celebrate",
+    "win",
+    "tiptoe",
+    "hop",
+    "hover",
+    "skid",
+    "dash",
+    "dodge",
+    "salute"
+  ],
+  "runtime": {
+    "identity_manifest": "hanna_identity_contract.json",
+    "asset_manifest": "character_manifest_v4.json",
+    "animation_manifest": "hanna_animation_manifest.json",
+    "motion_profile": "hanna_motion_profile.json",
+    "ability_profile": "hanna_ability_profile.json",
+    "qa_status": "hanna_qa_status.json",
+    "atlas_targets": {
+      "desktop": {
+        "atlas": "../hanna-atlas-v14-desktop.json",
+        "image": "../hanna-spritesheet-v14-desktop.png"
+      },
+      "mobile": {
+        "atlas": "../hanna-atlas-v14-mobile.json",
+        "image": "../hanna-spritesheet-v14-mobile.png"
+      },
+      "compact": {
+        "atlas": "../hanna-atlas-v14-compact.json",
+        "image": "../hanna-spritesheet-v14-compact.png"
+      },
+      "runtime": {
+        "atlas": "../hanna-atlas-v14-runtime.json",
+        "image": "../hanna-spritesheet-v14-runtime.png"
+      },
+      "lite": {
+        "atlas": "../hanna-atlas-v14-lite.json",
+        "image": "../hanna-spritesheet-v14-lite.png"
+      }
+    }
+  }
+}

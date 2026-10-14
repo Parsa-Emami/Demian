@@ -1,8 +1,9 @@
 """Shared V14 motion metadata; does not alter any artwork or sprite rectangles."""
 from copy import deepcopy
+from math import isfinite
 
 
-def apply_animation_timing(atlas, cycle_counts=None):
+def apply_animation_timing(atlas, cycle_counts=None, locomotion_profile=None):
     cycles = cycle_counts or {}
     animations = atlas['animations']
     for name in ('walk', 'tiptoe', 'run', 'sprint', 'skid', 'dash'):
@@ -40,4 +41,23 @@ def apply_animation_timing(atlas, cycle_counts=None):
         'heldApexGravity': .65, 'releasedRiseGravity': 1.65,
         'recoveryInterruptible': True,
     }
+    # Authored presentation can change stride cadence without changing gameplay
+    # velocity, jump physics or input forgiveness for any character.
+    if locomotion_profile:
+        allowed = {'id', 'strideLengths', 'maxStrideHz'}
+        if not isinstance(locomotion_profile, dict) or set(locomotion_profile) - allowed:
+            raise ValueError('Unsupported locomotion presentation field')
+        profile = atlas['motion']['locomotionProfile']
+        identity = locomotion_profile.get('id', profile['id'])
+        if not isinstance(identity, str) or not identity.strip():
+            raise ValueError('Locomotion profile id must be non-empty')
+        strides = locomotion_profile.get('strideLengths', profile['strideLengths'])
+        if not isinstance(strides, dict) or set(strides) != {'walk', 'run', 'sprint'}:
+            raise ValueError('Stride lengths must define walk, run and sprint')
+        if any(isinstance(v, bool) or not isinstance(v, (int, float)) or not isfinite(v) or not 0 < v <= 20 for v in strides.values()):
+            raise ValueError('Stride lengths must be finite and positive')
+        maximum = locomotion_profile.get('maxStrideHz', profile['maxStrideHz'])
+        if isinstance(maximum, bool) or not isinstance(maximum, (int, float)) or not isfinite(maximum) or not .4 <= maximum <= 1.55:
+            raise ValueError('Stride frequency must stay within .4–1.55 Hz')
+        profile.update(id=identity, strideLengths=deepcopy(strides), maxStrideHz=maximum)
     return atlas

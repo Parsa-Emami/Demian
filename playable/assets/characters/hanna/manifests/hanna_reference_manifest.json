@@ -1,0 +1,25 @@
+{
+  "character_key": "hanna",
+  "pack_version": 14,
+  "reference": "../hanna-reference-v14.png",
+  "master": "../source-v14/master.png",
+  "runner_motion": "../source-v14/runner-motion.png",
+  "slide_master": "../source-v14/slides.png",
+  "inputs": [
+    {
+      "name": "image(20261014-035805).png",
+      "role": "hanna-identity-and-outfit",
+      "sha256": "58289e67e7d142a06342bf76ec5bdaac4f34ddf47ecf5c57f7a3294ef40c4215"
+    },
+    {
+      "name": "image(20261012-163804).png",
+      "role": "darya-chibi-pixel-art-style",
+      "sha256": "bbc896349d0b5c010bfb6f3e125115615e5400f232bca1c6fa88eaed460f2c8f"
+    },
+    {
+      "name": "hanna-reference-v14.png",
+      "role": "generated-identity-design-board",
+      "sha256": "ecfdcc97ef22eeb3be0d105ac7acbd1acbac6c9ef651fbc945fdd424452af195"
+    }
+  ]
+}

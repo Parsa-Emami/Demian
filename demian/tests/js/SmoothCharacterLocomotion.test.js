@@ -16,15 +16,18 @@ const read = (slug, variant = 'runtime') => JSON.parse(readFileSync(resolve(impo
     `../../public/assets/characters/${slug}/${slug}-atlas-v14-${variant}.json`), 'utf8'));
 const close = (a, b, label = '') => assert.ok(Math.abs(a - b) < 1e-8, `${label}: ${a} != ${b}`);
 
-test('travelled-distance gait has the same phase at 30, 60 and 120 Hz on all six characters', () => {
+test('travelled-distance gait has the same phase at 30, 60 and 120 Hz on every installed character', () => {
     for (const slug of BUILTIN_CHARACTER_SLUGS) for (const hz of [30, 60, 120]) {
         const avatar = new CanvasCharacterAvatar({slug, atlas:read(slug), image:{}});
         const actor = {position:{x:0,z:0},speed:6,forward:{x:1,z:0},grounded:true};
         for (let i = 0; i < hz * 1.9; i++) avatar.sync(actor, 1 / hz);
-        close(avatar.animator.locomotionPhase, 1.9, `${slug}/${hz}`);
-        close(avatar.animator.locomotionFrequency, 1);
+        const frequency = Math.min(avatar.atlas.motion.locomotionProfile.maxStrideHz,
+            6 / avatar.atlas.motion.locomotionProfile.strideLengths.run);
+        close(avatar.animator.locomotionPhase, frequency * 1.9, `${slug}/${hz}`);
+        close(avatar.animator.locomotionFrequency, frequency);
         const a = avatar.animator;
-        close(((a.frameIndex+a.frameProgress())/a.currentFrames().length*a.animation.cycleCount)%1,.9);
+        close(((a.frameIndex+a.frameProgress())/a.currentFrames().length*a.animation.cycleCount)%1,
+            (frequency * 1.9) % 1);
     }
 });
 
@@ -43,11 +46,12 @@ test('walk/run/sprint switches preserve fractional foot phase even in Tiam two-c
     for (const slug of BUILTIN_CHARACTER_SLUGS) {
         const a = new FrameAnimator(read(slug));a.play('walk');
         advanceCharacterAnimation(a,{state:'walk',movementSpeed:3.4,deltaTime:.23});
+        const phase = 3.4 * .23 / a.atlas.motion.locomotionProfile.strideLengths.walk;
         for (const state of ['run','sprint','walk']) {
             a.play(state,{preservePhase:true});
             advanceCharacterAnimation(a,{state,movementSpeed:6,deltaTime:0});
-            close(a.locomotionPhase,.23,slug);
-            close((a.frameIndex+a.frameProgress())/a.currentFrames().length*a.animation.cycleCount,.23,slug);
+            close(a.locomotionPhase,phase,slug);
+            close((a.frameIndex+a.frameProgress())/a.currentFrames().length*a.animation.cycleCount,phase,slug);
         }
     }
 });

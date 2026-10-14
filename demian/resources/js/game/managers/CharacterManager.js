@@ -669,6 +669,7 @@ export default class CharacterManager {
             uzudi: '#8b5cf6',
             setayesh: '#f43f5e',
             negar: '#e6bc45',
+            hanna: '#d6ab67',
         }[record.slug] ?? '#a78bfa';
 
         context.imageSmoothingEnabled = false;

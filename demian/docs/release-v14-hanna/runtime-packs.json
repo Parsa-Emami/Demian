@@ -1,0 +1,40 @@
+[
+  {
+    "slug": "hanna",
+    "variant": "runtime",
+    "physicalFrames": 316,
+    "animationFrameNames": 672,
+    "decodedBytes": 11796480,
+    "downloadBytes": 1829160,
+    "samplingByFamily": {
+      "turn": 1,
+      "idle": 2,
+      "walk": 2,
+      "run": 2,
+      "jump": 2,
+      "land": 3,
+      "slide": 3,
+      "celebrate": 3
+    },
+    "sourceDecodedBytes": 33718272
+  },
+  {
+    "slug": "hanna",
+    "variant": "lite",
+    "physicalFrames": 239,
+    "animationFrameNames": 672,
+    "decodedBytes": 3932160,
+    "downloadBytes": 691101,
+    "samplingByFamily": {
+      "turn": 1,
+      "idle": 2,
+      "walk": 3,
+      "run": 3,
+      "jump": 3,
+      "land": 3,
+      "slide": 4,
+      "celebrate": 4
+    },
+    "sourceDecodedBytes": 33718272
+  }
+]
