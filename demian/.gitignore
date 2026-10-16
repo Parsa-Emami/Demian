@@ -25,3 +25,9 @@ _ide_helper.php
 Homestead.json
 Homestead.yaml
 Thumbs.db
+
+# Intermediate FBX conversion/bake products (source and compressed runtime assets are tracked).
+/public/assets/environments/demian-fbx/*.work.*
+/public/assets/environments/demian-fbx/cafe.glb
+/tools/__pycache__/
+/tools/fbx/__pycache__/

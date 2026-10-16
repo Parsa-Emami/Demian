@@ -1,0 +1,26 @@
+{
+  "tests": 300,
+  "testFiles": 97,
+  "testFailures": 0,
+  "browserCases": [
+    "desktop",
+    "phone",
+    "model-unavailable",
+    "floorplan-unavailable"
+  ],
+  "python": "3.12.14",
+  "offlineImporterDependencies": {
+    "numpy": "2.3.5",
+    "scipy": "1.17.0",
+    "Pillow": "12.3.0",
+    "shapely": "2.2.0",
+    "mapbox-earcut": "2.1.0"
+  },
+  "physicalDeviceTest": false,
+  "sourceRebuildVerified": true,
+  "sourceRebuildModelGitSha": "ceee17ae230842e1c9829c82186393b3922b0d70",
+  "productionBuildPassed": true,
+  "atomicBundleValidationPassed": true,
+  "uiLayerValidationPassed": true,
+  "characterPackValidationPassed": true
+}

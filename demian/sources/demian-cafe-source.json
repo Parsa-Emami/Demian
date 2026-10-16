@@ -1,0 +1,27 @@
+{
+  "filename": "دمیان .fbx",
+  "compression": "gzip",
+  "parts": [
+    {
+      "file": "demian-cafe.fbx.gz.001",
+      "bytes": 8388608,
+      "sha256": "eb1264f405370bc1e1264cddcd7aad544087119d18084ca758d77abf9a405048"
+    },
+    {
+      "file": "demian-cafe.fbx.gz.002",
+      "bytes": 8388608,
+      "sha256": "d503769d3f9082a2f0b20149d0e40150dd5ece837f8b6c9ccd4820eb6040e066"
+    },
+    {
+      "file": "demian-cafe.fbx.gz.003",
+      "bytes": 8388608,
+      "sha256": "71e05cc4d78f119c7c50bc51865c7dbb4119855ace618974f9713e14dd2708c9"
+    },
+    {
+      "file": "demian-cafe.fbx.gz.004",
+      "bytes": 8226626,
+      "sha256": "9319d90d6ec40638d20039bfee52633faa34e41bb51f5cbb6632c8551cd19e1d"
+    }
+  ],
+  "gzipSha256": "6d0034f74d36bff8f77120838de863703b2ae8bd521731ce1d3097e056b25308"
+}

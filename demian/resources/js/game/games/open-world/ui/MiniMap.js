@@ -73,7 +73,8 @@ export default class MiniMap {
         context.fillStyle = P.void;
         context.fillRect(0, 0, width, height);
 
-        if (!this.sceneCanvas || this.sceneCanvas.width !== width || this.sceneCanvas.height !== height) {
+        if (!this.sceneCanvas || this.sceneCanvas.width !== width || this.sceneCanvas.height !== height || this.sceneRevision !== this.cafe.revision) {
+            this.sceneRevision = this.cafe.revision;
             this.sceneCanvas = document.createElement('canvas');
             this.sceneCanvas.width = width; this.sceneCanvas.height = height;
             const scene = this.sceneCanvas.getContext('2d');

@@ -13,10 +13,10 @@ test('pixel camera world and screen transforms round-trip', () => {
     assert.ok(Math.abs(restored.z - world.z) <= 0.1);
 });
 
-test('reference café manifest fills a two by seven entrance-to-WC streaming grid', () => {
+test('reference café manifest fills a four by sixteen FBX streaming grid', () => {
     assert.equal(manifest.id, 'demian-reference-cafe');
-    assert.equal(manifest.chunks.length, 14);
+    assert.equal(manifest.chunks.length, 64);
     assert.equal(manifest.at(0, 0).id, 'cafe-0-0');
-    assert.equal(manifest.at(1, 6).id, 'cafe-1-6');
-    assert.equal(manifest.serialize().metadata.renderer, 'canvas2d-pixel');
+    assert.equal(manifest.at(3, 15).id, 'cafe-3-15');
+    assert.equal(manifest.serialize().metadata.renderer, 'fbx-baked-canvas2d');
 });

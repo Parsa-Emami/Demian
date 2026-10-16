@@ -12,7 +12,7 @@ export const ROLE_PLAY_CAFE_MAP = Object.freeze({
     id: 'demian-cafe-role-play',
     bounds: CAFE_BOUNDS,
     floor: CAFE_FLOOR,
-    spawn: Object.freeze({ x: 0, z: 12.8 }),
+    spawn: Object.freeze({ x: .36, z: -4.68 }),
     staticColliders: CAFE_STATIC_COLLIDERS,
     npcs: ROLE_PLAY_NPCS,
     pickups: ROLE_PLAY_PICKUPS,

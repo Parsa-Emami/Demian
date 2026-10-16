@@ -83,6 +83,8 @@ export function validateWorldManifest(manifest) {
         if (!Number.isFinite(point?.position?.x) || !Number.isFinite(point?.position?.z)) errors.push(`Save point ${id || '?'} requires a finite position.`);
     }
 
+    if (manifest.bounds && !['minX','maxX','minZ','maxZ'].every((k) => Number.isFinite(manifest.bounds[k])))
+        errors.push('World bounds require finite coordinates.');
     const spawn = manifest.spawn ?? {};
     if (!Number.isFinite(spawn.x) || !Number.isFinite(spawn.z)) errors.push('World spawn requires finite x/z.');
     return errors;
@@ -116,12 +118,18 @@ export function normalizeWorldManifest(input) {
     const maxGridX = Math.max(...chunks.map((chunk) => chunk.grid.x));
     const minGridZ = Math.min(...chunks.map((chunk) => chunk.grid.z));
     const maxGridZ = Math.max(...chunks.map((chunk) => chunk.grid.z));
-    const bounds = immutableBounds({
+    const gridBounds = immutableBounds({
         minX: origin.x + minGridX * chunkSize,
         maxX: origin.x + (maxGridX + 1) * chunkSize,
         minZ: origin.z + minGridZ * chunkSize,
         maxZ: origin.z + (maxGridZ + 1) * chunkSize,
     });
+    const bounds = input.bounds ? immutableBounds(input.bounds) : gridBounds;
+    if (!(bounds.minX < bounds.maxX && bounds.minZ < bounds.maxZ)
+        || bounds.minX < gridBounds.minX || bounds.maxX > gridBounds.maxX
+        || bounds.minZ < gridBounds.minZ || bounds.maxZ > gridBounds.maxZ) {
+        throw new TypeError('World bounds must be finite, positive and inside the streaming grid.');
+    }
     return Object.freeze({
         id: String(input.id),
         version: Number(input.version),

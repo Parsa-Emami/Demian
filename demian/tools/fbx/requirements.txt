@@ -1,0 +1,5 @@
+numpy==2.3.5
+scipy==1.17.0
+Pillow==12.3.0
+shapely==2.2.0
+mapbox-earcut==2.1.0

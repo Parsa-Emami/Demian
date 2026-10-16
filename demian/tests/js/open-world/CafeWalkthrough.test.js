@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import manifest from '../../../resources/js/game/games/open-world/data/DemianReferenceCafeManifest.js';
 import { CAFE_STATIC_COLLIDERS, ROLE_PLAY_NPCS } from '../../../resources/js/game/shared/cafe/CafeReferenceLayout.js';
 import {
-    CAFE_ROOMS, CAFE_WALKTHROUGH_ROUTE, CAFE_CHARACTER_SPAWNS, cafeRoomAt, cafePoint,
+    CAFE_BOUNDS, CAFE_ROOMS, CAFE_WALKTHROUGH_ROUTE, CAFE_CHARACTER_SPAWNS, cafeRoomAt, cafePoint,
 } from '../../../resources/js/game/shared/cafe/CafeWalkthroughScene.js';
 import Collider from '../../../resources/js/game/shared/collision/Collider.js';
 import { circleIntersectsAabb } from '../../../resources/js/game/shared/collision/CollisionMath.js';
@@ -51,13 +51,14 @@ test('all spawn, save and staff positions are reachable and not silently snapped
     }
 });
 
-test('unseen adjoining rooms are blocked instead of being rendered as an invented café floor', () => {
+test('space outside the imported floor is blocked while modeled rear rooms are preserved', () => {
     const grid = navigation();
-    for (const p of [cafePoint(-7, -56), cafePoint(9, -49)]) {
+    for (const p of [{ x: -19,z: -30 },{ x: 18,z: -150 }]) {
         assert.equal(cafeRoomAt(p), null);
         const cell = grid.worldToCell(p);
-        assert.equal(grid.isWalkable(cell.x, cell.z), false);
+        assert.equal(grid.isWalkable(cell.x,cell.z), false);
     }
+    assert.ok(cafeRoomAt({ x: 0,z: -165 }), 'The supplied model includes the closed rear room.');
     assert.ok(Object.isFrozen(CAFE_ROOMS[0].bounds));
 });
 
@@ -80,25 +81,30 @@ test('travel repairs stored positions inside a table, outside the footprint, or 
     }
 });
 
-test('V3 saves scale their location into V4 and preserve discovery instead of resetting progress', () => {
-    const state = { worldVersion: 3, position: { x: 3.3, z: -53 },
-        discoveredChunks: ['cafe-0-0', 'cafe-1-6'], unlockedSavePoints: ['save-lounge'] };
-    const plan = cafeRestorePlan(state, manifest);
-    assert.equal(plan.legacyLayout, false);
-    assert.deepEqual(plan.requested, { x: 6.6, z: -106 });
-    const discovery = new WorldDiscovery(state);
-    reconcileCafeDiscovery(discovery, manifest, plan);
-    assert.ok(discovery.isChunkDiscovered('cafe-0-0'));
-    assert.ok(discovery.isChunkDiscovered('cafe-1-6'));
-    assert.ok(discovery.isSavePointUnlocked('save-lounge'));
-    const target = safeCafeTravelPosition(plan.requested, navigation(), manifest.spawn);
-    assert.deepEqual(target, plan.requested);
+test('V3 and V4 saves retain destinations while positions reset to safe FBX destinations', () => {
+    for (const worldVersion of [3,4]) {
+        const state = { worldVersion,position:{ x:3.3,z:-53 },lastSavePointId:'save-lounge',
+            discoveredChunks:['cafe-0-0','cafe-1-6'],unlockedSavePoints:['save-lounge'] };
+        const plan = cafeRestorePlan(state,manifest);
+        assert.equal(plan.legacyLayout,true);
+        assert.deepEqual(plan.requested,manifest.savePoint('save-lounge').position);
+        const discovery = new WorldDiscovery(state);
+        reconcileCafeDiscovery(discovery,manifest,plan);
+        assert.ok(discovery.isSavePointUnlocked('save-lounge'));
+        assert.ok(discovery.isSavePointUnlocked('save-entrance'));
+        assert.equal(discovery.isChunkDiscovered('cafe-0-0'),false);
+        assert.deepEqual(safeCafeTravelPosition(plan.requested,navigation(),manifest.spawn),plan.requested);
+    }
+});
+
+test('same-version saves inside source-model sealed rooms return to the accessible entrance', () => {
+    assert.deepEqual(safeCafeTravelPosition({ x:0,z:-165 },navigation(),manifest.spawn),manifest.spawn);
 });
 
 test('floorplan projections keep the WC above the entrance and preserve distances in both axes', () => {
     const camera = cafeMapCamera(manifest.bounds, 800, 500, 24);
     const origin = camera.worldToScreen({ x: 0, z: 0 });
-    assert.ok(camera.worldToScreen({ x: 3, z: -60 }).y < camera.worldToScreen(manifest.spawn).y);
+    assert.ok(camera.worldToScreen({ x: 3.96,z:-130.68 }).y < camera.worldToScreen(manifest.spawn).y);
     assert.ok(Math.abs((camera.worldToScreen({ x: 1, z: 0 }).x - origin.x)
         - (camera.worldToScreen({ x: 0, z: 1 }).y - origin.y)) < 1e-9);
     const p = { x: 3.3, z: -53 }, restored = camera.screenToWorld(camera.worldToScreen(p));
@@ -113,4 +119,13 @@ test('overview framing can fit the long café on a landscape phone instead of cr
     const b = camera.worldToScreen({ x: bounds.maxX, z: bounds.maxZ });
     assert.ok(a.y >= 9 && b.y <= 381);
     assert.ok(a.x >= 9 && b.x <= 835);
+});
+
+test('zoomed and panned map projections keep geometry and pointer targets aligned', () => {
+    const center={x:5,z:-100},camera=cafeMapCamera(CAFE_BOUNDS,800,500,20,{zoom:6,center});
+    assert.deepEqual(camera.worldToScreen(center),{x:400,y:250});
+    for(const p of CAFE_WALKTHROUGH_ROUTE) {
+        const restored=camera.screenToWorld(camera.worldToScreen(p));
+        assert.ok(Math.abs(restored.x-p.x)<1e-9 && Math.abs(restored.z-p.z)<1e-9);
+    }
 });

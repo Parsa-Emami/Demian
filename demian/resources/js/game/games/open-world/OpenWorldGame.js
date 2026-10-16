@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { preloadFbxCafeArt } from '../../rendering2d/FbxCafeAssets.js';
 import BaseGame from '../../contracts/BaseGame.js';
 import CameraController from '../../core/CameraController.js';
 import CharacterRepository from '../../data/CharacterRepository.js';
@@ -79,6 +80,7 @@ export default class OpenWorldGame extends BaseGame {
     }
 
     async preload() {
+        await preloadFbxCafeArt();
         return this.manifest;
     }
 
@@ -154,14 +156,7 @@ export default class OpenWorldGame extends BaseGame {
             label: performanceProfile.tier.toUpperCase(),
         });
 
-        if (this.coarsePointer || globalThis.innerWidth <= 900) {
-            this.focusCharacter({ close: true, follow: true });
-        } else {
-            this.cameraController.overview({ immediate: true });
-            this.pixelRenderer.setMode('OVERVIEW', this.manifest.spawn, { immediate: true });
-            this.updateCameraButtons('OVERVIEW');
-            context.eventBus.emit('camera:mode', 'OVERVIEW');
-        }
+        this.focusCharacter({ close: true, follow: true });
 
         // Draw once after the final camera pose as well. The runtime will own all
         // subsequent frames, but the scene is already visible before the loading

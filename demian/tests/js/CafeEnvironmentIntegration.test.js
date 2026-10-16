@@ -36,7 +36,7 @@ test('every visible game renderer uses the shared 2D café pipeline and avoids T
 test('the café pixel renderer is data-driven from the shared collision layout', () => {
     const renderer = source('resources/js/game/rendering2d/CafePixelRenderer.js');
     assert.match(renderer, /CAFE_STATIC_COLLIDERS/);
-    assert.match(renderer, /drawDoorAndWindows/);
-    assert.match(renderer, /drawDecor/);
+    assert.match(renderer, /fbxFloorplanImage/);
+    assert.match(renderer, /preloadFbxCafeArt/);
     assert.match(renderer, /camera\.worldRect/);
 });

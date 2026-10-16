@@ -1,0 +1,28 @@
+<!doctype html><meta charset="utf-8"><title>Demian FBX build preview</title>
+<style>html,body{margin:0;background:#191c1e}canvas{display:block}</style>
+<script type="importmap">{"imports":{"three":"/node_modules/three/build/three.module.js","three/addons/":"/node_modules/three/examples/jsm/"}}</script>
+<script type="module">
+import * as THREE from 'three';
+import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
+import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
+const renderer=new THREE.WebGLRenderer({antialias:true,preserveDrawingBuffer:true});
+renderer.setPixelRatio(1);renderer.setSize(1200,900);renderer.setClearColor('#d9d2c4');renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.0;renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+document.body.append(renderer.domElement);
+const scene=new THREE.Scene();scene.add(new THREE.HemisphereLight(0xfff7e6,0x696e77,1.4));
+const light=new THREE.DirectionalLight(0xffeccb,1.8);light.position.set(-12,200,-90);light.target.position.set(0,0,-80);scene.add(light.target);light.castShadow=true;light.shadow.mapSize.set(4096,4096);Object.assign(light.shadow.camera,{left:-110,right:110,top:110,bottom:-110,near:.1,far:300});light.shadow.normalBias=.08;scene.add(light);
+const model=(await new GLTFLoader().loadAsync('/public/assets/environments/demian-fbx/cafe.glb')).scene;
+scene.add(model);model.traverse(o=>{if(o.userData.overhead)o.visible=false;if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});
+const bounds=new THREE.Box3().setFromObject(model);const center=bounds.getCenter(new THREE.Vector3());
+let camera;
+if(new URLSearchParams(location.search).has('top')){
+ camera=new THREE.OrthographicCamera(-24,24,96,-96,.1,400);camera.up.set(0,0,-1);camera.position.set(0,120,-80);camera.lookAt(0,0,-80);
+}else{
+ camera=new THREE.PerspectiveCamera(40,1200/900,.1,500);camera.position.set(90,115,20);camera.lookAt(0,0,-80);
+ const controls=new OrbitControls(camera,renderer.domElement);controls.target.set(0,0,-80);controls.update();controls.addEventListener('change',()=>renderer.render(scene,camera));
+}
+window.renderTop=(bounds,width,height)=>{
+ renderer.setSize(width,height,false);camera=new THREE.OrthographicCamera(bounds.minX,bounds.maxX,-bounds.minZ,-bounds.maxZ,.1,400);
+ camera.up.set(0,0,-1);camera.position.set(0,150,0);camera.lookAt(0,0,0);camera.updateProjectionMatrix();renderer.render(scene,camera);return renderer.domElement.toDataURL('image/png');
+};
+renderer.render(scene,camera);window.sceneReady=true;window.sceneStats={bounds,triangles:renderer.info.render.triangles,calls:renderer.info.render.calls};
+</script>

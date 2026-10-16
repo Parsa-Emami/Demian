@@ -95,10 +95,11 @@ test('the follow camera preserves character screen size across backbuffer densit
     }
 });
 
-test('World map derives district labels from chunk centers instead of optional manifest fields', async () => {
+test('the model floorplan stays readable without chunk-grid lines and supports zoom controls', async () => {
     const source = await readFile(url('resources/js/game/games/open-world/ui/WorldMap.js'), 'utf8');
-    assert.match(source, /districtCenter\(districtId\)/);
-    assert.match(source, /chunk\.center\.x/);
-    assert.match(source, /chunk\.center\.z/);
-    assert.match(source, /district\?\.color/);
+    assert.match(source, /data-map-zoom-in/);
+    assert.match(source, /data-map-fit/);
+    assert.match(source, /this\.cafe\.draw/);
+    assert.match(source, /mapCamera\.position\.x/);
+    assert.doesNotMatch(source, /context\.strokeRect\(x \+ 0\.5/);
 });

@@ -95,7 +95,7 @@ export default class OpenWorldPixelRenderer {
         this.camera.update(deltaTime);
 
         const ctx = this.context.renderer.beginFrame(P.voidBlue);
-        this.sceneCache.draw(ctx, this.camera, 'day');
+        this.sceneCache.draw(ctx, this.camera, `day:${this.cafe.revision}`);
         if (this.context.app?.options?.debug) this.drawChunks(ctx, loadedChunks, activeChunkIds);
         this.drawSavePoints(ctx, discovery);
 

@@ -1,0 +1,110 @@
+{
+  "browser": "153.0.8010.0",
+  "cases": [
+    {
+      "name": "desktop",
+      "passed": true,
+      "state": {
+        "version": 5,
+        "bounds": {
+          "minX": -20.16,
+          "maxX": 20.16,
+          "minZ": -174.24,
+          "maxZ": 14.04
+        },
+        "position": {
+          "x": 0.36,
+          "y": 0,
+          "z": -4.68
+        },
+        "colliders": 321,
+        "renderer": "pixel-2d",
+        "cache": {
+          "builds": 2,
+          "hits": 54,
+          "bytes": 6905800
+        }
+      },
+      "modelDownloaded": true
+    },
+    {
+      "name": "phone",
+      "passed": true,
+      "state": {
+        "version": 5,
+        "bounds": {
+          "minX": -20.16,
+          "maxX": 20.16,
+          "minZ": -174.24,
+          "maxZ": 14.04
+        },
+        "position": {
+          "x": 0.36,
+          "y": 0,
+          "z": -4.68
+        },
+        "colliders": 321,
+        "renderer": "pixel-2d",
+        "cache": {
+          "builds": 2,
+          "hits": 81,
+          "bytes": 2411808
+        }
+      },
+      "modelDownloaded": true
+    },
+    {
+      "name": "model-unavailable",
+      "passed": true,
+      "state": {
+        "version": 5,
+        "bounds": {
+          "minX": -20.16,
+          "maxX": 20.16,
+          "minZ": -174.24,
+          "maxZ": 14.04
+        },
+        "position": {
+          "x": 0.36,
+          "y": 0,
+          "z": -4.68
+        },
+        "colliders": 321,
+        "renderer": "pixel-2d",
+        "cache": {
+          "builds": 2,
+          "hits": 78,
+          "bytes": 4729856
+        }
+      },
+      "modelDownloaded": true
+    },
+    {
+      "name": "floorplan-unavailable",
+      "passed": true,
+      "state": {
+        "version": 5,
+        "bounds": {
+          "minX": -20.16,
+          "maxX": 20.16,
+          "minZ": -174.24,
+          "maxZ": 14.04
+        },
+        "position": {
+          "x": 0.36,
+          "y": 0,
+          "z": -4.68
+        },
+        "colliders": 321,
+        "renderer": "pixel-2d",
+        "cache": {
+          "builds": 2,
+          "hits": 70,
+          "bytes": 4729856
+        }
+      },
+      "modelDownloaded": false
+    }
+  ],
+  "physicalDeviceTest": false
+}

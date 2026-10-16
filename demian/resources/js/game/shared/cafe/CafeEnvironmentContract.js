@@ -1,6 +1,6 @@
 export const CAFE_ENVIRONMENT_ID = 'demian-reference-cafe@2';
 export const CAFE_WORLD_ID = 'demian-reference-cafe';
-export const CAFE_REFERENCE_ASSET_ROOT = '/assets/reference/cafe';
+export const CAFE_REFERENCE_ASSET_ROOT = '/assets/environments/demian-fbx';
 
 export const CAFE_SCENE_STYLE = Object.freeze({
     background: 0xdad5cc,

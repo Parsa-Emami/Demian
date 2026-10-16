@@ -32,7 +32,10 @@
         "build:negar:v14": "python3 tools/build_character_pack_v14.py --characters negar && python3 tools/build_runtime_character_packs.py",
         "build:characters:runtime": "python3 tools/build_runtime_character_packs.py",
         "test:negar:browser": "node tools/check_negar_v14.mjs",
-        "test:loading:browser": "node tools/check_loading_performance_v14.mjs"
+        "test:loading:browser": "node tools/check_loading_performance_v14.mjs",
+        "import:cafe:fbx": "python3 tools/import_fbx_cafe.py sources/demian-cafe.fbx.gz.001 && python3 tools/build_fbx_cafe_layout.py && node tools/bake_fbx_cafe.mjs && python3 tools/fbx/finish_bake.py",
+        "test:cafe:browser": "node tools/check_fbx_cafe.mjs",
+        "validate:cafe:fbx": "node --test tests/js/fbx/FbxCafe.test.js"
     },
     "devDependencies": {
         "@tailwindcss/vite": "^4.0.0",

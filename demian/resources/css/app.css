@@ -4835,3 +4835,21 @@ body {
 [data-character-ability][hidden], [data-character-ability-hint][hidden] { display: none !important; }
 [data-character-ability] { border-color: #f2cc64; color: #ffe8a3; }
 [data-character-ability]:disabled { opacity: .55; cursor: wait; }
+
+/* The full FBX is loaded only when the player opens this model view. */
+.fbx-cafe-inspector { position:absolute; inset:0; display:grid; grid-template-rows:auto minmax(0,1fr) auto; color:#efece4; background:#18221f; border-radius:inherit; overflow:hidden; direction:rtl; }
+.fbx-cafe-inspector header { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:.65rem; padding:.8rem 1rem; background:#1c2b26; }
+.fbx-cafe-inspector header div:last-child { display:flex; gap:.4rem; }
+.fbx-cafe-inspector h2 { font-size:1rem; margin:.15rem 0; }
+.fbx-cafe-inspector small { letter-spacing:.2em; color:#b6c9a3; }
+.fbx-cafe-inspector button { border:1px solid #526758; border-radius:.6rem; padding:.5rem .75rem; min-height:2.5rem; background:#293d32; color:#f3efdf; cursor:pointer; }
+.fbx-cafe-inspector button[aria-pressed="true"] { background:#526c49; }
+.fbx-cafe-inspector__stage { position:relative; min-height:0; overflow:hidden; background:#d6cfc0; }
+.fbx-cafe-inspector__stage canvas { display:block; width:100%; height:100%; touch-action:none; }
+.fbx-cafe-inspector__stage [role="status"] { position:absolute; inset:45% 1rem auto; text-align:center; color:#26382c; pointer-events:none; }
+.fbx-cafe-inspector footer { padding:.65rem 1rem; text-align:center; font-size:.75rem; color:#c6ceb9; background:#1c2b26; }
+@media (max-width:600px) { .open-world-map__panel header { gap:.4rem; padding:.6rem; } .open-world-map__panel header button { padding:.45rem .65rem; } }
+.open-world-map__canvas-wrap { position:relative; }
+.open-world-map__canvas-wrap > canvas { touch-action:none; }
+.open-world-map__zoom { position:absolute; left:1.4rem; bottom:1.4rem; display:flex; gap:.3rem; direction:ltr; }
+.open-world-map__zoom button { min-width:2.5rem; padding:.4rem .65rem; background:#182b25; }

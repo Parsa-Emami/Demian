@@ -9,3 +9,7 @@ The active catalog contains Open World and Dino Run. The installed V14 roster is
 - Actual checks and limitations: `docs/release-v14/QA.fa.md`.
 - Exact image-generation prompts: `docs/release-v14/art-prompts.json`.
 - Runtime: local Canvas2D, no generation service, no GPU shader pipeline.
+
+## FBX café environment
+
+The active café map is built from the supplied FBX, with a shared collision footprint and an on-demand 3D model view. See [the source and rebuild guide](docs/fbx-cafe/README.fa.md). The original upload is preserved in four lossless gzip parts under `sources/`.

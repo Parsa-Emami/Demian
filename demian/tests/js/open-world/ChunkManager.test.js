@@ -41,10 +41,10 @@ test('chunk manager loads active and preload rings with bounded concurrency resu
     manager.update({ x: 0, z: 0 });
     await manager.whenIdle();
     const stats = manager.stats();
-    assert.equal(stats.loaded, 6);
+    assert.equal(stats.loaded, 9);
     assert.equal(stats.active, 1);
-    assert.equal(stats.dormant, 5);
-    assert.equal(created.length, 6);
+    assert.equal(stats.dormant, 8);
+    assert.equal(created.length, 9);
     await manager.dispose();
 });
 
@@ -95,10 +95,10 @@ test('chunk manager aborts obsolete in-flight loads after a long-distance move',
         concurrency: 1,
     });
     manager.update({ x: -12, z: -120 });
-    manager.update({ x: 12, z: 24 });
+    manager.update(manifest.spawn);
     await manager.whenIdle();
     assert.ok(aborted >= 1);
-    assert.equal(manager.stats().currentChunkId, 'cafe-1-6');
-    assert.ok(manager.loaded.has('cafe-1-6'));
+    assert.equal(manager.stats().currentChunkId, 'cafe-1-14');
+    assert.ok(manager.loaded.has('cafe-1-14'));
     await manager.dispose();
 });

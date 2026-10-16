@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { CAFE_BOUNDS } from '../../../resources/js/game/shared/cafe/CafeWalkthroughScene.js';
 import WorldManifest, { validateWorldManifest } from '../../../resources/js/game/games/open-world/world/WorldManifest.js';
 import manifest, { DEMIAN_CITY_MANIFEST_DEFINITION } from '../../../resources/js/game/games/open-world/data/DemianCityManifest.js';
 
@@ -8,13 +9,13 @@ import manifest, { DEMIAN_CITY_MANIFEST_DEFINITION } from '../../../resources/js
 test('legacy Demian City manifest resolves to the immutable reference café', () => {
     assert.equal(validateWorldManifest(DEMIAN_CITY_MANIFEST_DEFINITION).length, 0);
     assert.equal(manifest.id, 'demian-reference-cafe');
-    assert.equal(manifest.chunks.length, 14);
+    assert.equal(manifest.chunks.length, 64);
     assert.equal(manifest.districts.length, 5);
     assert.equal(manifest.savePoints.length, 5);
     assert.ok(Object.isFrozen(manifest.serialize()));
     assert.ok(manifest.chunks.every((chunk) => chunk.theme === 'cafe'));
-    assert.equal(manifest.version, 4);
-    assert.deepEqual(manifest.bounds, { minX: -24, maxX: 24, minZ: -132, maxZ: 36 });
+    assert.equal(manifest.version, 5);
+    assert.deepEqual(manifest.bounds, CAFE_BOUNDS);
     for (const point of manifest.savePoints) {
         assert.equal(manifest.chunk(point.chunkId)?.id, point.chunkId);
         assert.equal(manifest.district(point.districtId)?.id, point.districtId);
