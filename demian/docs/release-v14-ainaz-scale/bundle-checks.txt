@@ -1,0 +1,7 @@
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> validate:build
+> node tools/validate_build_bundle.mjs
+
+Atomic Demian production bundle validated successfully.
+JavaScript bundle: assets/app-BEyAaW0x.js

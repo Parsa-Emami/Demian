@@ -1,0 +1,122 @@
+{
+  "character": "ainaz",
+  "browser": "153.0.8010.0",
+  "physicalPhoneMeasured": false,
+  "viewports": [
+    {
+      "width": 390,
+      "height": 844,
+      "selectedViaUi": true,
+      "previewLoaded": true,
+      "runnerJump": "passed",
+      "slide": "native-touch-passed",
+      "birdCleared": true,
+      "pack": {
+        "variant": "runtime",
+        "version": 14,
+        "actualRevision": "ec498a418fcab5681eef97a5a609bdcaa7bed43296f966976bebba715e6faa15",
+        "expectedRevision": "ec498a418fcab5681eef97a5a609bdcaa7bed43296f966976bebba715e6faa15"
+      },
+      "cafeMovement": "passed",
+      "cafeJump": "passed",
+      "cafeCelebrate": "passed",
+      "selectionSurvivesReload": true,
+      "runnerBodyScale": {
+        "ratios": {
+          "idle": 1.011904761904762,
+          "walk": 1.011904761904762,
+          "run": 1.011904761904762,
+          "sprint": 1.011904761904762
+        },
+        "frameWorldHeight": null,
+        "currentWorldHeight": null,
+        "bodyScale": 1,
+        "variant": "runtime"
+      },
+      "walkScale": {
+        "ratios": {
+          "idle": 1.011904761904762,
+          "walk": 1.011904761904762,
+          "run": 1.011904761904762,
+          "sprint": 1.011904761904762
+        },
+        "frameWorldHeight": 5.357142857142858,
+        "currentWorldHeight": 3.7946428571428577,
+        "bodyScale": 1,
+        "variant": "runtime"
+      },
+      "runScale": {
+        "ratios": {
+          "idle": 1.011904761904762,
+          "walk": 1.011904761904762,
+          "run": 1.011904761904762,
+          "sprint": 1.011904761904762
+        },
+        "frameWorldHeight": 5.357142857142858,
+        "currentWorldHeight": 3.850446428571429,
+        "bodyScale": 1,
+        "variant": "runtime"
+      },
+      "errors": [],
+      "failures": []
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "selectedViaUi": true,
+      "previewLoaded": true,
+      "runnerJump": "passed",
+      "slide": "keyboard-passed",
+      "birdCleared": true,
+      "pack": {
+        "variant": "runtime",
+        "version": 14,
+        "actualRevision": "ec498a418fcab5681eef97a5a609bdcaa7bed43296f966976bebba715e6faa15",
+        "expectedRevision": "ec498a418fcab5681eef97a5a609bdcaa7bed43296f966976bebba715e6faa15"
+      },
+      "cafeMovement": "passed",
+      "cafeJump": "passed",
+      "cafeCelebrate": "passed",
+      "selectionSurvivesReload": true,
+      "runnerBodyScale": {
+        "ratios": {
+          "idle": 1.011904761904762,
+          "walk": 1.011904761904762,
+          "run": 1.011904761904762,
+          "sprint": 1.011904761904762
+        },
+        "frameWorldHeight": null,
+        "currentWorldHeight": null,
+        "bodyScale": 1,
+        "variant": "runtime"
+      },
+      "walkScale": {
+        "ratios": {
+          "idle": 1.011904761904762,
+          "walk": 1.011904761904762,
+          "run": 1.011904761904762,
+          "sprint": 1.011904761904762
+        },
+        "frameWorldHeight": 5.357142857142858,
+        "currentWorldHeight": 3.7946428571428577,
+        "bodyScale": 1,
+        "variant": "runtime"
+      },
+      "runScale": {
+        "ratios": {
+          "idle": 1.011904761904762,
+          "walk": 1.011904761904762,
+          "run": 1.011904761904762,
+          "sprint": 1.011904761904762
+        },
+        "frameWorldHeight": 5.357142857142858,
+        "currentWorldHeight": 3.850446428571429,
+        "bodyScale": 1,
+        "variant": "runtime"
+      },
+      "errors": [],
+      "failures": []
+    }
+  ],
+  "status": "passed"
+}

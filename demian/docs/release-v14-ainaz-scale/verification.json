@@ -1,0 +1,38 @@
+{
+  "status": "passed",
+  "date": "2026-10-19",
+  "character": "ainaz",
+  "javascriptTests": {
+    "passed": 305,
+    "failed": 0
+  },
+  "atlasValidation": {
+    "characters": 8,
+    "variants": 40,
+    "visibleBodyScale": "passed",
+    "alphaGeometry": "passed"
+  },
+  "releaseValidation": "passed",
+  "uiLayers": "passed",
+  "productionBuild": "passed",
+  "atomicBundle": "passed",
+  "browser": {
+    "status": "passed",
+    "engine": "Chromium 153.0.8010.0",
+    "viewports": [
+      [
+        390,
+        844
+      ],
+      [
+        1440,
+        900
+      ]
+    ],
+    "loadedPngScale": "passed",
+    "walkRunWorldScale": "passed"
+  },
+  "limitations": [
+    "Phone viewport emulated; physical phone performance not measured."
+  ]
+}

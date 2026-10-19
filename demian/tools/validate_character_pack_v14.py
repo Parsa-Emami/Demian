@@ -2,6 +2,7 @@
 """Validate the shipped runtime contract and alpha geometry without art-build dependencies."""
 import json
 import hashlib
+from statistics import median
 from pathlib import Path
 from PIL import Image
 from character_art_registry import ACTIVE_CHARACTER_ROSTER, ACTIVE_CHARACTER_DEFINITIONS
@@ -40,6 +41,7 @@ def main():
             assert atlas['motion']['locomotionProfile']['phaseDriver'] == 'travelled-distance'
             assert atlas['render']['lockBodyScale'] and not atlas['render']['frameBlend']
             assert atlas['pivot'] == {'x': .5, 'y': .94}
+            visible_heights = {}
             for name, frame in atlas['frames'].items():
                 x, y, w, h = [frame[k] for k in ('x', 'y', 'w', 'h')]
                 assert w == h == cell and 0 <= x <= image.width - w and 0 <= y <= image.height - h
@@ -47,6 +49,19 @@ def main():
                 box = alpha.point(lambda v: 255 if v > 32 else 0).getbbox()
                 assert box is not None, f'{slug}/{variant}: empty {name}'
                 assert box[0] > 0 and box[1] > 0 and box[2] < cell and box[3] < cell, f'{slug}/{variant}: clipped {name}'
+                visible_heights[name] = (box[3] - box[1]) / cell
+            # Validate visible artwork, rather than trusting the square texture
+            # cell or display.worldHeight: the latter stayed unchanged when
+            # Ainaz's original walk/run silhouettes shrank to 60% of standing.
+            canonical_ratio = atlas['render']['referenceBodyHeightRatio']
+            calibrated = atlas['render'].get('bodyScaleCalibration', {}).get('referencePoseIndices', {})
+            gait_heights = {}
+            for state in ('idle', 'walk', 'run', 'sprint'):
+                height_ratio = median(visible_heights[name] for name in atlas['animations'][state]['frames']) / canonical_ratio
+                family = 'run' if state == 'sprint' else state
+                low, high = (.96, 1.05) if family in calibrated else (.84, 1.16)
+                assert low <= height_ratio <= high, f'{slug}/{variant}: {state} visible body scale {height_ratio:.3f} is outside {low}..{high}'
+                gait_heights[state] = round(height_ratio * 3.75, 3)
             for name, animation in atlas['animations'].items():
                 assert name not in ('attack', 'guitar', 'dance', 'spin', 'taunt', 'sleep')
                 assert animation_manifest['states'][name]['frames'] == len(animation['frames'])
@@ -82,7 +97,7 @@ def main():
                 assert atlas['animations'][ability['animation']]['frames'] == atlas['animations']['celebrate']['frames']
             results.append({'character': slug, 'variant': variant, 'frames': 672, 'image': atlas['meta']['image'],
                 'dimensions': list(image.size), 'decodedMiB': round(image.width * image.height * 4 / 2**20, 2),
-                'maxSlideHeight': round(max(slide_heights), 2), 'geometry': 'passed'})
+                'maxSlideHeight': round(max(slide_heights), 2), 'visibleWorldHeights': gait_heights, 'geometry': 'passed'})
         assert (directory / f'{slug}-preview-v14.png').is_file()
     for slug in ('ronak',):
         assert not (base / slug).exists() and not (base / '_legacy_archive' / slug).exists()

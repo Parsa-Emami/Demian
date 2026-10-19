@@ -6,7 +6,7 @@ import { resolve } from 'node:path';
 import FrameAnimator from '../../resources/js/game/characters/FrameAnimator.js';
 import CanvasCharacterAvatar from '../../resources/js/game/characters/CanvasCharacterAvatar.js';
 import CharacterVisualService from '../../resources/js/game/characters/runtime/CharacterVisualService.js';
-import { builtinCharacterAssetPair, builtinCharacterPreviewUrl } from '../../resources/js/game/characters/CharacterVisualContract.js';
+import { builtinCharacterAssetPair, builtinCharacterPreviewUrl, characterFrameWorldSize } from '../../resources/js/game/characters/CharacterVisualContract.js';
 import { characterManifestEntry, isProductionReady } from '../../resources/js/game/characters/manifests/CharacterManifestRegistry.js';
 
 const root = resolve(import.meta.dirname, '../../public/assets/characters');
@@ -71,6 +71,23 @@ test('Ainaz runtime and lite retain full pose names within decoded image budgets
             const samples = new Set(data.animations[state].frames.map(id => `${data.frames[id].x}:${data.frames[id].y}`));
             assert.ok(samples.size > 2, `${variant}/${state} must move its limbs`);
         }
+    }
+});
+
+test('Ainaz walking and running use calibrated artwork inside the same world footprint as the other characters', () => {
+    for (const variant of ['desktop','mobile','compact','runtime','lite']) {
+        const data = atlas(variant);
+        const calibration = data.render.bodyScaleCalibration;
+        assert.equal(calibration.method, 'authored-standing-pose-height');
+        assert.deepEqual(Object.keys(calibration.referencePoseIndices), ['walk','run','land','celebrate']);
+        assert.equal(calibration.targetBodyHeightRatio, data.render.referenceBodyHeightRatio);
+        const metrics = characterFrameWorldSize(data);
+        for (const slug of ['darya','setayesh','uzudi','negar','tiam','amirreza','hanna']) {
+            const other = characterFrameWorldSize(json(`${slug}/${slug}-atlas-v14-${variant}.json`));
+            assert.equal(metrics.frameHeight, other.frameHeight);
+            assert.equal(metrics.bodyHeight, other.bodyHeight);
+        }
+        assert.equal(data.render.lockBodyScale, true);
     }
 });
 

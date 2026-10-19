@@ -221,13 +221,31 @@ def build_character(slug):
     motion_scale = cap_scale(tuple(motion_keys), motion_scale)
     slide_scale = cap_scale(('slide',), slide_scale)
     body_ratio = float(np.median([p.height * base_scale for p in poses['idle']]) / WORK)
+    # Separate source sheets can have different head/body proportions. Skin
+    # segmentation can also merge a raised hand or rolled sleeve into the face.
+    # Calibrate opted-in clips against authored standing-height poses, using one
+    # uniform factor for the entire clip. Never resize individual runtime frames
+    # or stretch X/Y independently to compensate for a source-sheet mismatch.
+    scale_references = layout.get('bodyScaleReferencePoses', {})
+    state_scales = {}
+    for state, indices in scale_references.items():
+        if state not in ('walk', 'run', 'land', 'celebrate') or not isinstance(indices, list) or not indices:
+            raise ValueError(f'Invalid body-scale reference for {state}')
+        if any(type(i) is not int or i < 0 or i >= len(poses[state]) for i in indices):
+            raise ValueError(f'Invalid body-scale reference pose for {state}')
+        factor = WORK * body_ratio / np.median([poses[state][i].height for i in indices])
+        fitted = cap_scale((state,), factor)
+        if fitted < factor * .98:
+            raise ValueError(f'{state} cannot fit the canonical body scale inside the atlas gutters')
+        state_scales[state] = fitted
     sequences = {'idle': dense(poses['idle'], COUNTS['idle'], base_scale, head_fraction=head_fraction, skin_ratio=skin_ratio)}
     for key in ('walk', 'run', 'jump', 'slide', 'land'):
-        sequence = dense(poses[key], COUNTS[key], slide_scale if key == 'slide' else motion_scale if key in motion_keys else base_scale, key not in ('jump', 'land'), head_fraction, skin_ratio)
+        factor = state_scales.get(key, slide_scale if key == 'slide' else motion_scale if key in motion_keys else base_scale)
+        sequence = dense(poses[key], COUNTS[key], factor, key not in ('jump', 'land'), head_fraction, skin_ratio)
         sequences[key + '_e'] = sequence
         sequences[key + '_w'] = [p.transpose(Image.Transpose.FLIP_LEFT_RIGHT) for p in sequence]
     sequences['celebrate'] = dense(poses['celebrate'], COUNTS['celebrate'],
-        motion_scale if 'celebrate' in motion_keys else base_scale, head_fraction=head_fraction, skin_ratio=skin_ratio)
+        state_scales.get('celebrate', motion_scale if 'celebrate' in motion_keys else base_scale), head_fraction=head_fraction, skin_ratio=skin_ratio)
     sequences['turn'] = [Image.fromarray(normalized(p, base_scale, head_fraction, skin_ratio)) for p in poses['turn']]
     assert sum(map(len, sequences.values())) == COLS * ROWS == 672
     names = {key: [f'{key}_{i:03}' for i in range(len(frames))] for key, frames in sequences.items()}
@@ -294,6 +312,13 @@ def build_character(slug):
         if layout.get('companion'):
             atlas['companion'] = {**layout['companion'], 'alwaysVisible': True,
                 'bakedIntoEveryFrame': True, 'collisionIndependent': True}
+        if state_scales:
+            atlas['render']['bodyScaleCalibration'] = {
+                'method': 'authored-standing-pose-height',
+                'targetBodyHeightRatio': body_ratio,
+                'referencePoseIndices': scale_references,
+                'uniformScaleByState': {key: float(value) for key, value in state_scales.items()},
+            }
         if signature:
             atlas['abilities'] = [signature]
         apply_animation_timing(atlas, layout.get('locomotionCycleCounts'), layout.get('locomotionProfile'))

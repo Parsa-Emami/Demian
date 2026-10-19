@@ -32,7 +32,7 @@
     "interpolation": "single-owner-optical-flow",
     "sourceKeyPoseCount": 60,
     "license": "MIT",
-    "imageRevision": "26445ba3ef882a88c9df902b6ffde71f24f893966db165748d08494d3fb36671"
+    "imageRevision": "2a39b403b3181ea62a5a67e32cb062a95cfe03c06332208343767e432b0c3305"
   },
   "frames": {
     "idle_000": {
@@ -13480,7 +13480,53 @@
     "singleSilhouette": true,
     "physicsOwnsJumpHeight": true,
     "dedicatedSlide": true,
-    "smoothSampling": true
+    "smoothSampling": true,
+    "bodyScaleCalibration": {
+      "method": "authored-standing-pose-height",
+      "targetBodyHeightRatio": 0.7,
+      "referencePoseIndices": {
+        "walk": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7
+        ],
+        "run": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7
+        ],
+        "land": [
+          6,
+          7
+        ],
+        "celebrate": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7
+        ]
+      },
+      "uniformScaleByState": {
+        "walk": 0.6744086021505376,
+        "run": 0.7225806451612903,
+        "land": 0.7310023310023309,
+        "celebrate": 0.8124352331606217
+      }
+    }
   },
   "movement": {
     "style": "ground-runner",

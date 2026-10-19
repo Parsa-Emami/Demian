@@ -12,6 +12,12 @@
       ],
       "decodedMiB": 53.16,
       "maxSlideHeight": 41.43,
+      "visibleWorldHeights": {
+        "idle": 3.757,
+        "walk": 3.646,
+        "run": 3.757,
+        "sprint": 3.757
+      },
       "geometry": "passed"
     },
     {
@@ -25,6 +31,12 @@
       ],
       "decodedMiB": 32.16,
       "maxSlideHeight": 41.43,
+      "visibleWorldHeights": {
+        "idle": 3.731,
+        "walk": 3.635,
+        "run": 3.779,
+        "sprint": 3.779
+      },
       "geometry": "passed"
     },
     {
@@ -38,6 +50,12 @@
       ],
       "decodedMiB": 16.41,
       "maxSlideHeight": 41.43,
+      "visibleWorldHeights": {
+        "idle": 3.75,
+        "walk": 3.683,
+        "run": 3.817,
+        "sprint": 3.817
+      },
       "geometry": "passed"
     },
     {
@@ -51,6 +69,12 @@
       ],
       "decodedMiB": 11.25,
       "maxSlideHeight": 41.43,
+      "visibleWorldHeights": {
+        "idle": 3.739,
+        "walk": 3.683,
+        "run": 3.795,
+        "sprint": 3.795
+      },
       "geometry": "passed"
     },
     {
@@ -64,6 +88,12 @@
       ],
       "decodedMiB": 3.75,
       "maxSlideHeight": 41.43,
+      "visibleWorldHeights": {
+        "idle": 3.767,
+        "walk": 3.683,
+        "run": 3.767,
+        "sprint": 3.767
+      },
       "geometry": "passed"
     },
     {
@@ -77,6 +107,12 @@
       ],
       "decodedMiB": 53.16,
       "maxSlideHeight": 42.0,
+      "visibleWorldHeights": {
+        "idle": 3.757,
+        "walk": 3.757,
+        "run": 3.348,
+        "sprint": 3.348
+      },
       "geometry": "passed"
     },
     {
@@ -90,6 +126,12 @@
       ],
       "decodedMiB": 32.16,
       "maxSlideHeight": 42.17,
+      "visibleWorldHeights": {
+        "idle": 3.779,
+        "walk": 3.779,
+        "run": 3.348,
+        "sprint": 3.348
+      },
       "geometry": "passed"
     },
     {
@@ -103,6 +145,12 @@
       ],
       "decodedMiB": 16.41,
       "maxSlideHeight": 42.46,
+      "visibleWorldHeights": {
+        "idle": 3.817,
+        "walk": 3.75,
+        "run": 3.348,
+        "sprint": 3.348
+      },
       "geometry": "passed"
     },
     {
@@ -116,6 +164,12 @@
       ],
       "decodedMiB": 11.25,
       "maxSlideHeight": 42.29,
+      "visibleWorldHeights": {
+        "idle": 3.795,
+        "walk": 3.795,
+        "run": 3.376,
+        "sprint": 3.376
+      },
       "geometry": "passed"
     },
     {
@@ -129,6 +183,12 @@
       ],
       "decodedMiB": 3.75,
       "maxSlideHeight": 42.72,
+      "visibleWorldHeights": {
+        "idle": 3.85,
+        "walk": 3.767,
+        "run": 3.432,
+        "sprint": 3.432
+      },
       "geometry": "passed"
     },
     {
@@ -142,6 +202,12 @@
       ],
       "decodedMiB": 53.16,
       "maxSlideHeight": 43.15,
+      "visibleWorldHeights": {
+        "idle": 3.757,
+        "walk": 3.72,
+        "run": 3.516,
+        "sprint": 3.516
+      },
       "geometry": "passed"
     },
     {
@@ -155,6 +221,12 @@
       ],
       "decodedMiB": 32.16,
       "maxSlideHeight": 42.91,
+      "visibleWorldHeights": {
+        "idle": 3.779,
+        "walk": 3.731,
+        "run": 3.516,
+        "sprint": 3.516
+      },
       "geometry": "passed"
     },
     {
@@ -168,6 +240,12 @@
       ],
       "decodedMiB": 16.41,
       "maxSlideHeight": 43.5,
+      "visibleWorldHeights": {
+        "idle": 3.75,
+        "walk": 3.75,
+        "run": 3.516,
+        "sprint": 3.516
+      },
       "geometry": "passed"
     },
     {
@@ -181,6 +259,12 @@
       ],
       "decodedMiB": 11.25,
       "maxSlideHeight": 43.15,
+      "visibleWorldHeights": {
+        "idle": 3.795,
+        "walk": 3.739,
+        "run": 3.516,
+        "sprint": 3.516
+      },
       "geometry": "passed"
     },
     {
@@ -194,6 +278,12 @@
       ],
       "decodedMiB": 3.75,
       "maxSlideHeight": 44.02,
+      "visibleWorldHeights": {
+        "idle": 3.767,
+        "walk": 3.767,
+        "run": 3.348,
+        "sprint": 3.348
+      },
       "geometry": "passed"
     },
     {
@@ -207,6 +297,12 @@
       ],
       "decodedMiB": 53.16,
       "maxSlideHeight": 42.58,
+      "visibleWorldHeights": {
+        "idle": 3.795,
+        "walk": 3.46,
+        "run": 3.59,
+        "sprint": 3.59
+      },
       "geometry": "passed"
     },
     {
@@ -220,6 +316,12 @@
       ],
       "decodedMiB": 32.16,
       "maxSlideHeight": 42.91,
+      "visibleWorldHeights": {
+        "idle": 3.779,
+        "walk": 3.492,
+        "run": 3.587,
+        "sprint": 3.587
+      },
       "geometry": "passed"
     },
     {
@@ -233,6 +335,12 @@
       ],
       "decodedMiB": 16.41,
       "maxSlideHeight": 43.5,
+      "visibleWorldHeights": {
+        "idle": 3.817,
+        "walk": 3.482,
+        "run": 3.616,
+        "sprint": 3.616
+      },
       "geometry": "passed"
     },
     {
@@ -246,6 +354,12 @@
       ],
       "decodedMiB": 11.25,
       "maxSlideHeight": 43.15,
+      "visibleWorldHeights": {
+        "idle": 3.795,
+        "walk": 3.516,
+        "run": 3.627,
+        "sprint": 3.627
+      },
       "geometry": "passed"
     },
     {
@@ -259,6 +373,12 @@
       ],
       "decodedMiB": 3.75,
       "maxSlideHeight": 44.02,
+      "visibleWorldHeights": {
+        "idle": 3.85,
+        "walk": 3.516,
+        "run": 3.683,
+        "sprint": 3.683
+      },
       "geometry": "passed"
     },
     {
@@ -272,6 +392,12 @@
       ],
       "decodedMiB": 53.16,
       "maxSlideHeight": 42.0,
+      "visibleWorldHeights": {
+        "idle": 3.757,
+        "walk": 3.906,
+        "run": 3.869,
+        "sprint": 3.869
+      },
       "geometry": "passed"
     },
     {
@@ -285,6 +411,12 @@
       ],
       "decodedMiB": 32.16,
       "maxSlideHeight": 42.17,
+      "visibleWorldHeights": {
+        "idle": 3.731,
+        "walk": 3.922,
+        "run": 3.874,
+        "sprint": 3.874
+      },
       "geometry": "passed"
     },
     {
@@ -298,6 +430,12 @@
       ],
       "decodedMiB": 16.41,
       "maxSlideHeight": 42.46,
+      "visibleWorldHeights": {
+        "idle": 3.75,
+        "walk": 3.951,
+        "run": 3.884,
+        "sprint": 3.884
+      },
       "geometry": "passed"
     },
     {
@@ -311,6 +449,12 @@
       ],
       "decodedMiB": 11.25,
       "maxSlideHeight": 42.29,
+      "visibleWorldHeights": {
+        "idle": 3.739,
+        "walk": 3.934,
+        "run": 3.906,
+        "sprint": 3.906
+      },
       "geometry": "passed"
     },
     {
@@ -324,6 +468,12 @@
       ],
       "decodedMiB": 3.75,
       "maxSlideHeight": 42.72,
+      "visibleWorldHeights": {
+        "idle": 3.767,
+        "walk": 3.934,
+        "run": 3.934,
+        "sprint": 3.934
+      },
       "geometry": "passed"
     },
     {
@@ -337,6 +487,12 @@
       ],
       "decodedMiB": 53.16,
       "maxSlideHeight": 43.73,
+      "visibleWorldHeights": {
+        "idle": 3.757,
+        "walk": 3.311,
+        "run": 3.33,
+        "sprint": 3.33
+      },
       "geometry": "passed"
     },
     {
@@ -350,6 +506,12 @@
       ],
       "decodedMiB": 32.16,
       "maxSlideHeight": 44.39,
+      "visibleWorldHeights": {
+        "idle": 3.779,
+        "walk": 3.348,
+        "run": 3.348,
+        "sprint": 3.348
+      },
       "geometry": "passed"
     },
     {
@@ -363,6 +525,12 @@
       ],
       "decodedMiB": 16.41,
       "maxSlideHeight": 44.54,
+      "visibleWorldHeights": {
+        "idle": 3.817,
+        "walk": 3.348,
+        "run": 3.348,
+        "sprint": 3.348
+      },
       "geometry": "passed"
     },
     {
@@ -376,6 +544,12 @@
       ],
       "decodedMiB": 11.25,
       "maxSlideHeight": 44.88,
+      "visibleWorldHeights": {
+        "idle": 3.795,
+        "walk": 3.348,
+        "run": 3.348,
+        "sprint": 3.348
+      },
       "geometry": "passed"
     },
     {
@@ -389,6 +563,12 @@
       ],
       "decodedMiB": 3.75,
       "maxSlideHeight": 45.31,
+      "visibleWorldHeights": {
+        "idle": 3.85,
+        "walk": 3.348,
+        "run": 3.348,
+        "sprint": 3.348
+      },
       "geometry": "passed"
     },
     {
@@ -402,6 +582,12 @@
       ],
       "decodedMiB": 53.16,
       "maxSlideHeight": 33.95,
+      "visibleWorldHeights": {
+        "idle": 3.757,
+        "walk": 3.497,
+        "run": 3.311,
+        "sprint": 3.311
+      },
       "geometry": "passed"
     },
     {
@@ -415,6 +601,12 @@
       ],
       "decodedMiB": 32.16,
       "maxSlideHeight": 34.03,
+      "visibleWorldHeights": {
+        "idle": 3.779,
+        "walk": 3.54,
+        "run": 3.3,
+        "sprint": 3.3
+      },
       "geometry": "passed"
     },
     {
@@ -428,6 +620,12 @@
       ],
       "decodedMiB": 16.41,
       "maxSlideHeight": 34.18,
+      "visibleWorldHeights": {
+        "idle": 3.817,
+        "walk": 3.549,
+        "run": 3.348,
+        "sprint": 3.348
+      },
       "geometry": "passed"
     },
     {
@@ -441,6 +639,12 @@
       ],
       "decodedMiB": 11.25,
       "maxSlideHeight": 34.52,
+      "visibleWorldHeights": {
+        "idle": 3.795,
+        "walk": 3.571,
+        "run": 3.292,
+        "sprint": 3.292
+      },
       "geometry": "passed"
     },
     {
@@ -454,6 +658,12 @@
       ],
       "decodedMiB": 3.75,
       "maxSlideHeight": 34.96,
+      "visibleWorldHeights": {
+        "idle": 3.85,
+        "walk": 3.599,
+        "run": 3.348,
+        "sprint": 3.348
+      },
       "geometry": "passed"
     },
     {
@@ -466,7 +676,13 @@
         4032
       ],
       "decodedMiB": 53.16,
-      "maxSlideHeight": 20.14,
+      "maxSlideHeight": 39.7,
+      "visibleWorldHeights": {
+        "idle": 3.757,
+        "walk": 3.757,
+        "run": 3.795,
+        "sprint": 3.795
+      },
       "geometry": "passed"
     },
     {
@@ -479,7 +695,13 @@
         3136
       ],
       "decodedMiB": 32.16,
-      "maxSlideHeight": 20.71,
+      "maxSlideHeight": 39.95,
+      "visibleWorldHeights": {
+        "idle": 3.779,
+        "walk": 3.779,
+        "run": 3.779,
+        "sprint": 3.779
+      },
       "geometry": "passed"
     },
     {
@@ -492,7 +714,13 @@
         2240
       ],
       "decodedMiB": 16.41,
-      "maxSlideHeight": 20.71,
+      "maxSlideHeight": 40.39,
+      "visibleWorldHeights": {
+        "idle": 3.817,
+        "walk": 3.817,
+        "run": 3.817,
+        "sprint": 3.817
+      },
       "geometry": "passed"
     },
     {
@@ -505,7 +733,13 @@
         1920
       ],
       "decodedMiB": 11.25,
-      "maxSlideHeight": 20.71,
+      "maxSlideHeight": 40.57,
+      "visibleWorldHeights": {
+        "idle": 3.795,
+        "walk": 3.795,
+        "run": 3.795,
+        "sprint": 3.795
+      },
       "geometry": "passed"
     },
     {
@@ -518,7 +752,13 @@
         960
       ],
       "decodedMiB": 3.75,
-      "maxSlideHeight": 20.71,
+      "maxSlideHeight": 41.43,
+      "visibleWorldHeights": {
+        "idle": 3.85,
+        "walk": 3.85,
+        "run": 3.85,
+        "sprint": 3.85
+      },
       "geometry": "passed"
     }
   ]

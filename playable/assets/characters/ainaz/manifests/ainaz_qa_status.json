@@ -12,7 +12,7 @@
     "semantic_animation_states": 24,
     "runtime_physical_cells": 316,
     "lite_physical_cells": 239,
-    "js_tests_passed": 304,
+    "js_tests_passed": 305,
     "browser": "passed",
     "native_touch_slide": "passed",
     "runner_bird_cleared": "passed",
@@ -21,10 +21,12 @@
     "open_world_jump": "passed",
     "open_world_celebrate": "passed",
     "selection_survives_reload": "passed",
-    "atlas_image_revision_matches_loaded_png": "passed"
+    "atlas_image_revision_matches_loaded_png": "passed",
+    "canonical_visible_body_scale": "passed",
+    "walk_run_match_standing": "passed"
   },
   "php_runtime_tests": "not_run_php_unavailable",
-  "evidence": "../../../../../docs/release-v14-ainaz/README.fa.md",
+  "evidence": "../../../../../docs/release-v14-ainaz-scale/README.fa.md",
   "limitations": [
     "Phone dimensions emulated; physical device GPU, frame rate and battery not measured."
   ]

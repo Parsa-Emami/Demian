@@ -1,0 +1,152 @@
+{
+  "character": "ainaz",
+  "canonicalWorldHeight": 3.75,
+  "alphaThreshold": 32,
+  "measurements": [
+    {
+      "variant": "desktop",
+      "states": {
+        "idle": {
+          "before": 3.7574,
+          "after": 3.7574
+        },
+        "walk": {
+          "before": 2.3438,
+          "after": 3.7574
+        },
+        "run": {
+          "before": 2.1949,
+          "after": 3.7946
+        },
+        "sprint": {
+          "before": 2.1949,
+          "after": 3.7946
+        },
+        "slide": {
+          "before": 1.3021,
+          "after": 2.567
+        },
+        "celebrate": {
+          "before": 1.9717,
+          "after": 3.7946
+        }
+      }
+    },
+    {
+      "variant": "mobile",
+      "states": {
+        "idle": {
+          "before": 3.7787,
+          "after": 3.7787
+        },
+        "walk": {
+          "before": 2.3916,
+          "after": 3.7787
+        },
+        "run": {
+          "before": 2.2003,
+          "after": 3.7787
+        },
+        "sprint": {
+          "before": 2.2003,
+          "after": 3.7787
+        },
+        "slide": {
+          "before": 1.2915,
+          "after": 2.5829
+        },
+        "celebrate": {
+          "before": 1.9611,
+          "after": 3.7787
+        }
+      }
+    },
+    {
+      "variant": "compact",
+      "states": {
+        "idle": {
+          "before": 3.817,
+          "after": 3.817
+        },
+        "walk": {
+          "before": 2.4107,
+          "after": 3.817
+        },
+        "run": {
+          "before": 2.2098,
+          "after": 3.817
+        },
+        "sprint": {
+          "before": 2.2098,
+          "after": 3.817
+        },
+        "slide": {
+          "before": 1.3393,
+          "after": 2.6116
+        },
+        "celebrate": {
+          "before": 2.0089,
+          "after": 3.817
+        }
+      }
+    },
+    {
+      "variant": "runtime",
+      "states": {
+        "idle": {
+          "before": 3.7946,
+          "after": 3.7946
+        },
+        "walk": {
+          "before": 2.3996,
+          "after": 3.7946
+        },
+        "run": {
+          "before": 2.2321,
+          "after": 3.7946
+        },
+        "sprint": {
+          "before": 2.2321,
+          "after": 3.7946
+        },
+        "slide": {
+          "before": 1.3393,
+          "after": 2.567
+        },
+        "celebrate": {
+          "before": 2.0089,
+          "after": 3.7946
+        }
+      }
+    },
+    {
+      "variant": "lite",
+      "states": {
+        "idle": {
+          "before": 3.8504,
+          "after": 3.8504
+        },
+        "walk": {
+          "before": 2.4275,
+          "after": 3.8504
+        },
+        "run": {
+          "before": 2.26,
+          "after": 3.8504
+        },
+        "sprint": {
+          "before": 2.26,
+          "after": 3.8504
+        },
+        "slide": {
+          "before": 1.3393,
+          "after": 2.5949
+        },
+        "celebrate": {
+          "before": 2.0089,
+          "after": 3.8504
+        }
+      }
+    }
+  ]
+}

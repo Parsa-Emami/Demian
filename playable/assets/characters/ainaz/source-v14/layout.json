@@ -85,5 +85,42 @@
     "dash": "run",
     "dodge": "slide",
     "salute": "wave"
+  },
+  "faceSampleHeightRatio": 0.45,
+  "bodyScaleReferencePoses": {
+    "walk": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "run": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "land": [
+      6,
+      7
+    ],
+    "celebrate": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ]
   }
 }
