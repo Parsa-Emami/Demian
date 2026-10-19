@@ -1,0 +1,26 @@
+{
+  "source": "دمیان .fbx",
+  "sha256": "409a9c8bb67f4b8e3bf58849bb92f56286483da8242fab88abfeb4edd234f704",
+  "fbxVersion": 7700,
+  "units": "metres",
+  "upAxis": "Z",
+  "transform": {
+    "gameplayUnitsPerMetre": 4.0,
+    "sourceCenterX": -48.5125,
+    "sourceFrontY": 43.0,
+    "x": "-(sourceX - sourceCenterX) * scale",
+    "y": "sourceZ * scale",
+    "z": "(sourceY - sourceFrontY) * scale"
+  },
+  "counts": {
+    "Mesh": 11605,
+    "triangles": 597744,
+    "NurbsSurface": 1563,
+    "TrimNurbsSurface": 929,
+    "emptyMeshes": 11
+  },
+  "embeddedImages": 42,
+  "materials": 112,
+  "drawCalls": 113,
+  "bytes": 30711016
+}

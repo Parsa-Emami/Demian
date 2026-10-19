@@ -1,0 +1,26 @@
+{
+  "character_key": "ainaz",
+  "pack_version": 14,
+  "physics_owns_jump_height": true,
+  "dedicated_slide": true,
+  "uniform_body_scale": true,
+  "style": "ground-runner",
+  "wing_powered_states": [],
+  "locomotion_profile": {
+    "id": "shared-ground-v2",
+    "referenceCharacter": null,
+    "phaseDriver": "travelled-distance",
+    "strideLengths": {
+      "walk": 3.4,
+      "run": 6,
+      "sprint": 6.4
+    },
+    "maxStrideHz": 1.55,
+    "landingSeconds": 0.16,
+    "jumpBufferSeconds": 0.14,
+    "coyoteSeconds": 0.11,
+    "heldApexGravity": 0.65,
+    "releasedRiseGravity": 1.65,
+    "recoveryInterruptible": true
+  }
+}

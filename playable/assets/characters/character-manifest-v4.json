@@ -72,6 +72,16 @@
       "locomotion_style": "ground-runner",
       "manifest": "hanna/manifests/character_manifest_v4.json",
       "has_shipped_assets": true
+    },
+    {
+      "slug": "ainaz",
+      "display_name": "AINAZ / آیناز",
+      "production_status": "gold_standard_production",
+      "is_default_active": false,
+      "pack_version": 14,
+      "locomotion_style": "ground-runner",
+      "manifest": "ainaz/manifests/character_manifest_v4.json",
+      "has_shipped_assets": true
     }
   ]
 }

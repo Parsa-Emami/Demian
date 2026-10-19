@@ -1,0 +1,25 @@
+{
+  "character_key": "ainaz",
+  "pack_version": 14,
+  "reference": "../source-v14/master.png",
+  "master": "../source-v14/master.png",
+  "runner_motion": "../source-v14/runner-motion.png",
+  "slide_master": "../source-v14/slides.png",
+  "inputs": [
+    {
+      "name": "image(20261019-143228).png",
+      "role": "user-supplied-ainaz-identity-and-cream-outfit",
+      "library_file_id": "libfile_7afd8dff95ec81919573be8d605fc6ba"
+    },
+    {
+      "name": "image(20261019-143233).png",
+      "role": "user-supplied-ainaz-identity-and-cream-outfit",
+      "library_file_id": "libfile_9296b2676f6481918fa0726d79fe12d9"
+    },
+    {
+      "name": "image(20261019-143243).png",
+      "role": "user-supplied-ainaz-identity-and-cream-outfit",
+      "library_file_id": "libfile_91226d6c71a08191be365db747e83be4"
+    }
+  ]
+}

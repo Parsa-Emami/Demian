@@ -27,7 +27,7 @@ function readJson(relativePath) {
 }
 
 test('all installed reference-driven characters are production-ready', () => {
-    assert.deepEqual(PRODUCTION_CHARACTER_SLUGS, ['darya', 'setayesh', 'uzudi', 'negar', 'tiam', 'amirreza', 'hanna']);
+    assert.deepEqual(PRODUCTION_CHARACTER_SLUGS, ['darya', 'setayesh', 'uzudi', 'negar', 'tiam', 'amirreza', 'hanna', 'ainaz']);
     assert.equal(DEFAULT_ACTIVE_SLUG, 'darya');
     assert.equal(isProductionReady('darya'), true);
     assert.equal(characterProductionStatus('darya'), PRODUCTION_STATUS.GOLD_STANDARD);
@@ -285,6 +285,6 @@ test('CharacterRepository.listRankedByProductionStatus() annotates and sorts DB 
     assert.equal(ranked[1].is_production_ready, true);
     assert.equal(ranked[2].is_production_ready, true);
 
-    assert.deepEqual(CharacterRepository.productionSlugs(), ['darya', 'setayesh', 'uzudi', 'negar', 'tiam', 'amirreza', 'hanna']);
+    assert.deepEqual(CharacterRepository.productionSlugs(), ['darya', 'setayesh', 'uzudi', 'negar', 'tiam', 'amirreza', 'hanna', 'ainaz']);
     assert.deepEqual(CharacterRepository.legacySlugs(), []);
 });

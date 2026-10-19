@@ -164,6 +164,7 @@ export default class SpriteCharacter {
         this.shadow.renderOrder = 2;
 
         const selectionRingColor = {
+            ainaz: 0xe9d9b6,
             amirreza: 0x67e8f9,
             hanna: 0xd6ab67,
             parsa: 0xfbbf24,

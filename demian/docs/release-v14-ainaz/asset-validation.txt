@@ -1,0 +1,1 @@
+V14 asset validation passed: 8 characters / 40 atlas variants; 672 animation frame names each (runtime cells share sampled poses).

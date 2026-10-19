@@ -1,0 +1,55 @@
+{
+  "date": "2026-10-19",
+  "character": "ainaz",
+  "packVersion": 14,
+  "status": "passed",
+  "sourcePosesGenerated": 80,
+  "sourcePosesUsed": 60,
+  "animationFrameNames": 672,
+  "semanticAnimationStates": 24,
+  "variants": [
+    "desktop",
+    "mobile",
+    "compact",
+    "runtime",
+    "lite"
+  ],
+  "javascript": {
+    "tests": 304,
+    "passed": 304,
+    "failed": 0
+  },
+  "assetValidation": {
+    "characters": 8,
+    "atlasVariants": 40,
+    "status": "passed"
+  },
+  "releaseValidation": {
+    "javascriptFiles": 344,
+    "status": "passed"
+  },
+  "uiLayerValidation": "passed",
+  "productionBuild": "passed",
+  "atomicBundleValidation": "passed",
+  "browser": {
+    "status": "passed",
+    "engine": "Chromium 153.0.8010.0",
+    "viewports": [
+      [
+        390,
+        844
+      ],
+      [
+        1440,
+        900
+      ]
+    ]
+  },
+  "php": {
+    "status": "not_run",
+    "reason": "PHP and Composer are not installed in the execution environment. CharacterManagerTest includes Ainaz installation and activation coverage."
+  },
+  "limitations": [
+    "Phone dimensions emulated; physical device GPU, frame rate and battery not measured."
+  ]
+}

@@ -1,0 +1,66 @@
+{
+  "character_key": "ainaz",
+  "display_name": "AINAZ / آیناز",
+  "production_status": "gold_standard_production",
+  "pack_version": 14,
+  "source_of_truth": {
+    "reference_manifest": "ainaz_reference_manifest.json"
+  },
+  "identity_contract": "ainaz_identity_contract.json",
+  "animations": [
+    "idle",
+    "breathe",
+    "blink",
+    "ready",
+    "walk",
+    "run",
+    "sprint",
+    "takeoff",
+    "jump",
+    "fall",
+    "land",
+    "slide",
+    "crouch",
+    "turn",
+    "wave",
+    "celebrate",
+    "win",
+    "tiptoe",
+    "hop",
+    "hover",
+    "skid",
+    "dash",
+    "dodge",
+    "salute"
+  ],
+  "runtime": {
+    "identity_manifest": "ainaz_identity_contract.json",
+    "asset_manifest": "character_manifest_v4.json",
+    "animation_manifest": "ainaz_animation_manifest.json",
+    "motion_profile": "ainaz_motion_profile.json",
+    "ability_profile": "ainaz_ability_profile.json",
+    "qa_status": "ainaz_qa_status.json",
+    "atlas_targets": {
+      "desktop": {
+        "atlas": "../ainaz-atlas-v14-desktop.json",
+        "image": "../ainaz-spritesheet-v14-desktop.png"
+      },
+      "mobile": {
+        "atlas": "../ainaz-atlas-v14-mobile.json",
+        "image": "../ainaz-spritesheet-v14-mobile.png"
+      },
+      "compact": {
+        "atlas": "../ainaz-atlas-v14-compact.json",
+        "image": "../ainaz-spritesheet-v14-compact.png"
+      },
+      "runtime": {
+        "atlas": "../ainaz-atlas-v14-runtime.json",
+        "image": "../ainaz-spritesheet-v14-runtime.png"
+      },
+      "lite": {
+        "atlas": "../ainaz-atlas-v14-lite.json",
+        "image": "../ainaz-spritesheet-v14-lite.png"
+      }
+    }
+  }
+}

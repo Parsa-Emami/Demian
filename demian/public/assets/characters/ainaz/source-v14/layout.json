@@ -1,0 +1,89 @@
+{
+  "movementStyle": "ground-runner",
+  "locomotionCycleCounts": {
+    "walk": 1,
+    "run": 1,
+    "sprint": 1
+  },
+  "mainStates": [
+    "turn",
+    "idle",
+    "walk",
+    "jump",
+    "land"
+  ],
+  "mainRowBounds": [
+    0,
+    244,
+    467,
+    687,
+    883,
+    1086
+  ],
+  "motionColumns": 8,
+  "motionRowStates": [
+    "walk",
+    "run",
+    "land",
+    "celebrate"
+  ],
+  "motionRowBounds": [
+    0,
+    249,
+    474,
+    690,
+    887
+  ],
+  "slideRows": [
+    1
+  ],
+  "referenceAsset": "../source-v14/master.png",
+  "referenceInputs": [
+    {
+      "name": "image(20261019-143228).png",
+      "role": "user-supplied-ainaz-identity-and-cream-outfit",
+      "library_file_id": "libfile_7afd8dff95ec81919573be8d605fc6ba"
+    },
+    {
+      "name": "image(20261019-143233).png",
+      "role": "user-supplied-ainaz-identity-and-cream-outfit",
+      "library_file_id": "libfile_9296b2676f6481918fa0726d79fe12d9"
+    },
+    {
+      "name": "image(20261019-143243).png",
+      "role": "user-supplied-ainaz-identity-and-cream-outfit",
+      "library_file_id": "libfile_91226d6c71a08191be365db747e83be4"
+    }
+  ],
+  "sourceArtwork": [
+    {
+      "name": "master.png",
+      "sha256": "86878c8b1d38c72f8469d7a7a974e395c6062d8f0fc7ef4a9ce80c7cde685825"
+    },
+    {
+      "name": "runner-motion.png",
+      "sha256": "f92d00c91518d02afcb42790773ca9a30e9d22041953cae04c4b45366bbdc2d4"
+    },
+    {
+      "name": "slides.png",
+      "sha256": "803350b97cf218269db83e936c4ceceef36e7c80cc8920392fa92f3ba36c06d1"
+    }
+  ],
+  "identity": [
+    "straight dark brown hair with a side part",
+    "warm light skin, hazel brown eyes, arched eyebrows and a composed smile",
+    "loose ivory collared shirt with rolled sleeves and a dark inner neckline",
+    "matching ivory wide-leg trousers and cream flat shoes",
+    "delicate gold necklace and gold bracelets",
+    "consistent chibi proportions and a readable single silhouette in all movements"
+  ],
+  "animationAliases": {
+    "tiptoe": "walk",
+    "hop": "jump",
+    "hover": "jump",
+    "skid": "run",
+    "dash": "run",
+    "dodge": "slide",
+    "salute": "wave"
+  }
+}

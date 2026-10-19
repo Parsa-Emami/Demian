@@ -1,0 +1,31 @@
+{
+  "character_key": "ainaz",
+  "pack_version": 14,
+  "motion_version": "natural-locomotion-v2",
+  "status": "validated_in_emulated_browser",
+  "date": "2026-10-19",
+  "checks": {
+    "asset_geometry": "passed",
+    "all_variants": true,
+    "source_key_poses": 60,
+    "animation_frame_names": 672,
+    "semantic_animation_states": 24,
+    "runtime_physical_cells": 316,
+    "lite_physical_cells": 239,
+    "js_tests_passed": 304,
+    "browser": "passed",
+    "native_touch_slide": "passed",
+    "runner_bird_cleared": "passed",
+    "keyboard_jump": "passed",
+    "open_world_movement": "passed",
+    "open_world_jump": "passed",
+    "open_world_celebrate": "passed",
+    "selection_survives_reload": "passed",
+    "atlas_image_revision_matches_loaded_png": "passed"
+  },
+  "php_runtime_tests": "not_run_php_unavailable",
+  "evidence": "../../../../../docs/release-v14-ainaz/README.fa.md",
+  "limitations": [
+    "Phone dimensions emulated; physical device GPU, frame rate and battery not measured."
+  ]
+}

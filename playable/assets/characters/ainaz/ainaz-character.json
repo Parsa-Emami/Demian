@@ -1,0 +1,15 @@
+{
+  "slug": "ainaz",
+  "name": "AINAZ / آیناز",
+  "pack_version": 14,
+  "locomotion_style": "ground-runner",
+  "speech": {
+    "duration": 3.2,
+    "messages": [
+      "بزن بریم",
+      "یه دور دیگه",
+      "آماده‌ام",
+      "وقت یه رکورد تازه‌ست"
+    ]
+  }
+}

@@ -47,6 +47,7 @@ class CharacterManagerTest extends TestCase
             ['tiam', 'TIAM / تیام'],
             ['amirreza', 'AMIRREZA / امیررضا'],
             ['hanna', 'HANNA / حنا'],
+            ['ainaz', 'AINAZ / آیناز'],
         ] as [$slug, $name]) {
             $response->assertJsonFragment([
                 'slug' => $slug,
@@ -56,7 +57,7 @@ class CharacterManagerTest extends TestCase
         }
 
         // Updated asset pack versions
-        $packVersions = ['darya' => 14, 'setayesh' => 14, 'uzudi' => 14, 'negar' => 14, 'tiam' => 14, 'amirreza' => 14, 'hanna' => 14];
+        $packVersions = ['darya' => 14, 'setayesh' => 14, 'uzudi' => 14, 'negar' => 14, 'tiam' => 14, 'amirreza' => 14, 'hanna' => 14, 'ainaz' => 14];
 
         foreach ($packVersions as $slug => $version) {
             $response->assertJsonFragment([
@@ -105,6 +106,29 @@ class CharacterManagerTest extends TestCase
         $this->postJson("/characters/{$id}/activate")
             ->assertOk()->assertJsonPath('data.slug', 'hanna')->assertJsonPath('data.is_active', true);
         $this->getJson('/characters')->assertOk()->assertJsonPath('data.0.slug', 'hanna');
+        $this->assertSame(1, Character::query()->where('is_active', true)->count());
+    }
+
+    public function test_ainaz_is_installed_idempotently_and_can_be_selected_with_all_full_asset_variants(): void
+    {
+        $this->seed(BuiltinCharacterSeeder::class);
+        $ainaz = Character::query()->where('slug', 'ainaz')->firstOrFail();
+        $id = $ainaz->id;
+        $this->seed(BuiltinCharacterSeeder::class);
+        $this->assertSame($id, $ainaz->fresh()->id);
+        $this->assertSame('ground-runner', $ainaz->fresh()->settings['locomotion_style']);
+        $this->assertSame(14, $ainaz->fresh()->settings['asset_pack_version']);
+        $this->assertNull($ainaz->fresh()->settings['companion']);
+
+        foreach (['desktop', 'mobile', 'compact'] as $variant) {
+            $manifest = app(CharacterAssetService::class)->getOptimizedManifest($id, $variant);
+            $this->assertTrue($manifest['is_production_ready']);
+            $this->assertStringEndsWith("ainaz-atlas-v14-{$variant}.json", $manifest['atlas']);
+            $this->assertStringEndsWith("ainaz-spritesheet-v14-{$variant}.png", $manifest['image']);
+        }
+        $this->postJson("/characters/{$id}/activate")
+            ->assertOk()->assertJsonPath('data.slug', 'ainaz')->assertJsonPath('data.is_active', true);
+        $this->getJson('/characters')->assertOk()->assertJsonPath('data.0.slug', 'ainaz');
         $this->assertSame(1, Character::query()->where('is_active', true)->count());
     }
 

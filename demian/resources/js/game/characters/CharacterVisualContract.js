@@ -32,6 +32,7 @@ export const CHARACTER_PACK_VERSION = 6;
 // (npm run validate:character-art / audit_character_sprite_packs.py); until
 // then every character keeps resolving to CHARACTER_PACK_VERSION as before.
 export const CHARACTER_PACK_VERSION_OVERRIDES = Object.freeze({
+    ainaz: 14,
     amirreza: 14,
     arsal: 9,
     darya: 14,

@@ -1,0 +1,6 @@
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> validate:ui-layers
+> node tools/validate_ui_layers.mjs
+
+UI layer validation passed: 21 tokens, 21 semantic layers, 227 UI source files checked.

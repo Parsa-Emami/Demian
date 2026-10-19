@@ -662,6 +662,7 @@ export default class CharacterManager {
         canvas.height = 64;
         const context = canvas.getContext('2d');
         const accent = {
+            ainaz: '#e9d9b6',
             amirreza: '#fbbf24',
             parsa: '#ef4444',
             darya: '#fb7185',
