@@ -53,7 +53,9 @@ async function visibleBodyScale(page, mode) {
             const n=heights.length;
             ratios[state]=(heights[Math.floor((n-1)/2)]+heights[Math.floor(n/2)])/2/atlas.render.referenceBodyHeightRatio;
         }
-        return {ratios,frameWorldHeight:entity.baseHeight??null,
+        return {ratios,jumpRecoveryRatio:height('jump_e_047')/atlas.render.referenceBodyHeightRatio,
+            airborneRatio:atlas.animations.jump.frames.map(height).sort((a,b)=>a-b)[Math.floor(atlas.animations.jump.frames.length/2)]/atlas.render.referenceBodyHeightRatio,
+            frameWorldHeight:entity.baseHeight??null,
             currentWorldHeight:mode==='world'?height(entity.animator.currentFrameName())*entity.baseHeight:null,
             bodyScale:entity.bodyRoot?.scale?.y??1,variant:atlas.meta.variant};
     }, mode);
@@ -83,6 +85,8 @@ try {
         await page.waitForFunction(() => window.demianGameApplication.activeGame?.model?.status === 'ready');
         assert.equal(await page.evaluate(() => window.demianGameApplication.activeGame.avatar.slug), 'arsal');
         const runnerBodyScale = await visibleBodyScale(page, 'runner');
+        assert.ok(runnerBodyScale.jumpRecoveryRatio >= .96 && runnerBodyScale.jumpRecoveryRatio <= 1.05);
+        assert.ok(runnerBodyScale.airborneRatio >= .85 && runnerBodyScale.airborneRatio <= 1.05);
         for(const [state, ratio] of Object.entries(runnerBodyScale.ratios)) {
             assert.ok(ratio >= .96 && ratio <= 1.05, `Runner ${state} visible height must match the canonical body: ${ratio}`);
         }

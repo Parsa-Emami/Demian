@@ -91,7 +91,9 @@ test('Arsal walking and running use calibrated artwork inside the same world foo
         const data = atlas(variant);
         const calibration = data.render.bodyScaleCalibration;
         assert.equal(calibration.method, 'authored-standing-pose-height');
-        assert.deepEqual(Object.keys(calibration.referencePoseIndices), ['walk','run','land','celebrate']);
+        assert.deepEqual(Object.keys(calibration.referencePoseIndices), ['walk','run','jump','land','celebrate']);
+        assert.deepEqual(calibration.referencePoseIndices.jump, [7]);
+        assert.ok(calibration.uniformScaleByState.jump > calibration.uniformScaleByState.walk);
         assert.equal(calibration.targetBodyHeightRatio, data.render.referenceBodyHeightRatio);
         const metrics = characterFrameWorldSize(data);
         for (const slug of ['darya','setayesh','uzudi','negar','tiam','amirreza','hanna']) {

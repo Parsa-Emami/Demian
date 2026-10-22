@@ -1,0 +1,782 @@
+{
+  "status": "passed",
+  "units": "world-units",
+  "canonicalStandingHeight": 3.75,
+  "variants": [
+    {
+      "variant": "desktop",
+      "states": {
+        "idle": {
+          "before": {
+            "medianVisibleWidth": 1.5997,
+            "medianVisibleHeight": 3.7574
+          },
+          "after": {
+            "medianVisibleWidth": 1.5997,
+            "medianVisibleHeight": 3.7574
+          }
+        },
+        "walk": {
+          "before": {
+            "medianVisibleWidth": 2.1205,
+            "medianVisibleHeight": 3.7574
+          },
+          "after": {
+            "medianVisibleWidth": 2.1205,
+            "medianVisibleHeight": 3.7574
+          }
+        },
+        "run": {
+          "before": {
+            "medianVisibleWidth": 2.0833,
+            "medianVisibleHeight": 3.7574
+          },
+          "after": {
+            "medianVisibleWidth": 2.0833,
+            "medianVisibleHeight": 3.7574
+          }
+        },
+        "takeoff": {
+          "before": {
+            "medianVisibleWidth": 2.0647,
+            "medianVisibleHeight": 2.939
+          },
+          "after": {
+            "medianVisibleWidth": 2.5484,
+            "medianVisibleHeight": 3.5714
+          }
+        },
+        "jump": {
+          "before": {
+            "medianVisibleWidth": 2.1205,
+            "medianVisibleHeight": 2.846
+          },
+          "after": {
+            "medianVisibleWidth": 2.6042,
+            "medianVisibleHeight": 3.497
+          }
+        },
+        "fall": {
+          "before": {
+            "medianVisibleWidth": 2.0089,
+            "medianVisibleHeight": 2.8274
+          },
+          "after": {
+            "medianVisibleWidth": 2.4182,
+            "medianVisibleHeight": 3.497
+          }
+        },
+        "land": {
+          "before": {
+            "medianVisibleWidth": 1.7857,
+            "medianVisibleHeight": 3.7016
+          },
+          "after": {
+            "medianVisibleWidth": 1.7857,
+            "medianVisibleHeight": 3.7016
+          }
+        },
+        "slide": {
+          "before": {
+            "medianVisibleWidth": 3.6086,
+            "medianVisibleHeight": 2.753
+          },
+          "after": {
+            "medianVisibleWidth": 3.6086,
+            "medianVisibleHeight": 2.753
+          }
+        },
+        "celebrate": {
+          "before": {
+            "medianVisibleWidth": 2.2321,
+            "medianVisibleHeight": 3.7574
+          },
+          "after": {
+            "medianVisibleWidth": 2.2321,
+            "medianVisibleHeight": 3.7574
+          }
+        }
+      },
+      "calibration": {
+        "method": "authored-standing-pose-height",
+        "targetBodyHeightRatio": 0.7,
+        "referencePoseIndices": {
+          "walk": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7
+          ],
+          "run": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15
+          ],
+          "jump": [
+            7
+          ],
+          "land": [
+            0,
+            5,
+            6,
+            7
+          ],
+          "celebrate": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7
+          ]
+        },
+        "uniformScaleByState": {
+          "walk": 0.7648780487804877,
+          "run": 0.5650450450450449,
+          "jump": 0.8808988764044943,
+          "land": 0.5217970049916805,
+          "celebrate": 0.8934472934472933
+        }
+      }
+    },
+    {
+      "variant": "mobile",
+      "states": {
+        "idle": {
+          "before": {
+            "medianVisibleWidth": 1.6263,
+            "medianVisibleHeight": 3.7787
+          },
+          "after": {
+            "medianVisibleWidth": 1.6263,
+            "medianVisibleHeight": 3.7787
+          }
+        },
+        "walk": {
+          "before": {
+            "medianVisibleWidth": 2.1046,
+            "medianVisibleHeight": 3.7787
+          },
+          "after": {
+            "medianVisibleWidth": 2.1046,
+            "medianVisibleHeight": 3.7787
+          }
+        },
+        "run": {
+          "before": {
+            "medianVisibleWidth": 2.1046,
+            "medianVisibleHeight": 3.7787
+          },
+          "after": {
+            "medianVisibleWidth": 2.1046,
+            "medianVisibleHeight": 3.7787
+          }
+        },
+        "takeoff": {
+          "before": {
+            "medianVisibleWidth": 2.0328,
+            "medianVisibleHeight": 2.9416
+          },
+          "after": {
+            "medianVisibleWidth": 2.5112,
+            "medianVisibleHeight": 3.5874
+          }
+        },
+        "jump": {
+          "before": {
+            "medianVisibleWidth": 2.1524,
+            "medianVisibleHeight": 2.846
+          },
+          "after": {
+            "medianVisibleWidth": 2.6307,
+            "medianVisibleHeight": 3.4917
+          }
+        },
+        "fall": {
+          "before": {
+            "medianVisibleWidth": 2.0089,
+            "medianVisibleHeight": 2.8699
+          },
+          "after": {
+            "medianVisibleWidth": 2.4394,
+            "medianVisibleHeight": 3.5395
+          }
+        },
+        "land": {
+          "before": {
+            "medianVisibleWidth": 1.7698,
+            "medianVisibleHeight": 3.7309
+          },
+          "after": {
+            "medianVisibleWidth": 1.7698,
+            "medianVisibleHeight": 3.7309
+          }
+        },
+        "slide": {
+          "before": {
+            "medianVisibleWidth": 3.5874,
+            "medianVisibleHeight": 2.7742
+          },
+          "after": {
+            "medianVisibleWidth": 3.5874,
+            "medianVisibleHeight": 2.7742
+          }
+        },
+        "celebrate": {
+          "before": {
+            "medianVisibleWidth": 2.2481,
+            "medianVisibleHeight": 3.7787
+          },
+          "after": {
+            "medianVisibleWidth": 2.2481,
+            "medianVisibleHeight": 3.7787
+          }
+        }
+      },
+      "calibration": {
+        "method": "authored-standing-pose-height",
+        "targetBodyHeightRatio": 0.7,
+        "referencePoseIndices": {
+          "walk": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7
+          ],
+          "run": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15
+          ],
+          "jump": [
+            7
+          ],
+          "land": [
+            0,
+            5,
+            6,
+            7
+          ],
+          "celebrate": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7
+          ]
+        },
+        "uniformScaleByState": {
+          "walk": 0.7648780487804877,
+          "run": 0.5650450450450449,
+          "jump": 0.8808988764044943,
+          "land": 0.5217970049916805,
+          "celebrate": 0.8934472934472933
+        }
+      }
+    },
+    {
+      "variant": "compact",
+      "states": {
+        "idle": {
+          "before": {
+            "medianVisibleWidth": 1.6071,
+            "medianVisibleHeight": 3.817
+          },
+          "after": {
+            "medianVisibleWidth": 1.6071,
+            "medianVisibleHeight": 3.817
+          }
+        },
+        "walk": {
+          "before": {
+            "medianVisibleWidth": 2.1429,
+            "medianVisibleHeight": 3.817
+          },
+          "after": {
+            "medianVisibleWidth": 2.1429,
+            "medianVisibleHeight": 3.817
+          }
+        },
+        "run": {
+          "before": {
+            "medianVisibleWidth": 2.0759,
+            "medianVisibleHeight": 3.75
+          },
+          "after": {
+            "medianVisibleWidth": 2.0759,
+            "medianVisibleHeight": 3.75
+          }
+        },
+        "takeoff": {
+          "before": {
+            "medianVisibleWidth": 2.0759,
+            "medianVisibleHeight": 2.9464
+          },
+          "after": {
+            "medianVisibleWidth": 2.5446,
+            "medianVisibleHeight": 3.6161
+          }
+        },
+        "jump": {
+          "before": {
+            "medianVisibleWidth": 2.0759,
+            "medianVisibleHeight": 2.846
+          },
+          "after": {
+            "medianVisibleWidth": 2.6116,
+            "medianVisibleHeight": 3.4821
+          }
+        },
+        "fall": {
+          "before": {
+            "medianVisibleWidth": 2.0089,
+            "medianVisibleHeight": 2.8795
+          },
+          "after": {
+            "medianVisibleWidth": 2.4107,
+            "medianVisibleHeight": 3.5491
+          }
+        },
+        "land": {
+          "before": {
+            "medianVisibleWidth": 1.7411,
+            "medianVisibleHeight": 3.75
+          },
+          "after": {
+            "medianVisibleWidth": 1.7411,
+            "medianVisibleHeight": 3.75
+          }
+        },
+        "slide": {
+          "before": {
+            "medianVisibleWidth": 3.6161,
+            "medianVisibleHeight": 2.8125
+          },
+          "after": {
+            "medianVisibleWidth": 3.6161,
+            "medianVisibleHeight": 2.8125
+          }
+        },
+        "celebrate": {
+          "before": {
+            "medianVisibleWidth": 2.2433,
+            "medianVisibleHeight": 3.817
+          },
+          "after": {
+            "medianVisibleWidth": 2.2433,
+            "medianVisibleHeight": 3.817
+          }
+        }
+      },
+      "calibration": {
+        "method": "authored-standing-pose-height",
+        "targetBodyHeightRatio": 0.7,
+        "referencePoseIndices": {
+          "walk": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7
+          ],
+          "run": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15
+          ],
+          "jump": [
+            7
+          ],
+          "land": [
+            0,
+            5,
+            6,
+            7
+          ],
+          "celebrate": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7
+          ]
+        },
+        "uniformScaleByState": {
+          "walk": 0.7648780487804877,
+          "run": 0.5650450450450449,
+          "jump": 0.8808988764044943,
+          "land": 0.5217970049916805,
+          "celebrate": 0.8934472934472933
+        }
+      }
+    },
+    {
+      "variant": "runtime",
+      "states": {
+        "idle": {
+          "before": {
+            "medianVisibleWidth": 1.6183,
+            "medianVisibleHeight": 3.7946
+          },
+          "after": {
+            "medianVisibleWidth": 1.6183,
+            "medianVisibleHeight": 3.7946
+          }
+        },
+        "walk": {
+          "before": {
+            "medianVisibleWidth": 2.1205,
+            "medianVisibleHeight": 3.7946
+          },
+          "after": {
+            "medianVisibleWidth": 2.1205,
+            "medianVisibleHeight": 3.7946
+          }
+        },
+        "run": {
+          "before": {
+            "medianVisibleWidth": 2.1205,
+            "medianVisibleHeight": 3.7667
+          },
+          "after": {
+            "medianVisibleWidth": 2.1205,
+            "medianVisibleHeight": 3.7667
+          }
+        },
+        "takeoff": {
+          "before": {
+            "medianVisibleWidth": 2.0926,
+            "medianVisibleHeight": 2.9576
+          },
+          "after": {
+            "medianVisibleWidth": 2.5391,
+            "medianVisibleHeight": 3.6272
+          }
+        },
+        "jump": {
+          "before": {
+            "medianVisibleWidth": 2.1205,
+            "medianVisibleHeight": 2.846
+          },
+          "after": {
+            "medianVisibleWidth": 2.5949,
+            "medianVisibleHeight": 3.5156
+          }
+        },
+        "fall": {
+          "before": {
+            "medianVisibleWidth": 2.1763,
+            "medianVisibleHeight": 2.9018
+          },
+          "after": {
+            "medianVisibleWidth": 2.6228,
+            "medianVisibleHeight": 3.5714
+          }
+        },
+        "land": {
+          "before": {
+            "medianVisibleWidth": 1.6741,
+            "medianVisibleHeight": 3.7388
+          },
+          "after": {
+            "medianVisibleWidth": 1.6741,
+            "medianVisibleHeight": 3.7388
+          }
+        },
+        "slide": {
+          "before": {
+            "medianVisibleWidth": 3.6272,
+            "medianVisibleHeight": 2.7902
+          },
+          "after": {
+            "medianVisibleWidth": 3.6272,
+            "medianVisibleHeight": 2.7902
+          }
+        },
+        "celebrate": {
+          "before": {
+            "medianVisibleWidth": 2.2321,
+            "medianVisibleHeight": 3.7946
+          },
+          "after": {
+            "medianVisibleWidth": 2.2321,
+            "medianVisibleHeight": 3.7946
+          }
+        }
+      },
+      "calibration": {
+        "method": "authored-standing-pose-height",
+        "targetBodyHeightRatio": 0.7,
+        "referencePoseIndices": {
+          "walk": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7
+          ],
+          "run": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15
+          ],
+          "jump": [
+            7
+          ],
+          "land": [
+            0,
+            5,
+            6,
+            7
+          ],
+          "celebrate": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7
+          ]
+        },
+        "uniformScaleByState": {
+          "walk": 0.7648780487804877,
+          "run": 0.5650450450450449,
+          "jump": 0.8808988764044943,
+          "land": 0.5217970049916805,
+          "celebrate": 0.8934472934472933
+        }
+      }
+    },
+    {
+      "variant": "lite",
+      "states": {
+        "idle": {
+          "before": {
+            "medianVisibleWidth": 1.6741,
+            "medianVisibleHeight": 3.8504
+          },
+          "after": {
+            "medianVisibleWidth": 1.6741,
+            "medianVisibleHeight": 3.8504
+          }
+        },
+        "walk": {
+          "before": {
+            "medianVisibleWidth": 2.0926,
+            "medianVisibleHeight": 3.8504
+          },
+          "after": {
+            "medianVisibleWidth": 2.0926,
+            "medianVisibleHeight": 3.8504
+          }
+        },
+        "run": {
+          "before": {
+            "medianVisibleWidth": 2.0926,
+            "medianVisibleHeight": 3.7667
+          },
+          "after": {
+            "medianVisibleWidth": 2.0926,
+            "medianVisibleHeight": 3.7667
+          }
+        },
+        "takeoff": {
+          "before": {
+            "medianVisibleWidth": 2.0926,
+            "medianVisibleHeight": 3.0134
+          },
+          "after": {
+            "medianVisibleWidth": 2.5112,
+            "medianVisibleHeight": 3.5993
+          }
+        },
+        "jump": {
+          "before": {
+            "medianVisibleWidth": 2.1763,
+            "medianVisibleHeight": 2.8878
+          },
+          "after": {
+            "medianVisibleWidth": 2.5949,
+            "medianVisibleHeight": 3.5156
+          }
+        },
+        "fall": {
+          "before": {
+            "medianVisibleWidth": 2.1763,
+            "medianVisibleHeight": 2.9297
+          },
+          "after": {
+            "medianVisibleWidth": 2.6786,
+            "medianVisibleHeight": 3.5156
+          }
+        },
+        "land": {
+          "before": {
+            "medianVisibleWidth": 1.716,
+            "medianVisibleHeight": 3.8086
+          },
+          "after": {
+            "medianVisibleWidth": 1.716,
+            "medianVisibleHeight": 3.8086
+          }
+        },
+        "slide": {
+          "before": {
+            "medianVisibleWidth": 3.683,
+            "medianVisibleHeight": 2.8041
+          },
+          "after": {
+            "medianVisibleWidth": 3.683,
+            "medianVisibleHeight": 2.8041
+          }
+        },
+        "celebrate": {
+          "before": {
+            "medianVisibleWidth": 2.26,
+            "medianVisibleHeight": 3.8504
+          },
+          "after": {
+            "medianVisibleWidth": 2.26,
+            "medianVisibleHeight": 3.8504
+          }
+        }
+      },
+      "calibration": {
+        "method": "authored-standing-pose-height",
+        "targetBodyHeightRatio": 0.7,
+        "referencePoseIndices": {
+          "walk": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7
+          ],
+          "run": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15
+          ],
+          "jump": [
+            7
+          ],
+          "land": [
+            0,
+            5,
+            6,
+            7
+          ],
+          "celebrate": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7
+          ]
+        },
+        "uniformScaleByState": {
+          "walk": 0.7648780487804877,
+          "run": 0.5650450450450449,
+          "jump": 0.8808988764044943,
+          "land": 0.5217970049916805,
+          "celebrate": 0.8934472934472933
+        }
+      }
+    }
+  ]
+}

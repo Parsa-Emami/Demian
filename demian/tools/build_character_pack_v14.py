@@ -229,7 +229,7 @@ def build_character(slug):
     scale_references = layout.get('bodyScaleReferencePoses', {})
     state_scales = {}
     for state, indices in scale_references.items():
-        if state not in ('walk', 'run', 'land', 'celebrate') or not isinstance(indices, list) or not indices:
+        if state not in ('walk', 'run', 'jump', 'land', 'celebrate') or not isinstance(indices, list) or not indices:
             raise ValueError(f'Invalid body-scale reference for {state}')
         if any(type(i) is not int or i < 0 or i >= len(poses[state]) for i in indices):
             raise ValueError(f'Invalid body-scale reference pose for {state}')

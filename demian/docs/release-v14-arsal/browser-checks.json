@@ -14,8 +14,8 @@
       "pack": {
         "variant": "runtime",
         "version": 14,
-        "actualRevision": "209799b69531d72af978ed399b46aef83ea62454f9f321a39f400ce720afedc7",
-        "expectedRevision": "209799b69531d72af978ed399b46aef83ea62454f9f321a39f400ce720afedc7"
+        "actualRevision": "d809bf84eae95b1c5bf9dcccfbcdd90500c6077f3f565877e3155b3166eb0cc2",
+        "expectedRevision": "d809bf84eae95b1c5bf9dcccfbcdd90500c6077f3f565877e3155b3166eb0cc2"
       },
       "cafeMovement": "passed",
       "cafeJump": "passed",
@@ -28,6 +28,8 @@
           "run": 1.0044642857142858,
           "sprint": 1.0044642857142858
         },
+        "jumpRecoveryRatio": 0.9970238095238095,
+        "airborneRatio": 0.9375000000000001,
         "frameWorldHeight": null,
         "currentWorldHeight": null,
         "bodyScale": 1,
@@ -40,6 +42,8 @@
           "run": 1.0044642857142858,
           "sprint": 1.0044642857142858
         },
+        "jumpRecoveryRatio": 0.9970238095238095,
+        "airborneRatio": 0.9375000000000001,
         "frameWorldHeight": 5.357142857142858,
         "currentWorldHeight": 3.7946428571428577,
         "bodyScale": 1,
@@ -52,6 +56,8 @@
           "run": 1.0044642857142858,
           "sprint": 1.0044642857142858
         },
+        "jumpRecoveryRatio": 0.9970238095238095,
+        "airborneRatio": 0.9375000000000001,
         "frameWorldHeight": 5.357142857142858,
         "currentWorldHeight": 3.850446428571429,
         "bodyScale": 1,
@@ -71,8 +77,8 @@
       "pack": {
         "variant": "runtime",
         "version": 14,
-        "actualRevision": "209799b69531d72af978ed399b46aef83ea62454f9f321a39f400ce720afedc7",
-        "expectedRevision": "209799b69531d72af978ed399b46aef83ea62454f9f321a39f400ce720afedc7"
+        "actualRevision": "d809bf84eae95b1c5bf9dcccfbcdd90500c6077f3f565877e3155b3166eb0cc2",
+        "expectedRevision": "d809bf84eae95b1c5bf9dcccfbcdd90500c6077f3f565877e3155b3166eb0cc2"
       },
       "cafeMovement": "passed",
       "cafeJump": "passed",
@@ -85,6 +91,8 @@
           "run": 1.0044642857142858,
           "sprint": 1.0044642857142858
         },
+        "jumpRecoveryRatio": 0.9970238095238095,
+        "airborneRatio": 0.9375000000000001,
         "frameWorldHeight": null,
         "currentWorldHeight": null,
         "bodyScale": 1,
@@ -97,6 +105,8 @@
           "run": 1.0044642857142858,
           "sprint": 1.0044642857142858
         },
+        "jumpRecoveryRatio": 0.9970238095238095,
+        "airborneRatio": 0.9375000000000001,
         "frameWorldHeight": 5.357142857142858,
         "currentWorldHeight": 3.7946428571428577,
         "bodyScale": 1,
@@ -109,6 +119,8 @@
           "run": 1.0044642857142858,
           "sprint": 1.0044642857142858
         },
+        "jumpRecoveryRatio": 0.9970238095238095,
+        "airborneRatio": 0.9375000000000001,
         "frameWorldHeight": 5.357142857142858,
         "currentWorldHeight": 3.6272321428571432,
         "bodyScale": 1,
