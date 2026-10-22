@@ -1,0 +1,113 @@
+{
+  "locomotionCycleCounts": {
+    "run": 2,
+    "sprint": 2
+  },
+  "mainStates": [
+    "turn",
+    "idle",
+    "walk",
+    "jump",
+    "celebrate"
+  ],
+  "mainRowBounds": [
+    0,
+    225,
+    450,
+    666,
+    850,
+    1024
+  ],
+  "motionColumns": 8,
+  "motionRowBounds": [
+    0,
+    342,
+    683,
+    1024
+  ],
+  "motionRowStates": [
+    "run",
+    "run",
+    "land"
+  ],
+  "referenceAsset": "../source-v14/reference.jpg",
+  "referenceInputs": [
+    {
+      "name": "IMG_20261022_122855_548.jpg",
+      "role": "identity-costume-and-turnaround",
+      "sha256": "f96983099ed3885d992e1bd971780c304bb227e330c120a43b2e6b2e078fe308"
+    }
+  ],
+  "identity": [
+    "slicked-back side-parted black hair",
+    "neat small black moustache",
+    "warm light-olive skin and large dark eyes",
+    "charcoal black collared long-sleeve shirt tucked into black trousers",
+    "black belt and polished black shoes",
+    "narrow burgundy gold and beige patterned necktie",
+    "cream retro arcade alien and RETRO MIND on the back"
+  ],
+  "animationAliases": {
+    "tiptoe": "walk",
+    "hop": "jump",
+    "hover": "jump",
+    "skid": "run",
+    "dash": "run",
+    "dodge": "slide",
+    "salute": "wave"
+  },
+  "bodyScaleReferencePoses": {
+    "walk": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "run": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15
+    ],
+    "land": [
+      0,
+      5,
+      6,
+      7
+    ],
+    "celebrate": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ]
+  },
+  "faceSampleHeightRatio": 0.5,
+  "faceSkinRedGreenRatio": 1.1,
+  "slideRows": [
+    1
+  ],
+  "turnMirrorFrom": {
+    "sw": "se"
+  }
+}

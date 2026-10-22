@@ -1,0 +1,15 @@
+{
+  "character_key": "arsal",
+  "pack_version": 14,
+  "reference": "../source-v14/reference.jpg",
+  "master": "../source-v14/master.png",
+  "runner_motion": "../source-v14/runner-motion.png",
+  "slide_master": "../source-v14/slides.png",
+  "inputs": [
+    {
+      "name": "IMG_20261022_122855_548.jpg",
+      "role": "identity-costume-and-turnaround",
+      "sha256": "f96983099ed3885d992e1bd971780c304bb227e330c120a43b2e6b2e078fe308"
+    }
+  ]
+}

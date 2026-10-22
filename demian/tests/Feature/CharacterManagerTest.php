@@ -48,6 +48,7 @@ class CharacterManagerTest extends TestCase
             ['amirreza', 'AMIRREZA / امیررضا'],
             ['hanna', 'HANNA / حنا'],
             ['ainaz', 'AINAZ / آیناز'],
+            ['arsal', 'ARSAL / ارسل'],
         ] as [$slug, $name]) {
             $response->assertJsonFragment([
                 'slug' => $slug,
@@ -57,7 +58,7 @@ class CharacterManagerTest extends TestCase
         }
 
         // Updated asset pack versions
-        $packVersions = ['darya' => 14, 'setayesh' => 14, 'uzudi' => 14, 'negar' => 14, 'tiam' => 14, 'amirreza' => 14, 'hanna' => 14, 'ainaz' => 14];
+        $packVersions = ['darya' => 14, 'setayesh' => 14, 'uzudi' => 14, 'negar' => 14, 'tiam' => 14, 'amirreza' => 14, 'hanna' => 14, 'ainaz' => 14, 'arsal' => 14];
 
         foreach ($packVersions as $slug => $version) {
             $response->assertJsonFragment([
@@ -129,6 +130,40 @@ class CharacterManagerTest extends TestCase
         $this->postJson("/characters/{$id}/activate")
             ->assertOk()->assertJsonPath('data.slug', 'ainaz')->assertJsonPath('data.is_active', true);
         $this->getJson('/characters')->assertOk()->assertJsonPath('data.0.slug', 'ainaz');
+        $this->assertSame(1, Character::query()->where('is_active', true)->count());
+    }
+
+    public function test_arsal_is_installed_idempotently_and_can_be_selected_with_all_full_asset_variants(): void
+    {
+        $legacy = Character::query()->create([
+            'name' => 'Legacy Arsal', 'slug' => 'arsal', 'is_builtin' => true, 'is_active' => false,
+            'sprite_sheet_path' => 'assets/characters/arsal/arsal-spritesheet-v9-mobile.png',
+            'atlas_path' => 'assets/characters/arsal/arsal-atlas-v9-mobile.json',
+            'settings' => ['asset_pack_version' => 9],
+        ]);
+        Cache::put("char_manifest_v14_{$legacy->id}_mobile_pack9", ['pack_version' => 9], 3600);
+        $upgraded = app(CharacterAssetService::class)->getOptimizedManifest($legacy->id, 'mobile');
+        $this->assertSame(14, $upgraded['pack_version']);
+        $this->assertTrue($upgraded['is_production_ready']);
+        $this->seed(BuiltinCharacterSeeder::class);
+        $arsal = Character::query()->where('slug', 'arsal')->firstOrFail();
+        $id = $arsal->id;
+        $this->assertSame($legacy->id, $id);
+        $this->seed(BuiltinCharacterSeeder::class);
+        $this->assertSame($id, $arsal->fresh()->id);
+        $this->assertSame('ground-runner', $arsal->fresh()->settings['locomotion_style']);
+        $this->assertSame(14, $arsal->fresh()->settings['asset_pack_version']);
+        $this->assertNull($arsal->fresh()->settings['companion']);
+
+        foreach (['desktop', 'mobile', 'compact'] as $variant) {
+            $manifest = app(CharacterAssetService::class)->getOptimizedManifest($id, $variant);
+            $this->assertTrue($manifest['is_production_ready']);
+            $this->assertStringEndsWith("arsal-atlas-v14-{$variant}.json", $manifest['atlas']);
+            $this->assertStringEndsWith("arsal-spritesheet-v14-{$variant}.png", $manifest['image']);
+        }
+        $this->postJson("/characters/{$id}/activate")
+            ->assertOk()->assertJsonPath('data.slug', 'arsal')->assertJsonPath('data.is_active', true);
+        $this->getJson('/characters')->assertOk()->assertJsonPath('data.0.slug', 'arsal');
         $this->assertSame(1, Character::query()->where('is_active', true)->count());
     }
 

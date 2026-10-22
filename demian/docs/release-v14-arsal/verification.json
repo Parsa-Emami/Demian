@@ -1,0 +1,34 @@
+{
+  "status": "passed",
+  "javascript": {
+    "tests": 311,
+    "passed": 311
+  },
+  "phpCharacterManager": {
+    "tests": 7,
+    "passed": 7,
+    "assertions": 141
+  },
+  "assetValidation": {
+    "characters": 9,
+    "variants": 45,
+    "animationFrameNamesPerVariant": 672
+  },
+  "arsal": {
+    "sourceKeyPoses": 68,
+    "animationStates": 24,
+    "directions": 8,
+    "variants": [
+      "desktop",
+      "mobile",
+      "compact",
+      "runtime",
+      "lite"
+    ]
+  },
+  "releaseValidation": "passed",
+  "uiLayerValidation": "passed",
+  "atomicBundleValidation": "passed",
+  "artGeneration": "built-in imagegen",
+  "browserReport": "browser-checks.json"
+}
