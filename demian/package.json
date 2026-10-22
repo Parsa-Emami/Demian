@@ -38,7 +38,9 @@
         "validate:cafe:fbx": "node --test tests/js/fbx/FbxCafe.test.js",
         "build:ainaz:v14": "python3 tools/build_character_pack_v14.py --characters ainaz && python3 tools/build_runtime_character_packs.py --characters ainaz --report docs/release-v14-ainaz/runtime-packs.json",
         "build:arsal:v14": "python3 tools/build_character_pack_v14.py --characters arsal && python3 tools/build_runtime_character_packs.py --characters arsal --report docs/release-v14-arsal/runtime-packs.json",
-        "test:arsal:browser": "node tools/check_arsal_v14.mjs"
+        "test:arsal:browser": "node tools/check_arsal_v14.mjs",
+        "build:iman:v14": "python3 tools/prepare_iman_sources_v14.py && python3 tools/build_character_pack_v14.py --characters iman && python3 tools/build_runtime_character_packs.py --characters iman --report docs/release-v14-iman/runtime-packs.json",
+        "test:iman:browser": "node tools/check_iman_v14.mjs"
     },
     "devDependencies": {
         "@tailwindcss/vite": "^4.0.0",

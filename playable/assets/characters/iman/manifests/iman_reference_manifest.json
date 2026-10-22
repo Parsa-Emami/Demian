@@ -1,0 +1,15 @@
+{
+  "character_key": "iman",
+  "pack_version": 14,
+  "reference": "../source-v14/reference.jpg",
+  "master": "../source-v14/master.png",
+  "runner_motion": "../source-v14/runner-motion.png",
+  "slide_master": "../source-v14/slides.png",
+  "inputs": [
+    {
+      "name": "IMG_20261022_122909_365.jpg",
+      "role": "identity-costume-and-turnaround",
+      "sha256": "ef6be87a0ddb96b29ea5872244dcab7cb619876e6560354ea2622b9ecf816c91"
+    }
+  ]
+}

@@ -1,0 +1,111 @@
+{
+  "locomotionCycleCounts": {
+    "run": 2,
+    "sprint": 2
+  },
+  "mainStates": [
+    "turn",
+    "idle",
+    "jump",
+    "celebrate"
+  ],
+  "mainRowBounds": [
+    0,
+    256,
+    512,
+    768,
+    1024
+  ],
+  "motionColumns": 8,
+  "motionRowBounds": [
+    0,
+    384,
+    768,
+    1152,
+    1536
+  ],
+  "motionRowStates": [
+    "walk",
+    "run",
+    "run",
+    "land"
+  ],
+  "referenceAsset": "../source-v14/reference.jpg",
+  "referenceInputs": [
+    {
+      "name": "IMG_20261022_122909_365.jpg",
+      "role": "identity-costume-and-turnaround",
+      "sha256": "ef6be87a0ddb96b29ea5872244dcab7cb619876e6560354ea2622b9ecf816c91"
+    }
+  ],
+  "identity": [
+    "short-sided thick curly black hair",
+    "full neat black beard and moustache",
+    "warm olive skin and large dark eyes",
+    "stocky compact chibi build",
+    "black short-sleeve graphic polo with fingerprint motif and red gray white angular strokes",
+    "round black watch on the left wrist",
+    "black trousers and black sneakers"
+  ],
+  "animationAliases": {
+    "tiptoe": "walk",
+    "hop": "jump",
+    "hover": "jump",
+    "skid": "run",
+    "dash": "run",
+    "dodge": "slide",
+    "salute": "wave"
+  },
+  "bodyScaleReferencePoses": {
+    "walk": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "run": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15
+    ],
+    "jump": [
+      7
+    ],
+    "land": [
+      0,
+      5,
+      6,
+      7
+    ],
+    "celebrate": [
+      0,
+      6,
+      7
+    ]
+  },
+  "faceSampleHeightRatio": 0.5,
+  "faceSkinRedGreenRatio": 1.1,
+  "slideRows": [
+    1
+  ],
+  "turnMirrorFrom": {
+    "sw": "se"
+  }
+}

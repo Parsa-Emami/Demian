@@ -25,6 +25,7 @@ ACTIVE_CHARACTER_DEFINITIONS = {
     "hanna": {"display_name": "HANNA / حنا", "locomotion_style": "ground-runner"},
     "ainaz": {"display_name": "AINAZ / آیناز", "locomotion_style": "ground-runner"},
     "arsal": {"display_name": "ARSAL / ارسل", "locomotion_style": "ground-runner"},
+    "iman": {"display_name": "IMAN / ایمان", "locomotion_style": "ground-runner"},
 }
 ACTIVE_CHARACTER_ROSTER = tuple(ACTIVE_CHARACTER_DEFINITIONS)
 

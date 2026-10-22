@@ -18,7 +18,7 @@ test('canonical packs resolve every Demian roster member and Darya uses the refe
         assert.equal(sanitizeCharacterAnimation(name), 'idle');
     });
 
-    assert.deepEqual(BUILTIN_CHARACTER_SLUGS, ['darya', 'setayesh', 'uzudi', 'negar', 'tiam', 'amirreza', 'hanna', 'ainaz', 'arsal']);
+    assert.deepEqual(BUILTIN_CHARACTER_SLUGS, ['darya', 'setayesh', 'uzudi', 'negar', 'tiam', 'amirreza', 'hanna', 'ainaz', 'arsal', 'iman']);
     for (const slug of BUILTIN_CHARACTER_SLUGS) {
         assert.equal(characterPackVersion(slug), 14);
         const pair = builtinCharacterAssetPair(slug, 'mobile', 'https://example.test/game/');

@@ -1,0 +1,35 @@
+{
+  "status": "passed",
+  "javascript": {
+    "tests": 317,
+    "passed": 317
+  },
+  "phpCharacterManager": {
+    "tests": 8,
+    "passed": 8,
+    "assertions": 169
+  },
+  "assetValidation": {
+    "characters": 10,
+    "variants": 50,
+    "animationFrameNamesPerVariant": 672
+  },
+  "iman": {
+    "sourceKeyPoses": 68,
+    "animationStates": 24,
+    "directions": 8,
+    "variants": [
+      "desktop",
+      "mobile",
+      "compact",
+      "runtime",
+      "lite"
+    ],
+    "canonicalBodyHeight": 3.75
+  },
+  "releaseValidation": "passed",
+  "uiLayerValidation": "passed",
+  "atomicBundleValidation": "passed",
+  "artGeneration": "built-in imagegen",
+  "browserReport": "browser-checks.json"
+}
