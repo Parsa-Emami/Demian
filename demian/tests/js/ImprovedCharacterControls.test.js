@@ -9,6 +9,7 @@ import { advanceCharacterAnimation } from '../../resources/js/game/characters/Ch
 import CharacterFeedback from '../../resources/js/game/rendering2d/CharacterFeedback.js';
 import CharacterFollowRig from '../../resources/js/game/rendering2d/CharacterFollowRig.js';
 import GameRuntime from '../../resources/js/game/runtime/GameRuntime.js';
+import InputRouter from '../../resources/js/game/input/InputRouter.js';
 import FrameAnimator from '../../resources/js/game/characters/FrameAnimator.js';
 import { BUILTIN_CHARACTER_SLUGS } from '../../resources/js/game/characters/CharacterVisualContract.js';
 const pad = ({ buttons = [], axes = [0, 0], index = 0 } = {}) => ({ index, connected: true, mapping: 'standard', axes,
@@ -66,11 +67,9 @@ test('impulse poses follow physical duration independently of source clip length
     assert.deepEqual(samples, [.5, .5, .5]);
 });
 test('all ten characters and six variants resolve every enabled action to installed artwork', () => {
-    for (const slug of BUILTIN_CHARACTER_SLUGS) for (const variant of ['desktop', 'mobile', 'lite', 'runtime', 'detail', 'source']) {
-        const suffix = variant === 'source' ? '' : `-${variant}`;
-        let atlas;
-        try { atlas = JSON.parse(readFileSync(new URL(`../../public/assets/characters/${slug}/${slug}-atlas-v14${suffix}.json`, import.meta.url))); }
-        catch (error) { if (variant === 'source') continue; throw error; }
+    for (const slug of BUILTIN_CHARACTER_SLUGS) for (const variant of ['desktop', 'mobile', 'lite', 'runtime', 'detail', 'compact']) {
+        const suffix = `-${variant}`;
+        const atlas = JSON.parse(readFileSync(new URL(`../../public/assets/characters/${slug}/${slug}-atlas-v14${suffix}.json`, import.meta.url)));
         const animator = new FrameAnimator(atlas);
         for (const action of ['dash', 'dodge', 'slide', 'wave', 'celebrate']) {
             const resolved = animator.resolveName(action); assert.notEqual(resolved, 'idle', `${slug}:${variant}:${action}`);
@@ -96,4 +95,31 @@ test('runtime polls gamepads while paused or showing menus', () => {
     let polls = 0;
     const runtime = new GameRuntime({ inputRouter: { poll() { polls++; } }, requestFrame: () => 1, cancelFrame: () => {}, visibilityTarget: null });
     runtime.running = true; runtime.paused = true; runtime.tick(0); runtime.tick(16); assert.equal(polls, 2); runtime.dispose();
+});
+
+test('releasing one pointer preserves a second pointer holding the same action', () => {
+    let releases = 0;
+    const button = { classList: { remove() { releases++; } } };
+    const router = { pointerHolds: new Map([[1, { action: 'run', button }], [2, { action: 'run', button }]]), virtualHeld: new Set(['run']) };
+    InputRouter.prototype.onPointerUp.call(router, { pointerId: 1 });
+    assert.equal(router.virtualHeld.has('run'), true); assert.equal(releases, 0);
+    InputRouter.prototype.onPointerUp.call(router, { pointerId: 2 });
+    assert.equal(router.virtualHeld.has('run'), false); assert.equal(releases, 1);
+});
+test('releasing one physical Shift does not cancel the other Shift', () => {
+    const router = { keyboardCodes: new Map([['ShiftLeft', 'shift'], ['ShiftRight', 'shift']]), held: new Set(['shift']) };
+    InputRouter.prototype.onKeyUp.call(router, { code: 'ShiftLeft' }); assert.equal(router.held.has('shift'), true);
+    InputRouter.prototype.onKeyUp.call(router, { code: 'ShiftRight' }); assert.equal(router.held.has('shift'), false);
+});
+test('Space and Enter activate a focused UI button without also issuing a world action', t => {
+    for (const name of ['HTMLInputElement', 'HTMLTextAreaElement', 'HTMLSelectElement']) {
+        const original = globalThis[name]; globalThis[name] = class {};
+        t.after(() => { if (original === undefined) delete globalThis[name]; else globalThis[name] = original; });
+    }
+    const router = { setDevice() {}, held: new Set(), pressed: new Set(), keyboardCodes: new Map(), controlKeys() { throw Error('UI activation must be left to the button'); } };
+    for (const code of ['Space', 'Enter']) InputRouter.prototype.onKeyDown.call(router, {
+        code, key: code === 'Space' ? ' ' : 'Enter', target: { closest() { return {}; } },
+        preventDefault() { throw Error('native button activation must stay available'); },
+    });
+    assert.equal(router.held.size, 0); assert.equal(router.pressed.size, 0);
 });

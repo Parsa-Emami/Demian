@@ -502,7 +502,7 @@ export default class SpriteCharacter {
             if (this.introActive) this.stateLock = 0;
             this.introActive = false;
         }
-        if ((hasMovement || this.jumpBufferTimer > 0) && isInterruptibleRecovery(this.state)) {
+        if ((hasMovement || this.jumpBufferTimer > 0 || this.actionBuffer.remaining > 0) && isInterruptibleRecovery(this.state)) {
             this.stateLock = 0;
         }
 
@@ -587,7 +587,7 @@ export default class SpriteCharacter {
         // A buffered press is consumed on the landing tick, before the recovery
         // clip can lock it out and let the short input buffer expire.
         this.consumeBufferedJump(rawMove, inputMagnitude);
-        if (hasMovement && isInterruptibleRecovery(this.state)) this.stateLock = 0;
+        if ((hasMovement || this.actionBuffer.remaining > 0) && isInterruptibleRecovery(this.state)) this.stateLock = 0;
 
         if (this.stateLock <= 0) {
             this.selectLocomotionState(input, inputMagnitude, deltaTime);

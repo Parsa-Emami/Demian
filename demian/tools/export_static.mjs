@@ -1,6 +1,6 @@
 /** MIT. Build a portable static release without PHP or a database. */
 import { mkdirSync, readFileSync, writeFileSync, cpSync, rmSync, existsSync } from 'node:fs';
-import { resolve, join } from 'node:path';
+import { resolve, join, basename } from 'node:path';
 import { BUILTIN_CHARACTER_SLUGS, RETIRED_CHARACTER_SLUGS, characterPackVersion } from '../resources/js/game/characters/CharacterVisualContract.js';
 import { BUILTIN_CHARACTER_LABELS as labels } from '../resources/js/game/characters/manifests/CharacterManifestRegistry.js';
 const root = resolve(import.meta.dirname, '..');
@@ -11,7 +11,7 @@ if (!entry?.file) throw new Error('Run npm run build first.');
 mkdirSync(out, { recursive: true });
 rmSync(join(out, 'assets'), { recursive: true, force: true });
 cpSync(join(root, 'public/assets'), join(out, 'assets'), { recursive: true,
-    filter: source => !/\.work\.|\.tmp$|[/\\]cafe\.glb$/.test(source) });
+    filter: source => !basename(source).startsWith('.') && !/\.work\.|\.tmp$|[/\\]cafe\.glb$/.test(source) });
 for (const slug of RETIRED_CHARACTER_SLUGS) {
     rmSync(join(out, 'assets/characters', slug), { recursive: true, force: true });
     rmSync(join(out, 'assets/characters/_legacy_archive', slug), { recursive: true, force: true });

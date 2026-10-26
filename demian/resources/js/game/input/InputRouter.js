@@ -1,4 +1,4 @@
-import { INPUT_CONTEXTS } from './InputContexts';
+import { INPUT_CONTEXTS } from './InputContexts.js';
 import InputBindingStore, { keyboardToken } from './InputBindingStore.js';
 import GamepadSource from './GamepadSource.js';
 
@@ -116,7 +116,8 @@ export default class InputRouter {
         this.setDevice('keyboard');
 
         const nativeActivation = ['space', 'enter'].includes(key) && event.target.closest?.('button, summary, a');
-        if (this.controlKeys().has(key) && !nativeActivation) {
+        if (nativeActivation) return;
+        if (this.controlKeys().has(key)) {
             event.preventDefault();
         }
 

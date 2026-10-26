@@ -19,7 +19,7 @@ export default class CharacterActionHud {
         if (!entity) return;
         const remaining = Math.max(0, entity.actionCooldown ?? 0);
         for (const button of this.buttons) {
-            const unavailable = remaining > .16; button.disabled = unavailable; button.setAttribute('aria-disabled', String(unavailable));
+            const unavailable = remaining > .12; button.disabled = unavailable; button.setAttribute('aria-disabled', String(unavailable));
             button.style.setProperty('--action-ready', String(1 - Math.min(1, remaining / ((entity.actionDuration || .62) + .16))));
         }
         if (!this.element) return;

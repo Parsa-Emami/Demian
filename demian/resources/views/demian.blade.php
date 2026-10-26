@@ -674,7 +674,7 @@
                     <small class="virtual-stick__label">حرکت · تا انتها: دویدن</small>
                 </div>
 
-                <output data-action-status class="character-action-status" aria-label="وضعیت حرکت">آمادهٔ حرکت</output>
+                <output data-action-status class="character-action-status" aria-live="off" aria-label="وضعیت حرکت">آمادهٔ حرکت</output>
                 <div class="touch-controller__right">
                     <div
                         id="mobile-action-tray"
