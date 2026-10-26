@@ -1,0 +1,23 @@
+{
+  "status": "passed",
+  "baseCommit": "564c4ea412134ba451a787db79b18dc18bef7130",
+  "javascriptTests": 338,
+  "skills": 77,
+  "pinnedSkillFiles": 207,
+  "atlasVariants": 60,
+  "characters": 10,
+  "checks": {
+    "unitTests": "passed",
+    "releaseSyntaxAndImports": "passed",
+    "skillHashesAndAttribution": "passed",
+    "uiLayers": "passed",
+    "atomicBuild": "passed",
+    "characterArt": "passed",
+    "browserGameplay": "passed",
+    "browserSettingsLayout": "passed"
+  },
+  "physicalHardwareMeasured": false,
+  "gamepad": "simulated browser standard mapping",
+  "browserRenderer": "headless Chromium with software SwiftShader",
+  "bundle": "assets/app-Dmed0c2W.js"
+}

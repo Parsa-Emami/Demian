@@ -1,13 +1,16 @@
 import BaseScreen from './BaseScreen';
+import ControlBindingPanel from '../../input/ControlBindingPanel.js';
 
 export default class SettingsScreen extends BaseScreen {
-    constructor({ settings, ...options }) {
+    constructor({ settings, input, ...options }) {
         super({ ...options, layer: 'modal' });
         this.settings = settings;
         this.form = this.element.querySelector('[data-settings-form]');
+        this.controls = new ControlBindingPanel(this.element.querySelector('[data-control-bindings]'), input);
     }
 
     async beforeOpen() {
+        this.controls.cancel();
         const state = this.settings.snapshot();
         Object.entries(state).forEach(([key, value]) => {
             const field = this.form?.elements?.namedItem(key);
@@ -16,6 +19,10 @@ export default class SettingsScreen extends BaseScreen {
             else field.value = String(value);
         });
     }
+
+    async beforeClose() { this.controls.cancel(); }
+
+    dispose() { this.controls.dispose(); super.dispose(); }
 
     readForm() {
         if (!this.form) return {};

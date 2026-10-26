@@ -1,3 +1,4 @@
+import CharacterFollowRig from '../../../rendering2d/CharacterFollowRig.js';
 import PixelCamera2D from '../../../rendering2d/PixelCamera2D.js';
 import CafePixelRenderer from '../../../rendering2d/CafePixelRenderer.js';
 import StaticSceneCache from '../../../rendering2d/StaticSceneCache.js';
@@ -27,12 +28,15 @@ export default class OpenWorldPixelRenderer {
         this.sceneCache = new StaticSceneCache((ctx, camera, atmosphere) => this.cafe.draw(ctx, camera, { atmosphere }),
             { maxPixels: context.services?.performanceProfile?.tier === 'high' ? 3200000 : 2200000 });
         this.queue = new PixelRenderQueue();
+        this.followRig = new CharacterFollowRig();
+        this.followEntity = null;
         this.mode = 'OVERVIEW';
         this.camera.fitBounds(CAFE_RENDER_BOUNDS, 10);
     }
 
     setMode(mode, target, { immediate = false } = {}) {
         this.mode = mode === 'FOLLOW' ? 'FOLLOW' : 'OVERVIEW';
+        this.followRig.reset(target);
         if (this.mode === 'FOLLOW') {
             this.camera.setZoom(this.followZoom(), { immediate });
             this.camera.follow(target, { immediate });
@@ -97,13 +101,23 @@ export default class OpenWorldPixelRenderer {
         const focus = characterManager?.activeEntity
             ? characterRenderPose(characterManager.activeEntity, alpha)
             : characterManager?.position?.() ?? this.manifest.spawn;
-        if (this.mode === 'FOLLOW') this.camera.follow(focus);
+        if (this.mode === 'FOLLOW') {
+            if (this.followEntity !== characterManager?.activeEntity) {
+                this.followRig.reset(focus); this.followEntity = characterManager?.activeEntity;
+                this.camera.follow(focus, { immediate: true });
+            }
+            const target = this.followRig.sample(focus, deltaTime, { reducedMotion: this.context.settings?.resolvedReducedMotion?.() ?? false });
+            this.camera.follow(target, { immediate: target.immediate });
+        }
         this.camera.update(deltaTime);
 
         const ctx = this.context.renderer.beginFrame(P.voidBlue);
         this.sceneCache.draw(ctx, this.camera, `day:${this.cafe.revision}`);
         if (this.context.app?.options?.debug) this.drawChunks(ctx, loadedChunks, activeChunkIds);
         this.drawSavePoints(ctx, discovery);
+        const feedback = characterManager?.activeEntity?.feedback;
+        const reducedMotion = this.context.settings?.resolvedReducedMotion?.() ?? false;
+        feedback?.draw(ctx, this.camera, { reducedMotion });
 
         for (const [id, entity] of characterManager?.entities ?? []) {
             if (entity?.group?.visible === false) continue;
@@ -119,6 +133,7 @@ export default class OpenWorldPixelRenderer {
             });
         }
         this.queue.flush(ctx);
+        feedback?.draw(ctx, this.camera, { foreground: true, reducedMotion });
         drawPixelSceneEffects(ctx, logical.width, logical.height, {
             scanlines: false,
             frame: false,

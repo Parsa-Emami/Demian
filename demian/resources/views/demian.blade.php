@@ -482,6 +482,14 @@
                                 <label><input type="checkbox" name="soundEnabled"><span>افکت صوتی</span></label>
                                 <label><input type="checkbox" name="musicEnabled"><span>موسیقی</span></label>
                             </div>
+                            <details data-control-bindings class="control-settings">
+                                <summary>کنترل‌ها و تغییر کلیدها</summary>
+                                <p>کلید هر اکشن را انتخاب کن و کلید تازه را بزن. تغییرات همان لحظه ذخیره می‌شوند.</p>
+                                <div data-binding-list class="control-binding-list"></div>
+                                <p data-binding-status role="status" class="control-binding-status">کلیدهای جهت همیشه برای حرکت در دسترس‌اند.</p>
+                                <button type="button" data-bind-reset class="shell-button shell-button--ghost">بازنشانی کلیدها</button>
+                                <p class="gamepad-guide">دسته: آنالوگ چپ حرکت · A پرش · X دش · B جاخالی · L3 اسلاید · RB دویدن · Y تعامل · LB توانایی · LT سلام · RT شادی · R3 گفتگو · View نقشه · Menu توقف. در منو: جهت‌ها جابه‌جایی، A انتخاب و B بازگشت.</p>
+                            </details>
                             <div class="shell-modal__actions shell-modal__actions--row">
                                 <button type="submit" data-screen-autofocus class="shell-button shell-button--primary">ذخیره تنظیمات</button>
                                 <button type="button" data-shell-action="reset-settings" class="shell-button shell-button--ghost">پیش‌فرض</button>
@@ -636,16 +644,16 @@
             >
                 <div class="help-panel__grid">
                     <p><b class="text-white">WASD</b> 8-way move</p>
-                    <p><b class="text-white">Shift</b> sprint</p>
-                    <p><b class="text-white">Space</b> jump</p>
+                    <p><b class="text-white" data-action-key="run">Shift</b> sprint</p>
+                    <p><b class="text-white" data-action-key="jump">Space</b> jump</p>
                     <p><b class="text-white">↓ / G</b> slide</p>
                     <p><b class="text-white">O / V</b> celebrate / wave</p>
-                    <p data-character-ability-hint hidden><b class="text-white">Q</b> Smile Bloom</p>
-                    <p><b class="text-white">H</b> random speech</p>
-                    <p><b class="text-white">Enter</b> interact</p>
+                    <p data-character-ability-hint hidden><b class="text-white" data-action-key="ability">Q</b> Smile Bloom</p>
+                    <p><b class="text-white" data-action-key="speak">H</b> random speech</p>
+                    <p><b class="text-white" data-action-key="interact">Enter</b> interact</p>
                     <p><b class="text-white">F / R</b> camera / focus</p>
-                    <p><b class="text-white">M</b> world map</p>
-                    <p><b class="text-white">F6</b> quick save</p>
+                    <p><b class="text-white" data-action-key="toggleMap">M</b> world map</p>
+                    <p><b class="text-white" data-action-key="quickSave">F6</b> quick save</p>
                     <p><b class="text-white">Wheel</b> zoom</p>
                 </div>
             </section>
@@ -666,6 +674,7 @@
                     <small class="virtual-stick__label">حرکت · تا انتها: دویدن</small>
                 </div>
 
+                <output data-action-status class="character-action-status" aria-live="off" aria-label="وضعیت حرکت">آمادهٔ حرکت</output>
                 <div class="touch-controller__right">
                     <div
                         id="mobile-action-tray"
@@ -673,7 +682,9 @@
                         class="mobile-action-tray"
                         aria-hidden="true"
                     >
-                        <button type="button" data-input-press="slide" class="touch-action touch-action--mini">اسلاید</button>
+                        <button type="button" data-input-press="dash" class="touch-action touch-action--mini touch-action--dash"><span>دش</span><kbd data-action-key="dash">X</kbd></button>
+                        <button type="button" data-input-press="dodge" class="touch-action touch-action--mini"><span>جاخالی</span><kbd data-action-key="dodge">C</kbd></button>
+                        <button type="button" data-input-press="slide" class="touch-action touch-action--mini"><span>اسلاید</span><kbd data-action-key="slide">G</kbd></button>
                         <button type="button" data-input-press="celebrate" class="touch-action touch-action--mini">شادی</button>
                         <button type="button" data-input-press="ability" data-character-ability hidden class="touch-action touch-action--mini" aria-label="ابیلیتی کاراکتر">شکوفهٔ لبخند</button>
                         <button type="button" data-input-press="speak" class="touch-action touch-action--mini touch-action--speak">گفتگو</button>

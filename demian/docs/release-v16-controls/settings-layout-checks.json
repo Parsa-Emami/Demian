@@ -1,0 +1,27 @@
+{
+  "status": "passed",
+  "physicalHardwareMeasured": false,
+  "gamepad": "emulated standard mapping",
+  "renderer": "headless Chromium software rendering",
+  "profiles": [
+    {
+      "name": "desktop",
+      "width": 1440,
+      "height": 900,
+      "pausedInfoToastHidden": "passed",
+      "settingsScrollAndBindings": "passed",
+      "errors": [],
+      "failures": []
+    },
+    {
+      "name": "mobile",
+      "width": 390,
+      "height": 844,
+      "pausedInfoToastHidden": "passed",
+      "settingsScrollAndBindings": "passed",
+      "errors": [],
+      "failures": []
+    }
+  ],
+  "browser": "153.0.8010.0"
+}

@@ -70,6 +70,7 @@ export default class GameRuntime {
             );
             this.lastTimestamp = timestamp;
 
+            this.inputRouter.poll?.();
             if (!this.paused) {
                 this.step(frameDelta, timestamp);
             }

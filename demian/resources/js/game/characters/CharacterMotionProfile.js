@@ -68,7 +68,7 @@ export function characterJumpPose(jumpVelocity = 0, jumpForce = 6.5) {
 
 export function advanceCharacterAnimation(animator, {
     state, movementRatio = 0, deltaTime = 0, jumpVelocity = 0, jumpForce = 6.5,
-    physicsOwnsJumpHeight = false, movementSpeed = null, travelledDistance = null, stateTime = 0,
+    physicsOwnsJumpHeight = false, movementSpeed = null, travelledDistance = null, stateTime = 0, actionDuration = 0,
 } = {}) {
     const previousState = animator.motionState;
     animator.motionState = state;
@@ -80,6 +80,10 @@ export function advanceCharacterAnimation(animator, {
             animator.seek(phase.progress);
             return;
         }
+    }
+    if (actionDuration > 0 && ['dash', 'slide', 'dodge'].includes(state)) {
+        animator.seek(stateTime / actionDuration);
+        return;
     }
     const profile = animator.atlas.motion?.locomotionProfile;
     if (profile && Number.isFinite(movementSpeed) && ['walk', 'tiptoe', 'run', 'sprint', 'skid'].includes(state)) {

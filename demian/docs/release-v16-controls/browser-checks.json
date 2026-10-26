@@ -1,0 +1,188 @@
+{
+  "status": "passed",
+  "physicalHardwareMeasured": false,
+  "gamepad": "emulated standard mapping",
+  "renderer": "headless Chromium software rendering",
+  "profiles": [
+    {
+      "name": "desktop",
+      "width": 1440,
+      "height": 900,
+      "actions": [
+        {
+          "state": "dash",
+          "duration": 0.38666666666666666,
+          "particles": 7,
+          "clip": "run",
+          "declaredClip": "run",
+          "frames": 80
+        },
+        {
+          "state": "dodge",
+          "duration": 0.5866666666666666,
+          "particles": 5,
+          "clip": "slide",
+          "declaredClip": "slide",
+          "frames": 64
+        },
+        {
+          "state": "slide",
+          "duration": 0.5466666666666665,
+          "particles": 5,
+          "clip": "slide",
+          "declaredClip": "slide",
+          "frames": 64
+        },
+        {
+          "state": "wave",
+          "duration": 1.3166666666666669,
+          "particles": 8,
+          "clip": "wave",
+          "declaredClip": "wave",
+          "frames": 32
+        },
+        {
+          "state": "celebrate",
+          "duration": 1.7833333333333334,
+          "particles": 8,
+          "clip": "celebrate",
+          "declaredClip": "celebrate",
+          "frames": 64
+        }
+      ],
+      "rosterActions": [
+        {
+          "slug": "darya",
+          "dash": "passed",
+          "dodge": "passed",
+          "slide": "passed"
+        },
+        {
+          "slug": "setayesh",
+          "dash": "passed",
+          "dodge": "passed",
+          "slide": "passed"
+        },
+        {
+          "slug": "uzudi",
+          "dash": "passed",
+          "dodge": "passed",
+          "slide": "passed"
+        },
+        {
+          "slug": "negar",
+          "dash": "passed",
+          "dodge": "passed",
+          "slide": "passed"
+        },
+        {
+          "slug": "tiam",
+          "dash": "passed",
+          "dodge": "passed",
+          "slide": "passed"
+        },
+        {
+          "slug": "amirreza",
+          "dash": "passed",
+          "dodge": "passed",
+          "slide": "passed"
+        },
+        {
+          "slug": "hanna",
+          "dash": "passed",
+          "dodge": "passed",
+          "slide": "passed"
+        },
+        {
+          "slug": "ainaz",
+          "dash": "passed",
+          "dodge": "passed",
+          "slide": "passed"
+        },
+        {
+          "slug": "arsal",
+          "dash": "passed",
+          "dodge": "passed",
+          "slide": "passed"
+        },
+        {
+          "slug": "iman",
+          "dash": "passed",
+          "dodge": "passed",
+          "slide": "passed"
+        }
+      ],
+      "persianKeyboard": "passed",
+      "arrowDownMovement": "passed",
+      "landingBuffer": "passed",
+      "gamepadDashPauseResume": "passed",
+      "runnerGamepadJumpDuck": "passed",
+      "rebindConflictPersistenceReset": "passed",
+      "touchDodge": "not applicable",
+      "reducedMotionSetting": "passed",
+      "errors": [],
+      "failures": [],
+      "runtimeErrors": []
+    },
+    {
+      "name": "mobile",
+      "width": 390,
+      "height": 844,
+      "actions": [
+        {
+          "state": "dash",
+          "duration": 0.4033333333333333,
+          "particles": 7,
+          "clip": "run",
+          "declaredClip": "run",
+          "frames": 80
+        },
+        {
+          "state": "dodge",
+          "duration": 0.5866666666666666,
+          "particles": 5,
+          "clip": "slide",
+          "declaredClip": "slide",
+          "frames": 64
+        },
+        {
+          "state": "slide",
+          "duration": 0.5633333333333332,
+          "particles": 5,
+          "clip": "slide",
+          "declaredClip": "slide",
+          "frames": 64
+        },
+        {
+          "state": "wave",
+          "duration": 1.3166666666666669,
+          "particles": 8,
+          "clip": "wave",
+          "declaredClip": "wave",
+          "frames": 32
+        },
+        {
+          "state": "celebrate",
+          "duration": 1.7666666666666668,
+          "particles": 8,
+          "clip": "celebrate",
+          "declaredClip": "celebrate",
+          "frames": 64
+        }
+      ],
+      "rosterActions": [],
+      "persianKeyboard": "passed",
+      "arrowDownMovement": "passed",
+      "landingBuffer": "passed",
+      "gamepadDashPauseResume": "passed",
+      "runnerGamepadJumpDuck": "passed",
+      "rebindConflictPersistenceReset": "passed",
+      "touchDodge": "passed",
+      "reducedMotionSetting": "passed",
+      "errors": [],
+      "failures": [],
+      "runtimeErrors": []
+    }
+  ],
+  "browser": "153.0.8010.0"
+}

@@ -1,4 +1,6 @@
 import * as THREE from 'three';
+import CharacterActionBuffer, { IMPULSE_ACTIONS } from './CharacterActionBuffer.js';
+import CharacterFeedback from '../rendering2d/CharacterFeedback.js';
 import SpriteAnimator from './SpriteAnimator';
 import CharacterEffects from './CharacterEffects';
 import CharacterSpeechBubble from './CharacterSpeechBubble';
@@ -84,6 +86,8 @@ export default class SpriteCharacter {
         this.jumpDirection = new THREE.Vector3(1, 0, 0);
         this.zeroVelocity = new THREE.Vector3();
         this.isPlayerControlled = Boolean(controlled);
+        this.feedback?.clear();
+        this.actionBuffer?.clear();
         this.movementResolver = null;
         this.colliderRadius = 0.72;
 
@@ -105,6 +109,10 @@ export default class SpriteCharacter {
         this.skidArmed = false;
         this.idleVariantTimer = 2.6 + Math.random() * 1.8;
         this.dashCooldown = 0;
+        this.actionCooldown = 0;
+        this.actionDuration = 0;
+        this.actionBuffer = new CharacterActionBuffer();
+        this.feedback = new CharacterFeedback();
 
         this.introClock = 0;
         this.introStep = 0;
@@ -325,6 +333,8 @@ export default class SpriteCharacter {
 
     setPlayerControlled(controlled, { playIntro = false } = {}) {
         this.isPlayerControlled = Boolean(controlled);
+        this.feedback?.clear();
+        this.actionBuffer?.clear();
         this.movementResolver = null;
         this.colliderRadius = 0.72;
         this.locator.visible = this.isPlayerControlled;
@@ -460,6 +470,10 @@ export default class SpriteCharacter {
         this.abilityController.update(deltaTime);
         this.stateLock = Math.max(0, this.stateLock - deltaTime);
         this.dashCooldown = Math.max(0, this.dashCooldown - deltaTime);
+        this.actionCooldown = Math.max(0, this.actionCooldown - deltaTime);
+        this.actionBuffer.update(deltaTime);
+        const requestedAction = ['ability', ...ACTIONS.map(({ name }) => name)].find(name => input[name]);
+        if (requestedAction) this.actionBuffer.push(requestedAction);
         this.jumpBufferTimer = Math.max(0, this.jumpBufferTimer - deltaTime);
         this.stateTime += deltaTime;
         this.presentationTime += deltaTime;
@@ -488,7 +502,7 @@ export default class SpriteCharacter {
             if (this.introActive) this.stateLock = 0;
             this.introActive = false;
         }
-        if ((hasMovement || this.jumpBufferTimer > 0) && isInterruptibleRecovery(this.state)) {
+        if ((hasMovement || this.jumpBufferTimer > 0 || this.actionBuffer.remaining > 0) && isInterruptibleRecovery(this.state)) {
             this.stateLock = 0;
         }
 
@@ -499,7 +513,8 @@ export default class SpriteCharacter {
         this.consumeBufferedJump(rawMove, inputMagnitude);
 
         if (this.grounded && this.stateLock <= 0) {
-            this.handleActionInput(input);
+            const buffered = this.actionBuffer.take(this.actionCooldown <= 0);
+            if (buffered) this.handleActionInput({ [buffered]: true });
         }
 
         const actionBlocksMovement = this.stateLock > 0 && (LOCKED_ACTIONS.has(this.state)
@@ -572,7 +587,7 @@ export default class SpriteCharacter {
         // A buffered press is consumed on the landing tick, before the recovery
         // clip can lock it out and let the short input buffer expire.
         this.consumeBufferedJump(rawMove, inputMagnitude);
-        if (hasMovement && isInterruptibleRecovery(this.state)) this.stateLock = 0;
+        if ((hasMovement || this.actionBuffer.remaining > 0) && isInterruptibleRecovery(this.state)) this.stateLock = 0;
 
         if (this.stateLock <= 0) {
             this.selectLocomotionState(input, inputMagnitude, deltaTime);
@@ -585,10 +600,11 @@ export default class SpriteCharacter {
             jumpVelocity: this.jumpVelocity, jumpForce: this.jumpForce,
             physicsOwnsJumpHeight: Boolean(this.atlas.render?.physicsOwnsJumpHeight),
             movementSpeed: deltaTime > 0 ? travelledDistance / deltaTime : 0,
-            travelledDistance, stateTime: this.stateTime,
+            travelledDistance, stateTime: this.stateTime, actionDuration: this.actionDuration,
         });
         this.updateFrameBlend();
         this.effects.update(deltaTime, this.speed());
+        this.feedback.update(deltaTime, this);
         this.speech.update(deltaTime);
         this.updatePresentation(deltaTime);
     }
@@ -669,6 +685,7 @@ export default class SpriteCharacter {
             if (ability) {
                 this.velocity.set(0, 0, 0);
                 this.playLocked(ability.animation, ability.duration);
+                this.feedback.emit('ability', this);
                 return;
             }
         }
@@ -678,13 +695,10 @@ export default class SpriteCharacter {
         }
 
         if (['dash', 'slide', 'dodge'].includes(action.name)) {
-            if (action.name === 'dash' && this.dashCooldown > 0) {
-                return;
-            }
-            this.performImpulseAction(action.name, action.duration, action.impulse, action.reverse);
-            if (action.name === 'dash') {
-                this.dashCooldown = 0.18;
-            }
+            if (this.actionCooldown > 0) return;
+            const timing = IMPULSE_ACTIONS[action.name];
+            this.performImpulseAction(action.name, timing.duration, timing.speed, timing.reverse);
+            this.actionCooldown = timing.duration + .16;
             return;
         }
 
@@ -712,6 +726,8 @@ export default class SpriteCharacter {
         }
 
         this.playLocked(name, duration);
+        this.stateLock = duration;
+        this.actionDuration = duration;
     }
 
     updateIntro(deltaTime) {
@@ -797,6 +813,8 @@ export default class SpriteCharacter {
         this.previousState = previousState;
         this.state = state;
         this.stateTime = 0;
+        this.actionDuration = 0;
+        this.feedback?.emit(state, this);
         this.animator.play(state, {
             restart,
             preservePhase: !restart && sharesLocomotionPhase(previousState, state),
@@ -967,6 +985,7 @@ export default class SpriteCharacter {
     dispose() {
         this.abilityController.cancel();
         this.movementResolver = null;
+        this.feedback.clear();
         this.speech.dispose();
         this.effects.dispose();
         this.texture.dispose();

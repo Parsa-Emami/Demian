@@ -4853,3 +4853,23 @@ body {
 .open-world-map__canvas-wrap > canvas { touch-action:none; }
 .open-world-map__zoom { position:absolute; left:1.4rem; bottom:1.4rem; display:flex; gap:.3rem; direction:ltr; }
 .open-world-map__zoom button { min-width:2.5rem; padding:.4rem .65rem; background:#182b25; }
+
+.control-settings { border: 1px solid #ffffff20; border-radius: 16px; padding: 14px; }
+.control-settings summary { cursor: pointer; color: #f4e2bd; font-weight: 700; min-height: 32px; }
+.control-settings p { color: #b8bbcb; font-size: .8rem; line-height: 1.9; margin: 8px 0; }
+.control-binding-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 16px; margin-block: 12px; }
+.control-binding { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: .8rem; }
+.control-binding button { min-width: 60px; min-height: 40px; padding: 6px; border: 1px solid #ffffff30; border-radius: 10px; color: #e0f4f4; background: #151c30; direction: ltr; }
+.control-binding button[aria-pressed="true"] { border-color: #f4cd8b; background: #353049; }
+.control-binding-status { min-height: 3em; }
+.control-settings :focus-visible, .touch-action:focus-visible { outline: 2px solid #f4cd8b; outline-offset: 3px; }
+.touch-action kbd { display: block; font-size: 10px; color: #b1d8e6; font-family: inherit; line-height: 1.6; }
+.touch-action--dash { border-color: #8ddbd966; }
+.touch-action[data-input-press="dash"], .touch-action[data-input-press="dodge"], .touch-action[data-input-press="slide"] { background-image: linear-gradient(90deg, #8ddbd91b calc(var(--action-ready, 1) * 100%), transparent 0); }
+.character-action-status { position: absolute; bottom: 14px; left: 50%; transform: translateX(-50%); color: #e0dfd7; border: 1px solid #ffffff1c; border-radius: 24px; padding: 5px 12px; font-size: 11px; background: #111725da; pointer-events: none; white-space: nowrap; direction: rtl; }
+.character-action-status[data-busy="true"] { color: #9bdcde; border-color: #8ddbd94d; }
+html[data-input-device="gamepad"] .virtual-stick { opacity: .18; }
+@media (max-width: 600px) { .control-binding-list { grid-template-columns: 1fr; } .character-action-status { bottom: calc(140px + env(safe-area-inset-bottom, 0px)); font-size: 10px; } }
+@media (prefers-reduced-motion: reduce) { .touch-action, .mobile-action-tray { transition: none; } }
+
+.manager-shell[data-session-state="paused"] .shell-toast--info { display: none; }

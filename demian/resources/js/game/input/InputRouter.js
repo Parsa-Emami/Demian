@@ -1,4 +1,6 @@
-import { INPUT_CONTEXTS } from './InputContexts';
+import { INPUT_CONTEXTS } from './InputContexts.js';
+import InputBindingStore, { keyboardToken } from './InputBindingStore.js';
+import GamepadSource from './GamepadSource.js';
 
 const ACTION_HAPTICS = new Set([
     'jump',
@@ -16,14 +18,6 @@ const ACTION_HAPTICS = new Set([
     'toggleInventory',
     'toggleQuests',
 ]);
-
-function normalizeKeyboardEvent(event) {
-    if (event.code === 'Space' || event.key === ' ') {
-        return 'space';
-    }
-
-    return String(event.key ?? '').toLowerCase();
-}
 
 function isTypingTarget(target) {
     return (
@@ -45,6 +39,9 @@ export default class InputRouter {
         this.root = root;
         this.contexts = new Map(Object.entries(contexts));
         this.contextName = null;
+        this.bindings = new InputBindingStore();
+        this.gamepad = new GamepadSource();
+        this.keyboardCodes = new Map();
         this.held = new Set();
         this.pressed = new Set();
         this.virtualHeld = new Set();
@@ -53,12 +50,14 @@ export default class InputRouter {
         this.analog = { x: 0, z: 0, magnitude: 0 };
         this.stickBinding = null;
         this.coarsePointer = window.matchMedia?.('(pointer: coarse)').matches ?? false;
+        this.device = this.coarsePointer ? 'touch' : 'keyboard';
 
         this.onKeyDown = this.onKeyDown.bind(this);
         this.onKeyUp = this.onKeyUp.bind(this);
         this.onBlur = this.onBlur.bind(this);
         this.onPointerDown = this.onPointerDown.bind(this);
         this.onPointerUp = this.onPointerUp.bind(this);
+        this.onClick = this.onClick.bind(this);
 
         window.addEventListener('keydown', this.onKeyDown);
         window.addEventListener('keyup', this.onKeyUp);
@@ -68,6 +67,7 @@ export default class InputRouter {
                 this.onBlur();
             }
         });
+        this.root.addEventListener('click', this.onClick);
         this.root.addEventListener('pointerdown', this.onPointerDown);
         this.root.addEventListener('pointerup', this.onPointerUp);
         this.root.addEventListener('pointercancel', this.onPointerUp);
@@ -96,24 +96,27 @@ export default class InputRouter {
         }
 
         this.contextName = name;
-        this.pressed.clear();
-        this.virtualPressed.clear();
+        this.onBlur();
         this.root.dispatchEvent?.(new CustomEvent('input:context-changed', {
             detail: { context: name },
         }));
     }
 
     get context() {
-        return this.contexts.get(this.contextName);
+        return this.bindings.context(this.contextName, this.contexts.get(this.contextName));
     }
 
     onKeyDown(event) {
-        if (isTypingTarget(event.target)) {
+        if (event.defaultPrevented || isTypingTarget(event.target) || event.ctrlKey || event.metaKey || event.altKey) {
             return;
         }
 
-        const key = normalizeKeyboardEvent(event);
+        const key = keyboardToken(event);
+        if (event.repeat && !this.held.has(key)) return;
+        this.setDevice('keyboard');
 
+        const nativeActivation = ['space', 'enter'].includes(key) && event.target.closest?.('button, summary, a');
+        if (nativeActivation) return;
         if (this.controlKeys().has(key)) {
             event.preventDefault();
         }
@@ -123,10 +126,13 @@ export default class InputRouter {
         }
 
         this.held.add(key);
+        this.keyboardCodes.set(event.code || event.key, key);
     }
 
     onKeyUp(event) {
-        this.held.delete(normalizeKeyboardEvent(event));
+        const key = keyboardToken(event);
+        this.keyboardCodes.delete(event.code || event.key);
+        if (![...this.keyboardCodes.values()].includes(key)) this.held.delete(key);
     }
 
     controlKeys() {
@@ -154,6 +160,7 @@ export default class InputRouter {
 
         if (button.disabled || button.hidden || button.getAttribute('aria-disabled') === 'true') return;
 
+        this.setDevice(event.pointerType === 'touch' ? 'touch' : 'keyboard');
         event.preventDefault();
         event.stopPropagation();
         button.setPointerCapture?.(event.pointerId);
@@ -186,9 +193,11 @@ export default class InputRouter {
             return;
         }
 
-        this.virtualHeld.delete(binding.action);
-        binding.button.classList.remove('is-pressed');
         this.pointerHolds.delete(event.pointerId);
+        if (![...this.pointerHolds.values()].some(entry => entry.action === binding.action)) {
+            this.virtualHeld.delete(binding.action);
+            binding.button.classList.remove('is-pressed');
+        }
     }
 
     bindVirtualStick() {
@@ -233,6 +242,8 @@ export default class InputRouter {
         };
 
         const press = (event) => {
+            if (pointerId !== null) return;
+            this.setDevice('touch');
             event.preventDefault();
             pointerId = event.pointerId;
             base.setPointerCapture?.(pointerId);
@@ -263,7 +274,7 @@ export default class InputRouter {
         base.addEventListener('pointerup', release);
         base.addEventListener('pointercancel', release);
         base.addEventListener('lostpointercapture', release);
-        this.stickBinding = { base, knob, press, move, release };
+        this.stickBinding = { base, knob, press, move, release, reset: () => { pointerId = null; base.classList.remove('is-active'); } };
     }
 
     resetStick() {
@@ -272,6 +283,7 @@ export default class InputRouter {
         this.analog.magnitude = 0;
 
         if (this.stickBinding) {
+            this.stickBinding.reset();
             this.stickBinding.knob.style.setProperty('--stick-x', '0px');
             this.stickBinding.knob.style.setProperty('--stick-y', '0px');
             this.stickBinding.base.style.setProperty('--stick-force', '0');
@@ -315,19 +327,21 @@ export default class InputRouter {
         });
 
         Object.entries(context.actions ?? {}).forEach(([name, definition]) => {
-            snapshot[name] = definition.mode === 'hold'
+            const keyboard = definition.mode === 'hold'
                 ? this.isHeld(definition.keys)
                 : this.consumePressed(definition.keys, consumePresses);
+            snapshot[name] = this.gamepad.action(name, definition.mode, consumePresses) || keyboard;
         });
 
-        if (context.analog && this.analog.magnitude > 0.01) {
-            snapshot[context.analog.xAxis] = this.analog.x;
-            snapshot[context.analog.zAxis] = this.analog.z;
+        const analog = this.analog.magnitude > .01 ? this.analog : this.gamepad.stick;
+        if (context.analog && analog.magnitude > 0.01) {
+            snapshot[context.analog.xAxis] = analog.x;
+            snapshot[context.analog.zAxis] = analog.z;
 
             if (
-                this.coarsePointer &&
+                this.device === 'touch' &&
                 context.analog.autoSprintAction &&
-                this.analog.magnitude > context.analog.autoSprintThreshold
+                analog.magnitude > context.analog.autoSprintThreshold
             ) {
                 snapshot[context.analog.autoSprintAction] = true;
             }
@@ -336,7 +350,46 @@ export default class InputRouter {
         return snapshot;
     }
 
+    setDevice(device) {
+        if (this.device === device) return;
+        this.device = device;
+        document.documentElement.dataset.inputDevice = device;
+        this.root.dispatchEvent(new CustomEvent('input:device-changed', { detail: { device } }));
+    }
+
+    poll() {
+        if (document.hidden || !document.hasFocus()) { this.gamepad.reset(); return; }
+        let pads;
+        try { pads = navigator.getGamepads?.() ?? []; } catch { this.gamepad.reset(); return; }
+        const result = this.gamepad.poll(pads, this.contextName, performance.now());
+        if (result.active) this.setDevice('gamepad');
+        for (const action of result.ui) {
+            const event = new CustomEvent('input:gamepad-ui', { detail: { action }, cancelable: true });
+            this.root.dispatchEvent(event);
+            if (event.defaultPrevented) {
+                this.gamepad.pressed.clear();
+                if (['confirm', 'cancel', 'pause'].includes(action)) { this.gamepad.reset(); break; }
+            }
+        }
+    }
+
+    onClick(event) {
+        if (event.detail !== 0) return;
+        const button = event.target.closest?.('[data-input-press], [data-input-hold]');
+        if (!button || button.disabled || button.hidden || button.getAttribute('aria-disabled') === 'true') return;
+        if (button.dataset.inputPress) this.virtualPressed.add(button.dataset.inputPress);
+        if (button.dataset.inputHold && !button.dataset.inputPress) {
+            const action = button.dataset.inputHold;
+            if (this.virtualHeld.has(action)) this.virtualHeld.delete(action);
+            else this.virtualHeld.add(action);
+            button.classList.toggle('is-pressed', this.virtualHeld.has(action));
+            button.setAttribute('aria-pressed', String(this.virtualHeld.has(action)));
+        }
+    }
+
     onBlur() {
+        this.keyboardCodes.clear();
+        this.gamepad.reset();
         this.held.clear();
         this.pressed.clear();
         this.virtualHeld.clear();
@@ -345,6 +398,7 @@ export default class InputRouter {
         this.resetStick();
         this.root.querySelectorAll('.is-pressed').forEach((element) => {
             element.classList.remove('is-pressed');
+            if (element.hasAttribute('aria-pressed')) element.setAttribute('aria-pressed', 'false');
         });
     }
 
@@ -353,6 +407,7 @@ export default class InputRouter {
         window.removeEventListener('keyup', this.onKeyUp);
         window.removeEventListener('blur', this.onBlur);
         document.removeEventListener('visibilitychange', this.onVisibilityChange);
+        this.root.removeEventListener('click', this.onClick);
         this.root.removeEventListener('pointerdown', this.onPointerDown);
         this.root.removeEventListener('pointerup', this.onPointerUp);
         this.root.removeEventListener('pointercancel', this.onPointerUp);

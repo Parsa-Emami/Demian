@@ -54,8 +54,9 @@ test('an unknown slug defaults defensively to legacy_pending_reference_rebuild, 
     assert.equal(isProductionReady('totally-unknown-slug'), false);
 });
 
-test('loadRosterManifest() falls back to the embedded snapshot when fetch is unavailable/fails', async () => {
-    const manifest = await loadRosterManifest('http://example.test/');
+test('loadRosterManifest() falls back to the embedded snapshot when fetch is unavailable/fails', async (t) => {
+    t.mock.method(globalThis, 'fetch', async () => { throw new TypeError('Simulated offline request'); });
+    const manifest = await loadRosterManifest('https://demian.test/');
     assert.equal(manifest.productionCharacter ?? manifest.production_character, 'darya');
     assert.ok(Array.isArray(manifest.characters));
     assert.equal(manifest.characters.length, PRODUCTION_CHARACTER_SLUGS.length);
