@@ -46,6 +46,10 @@
       "compact": {
         "atlas": "../darya-atlas-v14-compact.json",
         "image": "../darya-spritesheet-v14-compact.png"
+      },
+      "detail": {
+        "atlas": "../darya-atlas-v14-detail.json",
+        "image": "../darya-spritesheet-v14-detail.png"
       }
     }
   }

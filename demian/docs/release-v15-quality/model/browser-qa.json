@@ -1,0 +1,32 @@
+{
+  "browser": "153.0.8010.0",
+  "cases": [
+    {
+      "name": "desktop",
+      "passed": true,
+      "state": {
+        "version": 5,
+        "bounds": {
+          "minX": -20.16,
+          "maxX": 20.16,
+          "minZ": -174.24,
+          "maxZ": 14.04
+        },
+        "position": {
+          "x": 0.36,
+          "y": 0,
+          "z": -4.68
+        },
+        "colliders": 321,
+        "renderer": "pixel-2d",
+        "cache": {
+          "builds": 2,
+          "hits": 57,
+          "bytes": 7128576
+        }
+      },
+      "modelDownloaded": true
+    }
+  ],
+  "physicalDeviceTest": false
+}

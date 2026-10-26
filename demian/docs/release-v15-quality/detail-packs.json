@@ -1,0 +1,192 @@
+[
+  {
+    "slug": "darya",
+    "variant": "detail",
+    "physicalFrames": 528,
+    "animationFrameNames": 672,
+    "decodedBytes": 34603008,
+    "downloadBytes": 8047818,
+    "samplingByFamily": {
+      "turn": 1,
+      "idle": 2,
+      "walk": 1,
+      "run": 1,
+      "jump": 1,
+      "land": 2,
+      "slide": 2,
+      "celebrate": 3
+    },
+    "sourceDecodedBytes": 55738368
+  },
+  {
+    "slug": "setayesh",
+    "variant": "detail",
+    "physicalFrames": 528,
+    "animationFrameNames": 672,
+    "decodedBytes": 34603008,
+    "downloadBytes": 6310584,
+    "samplingByFamily": {
+      "turn": 1,
+      "idle": 2,
+      "walk": 1,
+      "run": 1,
+      "jump": 1,
+      "land": 2,
+      "slide": 2,
+      "celebrate": 3
+    },
+    "sourceDecodedBytes": 55738368
+  },
+  {
+    "slug": "uzudi",
+    "variant": "detail",
+    "physicalFrames": 528,
+    "animationFrameNames": 672,
+    "decodedBytes": 34603008,
+    "downloadBytes": 6958068,
+    "samplingByFamily": {
+      "turn": 1,
+      "idle": 2,
+      "walk": 1,
+      "run": 1,
+      "jump": 1,
+      "land": 2,
+      "slide": 2,
+      "celebrate": 3
+    },
+    "sourceDecodedBytes": 55738368
+  },
+  {
+    "slug": "negar",
+    "variant": "detail",
+    "physicalFrames": 528,
+    "animationFrameNames": 672,
+    "decodedBytes": 34603008,
+    "downloadBytes": 6101145,
+    "samplingByFamily": {
+      "turn": 1,
+      "idle": 2,
+      "walk": 1,
+      "run": 1,
+      "jump": 1,
+      "land": 2,
+      "slide": 2,
+      "celebrate": 3
+    },
+    "sourceDecodedBytes": 55738368
+  },
+  {
+    "slug": "tiam",
+    "variant": "detail",
+    "physicalFrames": 528,
+    "animationFrameNames": 672,
+    "decodedBytes": 34603008,
+    "downloadBytes": 6475454,
+    "samplingByFamily": {
+      "turn": 1,
+      "idle": 2,
+      "walk": 1,
+      "run": 1,
+      "jump": 1,
+      "land": 2,
+      "slide": 2,
+      "celebrate": 3
+    },
+    "sourceDecodedBytes": 55738368
+  },
+  {
+    "slug": "amirreza",
+    "variant": "detail",
+    "physicalFrames": 528,
+    "animationFrameNames": 672,
+    "decodedBytes": 34603008,
+    "downloadBytes": 6852002,
+    "samplingByFamily": {
+      "turn": 1,
+      "idle": 2,
+      "walk": 1,
+      "run": 1,
+      "jump": 1,
+      "land": 2,
+      "slide": 2,
+      "celebrate": 3
+    },
+    "sourceDecodedBytes": 55738368
+  },
+  {
+    "slug": "hanna",
+    "variant": "detail",
+    "physicalFrames": 528,
+    "animationFrameNames": 672,
+    "decodedBytes": 34603008,
+    "downloadBytes": 4937030,
+    "samplingByFamily": {
+      "turn": 1,
+      "idle": 2,
+      "walk": 1,
+      "run": 1,
+      "jump": 1,
+      "land": 2,
+      "slide": 2,
+      "celebrate": 3
+    },
+    "sourceDecodedBytes": 55738368
+  },
+  {
+    "slug": "ainaz",
+    "variant": "detail",
+    "physicalFrames": 528,
+    "animationFrameNames": 672,
+    "decodedBytes": 34603008,
+    "downloadBytes": 6451201,
+    "samplingByFamily": {
+      "turn": 1,
+      "idle": 2,
+      "walk": 1,
+      "run": 1,
+      "jump": 1,
+      "land": 2,
+      "slide": 2,
+      "celebrate": 3
+    },
+    "sourceDecodedBytes": 55738368
+  },
+  {
+    "slug": "arsal",
+    "variant": "detail",
+    "physicalFrames": 528,
+    "animationFrameNames": 672,
+    "decodedBytes": 34603008,
+    "downloadBytes": 5122595,
+    "samplingByFamily": {
+      "turn": 1,
+      "idle": 2,
+      "walk": 1,
+      "run": 1,
+      "jump": 1,
+      "land": 2,
+      "slide": 2,
+      "celebrate": 3
+    },
+    "sourceDecodedBytes": 55738368
+  },
+  {
+    "slug": "iman",
+    "variant": "detail",
+    "physicalFrames": 528,
+    "animationFrameNames": 672,
+    "decodedBytes": 34603008,
+    "downloadBytes": 5722877,
+    "samplingByFamily": {
+      "turn": 1,
+      "idle": 2,
+      "walk": 1,
+      "run": 1,
+      "jump": 1,
+      "land": 2,
+      "slide": 2,
+      "celebrate": 3
+    },
+    "sourceDecodedBytes": 55738368
+  }
+]

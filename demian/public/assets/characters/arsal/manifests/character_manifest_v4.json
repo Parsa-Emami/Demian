@@ -60,6 +60,10 @@
       "lite": {
         "atlas": "../arsal-atlas-v14-lite.json",
         "image": "../arsal-spritesheet-v14-lite.png"
+      },
+      "detail": {
+        "atlas": "../arsal-atlas-v14-detail.json",
+        "image": "../arsal-spritesheet-v14-detail.png"
       }
     }
   }

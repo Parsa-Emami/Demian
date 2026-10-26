@@ -1,0 +1,13 @@
+{
+  "sourceSha256": "409a9c8bb67f4b8e3bf58849bb92f56286483da8242fab88abfeb4edd234f704",
+  "width": 2048,
+  "height": 9563,
+  "padding": 48,
+  "renderer": "Three.js WebGL / software SwiftShader",
+  "ambientOcclusion": "GTAO",
+  "shadowMapSize": 2048,
+  "image": "floorplan-detail.webp",
+  "sha256": "8a61dd99b0871923ef8ccfb715fe86fa4cacb4d0230d854dc1a24d973fb58f47",
+  "downloadBytes": 423068,
+  "tileCount": 7
+}

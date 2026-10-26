@@ -76,6 +76,19 @@ export default class DinoRunEnvironment {
                         ctx.fillRect(x, y, 2 + i % 4, 1 + i % 2);
                     }
                 }),
+                brush: tile(768, 32, (ctx, w, h) => {
+                    for (let i = 0; i < 13; i += 1) {
+                        const x = mod(i * 137 + 29, w), size = 3 + i % 5;
+                        ctx.strokeStyle = night ? '#65867a' : '#718b69'; ctx.lineWidth = 1.1;
+                        ctx.beginPath(); ctx.moveTo(x, h - 1);
+                        ctx.quadraticCurveTo(x - size, h - size * 1.4, x - size * 1.5, h - size * 1.6);
+                        ctx.moveTo(x, h - 1); ctx.quadraticCurveTo(x + 1, h - size * 1.6, x + size * .6, h - size * 2);
+                        ctx.moveTo(x, h - 1); ctx.quadraticCurveTo(x + size, h - size, x + size * 1.4, h - size * .9);
+                        ctx.stroke();
+                        ctx.fillStyle = night ? '#3a5554' : '#b49c73';
+                        ctx.beginPath(); ctx.ellipse(x + 12, h - 1, 3 + i % 3, 1.4, 0, 0, TAU); ctx.fill();
+                    }
+                }),
             };
         });
     }
@@ -108,6 +121,10 @@ export default class DinoRunEnvironment {
             ctx.globalAlpha = 1;
         }
         const sunY = h * (.23 + light.night * .29);
+        const glow = ctx.createRadialGradient(w * .79, sunY, 8 * s, w * .79, sunY, 110 * s);
+        glow.addColorStop(0, `rgba(255,224,155,${.32 * (1 - light.night)})`);
+        glow.addColorStop(1, 'rgba(255,224,155,0)');
+        ctx.fillStyle = glow; ctx.fillRect(0, 0, w, ground);
         ctx.globalAlpha = 1 - light.night; ctx.fillStyle = '#ffdb95';
         ctx.beginPath(); ctx.arc(w * .79, sunY, 23 * s, 0, TAU); ctx.fill();
         ctx.globalAlpha = light.night; ctx.fillStyle = '#e3ebd9';
@@ -125,9 +142,19 @@ export default class DinoRunEnvironment {
         this.drawLayer(ctx, 'far', ground - 140 * s, 140 * s, this.reducedMotion ? .1 : .14, distance, w, s, light.night);
         this.drawLayer(ctx, 'near', ground - 80 * s, 92 * s, .28, distance, w, s, light.night);
         this.drawLayer(ctx, 'ground', ground, h - ground, 1, distance, w, s, light.night);
+        this.drawLayer(ctx, 'brush', ground - 25 * s, 26 * s, 1, distance, w, s, light.night);
         return light;
     }
     drawObstacles(ctx, obstacles, { ground, scale: s, time, night }) {
+        ctx.save();
+        for (const obstacle of obstacles) {
+            const airborne = obstacle.type === 'bird';
+            ctx.fillStyle = airborne ? 'rgba(25,43,39,.10)' : 'rgba(25,43,39,.18)';
+            ctx.beginPath();
+            ctx.ellipse((obstacle.x + obstacle.w * .5) * s, ground + s,
+                obstacle.w * s * .55, (airborne ? 2 : 2.8) * s, 0, 0, Math.PI * 2); ctx.fill();
+        }
+        ctx.restore();
         ctx.save(); ctx.translate(0, ground); ctx.scale(s, -s);
         for (const o of obstacles) {
             if (o.type === 'cactus') {

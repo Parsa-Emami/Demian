@@ -60,6 +60,10 @@
       "lite": {
         "atlas": "../iman-atlas-v14-lite.json",
         "image": "../iman-spritesheet-v14-lite.png"
+      },
+      "detail": {
+        "atlas": "../iman-atlas-v14-detail.json",
+        "image": "../iman-spritesheet-v14-detail.png"
       }
     }
   }

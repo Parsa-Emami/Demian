@@ -9,7 +9,7 @@ from character_art_registry import ACTIVE_CHARACTER_ROSTER, ACTIVE_CHARACTER_DEF
 
 ROOT = Path(__file__).resolve().parents[1]
 SLUGS = ACTIVE_CHARACTER_ROSTER
-VARIANTS = {'desktop': 144, 'mobile': 112, 'compact': 80, 'runtime': 96, 'lite': 64}
+VARIANTS = {'desktop': 144, 'mobile': 112, 'compact': 80, 'runtime': 96, 'lite': 64, 'detail': 128}
 
 
 def main():
@@ -27,10 +27,10 @@ def main():
             assert atlas['meta']['imageRevision'] == hashlib.sha256((directory / atlas['meta']['image']).read_bytes()).hexdigest()
             grid = atlas['meta']['grid']
             assert image.mode == 'RGBA' and image.size == (grid['columns'] * cell, grid['rows'] * cell)
-            if variant in ('runtime', 'lite'):
+            if variant in ('runtime', 'lite', 'detail'):
                 assert atlas['meta']['decodedBytes'] == image.width * image.height * 4
-                assert atlas['meta']['packedPhysicalFrameCount'] <= (320 if variant == 'runtime' else 256)
-                assert atlas['meta']['decodedBytes'] <= (12 if variant == 'runtime' else 4) * 1024**2
+                assert atlas['meta']['packedPhysicalFrameCount'] <= {'runtime': 320, 'lite': 256, 'detail': 544}[variant]
+                assert atlas['meta']['decodedBytes'] <= {'runtime': 12, 'lite': 4, 'detail': 34}[variant] * 1024**2
                 assert atlas['animations'] == json.loads((directory / f'{slug}-atlas-v14-mobile.json').read_text())['animations']
             else:
                 assert grid == {'columns': 24, 'rows': 28}

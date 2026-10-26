@@ -42,9 +42,15 @@ export default class FbxCafeInspector {
             this.renderer.setPixelRatio(Math.min(globalThis.devicePixelRatio || 1,1.5));
             this.renderer.setClearColor(0xd6cfc0); this.renderer.outputColorSpace = THREE.SRGBColorSpace;
             this.renderer.toneMapping = THREE.ACESFilmicToneMapping; this.renderer.toneMappingExposure = 1;
+            this.renderer.shadowMap.enabled = true;
+            this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
             this.renderer.domElement.setAttribute('aria-label','مدل قابل چرخش کافه');
             this.scene = new THREE.Scene(); this.scene.add(new THREE.HemisphereLight(0xfff7e6,0x696e77,1.5));
-            const light = new THREE.DirectionalLight(0xffeccb,2); light.position.set(-20,120,-40); this.scene.add(light);
+            const light = new THREE.DirectionalLight(0xffeccb,2); light.position.set(-20,160,-40);
+            light.target.position.set(0,0,-80); light.castShadow = true;
+            light.shadow.mapSize.set(2048,2048); light.shadow.normalBias = .06;
+            Object.assign(light.shadow.camera,{left:-115,right:115,top:115,bottom:-115,near:.1,far:400});
+            this.scene.add(light,light.target);
             this.camera = new THREE.PerspectiveCamera(40,1,.2,2000);
             this.controls = new OrbitControls(this.camera,this.renderer.domElement);
             this.controls.minDistance = 6; this.controls.maxDistance = 800; this.controls.maxPolarAngle = Math.PI * .49;
@@ -61,7 +67,15 @@ export default class FbxCafeInspector {
             const gltf = await new GLTFLoader().parseAsync(bytes.buffer.slice(bytes.byteOffset,bytes.byteOffset+bytes.byteLength),'');
             if (this.closed) { this.releaseModel(gltf.scene); return; }
             this.model = gltf.scene;
-            this.model.traverse((o) => { if (o.userData.overhead) o.visible = this.showRoof; });
+            const anisotropy = Math.min(8,this.renderer.capabilities.getMaxAnisotropy());
+            this.model.traverse((o) => {
+                if (o.userData.overhead) o.visible = this.showRoof;
+                if (!o.isMesh) return;
+                o.castShadow = true; o.receiveShadow = true;
+                for (const material of [].concat(o.material ?? [])) {
+                    for (const value of Object.values(material)) if (value?.isTexture) value.anisotropy = anisotropy;
+                }
+            });
             this.scene.add(this.model);
             if (Number.isFinite(this.playerPosition?.x) && Number.isFinite(this.playerPosition?.z)) {
                 const marker = new THREE.Mesh(new THREE.ConeGeometry(.8,2,12),new THREE.MeshBasicMaterial({ color:0x00a8b0 }));
@@ -102,6 +116,7 @@ export default class FbxCafeInspector {
     releaseModel(model) {
         const textures = new Set();
         model?.traverse((o) => {
+            if (o.isLight) o.dispose?.();
             o.geometry?.dispose();
             for (const material of [].concat(o.material ?? [])) {
                 for (const value of Object.values(material)) if (value?.isTexture) textures.add(value);

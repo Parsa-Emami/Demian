@@ -9,7 +9,9 @@ if (out === root || out === join(root, 'public')) throw new Error('Output must b
 const entry = JSON.parse(readFileSync(join(root, 'public/build/manifest.json'), 'utf8'))['resources/js/app.js'];
 if (!entry?.file) throw new Error('Run npm run build first.');
 mkdirSync(out, { recursive: true });
-cpSync(join(root, 'public/assets'), join(out, 'assets'), { recursive: true });
+rmSync(join(out, 'assets'), { recursive: true, force: true });
+cpSync(join(root, 'public/assets'), join(out, 'assets'), { recursive: true,
+    filter: source => !/\.work\.|\.tmp$|[/\\]cafe\.glb$/.test(source) });
 for (const slug of RETIRED_CHARACTER_SLUGS) {
     rmSync(join(out, 'assets/characters', slug), { recursive: true, force: true });
     rmSync(join(out, 'assets/characters/_legacy_archive', slug), { recursive: true, force: true });

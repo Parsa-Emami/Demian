@@ -111,12 +111,15 @@ export default class DinoRunGame extends BaseGame {
         this.environment.drawObstacles(ctx, frame.obstacles, { ground, scale: s, time: this.model.time, night: light.night });
         this.environment.drawDust(ctx, { x: RUNNER_CONFIG.playerX * s, ground, scale: s, time: this.model.time,
             sliding: this.model.duck, running: this.model.status === 'running' && this.model.y === 0 });
-        const avatar = this.avatar, sprite = avatar.atlas.frames[avatar.animator.currentFrameName()];
+        const avatar = this.avatar, sample = avatar.animator.sample(alpha);
+        const sprite = avatar.atlas.frames[sample.frameName];
         if (sprite) {
             const ratio = avatar.atlas.render?.referenceBodyHeightRatio ?? .9;
             const spriteSize = RUNNER_CONFIG.bodyHeight / ratio * s;
             const x = RUNNER_CONFIG.playerX * s, y = ground - frame.y * s;
-            ctx.fillStyle = 'rgba(35,48,32,.16)'; ctx.beginPath(); ctx.ellipse(x, ground, 25 * s, 3 * s, 0, 0, Math.PI * 2); ctx.fill();
+            const lift = Math.min(1, frame.y / 120);
+            ctx.fillStyle = `rgba(35,48,32,${.18 * (1 - lift * .65)})`;
+            ctx.beginPath(); ctx.ellipse(x, ground, (25 - lift * 7) * s, (3 + lift) * s, 0, 0, Math.PI * 2); ctx.fill();
             ctx.save(); ctx.translate(x, y);
             // Sliding is a real low pose in the atlas. Keep face/body proportions at one uniform scale.
             ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';

@@ -10,7 +10,7 @@ import {
 } from '../../resources/js/game/rendering2d/PixelActorRenderer.js';
 
 test('Open World never blocks on desktop-size character sheets', () => {
-    assert.deepEqual(characterRuntimeVariants({ tier: 'high' }), { active: 'runtime', npc: 'lite' });
+    assert.deepEqual(characterRuntimeVariants({ tier: 'high' }), { active: 'detail', npc: 'lite' });
     assert.deepEqual(characterRuntimeVariants({ tier: 'performance' }), { active: 'lite', npc: 'lite' });
     assert.deepEqual(orderedSpriteVariants('runtime'), ['runtime', 'lite', 'compact', 'mobile']);
     assert.ok(!orderedSpriteVariants('lite').includes('desktop'));

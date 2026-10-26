@@ -16,8 +16,10 @@ export default class CafeGameRenderer2D {
             viewportWidth: dimensions.width,
             viewportHeight: dimensions.height,
             pixelsPerUnit: zoom,
+            pixelSnap: context.renderer.presentationMode !== 'smooth',
         });
-        this.cafe = new CafePixelRenderer({ bounds: map?.bounds, colliders: map?.staticColliders });
+        this.cafe = new CafePixelRenderer({ bounds: map?.bounds, colliders: map?.staticColliders,
+            detail: context.services?.performanceProfile?.tier === 'high' });
         this.queue = new PixelRenderQueue();
         if (!follow) this.camera.fitBounds(map?.bounds);
     }
@@ -25,6 +27,7 @@ export default class CafeGameRenderer2D {
     begin({ clear = '#17130f', target = null, deltaTime = 0, atmosphere = this.atmosphere } = {}) {
         const { width, height } = this.context.renderer.logicalDimensions();
         this.camera.resize(width, height);
+        this.camera.pixelSnap = this.context.renderer.presentationMode !== 'smooth';
         if (target && this.followEnabled) this.camera.follow(target);
         this.camera.update(deltaTime);
         const ctx = this.context.renderer.beginFrame(clear);

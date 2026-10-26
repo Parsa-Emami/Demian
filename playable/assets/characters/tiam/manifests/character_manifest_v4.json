@@ -52,6 +52,10 @@
       "compact": {
         "atlas": "../tiam-atlas-v14-compact.json",
         "image": "../tiam-spritesheet-v14-compact.png"
+      },
+      "detail": {
+        "atlas": "../tiam-atlas-v14-detail.json",
+        "image": "../tiam-spritesheet-v14-detail.png"
       }
     }
   }

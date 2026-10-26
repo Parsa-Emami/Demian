@@ -45,6 +45,10 @@
       "compact": {
         "atlas": "../setayesh-atlas-v14-compact.json",
         "image": "../setayesh-spritesheet-v14-compact.png"
+      },
+      "detail": {
+        "atlas": "../setayesh-atlas-v14-detail.json",
+        "image": "../setayesh-spritesheet-v14-detail.png"
       }
     }
   }

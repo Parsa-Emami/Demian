@@ -46,6 +46,10 @@
       "compact": {
         "atlas": "../negar-atlas-v14-compact.json",
         "image": "../negar-spritesheet-v14-compact.png"
+      },
+      "detail": {
+        "atlas": "../negar-atlas-v14-detail.json",
+        "image": "../negar-spritesheet-v14-detail.png"
       }
     }
   }

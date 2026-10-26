@@ -49,6 +49,7 @@ export default class FrameAnimator {
         this.locomotionPhase = 0;
         this.locomotionFrequency = 0;
         this.motionState = null;
+        this.previousSample = null;
     }
 
     has(name) {
@@ -297,6 +298,34 @@ export default class FrameAnimator {
             nextIndex = this.animation?.loop !== false ? 0 : frames.length - 1;
         }
         return frames[nextIndex] ?? null;
+    }
+
+    captureStep() {
+        this.previousSample = {
+            frames: this.currentFrames(),
+            animation: this.animation,
+            position: this.frameIndex + this.frameProgress(),
+        };
+    }
+
+    sample(alpha = 1) {
+        const frames = this.currentFrames();
+        if (!frames.length) return { frameName: null, nextFrameName: null, progress: 0 };
+        const current = this.frameIndex + this.frameProgress();
+        const previous = this.previousSample;
+        const t = Number.isFinite(alpha) ? Math.min(1, Math.max(0, alpha)) : 1;
+        let position = current;
+        if (previous?.frames === frames && previous.animation === this.animation) {
+            let distance = current - previous.position;
+            if (this.animation.loop !== false && distance < 0) distance += frames.length;
+            position = previous.position + distance * t;
+        }
+        position = this.animation?.loop !== false
+            ? ((position % frames.length) + frames.length) % frames.length
+            : Math.min(frames.length - 1, Math.max(0, position));
+        const index = Math.floor(position);
+        const next = index + 1 < frames.length ? index + 1 : this.animation?.loop !== false ? 0 : index;
+        return { frameName: frames[index], nextFrameName: frames[next], progress: position - index };
     }
 
     applyCurrentFrame() {}

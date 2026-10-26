@@ -45,6 +45,10 @@
       "compact": {
         "atlas": "../uzudi-atlas-v14-compact.json",
         "image": "../uzudi-spritesheet-v14-compact.png"
+      },
+      "detail": {
+        "atlas": "../uzudi-atlas-v14-detail.json",
+        "image": "../uzudi-spritesheet-v14-detail.png"
       }
     }
   }

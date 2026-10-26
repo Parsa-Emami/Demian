@@ -63,6 +63,7 @@ export function isRetiredCharacter(slug) {
     return RETIRED_CHARACTER_SLUGS.includes(String(slug ?? '').trim().toLowerCase());
 }
 export const CHARACTER_SPRITE_VARIANTS = Object.freeze([
+    'detail',
     'runtime',
     'lite',
     'desktop',

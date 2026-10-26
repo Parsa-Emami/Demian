@@ -97,6 +97,25 @@
       "geometry": "passed"
     },
     {
+      "character": "darya",
+      "variant": "detail",
+      "frames": 672,
+      "image": "darya-spritesheet-v14-detail.png",
+      "dimensions": [
+        3072,
+        2816
+      ],
+      "decodedMiB": 33.0,
+      "maxSlideHeight": 41.43,
+      "visibleWorldHeights": {
+        "idle": 3.767,
+        "walk": 3.641,
+        "run": 3.767,
+        "sprint": 3.767
+      },
+      "geometry": "passed"
+    },
+    {
       "character": "setayesh",
       "variant": "desktop",
       "frames": 672,
@@ -188,6 +207,25 @@
         "walk": 3.767,
         "run": 3.432,
         "sprint": 3.432
+      },
+      "geometry": "passed"
+    },
+    {
+      "character": "setayesh",
+      "variant": "detail",
+      "frames": 672,
+      "image": "setayesh-spritesheet-v14-detail.png",
+      "dimensions": [
+        3072,
+        2816
+      ],
+      "decodedMiB": 33.0,
+      "maxSlideHeight": 42.08,
+      "visibleWorldHeights": {
+        "idle": 3.767,
+        "walk": 3.767,
+        "run": 3.348,
+        "sprint": 3.348
       },
       "geometry": "passed"
     },
@@ -287,6 +325,25 @@
       "geometry": "passed"
     },
     {
+      "character": "uzudi",
+      "variant": "detail",
+      "frames": 672,
+      "image": "uzudi-spritesheet-v14-detail.png",
+      "dimensions": [
+        3072,
+        2816
+      ],
+      "decodedMiB": 33.0,
+      "maxSlideHeight": 43.37,
+      "visibleWorldHeights": {
+        "idle": 3.767,
+        "walk": 3.725,
+        "run": 3.516,
+        "sprint": 3.516
+      },
+      "geometry": "passed"
+    },
+    {
       "character": "negar",
       "variant": "desktop",
       "frames": 672,
@@ -378,6 +435,25 @@
         "walk": 3.516,
         "run": 3.683,
         "sprint": 3.683
+      },
+      "geometry": "passed"
+    },
+    {
+      "character": "negar",
+      "variant": "detail",
+      "frames": 672,
+      "image": "negar-spritesheet-v14-detail.png",
+      "dimensions": [
+        3072,
+        2816
+      ],
+      "decodedMiB": 33.0,
+      "maxSlideHeight": 42.72,
+      "visibleWorldHeights": {
+        "idle": 3.809,
+        "walk": 3.474,
+        "run": 3.599,
+        "sprint": 3.599
       },
       "geometry": "passed"
     },
@@ -477,6 +553,25 @@
       "geometry": "passed"
     },
     {
+      "character": "tiam",
+      "variant": "detail",
+      "frames": 672,
+      "image": "tiam-spritesheet-v14-detail.png",
+      "dimensions": [
+        3072,
+        2816
+      ],
+      "decodedMiB": 33.0,
+      "maxSlideHeight": 42.08,
+      "visibleWorldHeights": {
+        "idle": 3.767,
+        "walk": 3.934,
+        "run": 3.892,
+        "sprint": 3.892
+      },
+      "geometry": "passed"
+    },
+    {
       "character": "amirreza",
       "variant": "desktop",
       "frames": 672,
@@ -568,6 +663,25 @@
         "walk": 3.348,
         "run": 3.348,
         "sprint": 3.348
+      },
+      "geometry": "passed"
+    },
+    {
+      "character": "amirreza",
+      "variant": "detail",
+      "frames": 672,
+      "image": "amirreza-spritesheet-v14-detail.png",
+      "dimensions": [
+        3072,
+        2816
+      ],
+      "decodedMiB": 33.0,
+      "maxSlideHeight": 44.02,
+      "visibleWorldHeights": {
+        "idle": 3.767,
+        "walk": 3.348,
+        "run": 3.327,
+        "sprint": 3.327
       },
       "geometry": "passed"
     },
@@ -667,6 +781,25 @@
       "geometry": "passed"
     },
     {
+      "character": "hanna",
+      "variant": "detail",
+      "frames": 672,
+      "image": "hanna-spritesheet-v14-detail.png",
+      "dimensions": [
+        3072,
+        2816
+      ],
+      "decodedMiB": 33.0,
+      "maxSlideHeight": 33.66,
+      "visibleWorldHeights": {
+        "idle": 3.767,
+        "walk": 3.516,
+        "run": 3.306,
+        "sprint": 3.306
+      },
+      "geometry": "passed"
+    },
+    {
       "character": "ainaz",
       "variant": "desktop",
       "frames": 672,
@@ -758,6 +891,25 @@
         "walk": 3.85,
         "run": 3.85,
         "sprint": 3.85
+      },
+      "geometry": "passed"
+    },
+    {
+      "character": "ainaz",
+      "variant": "detail",
+      "frames": 672,
+      "image": "ainaz-spritesheet-v14-detail.png",
+      "dimensions": [
+        3072,
+        2816
+      ],
+      "decodedMiB": 33.0,
+      "maxSlideHeight": 40.13,
+      "visibleWorldHeights": {
+        "idle": 3.767,
+        "walk": 3.767,
+        "run": 3.809,
+        "sprint": 3.809
       },
       "geometry": "passed"
     },
@@ -857,6 +1009,25 @@
       "geometry": "passed"
     },
     {
+      "character": "arsal",
+      "variant": "detail",
+      "frames": 672,
+      "image": "arsal-spritesheet-v14-detail.png",
+      "dimensions": [
+        3072,
+        2816
+      ],
+      "decodedMiB": 33.0,
+      "maxSlideHeight": 44.02,
+      "visibleWorldHeights": {
+        "idle": 3.767,
+        "walk": 3.767,
+        "run": 3.767,
+        "sprint": 3.767
+      },
+      "geometry": "passed"
+    },
+    {
       "character": "iman",
       "variant": "desktop",
       "frames": 672,
@@ -948,6 +1119,25 @@
         "walk": 3.85,
         "run": 3.767,
         "sprint": 3.767
+      },
+      "geometry": "passed"
+    },
+    {
+      "character": "iman",
+      "variant": "detail",
+      "frames": 672,
+      "image": "iman-spritesheet-v14-detail.png",
+      "dimensions": [
+        3072,
+        2816
+      ],
+      "decodedMiB": 33.0,
+      "maxSlideHeight": 40.78,
+      "visibleWorldHeights": {
+        "idle": 3.767,
+        "walk": 3.767,
+        "run": 3.725,
+        "sprint": 3.725
       },
       "geometry": "passed"
     }

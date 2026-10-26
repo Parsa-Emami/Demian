@@ -52,6 +52,10 @@
       "compact": {
         "atlas": "../amirreza-atlas-v14-compact.json",
         "image": "../amirreza-spritesheet-v14-compact.png"
+      },
+      "detail": {
+        "atlas": "../amirreza-atlas-v14-detail.json",
+        "image": "../amirreza-spritesheet-v14-detail.png"
       }
     }
   }

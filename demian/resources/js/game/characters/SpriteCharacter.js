@@ -10,6 +10,7 @@ import {
 } from './DirectionResolver';
 import { WORLD_CONFIG } from '../world/WorldConfig';
 import { characterFrameWorldSize } from './CharacterVisualContract.js';
+import { captureCharacterStep } from './CharacterRenderState.js';
 import { CHARACTER_JUMP_TUNING, characterGravity, groundLocomotionState, isInterruptibleRecovery } from './CharacterLocomotionModel.js';
 import {
     advanceCharacterAnimation,
@@ -455,6 +456,7 @@ export default class SpriteCharacter {
 
 
     update(deltaTime, input, movementBasis) {
+        captureCharacterStep(this);
         this.abilityController.update(deltaTime);
         this.stateLock = Math.max(0, this.stateLock - deltaTime);
         this.dashCooldown = Math.max(0, this.dashCooldown - deltaTime);

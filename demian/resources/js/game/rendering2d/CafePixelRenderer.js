@@ -6,14 +6,15 @@ import { fbxFloorplanImage, fbxCafeArtRevision, preloadFbxCafeArt } from './FbxC
  * Canvas keeps the existing character controls and sprites deterministic and fast.
  */
 export default class CafePixelRenderer {
-    constructor({ bounds = CAFE_BOUNDS, colliders = CAFE_STATIC_COLLIDERS } = {}) {
+    constructor({ bounds = CAFE_BOUNDS, colliders = CAFE_STATIC_COLLIDERS, detail = false } = {}) {
         this.bounds = bounds; this.colliders = colliders;
-        void preloadFbxCafeArt();
+        this.detail = detail;
+        void preloadFbxCafeArt({ detail });
     }
     get revision() { return fbxCafeArtRevision(); }
     draw(ctx, camera, { atmosphere = 'day' } = {}) {
         ctx.save();
-        const image = fbxFloorplanImage();
+        const image = fbxFloorplanImage(this.detail);
         if (image) {
             const b = CAFE_BOUNDS;
             const rect = camera.worldRect({ x: (b.minX + b.maxX) / 2, z: (b.minZ + b.maxZ) / 2 },

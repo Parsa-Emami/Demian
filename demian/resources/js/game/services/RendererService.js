@@ -78,6 +78,7 @@ export default class RendererService {
         this.pixelRatio = 1;
         this.presentationMode = 'pixel';
         this.smoothMaxPixelRatio = 1.35;
+        this.smoothPixelBudget = 1250000;
         this.deviceRatio = 1;
         this.presentationScale = 1;
         this.lastWidth = 0;
@@ -120,9 +121,10 @@ export default class RendererService {
         };
     }
 
-    setPresentationMode(mode = 'pixel', { maxPixelRatio = 1.35 } = {}) {
+    setPresentationMode(mode = 'pixel', { maxPixelRatio = 1.35, pixelBudget = maxPixelRatio > 1.5 ? 2200000 : 1250000 } = {}) {
         this.presentationMode = mode === 'smooth' ? 'smooth' : 'pixel';
-        this.smoothMaxPixelRatio = clamp(Number(maxPixelRatio) || 1.35, 1, 1.5);
+        this.smoothMaxPixelRatio = clamp(Number(maxPixelRatio) || 1.35, 1, 2);
+        this.smoothPixelBudget = clamp(Number(pixelBudget) || 1250000, 250000, 2200000);
         this.canvas.style.imageRendering = this.presentationMode === 'smooth' ? 'auto' : 'pixelated';
         this.container.dataset.presentationMode = this.presentationMode;
     }
@@ -155,7 +157,8 @@ export default class RendererService {
         const physicalWidth = Math.max(1, Math.round(width * this.deviceRatio));
         const physicalHeight = Math.max(1, Math.round(height * this.deviceRatio));
         const grid = this.presentationMode === 'smooth'
-            ? { ...smoothPresentationGrid(width, height, this.deviceRatio, Math.min(this.smoothMaxPixelRatio, this.pixelRatio)), scale: null }
+            ? { ...smoothPresentationGrid(width, height, this.deviceRatio,
+                Math.min(this.smoothMaxPixelRatio, this.pixelRatio), this.smoothPixelBudget), scale: null }
             : this.choosePixelGrid(physicalWidth, physicalHeight);
 
         this.presentationScale = grid.scale ?? physicalWidth / grid.logicalWidth;

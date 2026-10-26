@@ -1,0 +1,21 @@
+{
+  "status": "passed",
+  "baseCommit": "6c04cf946e5eb89a08385ee0111d0850f83e6b3f",
+  "javascriptTests": 322,
+  "atlasVariantsValidated": 60,
+  "charactersValidated": 10,
+  "releaseValidation": "passed",
+  "uiLayers": "passed",
+  "atomicBundle": "passed",
+  "browserProfiles": [
+    "desktop 1440x900, high/detail",
+    "mobile 390x844, performance/lite"
+  ],
+  "browserChecks": "browser-checks.json",
+  "sourceModelAndMapChecks": "model/browser-qa.json",
+  "physicalHardwareMeasured": false,
+  "meshy": {
+    "newAssetsGenerated": false,
+    "reason": "Device authorization was not approved before its code expired."
+  }
+}

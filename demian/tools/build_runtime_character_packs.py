@@ -17,17 +17,19 @@ from character_art_registry import ACTIVE_CHARACTER_ROSTER
 
 ROOT = Path(__file__).resolve().parents[1]
 ASSETS = ROOT / 'public/assets/characters'
-VARIANTS = {'runtime': (96, 2), 'lite': (64, 3)}
+VARIANTS = {'runtime': (96, 2), 'lite': (64, 3), 'detail': (128, 2)}
 FAMILY_SAMPLING = {
+    'detail': {'turn': 1, 'idle': 2, 'walk': 1, 'run': 1, 'jump': 1, 'land': 2, 'slide': 2, 'celebrate': 3},
     'runtime': {'turn': 1, 'idle': 2, 'walk': 2, 'run': 2, 'jump': 2, 'land': 3, 'slide': 3, 'celebrate': 3},
     'lite': {'turn': 1, 'idle': 2, 'walk': 3, 'run': 3, 'jump': 3, 'land': 3, 'slide': 4, 'celebrate': 4},
 }
-DECODED_BUDGETS = {'runtime': 12 * 1024**2, 'lite': 4 * 1024**2}
+DECODED_BUDGETS = {'runtime': 12 * 1024**2, 'lite': 4 * 1024**2, 'detail': 34 * 1024**2}
 
 
 def build(slug, variant, cell, stride):
     directory = ASSETS / slug
-    source_path = directory / f'{slug}-atlas-v14-mobile.json'
+    source_variant = 'desktop' if variant == 'detail' else 'mobile'
+    source_path = directory / f'{slug}-atlas-v14-{source_variant}.json'
     source = json.loads(source_path.read_text())
     atlas = deepcopy(source)
     families = defaultdict(list)
@@ -49,7 +51,7 @@ def build(slug, variant, cell, stride):
         for i, name in enumerate(names):
             nearest = min(samples, key=lambda index: abs(index - i))
             aliases[name] = names[nearest]
-    columns = 16
+    columns = 24 if variant == 'detail' else 16
     rows = math.ceil(len(selected) / columns)
     if columns * rows * cell * cell * 4 > DECODED_BUDGETS[variant]:
         raise ValueError(f'{slug}/{variant} exceeds the decoded image budget')
@@ -100,8 +102,9 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--characters', nargs='+', choices=ACTIVE_CHARACTER_ROSTER, default=list(ACTIVE_CHARACTER_ROSTER))
     parser.add_argument('--report', default='docs/release-v14-negar/runtime-packs.json')
+    parser.add_argument('--variants', nargs='+', choices=VARIANTS, default=list(VARIANTS))
     args = parser.parse_args()
-    reports = [build(slug, variant, *settings) for slug in args.characters for variant, settings in VARIANTS.items()]
+    reports = [build(slug, variant, *VARIANTS[variant]) for slug in args.characters for variant in args.variants]
     output = ROOT / args.report
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(json.dumps(reports, ensure_ascii=False, indent=2) + '\n')

@@ -273,7 +273,7 @@ export default class CharacterManager {
     }
 
     variantRank(variant) {
-        return { lite: 1, compact: 2, runtime: 3, mobile: 4, desktop: 5, custom: 5 }[variant] ?? 0;
+        return { lite: 1, compact: 2, runtime: 3, mobile: 4, desktop: 5, detail: 6, custom: 6 }[variant] ?? 0;
     }
 
     async ensureEntityVariant(record, entity, variant) {

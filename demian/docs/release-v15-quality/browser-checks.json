@@ -1,0 +1,277 @@
+{
+  "status": "passed",
+  "physicalHardwareMeasured": false,
+  "profiles": [
+    {
+      "name": "desktop",
+      "width": 1440,
+      "height": 900,
+      "memory": 8,
+      "cores": 12,
+      "tier": "high",
+      "variant": "detail",
+      "world": {
+        "variant": "detail",
+        "detailEnvironment": true,
+        "pixelSnap": false,
+        "dimensions": {
+          "width": 1876,
+          "height": 1172,
+          "presentationScale": 1.535181236673774
+        }
+      },
+      "distanceMoved": 2.216370755574676,
+      "characters": [
+        {
+          "slug": "darya",
+          "variant": "detail",
+          "cell": 128,
+          "decodedBytes": 34603008,
+          "revision": "adc8779776ef2587bfadd98c10e8d382d9e126aff3c0e17be494e50334aa0423",
+          "expectedRevision": "adc8779776ef2587bfadd98c10e8d382d9e126aff3c0e17be494e50334aa0423",
+          "jump": "passed",
+          "landing": "passed",
+          "slide": "passed"
+        },
+        {
+          "slug": "setayesh",
+          "variant": "detail",
+          "cell": 128,
+          "decodedBytes": 34603008,
+          "revision": "4cbc4ab463d3056dbf5000111ab51c21780c9f0916e239e8b86d8be113e106c7",
+          "expectedRevision": "4cbc4ab463d3056dbf5000111ab51c21780c9f0916e239e8b86d8be113e106c7",
+          "jump": "passed",
+          "landing": "passed",
+          "slide": "passed"
+        },
+        {
+          "slug": "uzudi",
+          "variant": "detail",
+          "cell": 128,
+          "decodedBytes": 34603008,
+          "revision": "0d7260ab7f3a9f83acbe4cd9bd43e84f82eb1fa3c354380c65fd5a26d7b8549e",
+          "expectedRevision": "0d7260ab7f3a9f83acbe4cd9bd43e84f82eb1fa3c354380c65fd5a26d7b8549e",
+          "jump": "passed",
+          "landing": "passed",
+          "slide": "passed"
+        },
+        {
+          "slug": "negar",
+          "variant": "detail",
+          "cell": 128,
+          "decodedBytes": 34603008,
+          "revision": "6f9bf12752a96e9b50d28070360fa9410a6e0bf2a70e199f85f5d84e194ee561",
+          "expectedRevision": "6f9bf12752a96e9b50d28070360fa9410a6e0bf2a70e199f85f5d84e194ee561",
+          "jump": "passed",
+          "landing": "passed",
+          "slide": "passed"
+        },
+        {
+          "slug": "tiam",
+          "variant": "detail",
+          "cell": 128,
+          "decodedBytes": 34603008,
+          "revision": "37ee8b725c0cbb9a4326b8d63e9e8b0d5e68b4c0b9243992db66d4d2b7a15fd1",
+          "expectedRevision": "37ee8b725c0cbb9a4326b8d63e9e8b0d5e68b4c0b9243992db66d4d2b7a15fd1",
+          "jump": "passed",
+          "landing": "passed",
+          "slide": "passed"
+        },
+        {
+          "slug": "amirreza",
+          "variant": "detail",
+          "cell": 128,
+          "decodedBytes": 34603008,
+          "revision": "5a53767e6f93785dcd723237cefadb7028d106a5de235cf4279868366e7f592c",
+          "expectedRevision": "5a53767e6f93785dcd723237cefadb7028d106a5de235cf4279868366e7f592c",
+          "jump": "passed",
+          "landing": "passed",
+          "slide": "passed"
+        },
+        {
+          "slug": "hanna",
+          "variant": "detail",
+          "cell": 128,
+          "decodedBytes": 34603008,
+          "revision": "8ad4bd70a51b5c38ee28d1eb19bb52ea8032e1d9a751a304e5ab168a5061d300",
+          "expectedRevision": "8ad4bd70a51b5c38ee28d1eb19bb52ea8032e1d9a751a304e5ab168a5061d300",
+          "jump": "passed",
+          "landing": "passed",
+          "slide": "passed"
+        },
+        {
+          "slug": "ainaz",
+          "variant": "detail",
+          "cell": 128,
+          "decodedBytes": 34603008,
+          "revision": "1759f2cce9e70f668bcc207b6d3920fea5634ca6ce4a47c2822ee86ab1707e90",
+          "expectedRevision": "1759f2cce9e70f668bcc207b6d3920fea5634ca6ce4a47c2822ee86ab1707e90",
+          "jump": "passed",
+          "landing": "passed",
+          "slide": "passed"
+        },
+        {
+          "slug": "arsal",
+          "variant": "detail",
+          "cell": 128,
+          "decodedBytes": 34603008,
+          "revision": "7ea978593fd0461ed2b2ce6ef643110632a4ddac22299d8837ef5d292f9610b7",
+          "expectedRevision": "7ea978593fd0461ed2b2ce6ef643110632a4ddac22299d8837ef5d292f9610b7",
+          "jump": "passed",
+          "landing": "passed",
+          "slide": "passed"
+        },
+        {
+          "slug": "iman",
+          "variant": "detail",
+          "cell": 128,
+          "decodedBytes": 34603008,
+          "revision": "8818e59ed6bb4af9a3aa01107a645a4e3f83d74fd00ac5c1e2c320a7bd793e49",
+          "expectedRevision": "8818e59ed6bb4af9a3aa01107a645a4e3f83d74fd00ac5c1e2c320a7bd793e49",
+          "jump": "passed",
+          "landing": "passed",
+          "slide": "passed"
+        }
+      ],
+      "errors": [],
+      "failures": [],
+      "runtimeErrors": []
+    },
+    {
+      "name": "mobile",
+      "width": 390,
+      "height": 844,
+      "memory": 2,
+      "cores": 4,
+      "tier": "performance",
+      "variant": "lite",
+      "world": {
+        "variant": "lite",
+        "detailEnvironment": false,
+        "pixelSnap": false,
+        "dimensions": {
+          "width": 390,
+          "height": 844,
+          "presentationScale": 2
+        }
+      },
+      "distanceMoved": 2.216370755574676,
+      "characters": [
+        {
+          "slug": "darya",
+          "variant": "lite",
+          "cell": 64,
+          "decodedBytes": 3932160,
+          "revision": "0eec0e63a233ee06ecf02869b1cd5d6dd18d2b92a1d366456fce06cbb55100c7",
+          "expectedRevision": "0eec0e63a233ee06ecf02869b1cd5d6dd18d2b92a1d366456fce06cbb55100c7",
+          "jump": "passed",
+          "landing": "passed",
+          "slide": "passed"
+        },
+        {
+          "slug": "setayesh",
+          "variant": "lite",
+          "cell": 64,
+          "decodedBytes": 3932160,
+          "revision": "e196379f163c62548b5d81d5b86d9c43409c78dd5807b0c461a53c90b757e3e7",
+          "expectedRevision": "e196379f163c62548b5d81d5b86d9c43409c78dd5807b0c461a53c90b757e3e7",
+          "jump": "passed",
+          "landing": "passed",
+          "slide": "passed"
+        },
+        {
+          "slug": "uzudi",
+          "variant": "lite",
+          "cell": 64,
+          "decodedBytes": 3932160,
+          "revision": "d2c22a5fd55e628fceca474a6bc60d5f5c4e23f396065513ac3e8c6df5690263",
+          "expectedRevision": "d2c22a5fd55e628fceca474a6bc60d5f5c4e23f396065513ac3e8c6df5690263",
+          "jump": "passed",
+          "landing": "passed",
+          "slide": "passed"
+        },
+        {
+          "slug": "negar",
+          "variant": "lite",
+          "cell": 64,
+          "decodedBytes": 3932160,
+          "revision": "0ce3f7a7b36fd263b612d81309c2b9ef4038806b8a1f7fe86bb1704ecadfefe5",
+          "expectedRevision": "0ce3f7a7b36fd263b612d81309c2b9ef4038806b8a1f7fe86bb1704ecadfefe5",
+          "jump": "passed",
+          "landing": "passed",
+          "slide": "passed"
+        },
+        {
+          "slug": "tiam",
+          "variant": "lite",
+          "cell": 64,
+          "decodedBytes": 3932160,
+          "revision": "0359a13a1019d2340fd7f502da83343c3656e3cabd628ff9c2f30b22f03d4fdd",
+          "expectedRevision": "0359a13a1019d2340fd7f502da83343c3656e3cabd628ff9c2f30b22f03d4fdd",
+          "jump": "passed",
+          "landing": "passed",
+          "slide": "passed"
+        },
+        {
+          "slug": "amirreza",
+          "variant": "lite",
+          "cell": 64,
+          "decodedBytes": 3932160,
+          "revision": "473e91ef2615452f0c853b428e214db43ebd3a13a54a9b43be7499ea7cef90b6",
+          "expectedRevision": "473e91ef2615452f0c853b428e214db43ebd3a13a54a9b43be7499ea7cef90b6",
+          "jump": "passed",
+          "landing": "passed",
+          "slide": "passed"
+        },
+        {
+          "slug": "hanna",
+          "variant": "lite",
+          "cell": 64,
+          "decodedBytes": 3932160,
+          "revision": "f41ddf09a98d103176b44c897431f0e3286770165e246136f1600158faf07e09",
+          "expectedRevision": "f41ddf09a98d103176b44c897431f0e3286770165e246136f1600158faf07e09",
+          "jump": "passed",
+          "landing": "passed",
+          "slide": "passed"
+        },
+        {
+          "slug": "ainaz",
+          "variant": "lite",
+          "cell": 64,
+          "decodedBytes": 3932160,
+          "revision": "2d730464b6047a7d90040a6e093297e5c623c165cbb42eab3a8bbfd1bd929a8c",
+          "expectedRevision": "2d730464b6047a7d90040a6e093297e5c623c165cbb42eab3a8bbfd1bd929a8c",
+          "jump": "passed",
+          "landing": "passed",
+          "slide": "passed"
+        },
+        {
+          "slug": "arsal",
+          "variant": "lite",
+          "cell": 64,
+          "decodedBytes": 3932160,
+          "revision": "da03e050de02150e6e49d8fe21af83797d0bf558b578c1cfc91f1411e266bc43",
+          "expectedRevision": "da03e050de02150e6e49d8fe21af83797d0bf558b578c1cfc91f1411e266bc43",
+          "jump": "passed",
+          "landing": "passed",
+          "slide": "passed"
+        },
+        {
+          "slug": "iman",
+          "variant": "lite",
+          "cell": 64,
+          "decodedBytes": 3932160,
+          "revision": "4e5604c2f44f9c6ece3b2e575310a6798f78b3764ef34b2da066391558833f87",
+          "expectedRevision": "4e5604c2f44f9c6ece3b2e575310a6798f78b3764ef34b2da066391558833f87",
+          "jump": "passed",
+          "landing": "passed",
+          "slide": "passed"
+        }
+      ],
+      "errors": [],
+      "failures": [],
+      "runtimeErrors": []
+    }
+  ],
+  "browser": "153.0.8010.0"
+}

@@ -3,13 +3,14 @@ function point(value = {}) { return { x: Number(value.x) || 0, z: Number(value.z
 
 /** World-space camera for deterministic top-down pixel rendering. */
 export default class PixelCamera2D {
-    constructor({ bounds, viewportWidth = 480, viewportHeight = 270, pixelsPerUnit = 10, smoothing = 9 } = {}) {
+    constructor({ bounds, viewportWidth = 480, viewportHeight = 270, pixelsPerUnit = 10, smoothing = 9, pixelSnap = true } = {}) {
         this.bounds = bounds ?? { minX: -24, maxX: 24, minZ: -18, maxZ: 18 };
         this.viewportWidth = viewportWidth;
         this.viewportHeight = viewportHeight;
         this.pixelsPerUnit = pixelsPerUnit;
         this.targetPixelsPerUnit = pixelsPerUnit;
         this.smoothing = smoothing;
+        this.pixelSnap = pixelSnap;
         this.position = { x: 0, z: 0 };
         this.target = { x: 0, z: 0 };
     }
@@ -67,9 +68,10 @@ export default class PixelCamera2D {
     }
 
     worldToScreen(world) {
+        const sample = this.pixelSnap ? Math.round : (value) => value;
         return {
-            x: Math.round(this.viewportWidth / 2 + ((Number(world?.x) || 0) - this.position.x) * this.pixelsPerUnit),
-            y: Math.round(this.viewportHeight / 2 + ((Number(world?.z) || 0) - this.position.z) * this.pixelsPerUnit),
+            x: sample(this.viewportWidth / 2 + ((Number(world?.x) || 0) - this.position.x) * this.pixelsPerUnit),
+            y: sample(this.viewportHeight / 2 + ((Number(world?.z) || 0) - this.position.z) * this.pixelsPerUnit),
         };
     }
 

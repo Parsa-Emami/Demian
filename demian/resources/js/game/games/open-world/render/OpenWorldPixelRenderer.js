@@ -7,6 +7,7 @@ import { PIXEL_PALETTE as P } from '../../../rendering2d/PixelPalette.js';
 import { drawPixelSceneEffects } from '../../../rendering2d/PixelSceneEffects.js';
 import { CAFE_STATIC_COLLIDERS } from '../../../shared/cafe/CafeReferenceLayout.js';
 import { CAFE_RENDER_BOUNDS } from '../../../shared/cafe/CafeWalkthroughScene.js';
+import { characterRenderPose } from '../../../characters/CharacterRenderState.js';
 
 export default class OpenWorldPixelRenderer {
     constructor(context, manifest) {
@@ -19,9 +20,12 @@ export default class OpenWorldPixelRenderer {
             viewportHeight: logical.height,
             pixelsPerUnit: 9,
             smoothing: 8,
+            pixelSnap: false,
         });
-        this.cafe = new CafePixelRenderer({ bounds: manifest.bounds, colliders: CAFE_STATIC_COLLIDERS });
-        this.sceneCache = new StaticSceneCache((ctx, camera, atmosphere) => this.cafe.draw(ctx, camera, { atmosphere }));
+        this.cafe = new CafePixelRenderer({ bounds: manifest.bounds, colliders: CAFE_STATIC_COLLIDERS,
+            detail: context.services?.performanceProfile?.tier === 'high' });
+        this.sceneCache = new StaticSceneCache((ctx, camera, atmosphere) => this.cafe.draw(ctx, camera, { atmosphere }),
+            { maxPixels: context.services?.performanceProfile?.tier === 'high' ? 3200000 : 2200000 });
         this.queue = new PixelRenderQueue();
         this.mode = 'OVERVIEW';
         this.camera.fitBounds(CAFE_RENDER_BOUNDS, 10);
@@ -82,7 +86,7 @@ export default class OpenWorldPixelRenderer {
         }
     }
 
-    render({ characterManager, loadedChunks, activeChunkIds, discovery, deltaTime = 0 }) {
+    render({ characterManager, loadedChunks, activeChunkIds, discovery, deltaTime = 0, alpha = 1 }) {
         const logical = this.context.renderer.logicalDimensions();
         const scale = this.camera.targetPixelsPerUnit;
         const padX = this.mode === 'FOLLOW' ? logical.width * .15 / scale : 0;
@@ -90,7 +94,9 @@ export default class OpenWorldPixelRenderer {
         const b = this.mode === 'OVERVIEW' ? CAFE_RENDER_BOUNDS : this.manifest.bounds;
         this.camera.bounds = { minX: b.minX - padX, maxX: b.maxX + padX, minZ: b.minZ - padZ, maxZ: b.maxZ + padZ };
         this.camera.resize(logical.width, logical.height);
-        const focus = characterManager?.position?.() ?? this.manifest.spawn;
+        const focus = characterManager?.activeEntity
+            ? characterRenderPose(characterManager.activeEntity, alpha)
+            : characterManager?.position?.() ?? this.manifest.spawn;
         if (this.mode === 'FOLLOW') this.camera.follow(focus);
         this.camera.update(deltaTime);
 
@@ -101,12 +107,13 @@ export default class OpenWorldPixelRenderer {
 
         for (const [id, entity] of characterManager?.entities ?? []) {
             if (entity?.group?.visible === false) continue;
-            const position = entity?.group?.position;
+            const position = characterRenderPose(entity, alpha);
             this.queue.add({
                 layer: 20,
                 y: position?.z ?? 0,
                 draw: () => drawSpriteCharacter(ctx, this.camera, entity, {
                     player: entity === characterManager.activeEntity,
+                    alpha,
                     label: entity === characterManager.activeEntity ? '' : (entity.character?.name ?? entity.character?.slug ?? id),
                 }),
             });

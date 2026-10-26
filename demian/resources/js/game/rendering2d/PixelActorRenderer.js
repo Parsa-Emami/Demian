@@ -1,6 +1,7 @@
 import { characterFrameWorldSize } from '../characters/CharacterVisualContract.js';
 import { cssColor, PIXEL_PALETTE as P } from './PixelPalette.js';
 import { drawCharacterAbility } from '../characters/abilities/CharacterAbilityRenderer.js';
+import { characterRenderPose } from '../characters/CharacterRenderState.js';
 
 function actorPosition(actor) {
     const position = actor?.position ?? actor?.group?.position ?? actor;
@@ -15,8 +16,9 @@ export function isDrawableImage(image) {
     return width > 0 && height > 0;
 }
 
-export function spriteDrawMetrics(camera, entity, frame) {
-    const screen = camera.worldToScreen(actorPosition(entity));
+export function spriteDrawMetrics(camera, entity, frame, pose = characterRenderPose(entity)) {
+    const screen = camera.worldToScreen(pose);
+    const snap = camera.pixelSnap === false ? (value) => value : Math.round;
     const atlas = entity?.atlas ?? {};
     const pivot = atlas.pivot ?? { x: 0.5, y: 0.96 };
     const display = atlas.display ?? {};
@@ -31,13 +33,10 @@ export function spriteDrawMetrics(camera, entity, frame) {
         * (Number(visual.width) || 1);
     const scaleY = (worldMetrics.frameHeight * camera.pixelsPerUnit / Math.max(1, frame.h))
         * (Number(visual.height) || 1);
-    // Keep sprite presentation locked to the logical pixel grid. Fractional
-    // destination rectangles introduce shimmer/blur while walking, running and
-    // jumping even when image smoothing is disabled.
-    const frameWidth = Math.max(1, Math.round(frame.w * scaleX));
-    const frameHeight = Math.max(1, Math.round(frame.h * scaleY));
+    const frameWidth = Math.max(1, snap(frame.w * scaleX));
+    const frameHeight = Math.max(1, snap(frame.h * scaleY));
     const worldOffsetX = (Number(visual.x) || 0) * camera.pixelsPerUnit;
-    const jumpHeight = Math.max(0, Number(entity?.bodyRoot?.position?.y) || 0);
+    const jumpHeight = pose.jumpHeight;
     const worldOffsetY = (
         (Number(visual.bob) || 0)
         + (Number(visual.y) || 0)
@@ -52,8 +51,8 @@ export function spriteDrawMetrics(camera, entity, frame) {
         bodyHeight,
         frameWidth,
         frameHeight,
-        anchorX: Math.round(screen.x + worldOffsetX),
-        anchorY: Math.round(screen.y - worldOffsetY),
+        anchorX: snap(screen.x + worldOffsetX),
+        anchorY: snap(screen.y - worldOffsetY),
         jumpHeight,
         rotation: Number(visual.tilt) || 0,
         labelY: Math.round(screen.y - bodyHeight - worldOffsetY - 8),
@@ -104,9 +103,11 @@ export function drawSpriteCharacter(ctx, camera, entity, {
     player = entity?.isPlayerControlled,
     opacity = 1,
     eliminated = false,
+    alpha = 1,
 } = {}) {
     const image = entity?.texture?.image ?? entity?.texture?.source?.data;
-    const frameName = entity?.animator?.currentFrameName?.();
+    const sample = entity?.animator?.sample?.(alpha);
+    const frameName = sample?.frameName ?? entity?.animator?.currentFrameName?.();
     const frame = entity?.atlas?.frames?.[frameName];
     if (!isDrawableImage(image) || !frame) {
         drawPixelActor(ctx, camera, entity, {
@@ -120,8 +121,9 @@ export function drawSpriteCharacter(ctx, camera, entity, {
         return false;
     }
 
-    const metrics = spriteDrawMetrics(camera, entity, frame);
-    const shadowWidth = Math.max(12, metrics.frameWidth * 0.52);
+    const metrics = spriteDrawMetrics(camera, entity, frame, characterRenderPose(entity, alpha));
+    const elevation = Math.min(1, metrics.jumpHeight / 3.2);
+    const shadowWidth = Math.max(12, metrics.bodyWidth * 0.68) * (1 - elevation * 0.28);
     const shadowHeight = Math.max(2, metrics.frameHeight * 0.055);
 
     ctx.save();
@@ -129,9 +131,13 @@ export function drawSpriteCharacter(ctx, camera, entity, {
     ctx.imageSmoothingQuality = 'high';
     ctx.globalAlpha = Math.min(1, Math.max(0.08, Number(opacity) || 0));
     if (eliminated) ctx.globalAlpha *= 0.48;
-    ctx.fillStyle = 'rgba(20, 14, 12, 0.34)';
+    ctx.fillStyle = `rgba(20,14,12,${0.18 * (1 - elevation * 0.65)})`;
     ctx.beginPath();
-    ctx.ellipse(metrics.screen.x, metrics.screen.y + 1, shadowWidth / 2, shadowHeight / 2, 0, 0, Math.PI * 2);
+    ctx.ellipse(metrics.screen.x, metrics.screen.y + 1, shadowWidth * 0.58, shadowHeight * 0.7, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = `rgba(20,14,12,${0.25 * (1 - elevation * 0.9)})`;
+    ctx.beginPath();
+    ctx.ellipse(metrics.screen.x, metrics.screen.y + 1, shadowWidth * 0.38, shadowHeight * 0.32, 0, 0, Math.PI * 2);
     ctx.fill();
 
     if (player) {
@@ -155,10 +161,10 @@ export function drawSpriteCharacter(ctx, camera, entity, {
     // this block never runs for them and the draw above is unchanged.
     const blendConfig = entity?.atlas?.render;
     if (blendConfig?.frameBlend && typeof entity?.animator?.nextFrameName === 'function') {
-        const nextFrameName = entity.animator.nextFrameName();
+        const nextFrameName = sample?.nextFrameName ?? entity.animator.nextFrameName();
         const nextFrame = nextFrameName ? entity?.atlas?.frames?.[nextFrameName] : null;
         const maxAlpha = Math.min(0.65, Math.max(0, Number(blendConfig.frameBlendMaxAlpha) || 0.3));
-        const progress = typeof entity.animator.frameProgress === 'function' ? entity.animator.frameProgress() : 0;
+        const progress = sample?.progress ?? entity.animator.frameProgress?.() ?? 0;
         const easedProgress = progress * progress * (3 - 2 * progress);
         const blendAlpha = nextFrame ? easedProgress * maxAlpha : 0;
         if (blendAlpha > 0.015) {

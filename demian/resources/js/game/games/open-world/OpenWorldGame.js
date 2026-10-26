@@ -493,11 +493,11 @@ export default class OpenWorldGame extends BaseGame {
         });
     }
 
-    render() {
-        this.renderScene({ phase: 'frame', strict: true });
+    render(alpha = 1) {
+        this.renderScene({ phase: 'frame', strict: true, alpha });
     }
 
-    renderScene({ phase = 'frame', strict = true } = {}) {
+    renderScene({ phase = 'frame', strict = true, alpha = 1 } = {}) {
         if (!this.context?.renderer || !this.pixelRenderer) return false;
         try {
             const activeChunkIds = [...(this.chunkManager?.loaded ?? new Map())]
@@ -509,6 +509,7 @@ export default class OpenWorldGame extends BaseGame {
                 activeChunkIds,
                 discovery: this.discovery,
                 deltaTime: this.lastRenderDelta,
+                alpha,
             });
             if (!rendered) return false;
             this.renderFailureCount = 0;

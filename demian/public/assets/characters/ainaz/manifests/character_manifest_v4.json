@@ -60,6 +60,10 @@
       "lite": {
         "atlas": "../ainaz-atlas-v14-lite.json",
         "image": "../ainaz-spritesheet-v14-lite.png"
+      },
+      "detail": {
+        "atlas": "../ainaz-atlas-v14-detail.json",
+        "image": "../ainaz-spritesheet-v14-detail.png"
       }
     }
   }

@@ -7,6 +7,7 @@ import {
 } from './CharacterMotionProfile.js';
 import { CHARACTER_CANONICAL_BODY } from './CharacterVisualContract.js';
 import { groundLocomotionState } from './CharacterLocomotionModel.js';
+import { captureCharacterStep } from './CharacterRenderState.js';
 
 const DIRECTIONS = Object.freeze(['e', 'se', 's', 'sw', 'w', 'nw', 'n', 'ne']);
 
@@ -60,6 +61,7 @@ export default class CanvasCharacterAvatar {
 
     sync(actor, deltaTime = 0) {
         if (!actor) return this;
+        captureCharacterStep(this);
         const dt = Math.max(0, Number(deltaTime) || 0);
         const nextPosition = actor.position ?? actor.group?.position ?? actor;
         const x = Number(nextPosition?.x) || 0;
