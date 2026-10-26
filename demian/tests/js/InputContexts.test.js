@@ -10,13 +10,13 @@ test('Open World and Tetris map Space to different semantic actions', () => {
 });
 
 test('Open World exposes non-combat character actions and no hit controls', () => {
-    const requiredActions = ['run', 'jump', 'slide', 'celebrate', 'wave', 'speak', 'interact'];
+    const requiredActions = ['run', 'jump', 'dash', 'dodge', 'slide', 'celebrate', 'wave', 'speak', 'interact'];
 
     requiredActions.forEach((action) => {
         assert.ok(INPUT_CONTEXTS.OPEN_WORLD.actions[action], `${action} is missing`);
     });
 
-    ['attack', 'combo', 'uppercut', 'cast', 'charge', 'hurt', 'guitar', 'spin', 'dance', 'taunt', 'sleep', 'pose', 'laugh', 'salute', 'dodge'].forEach((action) => {
+    ['attack', 'combo', 'uppercut', 'cast', 'charge', 'hurt', 'guitar', 'spin', 'dance', 'taunt', 'sleep', 'pose', 'laugh', 'salute'].forEach((action) => {
         assert.equal(INPUT_CONTEXTS.OPEN_WORLD.actions[action], undefined, `${action} must stay removed`);
     });
 });

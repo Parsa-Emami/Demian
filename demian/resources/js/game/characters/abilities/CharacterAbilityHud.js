@@ -1,6 +1,9 @@
+import { keyLabel } from '../../input/InputBindingStore.js';
+
 /** Reuses the world action tray and hides the control for characters without an ability. */
 export default class CharacterAbilityHud {
-    constructor(root) {
+    constructor(root, input = null) {
+        this.input = input;
         this.button = root?.querySelector('[data-character-ability]') ?? null;
         this.hint = root?.querySelector('[data-character-ability-hint]') ?? null;
     }
@@ -16,7 +19,8 @@ export default class CharacterAbilityHud {
         const text = remaining > 0 ? `${ability.label} · ${remaining}ث` : ability.label;
         if (this.button.textContent !== text) this.button.textContent = text;
         this.button.disabled = remaining > 0 || !entity.grounded || entity.stateLock > 0;
-        this.button.setAttribute('aria-label', `${ability.label} · Q${remaining > 0 ? ` · ${remaining} ثانیه انتظار` : ''}`);
+        const key = this.input?.device === 'gamepad' ? 'LB' : keyLabel(this.input?.bindings.bindings.ability ?? 'q');
+        this.button.setAttribute('aria-label', `${ability.label} · ${key}${remaining > 0 ? ` · ${remaining} ثانیه انتظار` : ''}`);
         this.button.setAttribute('aria-disabled', String(this.button.disabled));
     }
 

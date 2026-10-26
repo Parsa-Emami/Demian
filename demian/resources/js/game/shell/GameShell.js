@@ -45,6 +45,7 @@ export default class GameShell {
         this.onClick = this.onClick.bind(this);
         this.onKeyDown = this.onKeyDown.bind(this);
         this.onSettingsSubmit = this.onSettingsSubmit.bind(this);
+        this.onGamepadUi = this.onGamepadUi.bind(this);
     }
 
     boot() {
@@ -57,7 +58,7 @@ export default class GameShell {
         this.selectionScreen = new GameSelectionScreen({ id: SCREEN_IDS.SELECTION, element: screen(SCREEN_IDS.SELECTION), animation: this.animation, catalog: this.catalog });
         this.loadingScreen = new LoadingScreen({ id: SCREEN_IDS.LOADING, element: screen(SCREEN_IDS.LOADING), animation: this.animation });
         this.pauseScreen = new PauseScreen({ id: SCREEN_IDS.PAUSE, element: screen(SCREEN_IDS.PAUSE), animation: this.animation });
-        this.settingsScreen = new SettingsScreen({ id: SCREEN_IDS.SETTINGS, element: screen(SCREEN_IDS.SETTINGS), animation: this.animation, settings: this.settings });
+        this.settingsScreen = new SettingsScreen({ id: SCREEN_IDS.SETTINGS, element: screen(SCREEN_IDS.SETTINGS), animation: this.animation, settings: this.settings, input: this.app.input });
         this.resultsScreen = new ResultsScreen({ id: SCREEN_IDS.RESULTS, element: screen(SCREEN_IDS.RESULTS), animation: this.animation });
 
         [
@@ -73,6 +74,7 @@ export default class GameShell {
         this.root.addEventListener('click', this.onClick);
         this.settingsScreen.form?.addEventListener('submit', this.onSettingsSubmit);
         window.addEventListener('keydown', this.onKeyDown);
+        document.addEventListener('input:gamepad-ui', this.onGamepadUi);
 
         this.unsubscribers.push(
             this.eventBus.on('game:loading-step', ({ progress, step }) => {
@@ -191,6 +193,8 @@ export default class GameShell {
                 break;
             case 'reset-settings':
                 this.settings.reset();
+                this.app.input.bindings.reset();
+                this.app.input.onBlur();
                 await this.settingsScreen.beforeOpen();
                 this.toast('تنظیمات به حالت پیش‌فرض برگشت.', 'success');
                 break;
@@ -234,6 +238,44 @@ export default class GameShell {
         }
     }
 
+    onGamepadUi(event) {
+        const { action } = event.detail;
+        const topModal = this.manager.modalStack.at(-1);
+        if (action === 'pause') {
+            event.preventDefault();
+            if (topModal === SCREEN_IDS.SETTINGS) this.manager.closeTopModal('gamepad');
+            else if (this.app.sessionState === 'playing') this.app.pauseGame();
+            else if (this.app.sessionState === 'paused') this.app.resumeGame();
+            return;
+        }
+        const screen = this.manager.screens.get(topModal ?? this.manager.primaryId);
+        if (!screen?.active || screen.element.hidden) return;
+        event.preventDefault();
+        if (this.settingsScreen.controls.pending) {
+            if (action === 'cancel') { this.settingsScreen.controls.cancel(); this.settingsScreen.controls.say('تغییر کلید لغو شد.'); }
+            return;
+        }
+        if (action === 'cancel') {
+            if (topModal === SCREEN_IDS.PAUSE) this.app.resumeGame();
+            else if (topModal) this.manager.closeTopModal('gamepad');
+            else if (this.manager.primaryId === SCREEN_IDS.SELECTION) this.showCafeMenu();
+            return;
+        }
+        const targets = [...screen.element.querySelectorAll('button, summary, input, select, a[href]')]
+            .filter(element => !element.disabled && element.getAttribute('aria-disabled') !== 'true' && element.getClientRects().length && getComputedStyle(element).visibility !== 'hidden');
+        const current = targets.indexOf(document.activeElement);
+        if (action === 'confirm') {
+            const target = targets[current < 0 ? 0 : current];
+            if (target?.tagName === 'SELECT') {
+                target.selectedIndex = (target.selectedIndex + 1) % target.options.length;
+                target.dispatchEvent(new Event('change', { bubbles: true }));
+            } else target?.click();
+        } else if (action === 'next' || action === 'previous') {
+            const direction = action === 'next' ? 1 : -1;
+            targets[(Math.max(0, current) + direction + targets.length) % targets.length]?.focus();
+        }
+    }
+
     toast(message, tone = 'info') {
         const host = this.shellRoot.querySelector('[data-shell-toast-host]');
         if (!host || !message) return;
@@ -259,6 +301,7 @@ export default class GameShell {
         this.root?.removeEventListener('click', this.onClick);
         this.settingsScreen?.form?.removeEventListener('submit', this.onSettingsSubmit);
         window.removeEventListener('keydown', this.onKeyDown);
+        document.removeEventListener('input:gamepad-ui', this.onGamepadUi);
         this.unsubscribers.forEach((unsubscribe) => unsubscribe?.());
         this.unsubscribers = [];
         await this.manager.dispose();

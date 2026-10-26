@@ -24,6 +24,7 @@ import WorldDiscovery from './world/WorldDiscovery.js';
 import OpenWorldSaveStore from './persistence/OpenWorldSaveStore.js';
 import SavePointSystem from './persistence/SavePointSystem.js';
 import OpenWorldHud from './ui/OpenWorldHud.js';
+import CharacterActionHud from '../../characters/CharacterActionHud.js';
 import CharacterAbilityHud from '../../characters/abilities/CharacterAbilityHud.js';
 import { assertCafeWorldManifest } from '../../shared/cafe/CafeEnvironmentContract.js';
 
@@ -86,7 +87,8 @@ export default class OpenWorldGame extends BaseGame {
 
     async enter(context) {
         this.context = context;
-        this.abilityHud = new CharacterAbilityHud(context.root);
+        this.abilityHud = new CharacterAbilityHud(context.root, context.input);
+        this.actionHud = new CharacterActionHud(context.root, context.input);
         const { performanceProfile } = context.services;
         this.maxPixelRatio = performanceProfile.maxPixelRatio;
         this.minimumPixelRatio = performanceProfile.minimumPixelRatio;
@@ -457,6 +459,7 @@ export default class OpenWorldGame extends BaseGame {
         const gameplayInput = this.context?.app?.sessionState === 'playing' && this.context.root.dataset.sidebarState !== 'expanded' && !this.mapOpen ? input : {};
         this.characterManager.update(deltaTime, gameplayInput, basis);
         this.abilityHud?.update(this.characterManager.activeEntity);
+        this.actionHud?.update(this.characterManager.activeEntity);
         this.updateInteraction(gameplayInput);
         this.updateStreaming();
         this.world.update(deltaTime);
@@ -588,6 +591,7 @@ export default class OpenWorldGame extends BaseGame {
 
     async exit() {
         this.abilityHud?.dispose();
+        this.actionHud?.dispose();
         this.savePoints?.save({ reason: 'exit' });
         this.unsubscribeCharacterSelected?.();
         this.cameraToggleButton?.removeEventListener('click', this.onCameraToggle);

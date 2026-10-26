@@ -28,6 +28,7 @@ jobs:
           python-version: '3.12'
       - run: pip install Pillow
       - run: npm ci
+      - run: npm run validate:skills
       - run: npm run test:ci
       - run: npm run validate:final
       - run: npm run validate:ui-layers

@@ -30,7 +30,9 @@ export const INPUT_CONTEXTS = Object.freeze({
             jumpHeld: held('space', 'jumpHeld'),
             celebrate: pressed('o', 'celebrate'),
             ability: pressed('q', 'ability'),
-            slide: pressed('arrowdown', 'g', 'slide'),
+            slide: pressed('g', 'slide'),
+            dash: pressed('x', 'dash'),
+            dodge: pressed('c', 'dodge'),
             wave: pressed('v', 'wave'),
             speak: pressed('h', 'speak'),
             interact: pressed('enter', 'interact'),
@@ -121,8 +123,8 @@ export const INPUT_CONTEXTS = Object.freeze({
 
     DINO_RUN: Object.freeze({
         actions: Object.freeze({
-            jump: pressed('space', 'arrowup', 'w', 'jump'),
-            jumpHeld: held('space', 'arrowup', 'w', 'jumpHeld'),
+            jump: pressed('space', 'arrowup', 'jump'),
+            jumpHeld: held('space', 'arrowup', 'jumpHeld'),
             duck: held('arrowdown', 's', 'duck', 'slide'),
             pause: pressed('escape', 'pause'),
         }),
