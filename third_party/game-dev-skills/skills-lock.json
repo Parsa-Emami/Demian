@@ -1,0 +1,1044 @@
+{
+  "repository": "https://github.com/gamedev-skills/awesome-gamedev-agent-skills",
+  "commit": "184b72be02884f782a0058f2eeae2ce4277453e4",
+  "license": "Apache-2.0",
+  "skillCount": 77,
+  "layout": "flat-project-local",
+  "files": [
+    {
+      "path": ".agents/skills/ai-behavior-trees-utility-ai/SKILL.md",
+      "sourcePath": "skills/disciplines/ai-behavior-trees-utility-ai/SKILL.md",
+      "sha256": "64936e8a9177931945cdabb2f04fccd3266f273cd6bffa2eaceef9f30c28396e"
+    },
+    {
+      "path": ".agents/skills/ai-behavior-trees-utility-ai/references/behavior-tree-core.md",
+      "sourcePath": "skills/disciplines/ai-behavior-trees-utility-ai/references/behavior-tree-core.md",
+      "sha256": "ba72c1400780af5f634eee083c23f1976ec77146d4acf48ec73786e758049143"
+    },
+    {
+      "path": ".agents/skills/ai-behavior-trees-utility-ai/references/best-practices-and-pitfalls.md",
+      "sourcePath": "skills/disciplines/ai-behavior-trees-utility-ai/references/best-practices-and-pitfalls.md",
+      "sha256": "8ff83984ad998bc949d7524bae38c4d5b1acec34ff24587fdc9a9e9952c23c53"
+    },
+    {
+      "path": ".agents/skills/ai-behavior-trees-utility-ai/references/practical-examples.md",
+      "sourcePath": "skills/disciplines/ai-behavior-trees-utility-ai/references/practical-examples.md",
+      "sha256": "2b32bdd643a47d319d7a2b3a9d7c9fa25401f09774d6fe674c1bcf90eaea7248"
+    },
+    {
+      "path": ".agents/skills/ai-behavior-trees-utility-ai/references/utility-ai-system.md",
+      "sourcePath": "skills/disciplines/ai-behavior-trees-utility-ai/references/utility-ai-system.md",
+      "sha256": "156ee87846a4c319be358d2ced18dbcdeeccc31d1ea96f0019867db19c53ef47"
+    },
+    {
+      "path": ".agents/skills/audio-design/SKILL.md",
+      "sourcePath": "skills/disciplines/audio-design/SKILL.md",
+      "sha256": "6644943d62dc49b29e142259c54e27d0cca68f404de3f4ade58778b663f7ca02"
+    },
+    {
+      "path": ".agents/skills/audio-design/references/adaptive-music.md",
+      "sourcePath": "skills/disciplines/audio-design/references/adaptive-music.md",
+      "sha256": "1aa1a14bc163f248583f7385c27cb36aa8748014df2b1d499c77c2b0846365ba"
+    },
+    {
+      "path": ".agents/skills/bevy-ecs/SKILL.md",
+      "sourcePath": "skills/other-engines/bevy-ecs/SKILL.md",
+      "sha256": "a1bd86a8c26a1399cb63cf408400db2ff861675b4dedc8a7c2ba7e47b9faa9f7"
+    },
+    {
+      "path": ".agents/skills/bevy-ecs/references/queries-and-scheduling.md",
+      "sourcePath": "skills/other-engines/bevy-ecs/references/queries-and-scheduling.md",
+      "sha256": "9c635bc38294a07ed887fc6f8d1adefb902d055ee03bcb3876de1652ae83cc69"
+    },
+    {
+      "path": ".agents/skills/camera-systems/SKILL.md",
+      "sourcePath": "skills/disciplines/camera-systems/SKILL.md",
+      "sha256": "419dc9912b1ab007b17df615fc2347158255b63f93000b43b4c4ed1b5605d01e"
+    },
+    {
+      "path": ".agents/skills/camera-systems/references/follow-and-framing.md",
+      "sourcePath": "skills/disciplines/camera-systems/references/follow-and-framing.md",
+      "sha256": "7664d4ab898e183a41bfe2ded1c71c5e16704575545a711830707df60e3a88fa"
+    },
+    {
+      "path": ".agents/skills/card-game/SKILL.md",
+      "sourcePath": "skills/genres/card-game/SKILL.md",
+      "sha256": "cc9b25b66e7100fe0e3d31703d8d54aed383d69a7eedf5f63b3ab9e632ee0b2a"
+    },
+    {
+      "path": ".agents/skills/card-game/references/effect-resolution.md",
+      "sourcePath": "skills/genres/card-game/references/effect-resolution.md",
+      "sha256": "b2a3aed03a9e557cce5ee3e8faf4f2aedd83e6e9fc3677d4b4ed30ab509ab405"
+    },
+    {
+      "path": ".agents/skills/create-game-assets/SKILL.md",
+      "sourcePath": "skills/disciplines/create-game-assets/SKILL.md",
+      "sha256": "36cd246a434fefe1e36feff066597a6268d9f63364bee387ee65a22f03838b5d"
+    },
+    {
+      "path": ".agents/skills/create-game-assets/agents/openai.yaml",
+      "sourcePath": "skills/disciplines/create-game-assets/agents/openai.yaml",
+      "sha256": "b5ff9e75ab8a845324d28745aa97af0a3cd4fccc56067a6494947e12e40f1990"
+    },
+    {
+      "path": ".agents/skills/create-game-assets/assets/art-direction-brief.md",
+      "sourcePath": "skills/disciplines/create-game-assets/assets/art-direction-brief.md",
+      "sha256": "6d5dc4f9f5fcb24300bab9ce7dbd56d5c948ba41da3cca2d3b3d235fee5fb72c"
+    },
+    {
+      "path": ".agents/skills/create-game-assets/assets/asset-manifest.json",
+      "sourcePath": "skills/disciplines/create-game-assets/assets/asset-manifest.json",
+      "sha256": "6cce05638c11b80eb5c8f776cf187f479a2579f1a1729b0970b1cc8e5fab4c8e"
+    },
+    {
+      "path": ".agents/skills/create-game-assets/references/art-direction.md",
+      "sourcePath": "skills/disciplines/create-game-assets/references/art-direction.md",
+      "sha256": "19b2ccb827eae0c6c4cd3648ab7febb82e44706bef8515f2e8912de23dec0a5c"
+    },
+    {
+      "path": ".agents/skills/create-game-assets/references/provenance.md",
+      "sourcePath": "skills/disciplines/create-game-assets/references/provenance.md",
+      "sha256": "098d3cf915cd66e8ff0ad3a639964167edf2280f9e23efbae3ea6242d5bea3db"
+    },
+    {
+      "path": ".agents/skills/create-game-assets/references/raster-pipeline.md",
+      "sourcePath": "skills/disciplines/create-game-assets/references/raster-pipeline.md",
+      "sha256": "d7a5714628fd8f4b66d03e060488e353b163b811112b164af218beb2b6450a02"
+    },
+    {
+      "path": ".agents/skills/create-game-assets/references/three-d-pipeline.md",
+      "sourcePath": "skills/disciplines/create-game-assets/references/three-d-pipeline.md",
+      "sha256": "ee6ed7c373e15ffeb8e6b275618482f028279a8146f01b6cfe6a8411cb8a3db4"
+    },
+    {
+      "path": ".agents/skills/create-game-assets/scripts/asset_report.py",
+      "sourcePath": "skills/disciplines/create-game-assets/scripts/asset_report.py",
+      "sha256": "99f4b38f9c4fe036f97ab1d4effd7f6931b62d24a90330a5a2f5ae71e7d1a77c"
+    },
+    {
+      "path": ".agents/skills/create-game-assets/scripts/build_preview_sheet.py",
+      "sourcePath": "skills/disciplines/create-game-assets/scripts/build_preview_sheet.py",
+      "sha256": "002a550a7b5fac6d8815078a72afc249dd828c40d975b2323223fc770118c64b"
+    },
+    {
+      "path": ".agents/skills/create-game-assets/scripts/requirements.txt",
+      "sourcePath": "skills/disciplines/create-game-assets/scripts/requirements.txt",
+      "sha256": "bbced595a25debee9232fbb784d35ee4f04967d3dbc528e8c3073d3e9adbe2ca"
+    },
+    {
+      "path": ".agents/skills/defold-core/SKILL.md",
+      "sourcePath": "skills/other-engines/defold-core/SKILL.md",
+      "sha256": "339b91b141406ee256527ccc27f692d191bb62f235f9e08d6ea1d2b4b66b2b9d"
+    },
+    {
+      "path": ".agents/skills/defold-core/agents/openai.yaml",
+      "sourcePath": "skills/other-engines/defold-core/agents/openai.yaml",
+      "sha256": "bec4e62bd3244bb27c98112170bd7084df88c85312379d62fc0fdb2a361c4cf9"
+    },
+    {
+      "path": ".agents/skills/defold-core/references/build-and-run.md",
+      "sourcePath": "skills/other-engines/defold-core/references/build-and-run.md",
+      "sha256": "dc78b9632774fdcdad6a559555ac0dbc37d602743d765432ffde3dc4e5df218a"
+    },
+    {
+      "path": ".agents/skills/defold-core/references/file-formats.md",
+      "sourcePath": "skills/other-engines/defold-core/references/file-formats.md",
+      "sha256": "3ccedb010786a479600801711f8b910a3c2e38382e65e70052f90b6bf01b2d69"
+    },
+    {
+      "path": ".agents/skills/defold-core/scripts/check_defold_project.py",
+      "sourcePath": "skills/other-engines/defold-core/scripts/check_defold_project.py",
+      "sha256": "8ebb0d60f0fc9494e92b0e4da341184e7c82a3e4b0c666bdaecbe2d32ae43a34"
+    },
+    {
+      "path": ".agents/skills/dialogue-systems/SKILL.md",
+      "sourcePath": "skills/disciplines/dialogue-systems/SKILL.md",
+      "sha256": "8d7576b4d702cc3c3db0abc90b2e5375b73e63d72479ffef73b5797237bde30b"
+    },
+    {
+      "path": ".agents/skills/dialogue-systems/references/ink-and-yarn.md",
+      "sourcePath": "skills/disciplines/dialogue-systems/references/ink-and-yarn.md",
+      "sha256": "c43275e04428ad8edb374f83477046a12d525b1535cc286d3f4c8e8e159c991e"
+    },
+    {
+      "path": ".agents/skills/dialogue-systems/references/runner.md",
+      "sourcePath": "skills/disciplines/dialogue-systems/references/runner.md",
+      "sha256": "9d70ca1cb7a518170300c06bfb88984230e71ee23ff0b7b225f3355a22cb4fe4"
+    },
+    {
+      "path": ".agents/skills/ebitengine-game/SKILL.md",
+      "sourcePath": "skills/ebitengine/ebitengine-game/SKILL.md",
+      "sha256": "bbd4d03e12b572385ea3e847dc05db915ba0da7154bffe180a30b0197d03d297"
+    },
+    {
+      "path": ".agents/skills/ebitengine-game/agents/openai.yaml",
+      "sourcePath": "skills/ebitengine/ebitengine-game/agents/openai.yaml",
+      "sha256": "1b3c9903dd08c124c2f1d659189802128494b2a2c682be7aa84c904c00fb47b8"
+    },
+    {
+      "path": ".agents/skills/ebitengine-game/assets/ci/github-actions.yml",
+      "sourcePath": "skills/ebitengine/ebitengine-game/assets/ci/github-actions.yml",
+      "sha256": "759948dfac5d43c19e44e1d993714522f1dd8197016804fc13dc9908abe79fa4"
+    },
+    {
+      "path": ".agents/skills/ebitengine-game/assets/starter/assets.go",
+      "sourcePath": "skills/ebitengine/ebitengine-game/assets/starter/assets.go",
+      "sha256": "b8e8170085bb85dd9d98791ace3648d576ffc5065cc9141e3b29e5231a9a55a8"
+    },
+    {
+      "path": ".agents/skills/ebitengine-game/assets/starter/game.go",
+      "sourcePath": "skills/ebitengine/ebitengine-game/assets/starter/game.go",
+      "sha256": "32bb9374c39eaf914475cde7e0d7d10bfeb45d1b6b9c0b633bb49c72e1372f6b"
+    },
+    {
+      "path": ".agents/skills/ebitengine-game/assets/starter/input.go",
+      "sourcePath": "skills/ebitengine/ebitengine-game/assets/starter/input.go",
+      "sha256": "be015487ae644a97d442a979b8e328eb983191f7205633495f2b8cbec7278e98"
+    },
+    {
+      "path": ".agents/skills/ebitengine-game/assets/starter/licenses/Go-Fonts.txt",
+      "sourcePath": "skills/ebitengine/ebitengine-game/assets/starter/licenses/Go-Fonts.txt",
+      "sha256": "dc588a7ba9130043b67c2380cc03cc6644ed3557f6d5e8589b96acba1c64e343"
+    },
+    {
+      "path": ".agents/skills/ebitengine-game/assets/starter/main.go",
+      "sourcePath": "skills/ebitengine/ebitengine-game/assets/starter/main.go",
+      "sha256": "dd420999d7cd96e749f9c2f81a258441502e908714bf0b51482573855bfbe62c"
+    },
+    {
+      "path": ".agents/skills/ebitengine-game/assets/starter/scenes.go",
+      "sourcePath": "skills/ebitengine/ebitengine-game/assets/starter/scenes.go",
+      "sha256": "34a9db373491e51d5dfd62e0bc1051173d6afe73d64aa344eef36293d375475e"
+    },
+    {
+      "path": ".agents/skills/ebitengine-game/assets/starter/sound.go",
+      "sourcePath": "skills/ebitengine/ebitengine-game/assets/starter/sound.go",
+      "sha256": "d4013f1ff7b95a9ad1f890e517cf3e6b9643b12312725cbf238ef159ad3eb42d"
+    },
+    {
+      "path": ".agents/skills/ebitengine-game/assets/starter/web/index.html",
+      "sourcePath": "skills/ebitengine/ebitengine-game/assets/starter/web/index.html",
+      "sha256": "a9276acdfc11a9f5db6d4a73e7aebf6d98beea5cde092aec83ec28af58de009e"
+    },
+    {
+      "path": ".agents/skills/ebitengine-game/assets/starter/world/world.go",
+      "sourcePath": "skills/ebitengine/ebitengine-game/assets/starter/world/world.go",
+      "sha256": "f990e6f5e19dddb448eee34713fe61fc8eafdc5d469da529fae700ddc0b48e47"
+    },
+    {
+      "path": ".agents/skills/ebitengine-game/assets/starter/world/world_test.go",
+      "sourcePath": "skills/ebitengine/ebitengine-game/assets/starter/world/world_test.go",
+      "sha256": "2fce979264ac184467b7bfe57bc74cfb0537c709d50c39c7a085b4ced0c74405"
+    },
+    {
+      "path": ".agents/skills/ebitengine-game/references/architecture-and-testing.md",
+      "sourcePath": "skills/ebitengine/ebitengine-game/references/architecture-and-testing.md",
+      "sha256": "3801668a31456adb2cb1ba718d5b34d96efc8c5ee8f20ee9d3cf999da00ae020"
+    },
+    {
+      "path": ".agents/skills/ebitengine-game/references/assets-and-animation.md",
+      "sourcePath": "skills/ebitengine/ebitengine-game/references/assets-and-animation.md",
+      "sha256": "ff2d9201b9706598ec790b34b5daa950b2efebc255e814a59fdc6d8c0081511f"
+    },
+    {
+      "path": ".agents/skills/ebitengine-game/references/audio.md",
+      "sourcePath": "skills/ebitengine/ebitengine-game/references/audio.md",
+      "sha256": "fe897bd8369fd9c4ae7156044998068da0b3856155f97820d5563aa3ac90928f"
+    },
+    {
+      "path": ".agents/skills/ebitengine-game/references/ci-and-release.md",
+      "sourcePath": "skills/ebitengine/ebitengine-game/references/ci-and-release.md",
+      "sha256": "9e81d4418ec023a1b9546d86acd488dc4c0970bc54488f1934c9828dfaf5ab97"
+    },
+    {
+      "path": ".agents/skills/ebitengine-game/references/design-and-quality.md",
+      "sourcePath": "skills/ebitengine/ebitengine-game/references/design-and-quality.md",
+      "sha256": "59c80b7f3ce2c6cefb7551495d5ef6f76ab5407e73372843f370060542d070fa"
+    },
+    {
+      "path": ".agents/skills/ebitengine-game/references/gameplay-systems.md",
+      "sourcePath": "skills/ebitengine/ebitengine-game/references/gameplay-systems.md",
+      "sha256": "766d575eaa23c043e8a3ea1305ef3d6d8c914dd05b78c101c83042664985b997"
+    },
+    {
+      "path": ".agents/skills/ebitengine-game/references/input.md",
+      "sourcePath": "skills/ebitengine/ebitengine-game/references/input.md",
+      "sha256": "91b6b31aad46a9777ba73aadee954c1904961dab6d56126ad4398cf94eb8b27d"
+    },
+    {
+      "path": ".agents/skills/ebitengine-game/references/monetization.md",
+      "sourcePath": "skills/ebitengine/ebitengine-game/references/monetization.md",
+      "sha256": "90739998dc982d88e304df1320f8039282d09c14353c71a50e558b8f0aeb3097"
+    },
+    {
+      "path": ".agents/skills/ebitengine-game/references/networking.md",
+      "sourcePath": "skills/ebitengine/ebitengine-game/references/networking.md",
+      "sha256": "9c63aa126439cf631ff71fb25df171347cdf4deb5a83a6e19c4a3095a80f9c30"
+    },
+    {
+      "path": ".agents/skills/ebitengine-game/references/playtest-diagnostics.md",
+      "sourcePath": "skills/ebitengine/ebitengine-game/references/playtest-diagnostics.md",
+      "sha256": "9f16a1cdff69ba97cb6a97d8c3e37d9fce64825abc80238d2c2151ae58dab14d"
+    },
+    {
+      "path": ".agents/skills/ebitengine-game/references/project-and-builds.md",
+      "sourcePath": "skills/ebitengine/ebitengine-game/references/project-and-builds.md",
+      "sha256": "19ed8b8c5eb0b389842f18639d652ce49517c5a081fdf11543c584b075b72276"
+    },
+    {
+      "path": ".agents/skills/ebitengine-game/references/publishing-and-platforms.md",
+      "sourcePath": "skills/ebitengine/ebitengine-game/references/publishing-and-platforms.md",
+      "sha256": "e10058a81c173fce0497abfb44a28ae024afaf51d207d1b2c6d75f9655337d56"
+    },
+    {
+      "path": ".agents/skills/ebitengine-game/references/rendering.md",
+      "sourcePath": "skills/ebitengine/ebitengine-game/references/rendering.md",
+      "sha256": "8713c34df4ddbf2502c230a198eafef185e75a5836f20738249ab12e1d329241"
+    },
+    {
+      "path": ".agents/skills/ebitengine-game/references/text-and-ui.md",
+      "sourcePath": "skills/ebitengine/ebitengine-game/references/text-and-ui.md",
+      "sha256": "f7254c1f14ef504a3b3cd6e5a1f3be2aacee4d324ba21fe0984b4e59797840c4"
+    },
+    {
+      "path": ".agents/skills/ebitengine-game/references/tilemaps.md",
+      "sourcePath": "skills/ebitengine/ebitengine-game/references/tilemaps.md",
+      "sha256": "e1c9acee8d0055c5539e456f598113518f56aba1f3851e7dcf24638f6d44fd9e"
+    },
+    {
+      "path": ".agents/skills/ebitengine-game/scripts/check_ebitengine.py",
+      "sourcePath": "skills/ebitengine/ebitengine-game/scripts/check_ebitengine.py",
+      "sha256": "75ab270f2673a826584301bab92b4b63bad7b9726340487d09c9156b401ee4d5"
+    },
+    {
+      "path": ".agents/skills/ebitengine-game/scripts/new_game.py",
+      "sourcePath": "skills/ebitengine/ebitengine-game/scripts/new_game.py",
+      "sha256": "333f715ab0571902797a128cd2333e94198dba24b11e1357afea8b4eb086fc11"
+    },
+    {
+      "path": ".agents/skills/ebitengine-game/scripts/package_macos_app.py",
+      "sourcePath": "skills/ebitengine/ebitengine-game/scripts/package_macos_app.py",
+      "sha256": "5300047a6daf1698ff31fcc6477179f5b64b4cc0961cabe70cfae732f9398270"
+    },
+    {
+      "path": ".agents/skills/fps-shooter/SKILL.md",
+      "sourcePath": "skills/genres/fps-shooter/SKILL.md",
+      "sha256": "86aadd96a3bb8817087846cac895691c28872d99ac5c80f746b95457e60d4072"
+    },
+    {
+      "path": ".agents/skills/fps-shooter/references/shooting-and-feel.md",
+      "sourcePath": "skills/genres/fps-shooter/references/shooting-and-feel.md",
+      "sha256": "9396a7b964b5f4e39576190b94b4e5ea31f36ed7e6ee6ee755edfb2da1fc0d3f"
+    },
+    {
+      "path": ".agents/skills/game-ai/SKILL.md",
+      "sourcePath": "skills/disciplines/game-ai/SKILL.md",
+      "sha256": "5c193ac1debc8ec9ed8f44be7a05d12d817ac390e1fa82018bcae4f2ff53fbd8"
+    },
+    {
+      "path": ".agents/skills/game-ai/references/behavior-trees.md",
+      "sourcePath": "skills/disciplines/game-ai/references/behavior-trees.md",
+      "sha256": "eed3fdb943801a7696f2ca03a54d60fc9111a63c5c817e567516b5e2df2c04a9"
+    },
+    {
+      "path": ".agents/skills/game-ai/references/pathfinding.md",
+      "sourcePath": "skills/disciplines/game-ai/references/pathfinding.md",
+      "sha256": "75d6c8397fc5ff2fb8ac3dd74e7b4f881331f2531f40b6f8db451f14adb6534d"
+    },
+    {
+      "path": ".agents/skills/game-feel/SKILL.md",
+      "sourcePath": "skills/disciplines/game-feel/SKILL.md",
+      "sha256": "48971c7ad1fbb39069cb165f0e45f88c13776585870d69d5de8a04bbe0988e28"
+    },
+    {
+      "path": ".agents/skills/game-feel/references/feedback-recipes.md",
+      "sourcePath": "skills/disciplines/game-feel/references/feedback-recipes.md",
+      "sha256": "f8cca962733b0b1f5d1db75fe966f6e13bf11015e39a04a849d6ff5c3e0e835e"
+    },
+    {
+      "path": ".agents/skills/game-jam/SKILL.md",
+      "sourcePath": "skills/workflows/game-jam/SKILL.md",
+      "sha256": "bf166b82872f5a9d04e61d01d8efa3159a7d1291af22010c8d0e002467b98655"
+    },
+    {
+      "path": ".agents/skills/game-ui-ux/SKILL.md",
+      "sourcePath": "skills/disciplines/game-ui-ux/SKILL.md",
+      "sha256": "54816447c4d07f9ab65782ebb7138dd0927c9cd84a3647e8806f2a86a3a094ff"
+    },
+    {
+      "path": ".agents/skills/game-ui-ux/references/layout-and-flow.md",
+      "sourcePath": "skills/disciplines/game-ui-ux/references/layout-and-flow.md",
+      "sha256": "961fc8c8e45a1ee5120e1deef9f6aef932ae3949e6f1ce26548b9d7616775d73"
+    },
+    {
+      "path": ".agents/skills/godot-2d-movement/SKILL.md",
+      "sourcePath": "skills/godot/godot-2d-movement/SKILL.md",
+      "sha256": "ea396576540acb85f0ca2050a96cfa6399a03668971bb320ef612e52a32c8f0a"
+    },
+    {
+      "path": ".agents/skills/godot-2d-movement/references/controller-recipes.md",
+      "sourcePath": "skills/godot/godot-2d-movement/references/controller-recipes.md",
+      "sha256": "bcf89d3e8a820d75a78ed32eaa8eaf20c01ea1a8154791f58a8e3546d6fb0fba"
+    },
+    {
+      "path": ".agents/skills/godot-3d-essentials/SKILL.md",
+      "sourcePath": "skills/godot/godot-3d-essentials/SKILL.md",
+      "sha256": "6164f02300775b7db62a79ca9f65f8dc2232efa64268fb330621cf898bbec73d"
+    },
+    {
+      "path": ".agents/skills/godot-3d-essentials/references/scene-and-environment.md",
+      "sourcePath": "skills/godot/godot-3d-essentials/references/scene-and-environment.md",
+      "sha256": "94d016b194b9d2a5d5ffa3b9cef531b639b15413740f0132ba9f4cc0cba03c34"
+    },
+    {
+      "path": ".agents/skills/godot-animation/SKILL.md",
+      "sourcePath": "skills/godot/godot-animation/SKILL.md",
+      "sha256": "43a339c8445b804ba84c32889ec9e4ca80e323003df74a35bcf4d3a7c8e9e99b"
+    },
+    {
+      "path": ".agents/skills/godot-animation/references/animation-tree-and-tween.md",
+      "sourcePath": "skills/godot/godot-animation/references/animation-tree-and-tween.md",
+      "sha256": "488900f895505dc6190b6e3626a4367c841dfda6ed288de8cf68a9891775c159"
+    },
+    {
+      "path": ".agents/skills/godot-audio/SKILL.md",
+      "sourcePath": "skills/godot/godot-audio/SKILL.md",
+      "sha256": "9ed39d72403eef39e2cbedb1015262ee8413f4f71c91734ba25f82eece839b5b"
+    },
+    {
+      "path": ".agents/skills/godot-audio/references/buses-and-effects.md",
+      "sourcePath": "skills/godot/godot-audio/references/buses-and-effects.md",
+      "sha256": "f84f5c91fc78631670315b4c63643603841ad1ca1f211a7891c8bc408f8c3e80"
+    },
+    {
+      "path": ".agents/skills/godot-csharp/SKILL.md",
+      "sourcePath": "skills/godot/godot-csharp/SKILL.md",
+      "sha256": "3b8d85099d5014d640858bed2d18fd5901b20803492e466b3fb5a82f079486c5"
+    },
+    {
+      "path": ".agents/skills/godot-csharp/references/csharp-setup-and-interop.md",
+      "sourcePath": "skills/godot/godot-csharp/references/csharp-setup-and-interop.md",
+      "sha256": "e15d5d5f8f6019d627e7d01818a4004d8229e039975387497466346073f3a1d5"
+    },
+    {
+      "path": ".agents/skills/godot-export/SKILL.md",
+      "sourcePath": "skills/godot/godot-export/SKILL.md",
+      "sha256": "473552185df50d5ab4a2ef874f47e08ffd7f6f552e191a7a5922c288b29800a6"
+    },
+    {
+      "path": ".agents/skills/godot-export/references/presets-and-cli.md",
+      "sourcePath": "skills/godot/godot-export/references/presets-and-cli.md",
+      "sha256": "ab2388a1870a0b813d110066bb54bad9f3787d067d13043d10944baec5b13dc1"
+    },
+    {
+      "path": ".agents/skills/godot-gdscript-headless-testing/SKILL.md",
+      "sourcePath": "skills/godot/godot-gdscript-headless-testing/SKILL.md",
+      "sha256": "980ecf1815cb179bc92749e419e3d5c87cc998413c57ed87035e34dc45e87034"
+    },
+    {
+      "path": ".agents/skills/godot-gdscript/SKILL.md",
+      "sourcePath": "skills/godot/godot-gdscript/SKILL.md",
+      "sha256": "9039fb6de0980495fbc77fb87aae22256d92e7b5cca558b9e318b53dbf557459"
+    },
+    {
+      "path": ".agents/skills/godot-gdscript/references/annotations-and-typing.md",
+      "sourcePath": "skills/godot/godot-gdscript/references/annotations-and-typing.md",
+      "sha256": "b905cae5114ecbbba2cac14ad49b05a2c252535a670f5a1d701b41def3a90f78"
+    },
+    {
+      "path": ".agents/skills/godot-multiplayer/SKILL.md",
+      "sourcePath": "skills/godot/godot-multiplayer/SKILL.md",
+      "sha256": "353319ed255916977fa21de4888496b404f400ee63b823db3ff743f5023b9cb6"
+    },
+    {
+      "path": ".agents/skills/godot-multiplayer/references/replication-and-rpc.md",
+      "sourcePath": "skills/godot/godot-multiplayer/references/replication-and-rpc.md",
+      "sha256": "05908f3ea13f0ceb21ddc561e7cc8c62e0f71e1b88cbb25cd7c13e8b7f3f6f39"
+    },
+    {
+      "path": ".agents/skills/godot-nodes-scenes/SKILL.md",
+      "sourcePath": "skills/godot/godot-nodes-scenes/SKILL.md",
+      "sha256": "fc0096a774a8581678180ed0e71039eea52533411b4b45dee708ebad10c920af"
+    },
+    {
+      "path": ".agents/skills/godot-nodes-scenes/references/tree-and-instancing.md",
+      "sourcePath": "skills/godot/godot-nodes-scenes/references/tree-and-instancing.md",
+      "sha256": "be3c86180bd18dd46bfdfd7a47317bdb50fc6942cfc3e3d7342b4d0f7834b7a4"
+    },
+    {
+      "path": ".agents/skills/godot-nodes-scenes/scripts/check_godot_project.py",
+      "sourcePath": "skills/godot/godot-nodes-scenes/scripts/check_godot_project.py",
+      "sha256": "779b2130ce00c9566b6a1972dc49916bc270922e1df7fb705a93cc0d5053ef85"
+    },
+    {
+      "path": ".agents/skills/godot-physics/SKILL.md",
+      "sourcePath": "skills/godot/godot-physics/SKILL.md",
+      "sha256": "e318719b45091bc2731eb2ebd256027f23f7f50a39b06eb7047608cf8426b297"
+    },
+    {
+      "path": ".agents/skills/godot-physics/references/bodies-and-queries.md",
+      "sourcePath": "skills/godot/godot-physics/references/bodies-and-queries.md",
+      "sha256": "5d1616f73d9f0161df501cbcb1bdbbc3c4b8c2abb687172e1d02a5d5e7907223"
+    },
+    {
+      "path": ".agents/skills/godot-resources/SKILL.md",
+      "sourcePath": "skills/godot/godot-resources/SKILL.md",
+      "sha256": "1c89eb8eaef4ac889c21640822d454d41a9017e4ca205d4044b73d5fd017aa13"
+    },
+    {
+      "path": ".agents/skills/godot-resources/references/resource-patterns.md",
+      "sourcePath": "skills/godot/godot-resources/references/resource-patterns.md",
+      "sha256": "a848b0be5d5d78307ffa8a91152ffb3b03204cd742a3edd289e03873aab77425"
+    },
+    {
+      "path": ".agents/skills/godot-shaders/SKILL.md",
+      "sourcePath": "skills/godot/godot-shaders/SKILL.md",
+      "sha256": "e96ac075c0d85f14af8de2a3f92bc4f0389a9bb9e9ac32bc1519f2aa4679d6be"
+    },
+    {
+      "path": ".agents/skills/godot-shaders/references/shading-language.md",
+      "sourcePath": "skills/godot/godot-shaders/references/shading-language.md",
+      "sha256": "406987a5728ac06e5a93b878d390387545a0f118a014b65a65d0e003bf3a64c9"
+    },
+    {
+      "path": ".agents/skills/godot-signals-groups/SKILL.md",
+      "sourcePath": "skills/godot/godot-signals-groups/SKILL.md",
+      "sha256": "eccc8d79a708eff3ff2b1f108baaf8bf3bf3c39e73e396973ea605a6a1190784"
+    },
+    {
+      "path": ".agents/skills/godot-signals-groups/references/signal-patterns.md",
+      "sourcePath": "skills/godot/godot-signals-groups/references/signal-patterns.md",
+      "sha256": "7f28a8fccf5aef6029e85d2ee8817dcb4d58c0344744f1a421f059ed61fbab4d"
+    },
+    {
+      "path": ".agents/skills/godot-tilemap/SKILL.md",
+      "sourcePath": "skills/godot/godot-tilemap/SKILL.md",
+      "sha256": "c92a7103c764963a4d065a637941bb537f2409e54277d05aa05ea2bf8fc75971"
+    },
+    {
+      "path": ".agents/skills/godot-tilemap/references/tileset-and-terrains.md",
+      "sourcePath": "skills/godot/godot-tilemap/references/tileset-and-terrains.md",
+      "sha256": "c2486c7bacdd3f099d981f50b1aa881a7647bb14112b343370f76e1753d12ed8"
+    },
+    {
+      "path": ".agents/skills/godot-ui-control/SKILL.md",
+      "sourcePath": "skills/godot/godot-ui-control/SKILL.md",
+      "sha256": "0b2cc92d670cc2274f6579748a1703ec6a2bf70dc3d2875985deea1018f05bdc"
+    },
+    {
+      "path": ".agents/skills/godot-ui-control/references/layout-and-theming.md",
+      "sourcePath": "skills/godot/godot-ui-control/references/layout-and-theming.md",
+      "sha256": "5f54eed206cd7d7f5fecffd2ce1c189739eba5b5e18b2d1773f9ba7202427f66"
+    },
+    {
+      "path": ".agents/skills/input-systems/SKILL.md",
+      "sourcePath": "skills/disciplines/input-systems/SKILL.md",
+      "sha256": "638bd3c07746a09e3945e81c0b9a2ca90c75d2f8a63c0be3c285d75475790b1f"
+    },
+    {
+      "path": ".agents/skills/input-systems/references/buffering-and-accessibility.md",
+      "sourcePath": "skills/disciplines/input-systems/references/buffering-and-accessibility.md",
+      "sha256": "dadd5fc9f7bbe88daeeb506e4e1b447267e232273a08ca32095a78f31aea0d84"
+    },
+    {
+      "path": ".agents/skills/itch-publish/SKILL.md",
+      "sourcePath": "skills/workflows/itch-publish/SKILL.md",
+      "sha256": "4ff24ed7a790b74162f6d9af14ce22452a3bccaaed0f8063bb64feada2d11713"
+    },
+    {
+      "path": ".agents/skills/itch-publish/references/butler-ci.md",
+      "sourcePath": "skills/workflows/itch-publish/references/butler-ci.md",
+      "sha256": "72bfb7dcb55e7af10160938bb6a19ce8766be93003bb13a66d458807c63faf45"
+    },
+    {
+      "path": ".agents/skills/level-design/SKILL.md",
+      "sourcePath": "skills/disciplines/level-design/SKILL.md",
+      "sha256": "9dd60fec5dc09957f7836739da96b5a2bcff2b46ecaab020f0a9ccff7463ba3a"
+    },
+    {
+      "path": ".agents/skills/level-design/references/pacing-and-flow.md",
+      "sourcePath": "skills/disciplines/level-design/references/pacing-and-flow.md",
+      "sha256": "e8e3940f585e376f353aefea009befe8199a1871f99d34d7b2340cb35cb61872"
+    },
+    {
+      "path": ".agents/skills/love2d-core/SKILL.md",
+      "sourcePath": "skills/other-engines/love2d-core/SKILL.md",
+      "sha256": "a5d585c884e2bdcea2f37822e45bba31964ee27130b972a3d1f8be68a5cd8d8a"
+    },
+    {
+      "path": ".agents/skills/love2d-core/references/state-stack.md",
+      "sourcePath": "skills/other-engines/love2d-core/references/state-stack.md",
+      "sha256": "848e3d1957e3ab6e83bd403323aec21b4516ce761d552813f7ebce3c76d8fbd6"
+    },
+    {
+      "path": ".agents/skills/performance-optimization/SKILL.md",
+      "sourcePath": "skills/disciplines/performance-optimization/SKILL.md",
+      "sha256": "ce89bd6ffe1515a70ba8fd9302f78fb82a558a423870a09cf7c6b27a7104578f"
+    },
+    {
+      "path": ".agents/skills/performance-optimization/references/profiling-and-budgets.md",
+      "sourcePath": "skills/disciplines/performance-optimization/references/profiling-and-budgets.md",
+      "sha256": "e68c43d5e66ec0f2fe60e0c0121c85360144ab7da5876ce6e2e3f26a2244e284"
+    },
+    {
+      "path": ".agents/skills/phaser-arcade-physics/SKILL.md",
+      "sourcePath": "skills/web-engines/phaser-arcade-physics/SKILL.md",
+      "sha256": "2e9780da9067323f5e06fcf4d1c90df03814bbbead7dffbb4fb9d5db0e63a7f7"
+    },
+    {
+      "path": ".agents/skills/phaser-arcade-physics/references/bodies-and-collision.md",
+      "sourcePath": "skills/web-engines/phaser-arcade-physics/references/bodies-and-collision.md",
+      "sha256": "7d6f323fe7ffd5e23de60897b2dba757e7fac04615612591816889e7549f515c"
+    },
+    {
+      "path": ".agents/skills/phaser-core/SKILL.md",
+      "sourcePath": "skills/web-engines/phaser-core/SKILL.md",
+      "sha256": "d7a6e622354cea86911dd15a52dfdb13d6e8ab2f21cb135ec285b2063b3c3cf3"
+    },
+    {
+      "path": ".agents/skills/phaser-core/references/scene-flow.md",
+      "sourcePath": "skills/web-engines/phaser-core/references/scene-flow.md",
+      "sha256": "8e44087643cda71c84018caabfeb0a0dfd16a77b6b04ae39860715da9076fe78"
+    },
+    {
+      "path": ".agents/skills/physics-tuning/SKILL.md",
+      "sourcePath": "skills/disciplines/physics-tuning/SKILL.md",
+      "sha256": "3e0f3d9ad049e552235cb98612381c82361fff582391c4d5584438309a14c35f"
+    },
+    {
+      "path": ".agents/skills/physics-tuning/references/timestep-and-ccd.md",
+      "sourcePath": "skills/disciplines/physics-tuning/references/timestep-and-ccd.md",
+      "sha256": "de507b0bee47cfa3ca5d051d0c4100f99736186e26cdb9488c252d6cc8d6f9ab"
+    },
+    {
+      "path": ".agents/skills/pixijs-rendering/SKILL.md",
+      "sourcePath": "skills/web-engines/pixijs-rendering/SKILL.md",
+      "sha256": "da832dcbaa5a281af15d784c8dff87e52c44556355cb92cf03d46016885a3e9d"
+    },
+    {
+      "path": ".agents/skills/pixijs-rendering/references/assets-and-display.md",
+      "sourcePath": "skills/web-engines/pixijs-rendering/references/assets-and-display.md",
+      "sha256": "57ca4b6f457f5c5dd6350cc5c33e029841608e3c3df61610a8021f45a0c42f11"
+    },
+    {
+      "path": ".agents/skills/platformer/SKILL.md",
+      "sourcePath": "skills/genres/platformer/SKILL.md",
+      "sha256": "001eb39b30832d9caea635e8fc5c65c467a188abb5dc960d51774edc5781b755"
+    },
+    {
+      "path": ".agents/skills/platformer/references/feel-tuning.md",
+      "sourcePath": "skills/genres/platformer/references/feel-tuning.md",
+      "sha256": "e23c1e532184561543c3c5c446e9ffe22a748223c8a049be174e89d16d166c4e"
+    },
+    {
+      "path": ".agents/skills/procedural-gen/SKILL.md",
+      "sourcePath": "skills/disciplines/procedural-gen/SKILL.md",
+      "sha256": "4bd422eff2c28dbb12e0edf7ef68f3e98bcbbdf4d430815ba6da2d0692630cc4"
+    },
+    {
+      "path": ".agents/skills/procedural-gen/references/dungeon-generation.md",
+      "sourcePath": "skills/disciplines/procedural-gen/references/dungeon-generation.md",
+      "sha256": "808451354e49b779111383827dba7c97964ce34647bbb3e33e21ae53728ca43c"
+    },
+    {
+      "path": ".agents/skills/procedural-gen/references/noise.md",
+      "sourcePath": "skills/disciplines/procedural-gen/references/noise.md",
+      "sha256": "4f4da0458cdebcd4323ee36da9e25032d5f3a52b3cf8b46177eced6cf79597ab"
+    },
+    {
+      "path": ".agents/skills/prototype-fast/SKILL.md",
+      "sourcePath": "skills/workflows/prototype-fast/SKILL.md",
+      "sha256": "02491395c621833d2252f7a33a96aa11f26eb48523fea167c68272fb3c785ba1"
+    },
+    {
+      "path": ".agents/skills/puzzle/SKILL.md",
+      "sourcePath": "skills/genres/puzzle/SKILL.md",
+      "sha256": "3f8d3031042af66633e97a4a3172c36914f9c5dde145179fecab047f907c2518"
+    },
+    {
+      "path": ".agents/skills/puzzle/references/board-and-resolution.md",
+      "sourcePath": "skills/genres/puzzle/references/board-and-resolution.md",
+      "sha256": "d04fa5ba786e9a8a5c5c9a84e61dc32bccbd0d3b3b2ac8932ba28954167a2a12"
+    },
+    {
+      "path": ".agents/skills/pygame-core/SKILL.md",
+      "sourcePath": "skills/other-engines/pygame-core/SKILL.md",
+      "sha256": "61fa5550b8989b985721af6fcc33c630297a2da81c52e1164244ccbc89e073b3"
+    },
+    {
+      "path": ".agents/skills/pygame-core/references/sprites-and-collision.md",
+      "sourcePath": "skills/other-engines/pygame-core/references/sprites-and-collision.md",
+      "sha256": "3d3233ea2bfa6e646426b038b20288841b3f657c9961f587ca5a355b75a1152c"
+    },
+    {
+      "path": ".agents/skills/roblox-characters/SKILL.md",
+      "sourcePath": "skills/other-engines/roblox-characters/SKILL.md",
+      "sha256": "e5ca39a32a1fd83ba887d7c52a1f02775bc7278847ecf1c66844daec325537e0"
+    },
+    {
+      "path": ".agents/skills/roblox-characters/agents/openai.yaml",
+      "sourcePath": "skills/other-engines/roblox-characters/agents/openai.yaml",
+      "sha256": "d206f4538baeb195e01d29cc53ea712948e6820c3c6539f7f2e2cce6656b8885"
+    },
+    {
+      "path": ".agents/skills/roblox-characters/references/lifecycle-and-animation.md",
+      "sourcePath": "skills/other-engines/roblox-characters/references/lifecycle-and-animation.md",
+      "sha256": "ecee2fe0dc55245ef94861d68852bbdb5c7de09eb2cb2c60e5e37295c3cfbed0"
+    },
+    {
+      "path": ".agents/skills/roblox-datastores/SKILL.md",
+      "sourcePath": "skills/other-engines/roblox-datastores/SKILL.md",
+      "sha256": "8fd15365225d7e5428040ed2d09872f7d5547cb0010576ce39fda1880c74b439"
+    },
+    {
+      "path": ".agents/skills/roblox-datastores/references/sessions-and-limits.md",
+      "sourcePath": "skills/other-engines/roblox-datastores/references/sessions-and-limits.md",
+      "sha256": "4f2cbb7da7273b3aab86ca124f8391684d1c1771a9735c7785bbfd6961bb0e7c"
+    },
+    {
+      "path": ".agents/skills/roblox-luau/SKILL.md",
+      "sourcePath": "skills/other-engines/roblox-luau/SKILL.md",
+      "sha256": "3b9310d54cd5d4b390e79e97157c6224ceb7676a5087352928ad84f8ea8218cb"
+    },
+    {
+      "path": ".agents/skills/roblox-luau/references/client-server.md",
+      "sourcePath": "skills/other-engines/roblox-luau/references/client-server.md",
+      "sha256": "6ff67b85345105480af3a6dbdbfff7c240e7a15eaf5c84d8079307993f72bdc7"
+    },
+    {
+      "path": ".agents/skills/roblox-networking/SKILL.md",
+      "sourcePath": "skills/other-engines/roblox-networking/SKILL.md",
+      "sha256": "4ceb603d88d8e26303c7efc33ead1241f6eba88f5c5039636ec95e31d60ed1db"
+    },
+    {
+      "path": ".agents/skills/roblox-networking/agents/openai.yaml",
+      "sourcePath": "skills/other-engines/roblox-networking/agents/openai.yaml",
+      "sha256": "b3f530519ed19704b115584ded1842ca430fef1650fa873694c4d9cfc7e29401"
+    },
+    {
+      "path": ".agents/skills/roblox-networking/references/validation-and-testing.md",
+      "sourcePath": "skills/other-engines/roblox-networking/references/validation-and-testing.md",
+      "sha256": "c75e0bb08c7b0515ab503ae00b86674a194b28371ee3a493769ba8b1f5b7b9ba"
+    },
+    {
+      "path": ".agents/skills/roblox-physics/SKILL.md",
+      "sourcePath": "skills/other-engines/roblox-physics/SKILL.md",
+      "sha256": "93b8879bb9a7b631cfa7a3d0ed8c8dd4ef7b839d89b93365ed637bd98f7c18fa"
+    },
+    {
+      "path": ".agents/skills/roblox-physics/agents/openai.yaml",
+      "sourcePath": "skills/other-engines/roblox-physics/agents/openai.yaml",
+      "sha256": "55b06a72b4e88c5ec5a4c9d7c3a9684849b6362545d97c8703e79a22120500bf"
+    },
+    {
+      "path": ".agents/skills/roblox-physics/references/queries-and-ownership.md",
+      "sourcePath": "skills/other-engines/roblox-physics/references/queries-and-ownership.md",
+      "sha256": "04c07117f22e7af7c74ee9b5150d9dbd41763b116753def52b2043a88493a459"
+    },
+    {
+      "path": ".agents/skills/roblox-studio-workflow/SKILL.md",
+      "sourcePath": "skills/other-engines/roblox-studio-workflow/SKILL.md",
+      "sha256": "d49e1a1e075eba99c89c85f0a576605d970569e027059b3288eaea6e11782042"
+    },
+    {
+      "path": ".agents/skills/roblox-studio-workflow/agents/openai.yaml",
+      "sourcePath": "skills/other-engines/roblox-studio-workflow/agents/openai.yaml",
+      "sha256": "34f2fe7716ef36610d0a577e05bdcfb36cbaaa25da23a159ee9c02a2d248c7d3"
+    },
+    {
+      "path": ".agents/skills/roblox-studio-workflow/references/studio-verification.md",
+      "sourcePath": "skills/other-engines/roblox-studio-workflow/references/studio-verification.md",
+      "sha256": "c476e8180ce27d6e0f7798b92741523e8c3550c433b7495340aec72bbecbeab0"
+    },
+    {
+      "path": ".agents/skills/roblox-ui/SKILL.md",
+      "sourcePath": "skills/other-engines/roblox-ui/SKILL.md",
+      "sha256": "f3875cccdb75523c0cc90c55f911d5b267ad9f6566bd5d552b565c329e8ab71c"
+    },
+    {
+      "path": ".agents/skills/roblox-ui/agents/openai.yaml",
+      "sourcePath": "skills/other-engines/roblox-ui/agents/openai.yaml",
+      "sha256": "4c67a26a3054126e21db6fb6f893135944a8ca0fac9d619506e867b989073ded"
+    },
+    {
+      "path": ".agents/skills/roblox-ui/assets/inventory-quality-test.model.json",
+      "sourcePath": "skills/other-engines/roblox-ui/assets/inventory-quality-test.model.json",
+      "sha256": "cf9b4953a17bf85709aff48ff0da8acfb3a4ed2760c79e30534878820fb06d38"
+    },
+    {
+      "path": ".agents/skills/roblox-ui/assets/inventory-quality-test.project.json",
+      "sourcePath": "skills/other-engines/roblox-ui/assets/inventory-quality-test.project.json",
+      "sha256": "ab2388eefb502d3e9e165aadc55aba09841940c757ad6d06048e4a8fcdfa0348"
+    },
+    {
+      "path": ".agents/skills/roblox-ui/references/input-navigation.md",
+      "sourcePath": "skills/other-engines/roblox-ui/references/input-navigation.md",
+      "sha256": "a31a6379911db1827ef00b70a2eeeb56996f3e757526305bc661a5d46a38137b"
+    },
+    {
+      "path": ".agents/skills/roblox-ui/references/responsive-layout.md",
+      "sourcePath": "skills/other-engines/roblox-ui/references/responsive-layout.md",
+      "sha256": "99572066781c1705c06acfc693d36e8eaf60643df16ae14d7fbfda29cd908ecc"
+    },
+    {
+      "path": ".agents/skills/roguelike/SKILL.md",
+      "sourcePath": "skills/genres/roguelike/SKILL.md",
+      "sha256": "d842c30ef0ee9bb8477c9545f557bfbe8f43d7d02b6bdf922db6db0f38c37b0c"
+    },
+    {
+      "path": ".agents/skills/roguelike/references/generation-fov-loot.md",
+      "sourcePath": "skills/genres/roguelike/references/generation-fov-loot.md",
+      "sha256": "7fdb0f50e96f47bad548fe2f4475929bbd82091489ee7031865cf4a8d21a52d4"
+    },
+    {
+      "path": ".agents/skills/router/SKILL.md",
+      "sourcePath": "router/SKILL.md",
+      "sha256": "940789817933aba088692baa3ffaf16e3162f1f499dc957c95ff8a19ad48603f"
+    },
+    {
+      "path": ".agents/skills/router/agents/openai.yaml",
+      "sourcePath": "router/agents/openai.yaml",
+      "sha256": "1304cad1da9611f8cf73ffb122bf7628b0fd6f0cce5a9f9072cd3fbdbe9ce128"
+    },
+    {
+      "path": ".agents/skills/router/references/engine-detection.md",
+      "sourcePath": "router/references/engine-detection.md",
+      "sha256": "0ab97f27f300b70617ba4c1cf522249e708a7823a211a00f52ed87fe4d86c8fa"
+    },
+    {
+      "path": ".agents/skills/router/references/routing-table.md",
+      "sourcePath": "router/references/routing-table.md",
+      "sha256": "166b3cbf7eca79ba9940428250b0cdaf19e1e801ac4c2868fdbf1cbd751cf099"
+    },
+    {
+      "path": ".agents/skills/rpg/SKILL.md",
+      "sourcePath": "skills/genres/rpg/SKILL.md",
+      "sha256": "d5e8b149c5b899d33cbf054b15caf0b013e4edb5ccfe9f45b313194a704e5f06"
+    },
+    {
+      "path": ".agents/skills/rpg/references/stats-combat-quests.md",
+      "sourcePath": "skills/genres/rpg/references/stats-combat-quests.md",
+      "sha256": "f48f556a5108a12c1c96990e379ab517c663f147d42d0f1831dd81644947d748"
+    },
+    {
+      "path": ".agents/skills/save-systems/SKILL.md",
+      "sourcePath": "skills/disciplines/save-systems/SKILL.md",
+      "sha256": "17a7e580cdb8ee2fe654fe1b2d9ba3066c57ef1ea6a8cd9cc69141ebaea16224"
+    },
+    {
+      "path": ".agents/skills/save-systems/references/versioning-and-migration.md",
+      "sourcePath": "skills/disciplines/save-systems/references/versioning-and-migration.md",
+      "sha256": "a95ee265936b5bb332934ae19a90c02c70f927adb3898e5a95ce1877abe9873c"
+    },
+    {
+      "path": ".agents/skills/shader-programming/SKILL.md",
+      "sourcePath": "skills/disciplines/shader-programming/SKILL.md",
+      "sha256": "a13ed34325b8c18f0c6982edb1a5aede99497a26b9e00fc19e9ce01e566f9923"
+    },
+    {
+      "path": ".agents/skills/shader-programming/references/effects.md",
+      "sourcePath": "skills/disciplines/shader-programming/references/effects.md",
+      "sha256": "af47d6efff3741f587e8f7a5338fce251b91a1a4b7fe514742edae8b5a84f71b"
+    },
+    {
+      "path": ".agents/skills/steam-publish/SKILL.md",
+      "sourcePath": "skills/workflows/steam-publish/SKILL.md",
+      "sha256": "6af10062f431dd3019230d4f034455b8c877b9dd41f87666d723062bc07b8a8d"
+    },
+    {
+      "path": ".agents/skills/steam-publish/references/steampipe-build-scripts.md",
+      "sourcePath": "skills/workflows/steam-publish/references/steampipe-build-scripts.md",
+      "sha256": "9ccb95deea6fd094febda2cf16fef3f219f00c9612addb7620762384c7d5fabb"
+    },
+    {
+      "path": ".agents/skills/steam-publish/scripts/check_steam_build.py",
+      "sourcePath": "skills/workflows/steam-publish/scripts/check_steam_build.py",
+      "sha256": "56c6e8a7b17bf35181fce3424c663c91a65720b8dd34f3115e6f5cc3a21f3e90"
+    },
+    {
+      "path": ".agents/skills/survival-crafting/SKILL.md",
+      "sourcePath": "skills/genres/survival-crafting/SKILL.md",
+      "sha256": "8eaf5290a82da5d5f8513b2bc145a8831bd6b2f80628cdc940fe4435695816dc"
+    },
+    {
+      "path": ".agents/skills/survival-crafting/references/needs-and-crafting.md",
+      "sourcePath": "skills/genres/survival-crafting/references/needs-and-crafting.md",
+      "sha256": "c944e77ed6c2f7ba2e2c3213228b5387ea15a672092f46d98c44666f0945bb3b"
+    },
+    {
+      "path": ".agents/skills/threejs-gltf-loading/SKILL.md",
+      "sourcePath": "skills/web-engines/threejs-gltf-loading/SKILL.md",
+      "sha256": "6ead2c9e21cff45ebf244f16bc1b815771f95f14d6479f5aae21d4ee3702a3f6"
+    },
+    {
+      "path": ".agents/skills/threejs-gltf-loading/references/loaders-and-animation.md",
+      "sourcePath": "skills/web-engines/threejs-gltf-loading/references/loaders-and-animation.md",
+      "sha256": "733d9df9b6a9f5ef9af5826ba80bdff14f6627c123db86abae0ddb41c2ee1f4a"
+    },
+    {
+      "path": ".agents/skills/threejs-materials-lighting/SKILL.md",
+      "sourcePath": "skills/web-engines/threejs-materials-lighting/SKILL.md",
+      "sha256": "51451f53c44b9bb3ee87b8f12fcc0d8c8f5b44d9426686cec4090636d7580784"
+    },
+    {
+      "path": ".agents/skills/threejs-materials-lighting/references/materials-lights-table.md",
+      "sourcePath": "skills/web-engines/threejs-materials-lighting/references/materials-lights-table.md",
+      "sha256": "b35eb1e9f194e871f9f79965f947928efa9b5626d41facac1b53fcf539113909"
+    },
+    {
+      "path": ".agents/skills/threejs-scene-setup/SKILL.md",
+      "sourcePath": "skills/web-engines/threejs-scene-setup/SKILL.md",
+      "sha256": "bdb7f24b888cc728a05a09779502ecc339c4a4f8a9b4dee2ae380fadd95f68f0"
+    },
+    {
+      "path": ".agents/skills/threejs-scene-setup/references/scene-graph.md",
+      "sourcePath": "skills/web-engines/threejs-scene-setup/references/scene-graph.md",
+      "sha256": "ab2f19b3f2425d3e6f67ba26faa6e76fd67290fff977b410feef8aaab088c82e"
+    },
+    {
+      "path": ".agents/skills/tower-defense/SKILL.md",
+      "sourcePath": "skills/genres/tower-defense/SKILL.md",
+      "sha256": "5b918ecfc6ed1c797fc1570c5f41c84a816d218589e867723f10af493bcc365c"
+    },
+    {
+      "path": ".agents/skills/tower-defense/references/balancing.md",
+      "sourcePath": "skills/genres/tower-defense/references/balancing.md",
+      "sha256": "eeb9ae73ae988b11db2186d92ee3ecd2de9f186ea23eec90efd0d25eeebf818f"
+    },
+    {
+      "path": ".agents/skills/unity-animation/SKILL.md",
+      "sourcePath": "skills/unity/unity-animation/SKILL.md",
+      "sha256": "5062042bbe8ceb255239909890f7950b2d39896cc160a6d542879e4018edc099"
+    },
+    {
+      "path": ".agents/skills/unity-animation/references/blend-trees-and-ik.md",
+      "sourcePath": "skills/unity/unity-animation/references/blend-trees-and-ik.md",
+      "sha256": "34ab71c124ae0c6798394d5a14a7571f82f78de6f8cb7687ec975cb5c1d2a423"
+    },
+    {
+      "path": ".agents/skills/unity-build-pipeline/SKILL.md",
+      "sourcePath": "skills/unity/unity-build-pipeline/SKILL.md",
+      "sha256": "96975bb7573a6a8b6672fac1ea8090178631d6c7dda4c455cb80e4205acefe9d"
+    },
+    {
+      "path": ".agents/skills/unity-build-pipeline/references/ci-build-script.md",
+      "sourcePath": "skills/unity/unity-build-pipeline/references/ci-build-script.md",
+      "sha256": "3290166f3eaee3080ff73c3c44583a71414dbe7ff8e57e885be7eb25875e9eb0"
+    },
+    {
+      "path": ".agents/skills/unity-csharp-scripting/SKILL.md",
+      "sourcePath": "skills/unity/unity-csharp-scripting/SKILL.md",
+      "sha256": "e49d3fed5f65c2d126600ea5d80b859ecb4be241726ae022aa3acd65caf10df4"
+    },
+    {
+      "path": ".agents/skills/unity-csharp-scripting/references/lifecycle-and-coroutines.md",
+      "sourcePath": "skills/unity/unity-csharp-scripting/references/lifecycle-and-coroutines.md",
+      "sha256": "c9b1dc7779fc7c840dd4f461fce78f61dfc23638d2ff37bb7010c42d8f5fd9ae"
+    },
+    {
+      "path": ".agents/skills/unity-csharp-scripting/scripts/check_unity_project.py",
+      "sourcePath": "skills/unity/unity-csharp-scripting/scripts/check_unity_project.py",
+      "sha256": "ab26d4e5eabd54524a53c12bf1d03cc9fbe496a509acdd5f5de9165c5c30c724"
+    },
+    {
+      "path": ".agents/skills/unity-input-system/SKILL.md",
+      "sourcePath": "skills/unity/unity-input-system/SKILL.md",
+      "sha256": "e8ed83bbdb8e9c7cb21022005fd2fd6088465240373742111977a47a07b577d1"
+    },
+    {
+      "path": ".agents/skills/unity-input-system/references/rebinding.md",
+      "sourcePath": "skills/unity/unity-input-system/references/rebinding.md",
+      "sha256": "a2ce5f56bb27058527323298f4a72fa364afd47fd7d410a9b6bc1c0ce52cb691"
+    },
+    {
+      "path": ".agents/skills/unity-navmesh/SKILL.md",
+      "sourcePath": "skills/unity/unity-navmesh/SKILL.md",
+      "sha256": "38e5e27602ae12a54452205f0ba8b789d70e34b19f6bbfe5395cd7ddafc5d65c"
+    },
+    {
+      "path": ".agents/skills/unity-physics/SKILL.md",
+      "sourcePath": "skills/unity/unity-physics/SKILL.md",
+      "sha256": "9bdf714987d6596756c52fade88cdc3f4276865042d7065fba6b1601d6f02e6f"
+    },
+    {
+      "path": ".agents/skills/unity-physics/references/raycasting-and-joints.md",
+      "sourcePath": "skills/unity/unity-physics/references/raycasting-and-joints.md",
+      "sha256": "544e608f005f37848fa3d3aa4adb9467a0da467e1a35dc5c9be3bb44d51dfedf"
+    },
+    {
+      "path": ".agents/skills/unity-scriptableobjects/SKILL.md",
+      "sourcePath": "skills/unity/unity-scriptableobjects/SKILL.md",
+      "sha256": "72d1e13c6a6878f525e531da3f1cdea86215623c309226c790aa8f3ffb93e8f0"
+    },
+    {
+      "path": ".agents/skills/unity-scriptableobjects/references/event-channels.md",
+      "sourcePath": "skills/unity/unity-scriptableobjects/references/event-channels.md",
+      "sha256": "e5515ebbf5c3406ad72f1bce45d1b9bf4bc36cf69e8f5bbaf682880f7942d0eb"
+    },
+    {
+      "path": ".agents/skills/unity-tilemap-2d/SKILL.md",
+      "sourcePath": "skills/unity/unity-tilemap-2d/SKILL.md",
+      "sha256": "443785c00dc42338f88251b9210e1ad0308afeb0377c5297ae37f7edc97af137"
+    },
+    {
+      "path": ".agents/skills/unreal-behavior-trees/SKILL.md",
+      "sourcePath": "skills/unreal/unreal-behavior-trees/SKILL.md",
+      "sha256": "f7e7d8afc54d4c2577d2fb5db887a4ab610fda6e9cc483a6cadef3fe3915138c"
+    },
+    {
+      "path": ".agents/skills/unreal-behavior-trees/references/custom-bttask.md",
+      "sourcePath": "skills/unreal/unreal-behavior-trees/references/custom-bttask.md",
+      "sha256": "8e0eb8b3b0dc4b66f4b8628890533d620fae9197b39c2acefca4b9283431d138"
+    },
+    {
+      "path": ".agents/skills/unreal-blueprints/SKILL.md",
+      "sourcePath": "skills/unreal/unreal-blueprints/SKILL.md",
+      "sha256": "19ff3dca49fc486a58389c5ff0e086ce12a397430c1dffc403a840049562f42b"
+    },
+    {
+      "path": ".agents/skills/unreal-blueprints/references/communication.md",
+      "sourcePath": "skills/unreal/unreal-blueprints/references/communication.md",
+      "sha256": "bc6f6eb3f82a173430645d8522e536f68765e937216f5c93a9bf646ad257c808"
+    },
+    {
+      "path": ".agents/skills/unreal-cpp-gameplay/SKILL.md",
+      "sourcePath": "skills/unreal/unreal-cpp-gameplay/SKILL.md",
+      "sha256": "f2acfd6ae0b17b1613e79418e77bec3d524aad7711115c62d48e1aefe5ef7f09"
+    },
+    {
+      "path": ".agents/skills/unreal-cpp-gameplay/references/components-and-gc.md",
+      "sourcePath": "skills/unreal/unreal-cpp-gameplay/references/components-and-gc.md",
+      "sha256": "d7d8b2193db2c0fc374617755b6491a536953f1e3f634ed6ad510dfa466a6507"
+    },
+    {
+      "path": ".agents/skills/unreal-enhanced-input/SKILL.md",
+      "sourcePath": "skills/unreal/unreal-enhanced-input/SKILL.md",
+      "sha256": "3d33571a1b0170ed2c01776c0039f3d3f980319c20f36d16fe6cdc1e26815dfb"
+    },
+    {
+      "path": ".agents/skills/unreal-enhanced-input/references/cpp-setup.md",
+      "sourcePath": "skills/unreal/unreal-enhanced-input/references/cpp-setup.md",
+      "sha256": "4fb9c7afd89afe5f0e7f103b18203f43fde54cdce03eb9de43976a9f4af51022"
+    },
+    {
+      "path": ".agents/skills/unreal-niagara/SKILL.md",
+      "sourcePath": "skills/unreal/unreal-niagara/SKILL.md",
+      "sha256": "d99f9810049526e509a4fef010495c52efd43782a8ca4879a52d1fabf8b85c5e"
+    },
+    {
+      "path": ".agents/skills/unreal-packaging/SKILL.md",
+      "sourcePath": "skills/unreal/unreal-packaging/SKILL.md",
+      "sha256": "adb8fd8cec1d095c88c15083334718263b92f7d39746937516d82b7cda9011fa"
+    },
+    {
+      "path": ".agents/skills/visual-novel/SKILL.md",
+      "sourcePath": "skills/genres/visual-novel/SKILL.md",
+      "sha256": "57f703ceaa5f9b3d2741415c1854d1fb00db2d0a92fc1757a279a3b089888086"
+    },
+    {
+      "path": ".agents/skills/visual-novel/references/script-and-flow.md",
+      "sourcePath": "skills/genres/visual-novel/references/script-and-flow.md",
+      "sha256": "96460289165b387ddd13ab532dde58d8d47709b0afdcb9fc9183fb58cffdac76"
+    }
+  ]
+}
