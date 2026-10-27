@@ -1,0 +1,144 @@
+{
+  "character": "amin",
+  "browser": "153.0.8010.0",
+  "headless": true,
+  "rendering": "Canvas 2D / headless software",
+  "physicalPhoneMeasured": false,
+  "viewports": [
+    {
+      "width": 390,
+      "height": 844,
+      "selectedViaUi": true,
+      "previewLoaded": true,
+      "runnerJump": "passed",
+      "slide": "native-touch-passed",
+      "birdCleared": true,
+      "pack": {
+        "variant": "runtime",
+        "version": 14,
+        "actualRevision": "255da501b5e176ed18492ba083bea93e6516d7e92d93e75e0bf9e6962ece2434",
+        "expectedRevision": "255da501b5e176ed18492ba083bea93e6516d7e92d93e75e0bf9e6962ece2434"
+      },
+      "cafeMovement": "passed",
+      "cafeJump": "passed",
+      "cafeCelebrate": "passed",
+      "speech": [
+        "ارادت",
+        "چه بازیکنی"
+      ],
+      "selectionSurvivesReload": true,
+      "runnerBodyScale": {
+        "ratios": {
+          "idle": 1.011904761904762,
+          "walk": 1.011904761904762,
+          "run": 1.011904761904762,
+          "sprint": 1.011904761904762
+        },
+        "jumpRecoveryRatio": 1.011904761904762,
+        "airborneRatio": 0.9672619047619049,
+        "frameWorldHeight": null,
+        "currentWorldHeight": null,
+        "bodyScale": 1,
+        "variant": "runtime"
+      },
+      "walkScale": {
+        "ratios": {
+          "idle": 1.011904761904762,
+          "walk": 1.011904761904762,
+          "run": 1.011904761904762,
+          "sprint": 1.011904761904762
+        },
+        "jumpRecoveryRatio": 1.011904761904762,
+        "airborneRatio": 0.9672619047619049,
+        "frameWorldHeight": 5.357142857142858,
+        "currentWorldHeight": 3.7946428571428577,
+        "bodyScale": 1,
+        "variant": "runtime"
+      },
+      "runScale": {
+        "ratios": {
+          "idle": 1.011904761904762,
+          "walk": 1.011904761904762,
+          "run": 1.011904761904762,
+          "sprint": 1.011904761904762
+        },
+        "jumpRecoveryRatio": 1.011904761904762,
+        "airborneRatio": 0.9672619047619049,
+        "frameWorldHeight": 5.357142857142858,
+        "currentWorldHeight": 3.7946428571428577,
+        "bodyScale": 1,
+        "variant": "runtime"
+      },
+      "errors": [],
+      "failures": []
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "selectedViaUi": true,
+      "previewLoaded": true,
+      "runnerJump": "passed",
+      "slide": "keyboard-passed",
+      "birdCleared": true,
+      "pack": {
+        "variant": "detail",
+        "version": 14,
+        "actualRevision": "bd57e745178b627c67a565264a711407978a7c559c74dde09731afee7f3b77a3",
+        "expectedRevision": "bd57e745178b627c67a565264a711407978a7c559c74dde09731afee7f3b77a3"
+      },
+      "cafeMovement": "passed",
+      "cafeJump": "passed",
+      "cafeCelebrate": "passed",
+      "speech": [
+        "ارادت",
+        "چه بازیکنی"
+      ],
+      "selectionSurvivesReload": true,
+      "runnerBodyScale": {
+        "ratios": {
+          "idle": 1.0044642857142858,
+          "walk": 1.0044642857142858,
+          "run": 1.0044642857142858,
+          "sprint": 1.0044642857142858
+        },
+        "jumpRecoveryRatio": 1.0044642857142858,
+        "airborneRatio": 0.9709821428571429,
+        "frameWorldHeight": null,
+        "currentWorldHeight": null,
+        "bodyScale": 1,
+        "variant": "detail"
+      },
+      "walkScale": {
+        "ratios": {
+          "idle": 1.0044642857142858,
+          "walk": 1.0044642857142858,
+          "run": 1.0044642857142858,
+          "sprint": 1.0044642857142858
+        },
+        "jumpRecoveryRatio": 1.0044642857142858,
+        "airborneRatio": 0.9709821428571429,
+        "frameWorldHeight": 5.357142857142858,
+        "currentWorldHeight": 3.7667410714285716,
+        "bodyScale": 1,
+        "variant": "detail"
+      },
+      "runScale": {
+        "ratios": {
+          "idle": 1.0044642857142858,
+          "walk": 1.0044642857142858,
+          "run": 1.0044642857142858,
+          "sprint": 1.0044642857142858
+        },
+        "jumpRecoveryRatio": 1.0044642857142858,
+        "airborneRatio": 0.9709821428571429,
+        "frameWorldHeight": 5.357142857142858,
+        "currentWorldHeight": 3.7667410714285716,
+        "bodyScale": 1,
+        "variant": "detail"
+      },
+      "errors": [],
+      "failures": []
+    }
+  ],
+  "status": "passed"
+}

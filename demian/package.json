@@ -42,7 +42,9 @@
         "build:iman:v14": "python3 tools/prepare_iman_sources_v14.py && python3 tools/build_character_pack_v14.py --characters iman && python3 tools/build_runtime_character_packs.py --characters iman --report docs/release-v14-iman/runtime-packs.json",
         "test:iman:browser": "node tools/check_iman_v14.mjs",
         "validate:skills": "node tools/validate_game_dev_skills.mjs",
-        "test:controls:browser": "node tools/check_character_controls.mjs"
+        "test:controls:browser": "node tools/check_character_controls.mjs",
+        "build:amin:v14": "python3 tools/prepare_amin_sources_v14.py && python3 tools/build_character_pack_v14.py --characters amin && python3 tools/build_runtime_character_packs.py --characters amin --report docs/release-v14-amin/runtime-packs.json",
+        "test:amin:browser": "node tools/check_amin_v14.mjs"
     },
     "devDependencies": {
         "@tailwindcss/vite": "^4.0.0",

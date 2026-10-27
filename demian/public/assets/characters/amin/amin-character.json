@@ -1,0 +1,11 @@
+{
+  "name": "AMIN / امین",
+  "slug": "amin",
+  "speech": {
+    "duration": 3.2,
+    "messages": [
+      "ارادت",
+      "چه بازیکنی"
+    ]
+  }
+}

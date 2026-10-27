@@ -1,0 +1,7 @@
+{
+  "character_key": "amin",
+  "pack_version": 14,
+  "runner_physics": "shared",
+  "combat": false,
+  "companion_collision_independent": false
+}

@@ -98,6 +98,28 @@ export function drawPixelActor(ctx, camera, actor, {
     ctx.globalAlpha = 1;
 }
 
+export function drawCharacterSpeech(ctx, camera, entity, { alpha = 1, cssScale = 1 } = {}) {
+    const speech = entity?.speech;
+    const image = speech?.texture?.image;
+    if (!speech?.sprite?.visible || !(speech.remaining > 0) || !isDrawableImage(image)) return false;
+    const frameName = entity?.animator?.sample?.(alpha)?.frameName ?? entity?.animator?.currentFrameName?.();
+    const frame = entity?.atlas?.frames?.[frameName];
+    if (!frame) return false;
+    const metrics = spriteDrawMetrics(camera, entity, frame, characterRenderPose(entity, alpha));
+    const margin = 8 * cssScale;
+    const width = Math.min(280 * cssScale, camera.viewportWidth - margin * 2);
+    if (!(width > 0)) return false;
+    const height = width * image.height / image.width;
+    const x = Math.min(camera.viewportWidth - margin - width, Math.max(margin, metrics.anchorX - width / 2));
+    const y = Math.min(camera.viewportHeight - margin - height, Math.max(margin, metrics.labelY - height - margin));
+    ctx.save();
+    ctx.imageSmoothingEnabled = true;
+    ctx.globalAlpha = Math.min(1, Math.max(0, speech.material?.opacity ?? 1));
+    ctx.drawImage(image, x, y, width, height);
+    ctx.restore();
+    return true;
+}
+
 export function drawSpriteCharacter(ctx, camera, entity, {
     label = '',
     player = entity?.isPlayerControlled,

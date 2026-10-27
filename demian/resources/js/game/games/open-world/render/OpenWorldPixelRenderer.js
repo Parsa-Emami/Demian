@@ -3,7 +3,7 @@ import PixelCamera2D from '../../../rendering2d/PixelCamera2D.js';
 import CafePixelRenderer from '../../../rendering2d/CafePixelRenderer.js';
 import StaticSceneCache from '../../../rendering2d/StaticSceneCache.js';
 import PixelRenderQueue from '../../../rendering2d/PixelRenderQueue.js';
-import { drawSpriteCharacter } from '../../../rendering2d/PixelActorRenderer.js';
+import { drawSpriteCharacter, drawCharacterSpeech } from '../../../rendering2d/PixelActorRenderer.js';
 import { PIXEL_PALETTE as P } from '../../../rendering2d/PixelPalette.js';
 import { drawPixelSceneEffects } from '../../../rendering2d/PixelSceneEffects.js';
 import { CAFE_STATIC_COLLIDERS } from '../../../shared/cafe/CafeReferenceLayout.js';
@@ -133,6 +133,10 @@ export default class OpenWorldPixelRenderer {
             });
         }
         this.queue.flush(ctx);
+        const cssScale = logical.width / Math.max(1, this.context.renderer.dimensions().width);
+        for (const entity of characterManager?.entities?.values?.() ?? []) {
+            if (entity?.group?.visible !== false) drawCharacterSpeech(ctx, this.camera, entity, { alpha, cssScale });
+        }
         feedback?.draw(ctx, this.camera, { foreground: true, reducedMotion });
         drawPixelSceneEffects(ctx, logical.width, logical.height, {
             scanlines: false,

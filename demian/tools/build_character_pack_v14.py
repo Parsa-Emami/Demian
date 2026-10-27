@@ -17,7 +17,7 @@ import numpy as np
 from PIL import Image
 from scipy import ndimage
 from character_animation_timing import apply_animation_timing
-from character_art_registry import ACTIVE_CHARACTER_DEFINITIONS
+from character_art_registry import ACTIVE_CHARACTER_DEFINITIONS, speech_payload
 
 ROOT = Path(__file__).resolve().parents[1]
 CHARACTERS = ROOT / 'public/assets/characters'
@@ -306,6 +306,7 @@ def build_character(slug):
                 'preserveAspectRatio': True, 'frameBlend': False, 'lockBodyScale': True,
                 'singleSilhouette': True, 'physicsOwnsJumpHeight': True, 'dedicatedSlide': True, 'smoothSampling': True},
             'movement': {'style': movement_style, 'wingPoweredStates': wing_states},
+            'speech': speech_payload(slug),
         }
         if slug == 'darya':
             atlas['companion'] = {'id': 'pishi', 'alwaysVisible': True, 'bakedIntoEveryFrame': True, 'collisionIndependent': True}

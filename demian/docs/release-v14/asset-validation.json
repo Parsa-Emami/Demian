@@ -1140,6 +1140,120 @@
         "sprint": 3.725
       },
       "geometry": "passed"
+    },
+    {
+      "character": "amin",
+      "variant": "desktop",
+      "frames": 672,
+      "image": "amin-spritesheet-v14-desktop.png",
+      "dimensions": [
+        3456,
+        4032
+      ],
+      "decodedMiB": 53.16,
+      "maxSlideHeight": 44.88,
+      "visibleWorldHeights": {
+        "idle": 3.757,
+        "walk": 3.757,
+        "run": 3.757,
+        "sprint": 3.757
+      },
+      "geometry": "passed"
+    },
+    {
+      "character": "amin",
+      "variant": "mobile",
+      "frames": 672,
+      "image": "amin-spritesheet-v14-mobile.png",
+      "dimensions": [
+        2688,
+        3136
+      ],
+      "decodedMiB": 32.16,
+      "maxSlideHeight": 45.13,
+      "visibleWorldHeights": {
+        "idle": 3.779,
+        "walk": 3.779,
+        "run": 3.779,
+        "sprint": 3.779
+      },
+      "geometry": "passed"
+    },
+    {
+      "character": "amin",
+      "variant": "compact",
+      "frames": 672,
+      "image": "amin-spritesheet-v14-compact.png",
+      "dimensions": [
+        1920,
+        2240
+      ],
+      "decodedMiB": 16.41,
+      "maxSlideHeight": 45.57,
+      "visibleWorldHeights": {
+        "idle": 3.817,
+        "walk": 3.817,
+        "run": 3.817,
+        "sprint": 3.817
+      },
+      "geometry": "passed"
+    },
+    {
+      "character": "amin",
+      "variant": "runtime",
+      "frames": 672,
+      "image": "amin-spritesheet-v14-runtime.png",
+      "dimensions": [
+        1536,
+        1920
+      ],
+      "decodedMiB": 11.25,
+      "maxSlideHeight": 44.88,
+      "visibleWorldHeights": {
+        "idle": 3.795,
+        "walk": 3.795,
+        "run": 3.795,
+        "sprint": 3.795
+      },
+      "geometry": "passed"
+    },
+    {
+      "character": "amin",
+      "variant": "lite",
+      "frames": 672,
+      "image": "amin-spritesheet-v14-lite.png",
+      "dimensions": [
+        1024,
+        960
+      ],
+      "decodedMiB": 3.75,
+      "maxSlideHeight": 45.31,
+      "visibleWorldHeights": {
+        "idle": 3.85,
+        "walk": 3.85,
+        "run": 3.85,
+        "sprint": 3.85
+      },
+      "geometry": "passed"
+    },
+    {
+      "character": "amin",
+      "variant": "detail",
+      "frames": 672,
+      "image": "amin-spritesheet-v14-detail.png",
+      "dimensions": [
+        3072,
+        2816
+      ],
+      "decodedMiB": 33.0,
+      "maxSlideHeight": 44.67,
+      "visibleWorldHeights": {
+        "idle": 3.767,
+        "walk": 3.767,
+        "run": 3.767,
+        "sprint": 3.767
+      },
+      "geometry": "passed"
     }
   ]
 }

@@ -1,0 +1,15 @@
+{
+  "character_key": "amin",
+  "pack_version": 14,
+  "reference": "../source-v14/reference.png",
+  "master": "../source-v14/master.png",
+  "runner_motion": "../source-v14/runner-motion.png",
+  "slide_master": "../source-v14/slides.png",
+  "inputs": [
+    {
+      "name": "image(20261027-073646).png",
+      "role": "identity-costume-and-turnaround",
+      "sha256": "e5fd1fc159750b9c130ab07f6dcf2cddcb0c7ac6791d22090b989b7951af1dbe"
+    }
+  ]
+}

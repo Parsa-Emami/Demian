@@ -51,6 +51,7 @@ class CharacterManagerTest extends TestCase
             ['ainaz', 'AINAZ / آیناز'],
             ['arsal', 'ARSAL / ارسل'],
             ['iman', 'IMAN / ایمان'],
+            ['amin', 'AMIN / امین'],
         ] as [$slug, $name]) {
             $response->assertJsonFragment([
                 'slug' => $slug,
@@ -60,7 +61,7 @@ class CharacterManagerTest extends TestCase
         }
 
         // Updated asset pack versions
-        $packVersions = ['darya' => 14, 'setayesh' => 14, 'uzudi' => 14, 'negar' => 14, 'tiam' => 14, 'amirreza' => 14, 'hanna' => 14, 'ainaz' => 14, 'arsal' => 14, 'iman' => 14];
+        $packVersions = ['darya' => 14, 'setayesh' => 14, 'uzudi' => 14, 'negar' => 14, 'tiam' => 14, 'amirreza' => 14, 'hanna' => 14, 'ainaz' => 14, 'arsal' => 14, 'iman' => 14, 'amin' => 14];
 
         foreach ($packVersions as $slug => $version) {
             $response->assertJsonFragment([

@@ -24,7 +24,7 @@
     "src": "resources/fonts/vazirmatn-latin-900-normal.woff2"
   },
   "resources/js/app.js": {
-    "file": "assets/app-Dmed0c2W.js",
+    "file": "assets/app-BDfbTArF.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true,
@@ -32,7 +32,7 @@
       "resources/js/app.js"
     ],
     "css": [
-      "assets/app-ByC3Ccm8.css"
+      "assets/app-BU-Peezu.css"
     ],
     "assets": [
       "assets/vazirmatn-arabic-400-normal-DMZFCm7K.woff2",

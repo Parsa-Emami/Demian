@@ -38,6 +38,7 @@ const EMBEDDED_ROSTER_SNAPSHOT = Object.freeze({
         Object.freeze({ slug: 'ainaz', displayName: 'AINAZ / آیناز', productionStatus: 'gold_standard_production', isDefaultActive: false, packVersion: 14 }),
         Object.freeze({ slug: 'arsal', displayName: 'ARSAL / ارسل', productionStatus: 'gold_standard_production', isDefaultActive: false, packVersion: 14 }),
         Object.freeze({ slug: 'iman', displayName: 'IMAN / ایمان', productionStatus: 'gold_standard_production', isDefaultActive: false, packVersion: 14 }),
+        Object.freeze({ slug: 'amin', displayName: 'AMIN / امین', productionStatus: 'gold_standard_production', isDefaultActive: false, packVersion: 14 }),
     ]),
 });
 

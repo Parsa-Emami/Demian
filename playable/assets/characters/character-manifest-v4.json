@@ -102,6 +102,16 @@
       "locomotion_style": "ground-runner",
       "manifest": "iman/manifests/character_manifest_v4.json",
       "has_shipped_assets": true
+    },
+    {
+      "slug": "amin",
+      "display_name": "AMIN / امین",
+      "production_status": "gold_standard_production",
+      "is_default_active": false,
+      "pack_version": 14,
+      "locomotion_style": "ground-runner",
+      "manifest": "amin/manifests/character_manifest_v4.json",
+      "has_shipped_assets": true
     }
   ]
 }
