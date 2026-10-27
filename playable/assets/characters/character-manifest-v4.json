@@ -112,6 +112,16 @@
       "locomotion_style": "ground-runner",
       "manifest": "amin/manifests/character_manifest_v4.json",
       "has_shipped_assets": true
+    },
+    {
+      "slug": "hossein",
+      "display_name": "HOSSEIN / حسین",
+      "production_status": "gold_standard_production",
+      "is_default_active": false,
+      "pack_version": 14,
+      "locomotion_style": "ground-runner",
+      "manifest": "hossein/manifests/character_manifest_v4.json",
+      "has_shipped_assets": true
     }
   ]
 }

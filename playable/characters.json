@@ -164,6 +164,21 @@
         "run_speed": 6.9,
         "jump_force": 6.8
       }
+    },
+    {
+      "id": "builtin-hossein",
+      "name": "HOSSEIN / حسین",
+      "slug": "hossein",
+      "is_builtin": true,
+      "is_active": false,
+      "sprite_url": "assets/characters/hossein/hossein-spritesheet-v14-mobile.png",
+      "atlas_url": "assets/characters/hossein/hossein-atlas-v14-mobile.json",
+      "settings": {
+        "scale": 1,
+        "walk_speed": 3.55,
+        "run_speed": 6.9,
+        "jump_force": 6.8
+      }
     }
   ]
 }

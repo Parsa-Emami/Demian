@@ -62,7 +62,7 @@ def main():
                 low, high = (.96, 1.05) if family in calibrated else (.84, 1.16)
                 assert low <= height_ratio <= high, f'{slug}/{variant}: {state} visible body scale {height_ratio:.3f} is outside {low}..{high}'
                 gait_heights[state] = round(height_ratio * 3.75, 3)
-            if slug in ('arsal', 'iman', 'amin'):
+            if slug in ('arsal', 'iman', 'amin', 'hossein'):
                 recovery_ratio = visible_heights['jump_e_047'] / canonical_ratio
                 airborne_ratio = median(visible_heights[name] for name in atlas['animations']['jump']['frames']) / canonical_ratio
                 assert .96 <= recovery_ratio <= 1.05, f'{slug}/{variant}: jump recovery changes the canonical body size'

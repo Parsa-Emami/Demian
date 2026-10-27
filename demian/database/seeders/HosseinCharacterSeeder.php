@@ -1,0 +1,13 @@
+<?php
+
+namespace Database\Seeders;
+
+use Illuminate\Database\Seeder;
+
+class HosseinCharacterSeeder extends Seeder
+{
+    public function run(): void
+    {
+        $this->call(BuiltinCharacterSeeder::class);
+    }
+}

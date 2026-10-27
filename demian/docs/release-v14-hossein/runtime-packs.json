@@ -1,0 +1,59 @@
+[
+  {
+    "slug": "hossein",
+    "variant": "runtime",
+    "physicalFrames": 316,
+    "animationFrameNames": 672,
+    "decodedBytes": 11796480,
+    "downloadBytes": 1986568,
+    "samplingByFamily": {
+      "turn": 1,
+      "idle": 2,
+      "walk": 2,
+      "run": 2,
+      "jump": 2,
+      "land": 3,
+      "slide": 3,
+      "celebrate": 3
+    },
+    "sourceDecodedBytes": 33718272
+  },
+  {
+    "slug": "hossein",
+    "variant": "lite",
+    "physicalFrames": 239,
+    "animationFrameNames": 672,
+    "decodedBytes": 3932160,
+    "downloadBytes": 764343,
+    "samplingByFamily": {
+      "turn": 1,
+      "idle": 2,
+      "walk": 3,
+      "run": 3,
+      "jump": 3,
+      "land": 3,
+      "slide": 4,
+      "celebrate": 4
+    },
+    "sourceDecodedBytes": 33718272
+  },
+  {
+    "slug": "hossein",
+    "variant": "detail",
+    "physicalFrames": 528,
+    "animationFrameNames": 672,
+    "decodedBytes": 34603008,
+    "downloadBytes": 5242880,
+    "samplingByFamily": {
+      "turn": 1,
+      "idle": 2,
+      "walk": 1,
+      "run": 1,
+      "jump": 1,
+      "land": 2,
+      "slide": 2,
+      "celebrate": 3
+    },
+    "sourceDecodedBytes": 55738368
+  }
+]

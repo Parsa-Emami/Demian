@@ -1,0 +1,30 @@
+{
+  "tool": "built-in image_gen",
+  "identityReference": "source-v14/reference.png",
+  "generationDate": "2026-10-27",
+  "originalGenerationSummary": "Hossein's user-supplied board was transformed into a compact Demian chibi sprite set with aviator sunglasses, swept-back hair, goatee and dark tucked long-sleeve shirt. Master: turnaround, idle, jump and celebration rows. Motion: walk, run, land and low feet-first slide rows.",
+  "recoveredSources": [
+    {
+      "stage": "approved full-length sleeves master",
+      "filename": "Hossein sprite sheet with full-length sleeves.png"
+    },
+    {
+      "stage": "authored motion",
+      "filename": "Hossein Walk, Run, Land, Slide Sheet.png"
+    }
+  ],
+  "finalMasterSpacingPrompt": "Edit target: Hossein's approved 4-row, 8-column transparent sprite sheet.\nFix ONLY spacing and overlap for production slicing. The top of the third-row fourth jump pose touches the shoes of the idle pose above it. Separate them fully, restore complete hair and complete shoes. Make ALL 32 sprites about 15 percent smaller using the SAME UNIFORM scale factor and center each within its existing cell, with at least 16 transparent pixels of gap between ALL silhouettes vertically and horizontally. Do not add visible grid lines. Output still EXACTLY 1536 x 1024, EXACTLY 4 rows of 8 full-body sprites.\nPreserve Hossein's EXACT identity, head/body proportions, black swept-back hair, gold-rim dark aviator glasses, goatee, dark navy collared shirt with FULL-LENGTH sleeves and wrist cuffs, belt, black pants and shoes. Preserve every current pose and ordering: turnaround row, subtle idle row, eight-stage jump row ending in full standing pose, greeting/celebration row. Do not change body proportions or costume. No props, no text, no labels, no scenery, no brown backing, no ground shadows. Actual transparent alpha. All 32 complete bodies must remain visually separate.",
+  "preparation": "Deterministic component extraction, one uniform body scale per calibrated clip, shared foot pivot and existing V14 single-owner optical-flow interpolation.",
+  "license": "Generated artwork distributed under the repository MIT license; character reference supplied by the user.",
+  "curatedMotion": {
+    "slideSourcePoseIndices": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+    ],
+    "reason": "Use the six authored low sliding poses; the two more upright seated endpoints exceed the shared runner bird clearance when calibrated to the same head scale."
+  }
+}

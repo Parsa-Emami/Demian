@@ -1,0 +1,70 @@
+{
+  "character_key": "hossein",
+  "display_name": "HOSSEIN / حسین",
+  "production_status": "gold_standard_production",
+  "pack_version": 14,
+  "source_of_truth": {
+    "reference_manifest": "hossein_reference_manifest.json"
+  },
+  "identity_contract": "hossein_identity_contract.json",
+  "animations": [
+    "idle",
+    "breathe",
+    "blink",
+    "ready",
+    "walk",
+    "run",
+    "sprint",
+    "takeoff",
+    "jump",
+    "fall",
+    "land",
+    "slide",
+    "crouch",
+    "turn",
+    "wave",
+    "celebrate",
+    "win",
+    "tiptoe",
+    "hop",
+    "hover",
+    "skid",
+    "dash",
+    "dodge",
+    "salute"
+  ],
+  "runtime": {
+    "identity_manifest": "hossein_identity_contract.json",
+    "asset_manifest": "character_manifest_v4.json",
+    "animation_manifest": "hossein_animation_manifest.json",
+    "motion_profile": "hossein_motion_profile.json",
+    "ability_profile": "hossein_ability_profile.json",
+    "qa_status": "hossein_qa_status.json",
+    "atlas_targets": {
+      "desktop": {
+        "atlas": "../hossein-atlas-v14-desktop.json",
+        "image": "../hossein-spritesheet-v14-desktop.png"
+      },
+      "mobile": {
+        "atlas": "../hossein-atlas-v14-mobile.json",
+        "image": "../hossein-spritesheet-v14-mobile.png"
+      },
+      "compact": {
+        "atlas": "../hossein-atlas-v14-compact.json",
+        "image": "../hossein-spritesheet-v14-compact.png"
+      },
+      "runtime": {
+        "atlas": "../hossein-atlas-v14-runtime.json",
+        "image": "../hossein-spritesheet-v14-runtime.png"
+      },
+      "lite": {
+        "atlas": "../hossein-atlas-v14-lite.json",
+        "image": "../hossein-spritesheet-v14-lite.png"
+      },
+      "detail": {
+        "atlas": "../hossein-atlas-v14-detail.json",
+        "image": "../hossein-spritesheet-v14-detail.png"
+      }
+    }
+  }
+}

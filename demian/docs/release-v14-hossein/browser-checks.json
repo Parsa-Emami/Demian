@@ -1,0 +1,150 @@
+{
+  "character": "hossein",
+  "browser": "153.0.8010.0",
+  "headless": true,
+  "rendering": "Canvas 2D / headless software",
+  "physicalPhoneMeasured": false,
+  "viewports": [
+    {
+      "width": 390,
+      "height": 844,
+      "selectedViaUi": true,
+      "previewLoaded": true,
+      "runnerJump": "passed",
+      "slide": "native-touch-passed",
+      "birdCleared": true,
+      "pack": {
+        "variant": "runtime",
+        "version": 14,
+        "actualRevision": "c1dd94644f23a4eaa20e8467b37cec5ecfaa4404ea2a7676426cd7c1a47ae285",
+        "expectedRevision": "c1dd94644f23a4eaa20e8467b37cec5ecfaa4404ea2a7676426cd7c1a47ae285"
+      },
+      "cafeMovement": "passed",
+      "cafeJump": "passed",
+      "cafeCelebrate": "passed",
+      "speech": [
+        "غم انگیزه",
+        "نیاز به بررسی بیشتر داره",
+        "مجتبی دهنتو",
+        "میزنم همرو آچه میکنم"
+      ],
+      "dialogueCoverage": "four controlled random samples via actual UI clicks/taps",
+      "selectionSurvivesReload": true,
+      "runnerBodyScale": {
+        "ratios": {
+          "idle": 1.011904761904762,
+          "walk": 1.011904761904762,
+          "run": 1.011904761904762,
+          "sprint": 1.011904761904762
+        },
+        "jumpRecoveryRatio": 1.011904761904762,
+        "airborneRatio": 0.9672619047619049,
+        "frameWorldHeight": null,
+        "currentWorldHeight": null,
+        "bodyScale": 1,
+        "variant": "runtime"
+      },
+      "walkScale": {
+        "ratios": {
+          "idle": 1.011904761904762,
+          "walk": 1.011904761904762,
+          "run": 1.011904761904762,
+          "sprint": 1.011904761904762
+        },
+        "jumpRecoveryRatio": 1.011904761904762,
+        "airborneRatio": 0.9672619047619049,
+        "frameWorldHeight": 5.357142857142858,
+        "currentWorldHeight": 3.7946428571428577,
+        "bodyScale": 1,
+        "variant": "runtime"
+      },
+      "runScale": {
+        "ratios": {
+          "idle": 1.011904761904762,
+          "walk": 1.011904761904762,
+          "run": 1.011904761904762,
+          "sprint": 1.011904761904762
+        },
+        "jumpRecoveryRatio": 1.011904761904762,
+        "airborneRatio": 0.9672619047619049,
+        "frameWorldHeight": 5.357142857142858,
+        "currentWorldHeight": 3.738839285714286,
+        "bodyScale": 1,
+        "variant": "runtime"
+      },
+      "errors": [],
+      "failures": []
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "selectedViaUi": true,
+      "previewLoaded": true,
+      "runnerJump": "passed",
+      "slide": "keyboard-passed",
+      "birdCleared": true,
+      "pack": {
+        "variant": "detail",
+        "version": 14,
+        "actualRevision": "e40b1ad0d2485d9a8c897b65ba5423d195fd48eb0b7107f6cc550a63900ca617",
+        "expectedRevision": "e40b1ad0d2485d9a8c897b65ba5423d195fd48eb0b7107f6cc550a63900ca617"
+      },
+      "cafeMovement": "passed",
+      "cafeJump": "passed",
+      "cafeCelebrate": "passed",
+      "speech": [
+        "غم انگیزه",
+        "نیاز به بررسی بیشتر داره",
+        "مجتبی دهنتو",
+        "میزنم همرو آچه میکنم"
+      ],
+      "dialogueCoverage": "four controlled random samples via actual UI clicks/taps",
+      "selectionSurvivesReload": true,
+      "runnerBodyScale": {
+        "ratios": {
+          "idle": 1.0044642857142858,
+          "walk": 1.0044642857142858,
+          "run": 1.0044642857142858,
+          "sprint": 1.0044642857142858
+        },
+        "jumpRecoveryRatio": 1.0044642857142858,
+        "airborneRatio": 0.9598214285714286,
+        "frameWorldHeight": null,
+        "currentWorldHeight": null,
+        "bodyScale": 1,
+        "variant": "detail"
+      },
+      "walkScale": {
+        "ratios": {
+          "idle": 1.0044642857142858,
+          "walk": 1.0044642857142858,
+          "run": 1.0044642857142858,
+          "sprint": 1.0044642857142858
+        },
+        "jumpRecoveryRatio": 1.0044642857142858,
+        "airborneRatio": 0.9598214285714286,
+        "frameWorldHeight": 5.357142857142858,
+        "currentWorldHeight": 3.7667410714285716,
+        "bodyScale": 1,
+        "variant": "detail"
+      },
+      "runScale": {
+        "ratios": {
+          "idle": 1.0044642857142858,
+          "walk": 1.0044642857142858,
+          "run": 1.0044642857142858,
+          "sprint": 1.0044642857142858
+        },
+        "jumpRecoveryRatio": 1.0044642857142858,
+        "airborneRatio": 0.9598214285714286,
+        "frameWorldHeight": 5.357142857142858,
+        "currentWorldHeight": 3.8085937500000004,
+        "bodyScale": 1,
+        "variant": "detail"
+      },
+      "errors": [],
+      "failures": []
+    }
+  ],
+  "status": "passed"
+}

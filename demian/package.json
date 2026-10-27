@@ -44,7 +44,9 @@
         "validate:skills": "node tools/validate_game_dev_skills.mjs",
         "test:controls:browser": "node tools/check_character_controls.mjs",
         "build:amin:v14": "python3 tools/prepare_amin_sources_v14.py && python3 tools/build_character_pack_v14.py --characters amin && python3 tools/build_runtime_character_packs.py --characters amin --report docs/release-v14-amin/runtime-packs.json",
-        "test:amin:browser": "node tools/check_amin_v14.mjs"
+        "test:amin:browser": "node tools/check_amin_v14.mjs",
+        "build:hossein:v14": "python3 tools/prepare_hossein_sources_v14.py && python3 tools/build_character_pack_v14.py --characters hossein && python3 tools/build_runtime_character_packs.py --characters hossein --report docs/release-v14-hossein/runtime-packs.json",
+        "test:hossein:browser": "node tools/check_hossein_v14.mjs"
     },
     "devDependencies": {
         "@tailwindcss/vite": "^4.0.0",

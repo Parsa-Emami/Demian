@@ -1,0 +1,15 @@
+{
+  "character_key": "hossein",
+  "pack_version": 14,
+  "reference": "../source-v14/reference.png",
+  "master": "../source-v14/master.png",
+  "runner_motion": "../source-v14/runner-motion.png",
+  "slide_master": "../source-v14/slides.png",
+  "inputs": [
+    {
+      "name": "image(20261027-080735).png",
+      "role": "identity-costume-and-turnaround",
+      "sha256": "a046a01684a793ab939d850ebdc5c3af386bed7d2432c5dc02e14881f456e868"
+    }
+  ]
+}
