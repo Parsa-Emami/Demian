@@ -149,6 +149,7 @@ export default class WorldMap {
         context.textBaseline = 'middle';
         this.drawBackdrop(context, width, height);
         const mapCamera = this.mapCamera(width,height);
+        this.cafe.prepare(mapCamera);
         const sceneKey = `${width}:${height}:${this.mapZoom}:${mapCamera.position.x}:${mapCamera.position.z}:${this.cafe.revision}`;
         if (!this.sceneCanvas || this.sceneKey !== sceneKey) {
             this.sceneCanvas = document.createElement('canvas');
@@ -235,6 +236,7 @@ export default class WorldMap {
     }
 
     dispose() {
+        this.cafe.dispose();
         this.inspector?.dispose(); this.inspector = null;
         document.removeEventListener('keydown', this.boundKey);
         this.canvas?.removeEventListener('click', this.boundClick);

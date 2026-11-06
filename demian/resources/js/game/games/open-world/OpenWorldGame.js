@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { preloadFbxCafeArt } from '../../rendering2d/FbxCafeAssets.js';
+import { cafeQualityProfile } from '../../rendering2d/CafeArtStream.js';
 import BaseGame from '../../contracts/BaseGame.js';
 import CameraController from '../../core/CameraController.js';
 import CharacterRepository from '../../data/CharacterRepository.js';
@@ -538,7 +539,8 @@ export default class OpenWorldGame extends BaseGame {
 
     resize({ reframe = true } = {}) {
         if (!this.context?.renderer || !this.cameraController) return { width: 1, height: 1 };
-        this.context.renderer.setPresentationMode('smooth', { maxPixelRatio: this.maxPixelRatio });
+        const profile = cafeQualityProfile(this.qualityPreference, this.context.services.performanceProfile.tier);
+        this.context.renderer.setPresentationMode('smooth', { maxPixelRatio: this.maxPixelRatio, pixelBudget: profile.pixelBudget });
         const { width, height } = this.context.renderer.resize(this.pixelRatio);
         this.cameraController.resize(width, height);
         this.pixelRenderer?.resize();
@@ -555,11 +557,23 @@ export default class OpenWorldGame extends BaseGame {
         return { width, height };
     }
 
+    applySettings(settings) {
+        if (!this.context || !this.pixelRenderer) return;
+        this.qualityPreference = settings.quality;
+        const profile = cafeQualityProfile(settings.quality, this.context.services.performanceProfile.tier);
+        this.maxPixelRatio = profile.maxPixelRatio;
+        this.minimumPixelRatio = profile.quality === 'performance' ? .72 : .82;
+        this.pixelRatio = Math.min(globalThis.devicePixelRatio || 1, this.maxPixelRatio);
+        this.pixelRenderer.cafe.setQuality(settings.quality);
+        this.qualityAccumulator = 0; this.qualityFrames = 0;
+        this.resize({ reframe: false });
+    }
+
     updateAdaptiveQuality(deltaTime) {
         if (this.qualityPreference !== 'auto') {
             this.context?.eventBus?.emit('studio:quality', {
                 pixelRatio: this.pixelRatio,
-                label: this.context?.services?.performanceProfile?.tier?.toUpperCase() ?? 'CUSTOM',
+                label: cafeQualityProfile(this.qualityPreference, this.context.services.performanceProfile.tier).quality.toUpperCase(),
             });
             return;
         }

@@ -176,7 +176,7 @@ html, body { margin: 0; padding: 0; min-width: 0; display: block; }
 
 .manager-shell:not([data-session-state="playing"]) .play-toolbar, .manager-shell:not([data-session-state="playing"]) .runner-hud, .manager-shell:not([data-session-state="playing"]) .runner-ready { display: none !important; }
 .manager-shell .interaction-prompt { background: #1c2824f0; border: 1px solid #738760; box-shadow: 0 6px 20px #0003; border-radius: 16px; max-width: min(300px, calc(100% - 32px)); }
-.manager-shell .interaction-prompt__key { min-width: 44px; min-height: 44px; color: #d7e8a2; border-color: #738760; background: #293b30; font-family: inherit; touch-action: manipulation; }
+.manager-shell .interaction-prompt__key { min-width: 44px; min-height: 44px; color: #d7e8a2; border-color: #738760; background: #293b30; font-family: inherit; touch-action: manipulation; pointer-events: auto; cursor: pointer; }
 .manager-shell .interaction-prompt__copy small { color: #b9c8ad; }
 
 .manager-shell .results-panel__score small, .manager-shell .results-panel__stats span { color: #b9c8ad; }

@@ -10,6 +10,9 @@ import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { GTAOPass } from 'three/addons/postprocessing/GTAOPass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { gunzipSync } from 'three/addons/libs/fflate.module.js';
+import { applyCafeSurfaceFinish } from './CafeSurfaceFinish.js';
+
+const polished = new URLSearchParams(location.search).has('polished');
 
 const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
 renderer.setPixelRatio(1);
@@ -21,8 +24,8 @@ renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 document.body.append(renderer.domElement);
 const scene = new THREE.Scene();
-scene.add(new THREE.HemisphereLight(0xfff3dc, 0x8193a4, 1.8));
-const key = new THREE.DirectionalLight(0xffe6bf, 1.8);
+scene.add(new THREE.HemisphereLight(0xfff3dc, 0x8193a4, polished ? .95 : 1.8));
+const key = new THREE.DirectionalLight(0xffe6bf, polished ? 2.6 : 1.8);
 key.castShadow = true;
 key.shadow.mapSize.set(2048, 2048);
 key.shadow.normalBias = .035;
@@ -40,6 +43,7 @@ model.traverse(object => {
     if (object.isMesh) { object.castShadow = true; object.receiveShadow = true; }
 });
 scene.add(model);
+if (polished) applyCafeSurfaceFinish(model);
 window.bakeTile = ({ bounds, width, height }) => {
     renderer.setSize(width, height, false);
     const centerX = (bounds.minX + bounds.maxX) / 2;
@@ -52,7 +56,7 @@ window.bakeTile = ({ bounds, width, height }) => {
     camera.position.set(centerX, 150, centerZ);
     camera.lookAt(centerX, 0, centerZ);
     camera.updateMatrixWorld();
-    key.position.set(centerX - 10, 140, centerZ + 16);
+    key.position.set(centerX - (polished ? 18 : 10), polished ? 64 : 140, centerZ + (polished ? 24 : 16));
     key.target.position.set(centerX, 0, centerZ);
     key.target.updateMatrixWorld();
     renderer.shadowMap.needsUpdate = true;
@@ -62,7 +66,7 @@ window.bakeTile = ({ bounds, width, height }) => {
     const ao = new GTAOPass(scene, camera, width, height);
     ao.updateGtaoMaterial({ radius: .9, distanceExponent: 1.5, thickness: 1.2, samples: 16 });
     ao.updatePdMaterial({ radius: 4, samples: 16 });
-    ao.blendIntensity = .75;
+    ao.blendIntensity = polished ? 1.05 : .75;
     const output = new OutputPass();
     composer.addPass(render);
     composer.addPass(ao);

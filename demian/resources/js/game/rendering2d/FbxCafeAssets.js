@@ -1,30 +1,21 @@
 import { CAFE_FBX } from '../shared/cafe/CafeWalkthroughScene.js';
+import cafeArt from '../../../game/cafe-art.json' with { type: 'json' };
 const ROOT = 'assets/environments/demian-fbx/';
-let floorplan = null, pending = null, detailFloorplan = null, detailPending = null, revision = 0;
+let floorplan = null, pending = null, revision = 0;
 export function fbxCafeAssetUrl(filename, base = globalThis.document?.baseURI) {
-    const version = filename === 'floorplan-detail.webp' ? 'quality-v15-20261026' : CAFE_FBX.assetVersion;
+    const version = filename.startsWith('polished-v1/') ? cafeArt.version : filename === 'floorplan-detail.webp' ? 'quality-v15-20261026' : CAFE_FBX.assetVersion;
     const path = `${ROOT}${filename}?v=${version}`;
     return base ? new URL(path, base).href : `/${path}`;
 }
-export const fbxFloorplanImage = (detail = false) => detail && detailFloorplan ? detailFloorplan : floorplan;
+export const fbxFloorplanImage = () => floorplan;
 export const fbxCafeArtRevision = () => revision;
-export function preloadFbxCafeArt({ detail = false } = {}) {
-    const base = preloadBaseArt();
-    if (!detail) return base;
-    if (detailFloorplan) return Promise.resolve(detailFloorplan);
-    detailPending ??= loadFloorplan('floorplan-detail.webp').then(image => {
-        if (image) { detailFloorplan = image; revision += 1; }
-        detailPending = null;
-        return image;
-    });
-    return Promise.all([base, detailPending]).then(([baseImage, detailImage]) => detailImage ?? baseImage);
-}
+export function preloadFbxCafeArt() { return preloadBaseArt(); }
 
 function preloadBaseArt() {
     if (floorplan) return Promise.resolve(floorplan);
     if (pending) return pending;
     if (typeof globalThis.Image !== 'function') return Promise.resolve(null);
-    pending = loadFloorplan('floorplan.webp').then(image => {
+    pending = loadFloorplan('polished-v1/preview.webp').then(image => {
         if (image) { floorplan = image; revision += 1; }
         pending = null;
         return image;

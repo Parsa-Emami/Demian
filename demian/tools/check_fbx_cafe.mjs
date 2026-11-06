@@ -34,7 +34,7 @@ try {
         const requests=[],errors=[];const page=await context.newPage();
         page.on('pageerror',e=>errors.push(e.message));page.on('request',r=>requests.push(r.url()));
         if(scenario.modelFailure)await page.route('**/cafe.glb.gz?*',r=>r.fulfill({status:503,body:'test unavailable'}));
-        if(scenario.artFailure)await page.route('**/floorplan.webp?*',r=>r.fulfill({status:503,body:'test unavailable'}));
+        if(scenario.artFailure)await page.route('**/polished-v1/preview.webp?*',r=>r.fulfill({status:503,body:'test unavailable'}));
         await page.goto(`http://127.0.0.1:${server.address().port}/Demian/`);
         await page.waitForFunction(()=>window.demianGameApplication?.sessionState==='menu',null,{timeout:60000});
         await page.evaluate(()=>window.demianGameApplication.launchGame('open-world'));

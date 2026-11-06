@@ -1,24 +1,29 @@
 import { CAFE_BOUNDS, CAFE_STATIC_COLLIDERS } from '../shared/cafe/CafeReferenceLayout.js';
 import { CAFE_ROOMS } from '../shared/cafe/CafeWalkthroughScene.js';
 import { fbxFloorplanImage, fbxCafeArtRevision, preloadFbxCafeArt } from './FbxCafeAssets.js';
+import CafeArtStream from './CafeArtStream.js';
 
 /** Orthographic bake of the complete FBX, shared by gameplay and both maps.
  * Canvas keeps the existing character controls and sprites deterministic and fast.
  */
 export default class CafePixelRenderer {
-    constructor({ bounds = CAFE_BOUNDS, colliders = CAFE_STATIC_COLLIDERS, detail = false } = {}) {
+    constructor({ bounds = CAFE_BOUNDS, colliders = CAFE_STATIC_COLLIDERS, detail = false, quality = 'auto', detected = detail ? 'high' : 'balanced' } = {}) {
         this.bounds = bounds; this.colliders = colliders;
         this.detail = detail;
-        void preloadFbxCafeArt({ detail });
+        this.stream = new CafeArtStream({ quality, detected });
+        void preloadFbxCafeArt();
     }
-    get revision() { return fbxCafeArtRevision(); }
-    draw(ctx, camera, { atmosphere = 'day' } = {}) {
+    get revision() { return `${fbxCafeArtRevision()}:${this.stream.revision}`; }
+    prepare(camera, padding = 0) { this.stream.prepare(camera, padding); }
+    setQuality(quality) { return this.stream.setQuality(quality); }
+    draw(ctx, camera, { atmosphere = 'day', prepared = false } = {}) {
+        if (!prepared) this.prepare(camera);
         ctx.save();
         const image = fbxFloorplanImage(this.detail);
+        const b = CAFE_BOUNDS;
+        const rect = camera.worldRect({ x: (b.minX + b.maxX) / 2, z: (b.minZ + b.maxZ) / 2 },
+            { x: (b.maxX - b.minX) / 2, z: (b.maxZ - b.minZ) / 2 });
         if (image) {
-            const b = CAFE_BOUNDS;
-            const rect = camera.worldRect({ x: (b.minX + b.maxX) / 2, z: (b.minZ + b.maxZ) / 2 },
-                { x: (b.maxX - b.minX) / 2, z: (b.maxZ - b.minZ) / 2 });
             ctx.imageSmoothingEnabled = true;
             ctx.drawImage(image, rect.x, rect.y, rect.width, rect.height);
         } else {
@@ -33,9 +38,12 @@ export default class CafePixelRenderer {
                 ctx.fillStyle = '#565e55'; ctx.fillRect(r.x,r.y,r.width,r.height);
             }
         }
+        ctx.save(); ctx.beginPath(); ctx.rect(rect.x, rect.y, rect.width, rect.height); ctx.clip();
+        this.stream.draw(ctx, camera); ctx.restore();
         if (atmosphere === 'night') {
             ctx.fillStyle = 'rgba(17,24,31,.24)'; ctx.fillRect(0,0,camera.viewportWidth,camera.viewportHeight);
         }
         ctx.restore();
     }
+    dispose() { this.stream.dispose(); }
 }

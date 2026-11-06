@@ -1,0 +1,166 @@
+{
+  "baseline": true,
+  "rendering": "headless Chromium, software SwiftShader",
+  "physicalDeviceTests": false,
+  "timings": "Canvas submission duration; not GPU frame time or physical-device FPS",
+  "results": [
+    {
+      "name": "desktop-performance",
+      "width": 1440,
+      "height": 900,
+      "quality": "performance",
+      "memory": 2,
+      "cores": 4,
+      "measurement": {
+        "samples": 3,
+        "medianMs": 0.39999999990686774,
+        "p95Ms": 2.699999999953434,
+        "cache": {
+          "builds": 2,
+          "hits": 63,
+          "bytes": 6905800
+        },
+        "art": null,
+        "tier": "performance",
+        "camera": {
+          "mode": "FOLLOW",
+          "position": {
+            "x": 0,
+            "z": -4.68
+          },
+          "ppu": 23.566666666666666
+        },
+        "position": {
+          "x": 0.36,
+          "y": 0,
+          "z": -4.68
+        },
+        "colliders": 321,
+        "character": "darya"
+      },
+      "errors": [],
+      "artRequests": [
+        "http://127.0.0.1:41983/Demian/assets/environments/demian-fbx/floorplan.webp?v=fbx-2026-10-16-v1"
+      ]
+    },
+    {
+      "name": "phone-performance",
+      "width": 390,
+      "height": 844,
+      "quality": "performance",
+      "memory": 2,
+      "cores": 4,
+      "mobile": true,
+      "measurement": {
+        "samples": 44,
+        "medianMs": 0.39999999990686774,
+        "p95Ms": 0.8999999999068677,
+        "cache": {
+          "builds": 2,
+          "hits": 120,
+          "bytes": 2411808
+        },
+        "art": null,
+        "tier": "performance",
+        "camera": {
+          "mode": "FOLLOW",
+          "position": {
+            "x": 0.36,
+            "z": -4.68
+          },
+          "ppu": 24
+        },
+        "position": {
+          "x": 0.36,
+          "y": 0,
+          "z": -4.68
+        },
+        "colliders": 321,
+        "character": "darya"
+      },
+      "errors": [],
+      "artRequests": [
+        "http://127.0.0.1:41983/Demian/assets/environments/demian-fbx/floorplan.webp?v=fbx-2026-10-16-v1"
+      ]
+    },
+    {
+      "name": "desktop-balanced",
+      "width": 1440,
+      "height": 900,
+      "quality": "balanced",
+      "memory": 4,
+      "cores": 8,
+      "measurement": {
+        "samples": 4,
+        "medianMs": 0.6000000000931323,
+        "p95Ms": 0.7000000001862645,
+        "cache": {
+          "builds": 2,
+          "hits": 84,
+          "bytes": 6905800
+        },
+        "art": null,
+        "tier": "balanced",
+        "camera": {
+          "mode": "FOLLOW",
+          "position": {
+            "x": 0,
+            "z": -4.68
+          },
+          "ppu": 23.566666666666666
+        },
+        "position": {
+          "x": 0.36,
+          "y": 0,
+          "z": -4.68
+        },
+        "colliders": 321,
+        "character": "darya"
+      },
+      "errors": [],
+      "artRequests": [
+        "http://127.0.0.1:41983/Demian/assets/environments/demian-fbx/floorplan.webp?v=fbx-2026-10-16-v1"
+      ]
+    },
+    {
+      "name": "desktop-high",
+      "width": 1440,
+      "height": 900,
+      "quality": "high",
+      "memory": 16,
+      "cores": 12,
+      "measurement": {
+        "samples": 14,
+        "medianMs": 0.5,
+        "p95Ms": 4.599999999860302,
+        "cache": {
+          "builds": 2,
+          "hits": 99,
+          "bytes": 7128576
+        },
+        "art": null,
+        "tier": "high",
+        "camera": {
+          "mode": "FOLLOW",
+          "position": {
+            "x": 0,
+            "z": -4.68
+          },
+          "ppu": 24
+        },
+        "position": {
+          "x": 0.36,
+          "y": 0,
+          "z": -4.68
+        },
+        "colliders": 321,
+        "character": "darya"
+      },
+      "errors": [],
+      "artRequests": [
+        "http://127.0.0.1:41983/Demian/assets/environments/demian-fbx/floorplan.webp?v=fbx-2026-10-16-v1",
+        "http://127.0.0.1:41983/Demian/assets/environments/demian-fbx/floorplan-detail.webp?v=quality-v15-20261026"
+      ]
+    }
+  ]
+}

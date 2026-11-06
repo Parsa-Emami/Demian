@@ -1,0 +1,343 @@
+{
+  "baseline": false,
+  "rendering": "headless Chromium, software SwiftShader",
+  "physicalDeviceTests": false,
+  "timings": "Canvas submission duration; not GPU frame time or physical-device FPS",
+  "results": [
+    {
+      "name": "desktop-performance",
+      "width": 1440,
+      "height": 900,
+      "quality": "performance",
+      "memory": 2,
+      "cores": 4,
+      "measurement": {
+        "samples": 62,
+        "medianMs": 0.39999999990686774,
+        "p95Ms": 1,
+        "cache": {
+          "builds": 4,
+          "hits": 125,
+          "bytes": 5719168
+        },
+        "art": {
+          "quality": "performance",
+          "level": 1024,
+          "ready": 6,
+          "active": 0,
+          "queued": 0,
+          "failed": 0,
+          "maxTiles": 8,
+          "decodedBytes": 9891648,
+          "maxDecodedBytes": 13416960,
+          "disposed": false
+        },
+        "tier": "performance",
+        "camera": {
+          "mode": "FOLLOW",
+          "position": {
+            "x": 0,
+            "z": -4.68
+          },
+          "ppu": 21.066666666666666
+        },
+        "position": {
+          "x": 0.36,
+          "y": 0,
+          "z": -4.68
+        },
+        "colliders": 321,
+        "character": "darya"
+      },
+      "movementJumpInteraction": true,
+      "phoneTouchJumpAndInteraction": false,
+      "errors": [],
+      "artRequests": [
+        "http://127.0.0.1:42713/Demian/assets/environments/demian-fbx/polished-v1/preview.webp?v=cafe-polished-v1",
+        "http://127.0.0.1:42713/Demian/assets/environments/demian-fbx/polished-v1/lod-1024/8-0.webp?v=cafe-polished-v1",
+        "http://127.0.0.1:42713/Demian/assets/environments/demian-fbx/polished-v1/lod-1024/8-1.webp?v=cafe-polished-v1",
+        "http://127.0.0.1:42713/Demian/assets/environments/demian-fbx/polished-v1/lod-1024/7-0.webp?v=cafe-polished-v1",
+        "http://127.0.0.1:42713/Demian/assets/environments/demian-fbx/polished-v1/lod-1024/7-1.webp?v=cafe-polished-v1",
+        "http://127.0.0.1:42713/Demian/assets/environments/demian-fbx/polished-v1/lod-1024/9-0.webp?v=cafe-polished-v1",
+        "http://127.0.0.1:42713/Demian/assets/environments/demian-fbx/polished-v1/lod-1024/9-1.webp?v=cafe-polished-v1",
+        "http://127.0.0.1:42713/Demian/assets/environments/demian-fbx/polished-v1/lod-1536/4-1.webp?v=cafe-polished-v1",
+        "http://127.0.0.1:42713/Demian/assets/environments/demian-fbx/polished-v1/lod-1536/3-1.webp?v=cafe-polished-v1",
+        "http://127.0.0.1:42713/Demian/assets/environments/demian-fbx/polished-v1/lod-1536/4-0.webp?v=cafe-polished-v1",
+        "http://127.0.0.1:42713/Demian/assets/environments/demian-fbx/polished-v1/lod-1536/4-2.webp?v=cafe-polished-v1",
+        "http://127.0.0.1:42713/Demian/assets/environments/demian-fbx/polished-v1/lod-1536/3-0.webp?v=cafe-polished-v1",
+        "http://127.0.0.1:42713/Demian/assets/environments/demian-fbx/polished-v1/lod-1536/3-2.webp?v=cafe-polished-v1",
+        "http://127.0.0.1:42713/Demian/assets/environments/demian-fbx/polished-v1/lod-1536/5-1.webp?v=cafe-polished-v1",
+        "http://127.0.0.1:42713/Demian/assets/environments/demian-fbx/polished-v1/lod-1536/2-1.webp?v=cafe-polished-v1",
+        "http://127.0.0.1:42713/Demian/assets/environments/demian-fbx/polished-v1/lod-1536/5-0.webp?v=cafe-polished-v1",
+        "http://127.0.0.1:42713/Demian/assets/environments/demian-fbx/polished-v1/lod-1536/5-2.webp?v=cafe-polished-v1",
+        "http://127.0.0.1:42713/Demian/assets/environments/demian-fbx/polished-v1/lod-1536/2-0.webp?v=cafe-polished-v1",
+        "http://127.0.0.1:42713/Demian/assets/environments/demian-fbx/polished-v1/lod-1536/2-2.webp?v=cafe-polished-v1"
+      ]
+    },
+    {
+      "name": "phone-performance",
+      "width": 390,
+      "height": 844,
+      "quality": "performance",
+      "memory": 2,
+      "cores": 4,
+      "mobile": true,
+      "measurement": {
+        "samples": 97,
+        "medianMs": 0.39999999990686774,
+        "p95Ms": 1,
+        "cache": {
+          "builds": 8,
+          "hits": 193,
+          "bytes": 2411808
+        },
+        "art": {
+          "quality": "performance",
+          "level": 1024,
+          "ready": 6,
+          "active": 0,
+          "queued": 0,
+          "failed": 0,
+          "maxTiles": 8,
+          "decodedBytes": 9891648,
+          "maxDecodedBytes": 13416960,
+          "disposed": false
+        },
+        "tier": "performance",
+        "camera": {
+          "mode": "FOLLOW",
+          "position": {
+            "x": 2.2320642939584054,
+            "z": -4.68
+          },
+          "ppu": 24
+        },
+        "position": {
+          "x": 2.6405729859362483,
+          "y": 0,
+          "z": -4.68
+        },
+        "colliders": 321,
+        "character": "darya"
+      },
+      "movementJumpInteraction": true,
+      "phoneTouchJumpAndInteraction": true,
+      "errors": [],
+      "artRequests": [
+        "http://127.0.0.1:42713/Demian/assets/environments/demian-fbx/polished-v1/preview.webp?v=cafe-polished-v1",
+        "http://127.0.0.1:42713/Demian/assets/environments/demian-fbx/polished-v1/lod-1024/8-1.webp?v=cafe-polished-v1",
+        "http://127.0.0.1:42713/Demian/assets/environments/demian-fbx/polished-v1/lod-1024/8-0.webp?v=cafe-polished-v1",
+        "http://127.0.0.1:42713/Demian/assets/environments/demian-fbx/polished-v1/lod-1024/7-1.webp?v=cafe-polished-v1",
+        "http://127.0.0.1:42713/Demian/assets/environments/demian-fbx/polished-v1/lod-1024/7-0.webp?v=cafe-polished-v1",
+        "http://127.0.0.1:42713/Demian/assets/environments/demian-fbx/polished-v1/lod-1024/9-1.webp?v=cafe-polished-v1",
+        "http://127.0.0.1:42713/Demian/assets/environments/demian-fbx/polished-v1/lod-1024/9-0.webp?v=cafe-polished-v1",
+        "http://127.0.0.1:42713/Demian/assets/environments/demian-fbx/polished-v1/lod-1536/12-1.webp?v=cafe-polished-v1",
+        "http://127.0.0.1:42713/Demian/assets/environments/demian-fbx/polished-v1/lod-1536/13-1.webp?v=cafe-polished-v1",
+        "http://127.0.0.1:42713/Demian/assets/environments/demian-fbx/polished-v1/lod-1536/12-2.webp?v=cafe-polished-v1",
+        "http://127.0.0.1:42713/Demian/assets/environments/demian-fbx/polished-v1/lod-1536/4-1.webp?v=cafe-polished-v1",
+        "http://127.0.0.1:42713/Demian/assets/environments/demian-fbx/polished-v1/lod-1536/4-2.webp?v=cafe-polished-v1",
+        "http://127.0.0.1:42713/Demian/assets/environments/demian-fbx/polished-v1/lod-1536/3-1.webp?v=cafe-polished-v1",
+        "http://127.0.0.1:42713/Demian/assets/environments/demian-fbx/polished-v1/lod-1536/3-2.webp?v=cafe-polished-v1",
+        "http://127.0.0.1:42713/Demian/assets/environments/demian-fbx/polished-v1/lod-1536/5-1.webp?v=cafe-polished-v1",
+        "http://127.0.0.1:42713/Demian/assets/environments/demian-fbx/polished-v1/lod-1536/5-2.webp?v=cafe-polished-v1",
+        "http://127.0.0.1:42713/Demian/assets/environments/demian-fbx/polished-v1/lod-1536/2-1.webp?v=cafe-polished-v1",
+        "http://127.0.0.1:42713/Demian/assets/environments/demian-fbx/polished-v1/lod-1536/2-2.webp?v=cafe-polished-v1"
+      ]
+    },
+    {
+      "name": "desktop-balanced",
+      "width": 1440,
+      "height": 900,
+      "quality": "balanced",
+      "memory": 4,
+      "cores": 8,
+      "measurement": {
+        "samples": 60,
+        "medianMs": 0.39999999990686774,
+        "p95Ms": 3.7000000001862645,
+        "cache": {
+          "builds": 10,
+          "hits": 126,
+          "bytes": 6905800
+        },
+        "art": {
+          "quality": "balanced",
+          "level": 1536,
+          "ready": 12,
+          "active": 0,
+          "queued": 0,
+          "failed": 0,
+          "maxTiles": 12,
+          "decodedBytes": 15580032,
+          "maxDecodedBytes": 17677056,
+          "disposed": false
+        },
+        "tier": "balanced",
+        "camera": {
+          "mode": "FOLLOW",
+          "position": {
+            "x": 0,
+            "z": -4.68
+          },
+          "ppu": 23.566666666666666
+        },
+        "position": {
+          "x": 0.36,
+          "y": 0,
+          "z": -4.68
+        },
+        "colliders": 321,
+        "character": "darya"
+      },
+      "movementJumpInteraction": true,
+      "phoneTouchJumpAndInteraction": false,
+      "errors": [],
+      "artRequests": [
+        "http://127.0.0.1:42713/Demian/assets/environments/demian-fbx/polished-v1/preview.webp?v=cafe-polished-v1",
+        "http://127.0.0.1:42713/Demian/assets/environments/demian-fbx/polished-v1/lod-1536/12-1.webp?v=cafe-polished-v1",
+        "http://127.0.0.1:42713/Demian/assets/environments/demian-fbx/polished-v1/lod-1536/13-1.webp?v=cafe-polished-v1",
+        "http://127.0.0.1:42713/Demian/assets/environments/demian-fbx/polished-v1/lod-1536/12-0.webp?v=cafe-polished-v1",
+        "http://127.0.0.1:42713/Demian/assets/environments/demian-fbx/polished-v1/lod-1536/12-2.webp?v=cafe-polished-v1",
+        "http://127.0.0.1:42713/Demian/assets/environments/demian-fbx/polished-v1/lod-1536/11-1.webp?v=cafe-polished-v1",
+        "http://127.0.0.1:42713/Demian/assets/environments/demian-fbx/polished-v1/lod-1536/13-0.webp?v=cafe-polished-v1",
+        "http://127.0.0.1:42713/Demian/assets/environments/demian-fbx/polished-v1/lod-1536/13-2.webp?v=cafe-polished-v1",
+        "http://127.0.0.1:42713/Demian/assets/environments/demian-fbx/polished-v1/lod-1536/11-0.webp?v=cafe-polished-v1",
+        "http://127.0.0.1:42713/Demian/assets/environments/demian-fbx/polished-v1/lod-1536/11-2.webp?v=cafe-polished-v1",
+        "http://127.0.0.1:42713/Demian/assets/environments/demian-fbx/polished-v1/lod-1536/14-1.webp?v=cafe-polished-v1",
+        "http://127.0.0.1:42713/Demian/assets/environments/demian-fbx/polished-v1/lod-1536/10-1.webp?v=cafe-polished-v1",
+        "http://127.0.0.1:42713/Demian/assets/environments/demian-fbx/polished-v1/lod-1536/14-0.webp?v=cafe-polished-v1",
+        "http://127.0.0.1:42713/Demian/assets/environments/demian-fbx/polished-v1/lod-1536/4-1.webp?v=cafe-polished-v1",
+        "http://127.0.0.1:42713/Demian/assets/environments/demian-fbx/polished-v1/lod-1536/3-1.webp?v=cafe-polished-v1",
+        "http://127.0.0.1:42713/Demian/assets/environments/demian-fbx/polished-v1/lod-1536/4-0.webp?v=cafe-polished-v1",
+        "http://127.0.0.1:42713/Demian/assets/environments/demian-fbx/polished-v1/lod-1536/4-2.webp?v=cafe-polished-v1",
+        "http://127.0.0.1:42713/Demian/assets/environments/demian-fbx/polished-v1/lod-1536/3-0.webp?v=cafe-polished-v1",
+        "http://127.0.0.1:42713/Demian/assets/environments/demian-fbx/polished-v1/lod-1536/3-2.webp?v=cafe-polished-v1",
+        "http://127.0.0.1:42713/Demian/assets/environments/demian-fbx/polished-v1/lod-1536/5-1.webp?v=cafe-polished-v1",
+        "http://127.0.0.1:42713/Demian/assets/environments/demian-fbx/polished-v1/lod-1536/2-1.webp?v=cafe-polished-v1",
+        "http://127.0.0.1:42713/Demian/assets/environments/demian-fbx/polished-v1/lod-1536/5-0.webp?v=cafe-polished-v1",
+        "http://127.0.0.1:42713/Demian/assets/environments/demian-fbx/polished-v1/lod-1536/5-2.webp?v=cafe-polished-v1",
+        "http://127.0.0.1:42713/Demian/assets/environments/demian-fbx/polished-v1/lod-1536/2-0.webp?v=cafe-polished-v1",
+        "http://127.0.0.1:42713/Demian/assets/environments/demian-fbx/polished-v1/lod-1536/2-2.webp?v=cafe-polished-v1"
+      ]
+    },
+    {
+      "name": "desktop-high",
+      "width": 1440,
+      "height": 900,
+      "quality": "high",
+      "memory": 16,
+      "cores": 12,
+      "measurement": {
+        "samples": 83,
+        "medianMs": 0.39999999990686774,
+        "p95Ms": 1.2999999998137355,
+        "cache": {
+          "builds": 11,
+          "hits": 143,
+          "bytes": 7128576
+        },
+        "art": {
+          "quality": "high",
+          "level": 1536,
+          "ready": 15,
+          "active": 0,
+          "queued": 0,
+          "failed": 0,
+          "maxTiles": 20,
+          "decodedBytes": 17726592,
+          "maxDecodedBytes": 26197248,
+          "disposed": false
+        },
+        "tier": "high",
+        "camera": {
+          "mode": "FOLLOW",
+          "position": {
+            "x": 0,
+            "z": -4.68
+          },
+          "ppu": 24
+        },
+        "position": {
+          "x": 0.36,
+          "y": 0,
+          "z": -4.68
+        },
+        "colliders": 321,
+        "character": "darya"
+      },
+      "movementJumpInteraction": true,
+      "phoneTouchJumpAndInteraction": false,
+      "errors": [],
+      "artRequests": [
+        "http://127.0.0.1:42713/Demian/assets/environments/demian-fbx/polished-v1/preview.webp?v=cafe-polished-v1",
+        "http://127.0.0.1:42713/Demian/assets/environments/demian-fbx/polished-v1/lod-1536/12-1.webp?v=cafe-polished-v1",
+        "http://127.0.0.1:42713/Demian/assets/environments/demian-fbx/polished-v1/lod-1536/13-1.webp?v=cafe-polished-v1",
+        "http://127.0.0.1:42713/Demian/assets/environments/demian-fbx/polished-v1/lod-1536/12-0.webp?v=cafe-polished-v1",
+        "http://127.0.0.1:42713/Demian/assets/environments/demian-fbx/polished-v1/lod-1536/12-2.webp?v=cafe-polished-v1",
+        "http://127.0.0.1:42713/Demian/assets/environments/demian-fbx/polished-v1/lod-1536/11-1.webp?v=cafe-polished-v1",
+        "http://127.0.0.1:42713/Demian/assets/environments/demian-fbx/polished-v1/lod-1536/13-0.webp?v=cafe-polished-v1",
+        "http://127.0.0.1:42713/Demian/assets/environments/demian-fbx/polished-v1/lod-1536/13-2.webp?v=cafe-polished-v1",
+        "http://127.0.0.1:42713/Demian/assets/environments/demian-fbx/polished-v1/lod-1536/11-0.webp?v=cafe-polished-v1",
+        "http://127.0.0.1:42713/Demian/assets/environments/demian-fbx/polished-v1/lod-1536/11-2.webp?v=cafe-polished-v1",
+        "http://127.0.0.1:42713/Demian/assets/environments/demian-fbx/polished-v1/lod-1536/14-1.webp?v=cafe-polished-v1",
+        "http://127.0.0.1:42713/Demian/assets/environments/demian-fbx/polished-v1/lod-1536/10-1.webp?v=cafe-polished-v1",
+        "http://127.0.0.1:42713/Demian/assets/environments/demian-fbx/polished-v1/lod-1536/14-0.webp?v=cafe-polished-v1",
+        "http://127.0.0.1:42713/Demian/assets/environments/demian-fbx/polished-v1/lod-1536/14-2.webp?v=cafe-polished-v1",
+        "http://127.0.0.1:42713/Demian/assets/environments/demian-fbx/polished-v1/lod-1536/10-0.webp?v=cafe-polished-v1",
+        "http://127.0.0.1:42713/Demian/assets/environments/demian-fbx/polished-v1/lod-1536/10-2.webp?v=cafe-polished-v1",
+        "http://127.0.0.1:42713/Demian/assets/environments/demian-fbx/polished-v1/lod-1536/4-1.webp?v=cafe-polished-v1",
+        "http://127.0.0.1:42713/Demian/assets/environments/demian-fbx/polished-v1/lod-1536/3-1.webp?v=cafe-polished-v1",
+        "http://127.0.0.1:42713/Demian/assets/environments/demian-fbx/polished-v1/lod-1536/4-0.webp?v=cafe-polished-v1",
+        "http://127.0.0.1:42713/Demian/assets/environments/demian-fbx/polished-v1/lod-1536/4-2.webp?v=cafe-polished-v1",
+        "http://127.0.0.1:42713/Demian/assets/environments/demian-fbx/polished-v1/lod-1536/3-0.webp?v=cafe-polished-v1",
+        "http://127.0.0.1:42713/Demian/assets/environments/demian-fbx/polished-v1/lod-1536/3-2.webp?v=cafe-polished-v1",
+        "http://127.0.0.1:42713/Demian/assets/environments/demian-fbx/polished-v1/lod-1536/5-1.webp?v=cafe-polished-v1",
+        "http://127.0.0.1:42713/Demian/assets/environments/demian-fbx/polished-v1/lod-1536/2-1.webp?v=cafe-polished-v1",
+        "http://127.0.0.1:42713/Demian/assets/environments/demian-fbx/polished-v1/lod-1536/5-0.webp?v=cafe-polished-v1",
+        "http://127.0.0.1:42713/Demian/assets/environments/demian-fbx/polished-v1/lod-1536/5-2.webp?v=cafe-polished-v1",
+        "http://127.0.0.1:42713/Demian/assets/environments/demian-fbx/polished-v1/lod-1536/2-0.webp?v=cafe-polished-v1",
+        "http://127.0.0.1:42713/Demian/assets/environments/demian-fbx/polished-v1/lod-1536/2-2.webp?v=cafe-polished-v1"
+      ]
+    },
+    {
+      "name": "detail-unavailable",
+      "state": {
+        "art": {
+          "quality": "balanced",
+          "level": 1536,
+          "ready": 0,
+          "active": 0,
+          "queued": 0,
+          "failed": 12,
+          "maxTiles": 12,
+          "decodedBytes": 4896768,
+          "maxDecodedBytes": 17677056,
+          "disposed": false
+        },
+        "colliders": 321
+      },
+      "errors": [],
+      "noRetryStorm": true
+    },
+    {
+      "name": "all-art-unavailable",
+      "state": {
+        "art": {
+          "quality": "balanced",
+          "level": 1536,
+          "ready": 0,
+          "active": 0,
+          "queued": 0,
+          "failed": 12,
+          "maxTiles": 12,
+          "decodedBytes": 0,
+          "maxDecodedBytes": 17677056,
+          "disposed": false
+        },
+        "colliders": 321
+      },
+      "errors": [],
+      "noRetryStorm": true
+    }
+  ]
+}

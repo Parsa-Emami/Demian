@@ -1,0 +1,32 @@
+{
+  "version": "cafe-polished-v1",
+  "root": "assets/environments/demian-fbx/polished-v1/",
+  "tileSize": 512,
+  "gutter": 2,
+  "sourceSha256": "409a9c8bb67f4b8e3bf58849bb92f56286483da8242fab88abfeb4edd234f704",
+  "preview": {
+    "file": "preview.webp",
+    "width": 512,
+    "height": 2391
+  },
+  "levels": [
+    {
+      "width": 1024,
+      "height": 4782,
+      "columns": 2,
+      "rows": 10
+    },
+    {
+      "width": 1536,
+      "height": 7172,
+      "columns": 3,
+      "rows": 15
+    },
+    {
+      "width": 2048,
+      "height": 9563,
+      "columns": 4,
+      "rows": 19
+    }
+  ]
+}

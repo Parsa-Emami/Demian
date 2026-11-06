@@ -1,0 +1,37 @@
+{
+  "date": "2026-11-06",
+  "baseCommit": "7dcdc0b4a082d6122e33f7d67fe080a9534d63d0",
+  "javascriptTests": {
+    "passed": 382,
+    "failed": 0,
+    "skipped": 0
+  },
+  "sourceFbxSha256": "409a9c8bb67f4b8e3bf58849bb92f56286483da8242fab88abfeb4edd234f704",
+  "geometryChanged": false,
+  "worldColliders": 321,
+  "artFiles": 142,
+  "artDownloadBytesAllLevels": 1278994,
+  "checks": {
+    "cafe-presentation": "passed",
+    "motion": "passed",
+    "final": "passed",
+    "ui-layers": "passed",
+    "skills": "passed",
+    "characters:v14": "passed",
+    "build": "passed",
+    "playable-art": "passed",
+    "playable-build": "passed"
+  },
+  "browserCases": [
+    "desktop-performance",
+    "phone-performance",
+    "desktop-balanced",
+    "desktop-high",
+    "detail-unavailable",
+    "all-art-unavailable"
+  ],
+  "finalPhoneCheck": "movement, touch jump, prompt interaction, live quality and HIGH label passed",
+  "physicalDeviceTests": false,
+  "gpuFrameTimeMeasured": false,
+  "javascriptBundle": "assets/app-KNa109qk.js"
+}

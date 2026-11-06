@@ -73,6 +73,7 @@ export default class MiniMap {
         context.fillStyle = P.void;
         context.fillRect(0, 0, width, height);
 
+        this.cafe.prepare(cafeMapCamera(this.manifest.bounds, width, height, 7));
         if (!this.sceneCanvas || this.sceneCanvas.width !== width || this.sceneCanvas.height !== height || this.sceneRevision !== this.cafe.revision) {
             this.sceneRevision = this.cafe.revision;
             this.sceneCanvas = document.createElement('canvas');
@@ -148,6 +149,7 @@ export default class MiniMap {
     }
 
     dispose() {
+        this.cafe.dispose();
         this.root?.removeEventListener('click', this.onClick);
         this.root?.remove();
         this.root = null;

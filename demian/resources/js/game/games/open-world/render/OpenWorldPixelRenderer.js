@@ -24,8 +24,8 @@ export default class OpenWorldPixelRenderer {
             pixelSnap: false,
         });
         this.cafe = new CafePixelRenderer({ bounds: manifest.bounds, colliders: CAFE_STATIC_COLLIDERS,
-            detail: context.services?.performanceProfile?.tier === 'high' });
-        this.sceneCache = new StaticSceneCache((ctx, camera, atmosphere) => this.cafe.draw(ctx, camera, { atmosphere }),
+            quality: context.settings?.snapshot?.().quality, detected: context.services?.performanceProfile?.tier });
+        this.sceneCache = new StaticSceneCache((ctx, camera) => this.cafe.draw(ctx, camera, { prepared: true }),
             { maxPixels: context.services?.performanceProfile?.tier === 'high' ? 3200000 : 2200000 });
         this.queue = new PixelRenderQueue();
         this.followRig = new CharacterFollowRig();
@@ -112,6 +112,7 @@ export default class OpenWorldPixelRenderer {
         this.camera.update(deltaTime);
 
         const ctx = this.context.renderer.beginFrame(P.voidBlue);
+        this.cafe.prepare(this.camera, 96);
         this.sceneCache.draw(ctx, this.camera, `day:${this.cafe.revision}`);
         if (this.context.app?.options?.debug) this.drawChunks(ctx, loadedChunks, activeChunkIds);
         this.drawSavePoints(ctx, discovery);
@@ -146,5 +147,5 @@ export default class OpenWorldPixelRenderer {
         return this.context.renderer.present();
     }
 
-    dispose() { this.sceneCache.dispose(); this.queue.items.length = 0; }
+    dispose() { this.cafe.dispose(); this.sceneCache.dispose(); this.queue.items.length = 0; }
 }

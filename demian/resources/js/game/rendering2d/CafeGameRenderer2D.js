@@ -19,7 +19,7 @@ export default class CafeGameRenderer2D {
             pixelSnap: context.renderer.presentationMode !== 'smooth',
         });
         this.cafe = new CafePixelRenderer({ bounds: map?.bounds, colliders: map?.staticColliders,
-            detail: context.services?.performanceProfile?.tier === 'high' });
+            quality: context.settings?.snapshot?.().quality, detected: context.services?.performanceProfile?.tier });
         this.queue = new PixelRenderQueue();
         if (!follow) this.camera.fitBounds(map?.bounds);
     }
@@ -31,6 +31,7 @@ export default class CafeGameRenderer2D {
         if (target && this.followEnabled) this.camera.follow(target);
         this.camera.update(deltaTime);
         const ctx = this.context.renderer.beginFrame(clear);
+        this.cafe.setQuality(this.context.settings?.snapshot?.().quality);
         this.cafe.draw(ctx, this.camera, { atmosphere });
         return ctx;
     }
@@ -49,5 +50,5 @@ export default class CafeGameRenderer2D {
     }
 
     setPixelRatio(value) { return this.resize(value); }
-    dispose() { this.queue.items.length = 0; }
+    dispose() { this.cafe.dispose(); this.queue.items.length = 0; }
 }
