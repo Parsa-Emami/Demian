@@ -32,7 +32,7 @@
     "interpolation": "single-owner-optical-flow",
     "sourceKeyPoseCount": 71,
     "license": "MIT",
-    "imageRevision": "e1ebd2ae1dbe7fc76ff630591940c8b107c04bee473fd3753445578a5c1d02ed"
+    "imageRevision": "6a3be5659de9dfdc2debfd7164f58a2bb3cb59aa678fe93c1f191eda291d558c"
   },
   "frames": {
     "idle_000": {
@@ -13480,11 +13480,61 @@
     "singleSilhouette": true,
     "physicsOwnsJumpHeight": true,
     "dedicatedSlide": true,
-    "smoothSampling": true
+    "smoothSampling": true,
+    "bodyScaleCalibration": {
+      "method": "authored-standing-pose-height",
+      "targetBodyHeightRatio": 0.7,
+      "referencePoseIndices": {
+        "walk": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7
+        ],
+        "run": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15
+        ],
+        "jump": [
+          7
+        ]
+      },
+      "uniformScaleByState": {
+        "walk": 0.5775322283609576,
+        "run": 0.6161100196463654,
+        "jump": 0.598473282442748
+      }
+    }
   },
   "movement": {
     "style": "ground-runner",
     "wingPoweredStates": []
+  },
+  "speech": {
+    "duration": 3.2,
+    "messages": [
+      "بزن بریم",
+      "مرحله بعد",
+      "رکورد تازه"
+    ]
   },
   "companion": {
     "id": "homayoun",

@@ -102,5 +102,11 @@
       5,
       6
     ]
-  }
+  },
+  "locomotionSource": "locomotion-v15.png",
+  "locomotionReferences": [
+    "darya",
+    "uzudi",
+    "setayesh"
+  ]
 }

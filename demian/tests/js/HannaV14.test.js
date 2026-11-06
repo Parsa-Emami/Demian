@@ -64,10 +64,10 @@ test('every Hanna variant has complete directional actions, independent low slid
     }
 });
 
-test('Hanna elegant cadence is distance-driven at every frame rate and retains supporting-foot phase across gaits', () => {
+test('Hanna reference cadence is distance-driven at every frame rate and retains supporting-foot phase across gaits', () => {
     const data = atlas(), standard = json('darya/darya-atlas-v14-runtime.json');
-    assert.equal(data.motion.locomotionProfile.id, 'hanna-elegant-v2');
-    assert.ok(data.motion.locomotionProfile.maxStrideHz < standard.motion.locomotionProfile.maxStrideHz);
+    assert.deepEqual(data.motion.locomotionProfile, standard.motion.locomotionProfile);
+    assert.equal(data.motion.locomotionProfile.maxStrideHz, standard.motion.locomotionProfile.maxStrideHz);
     for (const state of ['walk', 'run', 'sprint']) for (const hz of [30, 60, 120]) {
         const speed = state === 'walk' ? 3.55 : state === 'run' ? 6.9 : 7.6;
         const avatar = new CanvasCharacterAvatar({ slug: 'hanna', atlas: data, image: {}, player: true });
@@ -75,12 +75,12 @@ test('Hanna elegant cadence is distance-driven at every frame rate and retains s
         const expected = speed / data.motion.locomotionProfile.strideLengths[state];
         close(avatar.animator.locomotionFrequency, expected);
         close(avatar.animator.locomotionPhase, expected * 2);
-        assert.ok(expected < speed / standard.motion.locomotionProfile.strideLengths[state]);
+        close(expected, speed / standard.motion.locomotionProfile.strideLengths[state]);
         const before = avatar.animator.locomotionPhase;
         avatar.sync({speed, motionState:state === 'walk' ? 'run' : 'walk', grounded:true}, 0);
         close(avatar.animator.locomotionPhase, before);
         advanceCharacterAnimation(avatar.animator, {state:'run',movementSpeed:100,travelledDistance:100,deltaTime:.1});
-        assert.ok(avatar.animator.locomotionFrequency <= 1.3);
+        assert.ok(avatar.animator.locomotionFrequency <= standard.motion.locomotionProfile.maxStrideHz);
     }
 });
 

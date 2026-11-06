@@ -19,7 +19,8 @@ final class ArcadeController extends Controller
 {
     private function name(Request $request): string
     {
-        $request->merge(['display_name' => trim((string) $request->input('display_name', ''))]);
+        $name = $request->input('display_name');
+        if (is_string($name)) $request->merge(['display_name' => trim($name)]);
 
         return $request->validate(['display_name' => ['required', 'string', 'min:2', 'max:32', 'regex:/^[\pL\pN _\-\x{200C}]+$/u']])['display_name'];
     }

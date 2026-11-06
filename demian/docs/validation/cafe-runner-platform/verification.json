@@ -1,0 +1,21 @@
+{
+  "date": "2026-11-05",
+  "rules_version": "cafe-runner-v1",
+  "javascript": {"tests": 364, "passed": 364, "failed": 0},
+  "php": {"version": "8.3.6", "tests": 28, "assertions": 279, "passed": 28, "database": "SQLite in memory"},
+  "assets": {"characters": 12, "atlas_variants": 72, "frame_names_preserved": 672, "status": "passed"},
+  "release": {"status": "passed", "installed_characters": 12, "active_games": 2},
+  "ui_layers": {"status": "passed", "tokens": 21, "semantic_layers": 21, "source_files": 239},
+  "pinned_skills": {"status": "passed", "skills": 77, "files": 207, "upstream_commit": "184b72be02884f782a0058f2eeae2ce4277453e4"},
+  "production_bundle": {"status": "passed", "javascript": "assets/app-GquY1JCl.js", "css": "assets/app-hDnB4Eck.css", "targets": ["public/build", "playable/build"]},
+  "browser": {
+    "driver": "Chrome through computer-use browser",
+    "desktop": {"width": 1363, "height": 936},
+    "phone_layouts": {"method": "same-origin iframe with CSS viewport dimensions", "physical_device": false, "touch_hardware_emulated": false, "sizes": [[390,844],[844,390]]},
+    "observations": ["12-character menu", "cafe artwork and supplied wordmark", "display-name save", "Tiam selection", "start and jump", "initial difficulty 6.0 progressing to 6.1", "collision result", "score 97 visible on device leaderboard", "phone HUD overlap corrected"],
+    "standalone_playwright_script": "not completed: browser page closed in execution environment",
+    "performance_benchmark": "not measured"
+  },
+  "not_executed": ["MySQL CI job", "physical-device playtest", "production load test", "production backend deployment"],
+  "publication": {"pushed": false, "reason": "Automatic approval review rejected public repository push; explicit approval for public source and asset publication is required."}
+}

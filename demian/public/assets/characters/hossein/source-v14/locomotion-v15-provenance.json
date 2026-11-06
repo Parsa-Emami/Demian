@@ -1,0 +1,23 @@
+{
+  "character": "hossein",
+  "created": "2026-11-05",
+  "provider": "built-in image generation",
+  "file": "locomotion-v15.png",
+  "sha256": "fa26cfa96cd86d1ffd1ebd9d4d236266bdcdc86df1148a32eb9d585a348f77d0",
+  "grid": {
+    "rows": 3,
+    "columns": 8
+  },
+  "rows": [
+    "walk",
+    "run",
+    "jump"
+  ],
+  "referenceCharacters": [
+    "darya",
+    "uzudi",
+    "setayesh"
+  ],
+  "identitySource": "runner-motion.png",
+  "normalization": "single scale per clip; grounded foot anchor; retained original slide and idle art"
+}

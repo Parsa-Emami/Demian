@@ -107,5 +107,11 @@
   ],
   "turnMirrorFrom": {
     "sw": "se"
-  }
+  },
+  "locomotionSource": "locomotion-v15.png",
+  "locomotionReferences": [
+    "darya",
+    "uzudi",
+    "setayesh"
+  ]
 }

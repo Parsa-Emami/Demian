@@ -32,7 +32,7 @@
     "interpolation": "single-owner-optical-flow",
     "sourceKeyPoseCount": 68,
     "license": "MIT",
-    "imageRevision": "1ce0d467a33d22053705e7a095287c8b99466942127c932fa5ef8bee317e81c0"
+    "imageRevision": "409702406a7396e469abb96e04389e351143a599fe481f794fee8fe06cf0a080"
   },
   "frames": {
     "idle_000": {
@@ -13529,9 +13529,9 @@
         ]
       },
       "uniformScaleByState": {
-        "walk": 0.711111111111111,
-        "run": 0.5560283687943262,
-        "jump": 0.7063063063063062,
+        "walk": 0.7800995024875621,
+        "run": 0.7466666666666666,
+        "jump": 0.7127272727272727,
         "land": 0.542560553633218,
         "celebrate": 0.6506224066390041
       }
@@ -13540,5 +13540,14 @@
   "movement": {
     "style": "ground-runner",
     "wingPoweredStates": []
+  },
+  "speech": {
+    "duration": 3.2,
+    "messages": [
+      "با هم می‌رسیم.",
+      "محکم و با تمرکز.",
+      "آمادهٔ یک رکورد تازه‌ام.",
+      "یک قدم جلوتر."
+    ]
   }
 }

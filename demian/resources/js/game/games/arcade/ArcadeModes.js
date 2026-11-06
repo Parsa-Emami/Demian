@@ -60,7 +60,7 @@ const neonRun = {
         const s = game.modeState;
         s.speed = Math.min(13, s.speed + dt * .06);
         s.meters += s.speed * dt;
-        s.spawn -= dt;
+        s.spawn -= dt * (game.session.difficulty?.pressure ?? 1);
         s.jump = Math.max(0, s.jump - dt);
         s.dash = Math.max(0, s.dash - dt);
         s.hitFlash = Math.max(0, s.hitFlash - dt);
@@ -115,7 +115,7 @@ const starCatcher = {
         const x = clamp(game.player.position.x + vx * dt, -13.7, 13.7);
         setMovementActor(game, { x, z: 5.5, vx });
         if (input.dash) { setMovementActor(game, { x, z: 5.5, vx, motionState: 'dash' }); }
-        s.spawn -= dt;
+        s.spawn -= dt * (game.session.difficulty?.pressure ?? 1);
         if (s.spawn <= 0) {
             s.spawn = game.randomRange(.22, .48);
             const bomb = game.random() < .22;
@@ -165,7 +165,7 @@ const cafeDrift = {
         const z = clamp(game.player.position.z + vz * dt, -5.5, 6.2);
         setMovementActor(game, { x, z, vx, vz, motionState: input.dash ? 'dodge' : null });
         s.roadOffset += dt * 10;
-        s.spawn -= dt;
+        s.spawn -= dt * (game.session.difficulty?.pressure ?? 1);
         if (s.spawn <= 0) {
             s.spawn = game.randomRange(.42, .76);
             s.hazards.push({ x: game.randomRange(-8.6, 8.6), z: -10, w: game.randomRange(1.3, 2.2), h: game.randomRange(1.0, 1.8), speed: game.randomRange(6.4, 10.4), checked: false });
@@ -226,7 +226,7 @@ const shadowMaze = {
             if (!key.got && dist(key, game.player.position) < 1.0) { key.got = true; s.collected += 1; game.addScore(300 * game.session.combo); game.bumpCombo(1); }
         });
         s.ghosts.forEach((g, index) => {
-            g.x += g.vx * dt;
+            g.x += g.vx * dt * (game.session.difficulty?.pressure ?? 1);
             if (g.x < -14 || g.x > 14) g.vx *= -1;
             g.z += Math.sin(game.session.elapsed * 1.4 + index) * dt * .8;
             if (!g.cooldown && dist(g, game.player.position) < 1.1) { g.cooldown = .9; game.damage('سایه لمس‌ات کرد!'); }
@@ -281,7 +281,7 @@ const skyHop = {
         }
         if (z > 9.2) { game.damage('افتادی!'); x = 0; z = 4.5; s.vy = -8.2; game.resetCombo(); }
         while (s.platforms.some((p) => p.z > 8.5)) {
-            const p = s.platforms.find((entry) => entry.z > 8.5); p.z -= 19.5; p.x = game.randomRange(-10, 10); p.w = game.randomRange(3.5, 5.5);
+            const p = s.platforms.find((entry) => entry.z > 8.5); p.z -= 19.5; p.x = game.randomRange(-10, 10); p.w = game.randomRange(3.5, 5.5) / Math.sqrt(game.session.difficulty?.pressure ?? 1);
         }
         setMovementActor(game, { x, z, vx, vz: s.vy, airborne: true, jumpVelocity: -s.vy });
         game.addScore(Math.max(0, -s.vy) * dt * 2);
@@ -302,7 +302,7 @@ const rhythmRush = {
     fixedUpdate(game, dt, input) {
         const s = game.modeState;
         const beatDuration = 60 / s.bpm;
-        s.beat -= dt; s.pulse = Math.max(0, s.pulse - dt * 4);
+        s.beat -= dt * (game.session.difficulty?.pressure ?? 1); s.pulse = Math.max(0, s.pulse - dt * 4);
         if (s.beat <= 0) {
             s.beat += beatDuration;
             if (game.random() < .88) s.notes.push({ lane: Math.floor(game.random() * 3), z: -9, hit: false, missed: false });

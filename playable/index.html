@@ -17,6 +17,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="csrf-token" content="">
+    <meta name="demian-arcade-api" content="">
 
     <title>Demian Game Platform · Café Game Room</title>
 
@@ -48,8 +49,8 @@
         })();
     </script>
 
-    <link rel="stylesheet" href="build/assets/app-BU-Peezu.css">
-<script type="module" src="build/assets/app-CNHWhWxC.js"></script>
+    <link rel="stylesheet" href="build/assets/app-hDnB4Eck.css">
+<script type="module" src="build/assets/app-GquY1JCl.js"></script>
 </head>
 
 <body class="min-h-full bg-[#050610] text-white">
@@ -346,10 +347,11 @@
                             <button type="button" data-shell-action="settings" class="shell-button shell-button--ghost">
                                 <span>تنظیمات</span><b aria-hidden="true">⚙</b>
                             </button>
+                            <button type="button" data-shell-action="leaderboard" class="shell-button shell-button--ghost">لیدربورد کافه <b aria-hidden="true">♛</b></button>
                         </div>
                         <button type="button" data-sidebar-toggle class="shell-button shell-button--ghost menu-character-button">انتخاب کاراکتر <span aria-hidden="true">◉</span></button>
                         <div data-menu-reveal class="cafe-menu__footer">
-                            <span>۲ بازی · ۳ کاراکتر</span>
+                            <span>۲ بازی · ۱۲ کاراکتر</span>
                             <span>بازی‌های کوچک، ماجراجویی‌های بزرگ</span>
                         </div>
                     </div>
@@ -494,6 +496,20 @@
                     </div>
                 </section>
 
+                <section data-screen="leaderboard" class="shell-screen shell-screen--modal" role="dialog" aria-modal="true" aria-labelledby="ranking-title" aria-hidden="true" hidden>
+                    <div class="shell-modal ranking-panel">
+                        <p class="shell-kicker">DEMIAN · CAFÉ RUN</p>
+                        <h2 id="ranking-title">لیدربورد کافه</h2>
+                        <label>بازهٔ رکوردها
+                            <select data-ranking-period><option value="all">همیشه</option><option value="daily">امروز</option><option value="weekly">این هفته</option><option value="device">این دستگاه</option></select>
+                        </label>
+                        <p data-ranking-status role="status" aria-live="polite"></p>
+                        <div class="ranking-panel__scroll"><table><thead><tr><th scope="col">رتبه</th><th scope="col">بازیکن</th><th scope="col">امتیاز</th></tr></thead><tbody data-ranking-rows></tbody></table></div>
+                        <form data-ranking-name-form><label for="ranking-name">نام نمایشی</label><div><input id="ranking-name" name="display_name" minlength="2" maxlength="32" required autocomplete="nickname"><button type="submit" class="shell-button">ذخیره</button></div></form>
+                        <button type="button" data-shell-action="close-modal" class="shell-button shell-button--primary" data-screen-autofocus>بستن</button>
+                    </div>
+                </section>
+
                 <section
                     data-screen="results"
                     class="shell-screen shell-screen--results"
@@ -507,10 +523,13 @@
                         <p data-results-subtitle>مرحله به پایان رسید.</p>
                         <div class="results-panel__score"><small>امتیاز</small><strong data-results-score>0</strong></div>
                         <div data-results-stats class="results-panel__stats"></div>
+                        <p data-results-ranking role="status" aria-live="polite"></p>
+                        <button type="button" data-shell-action="retry-ranking" data-results-ranking-retry class="shell-button" hidden>تلاش دوباره برای ثبت آنلاین</button>
                         <div class="shell-modal__actions shell-modal__actions--row">
                             <button type="button" data-shell-action="restart" class="shell-button shell-button--primary">دوباره</button>
                             <button type="button" data-shell-action="replay" data-results-replay class="shell-button" hidden>بازپخش</button>
                             <button type="button" data-shell-action="exit-game" class="shell-button">بازگشت به کافه</button>
+                            <button type="button" data-shell-action="leaderboard" class="shell-button">لیدربورد</button>
                         </div>
                     </div>
                 </section>

@@ -27,6 +27,7 @@
       "h": 80
     }
   },
+  "timingVersion": "natural-locomotion-v2",
   "states": {
     "idle": {
       "frames": 40,
@@ -154,6 +155,5 @@
       "fps": 32,
       "loop": false
     }
-  },
-  "timingVersion": "natural-locomotion-v2"
+  }
 }

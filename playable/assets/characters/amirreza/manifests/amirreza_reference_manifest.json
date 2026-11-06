@@ -5,6 +5,17 @@
   "master": "../source-v14/master.png",
   "runner_motion": "../source-v14/runner-motion.png",
   "slide_master": "../source-v14/slides.png",
+  "locomotion_reference": {
+    "character": "uzudi",
+    "states": [
+      "walk",
+      "run",
+      "jump",
+      "land"
+    ],
+    "pose_order": "same guide row/column order",
+    "guide": "../source-v14/uzudi-motion-guide.png"
+  },
   "inputs": [
     {
       "name": "photo_5782787355554025224_w(2).jpg",
@@ -21,16 +32,5 @@
       "role": "pose-for-pose-locomotion-reference",
       "sha256": "39cd6d90140ff2cc102316b7c3280aa8be2c8502a79a48d237f93be0fcc471c3"
     }
-  ],
-  "locomotion_reference": {
-    "character": "uzudi",
-    "states": [
-      "walk",
-      "run",
-      "jump",
-      "land"
-    ],
-    "pose_order": "same guide row/column order",
-    "guide": "../source-v14/uzudi-motion-guide.png"
-  }
+  ]
 }

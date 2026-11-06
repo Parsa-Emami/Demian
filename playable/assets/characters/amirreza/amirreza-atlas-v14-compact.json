@@ -32,7 +32,7 @@
     "interpolation": "single-owner-optical-flow",
     "sourceKeyPoseCount": 60,
     "license": "MIT",
-    "imageRevision": "08f27e861fc0ba6b8be5ac33f6a2384e7db0777921381fb37c70e90291268e19"
+    "imageRevision": "510c233cc16afd4e268de7f94d61f9c0e52e4926548ab49999aea0d4f3780630"
   },
   "frames": {
     "idle_000": {
@@ -13480,7 +13480,41 @@
     "singleSilhouette": true,
     "physicsOwnsJumpHeight": true,
     "dedicatedSlide": true,
-    "smoothSampling": true
+    "smoothSampling": true,
+    "bodyScaleCalibration": {
+      "method": "authored-standing-pose-height",
+      "targetBodyHeightRatio": 0.7,
+      "referencePoseIndices": {
+        "walk": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7
+        ],
+        "run": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7
+        ],
+        "jump": [
+          7
+        ]
+      },
+      "uniformScaleByState": {
+        "walk": 0.6602105263157894,
+        "run": 0.7095022624434388,
+        "jump": 0.642622950819672
+      }
+    }
   },
   "movement": {
     "style": "wing-assisted",
@@ -13491,6 +13525,19 @@
       "jump",
       "fall",
       "slide"
+    ]
+  },
+  "speech": {
+    "duration": 3.2,
+    "messages": [
+      "بال بزن بریم",
+      "از همه سریع‌ترم",
+      "الان وقت های‌اسکوره",
+      "پرواز کوتاه، برد بزرگ",
+      "سرعت یعنی امیررضا",
+      "بزن بریم یه دور سریع",
+      "فول اسپید!",
+      "با بال‌ها می‌بریم"
     ]
   }
 }

@@ -161,8 +161,10 @@ export default class GameShell {
                 break;
             case 'retry-ranking': {
                 button.disabled = true;
+                const payload = this.resultsScreen.payload;
                 const result = await this.app.leaderboards.retry();
-                this.resultsScreen.renderRanking(result); button.disabled = false;
+                if (this.resultsScreen.payload === payload) this.resultsScreen.renderRanking(result);
+                button.disabled = false;
                 break;
             }
             case 'play':

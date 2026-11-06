@@ -1,0 +1,730 @@
+[
+  {
+    "seed": 7,
+    "width": 420,
+    "ticks": 137,
+    "transitions": [
+      {
+        "tick": 0,
+        "mask": 3
+      },
+      {
+        "tick": 1,
+        "mask": 2
+      }
+    ],
+    "expected": {
+      "score": 77,
+      "ticks": 137,
+      "passed": 0
+    }
+  },
+  {
+    "seed": 127,
+    "width": 960,
+    "ticks": 231,
+    "transitions": [
+      {
+        "tick": 0,
+        "mask": 3
+      },
+      {
+        "tick": 1,
+        "mask": 2
+      }
+    ],
+    "expected": {
+      "score": 131,
+      "ticks": 231,
+      "passed": 0
+    }
+  },
+  {
+    "seed": 4294967295,
+    "width": 420,
+    "ticks": 1242,
+    "transitions": [
+      {
+        "tick": 0,
+        "mask": 3
+      },
+      {
+        "tick": 1,
+        "mask": 2
+      },
+      {
+        "tick": 120,
+        "mask": 6
+      },
+      {
+        "tick": 148,
+        "mask": 2
+      },
+      {
+        "tick": 193,
+        "mask": 6
+      },
+      {
+        "tick": 221,
+        "mask": 2
+      },
+      {
+        "tick": 280,
+        "mask": 3
+      },
+      {
+        "tick": 281,
+        "mask": 2
+      },
+      {
+        "tick": 376,
+        "mask": 3
+      },
+      {
+        "tick": 377,
+        "mask": 2
+      },
+      {
+        "tick": 459,
+        "mask": 3
+      },
+      {
+        "tick": 460,
+        "mask": 2
+      },
+      {
+        "tick": 545,
+        "mask": 3
+      },
+      {
+        "tick": 546,
+        "mask": 2
+      },
+      {
+        "tick": 612,
+        "mask": 3
+      },
+      {
+        "tick": 613,
+        "mask": 2
+      },
+      {
+        "tick": 679,
+        "mask": 3
+      },
+      {
+        "tick": 680,
+        "mask": 2
+      },
+      {
+        "tick": 777,
+        "mask": 3
+      },
+      {
+        "tick": 778,
+        "mask": 2
+      },
+      {
+        "tick": 870,
+        "mask": 3
+      },
+      {
+        "tick": 871,
+        "mask": 2
+      },
+      {
+        "tick": 961,
+        "mask": 3
+      },
+      {
+        "tick": 962,
+        "mask": 2
+      },
+      {
+        "tick": 1049,
+        "mask": 3
+      },
+      {
+        "tick": 1050,
+        "mask": 2
+      },
+      {
+        "tick": 1138,
+        "mask": 3
+      },
+      {
+        "tick": 1139,
+        "mask": 2
+      }
+    ],
+    "expected": {
+      "score": 753,
+      "ticks": 1242,
+      "passed": 13
+    }
+  },
+  {
+    "seed": 8123,
+    "width": 1440,
+    "ticks": 5452,
+    "transitions": [
+      {
+        "tick": 0,
+        "mask": 3
+      },
+      {
+        "tick": 1,
+        "mask": 2
+      },
+      {
+        "tick": 297,
+        "mask": 3
+      },
+      {
+        "tick": 298,
+        "mask": 2
+      },
+      {
+        "tick": 385,
+        "mask": 3
+      },
+      {
+        "tick": 386,
+        "mask": 2
+      },
+      {
+        "tick": 459,
+        "mask": 3
+      },
+      {
+        "tick": 460,
+        "mask": 2
+      },
+      {
+        "tick": 549,
+        "mask": 6
+      },
+      {
+        "tick": 577,
+        "mask": 2
+      },
+      {
+        "tick": 627,
+        "mask": 3
+      },
+      {
+        "tick": 628,
+        "mask": 2
+      },
+      {
+        "tick": 706,
+        "mask": 3
+      },
+      {
+        "tick": 707,
+        "mask": 2
+      },
+      {
+        "tick": 796,
+        "mask": 3
+      },
+      {
+        "tick": 797,
+        "mask": 2
+      },
+      {
+        "tick": 890,
+        "mask": 6
+      },
+      {
+        "tick": 917,
+        "mask": 2
+      },
+      {
+        "tick": 966,
+        "mask": 3
+      },
+      {
+        "tick": 967,
+        "mask": 2
+      },
+      {
+        "tick": 1049,
+        "mask": 6
+      },
+      {
+        "tick": 1076,
+        "mask": 2
+      },
+      {
+        "tick": 1122,
+        "mask": 3
+      },
+      {
+        "tick": 1123,
+        "mask": 2
+      },
+      {
+        "tick": 1203,
+        "mask": 3
+      },
+      {
+        "tick": 1204,
+        "mask": 2
+      },
+      {
+        "tick": 1277,
+        "mask": 6
+      },
+      {
+        "tick": 1304,
+        "mask": 2
+      },
+      {
+        "tick": 1367,
+        "mask": 6
+      },
+      {
+        "tick": 1393,
+        "mask": 2
+      },
+      {
+        "tick": 1447,
+        "mask": 6
+      },
+      {
+        "tick": 1473,
+        "mask": 2
+      },
+      {
+        "tick": 1511,
+        "mask": 3
+      },
+      {
+        "tick": 1512,
+        "mask": 2
+      },
+      {
+        "tick": 1590,
+        "mask": 6
+      },
+      {
+        "tick": 1617,
+        "mask": 2
+      },
+      {
+        "tick": 1678,
+        "mask": 3
+      },
+      {
+        "tick": 1679,
+        "mask": 2
+      },
+      {
+        "tick": 1766,
+        "mask": 6
+      },
+      {
+        "tick": 1792,
+        "mask": 2
+      },
+      {
+        "tick": 1854,
+        "mask": 3
+      },
+      {
+        "tick": 1855,
+        "mask": 2
+      },
+      {
+        "tick": 1931,
+        "mask": 3
+      },
+      {
+        "tick": 1932,
+        "mask": 2
+      },
+      {
+        "tick": 2007,
+        "mask": 3
+      },
+      {
+        "tick": 2008,
+        "mask": 2
+      },
+      {
+        "tick": 2075,
+        "mask": 3
+      },
+      {
+        "tick": 2076,
+        "mask": 2
+      },
+      {
+        "tick": 2159,
+        "mask": 6
+      },
+      {
+        "tick": 2185,
+        "mask": 2
+      },
+      {
+        "tick": 2238,
+        "mask": 6
+      },
+      {
+        "tick": 2264,
+        "mask": 2
+      },
+      {
+        "tick": 2306,
+        "mask": 6
+      },
+      {
+        "tick": 2332,
+        "mask": 2
+      },
+      {
+        "tick": 2374,
+        "mask": 3
+      },
+      {
+        "tick": 2375,
+        "mask": 2
+      },
+      {
+        "tick": 2437,
+        "mask": 3
+      },
+      {
+        "tick": 2438,
+        "mask": 2
+      },
+      {
+        "tick": 2508,
+        "mask": 3
+      },
+      {
+        "tick": 2509,
+        "mask": 2
+      },
+      {
+        "tick": 2575,
+        "mask": 6
+      },
+      {
+        "tick": 2601,
+        "mask": 2
+      },
+      {
+        "tick": 2641,
+        "mask": 3
+      },
+      {
+        "tick": 2642,
+        "mask": 2
+      },
+      {
+        "tick": 2711,
+        "mask": 6
+      },
+      {
+        "tick": 2736,
+        "mask": 2
+      },
+      {
+        "tick": 2781,
+        "mask": 3
+      },
+      {
+        "tick": 2782,
+        "mask": 2
+      },
+      {
+        "tick": 2845,
+        "mask": 3
+      },
+      {
+        "tick": 2846,
+        "mask": 2
+      },
+      {
+        "tick": 2916,
+        "mask": 6
+      },
+      {
+        "tick": 2941,
+        "mask": 2
+      },
+      {
+        "tick": 2981,
+        "mask": 3
+      },
+      {
+        "tick": 2982,
+        "mask": 2
+      },
+      {
+        "tick": 3046,
+        "mask": 3
+      },
+      {
+        "tick": 3047,
+        "mask": 2
+      },
+      {
+        "tick": 3129,
+        "mask": 6
+      },
+      {
+        "tick": 3154,
+        "mask": 2
+      },
+      {
+        "tick": 3210,
+        "mask": 3
+      },
+      {
+        "tick": 3211,
+        "mask": 2
+      },
+      {
+        "tick": 3281,
+        "mask": 3
+      },
+      {
+        "tick": 3282,
+        "mask": 2
+      },
+      {
+        "tick": 3351,
+        "mask": 6
+      },
+      {
+        "tick": 3376,
+        "mask": 2
+      },
+      {
+        "tick": 3416,
+        "mask": 3
+      },
+      {
+        "tick": 3417,
+        "mask": 2
+      },
+      {
+        "tick": 3497,
+        "mask": 3
+      },
+      {
+        "tick": 3498,
+        "mask": 2
+      },
+      {
+        "tick": 3558,
+        "mask": 6
+      },
+      {
+        "tick": 3583,
+        "mask": 2
+      },
+      {
+        "tick": 3641,
+        "mask": 6
+      },
+      {
+        "tick": 3666,
+        "mask": 2
+      },
+      {
+        "tick": 3709,
+        "mask": 3
+      },
+      {
+        "tick": 3710,
+        "mask": 2
+      },
+      {
+        "tick": 3784,
+        "mask": 6
+      },
+      {
+        "tick": 3809,
+        "mask": 2
+      },
+      {
+        "tick": 3848,
+        "mask": 3
+      },
+      {
+        "tick": 3849,
+        "mask": 2
+      },
+      {
+        "tick": 3929,
+        "mask": 3
+      },
+      {
+        "tick": 3930,
+        "mask": 2
+      },
+      {
+        "tick": 4007,
+        "mask": 3
+      },
+      {
+        "tick": 4008,
+        "mask": 2
+      },
+      {
+        "tick": 4093,
+        "mask": 3
+      },
+      {
+        "tick": 4094,
+        "mask": 2
+      },
+      {
+        "tick": 4170,
+        "mask": 6
+      },
+      {
+        "tick": 4194,
+        "mask": 2
+      },
+      {
+        "tick": 4239,
+        "mask": 6
+      },
+      {
+        "tick": 4263,
+        "mask": 2
+      },
+      {
+        "tick": 4315,
+        "mask": 6
+      },
+      {
+        "tick": 4339,
+        "mask": 2
+      },
+      {
+        "tick": 4384,
+        "mask": 3
+      },
+      {
+        "tick": 4385,
+        "mask": 2
+      },
+      {
+        "tick": 4467,
+        "mask": 6
+      },
+      {
+        "tick": 4492,
+        "mask": 2
+      },
+      {
+        "tick": 4547,
+        "mask": 3
+      },
+      {
+        "tick": 4548,
+        "mask": 2
+      },
+      {
+        "tick": 4618,
+        "mask": 6
+      },
+      {
+        "tick": 4643,
+        "mask": 2
+      },
+      {
+        "tick": 4703,
+        "mask": 3
+      },
+      {
+        "tick": 4704,
+        "mask": 2
+      },
+      {
+        "tick": 4762,
+        "mask": 3
+      },
+      {
+        "tick": 4763,
+        "mask": 2
+      },
+      {
+        "tick": 4846,
+        "mask": 3
+      },
+      {
+        "tick": 4847,
+        "mask": 2
+      },
+      {
+        "tick": 4924,
+        "mask": 3
+      },
+      {
+        "tick": 4925,
+        "mask": 2
+      },
+      {
+        "tick": 5006,
+        "mask": 3
+      },
+      {
+        "tick": 5007,
+        "mask": 2
+      },
+      {
+        "tick": 5065,
+        "mask": 3
+      },
+      {
+        "tick": 5066,
+        "mask": 2
+      },
+      {
+        "tick": 5147,
+        "mask": 6
+      },
+      {
+        "tick": 5171,
+        "mask": 2
+      },
+      {
+        "tick": 5229,
+        "mask": 3
+      },
+      {
+        "tick": 5230,
+        "mask": 2
+      },
+      {
+        "tick": 5288,
+        "mask": 3
+      },
+      {
+        "tick": 5289,
+        "mask": 2
+      },
+      {
+        "tick": 5365,
+        "mask": 3
+      },
+      {
+        "tick": 5366,
+        "mask": 2
+      }
+    ],
+    "expected": {
+      "score": 4184,
+      "ticks": 5452,
+      "passed": 68
+    }
+  }
+]

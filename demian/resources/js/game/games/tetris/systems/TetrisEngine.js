@@ -27,7 +27,7 @@ export default class TetrisEngine {
         this.onEvent = onEvent;
         this.board = new Board(config.board);
         this.rotation = new RotationSystem();
-        this.scoring = new ScoringSystem();
+        this.scoring = new ScoringSystem({ initialLevel: config.progression.initialLevel ?? 1 });
         this.gravity = new GravitySystem();
         this.inputRepeat = new InputRepeatSystem();
         this.lockDelay = new LockDelaySystem();

@@ -3,14 +3,15 @@ const T_SPIN_POINTS = Object.freeze([400, 800, 1200, 1600]);
 const PERFECT_CLEAR_POINTS = Object.freeze([0, 800, 1200, 1800, 2000]);
 
 export default class ScoringSystem {
-    constructor() {
+    constructor({ initialLevel = 1 } = {}) {
+        this.initialLevel = Math.min(30, Math.max(1, Math.floor(Number(initialLevel) || 1)));
         this.reset();
     }
 
     reset() {
         this.score = 0;
         this.lines = 0;
-        this.level = 1;
+        this.level = this.initialLevel;
         this.combo = -1;
         this.backToBack = false;
         this.lastAward = null;
@@ -44,7 +45,7 @@ export default class ScoringSystem {
 
         this.score += points;
         this.lines += clearCount;
-        this.level = Math.floor(this.lines / 10) + 1;
+        this.level = Math.floor(this.lines / 10) + this.initialLevel;
 
         if (difficult) {
             this.backToBack = true;

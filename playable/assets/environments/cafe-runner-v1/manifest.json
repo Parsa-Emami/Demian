@@ -1,0 +1,22 @@
+{
+  "date": "2026-11-05",
+  "provider": "built-in image generation",
+  "image": "interior.webp",
+  "sha256": "5bdf680182c1d1125e849a39fe51756077533846c0a65a731bbe83572f414b8d",
+  "references": [
+    "assets/reference/cafe/05-main-hall-wide-view.jpg",
+    "assets/reference/cafe/10-bookshelf-and-communal-table.jpg"
+  ],
+  "elements": [
+    "concrete walls",
+    "green tile counter",
+    "espresso machine",
+    "oak tables",
+    "bookshelves",
+    "floor mirror",
+    "burgundy rugs",
+    "plants",
+    "pendant lamps"
+  ],
+  "collision": "render only; runner rules own all collisions"
+}

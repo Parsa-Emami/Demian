@@ -1,0 +1,23 @@
+{
+  "character": "amirreza",
+  "created": "2026-11-05",
+  "provider": "built-in image generation",
+  "file": "locomotion-v15.png",
+  "sha256": "14e96211a1979492d3256a62b13f08912cec519ee6227a06899e8ebfe8420491",
+  "grid": {
+    "rows": 3,
+    "columns": 8
+  },
+  "rows": [
+    "walk",
+    "run",
+    "jump"
+  ],
+  "referenceCharacters": [
+    "darya",
+    "uzudi",
+    "setayesh"
+  ],
+  "identitySource": "runner-motion.png",
+  "normalization": "single scale per clip; grounded foot anchor; retained original slide and idle art"
+}

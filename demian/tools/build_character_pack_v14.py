@@ -9,6 +9,7 @@ Install tools/requirements-character-art.txt before rebuilding.
 from __future__ import annotations
 
 import argparse
+import os
 import hashlib
 import json
 from pathlib import Path
@@ -36,7 +37,9 @@ def read_json(path):
 
 def write_json(path, value):
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(value, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+    temporary = path.with_name(f'.{path.name}.work.{os.getpid()}')
+    temporary.write_text(json.dumps(value, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+    temporary.replace(path)
 
 
 def isolate(image):
@@ -191,6 +194,13 @@ def build_character(slug):
     poses = dict(zip(main_states, main_rows))
     poses.update(run=run_poses, slide=slide_rows[0] + slide_rows[1])
     poses.update(extra_motion)
+    if layout.get('locomotionSource'):
+        family = Image.open(directory / 'source-v14' / layout['locomotionSource']).convert('RGBA')
+        rows = extract(family, [round(family.height * i / 3) for i in range(4)], columns=8)
+        for state, row in zip(('walk', 'run', 'jump'), rows):
+            cycles = int(layout.get('locomotionCycleCounts', {}).get(state, 1)) if state != 'jump' else 1
+            poses[state] = row * cycles
+            motion_keys.add(state)
     if layout.get('slideRows'):
         poses['slide'] = sum([slide_rows[i] for i in layout['slideRows']], [])
     # A curated source may exclude a pose whose shoulder is occluded. Selection
@@ -324,7 +334,9 @@ def build_character(slug):
             atlas['abilities'] = [signature]
         apply_animation_timing(atlas, layout.get('locomotionCycleCounts'), layout.get('locomotionProfile'))
         animations = atlas['animations']
-        sheet.save(directory / image_name, optimize=True)
+        temporary_image = directory / f'.{image_name}.work.{os.getpid()}'
+        sheet.save(temporary_image, format='PNG', optimize=True)
+        temporary_image.replace(directory / image_name)
         atlas['meta']['imageRevision'] = hashlib.sha256((directory / image_name).read_bytes()).hexdigest()
         write_json(directory / f'{slug}-atlas-v14-{variant}.json', atlas)
         print(f'{slug} / {variant}: {len(frames)} frames, {sheet.width}x{sheet.height}', flush=True)

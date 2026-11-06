@@ -1,0 +1,23 @@
+{
+  "character": "ainaz",
+  "created": "2026-11-05",
+  "provider": "built-in image generation",
+  "file": "locomotion-v15.png",
+  "sha256": "25405d3e29e2a89798a68205175c2c56de798f937185b34eb1b1935369c4bf1e",
+  "grid": {
+    "rows": 3,
+    "columns": 8
+  },
+  "rows": [
+    "walk",
+    "run",
+    "jump"
+  ],
+  "referenceCharacters": [
+    "darya",
+    "uzudi",
+    "setayesh"
+  ],
+  "alphaRepair": "built-in image editing; pale backdrop removed while preserving cream clothing",
+  "normalization": "single scale per clip; grounded foot anchor"
+}

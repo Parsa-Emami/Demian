@@ -32,7 +32,7 @@
     "interpolation": "single-owner-optical-flow",
     "sourceKeyPoseCount": 60,
     "license": "MIT",
-    "imageRevision": "740e40d4f1acb735bcd2a2177c7b727014048f0d6802e36b28d502174707358b"
+    "imageRevision": "1eb823df3d0c87836a2902cce86f6f71f0067a7a6c8c2b37602fc75d0b1bfc59"
   },
   "frames": {
     "idle_000": {
@@ -13518,18 +13518,31 @@
           5,
           6,
           7
+        ],
+        "jump": [
+          7
         ]
       },
       "uniformScaleByState": {
-        "walk": 0.6744086021505376,
-        "run": 0.7225806451612903,
+        "walk": 0.6124999999999999,
+        "run": 0.7031390134529147,
         "land": 0.7310023310023309,
-        "celebrate": 0.8124352331606217
+        "celebrate": 0.8124352331606217,
+        "jump": 0.629718875502008
       }
     }
   },
   "movement": {
     "style": "ground-runner",
     "wingPoweredStates": []
+  },
+  "speech": {
+    "duration": 3.2,
+    "messages": [
+      "بزن بریم",
+      "یه دور دیگه",
+      "آماده‌ام",
+      "وقت یه رکورد تازه‌ست"
+    ]
   }
 }

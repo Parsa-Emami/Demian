@@ -6,7 +6,7 @@ import { arcadeCharacterLabel } from '../arcade/ArcadeCharacterRoster.js';
 import { UI_LAYER, assignUiLayer } from '../../ui/UiLayer.js';
 import RunnerReplay from './RunnerReplay.js';
 
-const BEST_KEY = 'demian.dino-run.best.v1';
+const BEST_KEY = 'demian.dino-run.best.cafe-runner-v1';
 function readBest() { try { return Math.max(0, Number(localStorage.getItem(BEST_KEY)) || 0); } catch { return 0; } }
 function saveBest(value) { try { localStorage.setItem(BEST_KEY, String(value)); } catch {} }
 
@@ -35,6 +35,10 @@ export default class DinoRunGame extends BaseGame {
         this.ready = assignUiLayer(document.createElement('div'), UI_LAYER.LOCAL_BASE);
         this.ready.className = 'runner-ready'; this.ready.dir = 'rtl';
         this.ready.innerHTML = '<span>DEMIAN · CAFÉ RUN</span><h2>این بار، توی کافه بدو.</h2><p>از صندلی‌ها و جعبه‌های قهوه بپر؛ زیر چراغ‌ها اسلاید برو. سختی از ۶ شروع می‌شود.</p><button type="button" data-input-press="jump" data-input-hold="jumpHeld">شروع و پرش <b>↗</b></button><small>نگه‌دار: پرش بلندتر · Space / ↑ · ↓ برای اسلاید</small><p data-run-ranking-mode role="status"></p>';
+        const wordmark = document.createElement('img');
+        wordmark.className = 'runner-wordmark'; wordmark.alt = 'دمیان · DEMIAN';
+        wordmark.src = new URL('assets/environments/cafe-runner-v1/wordmark.png', document.baseURI).href;
+        this.ready.prepend(wordmark);
         context.root.querySelector('[data-game-hud-host]')?.append(this.ready);
         this.scoreNode = this.hud.querySelector('[data-run-score]'); this.bestNode = this.hud.querySelector('[data-run-best]');
         this.difficultyNode = this.hud.querySelector('[data-run-difficulty]');

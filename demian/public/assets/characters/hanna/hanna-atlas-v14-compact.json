@@ -32,7 +32,7 @@
     "interpolation": "single-owner-optical-flow",
     "sourceKeyPoseCount": 60,
     "license": "MIT",
-    "imageRevision": "25060db67e043b63d7da55befa92071bdaf18422835ae10164c98901da03421e"
+    "imageRevision": "3ea68eba06627c439372ec0c0688f275a0275c99baf4ddb9f9051c0afb88ceca"
   },
   "frames": {
     "idle_000": {
@@ -13454,15 +13454,15 @@
     "timingVersion": "natural-locomotion-v2",
     "jumpProgressDriver": "vertical-velocity",
     "locomotionProfile": {
-      "id": "hanna-elegant-v2",
+      "id": "shared-ground-v2",
       "referenceCharacter": null,
       "phaseDriver": "travelled-distance",
       "strideLengths": {
-        "walk": 4.1,
-        "run": 6.8,
-        "sprint": 7.4
+        "walk": 3.4,
+        "run": 6,
+        "sprint": 6.4
       },
-      "maxStrideHz": 1.3,
+      "maxStrideHz": 1.55,
       "landingSeconds": 0.16,
       "jumpBufferSeconds": 0.14,
       "coyoteSeconds": 0.11,
@@ -13480,10 +13480,53 @@
     "singleSilhouette": true,
     "physicsOwnsJumpHeight": true,
     "dedicatedSlide": true,
-    "smoothSampling": true
+    "smoothSampling": true,
+    "bodyScaleCalibration": {
+      "method": "authored-standing-pose-height",
+      "targetBodyHeightRatio": 0.7,
+      "referencePoseIndices": {
+        "walk": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7
+        ],
+        "run": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7
+        ],
+        "jump": [
+          7
+        ]
+      },
+      "uniformScaleByState": {
+        "walk": 0.598473282442748,
+        "run": 0.6399999999999999,
+        "jump": 0.5580071174377224
+      }
+    }
   },
   "movement": {
     "style": "ground-runner",
     "wingPoweredStates": []
+  },
+  "speech": {
+    "duration": 3.2,
+    "messages": [
+      "با آرامش پیش می‌ریم.",
+      "قدم بعدی، رکورد بعدی.",
+      "آمادهٔ یک پرش تمیز؟",
+      "بزن بریم یک دور دیگه."
+    ]
   }
 }

@@ -1,0 +1,60 @@
+name: Arcade backend verification
+on:
+  push:
+    paths:
+      - 'demian/app/**'
+      - 'demian/config/**'
+      - 'demian/database/**'
+      - 'demian/routes/**'
+      - 'demian/resources/game/**'
+      - 'demian/tests/**'
+      - 'demian/composer.*'
+      - '.github/workflows/arcade-backend.yml'
+  pull_request:
+    paths:
+      - 'demian/**'
+      - '.github/workflows/arcade-backend.yml'
+permissions:
+  contents: read
+jobs:
+  replay-and-api:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        database: [sqlite, mysql]
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: arcade-test-password
+          MYSQL_DATABASE: demian_test
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -parcade-test-password"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+    defaults:
+      run:
+        working-directory: demian
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, dom, xml, sqlite3, pdo_sqlite, pdo_mysql
+          coverage: none
+      - run: composer install --no-interaction --prefer-dist
+      - run: vendor/bin/phpunit
+        env:
+          APP_ENV: testing
+          APP_KEY: base64:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
+          DB_CONNECTION: ${{ matrix.database }}
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_DATABASE: ${{ matrix.database == 'mysql' && 'demian_test' || ':memory:' }}
+          DB_USERNAME: root
+          DB_PASSWORD: arcade-test-password
+          CACHE_STORE: array
+          SESSION_DRIVER: array

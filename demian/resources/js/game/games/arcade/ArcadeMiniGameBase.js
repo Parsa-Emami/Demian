@@ -3,6 +3,7 @@ import ArcadeMiniGameHud from './ArcadeMiniGameHud.js';
 import ArcadeMiniGameRenderer from './ArcadeMiniGameRenderer.js';
 import { arcadeMode } from './ArcadeModes.js';
 import { arcadeCharacterLabel } from './ArcadeCharacterRoster.js';
+import { arcadeDifficulty } from '../../difficulty/ArcadeDifficulty.js';
 
 function hashSeed(value) {
     const text = String(value ?? 'demian');
@@ -69,6 +70,7 @@ export default class ArcadeMiniGameBase extends BaseGame {
         this.session = {
             seed, elapsed: 0, timeLeft: this.config.duration, score: 0, combo: 1, lives: 3,
             status: this.config.objective ?? 'READY', damageCooldown: 0,
+            difficulty: arcadeDifficulty(0),
         };
         this.player.motionState = null;
         this.mode.reset(this);
@@ -80,6 +82,7 @@ export default class ArcadeMiniGameBase extends BaseGame {
     fixedUpdate(dt, input = {}) {
         if (this.completed || !this.session) return;
         this.session.elapsed += dt;
+        this.session.difficulty = arcadeDifficulty(this.session.elapsed);
         this.session.timeLeft = Math.max(0, this.config.duration - this.session.elapsed);
         this.session.damageCooldown = Math.max(0, this.session.damageCooldown - dt);
         this.mode.fixedUpdate(this, dt, input);

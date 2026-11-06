@@ -32,7 +32,7 @@
     "interpolation": "single-owner-optical-flow",
     "sourceKeyPoseCount": 64,
     "license": "MIT",
-    "imageRevision": "50a939e8b522691e8edf0cd8e2d83f9b7d7ddaca8d042e5e56edd7269af0406b"
+    "imageRevision": "8adc7b5f477d69dfb79fb07d158714d37558242f13acdf3a6b0887a0611b2b27"
   },
   "frames": {
     "idle_000": {
@@ -13521,9 +13521,9 @@
         ]
       },
       "uniformScaleByState": {
-        "walk": 0.5872659176029962,
-        "run": 0.6042389210019267,
-        "jump": 0.6560669456066945,
+        "walk": 0.6479338842975206,
+        "run": 0.687719298245614,
+        "jump": 0.6479338842975206,
         "land": 0.6197628458498023,
         "celebrate": 0.6272
       }

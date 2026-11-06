@@ -32,7 +32,7 @@
     "interpolation": "single-owner-optical-flow",
     "sourceKeyPoseCount": 68,
     "license": "MIT",
-    "imageRevision": "d4d2a6b63f92176486b7dace85a77692ad9f3bbd502bf25cff1e198c0733596a"
+    "imageRevision": "d4310cd631c91312a5679b826976eb2a4de0edffb067ecb35be0d6a7dbb82d7d"
   },
   "frames": {
     "idle_000": {
@@ -13534,9 +13534,9 @@
         ]
       },
       "uniformScaleByState": {
-        "walk": 0.7648780487804877,
-        "run": 0.5650450450450449,
-        "jump": 0.8808988764044943,
+        "walk": 0.5530864197530864,
+        "run": 0.5785977859778597,
+        "jump": 0.5244147157190635,
         "land": 0.5217970049916805,
         "celebrate": 0.8934472934472933
       }
@@ -13545,5 +13545,14 @@
   "movement": {
     "style": "ground-runner",
     "wingPoweredStates": []
+  },
+  "speech": {
+    "duration": 3.2,
+    "messages": [
+      "آروم و دقیق.",
+      "کراوات مرتبه؛ بزن بریم.",
+      "تمرکز روی مسیر.",
+      "یک پرش تمیز، یک رکورد تازه."
+    ]
   }
 }

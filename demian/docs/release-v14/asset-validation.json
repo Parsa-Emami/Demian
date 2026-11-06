@@ -470,9 +470,9 @@
       "maxSlideHeight": 42.0,
       "visibleWorldHeights": {
         "idle": 3.757,
-        "walk": 3.906,
-        "run": 3.869,
-        "sprint": 3.869
+        "walk": 3.795,
+        "run": 3.72,
+        "sprint": 3.72
       },
       "geometry": "passed"
     },
@@ -489,9 +489,9 @@
       "maxSlideHeight": 42.17,
       "visibleWorldHeights": {
         "idle": 3.731,
-        "walk": 3.922,
-        "run": 3.874,
-        "sprint": 3.874
+        "walk": 3.779,
+        "run": 3.731,
+        "sprint": 3.731
       },
       "geometry": "passed"
     },
@@ -508,9 +508,9 @@
       "maxSlideHeight": 42.46,
       "visibleWorldHeights": {
         "idle": 3.75,
-        "walk": 3.951,
-        "run": 3.884,
-        "sprint": 3.884
+        "walk": 3.817,
+        "run": 3.75,
+        "sprint": 3.75
       },
       "geometry": "passed"
     },
@@ -527,9 +527,9 @@
       "maxSlideHeight": 42.29,
       "visibleWorldHeights": {
         "idle": 3.739,
-        "walk": 3.934,
-        "run": 3.906,
-        "sprint": 3.906
+        "walk": 3.795,
+        "run": 3.767,
+        "sprint": 3.767
       },
       "geometry": "passed"
     },
@@ -546,9 +546,9 @@
       "maxSlideHeight": 42.72,
       "visibleWorldHeights": {
         "idle": 3.767,
-        "walk": 3.934,
-        "run": 3.934,
-        "sprint": 3.934
+        "walk": 3.85,
+        "run": 3.767,
+        "sprint": 3.767
       },
       "geometry": "passed"
     },
@@ -565,9 +565,9 @@
       "maxSlideHeight": 42.08,
       "visibleWorldHeights": {
         "idle": 3.767,
-        "walk": 3.934,
-        "run": 3.892,
-        "sprint": 3.892
+        "walk": 3.767,
+        "run": 3.725,
+        "sprint": 3.725
       },
       "geometry": "passed"
     },
@@ -584,9 +584,9 @@
       "maxSlideHeight": 43.73,
       "visibleWorldHeights": {
         "idle": 3.757,
-        "walk": 3.311,
-        "run": 3.33,
-        "sprint": 3.33
+        "walk": 3.757,
+        "run": 3.72,
+        "sprint": 3.72
       },
       "geometry": "passed"
     },
@@ -603,9 +603,9 @@
       "maxSlideHeight": 44.39,
       "visibleWorldHeights": {
         "idle": 3.779,
-        "walk": 3.348,
-        "run": 3.348,
-        "sprint": 3.348
+        "walk": 3.779,
+        "run": 3.731,
+        "sprint": 3.731
       },
       "geometry": "passed"
     },
@@ -622,9 +622,9 @@
       "maxSlideHeight": 44.54,
       "visibleWorldHeights": {
         "idle": 3.817,
-        "walk": 3.348,
-        "run": 3.348,
-        "sprint": 3.348
+        "walk": 3.817,
+        "run": 3.75,
+        "sprint": 3.75
       },
       "geometry": "passed"
     },
@@ -641,9 +641,9 @@
       "maxSlideHeight": 44.88,
       "visibleWorldHeights": {
         "idle": 3.795,
-        "walk": 3.348,
-        "run": 3.348,
-        "sprint": 3.348
+        "walk": 3.795,
+        "run": 3.739,
+        "sprint": 3.739
       },
       "geometry": "passed"
     },
@@ -660,9 +660,9 @@
       "maxSlideHeight": 45.31,
       "visibleWorldHeights": {
         "idle": 3.85,
-        "walk": 3.348,
-        "run": 3.348,
-        "sprint": 3.348
+        "walk": 3.85,
+        "run": 3.767,
+        "sprint": 3.767
       },
       "geometry": "passed"
     },
@@ -679,9 +679,9 @@
       "maxSlideHeight": 44.02,
       "visibleWorldHeights": {
         "idle": 3.767,
-        "walk": 3.348,
-        "run": 3.327,
-        "sprint": 3.327
+        "walk": 3.767,
+        "run": 3.725,
+        "sprint": 3.725
       },
       "geometry": "passed"
     },
@@ -698,9 +698,9 @@
       "maxSlideHeight": 33.95,
       "visibleWorldHeights": {
         "idle": 3.757,
-        "walk": 3.497,
-        "run": 3.311,
-        "sprint": 3.311
+        "walk": 3.757,
+        "run": 3.72,
+        "sprint": 3.72
       },
       "geometry": "passed"
     },
@@ -717,9 +717,9 @@
       "maxSlideHeight": 34.03,
       "visibleWorldHeights": {
         "idle": 3.779,
-        "walk": 3.54,
-        "run": 3.3,
-        "sprint": 3.3
+        "walk": 3.779,
+        "run": 3.731,
+        "sprint": 3.731
       },
       "geometry": "passed"
     },
@@ -736,9 +736,9 @@
       "maxSlideHeight": 34.18,
       "visibleWorldHeights": {
         "idle": 3.817,
-        "walk": 3.549,
-        "run": 3.348,
-        "sprint": 3.348
+        "walk": 3.817,
+        "run": 3.75,
+        "sprint": 3.75
       },
       "geometry": "passed"
     },
@@ -755,9 +755,9 @@
       "maxSlideHeight": 34.52,
       "visibleWorldHeights": {
         "idle": 3.795,
-        "walk": 3.571,
-        "run": 3.292,
-        "sprint": 3.292
+        "walk": 3.795,
+        "run": 3.739,
+        "sprint": 3.739
       },
       "geometry": "passed"
     },
@@ -774,9 +774,9 @@
       "maxSlideHeight": 34.96,
       "visibleWorldHeights": {
         "idle": 3.85,
-        "walk": 3.599,
-        "run": 3.348,
-        "sprint": 3.348
+        "walk": 3.85,
+        "run": 3.767,
+        "sprint": 3.767
       },
       "geometry": "passed"
     },
@@ -793,9 +793,9 @@
       "maxSlideHeight": 33.66,
       "visibleWorldHeights": {
         "idle": 3.767,
-        "walk": 3.516,
-        "run": 3.306,
-        "sprint": 3.306
+        "walk": 3.767,
+        "run": 3.725,
+        "sprint": 3.725
       },
       "geometry": "passed"
     },
@@ -813,8 +813,8 @@
       "visibleWorldHeights": {
         "idle": 3.757,
         "walk": 3.757,
-        "run": 3.795,
-        "sprint": 3.795
+        "run": 3.757,
+        "sprint": 3.757
       },
       "geometry": "passed"
     },
@@ -888,7 +888,7 @@
       "maxSlideHeight": 41.43,
       "visibleWorldHeights": {
         "idle": 3.85,
-        "walk": 3.85,
+        "walk": 3.767,
         "run": 3.85,
         "sprint": 3.85
       },
@@ -908,8 +908,8 @@
       "visibleWorldHeights": {
         "idle": 3.767,
         "walk": 3.767,
-        "run": 3.809,
-        "sprint": 3.809
+        "run": 3.767,
+        "sprint": 3.767
       },
       "geometry": "passed"
     },
@@ -926,7 +926,7 @@
       "maxSlideHeight": 43.73,
       "visibleWorldHeights": {
         "idle": 3.757,
-        "walk": 3.757,
+        "walk": 3.72,
         "run": 3.757,
         "sprint": 3.757
       },
@@ -945,7 +945,7 @@
       "maxSlideHeight": 43.65,
       "visibleWorldHeights": {
         "idle": 3.779,
-        "walk": 3.779,
+        "walk": 3.731,
         "run": 3.779,
         "sprint": 3.779
       },
@@ -964,9 +964,9 @@
       "maxSlideHeight": 44.54,
       "visibleWorldHeights": {
         "idle": 3.817,
-        "walk": 3.817,
-        "run": 3.75,
-        "sprint": 3.75
+        "walk": 3.75,
+        "run": 3.817,
+        "sprint": 3.817
       },
       "geometry": "passed"
     },
@@ -983,9 +983,9 @@
       "maxSlideHeight": 44.02,
       "visibleWorldHeights": {
         "idle": 3.795,
-        "walk": 3.795,
-        "run": 3.767,
-        "sprint": 3.767
+        "walk": 3.739,
+        "run": 3.795,
+        "sprint": 3.795
       },
       "geometry": "passed"
     },
@@ -1002,7 +1002,7 @@
       "maxSlideHeight": 44.02,
       "visibleWorldHeights": {
         "idle": 3.85,
-        "walk": 3.85,
+        "walk": 3.767,
         "run": 3.767,
         "sprint": 3.767
       },
@@ -1021,7 +1021,7 @@
       "maxSlideHeight": 44.02,
       "visibleWorldHeights": {
         "idle": 3.767,
-        "walk": 3.767,
+        "walk": 3.725,
         "run": 3.767,
         "sprint": 3.767
       },
@@ -1041,8 +1041,8 @@
       "visibleWorldHeights": {
         "idle": 3.757,
         "walk": 3.757,
-        "run": 3.72,
-        "sprint": 3.72
+        "run": 3.739,
+        "sprint": 3.739
       },
       "geometry": "passed"
     },
@@ -1098,8 +1098,8 @@
       "visibleWorldHeights": {
         "idle": 3.795,
         "walk": 3.795,
-        "run": 3.739,
-        "sprint": 3.739
+        "run": 3.767,
+        "sprint": 3.767
       },
       "geometry": "passed"
     },
@@ -1136,8 +1136,8 @@
       "visibleWorldHeights": {
         "idle": 3.767,
         "walk": 3.767,
-        "run": 3.725,
-        "sprint": 3.725
+        "run": 3.746,
+        "sprint": 3.746
       },
       "geometry": "passed"
     },
@@ -1155,8 +1155,8 @@
       "visibleWorldHeights": {
         "idle": 3.757,
         "walk": 3.757,
-        "run": 3.757,
-        "sprint": 3.757
+        "run": 3.739,
+        "sprint": 3.739
       },
       "geometry": "passed"
     },
@@ -1174,8 +1174,8 @@
       "visibleWorldHeights": {
         "idle": 3.779,
         "walk": 3.779,
-        "run": 3.779,
-        "sprint": 3.779
+        "run": 3.731,
+        "sprint": 3.731
       },
       "geometry": "passed"
     },
@@ -1193,8 +1193,8 @@
       "visibleWorldHeights": {
         "idle": 3.817,
         "walk": 3.817,
-        "run": 3.817,
-        "sprint": 3.817
+        "run": 3.75,
+        "sprint": 3.75
       },
       "geometry": "passed"
     },
@@ -1212,8 +1212,8 @@
       "visibleWorldHeights": {
         "idle": 3.795,
         "walk": 3.795,
-        "run": 3.795,
-        "sprint": 3.795
+        "run": 3.767,
+        "sprint": 3.767
       },
       "geometry": "passed"
     },
@@ -1231,8 +1231,8 @@
       "visibleWorldHeights": {
         "idle": 3.85,
         "walk": 3.85,
-        "run": 3.85,
-        "sprint": 3.85
+        "run": 3.767,
+        "sprint": 3.767
       },
       "geometry": "passed"
     },
@@ -1250,8 +1250,8 @@
       "visibleWorldHeights": {
         "idle": 3.767,
         "walk": 3.767,
-        "run": 3.767,
-        "sprint": 3.767
+        "run": 3.725,
+        "sprint": 3.725
       },
       "geometry": "passed"
     },
@@ -1345,8 +1345,8 @@
       "visibleWorldHeights": {
         "idle": 3.85,
         "walk": 3.85,
-        "run": 3.85,
-        "sprint": 3.85
+        "run": 3.767,
+        "sprint": 3.767
       },
       "geometry": "passed"
     },

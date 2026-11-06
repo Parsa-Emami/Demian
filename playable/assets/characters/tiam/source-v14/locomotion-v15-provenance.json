@@ -1,0 +1,23 @@
+{
+  "character": "tiam",
+  "created": "2026-11-05",
+  "provider": "built-in image generation",
+  "file": "locomotion-v15.png",
+  "sha256": "6007d3c3e5d1fff2ac8582fb13954ef9bb6847905fd3a2737f0dc0bb06da6bea",
+  "grid": {
+    "rows": 3,
+    "columns": 8
+  },
+  "rows": [
+    "walk",
+    "run",
+    "jump"
+  ],
+  "referenceCharacters": [
+    "darya",
+    "uzudi",
+    "setayesh"
+  ],
+  "identitySource": "runner-motion.png",
+  "normalization": "single scale per clip; grounded foot anchor; retained original slide and idle art"
+}

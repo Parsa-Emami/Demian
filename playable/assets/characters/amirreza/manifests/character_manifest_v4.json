@@ -53,6 +53,14 @@
         "atlas": "../amirreza-atlas-v14-compact.json",
         "image": "../amirreza-spritesheet-v14-compact.png"
       },
+      "runtime": {
+        "atlas": "../amirreza-atlas-v14-runtime.json",
+        "image": "../amirreza-spritesheet-v14-runtime.png"
+      },
+      "lite": {
+        "atlas": "../amirreza-atlas-v14-lite.json",
+        "image": "../amirreza-spritesheet-v14-lite.png"
+      },
       "detail": {
         "atlas": "../amirreza-atlas-v14-detail.json",
         "image": "../amirreza-spritesheet-v14-detail.png"

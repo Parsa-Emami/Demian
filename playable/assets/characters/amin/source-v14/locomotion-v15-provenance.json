@@ -1,0 +1,23 @@
+{
+  "character": "amin",
+  "created": "2026-11-05",
+  "provider": "built-in image generation",
+  "file": "locomotion-v15.png",
+  "sha256": "6719ba10df83ca6768d2813945d56819b66f81230a0bd9ae5ef92ba345ae4ecf",
+  "grid": {
+    "rows": 3,
+    "columns": 8
+  },
+  "rows": [
+    "walk",
+    "run",
+    "jump"
+  ],
+  "referenceCharacters": [
+    "darya",
+    "uzudi",
+    "setayesh"
+  ],
+  "identitySource": "runner-motion.png",
+  "normalization": "single scale per clip; grounded foot anchor; retained original slide and idle art"
+}

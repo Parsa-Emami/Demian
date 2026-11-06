@@ -184,6 +184,8 @@ html, body { margin: 0; padding: 0; min-width: 0; display: block; }
 .runner-ready { color: #f9edda; background: #172520e8; border: 1px solid #ad8c57; border-radius: 20px; padding: 20px; box-shadow: 0 12px 36px #10151044; }
 .runner-ready > span { color: #e8c282; letter-spacing: .13em; }
 .runner-ready button { background: #e9bb74; color: #19271f; }
+.runner-wordmark { width: 136px; height: 46px; object-fit: contain; margin: 0 auto 8px; filter: brightness(0) invert(1); }
+.runner-hud__score b { direction: ltr; }
 .runner-ready [data-run-ranking-mode] { color: #cbdac8; font-size: 10px; margin-bottom: 0; }
 .runner-hud { gap: 10px; pointer-events: auto; }
 .runner-hud__score { background: #16271fee; color: #f8ecd4; border: 1px solid #987e53; }
@@ -202,7 +204,7 @@ html, body { margin: 0; padding: 0; min-width: 0; display: block; }
 .ranking-panel form > div { display: flex; gap: 8px; align-items: center; }
 .ranking-panel form button { margin-top: 8px; width: auto; }
 @media (max-width: 600px) {
-    .runner-hud { top: max(12px, env(safe-area-inset-top)); right: 12px; gap: 6px; }
+    .runner-hud { top: calc(68px + env(safe-area-inset-top)); right: 12px; gap: 6px; }
     .runner-hud__score { gap: 12px; padding: 8px 10px; }
     .runner-hud__score b { font-size: 15px; }
     .runner-hud__score small { font-size: 9px; }

@@ -38,7 +38,7 @@ export default class TetrisGame extends BaseGame {
         this.context = context;
         this.scoreStore = new TetrisScoreStore();
         this.engine = new TetrisEngine({
-            config: TETRIS_CONFIG,
+            config: { ...TETRIS_CONFIG, progression: { ...TETRIS_CONFIG.progression, initialLevel: 6 } },
             onEvent: (event) => this.onEngineEvent(event),
         });
         this.renderer = new TetrisRenderer(context, TETRIS_CONFIG);

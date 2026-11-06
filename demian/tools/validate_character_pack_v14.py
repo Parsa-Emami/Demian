@@ -12,6 +12,30 @@ SLUGS = ACTIVE_CHARACTER_ROSTER
 VARIANTS = {'desktop': 144, 'mobile': 112, 'compact': 80, 'runtime': 96, 'lite': 64, 'detail': 128}
 
 
+
+def face_width(image):
+    box = image.getchannel('A').point(lambda value: 255 if value > 32 else 0).getbbox()
+    pose = image.crop(box).convert('RGBA')
+    points = set()
+    pixels = pose.load()
+    for y in range(round(pose.height * .55)):
+        for x in range(pose.width):
+            r, g, b, a = pixels[x, y]
+            if a > 160 and r > 155 and g > 80 and b < 195 and r > g * 1.1 and g > b * 1.03:
+                points.add((x, y))
+    largest = []
+    while points:
+        start = points.pop(); stack = [start]; component = [start]
+        while stack:
+            x, y = stack.pop()
+            for point in ((x-1,y),(x+1,y),(x,y-1),(x,y+1)):
+                if point in points:
+                    points.remove(point); stack.append(point); component.append(point)
+        if len(component) > len(largest): largest = component
+    assert largest, 'Character face must be measurable'
+    return max(x for x, _ in largest) - min(x for x, _ in largest) + 1
+
+
 def main():
     base = ROOT / 'public/assets/characters'
     roster = json.loads((base / 'character-manifest-v4.json').read_text())
@@ -66,7 +90,19 @@ def main():
                 recovery_ratio = visible_heights['jump_e_047'] / canonical_ratio
                 airborne_ratio = median(visible_heights[name] for name in atlas['animations']['jump']['frames']) / canonical_ratio
                 assert .96 <= recovery_ratio <= 1.05, f'{slug}/{variant}: jump recovery changes the canonical body size'
-                assert .85 <= airborne_ratio <= 1.05, f'{slug}/{variant}: airborne body shrinks below the shared size'
+                source_layout = json.loads((directory / 'source-v14/layout.json').read_text())
+                if source_layout.get('locomotionSource'):
+                    widths = {}
+                    for state in ('walk', 'jump'):
+                        measurements = []
+                        for frame_name in atlas['animations'][state]['frames']:
+                            f = atlas['frames'][frame_name]
+                            measurements.append(face_width(image.crop((f['x'], f['y'], f['x']+cell, f['y']+cell))))
+                        widths[state] = median(measurements)
+                    assert .80 <= widths['jump'] / widths['walk'] <= 1.20, f'{slug}/{variant}: jump changes head volume'
+                    assert .65 <= airborne_ratio <= 1.05, f'{slug}/{variant}: jump tuck is outside the authored range'
+                else:
+                    assert .85 <= airborne_ratio <= 1.05, f'{slug}/{variant}: airborne body shrinks below the shared size'
                 assert atlas['render']['bodyScaleCalibration']['referencePoseIndices']['jump'] == [7]
             for name, animation in atlas['animations'].items():
                 assert name not in ('attack', 'guitar', 'dance', 'spin', 'taunt', 'sleep')

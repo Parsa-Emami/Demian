@@ -92,5 +92,11 @@
     "sw": "se",
     "w": "w",
     "e": "e"
-  }
+  },
+  "locomotionSource": "locomotion-v15.png",
+  "locomotionReferences": [
+    "darya",
+    "uzudi",
+    "setayesh"
+  ]
 }
