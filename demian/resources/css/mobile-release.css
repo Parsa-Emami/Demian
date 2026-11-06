@@ -180,3 +180,32 @@ html, body { margin: 0; padding: 0; min-width: 0; display: block; }
 .manager-shell .interaction-prompt__copy small { color: #b9c8ad; }
 
 .manager-shell .results-panel__score small, .manager-shell .results-panel__stats span { color: #b9c8ad; }
+
+.runner-ready { color: #f9edda; background: #172520e8; border: 1px solid #ad8c57; border-radius: 20px; padding: 20px; box-shadow: 0 12px 36px #10151044; }
+.runner-ready > span { color: #e8c282; letter-spacing: .13em; }
+.runner-ready button { background: #e9bb74; color: #19271f; }
+.runner-ready [data-run-ranking-mode] { color: #cbdac8; font-size: 10px; margin-bottom: 0; }
+.runner-hud { gap: 10px; pointer-events: auto; }
+.runner-hud__score { background: #16271fee; color: #f8ecd4; border: 1px solid #987e53; }
+.runner-hud > button { display: grid; place-items: center; min-width: 44px; min-height: 44px; border-radius: 12px; background: #16271fee; color: #ecc484; border: 1px solid #987e53; font-size: 24px; }
+.ranking-panel { width: min(520px, 100%); max-height: min(90dvh, 760px); overflow-y: auto; color: #f8ecd4; }
+.ranking-panel h2 { font-size: 24px; }
+.ranking-panel label { display: block; font-size: 12px; text-align: right; }
+.ranking-panel select, .ranking-panel input { width: 100%; min-height: 44px; margin-top: 8px; padding: 10px 12px; color: #f8ecd4; border: 1px solid #6a795d; border-radius: 10px; background: #17251e; }
+.ranking-panel [data-ranking-status], [data-results-ranking] { font-size: 12px; line-height: 1.8; min-height: 24px; }
+.ranking-panel__scroll { max-height: 35dvh; overflow: auto; margin: 16px 0; border-block: 1px solid #4d5d43; }
+.ranking-panel table { width: 100%; border-collapse: collapse; text-align: right; font-size: 13px; }
+.ranking-panel th, .ranking-panel td { padding: 10px; border-bottom: 1px solid #34462f; }
+.ranking-panel th { color: #e6bc76; }
+.ranking-panel tr:first-child td { color: #f3ce8e; }
+.ranking-panel form { margin: 14px 0; }
+.ranking-panel form > div { display: flex; gap: 8px; align-items: center; }
+.ranking-panel form button { margin-top: 8px; width: auto; }
+@media (max-width: 600px) {
+    .runner-hud { top: max(12px, env(safe-area-inset-top)); right: 12px; gap: 6px; }
+    .runner-hud__score { gap: 12px; padding: 8px 10px; }
+    .runner-hud__score b { font-size: 15px; }
+    .runner-hud__score small { font-size: 9px; }
+    .runner-ready { top: 19%; padding: 16px; }
+}
+@media (max-height: 480px) { .runner-ready { top: 17%; padding: 10px 16px; } .runner-ready h2 { font-size: 18px; } .runner-ready p { font-size: 10px; } .runner-ready [data-run-ranking-mode] { display: none; } }

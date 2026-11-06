@@ -7,6 +7,7 @@ import LoadingScreen from './screens/LoadingScreen';
 import PauseScreen from './screens/PauseScreen';
 import SettingsScreen from './screens/SettingsScreen';
 import ResultsScreen from './screens/ResultsScreen';
+import LeaderboardScreen from './screens/LeaderboardScreen.js';
 
 const SCREEN_IDS = Object.freeze({
     BOOT: 'boot',
@@ -16,6 +17,7 @@ const SCREEN_IDS = Object.freeze({
     PAUSE: 'pause',
     SETTINGS: 'settings',
     RESULTS: 'results',
+    LEADERBOARD: 'leaderboard',
 });
 
 function isTypingTarget(target) {
@@ -60,6 +62,7 @@ export default class GameShell {
         this.pauseScreen = new PauseScreen({ id: SCREEN_IDS.PAUSE, element: screen(SCREEN_IDS.PAUSE), animation: this.animation });
         this.settingsScreen = new SettingsScreen({ id: SCREEN_IDS.SETTINGS, element: screen(SCREEN_IDS.SETTINGS), animation: this.animation, settings: this.settings, input: this.app.input });
         this.resultsScreen = new ResultsScreen({ id: SCREEN_IDS.RESULTS, element: screen(SCREEN_IDS.RESULTS), animation: this.animation });
+        this.leaderboardScreen = new LeaderboardScreen({ id: SCREEN_IDS.LEADERBOARD, element: screen(SCREEN_IDS.LEADERBOARD), animation: this.animation, service: this.app.leaderboards });
 
         [
             this.bootScreen,
@@ -69,6 +72,7 @@ export default class GameShell {
             this.pauseScreen,
             this.settingsScreen,
             this.resultsScreen,
+            this.leaderboardScreen,
         ].forEach((entry) => this.manager.register(entry));
 
         this.root.addEventListener('click', this.onClick);
@@ -151,6 +155,16 @@ export default class GameShell {
         }
 
         switch (button.dataset.shellAction) {
+            case 'leaderboard':
+                if (this.app.sessionState === 'playing') this.app.pauseGame();
+                await this.manager.show(SCREEN_IDS.LEADERBOARD);
+                break;
+            case 'retry-ranking': {
+                button.disabled = true;
+                const result = await this.app.leaderboards.retry();
+                this.resultsScreen.renderRanking(result); button.disabled = false;
+                break;
+            }
             case 'play':
                 await this.showGameSelection();
                 break;
@@ -214,6 +228,9 @@ export default class GameShell {
         if (event.repeat || isTypingTarget(event.target) || event.key !== 'Escape') return;
 
         const topModal = this.manager.modalStack.at(-1);
+        if (topModal === SCREEN_IDS.LEADERBOARD) {
+            event.preventDefault(); this.manager.closeTopModal('escape'); return;
+        }
         if (topModal === SCREEN_IDS.SETTINGS) {
             event.preventDefault();
             this.manager.closeTopModal('escape');

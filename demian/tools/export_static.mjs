@@ -5,6 +5,8 @@ import { BUILTIN_CHARACTER_SLUGS, RETIRED_CHARACTER_SLUGS, characterPackVersion 
 import { BUILTIN_CHARACTER_LABELS as labels } from '../resources/js/game/characters/manifests/CharacterManifestRegistry.js';
 const root = resolve(import.meta.dirname, '..');
 const out = resolve(root, process.argv.find((a) => a.startsWith('--out='))?.slice(6) ?? '_site');
+const arcadeApi = process.env.DEMIAN_ARCADE_API_URL?.trim() ?? '';
+if (arcadeApi && !/^https:\/\/[^\s<>"']+\/api\/v1\/arcade\/?$/.test(arcadeApi)) throw new Error('DEMIAN_ARCADE_API_URL must be an HTTPS arcade API URL.');
 if (out === root || out === join(root, 'public')) throw new Error('Output must be a separate release folder.');
 const entry = JSON.parse(readFileSync(join(root, 'public/build/manifest.json'), 'utf8'))['resources/js/app.js'];
 if (!entry?.file) throw new Error('Run npm run build first.');
@@ -31,7 +33,8 @@ html = html.replace(/\{\{--[\s\S]*?--\}\}/g, '')
     .replace(/@vite\([\s\S]*?\)/, `${(entry.css ?? []).map((c) => `<link rel="stylesheet" href="build/${c}">`).join('\n')}\n<script type="module" src="build/${entry.file}"></script>`)
     .replace(/\{\{\s*csrf_token\(\)\s*\}\}/g, '')
     .replace(/\{\{\s*route\('characters.index'\)\s*\}\}/g, 'characters.json')
-    .replace(/\{\{\s*url\('\/api\/v1\/events'\)\s*\}\}/g, 'api/v1/events');
+    .replace(/\{\{\s*url\('\/api\/v1\/events'\)\s*\}\}/g, 'api/v1/events')
+    .replace(/\{\{\s*url\('\/api\/v1\/arcade'\)\s*\}\}/g, arcadeApi);
 if (/@(?:vite|php|foreach|if)|\{\{/.test(html)) throw new Error('Unsupported template directive in static export.');
 writeFileSync(join(out, 'index.html'), html);
 writeFileSync(join(out, 'characters.json'), JSON.stringify({ data: BUILTIN_CHARACTER_SLUGS.map((slug) => ({

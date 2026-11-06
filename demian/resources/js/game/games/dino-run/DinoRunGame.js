@@ -4,6 +4,7 @@ import DinoRunEnvironment from './DinoRunEnvironment.js';
 import { BUILTIN_CHARACTER_SLUGS, builtinCharacterAssetPair } from '../../characters/CharacterVisualContract.js';
 import { arcadeCharacterLabel } from '../arcade/ArcadeCharacterRoster.js';
 import { UI_LAYER, assignUiLayer } from '../../ui/UiLayer.js';
+import RunnerReplay from './RunnerReplay.js';
 
 const BEST_KEY = 'demian.dino-run.best.v1';
 function readBest() { try { return Math.max(0, Number(localStorage.getItem(BEST_KEY)) || 0); } catch { return 0; } }
@@ -18,6 +19,8 @@ export default class DinoRunGame extends BaseGame {
     async enter(context) {
         this.context = context;
         this.environment = new DinoRunEnvironment(context.services.performanceProfile);
+        this.environment.reducedMotion = context.settings.resolvedReducedMotion();
+        await this.environment.load();
         this.actor = { position: { x: RUNNER_CONFIG.playerX, z: 0 }, forward: { x: 1, z: 0 },
             speed: 0, grounded: true, airborne: false, jumpVelocity: 0,
             jumpForce: RUNNER_CONFIG.jumpSpeed / 100, motionState: 'idle' };
@@ -27,13 +30,14 @@ export default class DinoRunGame extends BaseGame {
         this.refreshRoster();
         this.hud = assignUiLayer(document.createElement('section'), UI_LAYER.LOCAL_BASE);
         this.hud.className = 'runner-hud'; this.hud.dir = 'rtl';
-        this.hud.innerHTML = '<div class="runner-hud__title"><small>DEMIAN / 01</small><strong>DINO RUN</strong></div><div class="runner-hud__score"><span><small>امتیاز</small><b data-run-score>00000</b></span><span><small>رکورد</small><b data-run-best>00000</b></span></div>';
+        this.hud.innerHTML = '<div class="runner-hud__title"><small>DEMIAN / CAFÉ RUN</small><strong>DINO RUN</strong></div><div class="runner-hud__score"><span><small>امتیاز</small><b data-run-score>00000</b></span><span><small>رکورد دستگاه</small><b data-run-best>00000</b></span><span><small>سختی</small><b data-run-difficulty>6.0 / 10</b></span></div><button type="button" data-shell-action="leaderboard" aria-label="نمایش لیدربورد">♛</button>';
         context.root.querySelector('[data-game-hud-host]')?.append(this.hud);
         this.ready = assignUiLayer(document.createElement('div'), UI_LAYER.LOCAL_BASE);
         this.ready.className = 'runner-ready'; this.ready.dir = 'rtl';
-        this.ready.innerHTML = '<span>یک پرش دیگر…</span><h2>تا کجا می‌توانی بدوی؟</h2><p>از کاکتوس‌ها بپر. برای عبور از پرنده‌ها اسلاید برو.</p><button type="button" data-input-press="jump" data-input-hold="jumpHeld">شروع و پرش <b>↗</b></button><small>نگه‌دار: پرش بلندتر · Space / ↑ · ↓ برای اسلاید</small>';
+        this.ready.innerHTML = '<span>DEMIAN · CAFÉ RUN</span><h2>این بار، توی کافه بدو.</h2><p>از صندلی‌ها و جعبه‌های قهوه بپر؛ زیر چراغ‌ها اسلاید برو. سختی از ۶ شروع می‌شود.</p><button type="button" data-input-press="jump" data-input-hold="jumpHeld">شروع و پرش <b>↗</b></button><small>نگه‌دار: پرش بلندتر · Space / ↑ · ↓ برای اسلاید</small><p data-run-ranking-mode role="status"></p>';
         context.root.querySelector('[data-game-hud-host]')?.append(this.ready);
         this.scoreNode = this.hud.querySelector('[data-run-score]'); this.bestNode = this.hud.querySelector('[data-run-best]');
+        this.difficultyNode = this.hud.querySelector('[data-run-difficulty]');
         this.resize();
     }
     refreshRoster() {
@@ -53,14 +57,29 @@ export default class DinoRunGame extends BaseGame {
             this.refreshRoster();
             this.context.eventBus.emit('characters:changed', this.characterManager.characters);
             this.context.eventBus.emit('character:selected', { record: this.characterManager.activeRecord });
+            if (this.model.status === 'ready') await this.startSession();
+            else if (this.run?.mode === 'ranked') this.run.mode = 'practice';
         } finally { this.selecting = false; }
     }
-    startSession({ seed = Date.now() } = {}) {
-        this.model.reset({ seed, width: this.trackWidth }); this.finished = false;
-        this.ready.hidden = false; this.updateHud();
+    async startSession({ seed } = {}) {
+        this.starting = true; this.finished = false;
+        this.run = null; this.replay = new RunnerReplay();
+        const width = Math.round(Math.min(RUNNER_CONFIG.maxWidth, Math.max(RUNNER_CONFIG.minWidth, this.trackWidth)));
+        this.run = this.context.services.leaderboards
+            ? await this.context.services.leaderboards.start({ width, character: this.avatar.slug, seed })
+            : { mode: 'practice', seed: seed ?? Date.now(), track_width: width };
+        if (!this.context) return;
+        this.model.reset({ seed: this.run.seed, width: this.run.track_width });
+        this.actor.speed = 0; this.actor.airborne = false; this.actor.grounded = true; this.actor.motionState = 'idle';
+        this.avatar.sync(this.actor, 0);
+        const status = this.ready.querySelector('[data-run-ranking-mode]');
+        if (status) status.textContent = this.run.mode === 'ranked' ? 'این دور برای لیدربورد آنلاین ثبت می‌شود.'
+            : this.run.reason ?? 'رکورد این دور روی همین دستگاه ذخیره می‌شود.';
+        this.starting = false; this.ready.hidden = false; this.updateHud();
     }
     fixedUpdate(dt, input = {}) {
-        if (!this.context || this.context.app.sessionState !== 'playing' || this.context.root.dataset.sidebarState === 'expanded' || this.finished) return;
+        if (!this.context || this.context.app.sessionState !== 'playing' || this.context.root.dataset.sidebarState === 'expanded' || this.finished || this.starting) return;
+        if (this.replay && (this.model.status !== 'ready' || input.jump)) this.replay.record(input);
         this.model.step(dt, input);
         const model = this.model;
         this.actor.speed = model.status === 'ready' ? 0 : Math.min(8.4, 6 * model.speed / RUNNER_CONFIG.startSpeed);
@@ -79,6 +98,7 @@ export default class DinoRunGame extends BaseGame {
         if (!this.hud) return;
         this.scoreNode.textContent = String(this.model.score).padStart(5, '0');
         this.bestNode.textContent = String(Math.max(this.best, this.model.score)).padStart(5, '0');
+        if (this.difficultyNode) this.difficultyNode.textContent = `${this.model.difficulty.level.toFixed(1)} / 10`;
         this.ready.hidden = this.model.status !== 'ready';
     }
     finish() {
@@ -87,6 +107,7 @@ export default class DinoRunGame extends BaseGame {
         const previousBest = this.best; this.best = Math.max(this.best, this.model.score); saveBest(this.best);
         this.context.app.completeGame({ title: this.model.score > previousBest ? 'رکورد تازه!' : 'یک بار دیگر؟',
             subtitle: 'هر پرش، یک قدم نزدیک‌تر به رکورد بعدی.', score: this.model.score, won: false,
+            ranking: this.context.services?.leaderboards?.finish(this.run, this.model, this.replay, this.avatar.slug),
             stats: { 'رکورد': this.best, 'موانع ردشده': this.model.passed, 'زمان': `${Math.floor(this.model.time)} ثانیه`,
                 'کاراکتر': arcadeCharacterLabel(this.avatar.slug) } });
     }
@@ -98,7 +119,8 @@ export default class DinoRunGame extends BaseGame {
         const { width, height } = this.context.renderer.logicalDimensions();
         this.width = width; this.height = height;
         this.scale = Math.min(height / 430, width / 420);
-        this.trackWidth = width / this.scale; this.model.setWidth(this.trackWidth);
+        this.trackWidth = Math.round(Math.min(RUNNER_CONFIG.maxWidth, Math.max(RUNNER_CONFIG.minWidth, width / this.scale)));
+        if (!this.run) this.model.setWidth(this.trackWidth);
         const portrait = width < height;
         this.ground = portrait ? height * .67 : height * .74;
     }
@@ -129,7 +151,10 @@ export default class DinoRunGame extends BaseGame {
         }
         this.context.renderer.present();
     }
-    pause() {} resume() {} applySettings() { this.resize(); }
+    pause() {} resume() {} applySettings() {
+        if (this.environment && this.context) this.environment.reducedMotion = this.context.settings.resolvedReducedMotion();
+        this.resize();
+    }
     async exit() {}
     dispose() { this.hud?.remove(); this.ready?.remove(); this.environment?.dispose(); this.environment = null; this.hud = null; this.context = null; this.avatar = null; }
 }

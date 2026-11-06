@@ -1,7 +1,8 @@
 /** MIT — deterministic, renderer-independent endless runner. All units are logical pixels. */
 import { CHARACTER_JUMP_TUNING, characterGravity } from '../../characters/CharacterLocomotionModel.js';
-export const RUNNER_CONFIG = Object.freeze({ playerX: 86, bodyWidth: 28, bodyHeight: 58,
-    duckHeight: 35, birdAltitude: 46, gravity: 1750, jumpSpeed: 650, startSpeed: 245, maxSpeed: 480 });
+import rules from '../../../../game/runner-rules.json' with { type: 'json' };
+import { arcadeDifficulty } from '../../difficulty/ArcadeDifficulty.js';
+export const RUNNER_CONFIG = Object.freeze(rules);
 export function seededRandom(seed = 1) {
     let value = Number(seed) >>> 0;
     return () => { value = (Math.imul(value, 1664525) + 1013904223) >>> 0; return value / 4294967296; };
@@ -12,26 +13,29 @@ export function overlaps(a, b) {
 export default class DinoRunModel {
     constructor({ seed = Date.now(), width = 960 } = {}) { this.reset({ seed, width }); }
     reset({ seed = this.seed, width = this.width } = {}) {
-        this.seed = seed; this.random = seededRandom(seed); this.width = Math.max(420, width);
+        this.seed = seed; this.random = seededRandom(seed); this.width = Math.min(rules.maxWidth, Math.max(rules.minWidth, Math.round(width)));
         this.status = 'ready'; this.time = 0; this.distance = 0; this.score = 0;
         this.speed = RUNNER_CONFIG.startSpeed; this.y = 0; this.vy = 0; this.duck = false;
-        this.jumpBuffer = 0; this.landingTime = 0; this.spawnIn = 1.6; this.obstacles = [];
+        this.jumpBuffer = 0; this.landingTime = 0; this.spawnIn = rules.firstSpawnSeconds; this.obstacles = [];
+        this.tick = 0; this.difficulty = arcadeDifficulty(0); this.endReason = null;
         this.previous = { y: 0, distance: 0 }; this.nextId = 0; this.passed = 0;
     }
-    setWidth(width) { this.width = Math.max(420, width); }
+    setWidth(width) { if (this.status === 'ready') this.width = Math.min(rules.maxWidth, Math.max(rules.minWidth, Math.round(width))); }
     playerBounds() {
         const height = this.duck && this.y === 0 ? RUNNER_CONFIG.duckHeight : RUNNER_CONFIG.bodyHeight;
         return { x: RUNNER_CONFIG.playerX - 14, y: this.y + 3, w: RUNNER_CONFIG.bodyWidth, h: height - 4 };
     }
     spawn() {
-        const bird = this.time > 12 && this.random() < .3;
+        const bird = this.random() < rules.overheadChance;
         const tall = !bird && this.random() > .58;
         const h = bird ? 22 : tall ? 52 : 36;
         this.obstacles.push({ id: this.nextId++, type: bird ? 'bird' : 'cactus',
             x: this.width + 65, previousX: this.width + 65,
-            y: bird ? RUNNER_CONFIG.birdAltitude : 0, w: bird ? 40 : tall ? 26 : 21, h, scored: false });
-        // At top speed the player still has over one complete jump cycle between obstacles.
-        this.spawnIn = 1.05 + this.random() * .72;
+            y: bird ? RUNNER_CONFIG.birdAltitude : 0, w: bird ? 40 : tall ? 26 : 21, h, scored: false,
+            appearance: bird ? 'pendant' : tall ? 'chair' : 'coffee-crate' });
+        const p = this.difficulty.progress;
+        this.spawnIn = rules.spawnMinimumSeconds - rules.spawnMinimumReduction * p
+            + this.random() * (rules.spawnSpreadSeconds - rules.spawnSpreadReduction * p);
     }
     step(dt, input = {}) {
         if (this.status === 'over') return;
@@ -61,7 +65,8 @@ export default class DinoRunModel {
             }
         }
         this.time += dt;
-        this.speed = Math.min(RUNNER_CONFIG.maxSpeed, RUNNER_CONFIG.startSpeed + this.time * 3);
+        this.tick += 1; this.difficulty = arcadeDifficulty(this.time);
+        this.speed = Math.min(RUNNER_CONFIG.maxSpeed, RUNNER_CONFIG.startSpeed + this.time * rules.speedRamp);
         this.distance += this.speed * dt; this.score = Math.floor(this.distance / 10);
         this.spawnIn -= dt;
         if (this.spawnIn <= 0) this.spawn();
@@ -72,12 +77,13 @@ export default class DinoRunModel {
             const hitbox = { x: obstacle.x + 3, y: obstacle.y + 2, w: obstacle.w - 6, h: obstacle.h - 4 };
             // Swept horizontal bounds prevent tunnelling during slow display frames.
             const swept = { ...hitbox, w: hitbox.w + beforeX - obstacle.x };
-            if (overlaps(player, swept)) { this.status = 'over'; break; }
+            if (overlaps(player, swept)) { this.status = 'over'; this.endReason = 'collision'; break; }
             if (!obstacle.scored && obstacle.x + obstacle.w < player.x) {
                 obstacle.scored = true; this.passed += 1;
             }
         }
         this.obstacles = this.obstacles.filter((o) => o.x + o.w > -50);
+        if (this.tick >= rules.maxTicks && this.status === 'running') { this.status = 'over'; this.endReason = 'time-limit'; }
     }
     snapshot(alpha = 1) {
         const t = Math.min(1, Math.max(0, alpha));

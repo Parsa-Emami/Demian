@@ -16,6 +16,7 @@ import SettingsStore from '../settings/SettingsStore';
 import ControlLayoutService from '../controls/ControlLayoutService';
 import GameShell from '../shell/GameShell';
 import SessionStateMachine, { SESSION_STATES } from './SessionStateMachine';
+import ArcadeLeaderboardService from '../leaderboard/ArcadeLeaderboardService.js';
 
 const MENU_BACKDROP_GAME_ID = 'open-world';
 
@@ -57,6 +58,7 @@ export default class GameApplication {
             performanceProfile: this.performanceProfile,
         });
         this.settings = new SettingsStore();
+        this.leaderboards = new ArcadeLeaderboardService();
         this.animation = new AnimationService({
             reducedMotion: this.settings.resolvedReducedMotion(),
         });
@@ -353,6 +355,7 @@ export default class GameApplication {
                 navigation: this.navigation,
                 storyJournal: this.storyJournal,
                 characterVisuals: this.characterVisuals,
+                leaderboards: this.leaderboards,
             }),
         });
     }
