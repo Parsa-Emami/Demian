@@ -1,0 +1,74 @@
+{
+  "browser": "153.0.8010.0",
+  "rendering": "headless software Chromium",
+  "physicalDeviceMeasured": false,
+  "viewports": [
+    {
+      "width": 1440,
+      "height": 900,
+      "input": "keyboard",
+      "attackerSprites": 4,
+      "spritesLoaded": true,
+      "backgroundLoaded": true,
+      "overflow": false,
+      "loss": {
+        "reason": "attack",
+        "attacker": "uzudi",
+        "time": 1.2500000000000004,
+        "score": 56
+      },
+      "reducedMotion": false,
+      "directions": [
+        "w",
+        "w",
+        "w",
+        "w"
+      ]
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "input": "emulated touch",
+      "attackerSprites": 4,
+      "spritesLoaded": true,
+      "backgroundLoaded": true,
+      "overflow": false,
+      "loss": {
+        "reason": "attack",
+        "attacker": "amirreza",
+        "time": 1.0833333333333344,
+        "score": 48
+      },
+      "reducedMotion": false,
+      "directions": [
+        "w",
+        "w",
+        "w",
+        "w"
+      ]
+    },
+    {
+      "width": 844,
+      "height": 390,
+      "input": "emulated touch",
+      "attackerSprites": 4,
+      "spritesLoaded": true,
+      "backgroundLoaded": true,
+      "overflow": false,
+      "loss": {
+        "reason": "attack",
+        "attacker": "uzudi",
+        "time": 1.2500000000000004,
+        "score": 56
+      },
+      "reducedMotion": true,
+      "directions": [
+        "w",
+        "w",
+        "w",
+        "w"
+      ]
+    }
+  ],
+  "errors": []
+}

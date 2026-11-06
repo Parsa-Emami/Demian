@@ -32,7 +32,7 @@ final class ArcadePlatformTest extends TestCase
 
     private function createRun(array $player, array $fixture): array
     {
-        $data = ['request_id' => (string) Str::uuid(), 'game_id' => 'dino-run', 'rules_version' => 'cafe-runner-v1', 'character_slug' => 'darya', 'track_width' => $fixture['width']];
+        $data = ['request_id' => (string) Str::uuid(), 'game_id' => 'dino-run', 'rules_version' => app(RunnerReplayVerifier::class)->rules()['version'], 'character_slug' => 'darya', 'track_width' => $fixture['width']];
         $response = $this->withToken($player['token'])->postJson('/api/v1/arcade/runs', $data)->assertCreated()->json();
         ArcadeRun::query()->findOrFail($response['run_id'])->update(['seed' => $fixture['seed'], 'started_at' => now()->subSeconds((int) ceil($fixture['ticks'] / 60) + 1)]);
 
@@ -101,7 +101,7 @@ final class ArcadePlatformTest extends TestCase
     public function test_start_request_retry_preserves_seed_and_rejects_reused_ids(): void
     {
         $player = $this->identity();
-        $payload = ['request_id' => (string) Str::uuid(), 'game_id' => 'dino-run', 'rules_version' => 'cafe-runner-v1', 'character_slug' => 'tiam', 'track_width' => 420];
+        $payload = ['request_id' => (string) Str::uuid(), 'game_id' => 'dino-run', 'rules_version' => app(RunnerReplayVerifier::class)->rules()['version'], 'character_slug' => 'tiam', 'track_width' => 420];
         $one = $this->withToken($player['token'])->postJson('/api/v1/arcade/runs', $payload)->assertCreated()->json();
         $two = $this->postJson('/api/v1/arcade/runs', $payload)->assertCreated()->json(); $this->assertSame($one, $two);
         $payload['character_slug'] = 'hanna'; $this->postJson('/api/v1/arcade/runs', $payload)->assertConflict();

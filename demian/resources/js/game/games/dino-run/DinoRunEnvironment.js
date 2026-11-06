@@ -71,15 +71,71 @@ export default class DinoRunEnvironment {
     drawObstacles(ctx, obstacles, { ground, scale: s }) {
         ctx.save(); ctx.translate(0, ground); ctx.scale(s, s);
         for (const o of obstacles) {
+            if (o.attacker) continue;
             const x = o.x, y = -o.y - o.h;
             ctx.fillStyle = 'rgba(12,18,17,.30)'; ctx.beginPath(); ctx.ellipse(x + o.w / 2, 2, o.w * .72, 3, 0, 0, TAU); ctx.fill();
-            if (o.type === 'bird') {
+            if (o.appearance === 'hanging-sign') {
+                ctx.strokeStyle = '#b49362'; ctx.lineWidth = 2;
+                for (const dx of [8, o.w - 8]) { ctx.beginPath(); ctx.moveTo(x + dx, y - 58); ctx.lineTo(x + dx, y); ctx.stroke(); }
+                ctx.fillStyle = '#284c43'; ctx.fillRect(x, y, o.w, o.h);
+                ctx.strokeStyle = '#ebc88e'; ctx.strokeRect(x + 2, y + 2, o.w - 4, o.h - 4);
+                ctx.fillStyle = '#f3dab1'; ctx.font = 'bold 12px sans-serif'; ctx.textAlign = 'center'; ctx.fillText('CAFÉ', x + o.w / 2, y + o.h * .7);
+            } else if (o.appearance === 'serving-tray') {
+                ctx.fillStyle = '#b87a43'; ctx.fillRect(x, y + o.h - 7, o.w, 7);
+                ctx.fillStyle = '#e8e0cb'; ctx.fillRect(x + 9, y, 14, o.h - 7); ctx.fillRect(x + o.w - 24, y + 3, 14, o.h - 10);
+                ctx.fillStyle = '#654331'; ctx.fillRect(x + 11, y + 1, 10, 3); ctx.fillRect(x + o.w - 22, y + 4, 10, 3);
+                ctx.strokeStyle = '#e9c59a'; ctx.strokeRect(x + 8, y + 2, 17, 7);
+            } else if (o.appearance === 'pipe') {
+                ctx.fillStyle = '#6b7776'; ctx.fillRect(x, y + 4, o.w, o.h - 8);
+                ctx.fillStyle = '#b8c6bc'; ctx.fillRect(x, y + 5, o.w, 4);
+                ctx.fillStyle = '#b07f50'; ctx.fillRect(x + 9, y, 7, o.h); ctx.fillRect(x + o.w - 16, y, 7, o.h);
+                ctx.strokeStyle = '#303f3e'; ctx.lineWidth = 2; ctx.strokeRect(x, y + 4, o.w, o.h - 8);
+            } else if (o.type === 'bird') {
                 ctx.strokeStyle = '#c79853'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(x + o.w / 2, y - 70); ctx.lineTo(x + o.w / 2, y + 2); ctx.stroke();
                 ctx.fillStyle = '#243d37'; ctx.beginPath(); ctx.moveTo(x + 10, y); ctx.lineTo(x + o.w - 10, y);
                 ctx.lineTo(x + o.w, y + o.h - 4); ctx.lineTo(x, y + o.h - 4); ctx.closePath(); ctx.fill();
                 ctx.fillStyle = '#ffd998'; ctx.fillRect(x, y + o.h - 4, o.w, 4);
                 ctx.strokeStyle = '#e3b96e'; ctx.strokeRect(x + 1, y + 1, o.w - 2, o.h - 1);
-            } else if (o.appearance === 'chair' || o.h > 40) {
+            } else if (o.appearance === 'traffic-cone') {
+                ctx.fillStyle = '#d56a32'; ctx.beginPath(); ctx.moveTo(x + o.w / 2, y); ctx.lineTo(x + o.w - 2, 0); ctx.lineTo(x + 2, 0); ctx.closePath(); ctx.fill();
+                ctx.fillStyle = '#ffedc9'; ctx.fillRect(x + o.w * .3, y + o.h * .4, o.w * .4, 6);
+                ctx.fillRect(x + o.w * .16, y + o.h * .7, o.w * .68, 6);
+                ctx.fillStyle = '#353d38'; ctx.fillRect(x - 2, -5, o.w + 4, 5);
+            } else if (o.appearance === 'plant-pot') {
+                ctx.fillStyle = '#396a46';
+                for (let i = 0; i < 5; i++) {
+                    ctx.beginPath(); ctx.ellipse(x + o.w * (.2 + i * .15), y + 12 + i % 2 * 7, 5, 13, (i - 2) * .28, 0, TAU); ctx.fill();
+                }
+                ctx.fillStyle = '#ad6042'; ctx.fillRect(x + 3, y + o.h * .52, o.w - 6, o.h * .48);
+                ctx.fillStyle = '#df9462'; ctx.fillRect(x, y + o.h * .5, o.w, 6);
+            } else if (o.appearance === 'book-stack') {
+                for (let i = 0; i < 4; i++) {
+                    const by = y + o.h * i / 4, inset = i % 2 * 3;
+                    ctx.fillStyle = ['#70494a', '#314f50', '#a37b4b', '#556448'][i];
+                    ctx.fillRect(x + inset, by, o.w - 3, o.h / 4);
+                    ctx.fillStyle = '#e4d5b5'; ctx.fillRect(x + inset + 3, by + 3, o.w - 10, Math.max(2, o.h / 4 - 5));
+                }
+            } else if (o.appearance === 'barrel') {
+                ctx.fillStyle = '#91633f'; ctx.fillRect(x + 1, y + 3, o.w - 2, o.h - 3);
+                ctx.fillStyle = '#bc8a53'; ctx.beginPath(); ctx.ellipse(x + o.w / 2, y + 4, o.w / 2, 4, 0, 0, TAU); ctx.fill();
+                ctx.fillStyle = '#414c47'; ctx.fillRect(x, y + o.h * .25, o.w, 5); ctx.fillRect(x, y + o.h * .75, o.w, 5);
+                ctx.strokeStyle = '#6c492e'; ctx.lineWidth = 2;
+                for (let i = 1; i < 4; i++) { ctx.beginPath(); ctx.moveTo(x + o.w * i / 4, y + 8); ctx.lineTo(x + o.w * i / 4, -2); ctx.stroke(); }
+            } else if (o.appearance === 'floor-fan') {
+                const radius = o.w / 2 - 2, centerX = x + o.w / 2, centerY = y + radius;
+                ctx.fillStyle = '#576b61'; ctx.fillRect(centerX - 3, centerY, 6, -centerY); ctx.fillRect(x + 4, -5, o.w - 8, 5);
+                ctx.fillStyle = '#91a494'; ctx.beginPath(); ctx.arc(centerX, centerY, radius, 0, TAU); ctx.fill();
+                ctx.strokeStyle = '#31483e'; ctx.lineWidth = 3; ctx.stroke();
+                for (let i = 0; i < 4; i++) {
+                    const angle = i * TAU / 4;
+                    ctx.beginPath(); ctx.moveTo(centerX, centerY); ctx.lineTo(centerX + Math.cos(angle) * radius, centerY + Math.sin(angle) * radius); ctx.stroke();
+                }
+            } else if (o.appearance === 'suitcase') {
+                ctx.fillStyle = '#334b48'; ctx.fillRect(x, y + 5, o.w, o.h - 5);
+                ctx.strokeStyle = '#d6b480'; ctx.lineWidth = 2; ctx.strokeRect(x + o.w * .35, y, o.w * .3, 7);
+                ctx.fillStyle = '#b78a54'; ctx.fillRect(x + 9, y + 5, 4, o.h - 5); ctx.fillRect(x + o.w - 13, y + 5, 4, o.h - 5);
+                ctx.fillStyle = '#eccb91'; ctx.fillRect(x + o.w / 2 - 3, y + o.h * .4, 6, 7);
+            } else if (o.appearance === 'chair') {
                 ctx.fillStyle = '#67452c'; ctx.fillRect(x + 2, y + 3, 5, o.h - 3); ctx.fillRect(x + o.w - 7, y + 3, 5, o.h - 3);
                 ctx.fillStyle = '#c7985f'; ctx.fillRect(x, y, o.w, 7); ctx.fillRect(x, y + 18, o.w, 4);
                 ctx.fillStyle = '#ba8d55'; ctx.fillRect(x - 2, y + 30, o.w + 4, 7);

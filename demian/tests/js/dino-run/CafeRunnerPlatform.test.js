@@ -59,7 +59,7 @@ test('varied seeded maximum-speed courses remain avoidable with bounded obstacle
         for(let tick=0;tick<60*180;tick++) {
             const next=model.obstacles.find(o=>o.x+o.w>RUNNER_CONFIG.playerX-14);
             const near=next&&next.x-RUNNER_CONFIG.playerX<model.speed*.31;
-            model.step(1/60,{jump:near&&next.type==='cactus'&&model.y===0,jumpHeld:true,duck:near&&next.type==='bird'});
+            model.step(1/60,{jump:near&&next.response==='jump'&&model.y===0,jumpHeld:true,duck:near&&next.response==='duck'});
             assert.equal(model.status,'running',`${seed}/${width}/${model.time}`);assert.ok(model.obstacles.length<8);
         }
     }

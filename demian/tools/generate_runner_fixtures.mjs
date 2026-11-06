@@ -2,14 +2,15 @@ import { writeFileSync } from 'node:fs';
 import DinoRunModel, { RUNNER_CONFIG } from '../resources/js/game/games/dino-run/DinoRunModel.js';
 import RunnerReplay from '../resources/js/game/games/dino-run/RunnerReplay.js';
 const fixtures = [];
-for (const [seed, width, autoplaySeconds] of [[7,420,0],[127,960,0],[4294967295,420,20],[8123,1440,90]]) {
+for (const [seed, width, autoplaySeconds] of [[7,420,0],[127,960,0],[4294967295,420,20],[8123,1440,90],
+    [1,420,0],[2,420,0],[3,960,0],[5,2560,0]]) {
     const model = new DinoRunModel({ seed, width }), replay = new RunnerReplay();
     for (let tick = 0; tick < RUNNER_CONFIG.maxTicks; tick++) {
         const next = model.obstacles.find(o => o.x + o.w > RUNNER_CONFIG.playerX - 14);
         const near = next && next.x - RUNNER_CONFIG.playerX < model.speed * .31;
         const auto = model.time < autoplaySeconds;
-        const input = { jump: tick === 0 || Boolean(auto && near && next.type === 'cactus' && model.y === 0),
-            jumpHeld: true, duck: Boolean(auto && near && next.type === 'bird') };
+        const input = { jump: tick === 0 || Boolean(auto && near && next.response === 'jump' && model.y === 0),
+            jumpHeld: true, duck: Boolean(auto && near && next.response === 'duck') };
         replay.record(input); model.step(1/60,input);
         if (model.status === 'over') break;
     }

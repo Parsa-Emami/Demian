@@ -34,6 +34,7 @@ final class RunnerReplayVerifier
         $y = $vy = $time = $distance = $buffer = 0.0;
         $spawnIn = $r['firstSpawnSeconds']; $obstacles = [];
         $passed = $cursor = $mask = 0; $terminal = false;
+        $nextId = 0; $lastAppearance = null;
         for ($tick = 0; $tick < $ticks; $tick++) {
             if (isset($transitions[$cursor]) && $transitions[$cursor]['tick'] === $tick) $mask = $transitions[$cursor++]['mask'];
             $jump = (bool) ($mask & 1); $held = (bool) ($mask & 2); $duckInput = (bool) ($mask & 4);
@@ -56,12 +57,29 @@ final class RunnerReplayVerifier
             $time += $dt; $speed = min($r['maxSpeed'], $r['startSpeed'] + $time * $r['speedRamp']);
             $distance += $speed * $dt; $spawnIn -= $dt;
             if ($spawnIn <= 0) {
-                $overhead = $random() < $r['overheadChance']; $tall = ! $overhead && $random() > .58;
-                $obstacles[] = ['x' => $width + 65, 'y' => $overhead ? $r['birdAltitude'] : 0,
-                    'w' => $overhead ? 40 : ($tall ? 26 : 21), 'h' => $overhead ? 22 : ($tall ? 52 : 36), 'scored' => false];
-                $p = 1 - exp(-$time / $r['difficultyRampSeconds']);
-                $spawnIn = $r['spawnMinimumSeconds'] - $r['spawnMinimumReduction'] * $p
-                    + $random() * ($r['spawnSpreadSeconds'] - $r['spawnSpreadReduction'] * $p);
+                $edge = $width + 65;
+                $x = $nextId === 0 ? min($edge, $r['playerX'] + $speed * $r['firstEncounterSeconds']) : $edge;
+                for (;;) {
+                    $attack = $random() < $r['attackChance'];
+                    if ($attack) {
+                        $attacker = $r['attackers'][(int) floor($random() * count($r['attackers']))];
+                        $overhead = $random() < $r['overheadChance'];
+                        $definition = ['appearance' => $overhead ? 'pounce' : 'charge', 'w' => 40, 'h' => $r['bodyHeight'], 'y' => $overhead ? 44 : 0];
+                    } else {
+                        $index = (int) floor($random() * count($r['obstacleCatalog']));
+                        if ($r['obstacleCatalog'][$index]['appearance'] === $lastAppearance) $index = ($index + 1) % count($r['obstacleCatalog']);
+                        $definition = $r['obstacleCatalog'][$index];
+                    }
+                    $scale = $attack ? 1 : $r['obstacleScaleMinimum'] + $random() * $r['obstacleScaleSpread'];
+                    $lastAppearance = $definition['appearance']; $nextId++;
+                    $obstacles[] = ['x' => $x, 'y' => $definition['y'], 'w' => (int) round($definition['w'] * $scale),
+                        'h' => (int) round($definition['h'] * $scale), 'scored' => false];
+                    $p = 1 - exp(-$time / $r['difficultyRampSeconds']);
+                    $interval = $r['spawnMinimumSeconds'] - $r['spawnMinimumReduction'] * $p
+                        + $random() * ($r['spawnSpreadSeconds'] - $r['spawnSpreadReduction'] * $p);
+                    if ($x >= $edge) { $spawnIn = $interval + ($x - $edge) / $speed; break; }
+                    $x += $speed * $interval;
+                }
             }
             $height = $duck && $y == 0 ? $r['duckHeight'] : $r['bodyHeight'];
             foreach ($obstacles as &$o) {

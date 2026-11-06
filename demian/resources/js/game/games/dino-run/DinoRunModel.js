@@ -1,4 +1,3 @@
-/** MIT — deterministic, renderer-independent endless runner. All units are logical pixels. */
 import { CHARACTER_JUMP_TUNING, characterGravity } from '../../characters/CharacterLocomotionModel.js';
 import rules from '../../../../game/runner-rules.json' with { type: 'json' };
 import { arcadeDifficulty } from '../../difficulty/ArcadeDifficulty.js';
@@ -17,8 +16,9 @@ export default class DinoRunModel {
         this.status = 'ready'; this.time = 0; this.distance = 0; this.score = 0;
         this.speed = RUNNER_CONFIG.startSpeed; this.y = 0; this.vy = 0; this.duck = false;
         this.jumpBuffer = 0; this.landingTime = 0; this.spawnIn = rules.firstSpawnSeconds; this.obstacles = [];
-        this.tick = 0; this.difficulty = arcadeDifficulty(0); this.endReason = null;
+        this.tick = 0; this.difficulty = arcadeDifficulty(0); this.endReason = null; this.hitBy = null;
         this.previous = { y: 0, distance: 0 }; this.nextId = 0; this.passed = 0;
+        this.lastAppearance = null;
     }
     setWidth(width) { if (this.status === 'ready') this.width = Math.min(rules.maxWidth, Math.max(rules.minWidth, Math.round(width))); }
     playerBounds() {
@@ -26,16 +26,31 @@ export default class DinoRunModel {
         return { x: RUNNER_CONFIG.playerX - 14, y: this.y + 3, w: RUNNER_CONFIG.bodyWidth, h: height - 4 };
     }
     spawn() {
-        const bird = this.random() < rules.overheadChance;
-        const tall = !bird && this.random() > .58;
-        const h = bird ? 22 : tall ? 52 : 36;
-        this.obstacles.push({ id: this.nextId++, type: bird ? 'bird' : 'cactus',
-            x: this.width + 65, previousX: this.width + 65,
-            y: bird ? RUNNER_CONFIG.birdAltitude : 0, w: bird ? 40 : tall ? 26 : 21, h, scored: false,
-            appearance: bird ? 'pendant' : tall ? 'chair' : 'coffee-crate' });
-        const p = this.difficulty.progress;
-        this.spawnIn = rules.spawnMinimumSeconds - rules.spawnMinimumReduction * p
-            + this.random() * (rules.spawnSpreadSeconds - rules.spawnSpreadReduction * p);
+        const edge = this.width + 65;
+        let x = this.nextId === 0 ? Math.min(edge, rules.playerX + this.speed * rules.firstEncounterSeconds) : edge;
+        for (;;) {
+            const attack = this.random() < rules.attackChance;
+            let definition, attacker = null;
+            if (attack) {
+                attacker = rules.attackers[Math.floor(this.random() * rules.attackers.length)];
+                const overhead = this.random() < rules.overheadChance;
+                definition = { appearance: overhead ? 'pounce' : 'charge', w: 40, h: rules.bodyHeight, y: overhead ? 44 : 0 };
+            } else {
+                let index = Math.floor(this.random() * rules.obstacleCatalog.length);
+                if (rules.obstacleCatalog[index].appearance === this.lastAppearance) index = (index + 1) % rules.obstacleCatalog.length;
+                definition = rules.obstacleCatalog[index];
+            }
+            const scale = attack ? 1 : rules.obstacleScaleMinimum + this.random() * rules.obstacleScaleSpread;
+            this.lastAppearance = definition.appearance;
+            this.obstacles.push({ id: this.nextId++, type: attack ? 'attacker' : definition.y > 0 ? 'bird' : 'cactus',
+                response: definition.y > 0 ? 'duck' : 'jump', attacker, appearance: definition.appearance,
+                x, previousX: x, y: definition.y, w: Math.round(definition.w * scale), h: Math.round(definition.h * scale), scored: false });
+            const p = this.difficulty.progress;
+            const interval = rules.spawnMinimumSeconds - rules.spawnMinimumReduction * p
+                + this.random() * (rules.spawnSpreadSeconds - rules.spawnSpreadReduction * p);
+            if (x >= edge) { this.spawnIn = interval + (x - edge) / this.speed; break; }
+            x += this.speed * interval;
+        }
     }
     step(dt, input = {}) {
         if (this.status === 'over') return;
@@ -75,9 +90,11 @@ export default class DinoRunModel {
             const beforeX = obstacle.x;
             obstacle.x -= this.speed * dt;
             const hitbox = { x: obstacle.x + 3, y: obstacle.y + 2, w: obstacle.w - 6, h: obstacle.h - 4 };
-            // Swept horizontal bounds prevent tunnelling during slow display frames.
             const swept = { ...hitbox, w: hitbox.w + beforeX - obstacle.x };
-            if (overlaps(player, swept)) { this.status = 'over'; this.endReason = 'collision'; break; }
+            if (overlaps(player, swept)) {
+                this.status = 'over'; this.hitBy = obstacle.attacker ?? null;
+                this.endReason = this.hitBy ? 'attack' : 'collision'; break;
+            }
             if (!obstacle.scored && obstacle.x + obstacle.w < player.x) {
                 obstacle.scored = true; this.passed += 1;
             }
