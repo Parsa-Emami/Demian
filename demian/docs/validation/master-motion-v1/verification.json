@@ -1,0 +1,20 @@
+{
+  "date": "2026-11-06",
+  "baseCommit": "a234c78c35b16613a12f4a60e36d5e10a2bd65db",
+  "motionSourceSha256": "ab27808dda81e4841571994a346522d5fdde544478dd01c6434201449da4aace",
+  "javascriptTests": { "passed": 374, "failed": 0, "skipped": 0 },
+  "checks": {
+    "validate:motion": "passed",
+    "validate:final": "passed: 383 JavaScript files, 2 games, 12 characters",
+    "validate:ui-layers": "passed: 21 tokens, 21 layers, 243 UI files",
+    "validate:skills": "passed: 77 skills, 207 pinned files",
+    "validate:characters:v14": "passed: 12 characters, 72 atlas variants",
+    "validate:build": "passed: one atomic JavaScript bundle",
+    "playableBuild": "passed: one atomic JavaScript bundle",
+    "browser": "passed: desktop, emulated phone, reduced motion"
+  },
+  "javascriptBundle": "assets/app-CAVL5zON.js",
+  "artMigration": "pending sample review; existing authored V14 atlases retained",
+  "physicalDeviceTests": false,
+  "performanceMeasurements": false
+}

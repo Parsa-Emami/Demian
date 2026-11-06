@@ -29,5 +29,21 @@
     "heldApexGravity": 0.65,
     "releasedRiseGravity": 1.65,
     "recoveryInterruptible": true
+  },
+  "master_motion": {
+    "version": "master-motion-v1",
+    "rig_version": 1,
+    "family": "male-base-v1",
+    "source_sha256": "ab27808dda81e4841571994a346522d5fdde544478dd01c6434201449da4aace",
+    "art_status": "authored-atlas",
+    "accessories": [
+      {
+        "kind": "wings",
+        "anchor": "chest",
+        "span": 0.3,
+        "amplitude": 0.18,
+        "phaseOffset": 0
+      }
+    ]
   }
 }

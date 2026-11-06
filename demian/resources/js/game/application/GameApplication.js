@@ -120,12 +120,12 @@ export default class GameApplication {
                 this.controlLayouts.boot();
                 await this.shell.showBoot({
                     progress: 4,
-                    message: 'در حال راه‌اندازی Game Shell…',
+                    message: 'در حال آماده‌سازی دمیان…',
                 });
 
                 // Animation loading is progressive enhancement and never blocks the game.
                 this.animation.boot();
-                this.shell.setBootProgress(18, 'در حال آماده‌سازی Renderer مشترک…');
+                this.shell.setBootProgress(18, 'در حال آماده‌سازی تصویر کافه…');
                 this.eventBus.emit('application:boot-step', { progress: 18 });
 
                 this.shell.setBootProgress(34, 'در حال بارگذاری Café Demian…');
@@ -135,7 +135,7 @@ export default class GameApplication {
                 });
 
                 this.runtime.start();
-                this.shell.setBootProgress(88, 'در حال همگام‌سازی رابط و ورودی‌ها…');
+                this.shell.setBootProgress(88, 'تقریباً آماده‌ایم…');
                 this.synchronizeUi();
                 await this.enterMenuState({ initial: true });
                 this.shell.setBootProgress(100, 'آماده');

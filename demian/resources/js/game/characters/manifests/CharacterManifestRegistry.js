@@ -1,3 +1,4 @@
+import { MOTION_CHARACTERS } from '../motion/MasterMotionLibrary.js';
 /**
  * Character Core V4 — manifest-driven roster registry.
  *
@@ -27,20 +28,12 @@ const FETCH_TIMEOUT_MS = 5000;
 const EMBEDDED_ROSTER_SNAPSHOT = Object.freeze({
     manifestVersion: 'v4',
     productionCharacter: 'darya',
-    characters: Object.freeze([
-        Object.freeze({ slug: 'darya', displayName: 'DARYA / دریا', productionStatus: 'gold_standard_production', isDefaultActive: true, packVersion: 14 }),
-        Object.freeze({ slug: 'setayesh', displayName: 'SETAYESH / ستایش', productionStatus: 'gold_standard_production', isDefaultActive: false, packVersion: 14 }),
-        Object.freeze({ slug: 'uzudi', displayName: 'UZUDI / اوزودی', productionStatus: 'gold_standard_production', isDefaultActive: false, packVersion: 14, locomotionStyle: 'wing-assisted' }),
-        Object.freeze({ slug: 'negar', displayName: 'NEGAR / نگار', productionStatus: 'gold_standard_production', isDefaultActive: false, packVersion: 14 }),
-        Object.freeze({ slug: 'tiam', displayName: 'TIAM / تیام', productionStatus: 'gold_standard_production', isDefaultActive: false, packVersion: 14 }),
-        Object.freeze({ slug: 'amirreza', displayName: 'AMIRREZA / امیررضا', productionStatus: 'gold_standard_production', isDefaultActive: false, packVersion: 14, locomotionStyle: 'wing-assisted' }),
-        Object.freeze({ slug: 'hanna', displayName: 'HANNA / حنا', productionStatus: 'gold_standard_production', isDefaultActive: false, packVersion: 14 }),
-        Object.freeze({ slug: 'ainaz', displayName: 'AINAZ / آیناز', productionStatus: 'gold_standard_production', isDefaultActive: false, packVersion: 14 }),
-        Object.freeze({ slug: 'arsal', displayName: 'ARSAL / ارسل', productionStatus: 'gold_standard_production', isDefaultActive: false, packVersion: 14 }),
-        Object.freeze({ slug: 'iman', displayName: 'IMAN / ایمان', productionStatus: 'gold_standard_production', isDefaultActive: false, packVersion: 14 }),
-        Object.freeze({ slug: 'amin', displayName: 'AMIN / امین', productionStatus: 'gold_standard_production', isDefaultActive: false, packVersion: 14 }),
-        Object.freeze({ slug: 'hossein', displayName: 'HOSSEIN / حسین', productionStatus: 'gold_standard_production', isDefaultActive: false, packVersion: 14 }),
-    ]),
+    characters: Object.freeze(MOTION_CHARACTERS.map(entry => Object.freeze({
+        slug: entry.slug, displayName: entry.displayName,
+        productionStatus: 'gold_standard_production', isDefaultActive: entry.defaultActive,
+        packVersion: entry.packVersion, motionFamily: entry.family,
+        locomotionStyle: entry.accessories.some(item => item.kind === 'wings') ? 'wing-assisted' : 'ground-runner',
+    }))),
 });
 
 export const PRODUCTION_STATUS = Object.freeze({
