@@ -1,0 +1,134 @@
+{
+  "date": "2026-11-06",
+  "versionSource": "package.json",
+  "version": "14.0.0",
+  "browser": "153.0.8010.0",
+  "rendering": "headless Chromium, software SwiftShader",
+  "physicalDevices": false,
+  "appliedProjectSkills": [
+    "router",
+    "game-ui-ux"
+  ],
+  "results": [
+    {
+      "profile": {
+        "name": "desktop",
+        "width": 1440,
+        "height": 900
+      },
+      "menuActions": [
+        "quick-entry",
+        "game-selection",
+        "settings",
+        "character-selection",
+        "leaderboard"
+      ],
+      "titles": [
+        {
+          "screen": "main-menu",
+          "title": "Demian Game Platform · V14.0.0 · DARYA"
+        },
+        {
+          "screen": "settings",
+          "title": "Demian Game Platform · V14.0.0 · DARYA"
+        },
+        {
+          "screen": "game-selection",
+          "title": "Demian Game Platform · V14.0.0 · DARYA"
+        },
+        {
+          "screen": "leaderboard",
+          "title": "Demian Game Platform · V14.0.0 · DARYA"
+        },
+        {
+          "screen": "character-amin",
+          "title": "Demian Game Platform · V14.0.0 · AMIN"
+        },
+        {
+          "screen": "character-darya",
+          "title": "Demian Game Platform · V14.0.0 · DARYA"
+        },
+        {
+          "screen": "quick-entry",
+          "title": "Demian Game Platform · V14.0.0 · DARYA"
+        },
+        {
+          "screen": "return-to-menu",
+          "title": "Demian Game Platform · V14.0.0 · DARYA"
+        }
+      ],
+      "choices": [
+        {
+          "slug": "amin",
+          "title": "Demian Game Platform · V14.0.0 · AMIN"
+        },
+        {
+          "slug": "darya",
+          "title": "Demian Game Platform · V14.0.0 · DARYA"
+        }
+      ],
+      "errors": [],
+      "failures": []
+    },
+    {
+      "profile": {
+        "name": "phone",
+        "width": 390,
+        "height": 844
+      },
+      "menuActions": [
+        "quick-entry",
+        "game-selection",
+        "settings",
+        "character-selection",
+        "leaderboard"
+      ],
+      "titles": [
+        {
+          "screen": "main-menu",
+          "title": "Demian Game Platform · V14.0.0 · DARYA"
+        },
+        {
+          "screen": "settings",
+          "title": "Demian Game Platform · V14.0.0 · DARYA"
+        },
+        {
+          "screen": "game-selection",
+          "title": "Demian Game Platform · V14.0.0 · DARYA"
+        },
+        {
+          "screen": "leaderboard",
+          "title": "Demian Game Platform · V14.0.0 · DARYA"
+        },
+        {
+          "screen": "character-amin",
+          "title": "Demian Game Platform · V14.0.0 · AMIN"
+        },
+        {
+          "screen": "character-darya",
+          "title": "Demian Game Platform · V14.0.0 · DARYA"
+        },
+        {
+          "screen": "quick-entry",
+          "title": "Demian Game Platform · V14.0.0 · DARYA"
+        },
+        {
+          "screen": "return-to-menu",
+          "title": "Demian Game Platform · V14.0.0 · DARYA"
+        }
+      ],
+      "choices": [
+        {
+          "slug": "amin",
+          "title": "Demian Game Platform · V14.0.0 · AMIN"
+        },
+        {
+          "slug": "darya",
+          "title": "Demian Game Platform · V14.0.0 · DARYA"
+        }
+      ],
+      "errors": [],
+      "failures": []
+    }
+  ]
+}

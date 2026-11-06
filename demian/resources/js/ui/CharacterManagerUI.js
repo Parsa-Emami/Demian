@@ -1,6 +1,9 @@
 import ScrollSnapRail from './ScrollSnapRail.js';
 import CharacterPreviewRenderer from './CharacterPreviewRenderer.js';
+import release from '../../../package.json' with { type: 'json' };
 import { BUILTIN_CHARACTER_SLUGS, builtinCharacterPreviewUrl } from '../game/characters/CharacterVisualContract.js';
+
+const DOCUMENT_TITLE = `Demian Game Platform · V${release.version}`;
 
 export default class CharacterManagerUI {
     constructor({ root, manager = null, managerProvider = null, eventBus }) {
@@ -40,6 +43,7 @@ export default class CharacterManagerUI {
     }
 
     boot() {
+        document.title = DOCUMENT_TITLE;
         this.bindForm();
         this.bindCharacterRail();
         this.bindDropZone();
@@ -434,7 +438,7 @@ export default class CharacterManagerUI {
             element.textContent = `تمرکز ${localizedName}`;
         });
 
-        document.title = `Demian V5 Open Arcade · ${latinName}`;
+        document.title = `${DOCUMENT_TITLE} · ${latinName}`;
     }
 
     async guard(callback) {
