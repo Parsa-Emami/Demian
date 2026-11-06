@@ -11,7 +11,7 @@ export const GAME_CATALOG = Object.freeze([
     }),
     Object.freeze({
         id: 'dino-run', title: 'DINO RUN', subtitle: 'یک پرش دیگر…',
-        description: 'در کافه بدو، از صندلی‌ها بپر، زیر چراغ‌ها سر بخور و رکورد بزن. سختی از ۶ شروع می‌شود.',
+        description: 'از موانع عجیب کافه بگذر؛ از موج اوزودی بپر و زیر ضربهٔ امیررضا سر بخور.',
         icon: '↗', phase: 12, status: 'available', available: true,
         orientation: 'any', accent: 'amber',
         environment: CAFE_ENVIRONMENT_ID, environmentLocked: true, referenceAssets: CAFE_REFERENCE_ASSET_ROOT,

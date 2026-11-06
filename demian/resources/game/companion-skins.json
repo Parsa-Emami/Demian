@@ -1,0 +1,14 @@
+{
+  "version": "companion-skins-v1",
+  "pishi": {
+    "source": "darya/source-v14/master.png",
+    "frontView": 0,
+    "frontSize": [124, 161],
+    "frontPolygon": [[16,92],[22,96],[28,101],[36,102],[41,97],[45,98],[44,105],[47,109],[49,114],[49,120],[46,124],[42,128],[41,134],[40,141],[41,148],[41,152],[37,155],[23,156],[9,155],[2,152],[0,147],[0,139],[6,134],[11,130],[15,126],[13,120],[13,112],[15,106],[14,97]],
+    "backView": 4,
+    "backSize": [123, 158],
+    "backRect": [83, 92, 123, 158],
+    "bodyHeight": 0.4,
+    "directionSources": {"s":"front","sw":"front-mirrored","w":"front-mirrored","nw":"back","n":"back","ne":"back","e":"front","se":"front"}
+  }
+}

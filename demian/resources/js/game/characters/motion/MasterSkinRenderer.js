@@ -55,6 +55,6 @@ export function drawMasterSkin(ctx, image, skin, pose, { x = 0, ground = 0, heig
     layer(ctx, image, view.head, joints.neck.x - rest.neck.x, joints.neck.y - rest.neck.y, -pose.lean * .16, [0, .57]);
     layer(ctx, image, view.homayoun, joints.neck.x - rest.neck.x, joints.neck.y - rest.neck.y + (reducedMotion ? 0 : Math.sin(time * 4.1) * .004), -pose.lean * .16, [0, .57]);
     const pet = attachments.find(item => item.kind === 'pishi');
-    layer(ctx, image, view.pishi, (reducedMotion ? 0 : pet?.followOffset ?? 0) * pose.facing, (reducedMotion ? 0 : pet?.bob ?? 0) - elevation, 0, [0, 0]);
+    layer(ctx, image, view.pishi, (horizontal ? -.33 * horizontal : -.3) + (reducedMotion ? 0 : pet?.followOffset ?? 0) * pose.facing, (reducedMotion ? 0 : pet?.bob ?? 0) - elevation, 0, [0, 0]);
     ctx.restore(); return true;
 }

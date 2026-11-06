@@ -54,14 +54,14 @@ test('grounded feet stay planted and IK limb lengths remain constant across comp
 
 test('motion follows distance, keeps its phase when changing gait and stops when blocked', () => {
     const controller = new MasterMotionController('hanna');
-    controller.advance({ state: 'walk', distance: .34, deltaTime: .1 });
+    controller.advance({ state: 'walk', distance: MASTER_MOTION.clips.walk.strideLength * .1, deltaTime: .1 });
     assert(Math.abs(controller.phase - .1) < 1e-10);
-    controller.advance({ state: 'run', distance: .6, deltaTime: .1 });
+    controller.advance({ state: 'run', distance: MASTER_MOTION.clips.run.strideLength * .1, deltaTime: .1 });
     assert(Math.abs(controller.phase - .2) < 1e-10);
     controller.advance({ state: 'run', distance: 0, deltaTime: .1 });
     assert(Math.abs(controller.phase - .2) < 1e-10);
     controller.advance({ state: 'sprint', distance: 100, deltaTime: .1 });
-    assert(Math.abs(controller.phase - .355) < 1e-10);
+    assert(Math.abs(controller.phase - (.2 + MASTER_MOTION.playback.maxStrideHz * .1)) < 1e-10);
 });
 
 test('winged bodies retain the male family and accessories never modify the base pose', () => {
@@ -72,10 +72,11 @@ test('winged bodies retain the male family and accessories never modify the base
     assert.equal(entries[0].attachments.length, 0);
     assert.equal(entries[1].attachments[0].kind, 'wings');
     const rotation = entries[1].attachments[0].rotation;
-    entries[1].sync({ state: 'run', phase: .55 });
+    entries[1].sync({ state: 'run', phase: .21, deltaTime: .1 });
     assert.notEqual(rotation, entries[1].attachments[0].rotation);
     entries[1].sync({ state: 'slide', phase: .5 });
-    assert.equal(entries[1].attachments[0].extension, .15);
+    for (let i=0;i<60;i++) entries[1].sync({ state: 'slide', phase: .5, deltaTime: 1/60 });
+    assert(Math.abs(entries[1].attachments[0].extension-.15)<1e-5);
     for (const slug of ['darya', 'tiam']) {
         const entry = new MasterMotionController(slug);
         assert.equal(entry.attachments[0].collision, 'cosmetic');

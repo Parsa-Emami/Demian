@@ -1,3 +1,4 @@
+import { drawMasterSkin } from '../../characters/motion/MasterSkinRenderer.js';
 import BaseGame from '../../contracts/BaseGame.js';
 import DinoRunModel, { RUNNER_CONFIG } from './DinoRunModel.js';
 import DinoRunEnvironment from './DinoRunEnvironment.js';
@@ -6,7 +7,7 @@ import { arcadeCharacterLabel } from '../arcade/ArcadeCharacterRoster.js';
 import { UI_LAYER, assignUiLayer } from '../../ui/UiLayer.js';
 import RunnerReplay from './RunnerReplay.js';
 
-const BEST_KEY = 'demian.dino-run.best.cafe-runner-v1';
+const BEST_KEY = 'demian.dino-run.best.cafe-runner-v2';
 function readBest() { try { return Math.max(0, Number(localStorage.getItem(BEST_KEY)) || 0); } catch { return 0; } }
 function saveBest(value) { try { localStorage.setItem(BEST_KEY, String(value)); } catch {} }
 
@@ -15,6 +16,11 @@ export default class DinoRunGame extends BaseGame {
     constructor() { super(); this.model = new DinoRunModel(); this.best = readBest(); this.finished = false; this.uiTime = 0; }
     async preload(context) {
         this.avatar = await context.services.characterVisuals.createCanvasAvatar('player', { player: true });
+        this.avatar.animator.motionContext = 'runner';
+        this.raiders = new Map();
+        const slugs = ['uzudi', 'amirreza'];
+        const results = await Promise.allSettled(slugs.map(slug => context.services.characterVisuals.createCanvasAvatar(slug, { variant: 'lite' })));
+        results.forEach((result, index) => { if (result.status === 'fulfilled') this.raiders.set(slugs[index], result.value); });
     }
     async enter(context) {
         this.context = context;
@@ -30,18 +36,17 @@ export default class DinoRunGame extends BaseGame {
         this.refreshRoster();
         this.hud = assignUiLayer(document.createElement('section'), UI_LAYER.LOCAL_BASE);
         this.hud.className = 'runner-hud'; this.hud.dir = 'rtl';
-        this.hud.innerHTML = '<div class="runner-hud__title"><small>DEMIAN / CAFÉ RUN</small><strong>DINO RUN</strong></div><div class="runner-hud__score"><span><small>امتیاز</small><b data-run-score>00000</b></span><span><small>رکورد دستگاه</small><b data-run-best>00000</b></span><span><small>سختی</small><b data-run-difficulty>6.0 / 10</b></span></div><button type="button" data-shell-action="leaderboard" aria-label="نمایش لیدربورد">♛</button>';
+        this.hud.innerHTML = '<div class="runner-hud__title"><small>DEMIAN / CAFÉ RUN</small><strong>DINO RUN</strong></div><div class="runner-hud__score"><span><small>امتیاز</small><b data-run-score>00000</b></span><span><small>رکورد دستگاه</small><b data-run-best>00000</b></span></div><button type="button" data-shell-action="leaderboard" aria-label="نمایش لیدربورد">♛</button>';
         context.root.querySelector('[data-game-hud-host]')?.append(this.hud);
         this.ready = assignUiLayer(document.createElement('div'), UI_LAYER.LOCAL_BASE);
         this.ready.className = 'runner-ready'; this.ready.dir = 'rtl';
-        this.ready.innerHTML = '<span>DEMIAN · CAFÉ RUN</span><h2>این بار، توی کافه بدو.</h2><p>از صندلی‌ها و جعبه‌های قهوه بپر؛ زیر چراغ‌ها اسلاید برو. سختی از ۶ شروع می‌شود.</p><button type="button" data-input-press="jump" data-input-hold="jumpHeld">شروع و پرش <b>↗</b></button><small>نگه‌دار: پرش بلندتر · Space / ↑ · ↓ برای اسلاید</small><p data-run-ranking-mode role="status"></p>';
+        this.ready.innerHTML = '<span>DEMIAN · CAFÉ RUN</span><h2>این بار، توی کافه بدو.</h2><p>از موانع عجیب بپر؛ زیر موانع پرنده سر بخور. از موج اوزودی بپر و زیر پرتابهٔ امیررضا اسلاید برو.</p><button type="button" data-input-press="jump" data-input-hold="jumpHeld">شروع و پرش <b>↗</b></button><small>نگه‌دار: پرش بلندتر · Space / ↑ · ↓ برای اسلاید</small><p data-run-ranking-mode role="status"></p>';
         const wordmark = document.createElement('img');
         wordmark.className = 'runner-wordmark'; wordmark.alt = 'دمیان · DEMIAN';
         wordmark.src = new URL('assets/environments/cafe-runner-v1/wordmark.png', document.baseURI).href;
         this.ready.prepend(wordmark);
         context.root.querySelector('[data-game-hud-host]')?.append(this.ready);
         this.scoreNode = this.hud.querySelector('[data-run-score]'); this.bestNode = this.hud.querySelector('[data-run-best]');
-        this.difficultyNode = this.hud.querySelector('[data-run-difficulty]');
         this.resize();
     }
     refreshRoster() {
@@ -56,6 +61,7 @@ export default class DinoRunGame extends BaseGame {
         this.selecting = true;
         try {
             const avatar = await this.context.services.characterVisuals.createCanvasAvatar(slug, { player: true });
+            avatar.animator.motionContext = 'runner';
             this.avatar = avatar; avatar.sync(this.actor, 0);
             this.context.services.characterVisuals.setActiveSlug(slug);
             this.refreshRoster();
@@ -86,12 +92,17 @@ export default class DinoRunGame extends BaseGame {
         if (this.replay && (this.model.status !== 'ready' || input.jump)) this.replay.record(input);
         this.model.step(dt, input);
         const model = this.model;
-        this.actor.speed = model.status === 'ready' ? 0 : Math.min(8.4, 6 * model.speed / RUNNER_CONFIG.startSpeed);
-        this.actor.travelledDistance = this.actor.speed * dt;
+        this.actor.speed = model.status === 'ready' ? 0 : model.speed * 3.75 / RUNNER_CONFIG.bodyHeight;
+        this.actor.travelledDistance = (model.distance - model.previous.distance) * 3.75 / RUNNER_CONFIG.bodyHeight;
         this.actor.airborne = model.y > 0 || model.vy > 0; this.actor.grounded = !this.actor.airborne;
         this.actor.jumpVelocity = model.vy / 100;
-        this.actor.motionState = model.duck ? 'slide' : model.landingTime > 0 ? 'land' : null;
+        this.actor.motionState = model.duck ? 'slide' : model.landingTime > 0 ? 'land' : model.status === 'running' ? 'sprint' : 'idle';
         this.avatar.sync(this.actor, dt);
+        for (const [slug, avatar] of this.raiders ?? []) {
+            const attack = model.obstacles.find(item => item.attacker === slug && item.age < RUNNER_CONFIG.attackWarningSeconds + .75);
+            avatar.animator.masterMotion.sync({ state: attack && attack.warningLeft <= 0 ? 'attack' : 'ready', direction: 'w', facing: -1,
+                phase: model.time / 2.4, deltaTime: dt, reducedMotion: this.context.settings?.resolvedReducedMotion?.() ?? false });
+        }
         if (model.status === 'over') this.finish();
     }
     update(dt = 0) {
@@ -102,7 +113,6 @@ export default class DinoRunGame extends BaseGame {
         if (!this.hud) return;
         this.scoreNode.textContent = String(this.model.score).padStart(5, '0');
         this.bestNode.textContent = String(Math.max(this.best, this.model.score)).padStart(5, '0');
-        if (this.difficultyNode) this.difficultyNode.textContent = `${this.model.difficulty.level.toFixed(1)} / 10`;
         this.ready.hidden = this.model.status !== 'ready';
     }
     finish() {
@@ -134,6 +144,7 @@ export default class DinoRunGame extends BaseGame {
         const { width: w, height: h, scale: s, ground: ground } = this;
         const frame = this.model.snapshot(alpha); const distance = frame.distance;
         const light = this.environment.draw(ctx, { width: w, height: h, ground, scale: s, distance, time: this.model.time });
+        this.drawRaiders(ctx, frame.obstacles);
         this.environment.drawObstacles(ctx, frame.obstacles, { ground, scale: s, time: this.model.time, night: light.night });
         this.environment.drawDust(ctx, { x: RUNNER_CONFIG.playerX * s, ground, scale: s, time: this.model.time,
             sliding: this.model.duck, running: this.model.status === 'running' && this.model.y === 0 });
@@ -149,16 +160,49 @@ export default class DinoRunGame extends BaseGame {
             ctx.save(); ctx.translate(x, y);
             // Sliding is a real low pose in the atlas. Keep face/body proportions at one uniform scale.
             ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
-            ctx.drawImage(avatar.texture.image, sprite.x, sprite.y, sprite.w, sprite.h,
-                -spriteSize * (avatar.atlas.pivot?.x ?? .5), -spriteSize * (avatar.atlas.pivot?.y ?? .965), spriteSize, spriteSize);
+            if (!drawMasterSkin(ctx, avatar.texture.image, avatar.atlas.masterSkin, avatar.animator.masterMotion.sample(alpha),
+                { height: RUNNER_CONFIG.bodyHeight * s, reducedMotion: this.environment.reducedMotion, elevation: frame.y / RUNNER_CONFIG.bodyHeight, attachments: avatar.animator.masterMotion.attachments })) {
+                ctx.drawImage(avatar.texture.image, sprite.x, sprite.y, sprite.w, sprite.h,
+                    -spriteSize * (avatar.atlas.pivot?.x ?? .5), -spriteSize * (avatar.atlas.pivot?.y ?? .965), spriteSize, spriteSize);
+            }
             ctx.restore();
         }
         this.context.renderer.present();
     }
-    pause() {} resume() {} applySettings() {
+    drawRaiders(ctx, obstacles) {
+        const s = this.scale, warning = RUNNER_CONFIG.attackWarningSeconds;
+        for (const obstacle of obstacles) {
+            if (!obstacle.attacker || obstacle.age >= warning + .75) continue;
+            const avatar = this.raiders?.get(obstacle.attacker), x = (obstacle.originX + 26) * s;
+            const fade = Math.max(0, Math.min(1, (warning + .75 - obstacle.age) / .5));
+            ctx.save(); ctx.globalAlpha = fade;
+            const baseline = this.ground - 70 * s;
+            if (avatar) drawMasterSkin(ctx, avatar.texture.image, avatar.atlas.masterSkin, avatar.animator.masterMotion.pose,
+                { x, ground: baseline, height: RUNNER_CONFIG.bodyHeight * s, reducedMotion: this.environment.reducedMotion, attachments: avatar.animator.masterMotion.attachments });
+            ctx.font = `${Math.max(10, 11 * s)}px Vazirmatn, sans-serif`; ctx.textAlign = 'center'; ctx.fillStyle = '#f3e4c5';
+            ctx.fillText(obstacle.attacker === 'uzudi' ? 'اوزودی' : 'امیررضا', x, baseline - (RUNNER_CONFIG.bodyHeight + 6) * s);
+            if (obstacle.warningLeft > 0) {
+                const y = this.ground - (obstacle.y + obstacle.h / 2) * s;
+                ctx.strokeStyle = obstacle.attacker === 'uzudi' ? '#d2b4f2' : '#f4efd3'; ctx.lineWidth = 1.5;
+                ctx.setLineDash([5 * s, 5 * s]); ctx.beginPath(); ctx.moveTo(RUNNER_CONFIG.playerX * s, y); ctx.lineTo(obstacle.originX * s, y); ctx.stroke(); ctx.setLineDash([]);
+                ctx.fillStyle = '#f4e4ba'; ctx.fillText(obstacle.type === 'bird' ? 'اسلاید ↓' : 'پرش ↑', x - 38 * s, y - 12 * s);
+            }
+            ctx.restore();
+        }
+    }
+    pause() {} resume() {} applySettings(settings) {
         if (this.environment && this.context) this.environment.reducedMotion = this.context.settings.resolvedReducedMotion();
+        if (this.environment && this.context) {
+            this.environment.setQuality(settings?.quality === 'auto' ? this.context.services.performanceProfile.tier : settings?.quality ?? 'balanced');
+            const avatar = this.avatar, revision = this.qualityRevision = (this.qualityRevision ?? 0) + 1;
+            this.context.services.characterVisuals.loadPack(avatar.slug).then(pack => {
+                if (!this.context || this.avatar !== avatar || this.qualityRevision !== revision) return;
+                avatar.texture.image = pack.image; avatar.atlas = pack.atlas; avatar.animator.atlas = pack.atlas;
+                avatar.animator.animation = pack.atlas.animations[avatar.animator.animationName] ?? avatar.animator.animation;
+            }).catch(() => {});
+        }
         this.resize();
     }
     async exit() {}
-    dispose() { this.hud?.remove(); this.ready?.remove(); this.environment?.dispose(); this.environment = null; this.hud = null; this.context = null; this.avatar = null; }
+    dispose() { this.hud?.remove(); this.ready?.remove(); this.environment?.dispose(); this.environment = null; this.hud = null; this.context = null; this.avatar = null; this.raiders?.clear(); }
 }

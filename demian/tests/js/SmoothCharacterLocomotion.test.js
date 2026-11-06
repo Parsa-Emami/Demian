@@ -123,17 +123,14 @@ test('image revision replaces an old cache key while preserving asset queries an
     assert.equal(characterSpriteRevisionUrl('/assets/sprite.png',{meta:{}}),'/assets/sprite.png');
 });
 
-test('the actual pack loader requests the sprite revision paired with the freshly fetched atlas', async () => {
+test('the pack loader binds fresh metadata to the hashed master skin image',async()=>{
     const atlas=read('uzudi'),originalFetch=globalThis.fetch;
-    let fetched,loaded;
-    globalThis.fetch=async(url,options)=>{fetched={url,options};return {ok:true,json:async()=>atlas};};
-    try {
-        const service=new CharacterVisualService({storage:null});
-        service.loadImage=async(url)=>{loaded=url;return {naturalWidth:1536,naturalHeight:1920};};
-        const pack=await service.loadPair('uzudi','runtime');
-        assert.equal(fetched.options.cache,'no-cache');
-        assert.equal(new URL(loaded,'https://demian.test').searchParams.get('sprite_rev'),atlas.meta.imageRevision);
-        assert.equal(pack.spriteUrl,loaded);
-        service.dispose();
-    } finally {globalThis.fetch=originalFetch;}
+    const skin=JSON.parse(readFileSync(new URL('../../public/assets/characters/master-skins-v2/uzudi/runtime.json',import.meta.url)));
+    const requests=[];let loaded;
+    globalThis.fetch=async(url,options)=>{requests.push(options);return {ok:true,json:async()=>String(url).includes('master-skins-v2')?skin:atlas};};
+    try{
+        const service=new CharacterVisualService({storage:null});service.loadImage=async(url)=>{loaded=url;return{naturalWidth:skin.size[0],naturalHeight:skin.size[1]};};
+        const pack=await service.loadPair('uzudi','runtime');assert(requests.every(r=>r.cache==='no-cache'));
+        assert.equal(new URL(loaded).searchParams.get('rev'),skin.imageSha256.slice(0,16));assert.equal(pack.atlas.masterSkin,skin);service.dispose();
+    }finally{globalThis.fetch=originalFetch;}
 });

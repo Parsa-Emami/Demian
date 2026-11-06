@@ -1,5 +1,5 @@
 {
-  "version": "cafe-runner-v1",
+  "version": "cafe-runner-v2",
   "tickRate": 60,
   "maxTicks": 54000,
   "maxTransitions": 12000,
@@ -12,20 +12,99 @@
   "birdAltitude": 46,
   "gravity": 1750,
   "jumpSpeed": 650,
-  "startSpeed": 335,
-  "maxSpeed": 560,
+  "startSpeed": 390,
+  "maxSpeed": 600,
   "speedRamp": 2.8,
-  "firstSpawnSeconds": 1.15,
-  "difficultyStart": 6,
+  "firstSpawnSeconds": 0.6,
+  "difficultyStart": 8.4,
   "difficultyMax": 10,
   "difficultyRampSeconds": 90,
-  "spawnMinimumSeconds": 1.1,
-  "spawnMinimumReduction": 0.22,
-  "spawnSpreadSeconds": 0.58,
-  "spawnSpreadReduction": 0.23,
+  "spawnMinimumSeconds": 1.12,
+  "spawnMinimumReduction": 0.16,
+  "spawnSpreadSeconds": 0.26,
+  "spawnSpreadReduction": 0.11,
   "overheadChance": 0.32,
   "jumpBufferSeconds": 0.14,
   "apexRatio": 0.18,
   "heldApexGravity": 0.65,
-  "releasedRiseGravity": 1.65
+  "releasedRiseGravity": 1.65,
+  "attackEvery": 4,
+  "attackWarningSeconds": 1.0,
+  "attackOriginInset": 100,
+  "hazards": [
+    {
+      "type": "cactus",
+      "appearance": "clockwork-teapot",
+      "y": 0,
+      "w": 38,
+      "h": 36
+    },
+    {
+      "type": "cactus",
+      "appearance": "book-tower",
+      "y": 0,
+      "w": 28,
+      "h": 58
+    },
+    {
+      "type": "cactus",
+      "appearance": "walking-clock",
+      "y": 0,
+      "w": 34,
+      "h": 54
+    },
+    {
+      "type": "cactus",
+      "appearance": "coffee-geode",
+      "y": 0,
+      "w": 36,
+      "h": 39
+    },
+    {
+      "type": "cactus",
+      "appearance": "spring-mushroom",
+      "y": 0,
+      "w": 37,
+      "h": 45
+    },
+    {
+      "type": "bird",
+      "appearance": "flying-cassette",
+      "y": 46,
+      "w": 48,
+      "h": 24
+    },
+    {
+      "type": "bird",
+      "appearance": "steam-kettle",
+      "y": 44,
+      "w": 44,
+      "h": 26
+    },
+    {
+      "type": "bird",
+      "appearance": "pendulum-eye",
+      "y": 46,
+      "w": 42,
+      "h": 26
+    }
+  ],
+  "attacks": [
+    {
+      "attacker": "uzudi",
+      "type": "cactus",
+      "appearance": "shadow-ring",
+      "y": 0,
+      "w": 33,
+      "h": 30
+    },
+    {
+      "attacker": "amirreza",
+      "type": "bird",
+      "appearance": "feather-blade",
+      "y": 44,
+      "w": 50,
+      "h": 26
+    }
+  ]
 }

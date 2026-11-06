@@ -6,7 +6,7 @@ import os
 from pathlib import Path
 
 import numpy as np
-from PIL import Image
+from PIL import Image, ImageDraw
 from scipy import ndimage
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -62,13 +62,20 @@ def skin_layers(image,slug,direction):
     r,g,b=[pixels[:,:,i].astype(float) for i in range(3)]
     face=(yy<h*.46)&(yy>h*.18)&alpha&(r>145)&(g>75)&(r>g*1.1)&(g>b*1.02)
     groups,count=ndimage.label(ndimage.binary_closing(face,iterations=2))
-    if count:
+    if count and 'n' not in direction:
         sizes=np.bincount(groups.ravel());sizes[0]=0;ys,xs=np.where(groups==sizes.argmax())
-        if len(xs)>12:cx=float(np.median(xs[ys>np.quantile(ys,.6)]))
+        if len(xs)>max(12,h*h*.004):cx=float(np.median(xs[ys>np.quantile(ys,.6)]))
     masks={};layers={};body=pixels.copy()
     if slug=='darya':
-        sign=max((int(((yy>h*.55)&((xx-cx)*sign>h*.17)&alpha).sum()),sign)for sign in(-1,1))[1]
-        masks['pishi']=(yy>h*.54)&((xx-cx)*sign>h*.145)&alpha
+        sign=1 if 'n' in direction else -1
+        threshold=.145 if direction=='n' else .20 if 'n' in direction else .235
+        masks['pishi']=(yy>h*.54)&((xx-cx)*sign>h*threshold)&alpha
+        opened=ndimage.binary_opening(masks['pishi'],iterations=max(1,round(h*.008)))
+        groups,n=ndimage.label(opened)
+        if n:
+            sizes=np.bincount(groups.ravel());sizes[0]=0
+            ys,xs=np.where(groups==sizes.argmax())
+            masks['pishi']&=(xx>=xs.min()-1)&(xx<=xs.max()+1)&(yy>=ys.min()-1)&(yy<=ys.max()+1)
     if slug in ('uzudi','amirreza'):
         wing=(yy>h*.26)&(yy<h*.9)&(abs(xx-cx)>h*.155)&alpha
         if slug=='uzudi':wing&=(b>r*.94)&(g>r*.94)&(np.max(pixels[:,:,:3],axis=2)<135)
@@ -116,6 +123,19 @@ def skin_layers(image,slug,direction):
 def build(slug):
     views=source_views(slug)
     layers={direction:skin_layers(view,slug,direction)for direction,view in zip(DIRECTIONS,views)}
+    companion=None
+    if slug=='darya':
+        companion=json.loads((ROOT/'resources/game/companion-skins.json').read_text())['pishi']
+        front=views[companion['frontView']].copy();back=views[companion['backView']].copy()
+        assert list(front.size)==companion['frontSize'] and list(back.size)==companion['backSize']
+        mask=Image.new('L',front.size);ImageDraw.Draw(mask).polygon([tuple(p) for p in companion['frontPolygon']],fill=255)
+        array=np.array(front);array[:,:,3]=np.minimum(array[:,:,3],np.asarray(mask));front=Image.fromarray(array);front=front.crop(front.getbbox())
+        back=back.crop(tuple(companion['backRect']));back=back.crop(back.getbbox())
+        for direction,source in companion['directionSources'].items():
+            image=(back if source=='back' else front).copy()
+            if source.endswith('mirrored'):image=image.transpose(Image.Transpose.FLIP_LEFT_RIGHT)
+            height=companion['bodyHeight'];width=height*image.width/image.height
+            layers[direction]['pishi']={'image':image,'bounds':[-width/2,height,width,height]}
     actions={}
     if slug=='negar':
         atlas=json.loads((BASE/slug/f'{slug}-atlas-v14-desktop.json').read_text());sheet=Image.open(BASE/slug/f'{slug}-spritesheet-v14-desktop.png').convert('RGBA')
@@ -136,6 +156,7 @@ def build(slug):
         sheet=Image.new('RGBA',(width,y+row+2));data={'version':'master-skin-v2','slug':slug,'variant':variant,'sourceSha256':digest(BASE/slug/'source-v14/master.png'),'identitySha256':digest(BASE/slug/f'manifests/{slug}_identity_contract.json'),'sourceDirections':list(DIRECTIONS),'authoredActions':actions,'views':{d:{}for d in DIRECTIONS}}
         for direction,name,part,image,x,y in packed:
             sheet.alpha_composite(image,(x,y));data['views'][direction][name]={'bounds':part['bounds'],'frame':[x,y,image.width,image.height]}
+        if companion:data['companionSourceSha256']=digest(ROOT/'resources/game/companion-skins.json');data['companionDirections']=companion['directionSources']
         buffer=io.BytesIO();sheet.save(buffer,format='PNG',optimize=True);path=directory/f'{variant}.png';atomic(path,buffer.getvalue())
         data.update(image=path.name,imageSha256=digest(path),size=list(sheet.size),decodedBytes=sheet.width*sheet.height*4);write_json(directory/f'{variant}.json',data)
     print(f'{slug}: master-skin-v2 / eight authored views')

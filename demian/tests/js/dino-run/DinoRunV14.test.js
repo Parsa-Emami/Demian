@@ -26,7 +26,7 @@ test('runner sends a real slide state to the shared avatar, then releases it wit
     game.actor = {}; game.avatar = { sync: (actor) => { lastActor = { ...actor }; } };
     game.model.status = 'running';
     game.fixedUpdate(1 / 60, { duck: true }); assert.equal(lastActor.motionState, 'slide');
-    game.fixedUpdate(1 / 60, {}); assert.equal(lastActor.motionState, null);
+    game.fixedUpdate(1 / 60, {}); assert.equal(lastActor.motionState, 'sprint');
     game.fixedUpdate(1 / 60, { jump: true, jumpHeld: true }); assert.equal(lastActor.airborne, true);
 });
 
