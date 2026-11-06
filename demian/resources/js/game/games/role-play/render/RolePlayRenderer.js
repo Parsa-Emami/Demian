@@ -53,7 +53,7 @@ export default class RolePlayRenderer extends CafeGameRenderer2D {
     renderNpc(ctx, npc) {
         const avatar = this.characters.sync(`npc:${npc.id}`, npc, this.deltaTime);
         if (avatar) {
-            drawSpriteCharacter(ctx, this.camera, avatar, { label: npc.name ?? npc.id });
+            drawSpriteCharacter(ctx, this.camera, avatar, { reducedMotion: this.context.settings?.resolvedReducedMotion?.() ?? false, label: npc.name ?? npc.id });
             return;
         }
         drawPixelActor(ctx, this.camera, npc, { color: npc.color, label: npc.name ?? npc.id, size: 0.95 });
@@ -62,7 +62,7 @@ export default class RolePlayRenderer extends CafeGameRenderer2D {
     renderPlayer(ctx) {
         const avatar = this.characters.sync('player', this.world.player, this.deltaTime);
         if (avatar) {
-            drawSpriteCharacter(ctx, this.camera, avatar, { player: true });
+            drawSpriteCharacter(ctx, this.camera, avatar, { reducedMotion: this.context.settings?.resolvedReducedMotion?.() ?? false, player: true });
             return;
         }
         drawPixelActor(ctx, this.camera, this.world.player, { color: this.world.player.color, player: true });

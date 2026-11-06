@@ -373,12 +373,12 @@
                 <section data-screen="motion-comparison" class="shell-screen shell-screen--modal motion-lab" role="dialog" aria-modal="true" aria-labelledby="motion-lab-title" aria-hidden="true" hidden>
                     <div class="motion-lab__panel">
                         <header class="motion-lab__header">
-                            <div><p class="shell-kicker">DEMIAN / MOTION STUDIO</p><h2 id="motion-lab-title">الگوی مادر حرکت</h2><p>تصویر فعلی شخصیت‌ها را کنار الگوی مفصلی مشترک ببین؛ اعضای هر خانواده با یک فاز حرکت می‌کنند.</p></div>
+                            <div><p class="shell-kicker">DEMIAN / MOTION STUDIO</p><h2 id="motion-lab-title">الگوی مادر حرکت</h2><p>حرکت واقعی شخصیت‌ها و مفصل‌های مشترک را هم‌زمان ببین؛ سرعت و فاز هر چهار نمونه یکی است.</p></div>
                             <button type="button" data-shell-action="close-modal" class="shell-button shell-button--ghost" data-screen-autofocus aria-label="بستن مقایسهٔ حرکت">بستن</button>
                         </header>
                         <div class="motion-lab__toolbar">
                             <label>حرکت<select data-motion-state><option value="idle">ایستادن</option><option value="walk">راه‌رفتن</option><option value="run" selected>دویدن</option><option value="sprint">دویدن سریع</option><option value="takeoff">بلندشدن</option><option value="jump">اوج پرش</option><option value="fall">فرود هوایی</option><option value="land">تماس با زمین</option><option value="slide">اسلاید</option></select></label>
-                            <label>جهت<select data-motion-facing><option value="1">راست</option><option value="-1">چپ</option></select></label>
+                            <label>جهت<select data-motion-facing><option value="1">راست</option><option value="-1">چپ</option><option value="s">جلو</option><option value="n">پشت</option><option value="se">جلو راست</option><option value="sw">جلو چپ</option><option value="ne">پشت راست</option><option value="nw">پشت چپ</option></select></label>
                             <label>سرعت <output data-motion-speed-value>6.0</output><input data-motion-speed type="range" min="0" max="9" step="0.1" value="6" aria-label="سرعت مقایسه"></label>
                             <button type="button" data-motion-toggle class="shell-button">توقف حرکت</button>
                             <button type="button" data-motion-step class="shell-button shell-button--ghost">یک فریم جلو</button>
@@ -387,7 +387,7 @@
                         </div>
                         <label class="motion-lab__timeline">فاز مشترک <output data-motion-phase-value>0٪</output><input data-motion-phase type="range" min="0" max="99" step="1" value="0" aria-label="فاز مشترک حرکت"></label>
                         <div class="motion-lab__cards" data-motion-cards></div>
-                        <p class="motion-lab__note">نقطهٔ طلایی یعنی تماس پا با زمین. تصویر فعلی هنوز از اطلس اختصاصی شخصیت است؛ الگوی مادر، مرجع انتقال هنری پس از بازبینی نمونه‌هاست.</p>
+                        <p class="motion-lab__note">نقطهٔ طلایی یعنی تماس پا با زمین. همین الگو بدن هر ۱۲ شخصیت را در بازی حرکت می‌دهد؛ بال و همراه، حرکت جداگانه دارند.</p>
                         <details class="motion-lab__roster"><summary>خانوادهٔ حرکتی هر ۱۲ شخصیت</summary><p data-motion-roster></p></details>
                     </div>
                 </section>

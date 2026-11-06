@@ -1,4 +1,5 @@
-import { MASTER_MOTION, motionCharacter, sampleMasterPose, motionAttachments, canonicalMotionState, normalizedPhase } from './MasterMotionLibrary.js';
+import SecondaryMotionController from './SecondaryMotionController.js';
+import { MASTER_MOTION, motionCharacter, sampleMasterPose, motionAttachments, canonicalMotionState, normalizedPhase, runtimeMotionClip } from './MasterMotionLibrary.js';
 
 export default class MasterMotionController {
     constructor(slug) {
@@ -11,22 +12,23 @@ export default class MasterMotionController {
         this.previousState = null;
         this.elapsed = 0;
         this.events = [];
+        this.secondary = new SecondaryMotionController(definition);
         this.pose = sampleMasterPose(definition.family);
-        this.attachments = motionAttachments(definition, this.pose);
+        this.attachments = this.secondary.sample(this.pose);
     }
 
-    advance({ state = 'idle', distance = 0, deltaTime = 0, progress = 0, facing = 1 } = {}) {
-        const mode = canonicalMotionState(state), clip = MASTER_MOTION.clips[mode];
+    advance({ state = 'idle', distance = 0, deltaTime = 0, progress = 0, facing = 1, direction = null, reducedMotion = false, context = 'world', speed = 0 } = {}) {
+        const mode = canonicalMotionState(state), clip = runtimeMotionClip(mode, context, speed);
         const dt = Number.isFinite(deltaTime) ? Math.min(.25, Math.max(0, deltaTime)) : 0;
         const travel = Number.isFinite(distance) ? Math.max(0, distance) : 0;
         if (clip?.strideLength) {
             this.phase += Math.min(travel / clip.strideLength, MASTER_MOTION.playback.maxStrideHz * dt);
             this.distance += travel;
         }
-        return this.sync({ state, phase: this.phase, progress, facing, deltaTime: dt });
+        return this.sync({ state, phase: this.phase, progress, facing, direction, reducedMotion, context, speed, deltaTime: dt });
     }
 
-    sync({ state = 'idle', phase = this.phase, progress = 0, facing = 1, deltaTime = 0 } = {}) {
+    sync({ state = 'idle', phase = this.phase, progress = 0, facing = 1, direction = null, reducedMotion = false, context = 'world', speed = 0, deltaTime = 0 } = {}) {
         this.events = [];
         const mode = canonicalMotionState(state), moving = Boolean(MASTER_MOTION.clips[mode]?.strideLength);
         const value = Number.isFinite(phase) ? phase : this.phase;
@@ -43,11 +45,23 @@ export default class MasterMotionController {
         }
         this.phase = value;
         this.elapsed += Number.isFinite(deltaTime) ? Math.min(.25, Math.max(0, deltaTime)) : 0;
-        this.pose = sampleMasterPose(this.definition.family, { state, phase: value, progress, facing, time: this.elapsed });
-        this.attachments = motionAttachments(this.definition, this.pose);
+        this.previousPose = this.pose;
+        this.pose = sampleMasterPose(this.definition.family, { state, phase: value, progress, facing, direction, context, speed, time: this.elapsed });
+        this.attachments = this.secondary.sample(this.pose, deltaTime, reducedMotion);
         this.previousPhase = value;
         this.previousState = mode;
         return this.pose;
+    }
+
+    sample(alpha = 1) {
+        const current = this.pose, previous = this.previousPose;
+        if (!previous || previous.state !== current.state || previous.direction !== current.direction) return current;
+        const t = Number.isFinite(alpha) ? Math.max(0, Math.min(1, alpha)) : 1;
+        const joints = Object.fromEntries(Object.entries(current.joints).map(([name, point]) => [name, {
+            x: previous.joints[name].x + (point.x - previous.joints[name].x) * t,
+            y: previous.joints[name].y + (point.y - previous.joints[name].y) * t,
+        }]));
+        return { ...current, joints, lean: previous.lean + (current.lean - previous.lean) * t };
     }
 
     reset() {
@@ -56,6 +70,7 @@ export default class MasterMotionController {
         this.previousPhase = null;
         this.previousState = null;
         this.elapsed = 0;
+        this.secondary = new SecondaryMotionController(this.definition);
         return this.sync();
     }
 }

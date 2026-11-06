@@ -18,6 +18,7 @@ for (const definition of MOTION_CHARACTERS) {
     const entry = roster.characters.find(item => item.slug === definition.slug);
     assert(entry, `Missing roster entry: ${definition.slug}`);
     entry.motion_family = definition.family;
+    entry.master_skin = { version: MASTER_MOTION.rollout.art, url: `assets/characters/master-skins-v2/${definition.slug}/runtime.json` };
     entry.motion_accessories = definition.accessories;
     const path = `public/assets/characters/${definition.slug}/manifests/${definition.slug}_motion_profile.json`;
     const profile = JSON.parse(readFileSync(resolve(root, path), 'utf8'));
@@ -28,3 +29,6 @@ for (const definition of MOTION_CHARACTERS) {
 }
 write(rosterPath, roster);
 console.log(`Master motion compiled: ${MOTION_CHARACTERS.length} characters, 2 families, ${hash.slice(0, 12)}`);
+
+const artSource = readFileSync(resolve(root, 'resources/game/art-direction.json'));
+write('public/assets/environments/art-direction-v1.json', { ...JSON.parse(artSource), sourceSha256: createHash('sha256').update(artSource).digest('hex') });

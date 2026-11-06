@@ -1,3 +1,4 @@
+import { MASTER_MOTION } from '../motion/MasterMotionLibrary.js';
 import CanvasCharacterAvatar from '../CanvasCharacterAvatar.js';
 import {
     BUILTIN_CHARACTER_SLUGS,
@@ -39,6 +40,7 @@ export default class CharacterVisualService {
     constructor({ eventBus, performanceProfile = null, storage = safeStorage() } = {}) {
         this.eventBus = eventBus;
         this.performanceProfile = performanceProfile;
+        this.qualityPreference = 'auto';
         this.storage = storage;
         this.activeSlug = readStoredSlug(storage) ?? DEFAULT_ACTIVE_SLUG;
         this.packPromises = new Map();
@@ -82,8 +84,12 @@ export default class CharacterVisualService {
         return roster[Math.abs(Number(index) || 0) % Math.max(roster.length, 1)] ?? this.activeSlug;
     }
 
+    setQualityPreference(value) {
+        this.qualityPreference = ['performance', 'balanced', 'high'].includes(value) ? value : 'auto';
+    }
+
     runtimeVariant({ player = false } = {}) {
-        const variants = characterRuntimeVariants(this.performanceProfile);
+        const variants = characterRuntimeVariants(this.qualityPreference === 'auto' ? this.performanceProfile : { tier: this.qualityPreference });
         return player ? variants.active : variants.npc;
     }
 
@@ -153,8 +159,18 @@ export default class CharacterVisualService {
             if (atlas?.meta?.artIntegrity === 'invalid') {
                 throw new Error(`Character art integrity rejected for ${slug}/${variant}.`);
             }
-            const spriteUrl = characterSpriteRevisionUrl(pair.spriteUrl, atlas);
+            const skinVariant = ['detail', 'runtime', 'lite'].includes(variant) ? variant : variant === 'desktop' ? 'detail' : variant === 'compact' ? 'lite' : 'runtime';
+            const skinBase = new URL(`assets/characters/master-skins-v2/${slug}/`, globalThis.document?.baseURI ?? globalThis.location?.href ?? 'http://localhost/');
+            const skinResponse = await fetch(new URL(`${skinVariant}.json`, skinBase), { cache: 'no-cache', credentials: 'same-origin', signal: controller.signal });
+            if (!skinResponse.ok) throw new Error(`Master skin load failed (${skinResponse.status}) for ${slug}/${skinVariant}.`);
+            const skin = await skinResponse.json();
+            if (skin.version !== 'master-skin-v2' || skin.slug !== slug || skin.variant !== skinVariant || !skin.views?.e) throw new Error(`Master skin contract rejected for ${slug}/${skinVariant}.`);
+            const spriteUrl = new URL(`${skin.image}?rev=${skin.imageSha256.slice(0,16)}`, skinBase).href;
             const image = await this.loadImage(spriteUrl, controller.signal);
+            atlas.masterSkin = skin; atlas.motion ??= {};
+            atlas.motion.locomotionProfile = { ...atlas.motion.locomotionProfile,
+                strideLengths: Object.fromEntries(['walk', 'run', 'sprint'].map(state => [state, MASTER_MOTION.clips[state].strideLength])),
+                maxStrideHz: MASTER_MOTION.playback.maxStrideHz };
             return Object.freeze({ slug, variant, atlas, image, ...pair, spriteUrl });
         } finally {
             globalThis.clearTimeout(timeout);

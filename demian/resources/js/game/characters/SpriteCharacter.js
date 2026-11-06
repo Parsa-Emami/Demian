@@ -296,6 +296,9 @@ export default class SpriteCharacter {
         this.applyAtlasVisualMetrics(atlas);
 
         this.animator = new SpriteAnimator(this.texture, atlas);
+        this.animator.masterMotion = previousAnimator.masterMotion ?? this.animator.masterMotion;
+        this.animator.locomotionPhase = previousAnimator.locomotionPhase;
+        this.animator.locomotionFrequency = previousAnimator.locomotionFrequency;
         if (this.blendTexture) this.blendTexture.dispose();
         this.blendTexture = this.texture.clone();
         this.blendTexture.wrapS = THREE.ClampToEdgeWrapping;

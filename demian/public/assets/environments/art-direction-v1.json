@@ -1,0 +1,59 @@
+{
+  "version": "demian-art-v1",
+  "palette": {
+    "oak": "#a27a4f",
+    "walnut": "#715039",
+    "sage": "#617461",
+    "plaster": "#c8bb9b",
+    "trim": "#ead8b5",
+    "stone": "#a9ada0",
+    "grout": "#6f7c6c",
+    "ink": "#24332e",
+    "upholstery": "#37574b",
+    "brass": "#c29c60",
+    "sea": "#779f9c",
+    "sky": "#b4cbd0"
+  },
+  "lighting": {
+    "key": "upper-left",
+    "temperature": "warm-neutral",
+    "shadow": "soft-contact"
+  },
+  "cafe": {
+    "projection": "existing-fbx-overhead",
+    "geometry": "unchanged",
+    "colliders": 321
+  },
+  "runner": {
+    "projection": "side-elevation",
+    "groundFraction": 0.86,
+    "layerWidth": 1280,
+    "layerHeight": 720,
+    "parallax": [
+      0.035,
+      0.12,
+      0.24
+    ],
+    "decodedBudgetBytes": 12582912,
+    "rasterScale": {
+      "performance": 0.5,
+      "balanced": 0.8,
+      "high": 1
+    },
+    "clearTravelBand": 0.2
+  },
+  "characters": {
+    "heightWorldUnits": 3.75,
+    "head": "authored-eight-view-rgba",
+    "body": "shared-articulated-textured-rig",
+    "footPivot": "ground",
+    "anatomicalLeft": "Far"
+  },
+  "reducedMotion": {
+    "decorativeParallax": false,
+    "ambientParticles": false,
+    "secondaryMotion": false,
+    "essentialMotion": true
+  },
+  "sourceSha256": "da0bf93b42aec605f27f89ad599942a16139789ab3ff0238b21e70040aecc947"
+}

@@ -1,3 +1,4 @@
+import { MASTER_MOTION, canonicalMotionState, runtimeMotionClip } from './motion/MasterMotionLibrary.js';
 import { CHARACTER_STRIDE_LENGTHS } from './CharacterLocomotionModel.js';
 
 function clamp(value, min, max) {
@@ -67,14 +68,19 @@ export function characterJumpPose(jumpVelocity = 0, jumpForce = 6.5) {
 }
 
 function syncMasterMotion(animator, state, deltaTime) {
-    animator.masterMotion?.sync({ state, phase: animator.locomotionPhase, progress: animator.progress(),
-        facing: animator.facing, deltaTime });
+    const master = animator.masterMotion;
+    if (!master) return;
+    const mode = canonicalMotionState(state);
+    const phase = MASTER_MOTION.clips[mode]?.strideLength ? animator.locomotionPhase : mode === 'idle' ? master.elapsed / MASTER_MOTION.clips.idle.period : animator.progress();
+    master.sync({ state, phase, progress: animator.progress(),
+        facing: animator.facing, direction: animator.direction, context: animator.motionContext, speed: animator.motionSpeed, deltaTime });
 }
 
 export function advanceCharacterAnimation(animator, {
     state, movementRatio = 0, deltaTime = 0, jumpVelocity = 0, jumpForce = 6.5,
     physicsOwnsJumpHeight = false, movementSpeed = null, travelledDistance = null, stateTime = 0, actionDuration = 0,
 } = {}) {
+    animator.motionSpeed = movementSpeed;
     const previousState = animator.motionState;
     animator.motionState = state;
     animator.locomotionFrequency = 0;
@@ -100,7 +106,8 @@ export function advanceCharacterAnimation(animator, {
             animator.locomotionPhase = Math.round(animator.locomotionPhase * 2) / 2;
         }
         const family = ['walk', 'tiptoe'].includes(state) ? 'walk' : state === 'sprint' ? 'sprint' : 'run';
-        const stride = profile.strideLengths?.[family] ?? CHARACTER_STRIDE_LENGTHS[family];
+        const contextual = animator.motionContext ? runtimeMotionClip(family, animator.motionContext, movementSpeed) : null;
+        const stride = contextual?.strideLength ?? profile.strideLengths?.[family] ?? CHARACTER_STRIDE_LENGTHS[family];
         const dt = clamp(deltaTime, 0, .25), maximum = profile.maxStrideHz ?? 1.55;
         const speed = Math.max(0, movementSpeed);
         const frequency = Math.min(maximum, speed / stride);

@@ -91,6 +91,7 @@ export default class CharacterManager {
         this.textureLoader = new THREE.TextureLoader();
         this.assetPromises = new Map();
         this.entityPromises = new Map();
+        this.variantRequests = new WeakMap();
         this.lastBootWarning = null;
         this.disposed = false;
         this.hydrationGeneration = 0;
@@ -276,10 +277,17 @@ export default class CharacterManager {
         return { lite: 1, compact: 2, runtime: 3, mobile: 4, desktop: 5, detail: 6, custom: 6 }[variant] ?? 0;
     }
 
-    async ensureEntityVariant(record, entity, variant) {
+    setVisualQuality(tier) {
+        this.runtimeVariants = characterRuntimeVariants({ tier });
+        if (this.activeEntity && this.activeRecord) return this.ensureEntityVariant(this.activeRecord, this.activeEntity, this.runtimeVariants.active, { force: true });
+        return Promise.resolve();
+    }
+
+    async ensureEntityVariant(record, entity, variant, { force = false } = {}) {
+        const token = Symbol(variant); this.variantRequests.set(entity, token);
         const currentVariant = entity.runtimeSpriteVariant ?? 'compact';
         const downgradeNpc = variant === 'lite' && entity !== this.activeEntity && !entity.isPlayerControlled;
-        if (currentVariant === variant || (!downgradeNpc && this.variantRank(variant) <= this.variantRank(currentVariant))) {
+        if (currentVariant === variant || (!force && !downgradeNpc && this.variantRank(variant) <= this.variantRank(currentVariant))) {
             return entity;
         }
 
@@ -296,7 +304,7 @@ export default class CharacterManager {
             return entity;
         }
 
-        if (this.disposed || this.entities.get(String(record.id)) !== entity || (variant === 'lite' && entity.isPlayerControlled)) {
+        if (this.disposed || this.variantRequests.get(entity) !== token || this.entities.get(String(record.id)) !== entity || (!force && variant === 'lite' && entity.isPlayerControlled)) {
             assets.texture?.dispose?.();
             return entity;
         }

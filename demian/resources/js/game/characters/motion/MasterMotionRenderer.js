@@ -1,6 +1,7 @@
-import { MASTER_MOTION, MOTION_BONES } from './MasterMotionLibrary.js';
+import { MASTER_MOTION, MOTION_BONES, projectMasterJoints } from './MasterMotionLibrary.js';
 
 export function drawMasterRig(ctx, pose, { x, ground, scale, color = '#d6e89c', attachments = [] } = {}) {
+    pose = { ...pose, joints: projectMasterJoints(pose) };
     ctx.save();
     ctx.translate(x, ground);
     ctx.scale(scale, -scale);

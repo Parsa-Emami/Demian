@@ -12,6 +12,7 @@ import tailwindcss from '@tailwindcss/vite';
  * Disabling Rolldown code splitting removes that failure class completely.
  */
 export default defineConfig({
+    base: './',
     plugins: [
         laravel({
             input: ['resources/js/app.js'],

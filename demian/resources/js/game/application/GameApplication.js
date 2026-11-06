@@ -422,6 +422,7 @@ export default class GameApplication {
         this.root.dataset.hudVisible = String(settings.hudVisible);
         this.root.dataset.hintsVisible = String(settings.hintsVisible);
         this.root.dataset.interfaceDensity = settings.interfaceDensity;
+        this.characterVisuals.setQualityPreference(settings.quality);
         this.root.dataset.soundEnabled = String(settings.soundEnabled);
         this.root.dataset.musicEnabled = String(settings.musicEnabled);
         this.activeGame?.applySettings?.(settings);

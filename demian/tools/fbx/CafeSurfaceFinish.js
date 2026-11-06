@@ -1,8 +1,8 @@
 import * as THREE from 'three';
+import art from '../../resources/game/art-direction.json' with { type: 'json' };
 
 export function applyCafeSurfaceFinish(model) {
-    const palette = Object.fromEntries(Object.entries({ oak: '#a27a4f', walnut: '#715039', sage: '#617461',
-        plaster: '#c8bb9b', trim: '#ead8b5', stone: '#a9ada0', grout: '#6f7c6c' })
+    const palette = Object.fromEntries(Object.entries(art.palette)
         .map(([key, value]) => [key, `vec3(${new THREE.Color(value).toArray().map(v => v.toFixed(6)).join(',')})`]));
     const materials = new Set();
     model.traverse(object => {

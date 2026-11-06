@@ -23,7 +23,11 @@
           ],
           "collision": "cosmetic"
         }
-      ]
+      ],
+      "master_skin": {
+        "version": "master-skin-v2",
+        "url": "assets/characters/master-skins-v2/darya/runtime.json"
+      }
     },
     {
       "slug": "setayesh",
@@ -35,7 +39,11 @@
       "manifest": "setayesh/manifests/character_manifest_v4.json",
       "has_shipped_assets": true,
       "motion_family": "female-base-v1",
-      "motion_accessories": []
+      "motion_accessories": [],
+      "master_skin": {
+        "version": "master-skin-v2",
+        "url": "assets/characters/master-skins-v2/setayesh/runtime.json"
+      }
     },
     {
       "slug": "uzudi",
@@ -55,7 +63,11 @@
           "amplitude": 0.18,
           "phaseOffset": 0
         }
-      ]
+      ],
+      "master_skin": {
+        "version": "master-skin-v2",
+        "url": "assets/characters/master-skins-v2/uzudi/runtime.json"
+      }
     },
     {
       "slug": "negar",
@@ -67,7 +79,11 @@
       "manifest": "negar/manifests/character_manifest_v4.json",
       "has_shipped_assets": true,
       "motion_family": "female-base-v1",
-      "motion_accessories": []
+      "motion_accessories": [],
+      "master_skin": {
+        "version": "master-skin-v2",
+        "url": "assets/characters/master-skins-v2/negar/runtime.json"
+      }
     },
     {
       "slug": "tiam",
@@ -89,7 +105,11 @@
           ],
           "collision": "cosmetic"
         }
-      ]
+      ],
+      "master_skin": {
+        "version": "master-skin-v2",
+        "url": "assets/characters/master-skins-v2/tiam/runtime.json"
+      }
     },
     {
       "slug": "amirreza",
@@ -109,7 +129,11 @@
           "amplitude": 0.18,
           "phaseOffset": 0
         }
-      ]
+      ],
+      "master_skin": {
+        "version": "master-skin-v2",
+        "url": "assets/characters/master-skins-v2/amirreza/runtime.json"
+      }
     },
     {
       "slug": "hanna",
@@ -121,7 +145,11 @@
       "manifest": "hanna/manifests/character_manifest_v4.json",
       "has_shipped_assets": true,
       "motion_family": "female-base-v1",
-      "motion_accessories": []
+      "motion_accessories": [],
+      "master_skin": {
+        "version": "master-skin-v2",
+        "url": "assets/characters/master-skins-v2/hanna/runtime.json"
+      }
     },
     {
       "slug": "ainaz",
@@ -133,7 +161,11 @@
       "manifest": "ainaz/manifests/character_manifest_v4.json",
       "has_shipped_assets": true,
       "motion_family": "female-base-v1",
-      "motion_accessories": []
+      "motion_accessories": [],
+      "master_skin": {
+        "version": "master-skin-v2",
+        "url": "assets/characters/master-skins-v2/ainaz/runtime.json"
+      }
     },
     {
       "slug": "arsal",
@@ -145,7 +177,11 @@
       "manifest": "arsal/manifests/character_manifest_v4.json",
       "has_shipped_assets": true,
       "motion_family": "male-base-v1",
-      "motion_accessories": []
+      "motion_accessories": [],
+      "master_skin": {
+        "version": "master-skin-v2",
+        "url": "assets/characters/master-skins-v2/arsal/runtime.json"
+      }
     },
     {
       "slug": "iman",
@@ -157,7 +193,11 @@
       "manifest": "iman/manifests/character_manifest_v4.json",
       "has_shipped_assets": true,
       "motion_family": "male-base-v1",
-      "motion_accessories": []
+      "motion_accessories": [],
+      "master_skin": {
+        "version": "master-skin-v2",
+        "url": "assets/characters/master-skins-v2/iman/runtime.json"
+      }
     },
     {
       "slug": "amin",
@@ -169,7 +209,11 @@
       "manifest": "amin/manifests/character_manifest_v4.json",
       "has_shipped_assets": true,
       "motion_family": "male-base-v1",
-      "motion_accessories": []
+      "motion_accessories": [],
+      "master_skin": {
+        "version": "master-skin-v2",
+        "url": "assets/characters/master-skins-v2/amin/runtime.json"
+      }
     },
     {
       "slug": "hossein",
@@ -181,12 +225,16 @@
       "manifest": "hossein/manifests/character_manifest_v4.json",
       "has_shipped_assets": true,
       "motion_family": "male-base-v1",
-      "motion_accessories": []
+      "motion_accessories": [],
+      "master_skin": {
+        "version": "master-skin-v2",
+        "url": "assets/characters/master-skins-v2/hossein/runtime.json"
+      }
     }
   ],
   "master_motion": {
     "version": "master-motion-v1",
-    "source_sha256": "ab27808dda81e4841571994a346522d5fdde544478dd01c6434201449da4aace",
+    "source_sha256": "7b75f5e49242a92dd7ec0cab71918b5a5fa4834ddd02a74634edd5ffc88557f9",
     "url": "assets/characters/master-motion-v1.json"
   }
 }

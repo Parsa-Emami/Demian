@@ -48,7 +48,7 @@ export default class EventRenderer extends CafeGameRenderer2D {
     drawPlayer(ctx, player, deltaTime) {
         const avatar = this.characters.sync('player', player, deltaTime);
         if (avatar) {
-            drawSpriteCharacter(ctx, this.camera, avatar, { player: true });
+            drawSpriteCharacter(ctx, this.camera, avatar, { reducedMotion: this.context.settings?.resolvedReducedMotion?.() ?? false, player: true });
             return;
         }
         drawPixelActor(ctx, this.camera, player, { color: P.cyan, player: true, label: '' });

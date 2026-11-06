@@ -25,10 +25,10 @@
   },
   "master_motion": {
     "version": "master-motion-v1",
-    "rig_version": 1,
+    "rig_version": 2,
     "family": "female-base-v1",
-    "source_sha256": "ab27808dda81e4841571994a346522d5fdde544478dd01c6434201449da4aace",
-    "art_status": "authored-atlas",
+    "source_sha256": "7b75f5e49242a92dd7ec0cab71918b5a5fa4834ddd02a74634edd5ffc88557f9",
+    "art_status": "master-skin-v2",
     "accessories": [
       {
         "kind": "pishi",

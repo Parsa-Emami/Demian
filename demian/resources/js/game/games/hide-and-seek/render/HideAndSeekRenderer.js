@@ -62,7 +62,7 @@ export default class HideAndSeekRenderer extends CafeGameRenderer2D {
         const label = role === 'seeker' ? 'SEEKER' : '';
 
         if (avatar) {
-            drawSpriteCharacter(ctx, this.camera, avatar, {
+            drawSpriteCharacter(ctx, this.camera, avatar, { reducedMotion: this.context.settings?.resolvedReducedMotion?.() ?? false,
                 player: participant.id === playerId,
                 eliminated: participant.eliminated,
                 opacity: hidden ? 0.42 : 1,

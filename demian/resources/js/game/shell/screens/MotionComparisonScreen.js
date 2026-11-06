@@ -1,12 +1,14 @@
+import { drawMasterSkin } from '../../characters/motion/MasterSkinRenderer.js';
 import BaseScreen from './BaseScreen.js';
 import MasterMotionController from '../../characters/motion/MasterMotionController.js';
 import { MASTER_MOTION, MOTION_CHARACTERS, MOTION_SAMPLES, motionCharacter, motionFamily, normalizedPhase } from '../../characters/motion/MasterMotionLibrary.js';
 import { drawMasterRig } from '../../characters/motion/MasterMotionRenderer.js';
 
 export default class MotionComparisonScreen extends BaseScreen {
-    constructor({ visuals, settings, ...options }) {
+    constructor({ visuals, settings, runtime, ...options }) {
         super({ ...options, layer: 'modal' });
         this.visuals = visuals;
+        this.runtime = runtime;
         this.settings = settings;
         this.cards = new Map();
         this.generation = 0;
@@ -15,6 +17,7 @@ export default class MotionComparisonScreen extends BaseScreen {
         this.speed = 6;
         this.playing = !settings.resolvedReducedMotion();
         this.facing = 1;
+        this.direction = 'e';
         this.lastTime = null;
         this.request = null;
         this.onInput = this.onInput.bind(this);
@@ -27,6 +30,8 @@ export default class MotionComparisonScreen extends BaseScreen {
     }
 
     async beforeOpen() {
+        this.resumeRuntimeOnClose = !this.runtime?.paused;
+        this.runtime?.pause({ notifyGame: false });
         this.phase = 0;
         this.lastTime = null;
         this.playing = !this.settings.resolvedReducedMotion();
@@ -38,7 +43,7 @@ export default class MotionComparisonScreen extends BaseScreen {
         const assignments = MOTION_SAMPLES.map((slug, index) => {
             const article = document.createElement('article');
             article.className = 'motion-card';
-            article.innerHTML = `<header><label for="motion-character-${index}">شخصیت ${index + 1}</label><select id="motion-character-${index}" data-motion-character="${index}">${options}</select></header><p data-motion-family></p><canvas width="560" height="360" aria-label="مقایسهٔ تصویر شخصیت با الگوی مادر"></canvas><div class="motion-card__legend"><span>تصویر فعلی</span><span>الگوی مادر</span></div><p class="motion-card__status" role="status" data-motion-status>در حال آماده‌سازی…</p>`;
+            article.innerHTML = `<header><label for="motion-character-${index}">شخصیت ${index + 1}</label><select id="motion-character-${index}" data-motion-character="${index}">${options}</select></header><p data-motion-family></p><canvas width="560" height="360" aria-label="مقایسهٔ تصویر شخصیت با الگوی مادر"></canvas><div class="motion-card__legend"><span>پوستهٔ متصل به الگو</span><span>الگوی مادر</span></div><p class="motion-card__status" role="status" data-motion-status>در حال آماده‌سازی…</p>`;
             article.querySelector('select').value = slug;
             host.append(article);
             this.cards.set(index, { article, slug, avatar: null, controller: null });
@@ -76,6 +81,8 @@ export default class MotionComparisonScreen extends BaseScreen {
     }
 
     async beforeClose() {
+        if (this.resumeRuntimeOnClose) this.runtime?.resume({ notifyGame: false });
+        this.resumeRuntimeOnClose = false;
         ++this.generation;
         if (this.request !== null) cancelAnimationFrame(this.request);
         this.request = null;
@@ -120,7 +127,7 @@ export default class MotionComparisonScreen extends BaseScreen {
         if (input.matches('[data-motion-character]')) this.loadCard(Number(input.dataset.motionCharacter), input.value);
         if (input.matches('[data-motion-state]')) this.state = input.value;
         if (input.matches('[data-motion-speed]')) this.speed = Number(input.value);
-        if (input.matches('[data-motion-facing]')) this.facing = Number(input.value);
+        if (input.matches('[data-motion-facing]')) { this.direction = input.value === '1' ? 'e' : input.value === '-1' ? 'w' : input.value; this.facing = this.direction.includes('w') ? -1 : 1; }
         if (input.matches('[data-motion-phase]')) {
             this.playing = false;
             this.phase = normalizedPhase(Number(input.value) / 100);
@@ -135,10 +142,10 @@ export default class MotionComparisonScreen extends BaseScreen {
         this.lastTime = time;
         if (this.playing) {
             const clip = MASTER_MOTION.clips[this.state];
-            const frequency = clip?.strideLength ? Math.min(1.55, this.speed / clip.strideLength) : this.state === 'idle' ? 1 / 2.4 : .7;
+            const frequency = clip?.strideLength ? Math.min(MASTER_MOTION.playback.maxStrideHz, this.speed / clip.strideLength) : this.state === 'idle' ? 1 / 2.4 : .7;
             this.phase = normalizedPhase(this.phase + frequency * dt);
+            this.render(dt);
         }
-        this.render(dt);
         this.request = requestAnimationFrame(this.tick);
     }
 
@@ -150,29 +157,18 @@ export default class MotionComparisonScreen extends BaseScreen {
         this.element.querySelector('[data-motion-speed-value]').textContent = `${this.speed.toFixed(1)}`;
         this.cards.forEach(card => {
             const ctx = card.article.querySelector('canvas').getContext('2d');
-            const pose = card.controller.sync({ state: this.state, phase, progress: phase, facing: this.facing, deltaTime: dt });
+            const pose = card.controller.sync({ state: this.state, phase, progress: phase, facing: this.facing, direction: this.direction, reducedMotion: this.settings.resolvedReducedMotion(), deltaTime: dt });
             const avatar = card.avatar;
             ctx.clearRect(0, 0, 560, 360);
             ctx.fillStyle = '#111e1b'; ctx.fillRect(0, 0, 560, 360);
             ctx.strokeStyle = '#34443b'; ctx.lineWidth = 1;
-            ctx.beginPath(); ctx.moveTo(12, 302); ctx.lineTo(548, 302); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(12, 286); ctx.lineTo(548, 286); ctx.stroke();
             ctx.strokeStyle = '#25392f'; ctx.beginPath(); ctx.moveTo(280, 28); ctx.lineTo(280, 326); ctx.stroke();
             if (avatar) {
-                const animator = avatar.animator;
-                animator.play(this.state);
-                animator.setDirection(this.facing > 0 ? 'e' : 'w');
-                animator.setFacing(this.facing);
-                if (['walk', 'run', 'sprint', 'idle', 'slide'].includes(this.state)) animator.seekLoop(phase / Math.max(1, animator.animation.cycleCount ?? 1));
-                else animator.seek(phase);
-                const f = avatar.atlas.frames[animator.currentFrameName()];
-                if (f) {
-                    const size = 244 / (avatar.atlas.render?.referenceBodyHeightRatio ?? .7);
-                    const pivot = avatar.atlas.pivot ?? { x: .5, y: .94 };
-                    ctx.imageSmoothingEnabled = true;
-                    ctx.drawImage(avatar.texture.image, f.x, f.y, f.w, f.h, 141 - size * pivot.x, 302 - size * pivot.y, size, size);
-                }
+                drawMasterSkin(ctx, avatar.texture.image, avatar.atlas.masterSkin, pose, { x: 141, ground: 286, height: 220,
+                    reducedMotion: this.settings.resolvedReducedMotion(), attachments: card.controller.attachments });
             }
-            drawMasterRig(ctx, pose, { x: 418, ground: 302, scale: 274,
+            drawMasterRig(ctx, pose, { x: 418, ground: 286, scale: 220,
                 color: card.controller.definition.family === 'female-base-v1' ? '#d7e5ab' : '#a5d8de', attachments: card.controller.attachments });
         });
     }

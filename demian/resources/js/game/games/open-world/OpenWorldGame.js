@@ -565,6 +565,7 @@ export default class OpenWorldGame extends BaseGame {
         this.minimumPixelRatio = profile.quality === 'performance' ? .72 : .82;
         this.pixelRatio = Math.min(globalThis.devicePixelRatio || 1, this.maxPixelRatio);
         this.pixelRenderer.cafe.setQuality(settings.quality);
+        this.characterManager.setVisualQuality(profile.quality);
         this.qualityAccumulator = 0; this.qualityFrames = 0;
         this.resize({ reframe: false });
     }

@@ -69,7 +69,7 @@ export default class ArcadeMiniGameRenderer {
 
     drawPlayer(ctx, avatar, { label = 'PLAYER 1', opacity = 1 } = {}) {
         if (!avatar) return;
-        drawSpriteCharacter(ctx, this.camera, avatar, { label, player: true, opacity });
+        drawSpriteCharacter(ctx, this.camera, avatar, { reducedMotion: this.context.settings?.resolvedReducedMotion?.() ?? false, label, player: true, opacity });
     }
 
     finish(ctx) {

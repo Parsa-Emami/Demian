@@ -128,7 +128,7 @@ export default class OpenWorldPixelRenderer {
                 y: position?.z ?? 0,
                 draw: () => drawSpriteCharacter(ctx, this.camera, entity, {
                     player: entity === characterManager.activeEntity,
-                    alpha,
+                    alpha, reducedMotion,
                     label: entity === characterManager.activeEntity ? '' : (entity.character?.name ?? entity.character?.slug ?? id),
                 }),
             });

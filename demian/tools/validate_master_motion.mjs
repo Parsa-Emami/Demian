@@ -16,7 +16,7 @@ for (const entry of MOTION_CHARACTERS) {
     assert.equal(profile.master_motion.source_sha256, hash);
     assert.equal(profile.master_motion.family, entry.family);
     assert.equal(roster.characters.find(item => item.slug === entry.slug).motion_family, entry.family);
-    assert.equal(profile.master_motion.art_status, 'authored-atlas');
+    assert.equal(profile.master_motion.art_status, 'master-skin-v2');
     for (const state of ['idle', 'walk', 'run', 'sprint', 'takeoff', 'jump', 'fall', 'land', 'slide']) {
         for (let i = 0; i <= 48; i++) {
             const pose = sampleMasterPose(entry.family, { state, phase: i / 48, progress: i / 48 });

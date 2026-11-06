@@ -1,0 +1,13 @@
+{"version":"master-skin-v2","directions":["e","se","s","sw","w","nw","n","ne"],"characters":{
+"darya":{"shirt":"#25343e","trousers":"#454442","skin":"#e9b18b","sole":"#d8d5c6","sleeve":0.42,"style":"tee"},
+"setayesh":{"shirt":"#292b2e","trousers":"#36373a","skin":"#e8b58e","sole":"#c5beb0","sleeve":0.43,"style":"tee","tattoo":true,"necklace":true},
+"uzudi":{"shirt":"#333337","trousers":"#6a6650","skin":"#c99871","sole":"#d3c5a6","sleeve":0.43,"style":"tee","shorts":true,"fabric":"camo","tattoo":true},
+"negar":{"shirt":"#d9be4e","trousers":"#454346","skin":"#edb88d","sole":"#e9d8b3","sleeve":0.43,"style":"collar","watch":"#25282c","necklace":true,"scarf":true},
+"tiam":{"shirt":"#242b3c","trousers":"#9d3364","skin":"#e3aa85","sole":"#e2d1ad","sleeve":0.43,"style":"tee","fabric":"plaid","wideLeg":true},
+"amirreza":{"shirt":"#265aa0","trousers":"#263345","skin":"#d2a278","sole":"#ddcaa2","sleeve":0.64,"style":"collar","watch":"#a6aaa9","backStar":true},
+"hanna":{"shirt":"#292c34","trousers":"#292c34","skin":"#edbb94","sole":"#29292e","sleeve":1,"style":"blazer","dress":true,"handbag":true},
+"ainaz":{"shirt":"#e1d1ad","trousers":"#e3d2b1","skin":"#efc4a1","sole":"#d8c7a7","sleeve":0.66,"style":"collar","wideLeg":true,"bracelet":true,"necklace":true},
+"arsal":{"shirt":"#303137","trousers":"#303137","skin":"#d6aa82","sole":"#28282c","sleeve":1,"style":"collar","tie":true,"belt":true},
+"iman":{"shirt":"#303035","trousers":"#353438","skin":"#ce9e76","sole":"#5c5b57","sleeve":0.44,"style":"collar","watch":"#242629"},
+"amin":{"shirt":"#207f79","trousers":"#414348","skin":"#d7a57b","sole":"#414144","sleeve":0.46,"style":"collar","watch":"#b5bab8"},
+"hossein":{"shirt":"#2e3540","trousers":"#303238","skin":"#d3a17d","sole":"#292b2c","sleeve":1,"style":"collar","belt":true}}}

@@ -66,7 +66,7 @@ export default class GameShell {
         this.resultsScreen = new ResultsScreen({ id: SCREEN_IDS.RESULTS, element: screen(SCREEN_IDS.RESULTS), animation: this.animation });
         this.leaderboardScreen = new LeaderboardScreen({ id: SCREEN_IDS.LEADERBOARD, element: screen(SCREEN_IDS.LEADERBOARD), animation: this.animation, service: this.app.leaderboards });
 
-        this.motionScreen = new MotionComparisonScreen({ id: SCREEN_IDS.MOTION, element: screen(SCREEN_IDS.MOTION), animation: this.animation, visuals: this.app.characterVisuals, settings: this.settings });
+        this.motionScreen = new MotionComparisonScreen({ id: SCREEN_IDS.MOTION, element: screen(SCREEN_IDS.MOTION), animation: this.animation, visuals: this.app.characterVisuals, settings: this.settings, runtime: this.app.runtime });
 
         [
             this.motionScreen,

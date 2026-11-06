@@ -48,23 +48,39 @@ export function masterFootPath(phase, clip) {
 }
 
 export function canonicalMotionState(state) {
-    return ({ breathe: 'idle', blink: 'idle', ready: 'idle', tiptoe: 'walk', skid: 'run',
+    return MASTER_MOTION.poseAliases[state] ?? ({ breathe: 'idle', blink: 'idle', ready: 'idle', tiptoe: 'walk', skid: 'run',
         dash: 'sprint', hop: 'jump', hover: 'jump', dodge: 'slide', crouch: 'slide' })[state] ?? state;
 }
 
-export function sampleMasterPose(familyId, { state = 'idle', phase = 0, progress = 0, facing = 1, time = 0 } = {}) {
+export function runtimeMotionClip(state, context = 'world', speed = 0) {
+    const base = MASTER_MOTION.clips[canonicalMotionState(state)], profile = MASTER_MOTION.contexts?.[context];
+    if (!base?.strideLength || !profile || !Number.isFinite(speed) || speed <= 0) return base;
+    const stance = Math.min(profile.maximumStance, Math.max(profile.minimumStance, profile.stepWidth * profile.bodyWorldHeight * profile.cadenceHz / speed));
+    return { ...base, stepWidth: profile.stepWidth, lift: profile.lift, stance, strideLength: profile.stepWidth * profile.bodyWorldHeight / stance };
+}
+
+export function sampleMasterPose(familyId, { state = 'idle', phase = 0, progress = 0, facing = 1, time = 0, direction = null, context = 'world', speed = 0 } = {}) {
     const family = motionFamily(familyId);
     if (!family) throw new RangeError(`Unknown motion family: ${familyId}`);
+    if (['turn', 'spin'].includes(state)) direction = ['e', 'se', 's', 'sw', 'w', 'nw', 'n', 'ne'][Math.floor(normalizedPhase(progress) * 8)];
     const rig = MASTER_MOTION.skeleton, p = normalizedPhase(phase), t = clamp01(progress);
-    const mode = canonicalMotionState(state), clip = MASTER_MOTION.clips[mode];
+    const mode = canonicalMotionState(state), clip = runtimeMotionClip(mode, context, speed);
     const ground = Boolean(clip?.strideLength);
     const airborne = ['takeoff', 'jump', 'fall'].includes(mode);
     const slide = mode === 'slide';
     const landing = mode === 'land' ? Math.sin(t * Math.PI) : 0;
-    const bob = ground ? -Math.cos(p * TAU * 2) * clip.bob : Math.sin((Number.isFinite(time) ? time : 0) * TAU / MASTER_MOTION.clips.idle.period) * .002;
+    const bob = ground ? -Math.cos(p * TAU * 2) * clip.bob : Math.sin(p * TAU) * .002;
     const lean = ground ? family.lean[mode] : slide ? -1.4 : airborne ? .08 : 0;
     const pelvis = point(ground ? Math.sin(p * TAU) * family.hipSway : 0,
-        slide ? .075 : rig.hipHeight + bob - landing * .045);
+        slide ? .06 : rig.hipHeight + bob - landing * .045);
+    for (const [offset, depth] of [[0, 1], [.5, -1]]) {
+        const foot = ground ? masterFootPath(p + offset, clip) : { x: depth * .055, y: 0 };
+        if (!slide && !airborne) {
+            const reach = rig.upperLeg + rig.lowerLeg - .0001;
+            const dx = foot.x - pelvis.x - depth * .014;
+            pelvis.y = Math.min(pelvis.y, foot.y + Math.sqrt(Math.max(.001, reach * reach - dx * dx)));
+        }
+    }
     const chest = point(pelvis.x + Math.sin(lean) * (rig.chestHeight - rig.hipHeight), pelvis.y + Math.cos(lean) * (rig.chestHeight - rig.hipHeight));
     const neck = point(chest.x + Math.sin(lean) * .065, chest.y + .065);
     const joints = { pelvis, chest, neck, head: point(neck.x, neck.y + rig.headHeight - rig.chestHeight - .065) };
@@ -87,17 +103,23 @@ export function sampleMasterPose(familyId, { state = 'idle', phase = 0, progress
         const counterRotation = ground ? Math.sin(p * TAU) * family.shoulderCounterRotation : 0;
         const shoulder = point(chest.x + depth * rig.shoulderSpread, chest.y - .015 + counterRotation * depth);
         const swing = ground ? -Math.sin((p + offset) * TAU) * clip.armSwing * family.armSwingScale : .05 * depth;
-        const angle = swing + lean;
+        const angle = slide ? -1.4 : swing + lean;
         const elbow = point(shoulder.x + Math.sin(angle) * rig.upperArm, shoulder.y - Math.cos(angle) * rig.upperArm);
-        const bend = ground ? clip.elbowBend + family.armBendOffset : airborne ? .9 : slide ? 1.5 : .15;
+        const bend = ground ? clip.elbowBend + family.armBendOffset : airborne ? .9 : slide ? 2.75 : .15;
         const wrist = point(elbow.x + Math.sin(angle + bend) * rig.lowerArm, elbow.y - Math.cos(angle + bend) * rig.lowerArm);
         joints[`shoulder${side}`] = shoulder;
         joints[`elbow${side}`] = elbow;
         joints[`wrist${side}`] = wrist;
+        if (['wave', 'salute', 'celebrate', 'win', 'dance', 'taunt', 'guitar', 'attack'].includes(mode) && (side === 'Near' || ['celebrate', 'win', 'dance'].includes(mode))) {
+            const rotation = mode === 'attack' ? 1.8 : 2 + Math.sin(p * TAU * 2) * .28;
+            const arm = point(shoulder.x + Math.sin(rotation) * rig.upperArm, shoulder.y - Math.cos(rotation) * rig.upperArm);
+            joints[`elbow${side}`] = arm;
+            joints[`wrist${side}`] = point(arm.x + Math.sin(rotation - .8) * rig.lowerArm, arm.y - Math.cos(rotation - .8) * rig.lowerArm);
+        }
     }
     if (facing < 0) for (const joint of Object.values(joints)) joint.x *= -1;
     return { version: MASTER_MOTION.version, family: familyId, state: mode, phase: p, progress: t, joints,
-        contacts, lean: lean * (facing < 0 ? -1 : 1), facing: facing < 0 ? -1 : 1 };
+        contacts, context, speed, time, direction: direction ?? (facing < 0 ? 'w' : 'e'), lean: lean * (facing < 0 ? -1 : 1), facing: facing < 0 ? -1 : 1 };
 }
 
 export function motionAttachments(definition, pose) {
@@ -111,4 +133,17 @@ export function motionAttachments(definition, pose) {
             rotation: wing ? Math.sin(phase * TAU) * amplitude : 0,
             extension: wing ? (['takeoff', 'jump', 'fall'].includes(pose.state) ? 1 : pose.state === 'slide' ? .15 : .65) : 0 };
     });
+}
+
+export function projectMasterJoints(pose, direction = pose.direction) {
+    const vectors = { e: [1, 0], se: [.7071, .7071], s: [0, 1], sw: [-.7071, .7071], w: [-1, 0], nw: [-.7071, -.7071], n: [0, -1], ne: [.7071, -.7071] };
+    const [horizontal, depth] = vectors[direction] ?? vectors.e;
+    const output = {};
+    for (const [name, joint] of Object.entries(pose.joints)) {
+        const side = name.endsWith('Near') ? 1 : name.endsWith('Far') ? -1 : 0;
+        const lateral = side * (/shoulder|elbow|wrist/.test(name) ? .115 : .065);
+        const sagittal = joint.x * pose.facing;
+        output[name] = point(sagittal * horizontal - lateral * depth, joint.y - sagittal * depth);
+    }
+    return output;
 }

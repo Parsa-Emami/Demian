@@ -1,3 +1,4 @@
+import { drawMasterSkin } from '../characters/motion/MasterSkinRenderer.js';
 import { characterFrameWorldSize } from '../characters/CharacterVisualContract.js';
 import { cssColor, PIXEL_PALETTE as P } from './PixelPalette.js';
 import { drawCharacterAbility } from '../characters/abilities/CharacterAbilityRenderer.js';
@@ -126,6 +127,7 @@ export function drawSpriteCharacter(ctx, camera, entity, {
     opacity = 1,
     eliminated = false,
     alpha = 1,
+    reducedMotion = false,
 } = {}) {
     const image = entity?.texture?.image ?? entity?.texture?.source?.data;
     const sample = entity?.animator?.sample?.(alpha);
@@ -174,7 +176,9 @@ export function drawSpriteCharacter(ctx, camera, entity, {
     ctx.rotate(metrics.rotation);
     const destX = -metrics.pivotX * metrics.frameWidth;
     const destY = -metrics.pivotY * metrics.frameHeight;
-    ctx.drawImage(image, frame.x, frame.y, frame.w, frame.h, destX, destY, metrics.frameWidth, metrics.frameHeight);
+    const skinned = entity.atlas.masterSkin && drawMasterSkin(ctx, image, entity.atlas.masterSkin, entity.animator.masterMotion.sample(alpha),
+        { height: metrics.bodyHeight, reducedMotion, elevation: metrics.jumpHeight * camera.pixelsPerUnit / metrics.bodyHeight, attachments: entity.animator.masterMotion.attachments });
+    if (!skinned) ctx.drawImage(image, frame.x, frame.y, frame.w, frame.h, destX, destY, metrics.frameWidth, metrics.frameHeight);
 
     // Opt-in sub-frame smoothing: characters whose atlas sets
     // render.frameBlend cross-fade in a sliver of the upcoming frame,
@@ -182,7 +186,7 @@ export function drawSpriteCharacter(ctx, camera, entity, {
     // any extra art. Every other character's atlas has no such flag, so
     // this block never runs for them and the draw above is unchanged.
     const blendConfig = entity?.atlas?.render;
-    if (blendConfig?.frameBlend && typeof entity?.animator?.nextFrameName === 'function') {
+    if (!skinned && blendConfig?.frameBlend && typeof entity?.animator?.nextFrameName === 'function') {
         const nextFrameName = sample?.nextFrameName ?? entity.animator.nextFrameName();
         const nextFrame = nextFrameName ? entity?.atlas?.frames?.[nextFrameName] : null;
         const maxAlpha = Math.min(0.65, Math.max(0, Number(blendConfig.frameBlendMaxAlpha) || 0.3));
