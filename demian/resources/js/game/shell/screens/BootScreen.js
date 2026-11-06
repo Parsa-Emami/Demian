@@ -10,6 +10,7 @@ export default class BootScreen extends BaseScreen {
 
     setProgress(progress, message = null) {
         const safe = Math.min(100, Math.max(0, Number(progress) || 0));
+        this.bar?.setAttribute('aria-valuenow', String(Math.round(safe)));
         this.bar?.style.setProperty('--boot-progress', `${safe}%`);
         if (this.value) this.value.textContent = `${Math.round(safe)}%`;
         if (message && this.message) this.message.textContent = message;

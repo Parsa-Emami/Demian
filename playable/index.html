@@ -19,6 +19,8 @@
     <meta name="csrf-token" content="">
     <meta name="demian-arcade-api" content="">
 
+    <link rel="preload" as="image" href="assets/environments/cafe-runner-v1/wordmark.png" fetchpriority="high">
+
     <title>Demian Game Platform · Café Game Room</title>
 
     <script>
@@ -49,8 +51,8 @@
         })();
     </script>
 
-    <link rel="stylesheet" href="build/assets/app-hDnB4Eck.css">
-<script type="module" src="build/assets/app-GquY1JCl.js"></script>
+    <link rel="stylesheet" href="build/assets/app-CJSK9q5q.css">
+<script type="module" src="build/assets/app-CAVL5zON.js"></script>
 </head>
 
 <body class="min-h-full bg-[#050610] text-white">
@@ -301,16 +303,15 @@
                     aria-label="راه‌اندازی دمیان"
                 >
                     <div class="boot-console">
-                        <div class="boot-console__mark" aria-hidden="true">D</div>
-                        <p class="shell-kicker">DEMIAN GAME PLATFORM</p>
-                        <h1>CAFÉ DEMIAN</h1>
+                        <img class="boot-console__logo" src="assets/environments/cafe-runner-v1/wordmark.png" width="1637" height="553" alt="دمیان · DEMIAN" fetchpriority="high" decoding="async">
+                        <h1 class="sr-only">کافه دمیان</h1>
                         <p data-boot-message class="boot-console__message">در حال راه‌اندازی هسته‌ی دمیان…</p>
-                        <div data-boot-progress-bar class="shell-progress shell-progress--boot">
+                        <div data-boot-progress-bar class="shell-progress shell-progress--boot" role="progressbar" aria-label="پیشرفت بارگذاری دمیان" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
                             <span></span>
                         </div>
                         <div class="boot-console__meta">
                             <span data-boot-progress-value>0%</span>
-                            <span>CORE / RENDERER / INPUT / SHELL</span>
+                            <span>به کافهٔ دمیان خوش آمدی</span>
                         </div>
                     </div>
                 </section>
@@ -349,6 +350,7 @@
                             </button>
                             <button type="button" data-shell-action="leaderboard" class="shell-button shell-button--ghost">لیدربورد کافه <b aria-hidden="true">♛</b></button>
                         </div>
+                        <button type="button" data-shell-action="motion-comparison" class="shell-button shell-button--ghost">مقایسهٔ الگوی حرکت</button>
                         <button type="button" data-sidebar-toggle class="shell-button shell-button--ghost menu-character-button">انتخاب کاراکتر <span aria-hidden="true">◉</span></button>
                         <div data-menu-reveal class="cafe-menu__footer">
                             <span>۲ بازی · ۱۲ کاراکتر</span>
@@ -362,6 +364,28 @@
                         </div>
                         <div class="cafe-cabinet__controls"><i></i><i></i><i></i></div>
                     </aside>
+                </section>
+
+                <section data-screen="motion-comparison" class="shell-screen shell-screen--modal motion-lab" role="dialog" aria-modal="true" aria-labelledby="motion-lab-title" aria-hidden="true" hidden>
+                    <div class="motion-lab__panel">
+                        <header class="motion-lab__header">
+                            <div><p class="shell-kicker">DEMIAN / MOTION STUDIO</p><h2 id="motion-lab-title">الگوی مادر حرکت</h2><p>تصویر فعلی شخصیت‌ها را کنار الگوی مفصلی مشترک ببین؛ اعضای هر خانواده با یک فاز حرکت می‌کنند.</p></div>
+                            <button type="button" data-shell-action="close-modal" class="shell-button shell-button--ghost" data-screen-autofocus aria-label="بستن مقایسهٔ حرکت">بستن</button>
+                        </header>
+                        <div class="motion-lab__toolbar">
+                            <label>حرکت<select data-motion-state><option value="idle">ایستادن</option><option value="walk">راه‌رفتن</option><option value="run" selected>دویدن</option><option value="sprint">دویدن سریع</option><option value="takeoff">بلندشدن</option><option value="jump">اوج پرش</option><option value="fall">فرود هوایی</option><option value="land">تماس با زمین</option><option value="slide">اسلاید</option></select></label>
+                            <label>جهت<select data-motion-facing><option value="1">راست</option><option value="-1">چپ</option></select></label>
+                            <label>سرعت <output data-motion-speed-value>6.0</output><input data-motion-speed type="range" min="0" max="9" step="0.1" value="6" aria-label="سرعت مقایسه"></label>
+                            <button type="button" data-motion-toggle class="shell-button">توقف حرکت</button>
+                            <button type="button" data-motion-step class="shell-button shell-button--ghost">یک فریم جلو</button>
+                            <button type="button" data-motion-reset class="shell-button shell-button--ghost">از ابتدا</button>
+                            <button type="button" data-motion-winged class="shell-button shell-button--ghost">بال‌ها و همراه‌ها</button>
+                        </div>
+                        <label class="motion-lab__timeline">فاز مشترک <output data-motion-phase-value>0٪</output><input data-motion-phase type="range" min="0" max="99" step="1" value="0" aria-label="فاز مشترک حرکت"></label>
+                        <div class="motion-lab__cards" data-motion-cards></div>
+                        <p class="motion-lab__note">نقطهٔ طلایی یعنی تماس پا با زمین. تصویر فعلی هنوز از اطلس اختصاصی شخصیت است؛ الگوی مادر، مرجع انتقال هنری پس از بازبینی نمونه‌هاست.</p>
+                        <details class="motion-lab__roster"><summary>خانوادهٔ حرکتی هر ۱۲ شخصیت</summary><p data-motion-roster></p></details>
+                    </div>
                 </section>
 
                 <section

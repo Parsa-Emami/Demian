@@ -1,0 +1,248 @@
+{
+  "version": "master-motion-v1",
+  "rigVersion": 1,
+  "units": "body-height",
+  "rollout": {
+    "controller": "shared",
+    "art": "authored-atlas",
+    "retargeting": "comparison-before-roster-migration"
+  },
+  "skeleton": {
+    "hipHeight": 0.28,
+    "chestHeight": 0.48,
+    "headHeight": 0.72,
+    "upperLeg": 0.2,
+    "lowerLeg": 0.2,
+    "upperArm": 0.125,
+    "lowerArm": 0.115,
+    "shoulderSpread": 0.035,
+    "headRadius": 0.17
+  },
+  "clips": {
+    "idle": {
+      "period": 2.4
+    },
+    "walk": {
+      "strideLength": 3.4,
+      "stepWidth": 0.24,
+      "lift": 0.065,
+      "stance": 0.62,
+      "bob": 0.009,
+      "armSwing": 0.35,
+      "elbowBend": 0.3
+    },
+    "run": {
+      "strideLength": 6,
+      "stepWidth": 0.39,
+      "lift": 0.13,
+      "stance": 0.54,
+      "bob": 0.017,
+      "armSwing": 0.65,
+      "elbowBend": 1.05
+    },
+    "sprint": {
+      "strideLength": 6.4,
+      "stepWidth": 0.43,
+      "lift": 0.15,
+      "stance": 0.52,
+      "bob": 0.02,
+      "armSwing": 0.72,
+      "elbowBend": 1.12
+    }
+  },
+  "families": {
+    "female-base-v1": {
+      "label": "الگوی دخترها",
+      "lean": {
+        "walk": 0.035,
+        "run": 0.105,
+        "sprint": 0.13
+      },
+      "armSwingScale": 0.94,
+      "armBendOffset": 0.04,
+      "hipSway": 0.006,
+      "shoulderCounterRotation": 0.018
+    },
+    "male-base-v1": {
+      "label": "الگوی پسرها",
+      "lean": {
+        "walk": 0.045,
+        "run": 0.12,
+        "sprint": 0.15
+      },
+      "armSwingScale": 1,
+      "armBendOffset": 0,
+      "hipSway": 0.004,
+      "shoulderCounterRotation": 0.014
+    }
+  },
+  "playback": {
+    "maxStrideHz": 1.55,
+    "landingSeconds": 0.16
+  },
+  "samples": [
+    "hanna",
+    "ainaz",
+    "amin",
+    "hossein"
+  ],
+  "characters": [
+    {
+      "slug": "darya",
+      "displayName": "DARYA / دریا",
+      "family": "female-base-v1",
+      "packVersion": 14,
+      "defaultActive": true,
+      "skin": "darya",
+      "accessories": [
+        {
+          "kind": "pishi",
+          "anchor": "ground",
+          "offset": [
+            -0.3,
+            0
+          ],
+          "collision": "cosmetic"
+        }
+      ],
+      "identityContract": "assets/characters/darya/manifests/darya_identity_contract.json"
+    },
+    {
+      "slug": "setayesh",
+      "displayName": "SETAYESH / ستایش",
+      "family": "female-base-v1",
+      "packVersion": 14,
+      "defaultActive": false,
+      "skin": "setayesh",
+      "accessories": [],
+      "identityContract": "assets/characters/setayesh/manifests/setayesh_identity_contract.json"
+    },
+    {
+      "slug": "uzudi",
+      "displayName": "UZUDI / اوزودی",
+      "family": "male-base-v1",
+      "packVersion": 14,
+      "defaultActive": false,
+      "skin": "uzudi",
+      "accessories": [
+        {
+          "kind": "wings",
+          "anchor": "chest",
+          "span": 0.3,
+          "amplitude": 0.18,
+          "phaseOffset": 0
+        }
+      ],
+      "identityContract": "assets/characters/uzudi/manifests/uzudi_identity_contract.json"
+    },
+    {
+      "slug": "negar",
+      "displayName": "NEGAR / نگار",
+      "family": "female-base-v1",
+      "packVersion": 14,
+      "defaultActive": false,
+      "skin": "negar",
+      "accessories": [],
+      "identityContract": "assets/characters/negar/manifests/negar_identity_contract.json"
+    },
+    {
+      "slug": "tiam",
+      "displayName": "TIAM / تیام",
+      "family": "female-base-v1",
+      "packVersion": 14,
+      "defaultActive": false,
+      "skin": "tiam",
+      "accessories": [
+        {
+          "kind": "homayoun",
+          "anchor": "shoulderNear",
+          "offset": [
+            -0.025,
+            -0.045
+          ],
+          "collision": "cosmetic"
+        }
+      ],
+      "identityContract": "assets/characters/tiam/manifests/tiam_identity_contract.json"
+    },
+    {
+      "slug": "amirreza",
+      "displayName": "AMIRREZA / امیررضا",
+      "family": "male-base-v1",
+      "packVersion": 14,
+      "defaultActive": false,
+      "skin": "amirreza",
+      "accessories": [
+        {
+          "kind": "wings",
+          "anchor": "chest",
+          "span": 0.3,
+          "amplitude": 0.18,
+          "phaseOffset": 0
+        }
+      ],
+      "identityContract": "assets/characters/amirreza/manifests/amirreza_identity_contract.json"
+    },
+    {
+      "slug": "hanna",
+      "displayName": "HANNA / حنا",
+      "family": "female-base-v1",
+      "packVersion": 14,
+      "defaultActive": false,
+      "skin": "hanna",
+      "accessories": [],
+      "identityContract": "assets/characters/hanna/manifests/hanna_identity_contract.json"
+    },
+    {
+      "slug": "ainaz",
+      "displayName": "AINAZ / آیناز",
+      "family": "female-base-v1",
+      "packVersion": 14,
+      "defaultActive": false,
+      "skin": "ainaz",
+      "accessories": [],
+      "identityContract": "assets/characters/ainaz/manifests/ainaz_identity_contract.json"
+    },
+    {
+      "slug": "arsal",
+      "displayName": "ARSAL / ارسل",
+      "family": "male-base-v1",
+      "packVersion": 14,
+      "defaultActive": false,
+      "skin": "arsal",
+      "accessories": [],
+      "identityContract": "assets/characters/arsal/manifests/arsal_identity_contract.json"
+    },
+    {
+      "slug": "iman",
+      "displayName": "IMAN / ایمان",
+      "family": "male-base-v1",
+      "packVersion": 14,
+      "defaultActive": false,
+      "skin": "iman",
+      "accessories": [],
+      "identityContract": "assets/characters/iman/manifests/iman_identity_contract.json"
+    },
+    {
+      "slug": "amin",
+      "displayName": "AMIN / امین",
+      "family": "male-base-v1",
+      "packVersion": 14,
+      "defaultActive": false,
+      "skin": "amin",
+      "accessories": [],
+      "identityContract": "assets/characters/amin/manifests/amin_identity_contract.json"
+    },
+    {
+      "slug": "hossein",
+      "displayName": "HOSSEIN / حسین",
+      "family": "male-base-v1",
+      "packVersion": 14,
+      "defaultActive": false,
+      "skin": "hossein",
+      "accessories": [],
+      "identityContract": "assets/characters/hossein/manifests/hossein_identity_contract.json"
+    }
+  ],
+  "sourceSha256": "ab27808dda81e4841571994a346522d5fdde544478dd01c6434201449da4aace"
+}

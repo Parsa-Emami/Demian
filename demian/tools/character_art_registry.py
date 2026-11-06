@@ -15,19 +15,14 @@ from typing import Iterable
 ROOT = Path(__file__).resolve().parents[1]
 CHARACTER_ROOT = ROOT / "public" / "assets" / "characters"
 
+MOTION_CONTRACT = json.loads((ROOT / 'resources/game/character-motion.json').read_text(encoding='utf-8'))
 ACTIVE_CHARACTER_DEFINITIONS = {
-    "darya": {"display_name": "DARYA / دریا", "locomotion_style": "ground-runner"},
-    "setayesh": {"display_name": "SETAYESH / ستایش", "locomotion_style": "ground-runner"},
-    "uzudi": {"display_name": "UZUDI / اوزودی", "locomotion_style": "wing-assisted"},
-    "negar": {"display_name": "NEGAR / نگار", "locomotion_style": "ground-runner"},
-    "tiam": {"display_name": "TIAM / تیام", "locomotion_style": "ground-runner"},
-    "amirreza": {"display_name": "AMIRREZA / امیررضا", "locomotion_style": "wing-assisted"},
-    "hanna": {"display_name": "HANNA / حنا", "locomotion_style": "ground-runner"},
-    "ainaz": {"display_name": "AINAZ / آیناز", "locomotion_style": "ground-runner"},
-    "arsal": {"display_name": "ARSAL / ارسل", "locomotion_style": "ground-runner"},
-    "iman": {"display_name": "IMAN / ایمان", "locomotion_style": "ground-runner"},
-    "amin": {"display_name": "AMIN / امین", "locomotion_style": "ground-runner"},
-    "hossein": {"display_name": "HOSSEIN / حسین", "locomotion_style": "ground-runner"},
+    entry['slug']: {
+        'display_name': entry['displayName'],
+        'locomotion_style': 'wing-assisted' if any(item['kind'] == 'wings' for item in entry['accessories']) else 'ground-runner',
+        'motion_family': entry['family'],
+    }
+    for entry in MOTION_CONTRACT['characters']
 }
 ACTIVE_CHARACTER_ROSTER = tuple(ACTIVE_CHARACTER_DEFINITIONS)
 

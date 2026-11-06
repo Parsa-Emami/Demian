@@ -1,3 +1,4 @@
+import MotionComparisonScreen from './screens/MotionComparisonScreen.js';
 import { GAME_CATALOG, findGameCatalogEntry } from '../catalog/GameCatalog';
 import ScreenManager from './ScreenManager';
 import BootScreen from './screens/BootScreen';
@@ -18,6 +19,7 @@ const SCREEN_IDS = Object.freeze({
     SETTINGS: 'settings',
     RESULTS: 'results',
     LEADERBOARD: 'leaderboard',
+    MOTION: 'motion-comparison',
 });
 
 function isTypingTarget(target) {
@@ -64,7 +66,10 @@ export default class GameShell {
         this.resultsScreen = new ResultsScreen({ id: SCREEN_IDS.RESULTS, element: screen(SCREEN_IDS.RESULTS), animation: this.animation });
         this.leaderboardScreen = new LeaderboardScreen({ id: SCREEN_IDS.LEADERBOARD, element: screen(SCREEN_IDS.LEADERBOARD), animation: this.animation, service: this.app.leaderboards });
 
+        this.motionScreen = new MotionComparisonScreen({ id: SCREEN_IDS.MOTION, element: screen(SCREEN_IDS.MOTION), animation: this.animation, visuals: this.app.characterVisuals, settings: this.settings });
+
         [
+            this.motionScreen,
             this.bootScreen,
             this.cafeScreen,
             this.selectionScreen,
@@ -155,6 +160,10 @@ export default class GameShell {
         }
 
         switch (button.dataset.shellAction) {
+            case 'motion-comparison':
+                if (this.app.sessionState === 'playing') this.app.pauseGame();
+                await this.manager.show(SCREEN_IDS.MOTION);
+                break;
             case 'leaderboard':
                 if (this.app.sessionState === 'playing') this.app.pauseGame();
                 await this.manager.show(SCREEN_IDS.LEADERBOARD);
@@ -230,7 +239,7 @@ export default class GameShell {
         if (event.repeat || isTypingTarget(event.target) || event.key !== 'Escape') return;
 
         const topModal = this.manager.modalStack.at(-1);
-        if (topModal === SCREEN_IDS.LEADERBOARD) {
+        if (topModal === SCREEN_IDS.LEADERBOARD || topModal === SCREEN_IDS.MOTION) {
             event.preventDefault(); this.manager.closeTopModal('escape'); return;
         }
         if (topModal === SCREEN_IDS.SETTINGS) {

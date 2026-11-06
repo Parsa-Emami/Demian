@@ -3,7 +3,7 @@
     "private": true,
     "type": "module",
     "scripts": {
-        "build": "vite build",
+        "build": "node tools/compile_master_motion.mjs && vite build",
         "dev": "vite",
         "test:js": "node tools/run_js_tests.mjs",
         "test:ci": "node tools/run_js_tests.mjs",
@@ -46,7 +46,8 @@
         "build:amin:v14": "python3 tools/prepare_amin_sources_v14.py && python3 tools/build_character_pack_v14.py --characters amin && python3 tools/build_runtime_character_packs.py --characters amin --report docs/release-v14-amin/runtime-packs.json",
         "test:amin:browser": "node tools/check_amin_v14.mjs",
         "build:hossein:v14": "python3 tools/prepare_hossein_sources_v14.py && python3 tools/build_character_pack_v14.py --characters hossein && python3 tools/build_runtime_character_packs.py --characters hossein --report docs/release-v14-hossein/runtime-packs.json",
-        "test:hossein:browser": "node tools/check_hossein_v14.mjs"
+        "test:hossein:browser": "node tools/check_hossein_v14.mjs",
+        "validate:motion": "node tools/validate_master_motion.mjs"
     },
     "devDependencies": {
         "@tailwindcss/vite": "^4.0.0",

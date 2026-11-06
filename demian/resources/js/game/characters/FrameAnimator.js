@@ -1,3 +1,5 @@
+import MasterMotionController from './motion/MasterMotionController.js';
+import { motionCharacter } from './motion/MasterMotionLibrary.js';
 import { sanitizeCharacterAnimation } from './CharacterVisualContract.js';
 
 const DIRECTION_FALLBACKS = Object.freeze({
@@ -36,6 +38,8 @@ const DEFAULT_ANIMATION_FALLBACKS = Object.freeze({
 export default class FrameAnimator {
     constructor(atlas) {
         this.atlas = atlas;
+        const slug = atlas.meta?.slug ?? atlas.meta?.name?.split('/')[0]?.trim().toLowerCase();
+        this.masterMotion = motionCharacter(slug) ? new MasterMotionController(slug) : null;
         this.requestedAnimationName = null;
         this.animationName = null;
         this.animation = null;

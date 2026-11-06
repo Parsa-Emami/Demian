@@ -1,0 +1,76 @@
+{
+  "browser": "headless Chromium",
+  "rendering": "software SwiftShader",
+  "physicalDevices": false,
+  "results": [
+    {
+      "profile": "desktop",
+      "viewport": {
+        "width": 1440,
+        "height": 960
+      },
+      "bootLogo": "runner-wordmark",
+      "samples": [
+        {
+          "slug": "hanna",
+          "family": "female-base-v1"
+        },
+        {
+          "slug": "ainaz",
+          "family": "female-base-v1"
+        },
+        {
+          "slug": "amin",
+          "family": "male-base-v1"
+        },
+        {
+          "slug": "hossein",
+          "family": "male-base-v1"
+        }
+      ],
+      "synchronizedPose": true,
+      "inputAndAccessoryChecks": true,
+      "cleanClose": true,
+      "productionController": true,
+      "errors": [],
+      "failures": []
+    },
+    {
+      "profile": "phone",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "bootLogo": "runner-wordmark",
+      "samples": [
+        {
+          "slug": "hanna",
+          "family": "female-base-v1"
+        },
+        {
+          "slug": "ainaz",
+          "family": "female-base-v1"
+        },
+        {
+          "slug": "amin",
+          "family": "male-base-v1"
+        },
+        {
+          "slug": "hossein",
+          "family": "male-base-v1"
+        }
+      ],
+      "synchronizedPose": true,
+      "inputAndAccessoryChecks": true,
+      "cleanClose": true,
+      "productionController": true,
+      "errors": [],
+      "failures": []
+    },
+    {
+      "profile": "reduced-motion",
+      "pausedOnOpen": true,
+      "manualFrameStep": true
+    }
+  ]
+}

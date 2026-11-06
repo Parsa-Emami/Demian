@@ -66,6 +66,11 @@ export function characterJumpPose(jumpVelocity = 0, jumpForce = 6.5) {
     return { state: 'jump', progress: (apex - ratio) / (apex * 2) };
 }
 
+function syncMasterMotion(animator, state, deltaTime) {
+    animator.masterMotion?.sync({ state, phase: animator.locomotionPhase, progress: animator.progress(),
+        facing: animator.facing, deltaTime });
+}
+
 export function advanceCharacterAnimation(animator, {
     state, movementRatio = 0, deltaTime = 0, jumpVelocity = 0, jumpForce = 6.5,
     physicsOwnsJumpHeight = false, movementSpeed = null, travelledDistance = null, stateTime = 0, actionDuration = 0,
@@ -78,11 +83,13 @@ export function advanceCharacterAnimation(animator, {
         const phase = characterJumpPose(jumpVelocity, jumpForce);
         if (phase.state === state) {
             animator.seek(phase.progress);
+            syncMasterMotion(animator, state, deltaTime);
             return;
         }
     }
     if (actionDuration > 0 && ['dash', 'slide', 'dodge'].includes(state)) {
         animator.seek(stateTime / actionDuration);
+        syncMasterMotion(animator, state, deltaTime);
         return;
     }
     const profile = animator.atlas.motion?.locomotionProfile;
@@ -103,13 +110,16 @@ export function advanceCharacterAnimation(animator, {
         const cycles = Math.max(1, Number(animator.animation.cycleCount) || 1);
         animator.setPlaybackRate(Math.max(.25, frequency * animator.currentFrames().length / (animator.animation.fps * cycles)));
         animator.seekLoop(animator.locomotionPhase / cycles);
+        syncMasterMotion(animator, state, deltaTime);
         return;
     }
     if (profile && state === 'land') {
         animator.seek(stateTime / (profile.landingSeconds ?? .16));
+        syncMasterMotion(animator, state, deltaTime);
         return;
     }
     animator.update(deltaTime);
+    syncMasterMotion(animator, state, deltaTime);
 }
 
 export function characterPresentationPose({

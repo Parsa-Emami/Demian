@@ -211,3 +211,47 @@ html, body { margin: 0; padding: 0; min-width: 0; display: block; }
     .runner-ready { top: 19%; padding: 16px; }
 }
 @media (max-height: 480px) { .runner-ready { top: 17%; padding: 10px 16px; } .runner-ready h2 { font-size: 18px; } .runner-ready p { font-size: 10px; } .runner-ready [data-run-ranking-mode] { display: none; } }
+
+.boot-console__logo {
+    display: block;
+    width: min(76vw, 430px);
+    height: auto;
+    max-height: 28vh;
+    object-fit: contain;
+    margin: 0 auto 38px;
+    filter: brightness(0) invert(1);
+}
+
+.shell-screen.motion-lab {
+    display: block;
+    padding: max(12px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    align-items: start;
+}
+.motion-lab__panel { width: min(1120px, 100%); margin: 0 auto; padding: clamp(16px, 3vw, 30px); border: 1px solid #405346; border-radius: 24px; background: #14231f; color: #eef2dc; }
+.motion-lab__header { display: flex; align-items: start; justify-content: space-between; gap: 16px; margin-bottom: 20px; }
+.motion-lab__header h2 { font-size: clamp(1.5rem, 4vw, 2.4rem); margin: 4px 0 10px; }
+.motion-lab__header p:not(.shell-kicker), .motion-lab__note { color: #bec9bc; font-size: .86rem; line-height: 1.9; }
+.motion-lab__header > button { width: auto; min-width: 74px; }
+.motion-lab__toolbar { display: flex; flex-wrap: wrap; gap: 12px; align-items: end; }
+.motion-lab__toolbar label { display: grid; gap: 6px; min-width: 110px; flex: 1; font-size: .8rem; color: #cbd6bd; }
+.motion-lab__toolbar select, .motion-card select { background: #20352b; color: #f2f2da; border: 1px solid #52644d; padding: 8px 12px; border-radius: 10px; min-height: 44px; font: inherit; }
+.motion-lab__toolbar button { width: auto; min-height: 44px; padding: 10px 14px; font-size: .8rem; }
+.motion-lab input[type="range"] { accent-color: #d8e7a6; min-height: 32px; width: 100%; cursor: pointer; }
+.motion-lab__timeline { display: grid; grid-template-columns: auto 1fr; gap: 8px; margin: 20px 0; font-size: .8rem; }
+.motion-lab__timeline output { text-align: left; font-variant-numeric: tabular-nums; }
+.motion-lab__timeline input { grid-column: 1 / -1; direction: ltr; }
+.motion-lab__cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.motion-card { min-width: 0; overflow: hidden; border: 1px solid #3a4d3e; border-radius: 18px; background: #11201a; }
+.motion-card header { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 14px 0; font-size: .8rem; }
+.motion-card [data-motion-family] { margin: 8px 14px 0; color: #d9e6aa; font-size: .8rem; }
+.motion-card canvas { display: block; width: 100%; aspect-ratio: 14 / 9; }
+.motion-card__legend { display: flex; direction: ltr; justify-content: space-around; color: #c1cebc; font-size: .75rem; }
+.motion-card__status { margin: 10px 14px 14px; min-height: 1.6em; color: #b4c7c9; font-size: .75rem; }
+.motion-lab__roster { border-top: 1px solid #3a4d3e; padding-top: 14px; font-size: .8rem; line-height: 2; color: #ccd4bf; }
+.motion-lab__roster summary { min-height: 44px; cursor: pointer; }
+.motion-lab :is(button, select, input, summary):focus-visible { outline: 2px solid #e5d298; outline-offset: 4px; }
+@media (max-width: 650px) { .motion-lab__cards { grid-template-columns: minmax(0, 1fr); } .motion-lab__toolbar label { min-width: 115px; } }
+
+@media (min-width: 900px) { .motion-card canvas { height: min(19vh, 180px); aspect-ratio: auto; object-fit: contain; } }
