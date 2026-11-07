@@ -136,6 +136,7 @@ export const INPUT_CONTEXTS = Object.freeze({
 
     AFTER_HOURS: cafeShiftInput,
     CAFE_RUSH: cafeShiftInput,
+    CAFE_CRITTERS: Object.freeze({ actions: Object.freeze({ pause: pressed('escape', 'pause') }) }),
 
     DINO_RUN: Object.freeze({
         actions: Object.freeze({

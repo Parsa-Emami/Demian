@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { GAME_CATALOG, findGameCatalogEntry } from '../../resources/js/game/catalog/GameCatalog.js';
 
-const EXPECTED = ['open-world', 'dino-run', 'after-hours', 'cafe-rush'];
+const EXPECTED = ['open-world', 'dino-run', 'after-hours', 'cafe-rush', 'cafe-critters'];
 
 test('Mobile release exposes Open World, Dino Run, After Hours and Café Rush', () => {
     assert.deepEqual(GAME_CATALOG.map((game) => game.id), EXPECTED);

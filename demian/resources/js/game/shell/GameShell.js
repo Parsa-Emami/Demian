@@ -289,7 +289,10 @@ export default class GameShell {
             return;
         }
         const screen = this.manager.screens.get(topModal ?? this.manager.primaryId);
-        if (!dialog && (!screen?.active || screen.element.hidden)) return;
+        const activeScreen = screen?.active && !screen.element.hidden ? screen.element : null;
+        const gameControls = this.app.sessionState === 'playing' ? this.root.querySelector('[data-gamepad-scope]') : null;
+        const scope = dialog ?? activeScreen ?? gameControls;
+        if (!scope) return;
         event.preventDefault();
         if (this.settingsScreen.controls.pending) {
             if (action === 'cancel') { this.settingsScreen.controls.cancel(); this.settingsScreen.controls.say('تغییر کلید لغو شد.'); }
@@ -301,7 +304,7 @@ export default class GameShell {
             else if (this.manager.primaryId === SCREEN_IDS.SELECTION) this.showCafeMenu();
             return;
         }
-        const targets = [...(dialog ?? screen.element).querySelectorAll('button, summary, input, select, a[href]')]
+        const targets = [...scope.querySelectorAll('button, summary, input, select, a[href]')]
             .filter(element => !element.disabled && element.getAttribute('aria-disabled') !== 'true' && element.getClientRects().length && getComputedStyle(element).visibility !== 'hidden');
         const current = targets.indexOf(document.activeElement);
         if (action === 'confirm') {

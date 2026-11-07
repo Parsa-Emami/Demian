@@ -33,6 +33,7 @@ python3 -m http.server 8080 --directory playable
 | Open World | جوی‌استیک، دویدن، پرش، تعامل و اکشن‌ها | WASD / جهت‌ها، Shift، Space، E؛ G برای اسلاید؛ M برای نقشه |
 | [After Hours](demian/docs/after-hours/README.fa.md) | جوی‌استیک، دویدن و تعامل | WASD / جهت‌ها، Shift و E |
 | [Café Rush](demian/docs/cafe-rush/README.fa.md) | جوی‌استیک، دویدن و تعامل | WASD / جهت‌ها، Shift و E |
+| [Café Critters](demian/docs/cafe-critters/README.fa.md) | لمس گزینه‌ها و دعوت مهمان | Tab برای حرکت میان گزینه‌ها؛ Enter یا Space برای انتخاب |
 | مشترک | توقف، کاراکتر، خانه | Escape برای توقف؛ P برای پنل کاراکتر |
 
 ## ساخت از سورس

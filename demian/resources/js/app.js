@@ -5,6 +5,7 @@ import '../css/arcade-minigames.css';
 import '../css/mobile-release.css';
 import '../css/after-hours.css';
 import '../css/cafe-rush.css';
+import '../css/cafe-critters.css';
 import GameApplication from './game/application/GameApplication';
 import CharacterManagerUI from './ui/CharacterManagerUI';
 import SidebarController from './ui/SidebarController';
