@@ -14,6 +14,9 @@ export default class ArcadeWorld {
         this.colliders = CAFE_STATIC_COLLIDERS;
         this.cabinets = [
             { id: 'merch-shelf', gameId: 'dino-run', position: { x: 10.65, y: 0, z: 14.5 }, interaction: { x: 7.0, z: 13.4, radius: 2.4 }, userData: { gameId: 'dino-run' } },
+            { id: 'after-hours-panel', gameId: 'after-hours', position: { x: -6.6, z: -4.8 },
+                interaction: { x: -5.4, z: -4.8, radius: 2.35 }, minimumFacing: -1,
+                userData: { gameId: 'after-hours' } },
         ];
         this.elapsed = 0;
     }

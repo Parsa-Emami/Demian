@@ -16,6 +16,13 @@ export const GAME_CATALOG = Object.freeze([
         orientation: 'any', accent: 'amber',
         environment: CAFE_ENVIRONMENT_ID, environmentLocked: true, referenceAssets: CAFE_REFERENCE_ASSET_ROOT,
     }),
+    Object.freeze({
+        id: 'after-hours', title: 'AFTER HOURS', subtitle: 'خاموشی کافه',
+        description: 'دو کارت شیفت، سه مدار و یک سایه. برق خروج را وصل کن و پیش از خاموشی فرار کن.',
+        icon: 'ϟ', phase: 15, status: 'available', available: true,
+        orientation: 'any', accent: 'violet',
+        environment: CAFE_ENVIRONMENT_ID, environmentLocked: true, referenceAssets: CAFE_REFERENCE_ASSET_ROOT,
+    }),
 ]);
 
 export function findGameCatalogEntry(gameId) {

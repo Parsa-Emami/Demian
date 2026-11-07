@@ -121,6 +121,19 @@ export const INPUT_CONTEXTS = Object.freeze({
         }),
     }),
 
+    AFTER_HOURS: Object.freeze({
+        axes: Object.freeze({
+            x: axis(['a', 'arrowleft', 'left'], ['d', 'arrowright', 'right']),
+            z: axis(['w', 'arrowup', 'up'], ['s', 'arrowdown', 'down']),
+        }),
+        analog: Object.freeze({ xAxis: 'x', zAxis: 'z' }),
+        actions: Object.freeze({
+            run: held('shift', 'run'),
+            interact: pressed('e', 'enter', 'interact'),
+            pause: pressed('escape', 'pause'),
+        }),
+    }),
+
     DINO_RUN: Object.freeze({
         actions: Object.freeze({
             jump: pressed('space', 'arrowup', 'jump'),

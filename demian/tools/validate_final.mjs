@@ -9,7 +9,7 @@ import { BUILTIN_CHARACTER_SLUGS } from '../resources/js/game/characters/Charact
 import { characterManifestEntry } from '../resources/js/game/characters/manifests/CharacterManifestRegistry.js';
 const root=resolve(import.meta.dirname,'..');
 const read=p=>readFileSync(join(root,p),'utf8');
-assert.deepEqual(GAME_CATALOG.map(g=>g.id),['open-world','dino-run']);
+assert.deepEqual(GAME_CATALOG.map(g=>g.id),['open-world','dino-run','after-hours']);
 assert(GAME_CATALOG.every(g=>g.orientation==='any'));
 const entries=JSON.parse(read('public/assets/characters/character-manifest-v4.json')).characters;
 assert.deepEqual(entries.map(c=>c.slug), BUILTIN_CHARACTER_SLUGS);
@@ -35,5 +35,5 @@ for(const file of files){
         assert([base,base+'.js',base+'.mjs',base+'.json',join(base,'index.js')].some(existsSync),file+': missing '+specifier);
     }
 }
-console.log('Release 14 validation passed: '+files.length+' JS files, 2 games, '+entries.length+' installed characters.');
+console.log('Release 14 validation passed: '+files.length+' JS files, '+GAME_CATALOG.length+' games, '+entries.length+' installed characters.');
 

@@ -31,6 +31,7 @@ python3 -m http.server 8080 --directory playable
 |---|---|---|
 | Dino Run | پرش؛ نگه‌داشتن برای ارتفاع بیشتر؛ نگه‌داشتن اسلاید زیر پرنده | Space / ↑ / W؛ ↓ / S برای اسلاید |
 | Open World | جوی‌استیک، دویدن، پرش، تعامل و اکشن‌ها | WASD / جهت‌ها، Shift، Space، E؛ G برای اسلاید؛ M برای نقشه |
+| [After Hours](demian/docs/after-hours/README.fa.md) | جوی‌استیک، دویدن و تعامل | WASD / جهت‌ها، Shift و E |
 | مشترک | توقف، کاراکتر، خانه | Escape برای توقف؛ P برای پنل کاراکتر |
 
 ## ساخت از سورس

@@ -249,6 +249,7 @@ export default class OpenWorldGame extends BaseGame {
                 id: cabinet.id,
                 position: cabinet.interaction,
                 radius: cabinet.interaction.radius,
+                minimumFacing: cabinet.minimumFacing,
                 label: game?.available ? `اجرای ${game.title}` : game?.title ?? 'دستگاه آرکید',
                 hint: game?.available ? 'ENTER · شروع بازی' : `در فاز ${game?.phase ?? 'بعدی'} فعال می‌شود`,
                 priority: game?.id === 'tetris' ? 2 : 1,
