@@ -126,7 +126,10 @@ export default class GameShell {
     }
 
     showPause(definition) {
-        return this.manager.show(SCREEN_IDS.PAUSE, { title: definition?.title });
+        return this.manager.show(SCREEN_IDS.PAUSE, {
+            title: definition?.title,
+            hasGuide: typeof this.app.activeGame?.showGuide === 'function',
+        });
     }
 
     showSettings() {
@@ -196,6 +199,9 @@ export default class GameShell {
                 break;
             case 'close-modal':
                 await this.manager.closeTopModal();
+                break;
+            case 'game-guide':
+                this.app.activeGame?.showGuide?.();
                 break;
             case 'resume':
                 this.app.resumeGame();
@@ -268,6 +274,12 @@ export default class GameShell {
 
     onGamepadUi(event) {
         const { action } = event.detail;
+        const dialog = this.root.querySelector('dialog[data-game-dialog][open]');
+        if (dialog && (action === 'pause' || action === 'cancel')) {
+            event.preventDefault();
+            dialog.dispatchEvent(new Event('cancel', { cancelable: true }));
+            return;
+        }
         const topModal = this.manager.modalStack.at(-1);
         if (action === 'pause') {
             event.preventDefault();
@@ -277,7 +289,7 @@ export default class GameShell {
             return;
         }
         const screen = this.manager.screens.get(topModal ?? this.manager.primaryId);
-        if (!screen?.active || screen.element.hidden) return;
+        if (!dialog && (!screen?.active || screen.element.hidden)) return;
         event.preventDefault();
         if (this.settingsScreen.controls.pending) {
             if (action === 'cancel') { this.settingsScreen.controls.cancel(); this.settingsScreen.controls.say('تغییر کلید لغو شد.'); }
@@ -289,7 +301,7 @@ export default class GameShell {
             else if (this.manager.primaryId === SCREEN_IDS.SELECTION) this.showCafeMenu();
             return;
         }
-        const targets = [...screen.element.querySelectorAll('button, summary, input, select, a[href]')]
+        const targets = [...(dialog ?? screen.element).querySelectorAll('button, summary, input, select, a[href]')]
             .filter(element => !element.disabled && element.getAttribute('aria-disabled') !== 'true' && element.getClientRects().length && getComputedStyle(element).visibility !== 'hidden');
         const current = targets.indexOf(document.activeElement);
         if (action === 'confirm') {

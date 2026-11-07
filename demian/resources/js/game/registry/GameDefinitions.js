@@ -31,4 +31,13 @@ export const GAME_DEFINITIONS = Object.freeze({
             renderer: 'shared-canvas2d-pixel', deployment: 'atomic-bundle',
             environment: CAFE_ENVIRONMENT_ID, environmentLocked: true, referenceAssets: CAFE_REFERENCE_ASSET_ROOT }),
     }),
+    'after-hours': Object.freeze({
+        title: 'After Hours', inputContext: 'AFTER_HOURS', orientation: 'any',
+        loader: () => import('../games/after-hours/AfterHoursGame.js'),
+        metadata: Object.freeze({
+            phase: 15, status: 'available', supportsResults: true,
+            renderer: 'shared-canvas2d-pixel', deployment: 'atomic-bundle',
+            environment: CAFE_ENVIRONMENT_ID, environmentLocked: true, referenceAssets: CAFE_REFERENCE_ASSET_ROOT,
+        }),
+    }),
 });

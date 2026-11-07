@@ -459,6 +459,7 @@
                             <button type="button" data-shell-action="resume" data-screen-autofocus class="shell-button shell-button--primary">ادامه‌ی بازی</button>
                             <button type="button" data-shell-action="restart" class="shell-button">شروع دوباره</button>
                             <button type="button" data-shell-action="settings" class="shell-button">تنظیمات</button>
+                            <button type="button" data-shell-action="game-guide" class="shell-button" hidden>راهنما</button>
                             <button type="button" data-shell-action="exit-game" class="shell-button shell-button--danger">خروج به کافه</button>
                         </div>
                         <small>ESC برای ادامه</small>
@@ -715,6 +716,7 @@
                         <span aria-hidden="true">✦</span>
                     </div>
                     <small class="virtual-stick__label">حرکت · تا انتها: دویدن</small>
+                    <small class="virtual-stick__label virtual-stick__label--after-hours" aria-hidden="true">حرکت</small>
                 </div>
 
                 <output data-action-status class="character-action-status" aria-live="off" aria-label="وضعیت حرکت">آمادهٔ حرکت</output>
