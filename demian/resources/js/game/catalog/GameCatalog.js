@@ -23,6 +23,13 @@ export const GAME_CATALOG = Object.freeze([
         orientation: 'any', accent: 'violet',
         environment: CAFE_ENVIRONMENT_ID, environmentLocked: true, referenceAssets: CAFE_REFERENCE_ASSET_ROOT,
     }),
+    Object.freeze({
+        id: 'cafe-rush', title: 'CAFÉ RUSH', subtitle: 'سفارش آخر',
+        description: 'سفارش را آماده کن، سینی را سالم برسان و شیفت شلوغ کافه را در دو دقیقه جمع کن.',
+        icon: '▤', phase: 16, status: 'available', available: true,
+        orientation: 'any', accent: 'pink',
+        environment: CAFE_ENVIRONMENT_ID, environmentLocked: true, referenceAssets: CAFE_REFERENCE_ASSET_ROOT,
+    }),
 ]);
 
 export function findGameCatalogEntry(gameId) {

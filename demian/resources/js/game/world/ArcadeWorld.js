@@ -17,6 +17,9 @@ export default class ArcadeWorld {
             { id: 'after-hours-panel', gameId: 'after-hours', position: { x: -6.6, z: -4.8 },
                 interaction: { x: -5.4, z: -4.8, radius: 2.35 }, minimumFacing: -1,
                 userData: { gameId: 'after-hours' } },
+            { id: 'cafe-rush-counter', gameId: 'cafe-rush', position: { x: -0.1, z: -26.35 },
+                interaction: { x: -0.1, z: -26.35, radius: 2.15 }, minimumFacing: -1,
+                userData: { gameId: 'cafe-rush' } },
         ];
         this.elapsed = 0;
     }

@@ -1,19 +1,6 @@
-const SOUNDS = Object.freeze({
-    walk: [108, 62, .085, .036, 'triangle'],
-    sprint: [166, 62, .12, .075, 'triangle'],
-    shadow: [91, 43, .18, .085, 'triangle'],
-    metal: [684, 95, .35, .15, 'triangle'],
-    power: [207, 377, .15, .092, 'sine'],
-    card: [436, 668, .17, .105, 'sine'],
-    chase: [187, 54, .48, .18, 'triangle'],
-    escaped: [358, 716, .43, .125, 'sine'],
-    caught: [154, 42, .4, .155, 'triangle'],
-    timeout: [173, 68, .3, .1, 'sine'],
-    'last-minute': [282, 180, .22, .11, 'sine'],
-});
-
-export default class AfterHoursAudio {
-    constructor() {
+export default class CafeCueAudio {
+    constructor(cues) {
+        this.cues = cues;
         this.context = null;
         this.master = null;
         this.enabled = true;
@@ -43,7 +30,7 @@ export default class AfterHoursAudio {
 
     play(type, origin, listener) {
         if (!this.enabled || this.context?.state !== 'running' || document.hidden || this.voices.size >= 6) return;
-        const voice = SOUNDS[type];
+        const voice = this.cues[type];
         if (!voice) return;
         const [start, end, length, volume, wave] = voice;
         const now = this.context.currentTime;
