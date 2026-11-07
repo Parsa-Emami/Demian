@@ -30,6 +30,13 @@ export const GAME_CATALOG = Object.freeze([
         orientation: 'any', accent: 'pink',
         environment: CAFE_ENVIRONMENT_ID, environmentLocked: true, referenceAssets: CAFE_REFERENCE_ASSET_ROOT,
     }),
+    Object.freeze({
+        id: 'cafe-critters', title: 'CAFÉ CRITTERS', subtitle: 'مهمان‌های ریز کافه',
+        description: 'با نگار و پیشی سرنخ‌ها را بخوان، میز کنار پنجره را بچین و دفترچهٔ هشت مهمان را کامل کن.',
+        icon: '✦', phase: 17, status: 'available', available: true,
+        orientation: 'any', accent: 'sage',
+        environment: CAFE_ENVIRONMENT_ID, environmentLocked: true, referenceAssets: CAFE_REFERENCE_ASSET_ROOT,
+    }),
 ]);
 
 export function findGameCatalogEntry(gameId) {

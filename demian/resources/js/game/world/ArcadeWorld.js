@@ -20,6 +20,9 @@ export default class ArcadeWorld {
             { id: 'cafe-rush-counter', gameId: 'cafe-rush', position: { x: -0.1, z: -26.35 },
                 interaction: { x: -0.1, z: -26.35, radius: 2.15 }, minimumFacing: -1,
                 userData: { gameId: 'cafe-rush' } },
+            { id: 'critters-window-table', gameId: 'cafe-critters', position: { x: .36, z: -17.3 },
+                interaction: { x: .36, z: -17.3, radius: 2.15 }, minimumFacing: -1,
+                userData: { gameId: 'cafe-critters' } },
         ];
         this.elapsed = 0;
     }

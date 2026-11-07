@@ -9,7 +9,7 @@ const root = resolve(import.meta.dirname, '../..');
 const source = (file) => readFileSync(resolve(root, file), 'utf8');
 
 test('every playable game declares the shared reference café environment', () => {
-    const ids = ['open-world', 'dino-run', 'after-hours', 'cafe-rush'];
+    const ids = ['open-world', 'dino-run', 'after-hours', 'cafe-rush', 'cafe-critters'];
     ids.forEach((id) => {
         assert.equal(GAME_DEFINITIONS[id].metadata.environment, 'demian-reference-cafe@2');
         assert.equal(GAME_CATALOG.find((game) => game.id === id)?.environment, 'demian-reference-cafe@2');
@@ -27,6 +27,7 @@ test('every visible game renderer uses the shared 2D café pipeline and avoids T
         'resources/js/game/games/open-world/render/OpenWorldPixelRenderer.js',
         'resources/js/game/games/after-hours/AfterHoursRenderer.js',
         'resources/js/game/games/cafe-rush/CafeRushRenderer.js',
+        'resources/js/game/games/cafe-critters/CafeCrittersRenderer.js',
     ];
     renderers.forEach((file) => {
         const contents = source(file);
