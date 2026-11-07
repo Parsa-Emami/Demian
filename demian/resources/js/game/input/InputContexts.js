@@ -5,6 +5,19 @@ const axis = (negative, positive) => Object.freeze({
     positive: Object.freeze(positive),
 });
 
+const cafeShiftInput = Object.freeze({
+    axes: Object.freeze({
+        x: axis(['a', 'arrowleft', 'left'], ['d', 'arrowright', 'right']),
+        z: axis(['w', 'arrowup', 'up'], ['s', 'arrowdown', 'down']),
+    }),
+    analog: Object.freeze({ xAxis: 'x', zAxis: 'z' }),
+    actions: Object.freeze({
+        run: held('shift', 'run'),
+        interact: pressed('e', 'enter', 'interact'),
+        pause: pressed('escape', 'pause'),
+    }),
+});
+
 export const INPUT_CONTEXTS = Object.freeze({
     MENU: Object.freeze({
         actions: Object.freeze({
@@ -121,18 +134,8 @@ export const INPUT_CONTEXTS = Object.freeze({
         }),
     }),
 
-    AFTER_HOURS: Object.freeze({
-        axes: Object.freeze({
-            x: axis(['a', 'arrowleft', 'left'], ['d', 'arrowright', 'right']),
-            z: axis(['w', 'arrowup', 'up'], ['s', 'arrowdown', 'down']),
-        }),
-        analog: Object.freeze({ xAxis: 'x', zAxis: 'z' }),
-        actions: Object.freeze({
-            run: held('shift', 'run'),
-            interact: pressed('e', 'enter', 'interact'),
-            pause: pressed('escape', 'pause'),
-        }),
-    }),
+    AFTER_HOURS: cafeShiftInput,
+    CAFE_RUSH: cafeShiftInput,
 
     DINO_RUN: Object.freeze({
         actions: Object.freeze({

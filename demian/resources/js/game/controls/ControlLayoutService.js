@@ -7,6 +7,7 @@ export const CONTROL_LAYOUTS = Object.freeze({
     HIDE_AND_SEEK: Object.freeze({ id: 'hide-and-seek', joystick: true }),
     ARCADE: Object.freeze({ id: 'arcade', joystick: true }),
     AFTER_HOURS: Object.freeze({ id: 'after-hours', joystick: true }),
+    CAFE_RUSH: Object.freeze({ id: 'cafe-rush', joystick: true }),
     DINO_RUN: Object.freeze({ id: 'dino-run', joystick: false }),
     TETRIS: Object.freeze({ id: 'tetris', joystick: false }),
 });

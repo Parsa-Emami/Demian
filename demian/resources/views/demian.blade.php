@@ -716,7 +716,7 @@
                         <span aria-hidden="true">✦</span>
                     </div>
                     <small class="virtual-stick__label">حرکت · تا انتها: دویدن</small>
-                    <small class="virtual-stick__label virtual-stick__label--after-hours" aria-hidden="true">حرکت</small>
+                    <small class="virtual-stick__label virtual-stick__label--manual-run" aria-hidden="true">حرکت</small>
                 </div>
 
                 <output data-action-status class="character-action-status" aria-live="off" aria-label="وضعیت حرکت">آمادهٔ حرکت</output>

@@ -1,10 +1,24 @@
 import BaseGame from '../../contracts/BaseGame.js';
 import { preloadFbxCafeArt } from '../../rendering2d/FbxCafeAssets.js';
-import AfterHoursAudio from './AfterHoursAudio.js';
+import CafeCueAudio from '../../shared/cafe/CafeCueAudio.js';
 import AfterHoursModel from './AfterHoursModel.js';
 import AfterHoursRenderer from './AfterHoursRenderer.js';
 import AfterHoursUi, { shiftTime } from './AfterHoursUi.js';
 import { CIRCUITS, SHIFT_LAYOUTS, SHIFT_RULES, distance } from './AfterHoursMap.js';
+
+const AFTER_HOURS_CUES = Object.freeze({
+    walk: [108, 62, .085, .036, 'triangle'],
+    sprint: [166, 62, .12, .075, 'triangle'],
+    shadow: [91, 43, .18, .085, 'triangle'],
+    metal: [684, 95, .35, .15, 'triangle'],
+    power: [207, 377, .15, .092, 'sine'],
+    card: [436, 668, .17, .105, 'sine'],
+    chase: [187, 54, .48, .18, 'triangle'],
+    escaped: [358, 716, .43, .125, 'sine'],
+    caught: [154, 42, .4, .155, 'triangle'],
+    timeout: [173, 68, .3, .1, 'sine'],
+    'last-minute': [282, 180, .22, .11, 'sine'],
+});
 
 const STORAGE = 'demian.after-hours.v1.';
 const INTRO = 'دو کارت در پیشخوان و انبار جا مانده. تابلوهای برق را کنار ورودی و راهرو پیدا کن.';
@@ -46,7 +60,7 @@ export default class AfterHoursGame extends BaseGame {
     constructor() {
         super();
         this.model = new AfterHoursModel();
-        this.audio = new AfterHoursAudio();
+        this.audio = new CafeCueAudio(AFTER_HOURS_CUES);
         this.radio = INTRO;
     }
 
