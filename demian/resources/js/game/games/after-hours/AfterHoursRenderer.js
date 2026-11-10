@@ -123,7 +123,7 @@ export default class AfterHoursRenderer {
         const size = Math.max(7, Math.min(camera.pixelsPerUnit * .8, 18));
         const color = target.kind === 'card' ? '#83e4ea'
             : target.kind === 'exit' && model.exitReady ? '#94e2ab' : '#ffca83';
-        const symbol = target.kind === 'card' ? (target.id === 'card-1' ? '1' : '2')
+        const symbol = target.kind === 'card' ? (target.id === 'card-1' ? '۱' : '۲')
             : target.kind === 'panel' ? 'ϟ' : target.kind === 'exit' ? '↗' : model.relic ? '✓' : '◇';
 
         ctx.save();
@@ -140,6 +140,14 @@ export default class AfterHoursRenderer {
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillText(symbol, x, y - size * .19);
+        if (target.kind === 'panel' && model.nearby()?.id === target.id) {
+            ctx.font = '700 12px Vazirmatn, sans-serif';
+            const width = ctx.measureText(target.label).width + 14;
+            ctx.fillStyle = '#152033';
+            ctx.fillRect(x - width / 2, y + size, width, 21);
+            ctx.fillStyle = '#ffdfa8';
+            ctx.fillText(target.label, x, y + size + 10);
+        }
         ctx.restore();
     }
 

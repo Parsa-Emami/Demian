@@ -55,6 +55,10 @@ export default class CafeRushModel {
 
     get carriedOrder() { return this.orders.find((order) => order.id === this.tray?.orderId) ?? null; }
 
+    get waitingOrder() {
+        return this.orders.find((order) => order.state === 'waiting' && order.vip)
+            ?? this.orders.find((order) => order.state === 'waiting') ?? null;
+    }
     get acceptedOrder() { return this.orders.find((order) => order.state === 'accepted') ?? null; }
 
     stationOrder(id) {
@@ -91,8 +95,7 @@ export default class CafeRushModel {
             this.events.push({ type: 'accepted', order: this.acceptedOrder });
             return;
         }
-        const next = this.orders.find((order) => order.state === 'waiting' && order.vip)
-            ?? this.orders.find((order) => order.state === 'waiting');
+        const next = this.waitingOrder;
         if (!next) {
             this.events.push({ type: 'no-tickets' });
             return;

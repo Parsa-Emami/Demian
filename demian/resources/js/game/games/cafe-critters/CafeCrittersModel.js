@@ -33,7 +33,7 @@ export default class CafeCrittersModel {
     }
 
     get guest() { return this.targets[this.page]; }
-    get remaining() { return Math.max(0, this.rules.seconds - this.elapsed); }
+    get remaining() { return this.rules.seconds === null ? null : Math.max(0, this.rules.seconds - this.elapsed); }
     get canInvite() { return this.status === 'playing' && TABLE_FIELDS.every(({ id }) => this.selection[id]); }
 
     start() {
@@ -90,7 +90,7 @@ export default class CafeCrittersModel {
     }
 
     advance(dt) {
-        if (this.status !== 'playing' || !Number.isFinite(dt) || dt <= 0) return;
+        if (this.status !== 'playing' || this.rules.seconds === null || !Number.isFinite(dt) || dt <= 0) return;
         this.elapsed = Math.min(this.rules.seconds, this.elapsed + dt);
         if (this.remaining <= 1e-6) {
             this.elapsed = this.rules.seconds;

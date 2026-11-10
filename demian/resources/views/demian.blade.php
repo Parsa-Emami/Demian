@@ -503,6 +503,21 @@
                                     <option value="compact">فشرده</option>
                                 </select>
                             </label>
+                            <label class="settings-field">
+                                <span><b>اندازهٔ نوشته‌های بازی</b><small>متن اطلاعات، هشدارها و پنل‌های داخل بازی.</small></span>
+                                <select name="hudScale">
+                                    <option value="standard">استاندارد</option>
+                                    <option value="large">بزرگ</option>
+                                    <option value="extra">خیلی بزرگ</option>
+                                </select>
+                            </label>
+                            <label class="settings-field">
+                                <span><b>کنتراست اطلاعات بازی</b><small>خوانایی پنل‌ها روی صحنه‌های روشن و تاریک.</small></span>
+                                <select name="hudContrast">
+                                    <option value="standard">استاندارد</option>
+                                    <option value="high">زیاد</option>
+                                </select>
+                            </label>
                             <div class="settings-toggle-grid">
                                 <label><input type="checkbox" name="hudVisible"><span>نمایش HUD</span></label>
                                 <label><input type="checkbox" name="hintsVisible"><span>نمایش راهنما</span></label>

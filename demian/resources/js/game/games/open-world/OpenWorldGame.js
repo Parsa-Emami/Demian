@@ -489,6 +489,7 @@ export default class OpenWorldGame extends BaseGame {
             chunkStats,
             aiStats: this.aiBudget.stats(),
             district: this.currentDistrict,
+            target: this.context.services.interaction.active(this.interactionActorId),
             activeChunkIds,
         });
         this.context.eventBus.emit('studio:frame', {
@@ -549,6 +550,7 @@ export default class OpenWorldGame extends BaseGame {
         const { width, height } = this.context.renderer.resize(this.pixelRatio);
         this.cameraController.resize(width, height);
         this.pixelRenderer?.resize();
+        if (this.hud?.isMapOpen()) this.hud.worldMap.draw();
 
         if (reframe) {
             const mode = this.cameraController?.mode ?? 'OVERVIEW';

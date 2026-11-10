@@ -1,6 +1,7 @@
 import { freezeCafe } from '../../shared/cafe/CafeWalkthroughScene.js';
 
 export const CRITTER_RULES = freezeCafe({
+    calm: { label: 'آرام', level: 2, seconds: null, clue: 'همهٔ انتخاب‌ها در دفترچه' },
     easy: { label: 'آسان', level: 2, seconds: 300, clue: 'هر سه انتخاب در دفترچه' },
     standard: { label: 'استاندارد', level: 4, seconds: 240, clue: 'یک انتخاب از رفتار مهمان' },
     hard: { label: 'سخت', level: 6, seconds: 180, clue: 'ترکیب نوشته و تصویر پیشی' },
@@ -103,7 +104,7 @@ export function cluesFor(guest, difficulty) {
     const { light, food, decor } = guest.setting;
     const lightName = tableLabel('light', light);
     const foodName = tableLabel('food', food);
-    if (difficulty === 'easy') return {
+    if (difficulty === 'easy' || difficulty === 'calm') return {
         journal: `${lightName}، ${foodName} و ${tableLabel('decor', decor)} را برای این مهمان روی میز بگذار.`,
         pishi: 'پیشی سه انتخاب را در نقاشی کنارش نشان می‌دهد.',
         art: [light, food, decor],

@@ -1,7 +1,7 @@
 import CafeGameRenderer2D from '../../rendering2d/CafeGameRenderer2D.js';
 import { drawSpriteCharacter } from '../../rendering2d/PixelActorRenderer.js';
 import { CAFE_STATIC_COLLIDERS } from '../../shared/cafe/CafeReferenceLayout.js';
-import { RECIPES, RUSH_BOUNDS, RUSH_SPOTS, VIP_AT } from './CafeRushMap.js';
+import { RECIPES, RUSH_BOUNDS, RUSH_SPOTS, VIP_AT, rushObjective } from './CafeRushMap.js';
 
 const BOARD = {
     position: { x: 0, z: (RUSH_BOUNDS.minZ + RUSH_BOUNDS.maxZ) / 2 },
@@ -55,12 +55,8 @@ export default class CafeRushRenderer {
         for (const avatar of cast) drawSpriteCharacter(ctx, camera, avatar, { alpha, player: false });
         const carried = model.carriedOrder;
         if (carried) this.drawTray(ctx, camera, model, carried);
-        const accepted = model.acceptedOrder;
-        const ready = model.orders.find((order) => order.state === 'ready');
-        const destination = carried ? `table-${carried.table}`
-            : accepted ? RECIPES[accepted.recipe].station
-            : ready ? RECIPES[ready.recipe].station : 'tickets';
-        for (const spot of RUSH_SPOTS) this.drawSign(ctx, camera, spot, spot.id === destination, model);
+        const objective = rushObjective(model);
+        for (const spot of RUSH_SPOTS) this.drawSign(ctx, camera, spot, spot.id === objective.id ? objective.marker : '', model);
         if (cue) this.drawCue(ctx, camera, model.elapsed, cue);
         this.scene.end(ctx);
     }
@@ -121,13 +117,27 @@ export default class CafeRushRenderer {
             ctx.fill();
         }
         ctx.restore();
+        const balance = 1 - model.tray.risk;
+        const x = at.x + side * scale * .78;
+        const y = at.y - scale * 2.1;
+        ctx.save();
+        ctx.fillStyle = '#201b18';
+        ctx.fillRect(x - 19, y - 5, 38, 9);
+        ctx.fillStyle = balance < .34 ? '#ff9b8d' : balance < .68 ? '#ffdc84' : '#b9e8ad';
+        ctx.fillRect(x - 17, y - 3, 34 * balance, 5);
+        if (balance < .68) {
+            ctx.font = 'bold 14px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(balance < .34 ? '!' : '△', x, y - 8);
+        }
+        ctx.restore();
     }
 
     drawSign(ctx, camera, spot, active, model) {
         const at = camera.worldToScreen(spot);
         const size = Math.max(10, Math.min(14, camera.pixelsPerUnit * .73));
         const pending = spot.kind === 'station' ? model.stationOrder(spot.id) : null;
-        const label = spot.kind === 'table' ? spot.label : `${spot.sign}  ${spot.label}`;
+        const label = active ? `◆ ${active}` : spot.kind === 'table' ? spot.label : `${spot.sign}  ${spot.label}`;
         ctx.save();
         ctx.font = `800 ${size}px ${UI_FONT}`;
         ctx.textBaseline = 'middle';

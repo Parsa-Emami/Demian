@@ -11,7 +11,7 @@ export function overlaps(a, b) {
 }
 export default class DinoRunModel {
     constructor({ seed = Date.now(), width = 960 } = {}) { this.reset({ seed, width }); }
-    reset({ seed = this.seed, width = this.width } = {}) {
+    reset({ seed = this.seed, width = this.width, lesson = null } = {}) {
         this.seed = seed; this.random = seededRandom(seed); this.width = Math.min(rules.maxWidth, Math.max(rules.minWidth, Math.round(width)));
         this.status = 'ready'; this.time = 0; this.distance = 0; this.score = 0;
         this.speed = RUNNER_CONFIG.startSpeed; this.y = 0; this.vy = 0; this.duck = false;
@@ -19,6 +19,17 @@ export default class DinoRunModel {
         this.tick = 0; this.difficulty = arcadeDifficulty(0); this.endReason = null; this.hitBy = null;
         this.previous = { y: 0, distance: 0 }; this.nextId = 0; this.passed = 0;
         this.lastAppearance = null;
+        this.lesson = lesson;
+        this.hitObstacle = null;
+        if (lesson) {
+            this.status = 'running';
+            this.speed = 310;
+            this.spawnIn = Infinity;
+            const definition = rules.obstacleCatalog.find(({ appearance }) => appearance === (lesson === 'jump' ? 'coffee-crate' : 'pendant'));
+            const x = rules.playerX + 310 * .92;
+            this.obstacles.push({ ...definition, id: this.nextId++, x, previousX: x, scored: false,
+                type: lesson === 'jump' ? 'cactus' : 'bird', response: lesson });
+        }
     }
     setWidth(width) { if (this.status === 'ready') this.width = Math.min(rules.maxWidth, Math.max(rules.minWidth, Math.round(width))); }
     playerBounds() {
@@ -81,7 +92,7 @@ export default class DinoRunModel {
         }
         this.time += dt;
         this.tick += 1; this.difficulty = arcadeDifficulty(this.time);
-        this.speed = Math.min(RUNNER_CONFIG.maxSpeed, RUNNER_CONFIG.startSpeed + this.time * rules.speedRamp);
+        if (!this.lesson) this.speed = Math.min(RUNNER_CONFIG.maxSpeed, RUNNER_CONFIG.startSpeed + this.time * rules.speedRamp);
         this.distance += this.speed * dt; this.score = Math.floor(this.distance / 10);
         this.spawnIn -= dt;
         if (this.spawnIn <= 0) this.spawn();
@@ -93,6 +104,7 @@ export default class DinoRunModel {
             const swept = { ...hitbox, w: hitbox.w + beforeX - obstacle.x };
             if (overlaps(player, swept)) {
                 this.status = 'over'; this.hitBy = obstacle.attacker ?? null;
+                this.hitObstacle = { appearance: obstacle.appearance, response: obstacle.response };
                 this.endReason = this.hitBy ? 'attack' : 'collision'; break;
             }
             if (!obstacle.scored && obstacle.x + obstacle.w < player.x) {

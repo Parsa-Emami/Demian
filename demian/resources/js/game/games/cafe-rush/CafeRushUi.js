@@ -1,6 +1,6 @@
 import setTouchInteractionLabel from '../../input/TouchInteractionLabel.js';
 import { UI_LAYER, assignUiLayer } from '../../ui/UiLayer.js';
-import { RECIPES, RUSH_RULES, RUSH_SPOTS, VIP_AT } from './CafeRushMap.js';
+import { RECIPES, RUSH_RULES, RUSH_SPOTS, VIP_AT, rushObjective } from './CafeRushMap.js';
 
 export const rushDigits = new Intl.NumberFormat('fa-IR', { useGrouping: false });
 const timerDigits = new Intl.NumberFormat('fa-IR', { useGrouping: false, minimumIntegerDigits: 2 });
@@ -10,6 +10,7 @@ const STATES = Object.freeze({
 const TARGETS = Object.fromEntries(RUSH_SPOTS.map((spot) => [spot.id, spot.label]));
 const BRIEFING = `
     <p>از پیشخوان برگه بگیر، خوراکی را در ایستگاه آماده کن و سینی را به میز درست برسان.</p>
+    <p>در گوشی، نمای افقی فضای بیشتری برای دنبال کردن مقصدها دارد.</p>
     <p>دو دقیقه برای پر کردن سهمیه وقت داری. در پیچ آهسته شو تا سینی نریزد. هر سه تحویل پیاپی ۵۰ امتیاز اضافه دارد.</p>
     <p>در ۳۰ ثانیهٔ پایانی سفارش ویژهٔ اوزودی به میز ۲ می‌رسد.</p>
     <div class="shift-guide__controls">
@@ -34,31 +35,40 @@ export default class CafeRushUi {
         this.hud.className = 'rush-hud';
         this.hud.setAttribute('aria-label', 'وضعیت سفارش آخر');
         this.hud.innerHTML = `
-            <div class="rush-hud__panel">
-                <header class="rush-hud__header">
-                    <div class="rush-hud__brand"><span lang="en">DEMIAN / CAFÉ RUSH</span><strong>سفارش آخر</strong><small data-rush-level></small></div>
-                    <div><span>مانده</span><time data-rush-time dir="ltr"></time></div>
-                    <div><span>تحویل</span><b data-rush-served dir="ltr"></b></div>
-                    <div><span>امتیاز</span><b data-rush-score></b></div>
-                </header>
-                <div class="rush-hud__strip">
-                    <span>زنجیره <b data-rush-combo></b></span><span data-rush-vip></span>
+            <div class="game-readout__rail">
+                <div class="game-readout__stats">
+                    <div class="shift-hud__meter"><span>زمان مانده</span><time data-rush-time dir="ltr"></time></div>
+                    <div class="shift-hud__meter"><span>تحویل</span><b data-rush-served dir="ltr"></b></div>
                 </div>
-                <div class="rush-tickets" data-rush-tickets aria-label="صف سفارش‌ها"></div>
+                <div class="game-readout__state">
+                    <strong data-rush-goal role="status"></strong>
+                    <span data-rush-urgent hidden></span>
+                </div>
+                <details class="game-readout__details">
+                    <summary>صف سفارش‌ها</summary>
+                    <div class="game-readout__body">
+                        <div class="game-readout__meta">
+                            <span data-rush-level></span><span>امتیاز <b data-rush-score></b></span>
+                            <span>زنجیره <b data-rush-combo></b></span><span data-rush-vip></span>
+                        </div>
+                        <div class="rush-tickets" data-rush-tickets aria-label="صف سفارش‌ها"></div>
+                        <div class="rush-notice"><strong>ستایش · پیشخوان</strong><span data-rush-notice></span></div>
+                    </div>
+                </details>
             </div>
             <div class="rush-hud__bottom">
                 <div class="rush-prompt" data-rush-prompt hidden></div>
                 <div class="rush-tray" data-rush-tray hidden>
                     <strong data-rush-destination></strong>
-                    <span>تعادل سینی</span>
+                    <span data-rush-risk></span>
                     <meter data-rush-balance min="0" max="1" low=".34" high=".68" optimum="1" aria-label="تعادل سینی"></meter>
                 </div>
-                <div class="rush-notice" role="status" aria-live="polite"><strong>ستایش · پیشخوان</strong><span data-rush-notice></span></div>
+
             </div>
         `;
         root.querySelector('[data-game-hud-host]').append(this.hud);
         this.nodes = Object.fromEntries([
-            'level', 'time', 'served', 'score', 'combo', 'vip', 'tickets', 'tray', 'destination', 'balance', 'notice', 'prompt',
+            'level', 'time', 'served', 'score', 'combo', 'vip', 'tickets', 'tray', 'destination', 'balance', 'risk', 'notice', 'prompt', 'goal', 'urgent',
         ].map((id) => [id, this.hud.querySelector(`[data-rush-${id}]`)]));
         this.tickets = new Map();
         this.empty = document.createElement('span');
@@ -146,6 +156,12 @@ export default class CafeRushUi {
         text(nodes.vip, vip);
         text(nodes.notice, notice);
         this.hud.dataset.urgent = String(model.remaining <= 15);
+        const focus = rushObjective(model);
+        text(nodes.goal, focus.label);
+        const urgent = model.orders.reduce((soonest, order) => order.due - model.elapsed <= 6
+            && (!soonest || order.due < soonest.due) ? order : soonest, null);
+        nodes.urgent.hidden = !urgent;
+        if (urgent) text(nodes.urgent, `! فوری · #${rushDigits.format(urgent.id)} · میز ${rushDigits.format(urgent.table)} · ${rushDigits.format(Math.max(0, Math.ceil(urgent.due - model.elapsed)))} ث`);
         const carrying = model.carriedOrder;
         nodes.tray.hidden = !carrying;
         if (carrying) {
@@ -153,6 +169,7 @@ export default class CafeRushUi {
             const value = 1 - model.tray.risk;
             nodes.balance.value = value;
             nodes.tray.dataset.risk = value < .34 ? 'high' : value < .68 ? 'medium' : 'low';
+            text(nodes.risk, value < .34 ? '! سینی در خطر · آهسته‌تر' : value < .68 ? '△ تعادل سینی کم شده' : '✓ سینی متعادل');
         }
         this.updateTickets(model);
         const spot = model.status === 'running' && !this.dialog.open ? model.nearby() : null;
@@ -187,7 +204,7 @@ export default class CafeRushUi {
                 const icon = card.querySelector('[data-ticket-icon]');
                 icon.textContent = recipe.icon;
                 icon.style.color = recipe.color;
-                card.querySelector('strong').textContent = recipe.name;
+                card.querySelector('strong').textContent = `#${rushDigits.format(order.id)} · ${recipe.name}`;
                 card.querySelector('[data-ticket-table]').textContent = order.vip ? 'میز ۲ · VIP' : `میز ${rushDigits.format(order.table)}`;
                 entry = { card, time: card.querySelector('time'), state: card.querySelector('small') };
                 this.tickets.set(order.id, entry);

@@ -420,6 +420,8 @@ export default class GameApplication {
         this.animation.setReducedMotion(this.settings.resolvedReducedMotion());
         this.root.dataset.motion = this.animation.reducedMotion ? 'reduced' : 'full';
         this.root.dataset.qualityPreference = settings.quality;
+        this.root.dataset.hudScale = settings.hudScale;
+        this.root.dataset.hudContrast = settings.hudContrast;
         this.root.dataset.hudVisible = String(settings.hudVisible);
         this.root.dataset.hintsVisible = String(settings.hintsVisible);
         this.root.dataset.interfaceDensity = settings.interfaceDensity;

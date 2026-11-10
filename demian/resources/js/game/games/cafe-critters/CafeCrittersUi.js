@@ -7,6 +7,7 @@ export const critterDigits = new Intl.NumberFormat('fa-IR', { useGrouping: false
 const paddedDigits = new Intl.NumberFormat('fa-IR', { useGrouping: false, minimumIntegerDigits: 2 });
 const number = (value) => critterDigits.format(value);
 const BRIEFING = `
+    <p>در گوشی، نمای عمودی سرنخ‌ها و انتخاب‌های میز را پشت سر هم می‌چیند.</p>
     <p>نگار دفترچه‌ای کنار پنجره پیدا کرده است. نوشتهٔ دفترچه و سرنخ پیشی را بخوان، نور و خوراکی و دکور میز را انتخاب کن و مهمان را دعوت کن.</p>
     <p>بعد از دو چیدمان اشتباهِ متفاوت، یک سرنخ دقیق‌تر می‌گیری. هر کشف یک صفحه و یک یادگاری به دفترچه اضافه می‌کند.</p>
     <div class="shift-guide__controls">
@@ -84,7 +85,7 @@ export default class CafeCrittersUi {
                     <section class="critters-page" aria-labelledby="critters-page-title">
                         <div class="critters-page__top">
                             <div class="critters-page__portrait" data-critters-portrait></div>
-                            <div><span class="critters-kicker" data-critters-page></span><h3 id="critters-page-title" data-critters-guest></h3>
+                            <div><span class="critters-kicker" data-critters-page></span><h3 id="critters-page-title" data-critters-guest tabindex="-1"></h3>
                                 <p data-critters-guest-title></p></div>
                         </div>
                         <div class="critters-page__clues" data-critters-clues>
@@ -102,16 +103,16 @@ export default class CafeCrittersUi {
                     <section class="critters-workbench" aria-labelledby="critters-workbench-title">
                         <div class="critters-workbench__head"><h3 id="critters-workbench-title">چیدن میز</h3><span data-critters-picks></span></div>
                         <div class="critters-fields" data-critters-choices>${choicesMarkup()}</div>
-                        <div class="critters-workbench__foot">
-                            <p data-critters-feedback role="status" aria-live="polite"></p>
-                            <button class="critters-primary" type="button" data-critters-action="invite">دعوت مهمان</button>
-                            <button class="critters-primary" type="button" data-critters-action="next" hidden>مهمان بعدی</button>
-                        </div>
                     </section>
                     <section class="critters-index" aria-labelledby="critters-index-title">
                         <div><h3 id="critters-index-title">صفحه‌های دفترچه</h3><span>یادگاری‌های کشف‌شده روی قفسه می‌نشینند.</span></div>
                         <ol data-critters-index></ol>
                     </section>
+                </div>
+                <div class="critters-workbench__foot">
+                    <p data-critters-feedback role="status"></p>
+                    <button class="critters-primary" type="button" data-critters-action="invite">دعوت مهمان</button>
+                    <button class="critters-primary" type="button" data-critters-action="next" hidden>مهمان بعدی</button>
                 </div>
             </div>`;
         root.querySelector('[data-game-hud-host]').append(this.hud);
@@ -144,7 +145,7 @@ export default class CafeCrittersUi {
                 <legend>درجهٔ سختی</legend>
                 ${Object.entries(CRITTER_RULES).map(([id, rule]) => `<button type="button" data-critters-choice="${id}" aria-pressed="false">
                     <span><strong>${rule.label}</strong><b>${number(rule.level)} از ۱۰</b></span>
-                    <small>${number(rule.seconds / 60)} دقیقه · ${rule.clue}</small>
+                    <small>${rule.seconds === null ? 'بدون زمان' : `${number(rule.seconds / 60)} دقیقه`} · ${rule.clue}</small>
                 </button>`).join('')}
             </fieldset>
             <div class="critters-album" data-critters-album hidden></div>
@@ -200,15 +201,16 @@ export default class CafeCrittersUi {
 
     focusChoice({ resetScroll = false } = {}) {
         if (resetScroll) this.board.scrollTop = 0;
-        this.controls[0]?.focus({ preventScroll: true });
+        const focus = resetScroll ? this.nodes.guest : this.controls[0];
+        focus?.focus({ preventScroll: resetScroll });
     }
 
     updateTime(seconds) {
-        const value = Math.max(0, Math.ceil(seconds));
+        const value = seconds === null ? null : Math.max(0, Math.ceil(seconds));
         if (value === this.shownTime) return;
         this.shownTime = value;
-        this.nodes.time.textContent = `${paddedDigits.format(Math.floor(value / 60))}:${paddedDigits.format(value % 60)}`;
-        this.hud.dataset.urgent = String(value <= 20);
+        this.nodes.time.textContent = value === null ? 'بدون زمان' : `${paddedDigits.format(Math.floor(value / 60))}:${paddedDigits.format(value % 60)}`;
+        this.hud.dataset.urgent = String(value !== null && value <= 20);
     }
 
     update(model) {

@@ -16,6 +16,8 @@ export const DEFAULT_SETTINGS = Object.freeze({
     motion: 'system',
     quality: 'auto',
     hudVisible: true,
+    hudScale: 'standard',
+    hudContrast: 'standard',
     hintsVisible: true,
     soundEnabled: true,
     musicEnabled: true,
@@ -23,6 +25,8 @@ export const DEFAULT_SETTINGS = Object.freeze({
 });
 
 const ENUMS = Object.freeze({
+    hudScale: new Set(['standard', 'large', 'extra']),
+    hudContrast: new Set(['standard', 'high']),
     motion: new Set(['system', 'full', 'reduced']),
     quality: new Set(['auto', 'performance', 'balanced', 'high']),
     interfaceDensity: new Set(['comfortable', 'compact']),

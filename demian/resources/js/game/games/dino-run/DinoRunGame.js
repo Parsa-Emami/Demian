@@ -8,9 +8,24 @@ import RunnerReplay from './RunnerReplay.js';
 import CanvasCharacterAvatar from '../../characters/CanvasCharacterAvatar.js';
 
 const BEST_KEY = `demian.dino-run.best.${RUNNER_CONFIG.version}`;
+const LESSON_KEY = 'demian.dino-run.tutorial.v1';
+const scoreDigits = new Intl.NumberFormat('fa-IR', { useGrouping: false, minimumIntegerDigits: 5 });
+const statDigits = new Intl.NumberFormat('fa-IR');
+const OBSTACLE_LABELS = Object.freeze({
+    'coffee-crate': 'جعبهٔ قهوه', chair: 'صندلی', suitcase: 'چمدان', 'traffic-cone': 'مخروط',
+    'plant-pot': 'گلدان', 'book-stack': 'دستهٔ کتاب', barrel: 'بشکه', 'floor-fan': 'پنکه',
+    pendant: 'چراغ آویز', 'hanging-sign': 'تابلو آویز', 'serving-tray': 'سینی', pipe: 'لوله',
+});
 const ATTACKER_LABELS = Object.freeze({ uzudi: 'اوزودی', amirreza: 'امیررضا' });
 function readBest() { try { return Math.max(0, Number(localStorage.getItem(BEST_KEY)) || 0); } catch { return 0; } }
 function saveBest(value) { try { localStorage.setItem(BEST_KEY, String(value)); } catch {} }
+
+function collisionGuide(model) {
+    if (!model.hitObstacle) return 'زمان این دور تمام شد.';
+    const { appearance, response } = model.hitObstacle;
+    const name = model.hitBy ? `حملهٔ ${ATTACKER_LABELS[model.hitBy]}` : OBSTACLE_LABELS[appearance] ?? 'برخورد با مانع';
+    return `${name} · ${response === 'jump' ? 'برای خطر زمینی، کمی پیش از برخورد بپر.' : 'برای خطر هوایی، اسلاید را تا عبور ادامه بده.'}`;
+}
 
 export default class DinoRunGame extends BaseGame {
     constructor() { super(); this.model = new DinoRunModel(); this.best = readBest(); this.finished = false; this.uiTime = 0; }
@@ -36,18 +51,71 @@ export default class DinoRunGame extends BaseGame {
         this.refreshRoster();
         this.hud = assignUiLayer(document.createElement('section'), UI_LAYER.LOCAL_BASE);
         this.hud.className = 'runner-hud'; this.hud.dir = 'rtl';
-        this.hud.innerHTML = '<div class="runner-hud__title"><small>DEMIAN / CAFÉ RUN</small><strong>DINO RUN</strong></div><div class="runner-hud__score"><span><small>امتیاز</small><b data-run-score>00000</b></span><span><small>رکورد دستگاه</small><b data-run-best>00000</b></span></div><button type="button" data-shell-action="leaderboard" aria-label="نمایش لیدربورد">♛</button>';
+        this.hud.innerHTML = '<div class="runner-hud__title"><small>DEMIAN / CAFÉ RUN</small><strong>DINO RUN</strong></div><div class="runner-hud__score"><span><small>امتیاز</small><b data-run-score>۰۰۰۰۰</b></span><span><small>رکورد دستگاه</small><b data-run-best>۰۰۰۰۰</b></span></div><button type="button" data-shell-action="leaderboard" aria-label="نمایش لیدربورد">♛</button>';
+        this.threat = document.createElement('div');
+        this.threat.className = 'runner-threat';
+        this.threat.hidden = true;
+        this.hud.append(this.threat);
         context.root.querySelector('[data-game-hud-host]')?.append(this.hud);
         this.ready = assignUiLayer(document.createElement('div'), UI_LAYER.LOCAL_BASE);
         this.ready.className = 'runner-ready'; this.ready.dir = 'rtl';
         this.ready.innerHTML = '<span>DEMIAN · CAFÉ RUN</span><h2>این بار، توی کافه بدو.</h2><p>از موانع و حمله‌های زمینی اوزودی و امیررضا بپر؛ زیر موانع و حمله‌های هوایی اسلاید برو. هر برخورد یعنی پایان دور!</p><button type="button" data-input-press="jump" data-input-hold="jumpHeld">شروع و پرش <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20V4m-6 6 6-6 6 6"/></svg></button><small data-runner-keyboard-guide>نگه‌دار: پرش بلندتر · Space / ↑ · ↓ برای اسلاید</small><small data-runner-touch-guide>برای پرش بلندتر، دکمهٔ پرش را نگه دار.</small><p data-run-ranking-mode role="status"></p>';
+        const lesson = document.createElement('button');
+        lesson.type = 'button';
+        lesson.className = 'runner-ready__lesson';
+        try { this.lessonLearned = localStorage.getItem(LESSON_KEY) === 'done'; } catch {}
+        lesson.textContent = this.lessonLearned ? 'مرور پرش و اسلاید' : 'تمرین پیشنهادی · پرش و اسلاید';
+        lesson.addEventListener('click', () => this.showLesson('jump'));
+        this.ready.querySelector('[data-runner-keyboard-guide]').before(lesson);
+        this.lessonPanel = assignUiLayer(document.createElement('section'), UI_LAYER.LOCAL_BASE);
+        this.lessonPanel.className = 'runner-ready runner-lesson';
+        this.lessonPanel.dir = 'rtl';
+        this.lessonPanel.hidden = true;
+        this.lessonPanel.innerHTML = '<span data-lesson-step></span><h2 data-lesson-title></h2><p data-lesson-copy role="status"></p><button type="button" data-lesson-start></button><button type="button" class="runner-ready__lesson" data-lesson-exit>بازگشت به شروع</button>';
+        this.lessonPanel.querySelector('[data-lesson-start]').addEventListener('click', () => {
+            if (this.lessonStep === 'done') this.leaveLesson();
+            else this.startLesson();
+        });
+        this.lessonPanel.querySelector('[data-lesson-exit]').addEventListener('click', () => this.leaveLesson());
         const wordmark = document.createElement('img');
         wordmark.className = 'runner-wordmark'; wordmark.alt = 'دمیان · DEMIAN';
         wordmark.src = new URL('assets/environments/cafe-runner-v1/wordmark.png', document.baseURI).href;
         this.ready.prepend(wordmark);
-        context.root.querySelector('[data-game-hud-host]')?.append(this.ready);
+        context.root.querySelector('[data-game-hud-host]')?.append(this.ready, this.lessonPanel);
         this.scoreNode = this.hud.querySelector('[data-run-score]'); this.bestNode = this.hud.querySelector('[data-run-best]');
         this.resize();
+    }
+    showLesson(step, missed = false) {
+        this.lessonStep = step;
+        this.lessonActive = false;
+        this.ready.hidden = true;
+        this.threat.hidden = true;
+        this.lessonPanel.hidden = false;
+        const jump = step === 'jump';
+        const done = step === 'done';
+        this.lessonPanel.querySelector('[data-lesson-step]').textContent = done ? 'تمرین کامل شد' : `تمرین ${jump ? '۱' : '۲'} از ۲`;
+        this.lessonPanel.querySelector('[data-lesson-title]').textContent = done ? 'آمادهٔ دویدن هستی' : jump ? '↑ پرش از مانع زمینی' : '↓ اسلاید زیر مانع هوایی';
+        this.lessonPanel.querySelector('[data-lesson-copy]').textContent = done ? 'حالا می‌توانی یک دور امتیازی شروع کنی.'
+            : missed ? collisionGuide(this.model) : jump ? 'وقتی جعبه نزدیک شد، پرش را بزن. نگه‌داشتن دکمه پرش را بلندتر می‌کند.'
+                : 'وقتی چراغ نزدیک شد، اسلاید را تا رد شدن از زیر آن ادامه بده.';
+        const start = this.lessonPanel.querySelector('[data-lesson-start]');
+        start.textContent = done ? 'رفتن به شروع دور' : missed ? 'تلاش دوباره' : 'شروع این تمرین';
+        start.focus();
+        if (done) {
+            try { localStorage.setItem(LESSON_KEY, 'done'); } catch {}
+            this.ready.querySelector('.runner-ready__lesson').textContent = 'مرور پرش و اسلاید';
+        }
+    }
+    startLesson() {
+        this.context.input.clearTouch();
+        this.model.reset({ width: this.trackWidth, lesson: this.lessonStep });
+        this.lessonActive = true;
+        this.lessonPanel.hidden = true;
+        this.updateHud();
+    }
+    leaveLesson() {
+        this.startSession().then(() => this.ready?.querySelector('[data-input-press="jump"]')?.focus())
+            .catch(() => this.context?.app.shell.toast('شروع دور انجام نشد. دوباره تلاش کن.', 'error'));
     }
     refreshRoster() {
         this.characterManager.characters = BUILTIN_CHARACTER_SLUGS.map((slug) => ({
@@ -66,12 +134,14 @@ export default class DinoRunGame extends BaseGame {
             this.refreshRoster();
             this.context.eventBus.emit('characters:changed', this.characterManager.characters);
             this.context.eventBus.emit('character:selected', { record: this.characterManager.activeRecord });
-            if (this.model.status === 'ready') await this.startSession();
+            if (this.model.status === 'ready' && !this.lessonStep) await this.startSession();
             else if (this.run?.mode === 'ranked') this.run.mode = 'practice';
         } finally { this.selecting = false; }
     }
     async startSession({ seed } = {}) {
         this.starting = true; this.finished = false;
+        this.lessonStep = null; this.lessonActive = false;
+        this.lessonPanel.hidden = true;
         this.run = null; this.replay = new RunnerReplay();
         const width = Math.round(Math.min(RUNNER_CONFIG.maxWidth, Math.max(RUNNER_CONFIG.minWidth, this.trackWidth)));
         this.run = this.context.services.leaderboards
@@ -88,7 +158,8 @@ export default class DinoRunGame extends BaseGame {
     }
     fixedUpdate(dt, input = {}) {
         if (!this.context || this.context.app.sessionState !== 'playing' || this.context.root.dataset.sidebarState === 'expanded' || this.finished || this.starting) return;
-        if (this.replay && (this.model.status !== 'ready' || input.jump)) this.replay.record(input);
+        if (this.lessonStep && !this.lessonActive) return;
+        if (!this.lessonStep && this.replay && (this.model.status !== 'ready' || input.jump)) this.replay.record(input);
         this.model.step(dt, input);
         const model = this.model;
         this.actor.speed = model.status === 'ready' ? 0 : Math.min(8.4, 6 * model.speed / RUNNER_CONFIG.startSpeed);
@@ -103,7 +174,10 @@ export default class DinoRunGame extends BaseGame {
                 travelledDistance: 7.2 * dt, grounded: !airborne, airborne,
                 jumpVelocity: airborne ? -1 : 0, jumpForce: RUNNER_CONFIG.jumpSpeed / 100 }, dt);
         }
-        if (model.status === 'over') this.finish();
+        if (this.lessonActive) {
+            if (model.status === 'over') this.showLesson(this.lessonStep, true);
+            else if (model.passed) this.showLesson(this.lessonStep === 'jump' ? 'duck' : 'done');
+        } else if (model.status === 'over') this.finish();
     }
     update(dt = 0) {
         this.uiTime += dt;
@@ -111,18 +185,30 @@ export default class DinoRunGame extends BaseGame {
     }
     updateHud() {
         if (!this.hud) return;
-        this.scoreNode.textContent = String(this.model.score).padStart(5, '0');
-        this.bestNode.textContent = String(Math.max(this.best, this.model.score)).padStart(5, '0');
-        this.ready.hidden = this.model.status !== 'ready';
+        const score = this.lessonStep ? 0 : this.model.score;
+        this.scoreNode.textContent = scoreDigits.format(score);
+        this.bestNode.textContent = scoreDigits.format(Math.max(this.best, score));
+        this.ready.hidden = this.starting || Boolean(this.lessonStep) || this.model.status !== 'ready';
+        const model = this.model;
+        const obstacle = model.status === 'running' && (!this.lessonStep || this.lessonActive)
+            ? model.obstacles.find((entry) => !entry.scored && entry.x + entry.w >= RUNNER_CONFIG.playerX
+                && entry.x - RUNNER_CONFIG.playerX < model.speed * 1.4)
+            : null;
+        this.threat.hidden = !obstacle;
+        if (obstacle) {
+            const cue = obstacle.response === 'jump' ? '↑ زمینی · پرش' : '↓ هوایی · اسلاید';
+            this.threat.dataset.response = obstacle.response;
+            if (this.threat.textContent !== cue) this.threat.textContent = cue;
+        }
     }
     finish() {
         if (this.finished) return;
         this.finished = true;
         const previousBest = this.best; this.best = Math.max(this.best, this.model.score); saveBest(this.best);
         this.context.app.completeGame({ title: this.model.score > previousBest ? 'رکورد تازه!' : 'یک بار دیگر؟',
-            subtitle: this.model.hitBy ? `حملهٔ ${ATTACKER_LABELS[this.model.hitBy]} بهت رسید!` : 'هر پرش، یک قدم نزدیک‌تر به رکورد بعدی.', score: this.model.score, won: false,
+            subtitle: collisionGuide(this.model), score: this.model.score, won: false,
             ranking: this.context.services?.leaderboards?.finish(this.run, this.model, this.replay, this.avatar.slug),
-            stats: { 'رکورد': this.best, 'موانع ردشده': this.model.passed, 'زمان': `${Math.floor(this.model.time)} ثانیه`,
+            stats: { 'رکورد': statDigits.format(this.best), 'موانع ردشده': statDigits.format(this.model.passed), 'زمان': `${statDigits.format(Math.floor(this.model.time))} ثانیه`,
                 'کاراکتر': arcadeCharacterLabel(this.avatar.slug) } });
     }
     resize() {
@@ -202,5 +288,5 @@ export default class DinoRunGame extends BaseGame {
         this.resize();
     }
     async exit() {}
-    dispose() { this.hud?.remove(); this.ready?.remove(); this.environment?.dispose(); this.attackAvatars?.clear(); this.environment = null; this.hud = null; this.context = null; this.avatar = null; }
+    dispose() { this.hud?.remove(); this.ready?.remove(); this.lessonPanel?.remove(); this.environment?.dispose(); this.attackAvatars?.clear(); this.environment = null; this.hud = null; this.context = null; this.avatar = null; }
 }

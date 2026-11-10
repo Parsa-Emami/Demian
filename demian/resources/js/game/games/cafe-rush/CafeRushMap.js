@@ -35,3 +35,21 @@ export const RECIPES = freezeCafe({
 export function rushGround() {
     return createCafeGround({ bounds: RUSH_BOUNDS, radius: 0.44, actors: { player: RUSH_START }, owner: 'cafe-rush' });
 }
+
+const ticketNumber = new Intl.NumberFormat('fa-IR', { useGrouping: false });
+
+export function rushObjective(model) {
+    const carried = model.carriedOrder;
+    const accepted = model.acceptedOrder;
+    const ready = model.orders.find((order) => order.state === 'ready');
+    const preparing = model.orders.find((order) => order.state === 'preparing');
+    const waiting = model.waitingOrder;
+    const order = carried ?? accepted ?? ready ?? waiting ?? preparing;
+    const id = carried ? `table-${carried.table}`
+        : order && order !== waiting ? RECIPES[order.recipe].station : 'tickets';
+    const destination = RUSH_SPOTS.find((spot) => spot.id === id).label;
+    const stage = carried ? 'تحویل' : accepted ? 'آماده کن' : ready ? 'سینی را بردار'
+        : waiting ? 'برگه را بردار' : preparing ? 'در حال آماده‌شدن' : 'منتظر سفارش';
+    const marker = order ? `#${ticketNumber.format(order.id)} · ${destination}` : destination;
+    return { id, marker, label: `${stage} · ${marker}` };
+}

@@ -43,7 +43,7 @@ test('eight individually illustrated guests have unique solutions using the agre
 
 test('the three difficulty grades use direct, behavioral and combined clues', () => {
     const guest = CRITTERS[0];
-    assert.deepEqual(Object.values(CRITTER_RULES).map(({ level, seconds }) => [level, seconds]), [[2, 300], [4, 240], [6, 180]]);
+    assert.deepEqual(Object.values(CRITTER_RULES).filter(({ seconds }) => seconds !== null).map(({ level, seconds }) => [level, seconds]), [[2, 300], [4, 240], [6, 180]]);
     assert.match(cluesFor(guest, 'easy').journal, /مهتاب، هل و گلدان/);
     assert.match(cluesFor(guest, 'standard').journal, /مهتاب.*هل/);
     assert.doesNotMatch(cluesFor(guest, 'standard').journal, /گلدان/);
@@ -185,4 +185,19 @@ test('the Open World entrance is visible from the canonical aisle and uses puzzl
     assert.equal(ground.canSee(player, entry.interaction), true);
     assert.ok(ground.grid.findPath(player, entry.interaction).length);
     assert.equal(CONTROL_LAYOUTS.CAFE_CRITTERS.joystick, false);
+});
+
+test('calm mode preserves discovery and never times out', () => {
+    const model = new CafeCrittersModel('calm');
+    model.start();
+    model.advance(720);
+    assert.equal(model.status, 'playing');
+    assert.equal(model.remaining, null);
+    assert.deepEqual(cluesFor(model.guest, 'calm'), cluesFor(model.guest, 'easy'));
+    while (model.status !== 'finished') {
+        inviteGuest(model);
+        model.next();
+    }
+    assert.equal(model.result().won, true);
+    assert.equal(model.album.size, model.targets.length);
 });

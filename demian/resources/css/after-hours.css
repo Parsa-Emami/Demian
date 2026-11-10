@@ -438,9 +438,3 @@
         inset-block-end: 74px;
     }
 }
-
-@media (max-width: 590px) and (orientation: portrait) {
-    .manager-shell[data-active-game="after-hours"] .play-toolbar {
-        top: calc(max(9px, env(safe-area-inset-top)) + 148px);
-    }
-}

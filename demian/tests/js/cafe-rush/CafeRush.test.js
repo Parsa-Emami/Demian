@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import CafeRushModel, { rushDistance } from '../../../resources/js/game/games/cafe-rush/CafeRushModel.js';
 import {
-    RECIPES, RUSH_DURATION, RUSH_GUESTS, RUSH_RULES, RUSH_SPOTS, RUSH_START, VIP_AT,
+    RECIPES, RUSH_DURATION, RUSH_GUESTS, RUSH_RULES, RUSH_SPOTS, RUSH_START, VIP_AT, rushObjective,
 } from '../../../resources/js/game/games/cafe-rush/CafeRushMap.js';
 import { INPUT_CONTEXTS } from '../../../resources/js/game/input/InputContexts.js';
 import { CONTROL_LAYOUTS } from '../../../resources/js/game/controls/ControlLayoutService.js';
@@ -240,3 +240,25 @@ for (const difficulty of Object.keys(RUSH_RULES)) {
         });
     }
 }
+
+test('the order readout and destination follow the ticket from priority pickup to delivery', (t) => {
+    const model = setup(t);
+    model.start();
+    const original = model.orders[0];
+    const vip = { ...original, id: 12, vip: true, table: 2 };
+    model.orders.push(vip);
+    assert.equal(rushObjective(model).id, 'tickets');
+    assert.match(rushObjective(model).marker, /۱۲/);
+    place(model, 'tickets');
+    model.interact();
+    assert.equal(model.acceptedOrder, vip);
+    const station = RECIPES[vip.recipe].station;
+    assert.equal(rushObjective(model).id, station);
+    place(model, station);
+    model.interact();
+    waitForPrep(model, vip);
+    assert.match(rushObjective(model).label, /سینی را بردار/);
+    model.interact();
+    assert.equal(rushObjective(model).id, 'table-2');
+    assert.match(rushObjective(model).marker, /۱۲.*میز ۲/);
+});

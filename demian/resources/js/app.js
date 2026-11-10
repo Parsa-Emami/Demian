@@ -7,6 +7,7 @@ import '../css/after-hours.css';
 import '../css/cafe-rush.css';
 import '../css/cafe-critters.css';
 import '../css/touch-controls.css';
+import '../css/game-hud.css';
 import GameApplication from './game/application/GameApplication';
 import CharacterManagerUI from './ui/CharacterManagerUI';
 import SidebarController from './ui/SidebarController';

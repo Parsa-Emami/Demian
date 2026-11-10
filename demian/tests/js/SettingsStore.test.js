@@ -18,6 +18,7 @@ test('SettingsStore validates persisted values and preserves defaults', () => {
             quality: 'ultra',
             motion: 'reduced',
             hudVisible: false,
+            hudScale: 'invalid',
             soundEnabled: 'yes',
         }),
     });
@@ -26,6 +27,8 @@ test('SettingsStore validates persisted values and preserves defaults', () => {
     assert.equal(store.snapshot().quality, DEFAULT_SETTINGS.quality);
     assert.equal(store.snapshot().motion, 'reduced');
     assert.equal(store.snapshot().hudVisible, false);
+    assert.equal(store.snapshot().hudScale, 'standard');
+    assert.equal(store.snapshot().hudContrast, 'standard');
     assert.equal(store.snapshot().soundEnabled, DEFAULT_SETTINGS.soundEnabled);
 });
 
@@ -36,10 +39,12 @@ test('SettingsStore persists updates and emits immutable snapshots', () => {
     const changes = [];
     store.subscribe((change) => changes.push(change));
 
-    const current = store.update({ quality: 'high', musicEnabled: false });
+    const current = store.update({ quality: 'high', musicEnabled: false, hudScale: 'extra', hudContrast: 'high' });
 
     assert.equal(current.quality, 'high');
     assert.equal(current.musicEnabled, false);
+    assert.equal(current.hudScale, 'extra');
+    assert.equal(current.hudContrast, 'high');
     assert.ok(Object.isFrozen(current));
     assert.equal(changes.length, 1);
     assert.deepEqual(JSON.parse(storage.dump(key)), current);

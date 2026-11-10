@@ -43,25 +43,54 @@ export default class WorldMap {
         this.sceneKey = null;
         this.playerPosition = { x: 0, z: 0 };
         this.boundClick = (event) => this.selectFromPointer(event);
-        this.boundKey = (event) => { if (event.key === 'Escape') this.close(); };
+        this.boundKey = (event) => event.stopPropagation();
     }
 
     mount() {
         if (!this.host || this.root) return;
-        this.root = document.createElement('section');
+        this.root = document.createElement('dialog');
+        this.root.dataset.gameDialog = 'world-map';
+        this.root.setAttribute('aria-labelledby', 'world-map-title');
         this.root.className = 'open-world-map';
         assignUiLayer(this.root, UI_LAYER.LOCAL_BASE);
         this.root.hidden = true;
         this.root.setAttribute('aria-hidden', 'true');
         this.root.innerHTML = `
-            <div class="open-world-map__panel" role="dialog" aria-modal="true" aria-label="نقشه کافه دمیان">
-                <header><div><small>DEMIAN // CAFÉ</small><h2>نقشه کافه</h2></div><button type="button" data-map-3d>نمای سه‌بعدی</button><button type="button" data-map-close aria-label="بستن نقشه">×</button></header>
-                <div class="open-world-map__canvas-wrap"><canvas></canvas><div class="open-world-map__zoom" data-ui-layer="local-control"><button type="button" data-map-zoom-in aria-label="بزرگ‌نمایی">+</button><button type="button" data-map-zoom-out aria-label="کوچک‌نمایی">−</button><button type="button" data-map-fit>نقشه کامل</button></div></div>
-                <footer><div><strong data-map-selection>یک Save Point را انتخاب کن</strong><small data-map-status>نقاط کشف‌شده برای سفر سریع فعال‌اند.</small></div><button type="button" data-map-travel disabled>سفر سریع</button></footer>
+            <div class="open-world-map__panel" dir="rtl">
+                <header><div><small lang="en" dir="ltr">DEMIAN // CAFÉ</small><h2 id="world-map-title">نقشهٔ کافه</h2></div><button type="button" data-map-3d>نمای سه‌بعدی</button><button type="button" data-map-close aria-label="بستن نقشه" autofocus>×</button></header>
+                <div class="open-world-map__body">
+                    <div class="open-world-map__canvas-wrap"><canvas aria-hidden="true"></canvas><div class="open-world-map__zoom" data-ui-layer="local-control"><button type="button" data-map-zoom-in aria-label="بزرگ‌نمایی">+</button><button type="button" data-map-zoom-out aria-label="کوچک‌نمایی">−</button><button type="button" data-map-fit>نقشهٔ کامل</button></div></div>
+                    <section class="open-world-map__places" aria-labelledby="world-map-places-title">
+                        <h3 id="world-map-places-title">مقصدهای سفر سریع</h3>
+                        <ul data-map-places></ul>
+                    </section>
+                </div>
+                <footer><div role="status"><strong data-map-selection>مقصدی انتخاب کن</strong><small data-map-status>نقاط کشف‌شده برای سفر سریع فعال‌اند.</small></div><button type="button" data-map-travel disabled>سفر سریع</button></footer>
             </div>`;
         this.canvas = this.root.querySelector('canvas');
         this.context = this.canvas.getContext('2d', { alpha: false });
         if (this.context) this.context.imageSmoothingEnabled = false;
+        const places = this.root.querySelector('[data-map-places]');
+        this.placeButtons = new Map(this.manifest.savePoints.map((point) => {
+            const item = document.createElement('li');
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.dataset.mapPoint = point.id;
+            const name = document.createElement('strong');
+            name.textContent = point.label;
+            const status = document.createElement('small');
+            button.append(name, status);
+            button.addEventListener('click', () => this.selectPoint(point, true));
+            item.append(button);
+            places.append(item);
+            return [point.id, { button, status }];
+        }));
+        this.root.addEventListener('keydown', this.boundKey);
+        this.root.addEventListener('cancel', (event) => {
+            event.preventDefault();
+            if (this.inspector && !this.inspector.closed) this.inspector.dispose();
+            else this.close();
+        });
         this.root.querySelector('[data-map-3d]').addEventListener('click', () => {
             this.inspector?.dispose();
             this.inspector = new FbxCafeInspector(this.root, { playerPosition: this.playerPosition });
@@ -88,24 +117,25 @@ export default class WorldMap {
     open(position = null) {
         if (!this.root) this.mount();
         if (position) this.playerPosition = { x: Number(position.x) || 0, z: Number(position.z) || 0 };
-        this.mapZoom=1;this.mapCenter=null;
+        if (this.root.open) return;
+        this.mapZoom = 1;
+        this.mapCenter = null;
         this.root.hidden = false;
-        this.root.setAttribute('aria-hidden', 'false');
-        document.addEventListener('keydown', this.boundKey);
-        this.draw();
-        this.closeButton?.focus();
+        this.root.removeAttribute('aria-hidden');
+        this.root.showModal();
+        this.selectPoint(this.manifest.savePoint(this.selectedId));
     }
 
     close() {
-        if (!this.root || this.root.hidden) return;
+        if (!this.root?.open) return;
         this.inspector?.dispose(); this.inspector = null;
+        this.root.close();
         this.root.hidden = true;
         this.root.setAttribute('aria-hidden', 'true');
-        document.removeEventListener('keydown', this.boundKey);
         this.onClose?.();
     }
 
-    isOpen() { return Boolean(this.root && !this.root.hidden); }
+    isOpen() { return Boolean(this.root?.open); }
 
     mapCamera(width,height) {
         const camera=cafeMapCamera(this.manifest.bounds,width,height,
@@ -214,31 +244,47 @@ export default class WorldMap {
             if (candidate < distance) { nearest = point; distance = candidate; }
         }
         if (!nearest || distance > Math.max(24, this.canvas.width * 0.035)) return;
-        this.selectedId = nearest.id;
-        const unlocked = this.discovery.isSavePointUnlocked(nearest.id);
-        setText(this.selectionLabel, nearest.label);
-        setText(this.statusLabel, unlocked ? 'این Save Point برای سفر سریع آماده است.' : 'ابتدا این Save Point را در جهان فعال کن.');
-        this.travelButton.disabled = !unlocked;
+        this.selectPoint(nearest);
+    }
+
+    selectPoint(point, reveal = false) {
+        this.selectedId = point?.id ?? null;
+        if (reveal) {
+            this.mapZoom = Math.max(2, this.mapZoom);
+            this.mapCenter = { ...point.position };
+        }
+        const unlocked = point && this.discovery.isSavePointUnlocked(point.id);
+        setText(this.selectionLabel, point?.label ?? 'مقصدی انتخاب کن');
+        setText(this.statusLabel, !point ? 'نقاط کشف‌شده برای سفر سریع فعال‌اند.'
+            : unlocked ? 'آمادهٔ سفر سریع' : 'برای باز شدن، این نقطه را در کافه فعال کن.');
+        this.travelButton.disabled = !unlocked || Boolean(this.travelling);
+        for (const [id, { button, status }] of this.placeButtons) {
+            button.setAttribute('aria-pressed', String(id === this.selectedId));
+            setText(status, this.discovery.isSavePointUnlocked(id) ? '✓ قابل سفر' : '◇ کشف‌نشده');
+        }
         this.draw();
     }
 
     async travel() {
         const point = this.manifest.savePoint(this.selectedId);
-        if (!point || !this.discovery.isSavePointUnlocked(point.id)) return;
+        if (this.travelling || !point || !this.discovery.isSavePointUnlocked(point.id)) return;
+        this.travelling = true;
         this.travelButton.disabled = true;
         setText(this.statusLabel, 'در حال بارگذاری مقصد…');
         try {
-            await this.onFastTravel?.(point);
+            if (await this.onFastTravel?.(point) === false) throw new Error();
             this.close();
+        } catch {
+            setText(this.statusLabel, 'سفر انجام نشد. دوباره تلاش کن.');
         } finally {
-            this.travelButton.disabled = false;
+            this.travelling = false;
+            this.travelButton.disabled = !this.discovery.isSavePointUnlocked(this.selectedId);
         }
     }
 
     dispose() {
         this.cafe.dispose();
-        this.inspector?.dispose(); this.inspector = null;
-        document.removeEventListener('keydown', this.boundKey);
+        this.close();
         this.canvas?.removeEventListener('click', this.boundClick);
         for(const [type,handler]of [['wheel',this.boundWheel],['pointerdown',this.boundDown],['pointermove',this.boundMove],['pointerup',this.boundUp],['pointercancel',this.boundUp]])this.canvas?.removeEventListener(type,handler);
         this.sceneCanvas = null;

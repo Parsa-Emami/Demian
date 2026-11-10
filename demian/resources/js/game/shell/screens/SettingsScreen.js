@@ -53,6 +53,8 @@ export default class SettingsScreen extends BaseScreen {
             motion: data.get('motion'),
             quality: data.get('quality'),
             interfaceDensity: data.get('interfaceDensity'),
+            hudScale: data.get('hudScale'),
+            hudContrast: data.get('hudContrast'),
             hudVisible: data.get('hudVisible') === 'on',
             hintsVisible: data.get('hintsVisible') === 'on',
             soundEnabled: data.get('soundEnabled') === 'on',

@@ -1,5 +1,7 @@
 import BaseScreen from './BaseScreen';
 
+const resultDigits = new Intl.NumberFormat('fa-IR');
+
 export default class ResultsScreen extends BaseScreen {
     constructor(options) {
         super(options);
@@ -23,7 +25,7 @@ export default class ResultsScreen extends BaseScreen {
         }).catch(() => { if (this.payload === current) this.renderRanking({ status: 'pending', retryable: true }); });
         if (this.title) this.title.textContent = payload.title ?? 'نتیجه‌ی بازی';
         if (this.subtitle) this.subtitle.textContent = payload.subtitle ?? 'مرحله به پایان رسید.';
-        if (this.score) this.score.textContent = String(payload.score ?? 0);
+        if (this.score) this.score.textContent = resultDigits.format(payload.score ?? 0);
         this.renderStats(payload.stats ?? {});
         if (this.replayButton) {
             this.replayButton.hidden = !payload.replay;
@@ -39,7 +41,7 @@ export default class ResultsScreen extends BaseScreen {
             const labelElement = document.createElement('span');
             const valueElement = document.createElement('strong');
             labelElement.textContent = String(label);
-            valueElement.textContent = String(value);
+            valueElement.textContent = typeof value === 'number' ? resultDigits.format(value) : String(value);
             row.append(labelElement, valueElement);
             this.stats.appendChild(row);
         });

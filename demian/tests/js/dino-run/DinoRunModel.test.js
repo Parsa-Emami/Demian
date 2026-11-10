@@ -73,3 +73,29 @@ test('long seeded autoplay sessions stay playable with bounded obstacle memory a
         assert.ok(model.passed > 80);
     }
 });
+
+test('tutorial encounters use the normal player physics, then reset to an unmodified seeded run', () => {
+    const model = new DinoRunModel({ seed: 7, width: 420 });
+    for (const lesson of ['jump', 'duck']) {
+        model.reset({ lesson });
+        const obstacle = model.obstacles[0];
+        assert.equal(obstacle.response, lesson);
+        for (let i = 0; i < 100 && !model.passed; i++) {
+            const near = obstacle.x - RUNNER_CONFIG.playerX < model.speed * .28;
+            model.step(1 / 60, { jump: near && lesson === 'jump' && model.y === 0, jumpHeld: true, duck: near && lesson === 'duck' });
+        }
+        assert.equal(model.passed, 1);
+        assert.equal(model.status, 'running');
+        model.reset({ lesson });
+        for (let i = 0; i < 100; i++) model.step(1 / 60);
+        assert.equal(model.hitObstacle.response, lesson);
+    }
+    model.reset();
+    const ranked = new DinoRunModel({ seed: 7, width: 420 });
+    for (const entry of [model, ranked]) {
+        entry.step(1 / 60, { jump: true });
+        for (let i = 0; i < 100; i++) entry.step(1 / 60);
+    }
+    assert.deepEqual(model.snapshot(), ranked.snapshot());
+    assert.equal(model.score, ranked.score);
+});

@@ -12,8 +12,8 @@ export function shiftTime(seconds) {
 
 const DANGER = Object.freeze({
     patrol: 'سایه در گشت',
-    investigate: 'سایه دنبال صداست',
-    chase: 'سایه در تعقیب',
+    investigate: '△ سایه دنبال صداست',
+    chase: '! در تعقیب · مسیرت را عوض کن',
 });
 
 const TOUCH_ACTIONS = {
@@ -25,6 +25,7 @@ const TOUCH_ACTIONS = {
 
 const BRIEFING = `
     <p>دو کارت شیفت را پیدا کن، برق خروجی را وصل کن و پیش از پایان وقت بیرون برو.</p>
+    <p>در گوشی، نمای افقی دید بیشتری از مسیر فرار می‌دهد.</p>
     <p>دو مدار هم‌زمان روشن می‌مانند. دویدن و باز کردن محفظهٔ فلزی صدا ایجاد می‌کند و سایه را خبر می‌کند.</p>
     <div class="shift-guide__controls">
         <span class="shift-guide__keyboard">حرکت <kbd>WASD / ↑↓←→</kbd> · دویدن <kbd>Shift</kbd> · تعامل <kbd>E</kbd></span>
@@ -46,36 +47,42 @@ export default class AfterHoursUi {
         this.hud.className = 'shift-hud';
         this.hud.setAttribute('aria-label', 'وضعیت خاموشی کافه');
         this.hud.innerHTML = `
-            <div class="shift-hud__console">
-                <div class="shift-hud__title">
-                    <span lang="en">DEMIAN / AFTER HOURS</span>
-                    <strong>خاموشی کافه</strong>
-                    <small data-shift-level></small>
-                </div>
+            <div class="game-readout__rail">
+                <div class="game-readout__stats">
                 <div class="shift-hud__meter">
                     <span>زمان مانده</span><time data-shift-time dir="ltr"></time>
                 </div>
                 <div class="shift-hud__meter">
                     <span>کارت شیفت</span><b data-shift-cards dir="ltr"></b>
                 </div>
-                <div class="shift-hud__circuits" aria-label="مدارهای برق">
+                </div>
+                <div class="game-readout__state">
+                    <strong data-shift-danger role="status"></strong>
+                    <span data-shift-goal></span>
+                </div>
+                <details class="game-readout__details">
+                    <summary>مدارها و بی‌سیم</summary>
+                    <div class="game-readout__body">
+                        <div class="game-readout__meta">
+                            <span data-shift-level></span>
+                            <span data-shift-zone></span>
+                            <span data-shift-relic hidden>◇ یادگار همراهت است</span>
+                        </div>
+                        <div class="shift-hud__circuits" aria-label="مدارهای برق">
                     ${CIRCUITS.map((circuit) => `<div data-shift-circuit="${circuit.id}">
                         <i aria-hidden="true"></i><b>${circuit.label}</b><small></small>
                     </div>`).join('')}
-                </div>
-            </div>
-            <div class="shift-hud__status">
-                <span data-shift-zone></span>
-                <span data-shift-danger></span>
-                <span data-shift-relic hidden>◇ یادگار همراهت است</span>
-            </div>
-            <div class="shift-hud__radio" role="status" aria-live="polite">
-                <strong>نگار / بی‌سیم</strong><span data-shift-radio></span>
+                        </div>
+                        <div class="shift-hud__radio">
+                            <strong>نگار / بی‌سیم</strong><span data-shift-radio></span>
+                        </div>
+                    </div>
+                </details>
             </div>
             <div class="shift-hud__prompt" data-shift-prompt hidden></div>
         `;
         root.querySelector('[data-game-hud-host]').append(this.hud);
-        this.nodes = Object.fromEntries(['level', 'time', 'cards', 'zone', 'danger', 'relic', 'radio', 'prompt']
+        this.nodes = Object.fromEntries(['level', 'time', 'cards', 'zone', 'danger', 'goal', 'relic', 'radio', 'prompt']
             .map((id) => [id, this.hud.querySelector(`[data-shift-${id}]`)]));
         this.circuitNodes = [...this.hud.querySelectorAll('[data-shift-circuit]')];
 
@@ -97,9 +104,9 @@ export default class AfterHoursUi {
                 </button>`).join('')}
             </fieldset>
             <div class="shift-power" data-shift-power hidden>
-                <p>دو مدار روشن می‌مانند. بخش بی‌برق را انتخاب کن.</p>
+                <p>دو مدار روشن می‌مانند. خاموش کردن یک مدار، بخش متناظر کافه را بی‌برق می‌کند و مدار قبلی را روشن می‌کند.</p>
                 ${CIRCUITS.map((circuit) => `<button type="button" data-shift-switch="${circuit.id}">
-                    <span aria-hidden="true">ϟ</span><strong>${circuit.label}</strong><small></small>
+                    <span aria-hidden="true">ϟ</span><strong>مدار ${circuit.label}</strong><small></small>
                 </button>`).join('')}
             </div>
             <div class="shift-dialog__actions">
@@ -176,14 +183,18 @@ export default class AfterHoursUi {
         setText(nodes.level, `${model.rules.label} · ${digits.format(model.rules.level)} از ۱۰`);
         setText(nodes.time, shiftTime(model.remaining));
         setText(nodes.cards, `${digits.format(model.cardCount)} / ۲`);
-        setText(nodes.zone, CIRCUITS.find((circuit) => circuit.id === circuitAt(model.player.position)).label);
+        const zone = circuitAt(model.player.position);
+        const dark = CIRCUITS.find((circuit) => circuit.id === model.darkCircuit);
+        setText(nodes.zone, `موقعیت: ${CIRCUITS.find((circuit) => circuit.id === zone).label}`);
         setText(nodes.danger, DANGER[model.shadow.mode]);
+        setText(nodes.goal, model.exitReady ? 'به درِ خروج برو'
+            : dark?.id === 'exit' ? 'تابلو برق · مدار خروجی را روشن کن' : 'کارت‌های شیفت را پیدا کن');
         setText(nodes.radio, radio);
         nodes.relic.hidden = !model.relic;
         for (const node of this.circuitNodes) {
             const powered = node.dataset.shiftCircuit !== model.darkCircuit;
             node.dataset.powered = String(powered);
-            setText(node.querySelector('small'), powered ? 'روشن' : 'خاموش');
+            setText(node.querySelector('small'), `${powered ? '✓ روشن' : '× خاموش'}${node.dataset.shiftCircuit === zone ? ' · اینجا' : ''}`);
         }
         const target = model.status === 'running' && !this.dialog.open ? model.nearby() : null;
         setTouchInteractionLabel(this.touchLabel, TOUCH_ACTIONS[target?.kind]);
