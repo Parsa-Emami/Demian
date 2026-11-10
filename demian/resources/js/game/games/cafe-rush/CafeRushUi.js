@@ -1,3 +1,4 @@
+import setTouchInteractionLabel from '../../input/TouchInteractionLabel.js';
 import { UI_LAYER, assignUiLayer } from '../../ui/UiLayer.js';
 import { RECIPES, RUSH_RULES, RUSH_SPOTS, VIP_AT } from './CafeRushMap.js';
 
@@ -13,7 +14,7 @@ const BRIEFING = `
     <p>در ۳۰ ثانیهٔ پایانی سفارش ویژهٔ اوزودی به میز ۲ می‌رسد.</p>
     <div class="shift-guide__controls">
         <span class="shift-guide__keyboard">حرکت <kbd>WASD / ↑↓←→</kbd> · دویدن <kbd>Shift</kbd> · تعامل <kbd>E</kbd></span>
-        <span class="shift-guide__touch">جوی‌استیک · نگه‌داشتن «دویدن» · دکمهٔ «تعامل» کنار ایستگاه</span>
+        <span class="shift-guide__touch">جوی‌استیک · دکمهٔ «دویدن» · دکمهٔ «تعامل» کنار ایستگاه</span>
     </div>
 `;
 
@@ -28,6 +29,7 @@ function text(element, value) {
 
 export default class CafeRushUi {
     constructor(root, onAction) {
+        this.touchLabel = root.querySelector('[data-touch-interact-label]');
         this.hud = assignUiLayer(document.createElement('section'), UI_LAYER.LOCAL_BASE);
         this.hud.className = 'rush-hud';
         this.hud.setAttribute('aria-label', 'وضعیت سفارش آخر');
@@ -155,11 +157,17 @@ export default class CafeRushUi {
         this.updateTickets(model);
         const spot = model.status === 'running' && !this.dialog.open ? model.nearby() : null;
         nodes.prompt.hidden = !spot;
-        if (spot) {
-            const station = spot.kind === 'station' ? model.stationOrder(spot.id) : null;
-            const label = station?.state === 'ready' ? 'برداشتن سینی' : station ? 'در حال آماده‌سازی' : TARGETS[spot.id];
-            text(nodes.prompt, `تعامل · ${label}`);
+        if (!spot) {
+            setTouchInteractionLabel(this.touchLabel);
+            return;
         }
+        const station = spot.kind === 'station' ? model.stationOrder(spot.id) : null;
+        const label = station?.state === 'ready' ? 'برداشتن سینی' : station ? 'در حال آماده‌سازی' : TARGETS[spot.id];
+        const action = spot.kind === 'tickets' ? 'برداشتن سفارش'
+            : spot.kind === 'table' ? 'تحویل سفارش'
+                : station?.state === 'ready' ? 'برداشتن سینی' : 'آماده‌سازی';
+        setTouchInteractionLabel(this.touchLabel, action);
+        text(nodes.prompt, `تعامل · ${label}`);
     }
 
     updateTickets(model) {
@@ -194,5 +202,10 @@ export default class CafeRushUi {
         }
     }
 
-    dispose() { this.close(); this.hud.remove(); this.dialog.remove(); }
+    dispose() {
+        setTouchInteractionLabel(this.touchLabel);
+        this.close();
+        this.hud.remove();
+        this.dialog.remove();
+    }
 }

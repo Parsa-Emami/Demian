@@ -1,0 +1,321 @@
+.manager-shell {
+    --touch-safe-left: max(14px, env(safe-area-inset-left));
+    --touch-safe-right: max(14px, env(safe-area-inset-right));
+    --touch-safe-bottom: max(16px, env(safe-area-inset-bottom));
+    --touch-extra-inline: max(0px, calc((100vw - 294px) / 2));
+    --touch-stick-inline: min(var(--touch-stick-inset, 0px), var(--touch-extra-inline));
+    --touch-button-inline: min(var(--touch-button-inset, 0px), var(--touch-extra-inline));
+    --touch-stick-block: calc(var(--touch-safe-bottom) + min(var(--touch-stick-lift, 0px), 14dvh));
+    --touch-button-block: calc(var(--touch-safe-bottom) + min(var(--touch-button-lift, 0px), 14dvh));
+    --touch-stick-diameter: clamp(68px, calc(104px * var(--touch-stick-scale, 1)), min(124px, 31vw));
+    --touch-button-target: clamp(48px, calc(56px * var(--touch-button-scale, 1)), 68px);
+    --touch-action-width: calc(2 * var(--touch-button-target) + 8px);
+}
+
+.manager-shell[data-touch-ui="off"] :is([data-control-surface="world"], [data-control-surface="dino-run"]),
+.manager-shell[data-touch-map-open="true"] [data-control-surface="world"] {
+    display: none !important;
+}
+
+.manager-shell[data-touch-ui="on"][data-session-state="playing"]:is([data-control-layout="after-hours"], [data-control-layout="cafe-rush"]):not([data-shift-dialog]) [data-control-surface="world"] {
+    display: flex !important;
+}
+
+.manager-shell .touch-controller {
+    height: 0;
+    min-height: 0;
+    padding: 0;
+    overflow: visible;
+}
+
+.manager-shell .touch-stick-zone {
+    position: absolute;
+    bottom: var(--touch-stick-block);
+    left: calc(var(--touch-safe-left) + var(--touch-stick-inline));
+    width: var(--touch-stick-diameter);
+    height: var(--touch-stick-diameter);
+    pointer-events: none;
+}
+
+.manager-shell[data-touch-stick-mode="floating"] .touch-stick-zone {
+    width: max(var(--touch-stick-diameter), min(42vw, 250px));
+    height: max(var(--touch-stick-diameter), min(34dvh, 200px));
+    pointer-events: auto;
+    touch-action: none;
+}
+
+.manager-shell .virtual-stick {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: var(--touch-stick-diameter);
+    height: var(--touch-stick-diameter);
+    opacity: var(--touch-opacity, 1);
+    pointer-events: auto;
+    transform: translate(var(--stick-origin-x, 0px), var(--stick-origin-y, 0px));
+}
+
+.manager-shell[data-touch-stick-mode="floating"] .virtual-stick {
+    pointer-events: none;
+}
+
+.manager-shell[data-touch-stick-mode="floating"] .virtual-stick:not(.is-active) {
+    opacity: calc(.62 * var(--touch-opacity, 1));
+}
+
+.manager-shell .virtual-stick__knob {
+    width: 43%;
+    height: 43%;
+}
+
+.manager-shell .virtual-stick__label {
+    bottom: 4px;
+    font-size: 10px;
+    pointer-events: none;
+}
+
+.manager-shell .touch-controller__right {
+    position: absolute;
+    bottom: var(--touch-button-block);
+    right: calc(var(--touch-safe-right) + var(--touch-button-inline));
+    width: var(--touch-action-width);
+    max-width: var(--touch-action-width);
+    opacity: var(--touch-opacity, 1);
+}
+
+.manager-shell .touch-controller__actions {
+    width: 100%;
+    max-width: none;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.manager-shell :is([data-control-surface="world"], [data-control-surface="dino-run"]) button {
+    touch-action: none;
+}
+
+.manager-shell .touch-controller__actions .touch-action {
+    height: var(--touch-button-target);
+    min-height: 48px;
+    gap: 1px;
+    padding: 3px;
+}
+
+.manager-shell .touch-controller__actions .touch-action span {
+    max-width: 100%;
+    font-size: 11px;
+    line-height: 1.15;
+    overflow-wrap: anywhere;
+}
+
+.manager-shell .touch-controller__actions .touch-action small span {
+    font-size: 9px;
+}
+
+.manager-shell :is(.touch-controller__actions, .runner-controls, .runner-ready) svg {
+    width: 17px;
+    height: 17px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.manager-shell .runner-controls {
+    left: calc(var(--touch-safe-left) + var(--touch-button-inline));
+    right: calc(var(--touch-safe-right) + var(--touch-button-inline));
+    bottom: var(--touch-button-block);
+    direction: ltr;
+    flex-direction: row-reverse;
+}
+
+.manager-shell .runner-controls button {
+    opacity: var(--touch-opacity, 1);
+    min-width: calc(var(--touch-button-target) + 16px);
+    min-height: var(--touch-button-target);
+    padding: 7px 9px;
+    border-radius: 16px;
+    gap: 2px;
+}
+
+.manager-shell[data-touch-hand="left"] .runner-controls {
+    flex-direction: row;
+}
+
+.manager-shell[data-touch-hand="left"] .touch-stick-zone {
+    left: auto;
+    right: calc(var(--touch-safe-right) + var(--touch-stick-inline));
+}
+
+.manager-shell[data-touch-hand="left"] .virtual-stick {
+    left: auto;
+    right: 0;
+}
+
+.manager-shell[data-touch-hand="left"] .touch-controller__right {
+    right: auto;
+    left: calc(var(--touch-safe-left) + var(--touch-button-inline));
+}
+
+.manager-shell[data-touch-hand="left"] .mobile-action-tray {
+    right: auto;
+    left: 0;
+}
+
+.manager-shell:is([data-control-layout="after-hours"], [data-control-layout="cafe-rush"]) [data-control-surface="world"] :is(.mobile-action-tray, .touch-action--jump, .touch-action--emote, .touch-action--more, .character-action-status) {
+    display: none !important;
+}
+
+.manager-shell:is([data-control-layout="after-hours"], [data-control-layout="cafe-rush"]) .touch-controller__actions {
+    grid-template-areas: "run interact";
+}
+
+[data-touch-toggle],
+.manager-shell[data-touch-run-mode="toggle"] .touch-action--run [data-touch-hold],
+.manager-shell[data-touch-slide-mode="toggle"] .runner-controls__duck [data-touch-hold] {
+    display: none;
+}
+
+.manager-shell[data-touch-run-mode="toggle"] .touch-action--run [data-touch-toggle],
+.manager-shell[data-touch-slide-mode="toggle"] .runner-controls__duck [data-touch-toggle] {
+    display: inline;
+}
+
+.touch-settings__fields, .touch-settings__switches {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 156px), 1fr));
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.touch-settings__fields label {
+    display: grid;
+    min-width: 0;
+    gap: 5px;
+    font-size: 12px;
+}
+
+.touch-settings__fields select {
+    width: 100%;
+    min-height: 44px;
+}
+
+.touch-settings__range {
+    grid-template-columns: minmax(0, 1fr) 36px;
+    align-items: center;
+}
+
+.touch-settings__range > span {
+    grid-column: 1 / -1;
+}
+
+.touch-settings__range input {
+    width: 100%;
+    min-width: 0;
+    min-height: 28px;
+    accent-color: #d7e8a2;
+}
+
+.touch-settings__range output {
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+}
+
+.touch-settings__switches label {
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 44px;
+}
+
+.touch-settings :is(input, select) {
+    scroll-margin-block-start: 114px;
+}
+
+.touch-preview {
+    position: sticky;
+    inset-block-start: 0;
+    z-index: var(--z-local-control);
+    min-height: 104px;
+    overflow: hidden;
+    background: #17251f;
+    border: 1px solid #657358;
+    border-radius: 12px;
+}
+
+.touch-preview__stick, .touch-preview__actions {
+    position: absolute;
+    opacity: var(--touch-opacity, 1);
+    color: #26382e;
+}
+
+.touch-preview__stick {
+    left: calc(10px + var(--touch-stick-inset, 0px) / 2);
+    bottom: calc(10px + var(--touch-stick-lift, 0px) / 2);
+    width: calc(44px * var(--touch-stick-scale, 1));
+    aspect-ratio: 1;
+    display: grid;
+    place-items: center;
+    border: 2px solid #d7e8a2;
+    border-radius: 50%;
+    color: #d7e8a2;
+}
+
+.touch-preview[data-touch-stick-mode="floating"] .touch-preview__stick {
+    border-style: dashed;
+}
+
+.touch-preview__actions {
+    right: calc(10px + var(--touch-button-inset, 0px) / 2);
+    bottom: calc(10px + var(--touch-button-lift, 0px) / 2);
+    display: flex;
+    gap: 5px;
+}
+
+.touch-preview__actions i {
+    display: grid;
+    place-items: center;
+    width: calc(40px * var(--touch-button-scale, 1));
+    height: calc(31px * var(--touch-button-scale, 1));
+    border-radius: 8px;
+    background: #d7e8a2;
+    font-size: 10px;
+    font-style: normal;
+}
+
+.touch-preview[data-touch-hand="left"] .touch-preview__stick {
+    left: auto;
+    right: calc(10px + var(--touch-stick-inset, 0px) / 2);
+}
+
+.touch-preview[data-touch-hand="left"] .touch-preview__actions {
+    right: auto;
+    left: calc(10px + var(--touch-button-inset, 0px) / 2);
+}
+
+.touch-preview[data-touch-visibility="hidden"] > span {
+    visibility: hidden;
+}
+
+[data-runner-touch-guide],
+.manager-shell[data-touch-ui="on"] [data-runner-keyboard-guide] {
+    display: none;
+}
+
+.manager-shell[data-touch-ui="on"] [data-runner-touch-guide] {
+    display: inline;
+}
+
+@media (max-width: 600px) {
+    .manager-shell[data-touch-ui="on"] .character-action-status {
+        display: none;
+    }
+
+    .manager-shell[data-touch-ui="on"] .interaction-prompt {
+        bottom: calc(max(
+            var(--touch-stick-block) + var(--touch-stick-diameter),
+            var(--touch-button-block) + var(--touch-action-width)
+        ) + 10px);
+    }
+}

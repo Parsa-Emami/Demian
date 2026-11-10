@@ -305,7 +305,7 @@ export default class OpenWorldGame extends BaseGame {
             manifest: this.manifest,
             discovery: this.discovery,
             onFastTravel: (point) => this.fastTravel(point),
-            onMapClosed: () => { this.mapOpen = false; },
+            onMapClosed: () => this.setMapOpen(false),
         });
         this.hud.mount();
     }
@@ -447,12 +447,16 @@ export default class OpenWorldGame extends BaseGame {
         this.cameraToggleButton.textContent = mode === 'FOLLOW' ? 'نمای کامل · F' : `دنبال‌کردن ${this.currentCharacterLabel} · F`;
     }
 
+    setMapOpen(open) {
+        if (this.mapOpen === open) return;
+        this.mapOpen = open;
+        this.context.root.dataset.touchMapOpen = String(open);
+        this.context.input.clearTouch();
+    }
+
     fixedUpdate(deltaTime, input) {
-        if (input.toggleMap) {
-            this.hud.toggleMap();
-            this.mapOpen = this.hud.isMapOpen();
-        }
-        this.mapOpen = this.hud?.isMapOpen() ?? this.mapOpen;
+        if (input.toggleMap) this.hud.toggleMap();
+        this.setMapOpen(this.hud?.isMapOpen() ?? this.mapOpen);
         if (input.quickSave && this.context?.app?.sessionState === 'playing') {
             this.savePoints.save({ reason: 'quick-save' });
             this.context.app.shell.toast('پیشرفت Open World ذخیره شد.', 'success');
@@ -605,6 +609,7 @@ export default class OpenWorldGame extends BaseGame {
     }
 
     async exit() {
+        this.setMapOpen(false);
         this.abilityHud?.dispose();
         this.actionHud?.dispose();
         this.savePoints?.save({ reason: 'exit' });

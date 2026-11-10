@@ -1,3 +1,5 @@
+import { DEFAULT_TOUCH_CONTROLS, normalizeTouchControls } from '../input/TouchControlPreferences.js';
+
 const DEFAULT_STORAGE_KEY = 'demian.platform.settings.v1';
 
 function defaultStorage() {
@@ -9,6 +11,7 @@ function defaultStorage() {
 }
 
 export const DEFAULT_SETTINGS = Object.freeze({
+    ...DEFAULT_TOUCH_CONTROLS,
     version: 1,
     motion: 'system',
     quality: 'auto',
@@ -44,7 +47,7 @@ function normalize(candidate = {}) {
         }
     });
 
-    return Object.freeze(next);
+    return Object.freeze({ ...next, ...normalizeTouchControls(candidate) });
 }
 
 /**

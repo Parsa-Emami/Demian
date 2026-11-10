@@ -1,3 +1,4 @@
+import setTouchInteractionLabel from '../../input/TouchInteractionLabel.js';
 import { UI_LAYER, assignUiLayer } from '../../ui/UiLayer.js';
 import { CIRCUITS, SHIFT_RULES, circuitAt } from './AfterHoursMap.js';
 
@@ -15,12 +16,19 @@ const DANGER = Object.freeze({
     chase: 'سایه در تعقیب',
 });
 
+const TOUCH_ACTIONS = {
+    panel: 'بازکردن تابلو',
+    card: 'برداشتن کارت',
+    locker: 'بازکردن محفظه',
+    exit: 'بازکردن خروجی',
+};
+
 const BRIEFING = `
     <p>دو کارت شیفت را پیدا کن، برق خروجی را وصل کن و پیش از پایان وقت بیرون برو.</p>
     <p>دو مدار هم‌زمان روشن می‌مانند. دویدن و باز کردن محفظهٔ فلزی صدا ایجاد می‌کند و سایه را خبر می‌کند.</p>
     <div class="shift-guide__controls">
         <span class="shift-guide__keyboard">حرکت <kbd>WASD / ↑↓←→</kbd> · دویدن <kbd>Shift</kbd> · تعامل <kbd>E</kbd></span>
-        <span class="shift-guide__touch">جوی‌استیک برای حرکت · نگه‌داشتن «دویدن» · دکمهٔ «تعامل» کنار هر علامت</span>
+        <span class="shift-guide__touch">جوی‌استیک برای حرکت · دکمهٔ «دویدن» · دکمهٔ «تعامل» کنار هر علامت</span>
         <span>دستهٔ بازی · استیک چپ برای حرکت، دکمهٔ دویدن و تعامل طبق تنظیمات دمیان</span>
     </div>
 `;
@@ -32,6 +40,7 @@ function setText(element, value) {
 export default class AfterHoursUi {
     constructor(root, onAction) {
         this.root = root;
+        this.touchLabel = root.querySelector('[data-touch-interact-label]');
         this.onAction = onAction;
         this.hud = assignUiLayer(document.createElement('section'), UI_LAYER.LOCAL_BASE);
         this.hud.className = 'shift-hud';
@@ -177,11 +186,13 @@ export default class AfterHoursUi {
             setText(node.querySelector('small'), powered ? 'روشن' : 'خاموش');
         }
         const target = model.status === 'running' && !this.dialog.open ? model.nearby() : null;
+        setTouchInteractionLabel(this.touchLabel, TOUCH_ACTIONS[target?.kind]);
         nodes.prompt.hidden = !target;
         if (target) setText(nodes.prompt, `تعامل · ${target.label}`);
     }
 
     dispose() {
+        setTouchInteractionLabel(this.touchLabel);
         this.close();
         this.dialog.remove();
         this.hud.remove();

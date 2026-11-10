@@ -40,7 +40,7 @@ export default class DinoRunGame extends BaseGame {
         context.root.querySelector('[data-game-hud-host]')?.append(this.hud);
         this.ready = assignUiLayer(document.createElement('div'), UI_LAYER.LOCAL_BASE);
         this.ready.className = 'runner-ready'; this.ready.dir = 'rtl';
-        this.ready.innerHTML = '<span>DEMIAN · CAFÉ RUN</span><h2>این بار، توی کافه بدو.</h2><p>از موانع و حمله‌های زمینی اوزودی و امیررضا بپر؛ زیر موانع و حمله‌های هوایی اسلاید برو. هر برخورد یعنی پایان دور!</p><button type="button" data-input-press="jump" data-input-hold="jumpHeld">شروع و پرش <b>↗</b></button><small>نگه‌دار: پرش بلندتر · Space / ↑ · ↓ برای اسلاید</small><p data-run-ranking-mode role="status"></p>';
+        this.ready.innerHTML = '<span>DEMIAN · CAFÉ RUN</span><h2>این بار، توی کافه بدو.</h2><p>از موانع و حمله‌های زمینی اوزودی و امیررضا بپر؛ زیر موانع و حمله‌های هوایی اسلاید برو. هر برخورد یعنی پایان دور!</p><button type="button" data-input-press="jump" data-input-hold="jumpHeld">شروع و پرش <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20V4m-6 6 6-6 6 6"/></svg></button><small data-runner-keyboard-guide>نگه‌دار: پرش بلندتر · Space / ↑ · ↓ برای اسلاید</small><small data-runner-touch-guide>برای پرش بلندتر، دکمهٔ پرش را نگه دار.</small><p data-run-ranking-mode role="status"></p>';
         const wordmark = document.createElement('img');
         wordmark.className = 'runner-wordmark'; wordmark.alt = 'دمیان · DEMIAN';
         wordmark.src = new URL('assets/environments/cafe-runner-v1/wordmark.png', document.baseURI).href;

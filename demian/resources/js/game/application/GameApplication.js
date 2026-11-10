@@ -62,7 +62,7 @@ export default class GameApplication {
         this.animation = new AnimationService({
             reducedMotion: this.settings.resolvedReducedMotion(),
         });
-        this.input = new InputRouter({ root: document, initialContext: 'MENU' });
+        this.input = new InputRouter({ root: document, touchRoot: this.root, initialContext: 'MENU' });
         this.controlLayouts = new ControlLayoutService({ root: this.root, eventTarget: document });
         this.registry = new GameRegistry(GAME_DEFINITIONS);
         this.runtime = new GameRuntime({
@@ -416,6 +416,7 @@ export default class GameApplication {
 
     applySettings(settings) {
         if (!settings || !this.root) return;
+        this.input.applyTouchControls(settings);
         this.animation.setReducedMotion(this.settings.resolvedReducedMotion());
         this.root.dataset.motion = this.animation.reducedMotion ? 'reduced' : 'full';
         this.root.dataset.qualityPreference = settings.quality;

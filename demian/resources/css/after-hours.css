@@ -381,15 +381,6 @@
     display: none !important;
 }
 
-.virtual-stick__label--manual-run,
-.manager-shell:is([data-control-layout="after-hours"], [data-control-layout="cafe-rush"]) .virtual-stick__label:not(.virtual-stick__label--manual-run) {
-    display: none;
-}
-
-.manager-shell:is([data-control-layout="after-hours"], [data-control-layout="cafe-rush"]) .virtual-stick__label--manual-run {
-    display: block;
-}
-
 @media (pointer: coarse) {
     .shift-guide__touch {
         display: block;
@@ -397,24 +388,6 @@
 
     .shift-guide__keyboard {
         display: none;
-    }
-
-    .manager-shell:is([data-active-game="after-hours"], [data-active-game="cafe-rush"])[data-session-state="playing"]:is([data-control-layout="after-hours"], [data-control-layout="cafe-rush"]):not([data-shift-dialog]) [data-control-surface="world"] {
-        display: flex !important;
-    }
-
-    .manager-shell:is([data-control-layout="after-hours"], [data-control-layout="cafe-rush"]) [data-control-surface="world"] :is(.mobile-action-tray, .touch-action--jump, .touch-action--emote, .touch-action--more, .character-action-status) {
-        display: none !important;
-    }
-
-    .manager-shell:is([data-control-layout="after-hours"], [data-control-layout="cafe-rush"]) .touch-controller__actions {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        grid-template-areas: "run interact";
-        width: auto;
-    }
-
-    .manager-shell:is([data-control-layout="after-hours"], [data-control-layout="cafe-rush"]) .touch-action--interact {
-        display: grid;
     }
 
     .shift-hud__radio {

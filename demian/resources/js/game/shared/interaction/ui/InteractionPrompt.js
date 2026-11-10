@@ -1,8 +1,10 @@
+import setTouchInteractionLabel from '../../../input/TouchInteractionLabel.js';
 import { UI_LAYER, assignUiLayer } from '../../../ui/UiLayer.js';
 
 export default class InteractionPrompt {
     constructor({ host, eventBus, animation = null } = {}) {
         this.host = host;
+        this.touchLabel = host?.closest('[data-manager-shell]')?.querySelector('[data-touch-interact-label]');
         this.eventBus = eventBus;
         this.animation = animation;
         this.element = null;
@@ -32,6 +34,7 @@ export default class InteractionPrompt {
     update({ interactable, visible } = {}) {
         if (!this.element) return;
         const shouldShow = Boolean(visible && interactable);
+        setTouchInteractionLabel(this.touchLabel, shouldShow ? interactable.label : null);
         this.element.querySelector('[data-interaction-label]').textContent = interactable?.label ?? '';
         const hint = this.element.querySelector('[data-interaction-hint]');
         hint.textContent = (interactable?.hint ?? '').replace(/ENTER\s*[·:]?\s*/gi, '');
@@ -48,6 +51,7 @@ export default class InteractionPrompt {
     }
 
     dispose() {
+        setTouchInteractionLabel(this.touchLabel);
         this.unsubscribe?.();
         this.unsubscribe = null;
         this.element?.remove();

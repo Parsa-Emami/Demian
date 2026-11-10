@@ -121,7 +121,7 @@ export default class MobileGameUI {
     onActionsToggle(event) {
         event.preventDefault();
         this.isExpanded = !this.isExpanded;
-        navigator.vibrate?.(8);
+        if (this.root.dataset.touchHaptics === 'true' && this.isMobileDevice) navigator.vibrate?.(8);
         this.applyExpandedState();
     }
 

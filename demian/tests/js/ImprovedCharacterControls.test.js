@@ -100,7 +100,7 @@ test('runtime polls gamepads while paused or showing menus', () => {
 test('releasing one pointer preserves a second pointer holding the same action', () => {
     let releases = 0;
     const button = { classList: { remove() { releases++; } } };
-    const router = { pointerHolds: new Map([[1, { action: 'run', button }], [2, { action: 'run', button }]]), virtualHeld: new Set(['run']) };
+    const router = { pointerHolds: new Map([[1, { action: 'run', button }], [2, { action: 'run', button }]]), virtualHeld: new Set(['run']), latchedHolds: new Map() };
     InputRouter.prototype.onPointerUp.call(router, { pointerId: 1 });
     assert.equal(router.virtualHeld.has('run'), true); assert.equal(releases, 0);
     InputRouter.prototype.onPointerUp.call(router, { pointerId: 2 });

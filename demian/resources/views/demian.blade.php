@@ -509,6 +509,34 @@
                                 <label><input type="checkbox" name="soundEnabled"><span>افکت صوتی</span></label>
                                 <label><input type="checkbox" name="musicEnabled"><span>موسیقی</span></label>
                             </div>
+                            <details data-touch-settings class="control-settings touch-settings">
+                                <summary>جوی‌استیک و کنترل لمسی</summary>
+                                <p>پیش‌نمایش زنده است. برای اعمال چیدمان در بازی، تنظیمات را ذخیره کن.</p>
+                                <div data-touch-preview data-ui-layer="local-control" class="touch-preview" aria-hidden="true" dir="ltr">
+                                    <span class="touch-preview__stick">✦</span>
+                                    <span class="touch-preview__actions"><i>پرش</i><i>تعامل</i></span>
+                                </div>
+                                <div class="touch-settings__fields">
+                                    <label><span>نوع جوی‌استیک</span><select name="touchStickMode"><option value="fixed">ثابت</option><option value="floating">شناور</option></select></label>
+                                    <label><span>چیدمان</span><select name="touchHand"><option value="right">راست‌دست</option><option value="left">چپ‌دست</option></select></label>
+                                    <label><span>نمایش روی صفحه</span><select name="touchVisibility"><option value="auto">خودکار</option><option value="always">همیشه</option><option value="hidden">پنهان</option></select></label>
+                                    <label><span>روش دویدن</span><select name="touchRunMode"><option value="hold">نگه‌داشتن</option><option value="toggle">ضربه برای تغییر وضعیت</option></select></label>
+                                    <label><span>روش اسلاید در رانر</span><select name="touchSlideMode"><option value="hold">نگه‌داشتن</option><option value="toggle">ضربه برای تغییر وضعیت</option></select></label>
+                                    <label class="touch-settings__range"><span>اندازهٔ جوی‌استیک</span><input type="range" name="touchStickSize" min="80" max="120" value="100" dir="ltr"><output dir="ltr" aria-hidden="true">100</output></label>
+                                    <label class="touch-settings__range"><span>اندازهٔ دکمه‌ها</span><input type="range" name="touchButtonSize" min="90" max="120" value="100" dir="ltr"><output dir="ltr" aria-hidden="true">100</output></label>
+                                    <label class="touch-settings__range"><span>شفافیت کنترل‌ها</span><input type="range" name="touchOpacity" min="55" max="100" value="100" dir="ltr"><output dir="ltr" aria-hidden="true">100</output></label>
+                                    <label class="touch-settings__range"><span>حساسیت جوی‌استیک</span><input type="range" name="touchSensitivity" min="60" max="160" value="100" dir="ltr"><output dir="ltr" aria-hidden="true">100</output></label>
+                                    <label class="touch-settings__range"><span>ناحیهٔ بی‌اثر مرکز استیک</span><input type="range" name="touchDeadZone" min="0" max="30" value="10" dir="ltr"><output dir="ltr" aria-hidden="true">10</output></label>
+                                    <label class="touch-settings__range"><span>فاصلهٔ استیک از کناره</span><input type="range" name="touchStickInset" min="0" max="32" value="0" dir="ltr"><output dir="ltr" aria-hidden="true">0</output></label>
+                                    <label class="touch-settings__range"><span>فاصلهٔ دکمه‌ها از کناره</span><input type="range" name="touchButtonInset" min="0" max="32" value="0" dir="ltr"><output dir="ltr" aria-hidden="true">0</output></label>
+                                    <label class="touch-settings__range"><span>فاصلهٔ استیک از پایین</span><input type="range" name="touchStickLift" min="0" max="64" value="0" dir="ltr"><output dir="ltr" aria-hidden="true">0</output></label>
+                                    <label class="touch-settings__range"><span>فاصلهٔ دکمه‌ها از پایین</span><input type="range" name="touchButtonLift" min="0" max="64" value="0" dir="ltr"><output dir="ltr" aria-hidden="true">0</output></label>
+                                </div>
+                                <div class="touch-settings__switches">
+                                    <label><input type="checkbox" name="touchAutoSprint" checked> دویدن خودکار در کافه، در حالت نگه‌داشتن</label>
+                                    <label><input type="checkbox" name="touchHaptics" checked> لرزش لمس در دستگاه‌های سازگار</label>
+                                </div>
+                            </details>
                             <details data-control-bindings class="control-settings">
                                 <summary>کنترل‌ها و تغییر کلیدها</summary>
                                 <p>کلید هر اکشن را انتخاب کن و کلید تازه را بزن. تغییرات همان لحظه ذخیره می‌شوند.</p>
@@ -703,20 +731,21 @@
             </section>
 
             <section data-gameplay-ui data-control-surface="world" data-ui-layer="controls" class="touch-controller absolute inset-x-0 bottom-0" dir="ltr" aria-label="کنترل‌های لمسی بازی">
-                <div
-                    data-virtual-stick
-                    class="virtual-stick"
-                    role="application"
-                    aria-label="جوی‌استیک حرکت ۸ جهته"
-                >
-                    <div class="virtual-stick__arrows" aria-hidden="true">
-                        <span>▲</span><span>▶</span><span>▼</span><span>◀</span>
+                <div data-touch-stick-zone class="touch-stick-zone">
+                    <div
+                        data-virtual-stick
+                        class="virtual-stick"
+                        role="img"
+                        aria-label="جوی‌استیک حرکت ۸ جهته"
+                    >
+                        <div class="virtual-stick__arrows" aria-hidden="true">
+                            <span>▲</span><span>▶</span><span>▼</span><span>◀</span>
+                        </div>
+                        <div data-virtual-stick-knob class="virtual-stick__knob">
+                            <span aria-hidden="true">✦</span>
+                        </div>
+                        <small class="virtual-stick__label">حرکت</small>
                     </div>
-                    <div data-virtual-stick-knob class="virtual-stick__knob">
-                        <span aria-hidden="true">✦</span>
-                    </div>
-                    <small class="virtual-stick__label">حرکت · تا انتها: دویدن</small>
-                    <small class="virtual-stick__label virtual-stick__label--manual-run" aria-hidden="true">حرکت</small>
                 </div>
 
                 <output data-action-status class="character-action-status" aria-live="off" aria-label="وضعیت حرکت">آمادهٔ حرکت</output>
@@ -738,13 +767,13 @@
 
                     <div class="touch-controller__actions" aria-label="اکشن‌های اصلی">
                         <button type="button" data-input-press="interact" class="touch-action touch-action--interact touch-action--primary">
-                            <span>تعامل</span><small>◎</small>
+                            <span data-touch-interact-label>تعامل</span><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="2"/></svg>
                         </button>
                         <button type="button" data-input-hold="run" class="touch-action touch-action--run">
-                            <span>دویدن</span><small>نگه‌دار</small>
+                            <span>دویدن</span><small><span data-touch-hold>نگه‌دار</span><span data-touch-toggle>ضربه</span></small>
                         </button>
                         <button type="button" data-input-press="jump" data-input-hold="jumpHeld" class="touch-action touch-action--jump touch-action--primary">
-                            <span>پرش</span><small>▲</small>
+                            <span>پرش</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20V4m-6 6 6-6 6 6"/></svg>
                         </button>
                         <button type="button" data-input-press="wave" class="touch-action touch-action--emote touch-action--primary">
                             <span>سلام</span><small>✦</small>
@@ -770,8 +799,8 @@
                 <button type="button" data-shell-action="menu" aria-label="بازگشت به منو">⌂</button>
             </nav>
             <section data-gameplay-ui data-control-surface="dino-run" data-ui-layer="controls" class="runner-controls" dir="rtl" aria-label="کنترل‌های رانر">
-                <button type="button" data-input-press="jump" data-input-hold="jumpHeld" class="runner-controls__jump"><b aria-hidden="true">↗</b><span>پرش</span><small>نگه‌دار: بلندتر</small></button>
-                <button type="button" data-input-hold="duck" class="runner-controls__duck"><b aria-hidden="true">↓</b><span>اسلاید</span></button>
+                <button type="button" data-input-press="jump" data-input-hold="jumpHeld" class="runner-controls__jump"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20V4m-6 6 6-6 6 6"/></svg><span>پرش</span><small>نگه‌دار: بلندتر</small></button>
+                <button type="button" data-input-hold="duck" class="runner-controls__duck"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v16m-6-6 6 6 6-6"/></svg><span>اسلاید</span><small><span data-touch-hold>نگه‌دار</span><span data-touch-toggle>ضربه</span></small></button>
             </section>
 
             <div data-orientation-hint data-ui-layer="stage-system" class="orientation-hint" aria-hidden="true">
