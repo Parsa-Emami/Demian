@@ -1,5 +1,6 @@
 import EventBus from '../core/EventBus';
 import PerformanceProfile from '../core/PerformanceProfile';
+import RenderQuality from '../performance/RenderQuality.js';
 import InputRouter from '../input/InputRouter';
 import GameRegistry from '../registry/GameRegistry';
 import { GAME_DEFINITIONS } from '../registry/GameDefinitions';
@@ -53,6 +54,8 @@ export default class GameApplication {
         ];
         this.rendererService = new RendererService(container);
         this.performanceProfile = new PerformanceProfile(this.rendererService.renderer);
+        this.renderQuality = new RenderQuality(this.performanceProfile.tier);
+        this.root.dataset.performanceTier = this.performanceProfile.tier;
         this.characterVisuals = new CharacterVisualService({
             eventBus: this.eventBus,
             performanceProfile: this.performanceProfile,
@@ -68,6 +71,10 @@ export default class GameApplication {
         this.runtime = new GameRuntime({
             inputRouter: this.input,
             eventBus: this.eventBus,
+            canRender: () => this.rendererService.isAvailable(),
+            observeFrame: (seconds) => {
+                if (this.sessionState === SESSION_STATES.PLAYING && this.renderQuality.observe(seconds)) this.applyRenderQuality();
+            },
         });
         this.shell = new GameShell({
             root: this.root,
@@ -92,6 +99,11 @@ export default class GameApplication {
             ({ current }) => this.applySettings(current),
             { immediate: true }
         );
+        this.layoutFrame = null;
+        this.onVisibility = () => this.renderQuality.resetMeasurements();
+        document.addEventListener('visibilitychange', this.onVisibility);
+        this.resizeObserver = typeof ResizeObserver === 'function' ? new ResizeObserver(this.onResize) : null;
+        this.resizeObserver?.observe(container);
         window.addEventListener('resize', this.onResize);
     }
 
@@ -282,6 +294,7 @@ export default class GameApplication {
             await nextGame.enter(context, params);
 
             this.runtime.setGame(nextGame);
+            this.renderQuality.resetMeasurements();
             this.activeGame = nextGame;
             this.activeGameId = gameId;
             this.activeDefinition = definition;
@@ -420,6 +433,8 @@ export default class GameApplication {
         this.animation.setReducedMotion(this.settings.resolvedReducedMotion());
         this.root.dataset.motion = this.animation.reducedMotion ? 'reduced' : 'full';
         this.root.dataset.qualityPreference = settings.quality;
+        this.renderQuality.setPreference(settings.quality);
+        this.applyRenderQuality(settings.frameRate);
         this.root.dataset.hudScale = settings.hudScale;
         this.root.dataset.hudContrast = settings.hudContrast;
         this.root.dataset.hudVisible = String(settings.hudVisible);
@@ -429,6 +444,17 @@ export default class GameApplication {
         this.root.dataset.musicEnabled = String(settings.musicEnabled);
         this.activeGame?.applySettings?.(settings);
         this.eventBus.emit('settings:applied', settings);
+    }
+
+    applyRenderQuality(frameRate = this.settings.snapshot().frameRate) {
+        const profile = this.renderQuality.profile;
+        const changed = this.rendererService.quality !== profile;
+        this.rendererService.quality = profile;
+        this.root.dataset.renderQuality = this.renderQuality.economical ? 'economy' : profile.quality;
+        const target = frameRate === 'auto' ? (this.renderQuality.economical ? 30 : 60) : Number(frameRate);
+        this.root.dataset.renderFps = String(target);
+        this.runtime.setRenderRate(target);
+        if (changed && this.activeGame) this.activeGame.resize?.({ reframe: false });
     }
 
     synchronizeUi() {
@@ -444,8 +470,11 @@ export default class GameApplication {
     }
 
     handleLayoutChange() {
-        this.activeGame?.resize?.();
-        window.setTimeout(() => this.activeGame?.resize?.(), 360);
+        if (this.layoutFrame !== null || this.disposed) return;
+        this.layoutFrame = window.requestAnimationFrame(() => {
+            this.layoutFrame = null;
+            this.activeGame?.resize?.({ reframe: false });
+        });
     }
 
     async dispose() {
@@ -454,6 +483,9 @@ export default class GameApplication {
         this.transitionSession(SESSION_STATES.DISPOSED);
         await this.switchQueue.catch(() => undefined);
         window.removeEventListener('resize', this.onResize);
+        document.removeEventListener('visibilitychange', this.onVisibility);
+        this.resizeObserver?.disconnect();
+        if (this.layoutFrame !== null) window.cancelAnimationFrame(this.layoutFrame);
         this.unsubscribeSettings?.();
         this.runtime.dispose();
 

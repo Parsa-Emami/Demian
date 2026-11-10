@@ -6,7 +6,6 @@ export default class CafeGameRenderer2D {
     constructor(context, map, { follow = true, atmosphere = 'day', zoom = 10 } = {}) {
         this.context = context;
         this.map = map;
-        this.pixelRatio = 1;
         this.followEnabled = follow;
         this.atmosphere = atmosphere;
         this.zoom = zoom;
@@ -31,7 +30,6 @@ export default class CafeGameRenderer2D {
         if (target && this.followEnabled) this.camera.follow(target);
         this.camera.update(deltaTime);
         const ctx = this.context.renderer.beginFrame(clear);
-        this.cafe.setQuality(this.context.settings?.snapshot?.().quality);
         this.cafe.draw(ctx, this.camera, { atmosphere });
         return ctx;
     }
@@ -41,14 +39,13 @@ export default class CafeGameRenderer2D {
         return this.context.renderer.present();
     }
 
-    resize(pixelRatio = this.pixelRatio) {
-        this.pixelRatio = Math.max(0.75, Number(pixelRatio) || 1);
-        const dimensions = this.context.renderer.resize(this.pixelRatio);
+    resize() {
+        this.cafe.setQuality(this.context.renderer.quality?.quality);
+        const dimensions = this.context.renderer.resizeSmooth();
         this.camera.resize(dimensions.logicalWidth, dimensions.logicalHeight);
         if (!this.followEnabled) this.camera.fitBounds(this.map?.bounds);
         return dimensions;
     }
 
-    setPixelRatio(value) { return this.resize(value); }
     dispose() { this.cafe.dispose(); this.queue.items.length = 0; }
 }

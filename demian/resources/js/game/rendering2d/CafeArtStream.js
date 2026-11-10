@@ -2,18 +2,13 @@ import art from '../../../game/cafe-art.json' with { type: 'json' };
 import { CAFE_BOUNDS } from '../shared/cafe/CafeWalkthroughScene.js';
 import { fbxCafeAssetUrl, fbxFloorplanImage } from './FbxCafeAssets.js';
 
-const PROFILES = Object.freeze({
-    performance: Object.freeze({ quality: 'performance', maxWidth: 1024, maxTiles: 8, concurrency: 1, maxPixelRatio: 1, pixelBudget: 1000000 }),
-    balanced: Object.freeze({ quality: 'balanced', maxWidth: 1536, maxTiles: 12, concurrency: 2, maxPixelRatio: 1.35, pixelBudget: 1250000 }),
-    high: Object.freeze({ quality: 'high', maxWidth: 2048, maxTiles: 20, concurrency: 3, maxPixelRatio: 1.75, pixelBudget: 2200000 }),
-});
+import { renderQualityProfile as cafeQualityProfile } from '../performance/RenderQuality.js';
+
+export { cafeQualityProfile };
+
 const width = CAFE_BOUNDS.maxX - CAFE_BOUNDS.minX, height = CAFE_BOUNDS.maxZ - CAFE_BOUNDS.minZ;
 const previewBytes = art.preview.width * art.preview.height * 4;
 const tileBytes = (art.tileSize + art.gutter * 2) ** 2 * 4;
-
-export function cafeQualityProfile(preference = 'auto', detected = 'balanced') {
-    return PROFILES[preference] ?? PROFILES[detected] ?? PROFILES.balanced;
-}
 
 export function cafeArtLevel(camera, profile) {
     const demand = camera.pixelsPerUnit * width * 1.15;
@@ -48,16 +43,19 @@ async function loadTile(url, { signal }) {
     const response = await fetch(url, { signal });
     if (!response.ok) throw Error('Cafe tile unavailable');
     const blob = await response.blob();
-    if (typeof createImageBitmap === 'function') return createImageBitmap(blob);
+    if (typeof createImageBitmap === 'function') {
+        try { return await createImageBitmap(blob); }
+        catch { if (signal?.aborted) return null; }
+    }
     const objectUrl = URL.createObjectURL(blob);
     try { const image = new Image(); image.src = objectUrl; await image.decode(); return image; }
     finally { URL.revokeObjectURL(objectUrl); }
 }
 
 export default class CafeArtStream {
-    constructor({ quality = 'auto', detected = 'balanced', loader = loadTile, clock = Date.now } = {}) {
+    constructor({ quality = 'auto', detected = 'balanced', loader = loadTile, clock = Date.now, onTileReady = null } = {}) {
         this.profile = cafeQualityProfile(quality, detected); this.detected = detected;
-        this.loader = loader; this.clock = clock;
+        this.loader = loader; this.clock = clock; this.onTileReady = onTileReady;
         this.ready = new Map(); this.active = new Map(); this.failed = new Map();
         this.queue = []; this.desired = new Set();
         this.revision = 0; this.generation = 0; this.disposed = false;
@@ -95,8 +93,9 @@ export default class CafeArtStream {
             const entry = this.ready.get(tile.id);
             if (entry) { this.ready.delete(tile.id); this.ready.set(tile.id, entry); }
         }
-        this.queue = tiles.filter(tile => !this.ready.has(tile.id) && !this.active.has(tile.id)
-            && (this.failed.get(tile.id) ?? 0) <= this.clock());
+        this.queue = tiles.filter(tile => !this.ready.has(tile.id)
+            && (!this.active.has(tile.id) || this.active.get(tile.id).controller.signal.aborted)
+            && (this.failed.get(tile.id) ?? 0) <= now);
         this.pump();
     }
 
@@ -114,7 +113,9 @@ export default class CafeArtStream {
                 if (!victim) return;
                 this.evict(victim);
             }
-            const tile = this.queue.shift();
+            const index = this.queue.findIndex((tile) => !this.active.has(tile.id));
+            if (index < 0) return;
+            const [tile] = this.queue.splice(index, 1);
             if (!this.desired.has(tile.id) || this.ready.has(tile.id) || this.active.has(tile.id)) continue;
             const entry = { controller: new AbortController(), generation: this.generation };
             this.active.set(tile.id, entry);
@@ -126,6 +127,7 @@ export default class CafeArtStream {
                     const bytes = image.width * image.height * 4;
                     if (bytes > tileBytes || this.loadedBytes + bytes > this.profile.maxTiles * tileBytes) { image.close?.(); return; }
                     this.ready.set(tile.id, { image, tile, bytes }); this.loadedBytes += bytes; this.revision++;
+                    this.onTileReady?.();
                 })
                 .catch(() => {
                     if (!this.disposed && entry.generation === this.generation && this.desired.has(tile.id)

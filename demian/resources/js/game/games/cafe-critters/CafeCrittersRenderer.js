@@ -13,19 +13,18 @@ export default class CafeCrittersRenderer {
     }
 
     resize() {
-        const ratio = Math.min(1.25, this.context.services.performanceProfile?.maxPixelRatio ?? 1);
-        this.context.renderer.setPresentationMode('smooth', { maxPixelRatio: ratio });
-        this.scene.resize(ratio);
-        const { viewportWidth: width, viewportHeight: height } = this.scene.camera;
-        this.shadeSize = { width, height };
-        this.shade = null;
+        this.scene.resize();
+        this.frameKey = null;
     }
 
     render(light, dt) {
+        const { width, height } = this.context.renderer.logicalDimensions();
+        this.scene.cafe.prepare(this.scene.camera);
+        const key = `${width}:${height}:${light}:${this.scene.cafe.revision}:${this.context.renderer.surfaceRevision}`;
+        if (key === this.frameKey) return;
         const ctx = this.scene.begin({ clear: '#172a27', deltaTime: dt, atmosphere: light === 'moon' ? 'night' : 'day' });
-        const { viewportWidth: width, viewportHeight: height } = this.scene.camera;
-        if (!this.shade || this.shadeSize.width !== width || this.shadeSize.height !== height) {
-            this.shadeSize = { width, height };
+        if (!this.shade || this.shadeHeight !== height) {
+            this.shadeHeight = height;
             this.shade = ctx.createLinearGradient(0, 0, 0, height);
             this.shade.addColorStop(0, '#172e28e8');
             this.shade.addColorStop(.58, '#172e28be');
@@ -34,6 +33,7 @@ export default class CafeCrittersRenderer {
         ctx.fillStyle = this.shade;
         ctx.fillRect(0, 0, width, height);
         this.scene.end(ctx);
+        this.frameKey = key;
     }
 
     dispose() { this.scene.dispose(); }

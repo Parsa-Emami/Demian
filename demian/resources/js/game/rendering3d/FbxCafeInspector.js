@@ -3,12 +3,25 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { gunzipSync } from 'three/addons/libs/fflate.module.js';
 import { fbxCafeAssetUrl } from '../rendering2d/FbxCafeAssets.js';
+import { renderQualityProfile } from '../performance/RenderQuality.js';
 import { UI_LAYER, assignUiLayer } from '../ui/UiLayer.js';
 
 /** One on-demand, event-rendered WebGL view. No GPU work in the game loop. */
 export default class FbxCafeInspector {
-    constructor(host, { playerPosition = null } = {}) {
+    constructor(host, { playerPosition = null, quality = 'balanced' } = {}) {
         this.host = host; this.playerPosition = playerPosition; this.closed = false;
+        this.profile = renderQualityProfile(quality);
+        this.onContextLost = () => {
+            this.contextLost = true;
+            this.status.hidden = false;
+            this.status.textContent = 'در حال بازیابی نمای سه‌بعدی…';
+        };
+        this.onContextRestored = () => {
+            this.contextLost = false;
+            this.status.hidden = Boolean(this.model);
+            this.status.textContent = 'در حال بارگذاری مدل سه‌بعدی…';
+            this.resize();
+        };
         this.abort = new AbortController(); this.showRoof = false;
         this.onKey = (event) => {
             if (event.key === 'Escape') { event.preventDefault(); event.stopImmediatePropagation(); this.dispose(); }
@@ -30,6 +43,7 @@ export default class FbxCafeInspector {
           <div class="fbx-cafe-inspector__stage"><p role="status">در حال بارگذاری مدل سه‌بعدی…</p></div>
           <footer>چرخش با کشیدن · زوم با اسکرول یا دو انگشت · جابه‌جایی با دکمهٔ راست ماوس</footer>`;
         this.host.append(this.root); this.stage = this.root.querySelector('.fbx-cafe-inspector__stage');
+        this.status = this.stage.querySelector('[role="status"]');
         this.root.querySelector('[data-fbx-close]').addEventListener('click', () => this.dispose());
         this.root.querySelector('[data-fbx-reset]').addEventListener('click', () => this.overview());
         this.root.querySelector('[data-fbx-roof]').addEventListener('click', (event) => {
@@ -38,17 +52,20 @@ export default class FbxCafeInspector {
         });
         this.root.querySelector('[data-fbx-close]').focus(); document.addEventListener('keydown',this.onKey,true);
         try {
-            this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
-            this.renderer.setPixelRatio(Math.min(globalThis.devicePixelRatio || 1,1.5));
+            const lightMode = this.profile.quality === 'performance';
+            this.renderer = new THREE.WebGLRenderer({ antialias: !lightMode, alpha: false });
+            this.renderer.domElement.addEventListener('webglcontextlost', this.onContextLost);
+            this.renderer.domElement.addEventListener('webglcontextrestored', this.onContextRestored);
             this.renderer.setClearColor(0xd6cfc0); this.renderer.outputColorSpace = THREE.SRGBColorSpace;
             this.renderer.toneMapping = THREE.ACESFilmicToneMapping; this.renderer.toneMappingExposure = 1;
-            this.renderer.shadowMap.enabled = true;
+            this.renderer.shadowMap.enabled = !lightMode;
             this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
             this.renderer.domElement.setAttribute('aria-label','مدل قابل چرخش کافه');
             this.scene = new THREE.Scene(); this.scene.add(new THREE.HemisphereLight(0xfff7e6,0x696e77,1.5));
             const light = new THREE.DirectionalLight(0xffeccb,2); light.position.set(-20,160,-40);
-            light.target.position.set(0,0,-80); light.castShadow = true;
-            light.shadow.mapSize.set(2048,2048); light.shadow.normalBias = .06;
+            light.target.position.set(0,0,-80); light.castShadow = !lightMode;
+            const shadowSize = this.profile.quality === 'high' ? 2048 : 1024;
+            light.shadow.mapSize.set(shadowSize, shadowSize); light.shadow.normalBias = .06;
             Object.assign(light.shadow.camera,{left:-115,right:115,top:115,bottom:-115,near:.1,far:400});
             this.scene.add(light,light.target);
             this.camera = new THREE.PerspectiveCamera(40,1,.2,2000);
@@ -81,7 +98,7 @@ export default class FbxCafeInspector {
                 const marker = new THREE.Mesh(new THREE.ConeGeometry(.8,2,12),new THREE.MeshBasicMaterial({ color:0x00a8b0 }));
                 marker.rotation.z = Math.PI; marker.position.set(this.playerPosition.x,3,this.playerPosition.z); this.scene.add(marker);
             }
-            this.stage.querySelector('[role="status"]')?.remove(); this.overview();
+            this.status.hidden = Boolean(!this.contextLost); this.overview();
             this.root.dataset.modelReady = 'true';
         } catch (error) {
             if (this.closed || error.name === 'AbortError') return;
@@ -108,11 +125,19 @@ export default class FbxCafeInspector {
         this.controls.update();this.render();
     }
     resize() {
-        if (!this.renderer || !this.camera || this.closed) return;
+        if (!this.renderer || !this.camera || this.closed || this.contextLost) return;
         const width = Math.max(1,this.stage.clientWidth), height = Math.max(1,this.stage.clientHeight);
-        this.renderer.setSize(width,height); this.camera.aspect = width/height; this.camera.updateProjectionMatrix(); this.render();
+        const ratio = Math.min(globalThis.devicePixelRatio || 1, this.profile.maxPixelRatio,
+            Math.sqrt(this.profile.pixelBudget / (width * height)));
+        if (this.width !== width || this.height !== height || this.pixelRatio !== ratio) {
+            this.width = width; this.height = height; this.pixelRatio = ratio;
+            this.renderer.setDrawingBufferSize(width, height, ratio);
+            this.camera.aspect = width / height;
+            this.camera.updateProjectionMatrix();
+        }
+        this.render();
     }
-    render() { if (!this.closed && this.renderer && this.camera && this.scene) this.renderer.render(this.scene,this.camera); }
+    render() { if (!this.closed && !this.contextLost && this.renderer && this.camera && this.scene) this.renderer.render(this.scene,this.camera); }
     releaseModel(model) {
         const textures = new Set();
         model?.traverse((o) => {
@@ -128,6 +153,8 @@ export default class FbxCafeInspector {
     dispose() {
         if (this.closed) return; this.closed = true; this.abort.abort();
         document.removeEventListener('keydown',this.onKey,true); this.observer?.disconnect(); this.controls?.dispose();
+        this.renderer?.domElement.removeEventListener('webglcontextlost', this.onContextLost);
+        this.renderer?.domElement.removeEventListener('webglcontextrestored', this.onContextRestored);
         this.releaseModel(this.scene); this.renderer?.dispose(); this.renderer?.forceContextLoss(); this.root?.remove();
         if (this.previousFocus?.isConnected) this.previousFocus.focus();
         this.scene = this.model = this.root = this.renderer = this.controls = null;

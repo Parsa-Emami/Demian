@@ -1,6 +1,5 @@
 import * as THREE from 'three';
 import { preloadFbxCafeArt } from '../../rendering2d/FbxCafeAssets.js';
-import { cafeQualityProfile } from '../../rendering2d/CafeArtStream.js';
 import BaseGame from '../../contracts/BaseGame.js';
 import CameraController from '../../core/CameraController.js';
 import CharacterRepository from '../../data/CharacterRepository.js';
@@ -55,7 +54,6 @@ export default class OpenWorldGame extends BaseGame {
         this.chunkManager = null;
         this.chunkRenderer = null;
         this.pixelRenderer = null;
-        this.lastRenderDelta = 0;
         this.aiBudget = new AiBudgetScheduler({ maxUpdatesPerFrame: 6 });
         this.discovery = new WorldDiscovery();
         this.saveStore = new OpenWorldSaveStore();
@@ -70,19 +68,14 @@ export default class OpenWorldGame extends BaseGame {
         this.currentCharacterLabel = 'کاراکتر';
         this.coarsePointer = globalThis.matchMedia?.('(pointer: coarse)').matches ?? false;
         this.pixelRatio = 1;
-        this.maxPixelRatio = 1.5;
-        this.minimumPixelRatio = 0.8;
-        this.qualityAccumulator = 0;
-        this.qualityFrames = 0;
-        this.qualityCooldown = 0;
 
         this.onCameraToggle = this.onCameraToggle.bind(this);
         this.onCameraReset = this.onCameraReset.bind(this);
         this.onKeyboardShortcut = this.onKeyboardShortcut.bind(this);
     }
 
-    async preload() {
-        await preloadFbxCafeArt();
+    preload() {
+        void preloadFbxCafeArt();
         return this.manifest;
     }
 
@@ -91,12 +84,7 @@ export default class OpenWorldGame extends BaseGame {
         this.abilityHud = new CharacterAbilityHud(context.root, context.input);
         this.actionHud = new CharacterActionHud(context.root, context.input);
         const { performanceProfile } = context.services;
-        this.maxPixelRatio = performanceProfile.maxPixelRatio;
-        this.minimumPixelRatio = performanceProfile.minimumPixelRatio;
-        this.pixelRatio = Math.min(globalThis.devicePixelRatio || 1, this.maxPixelRatio);
-        this.qualityPreference = context.settings?.snapshot?.().quality ?? 'auto';
         context.container.dataset.performanceTier = performanceProfile.tier;
-        context.root?.setAttribute('data-performance-tier', performanceProfile.tier);
 
         assertCafeWorldManifest(this.manifest);
         // Three remains only as the character simulation container; visible output is Canvas2D.
@@ -474,8 +462,6 @@ export default class OpenWorldGame extends BaseGame {
     }
 
     update(deltaTime) {
-        this.lastRenderDelta = deltaTime;
-        this.updateAdaptiveQuality(deltaTime);
         this.cameraController.update(this.characterManager.focusPoint(), deltaTime);
         this.world.updateCameraVisibility(this.camera);
         const position = this.characterManager.position();
@@ -503,11 +489,11 @@ export default class OpenWorldGame extends BaseGame {
         });
     }
 
-    render(alpha = 1) {
-        this.renderScene({ phase: 'frame', strict: true, alpha });
+    render(alpha = 1, deltaTime = 0) {
+        this.renderScene({ phase: 'frame', strict: true, alpha, deltaTime });
     }
 
-    renderScene({ phase = 'frame', strict = true, alpha = 1 } = {}) {
+    renderScene({ phase = 'frame', strict = true, alpha = 1, deltaTime = 0 } = {}) {
         if (!this.context?.renderer || !this.pixelRenderer) return false;
         try {
             const activeChunkIds = [...(this.chunkManager?.loaded ?? new Map())]
@@ -518,7 +504,7 @@ export default class OpenWorldGame extends BaseGame {
                 loadedChunks: this.chunkManager?.loaded ?? new Map(),
                 activeChunkIds,
                 discovery: this.discovery,
-                deltaTime: this.lastRenderDelta,
+                deltaTime,
                 alpha,
             });
             if (!rendered) return false;
@@ -545,12 +531,17 @@ export default class OpenWorldGame extends BaseGame {
 
     resize({ reframe = true } = {}) {
         if (!this.context?.renderer || !this.cameraController) return { width: 1, height: 1 };
-        const profile = cafeQualityProfile(this.qualityPreference, this.context.services.performanceProfile.tier);
-        this.context.renderer.setPresentationMode('smooth', { maxPixelRatio: this.maxPixelRatio, pixelBudget: profile.pixelBudget });
-        const { width, height } = this.context.renderer.resize(this.pixelRatio);
+        const profile = this.context.renderer.quality;
+        this.pixelRenderer?.cafe.setQuality(profile?.quality);
+        const { width, height, logicalWidth } = this.context.renderer.resizeSmooth();
+        const nextRatio = logicalWidth / width;
+        if (nextRatio !== this.pixelRatio) {
+            this.pixelRatio = nextRatio;
+            this.context.eventBus.emit('studio:quality', { pixelRatio: this.pixelRatio, label: profile?.quality.toUpperCase() });
+        }
         this.cameraController.resize(width, height);
         this.pixelRenderer?.resize();
-        if (this.hud?.isMapOpen()) this.hud.worldMap.draw();
+        this.hud?.worldMap.setQuality(profile);
 
         if (reframe) {
             const mode = this.cameraController?.mode ?? 'OVERVIEW';
@@ -562,52 +553,6 @@ export default class OpenWorldGame extends BaseGame {
         }
 
         return { width, height };
-    }
-
-    applySettings(settings) {
-        if (!this.context || !this.pixelRenderer) return;
-        this.qualityPreference = settings.quality;
-        const profile = cafeQualityProfile(settings.quality, this.context.services.performanceProfile.tier);
-        this.maxPixelRatio = profile.maxPixelRatio;
-        this.minimumPixelRatio = profile.quality === 'performance' ? .72 : .82;
-        this.pixelRatio = Math.min(globalThis.devicePixelRatio || 1, this.maxPixelRatio);
-        this.pixelRenderer.cafe.setQuality(settings.quality);
-        this.qualityAccumulator = 0; this.qualityFrames = 0;
-        this.resize({ reframe: false });
-    }
-
-    updateAdaptiveQuality(deltaTime) {
-        if (this.qualityPreference !== 'auto') {
-            this.context?.eventBus?.emit('studio:quality', {
-                pixelRatio: this.pixelRatio,
-                label: cafeQualityProfile(this.qualityPreference, this.context.services.performanceProfile.tier).quality.toUpperCase(),
-            });
-            return;
-        }
-        if (!deltaTime || !this.context?.renderer) return;
-        this.qualityAccumulator += deltaTime;
-        this.qualityFrames += 1;
-        if (this.qualityAccumulator < 1.5 || this.qualityCooldown > 0) {
-            this.qualityCooldown = Math.max(0, this.qualityCooldown - deltaTime);
-            return;
-        }
-        const averageFrame = this.qualityAccumulator / Math.max(1, this.qualityFrames);
-        let nextPixelRatio = this.pixelRatio;
-        if (averageFrame > 0.022 && this.pixelRatio > this.minimumPixelRatio) {
-            nextPixelRatio = Math.max(this.minimumPixelRatio, this.pixelRatio - 0.1);
-        } else if (averageFrame < 0.015 && this.pixelRatio < this.maxPixelRatio) {
-            nextPixelRatio = Math.min(this.maxPixelRatio, this.pixelRatio + 0.1);
-        }
-        this.qualityAccumulator = 0;
-        this.qualityFrames = 0;
-        if (Math.abs(nextPixelRatio - this.pixelRatio) < 0.05) return;
-        this.pixelRatio = Number(nextPixelRatio.toFixed(2));
-        this.resize();
-        this.qualityCooldown = 1.5;
-        this.context.eventBus.emit('studio:quality', {
-            pixelRatio: this.pixelRatio,
-            label: `${this.context.services.performanceProfile.tier.toUpperCase()} · AUTO`,
-        });
     }
 
     async exit() {

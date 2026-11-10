@@ -480,12 +480,20 @@
                         </header>
                         <form data-settings-form class="settings-form">
                             <label class="settings-field">
-                                <span><b>کیفیت تصویر</b><small>مستقیماً روی Pixel Ratio بازی اعمال می‌شود.</small></span>
+                                <span><b>کیفیت تصویر</b><small>وضوح صحنه و میزان جزئیات را در همهٔ بازی‌ها تنظیم می‌کند.</small></span>
                                 <select name="quality">
+                                    <option value="auto">خودکار · متناسب با گوشی</option>
+                                    <option value="performance">سبک · مصرف کمتر</option>
+                                    <option value="balanced">متعادل</option>
+                                    <option value="high">جزئیات بیشتر</option>
+                                </select>
+                            </label>
+                            <label class="settings-field">
+                                <span><b>نرخ فریم تصویر</b><small>۳۰ فریم برای مصرف کمتر و ۶۰ فریم برای حرکت روان‌تر.</small></span>
+                                <select name="frameRate">
                                     <option value="auto">خودکار</option>
-                                    <option value="performance">Performance</option>
-                                    <option value="balanced">Balanced</option>
-                                    <option value="high">High</option>
+                                    <option value="30">تا ۳۰ فریم</option>
+                                    <option value="60">تا ۶۰ فریم</option>
                                 </select>
                             </label>
                             <label class="settings-field">

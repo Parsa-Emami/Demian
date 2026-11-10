@@ -1,40 +1,36 @@
-/**
- * Demian mobile performance layer.
- * Fixes viewport sizing on mobile browsers and applies adaptive rendering
- * quality without sacrificing character animation smoothness.
- */
 export default class MobilePerformanceManager {
     constructor() {
-        this.lastHeight = 0;
-        this.raf = null;
+        this.frame = null;
+        this.queueViewportUpdate = this.queueViewportUpdate.bind(this);
     }
 
     mount() {
         this.updateViewport();
-        window.addEventListener('resize', () => this.updateViewport(), { passive: true });
-        window.addEventListener('orientationchange', () => {
-            setTimeout(() => this.updateViewport(), 120);
-        }, { passive: true });
-        this.enableSmoothCanvas();
+        window.addEventListener('resize', this.queueViewportUpdate, { passive: true });
+        window.visualViewport?.addEventListener('resize', this.queueViewportUpdate, { passive: true });
+        window.addEventListener('pageshow', this.queueViewportUpdate, { passive: true });
+    }
+
+    queueViewportUpdate() {
+        if (this.frame !== null) return;
+        this.frame = window.requestAnimationFrame(() => {
+            this.frame = null;
+            this.updateViewport();
+        });
     }
 
     updateViewport() {
-        const vv = window.visualViewport;
-        const height = vv?.height || window.innerHeight;
-        const width = vv?.width || window.innerWidth;
-        if (!height || !width) return;
+        const viewport = window.visualViewport;
+        const fit = Math.abs((viewport?.scale ?? 1) - 1) < .01;
+        const height = Math.round(fit ? (viewport?.height || window.innerHeight) : window.innerHeight);
+        const width = Math.round(fit ? (viewport?.width || window.innerWidth) : window.innerWidth);
+        if (height <= 0 || width <= 0 || (this.height === height && this.width === width)) return;
 
-        document.documentElement.style.setProperty('--demian-vh', `${height / 100}px`);
-        document.documentElement.style.setProperty('--demian-vw', `${width / 100}px`);
-        document.documentElement.style.setProperty('--demian-real-height', `${height}px`);
-        this.lastHeight = height;
-    }
-
-    enableSmoothCanvas() {
-        document.querySelectorAll('canvas[data-game-canvas]').forEach((canvas) => {
-            canvas.style.imageRendering = 'auto';
-            canvas.style.transform = 'translateZ(0)';
-            canvas.style.backfaceVisibility = 'hidden';
-        });
+        const style = document.documentElement.style;
+        style.setProperty('--demian-vh', `${height / 100}px`);
+        style.setProperty('--demian-vw', `${width / 100}px`);
+        style.setProperty('--demian-real-height', `${height}px`);
+        this.height = height;
+        this.width = width;
     }
 }

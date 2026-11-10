@@ -26,9 +26,7 @@ export default class AfterHoursRenderer {
     }
 
     resize(position) {
-        const ratio = this.context.services.performanceProfile?.maxPixelRatio ?? 1.35;
-        this.context.renderer.setPresentationMode('smooth', { maxPixelRatio: ratio });
-        const size = this.scene.resize(ratio);
+        const size = this.scene.resize();
         const { logicalWidth: width, logicalHeight: height } = size;
         const zoom = width < height
             ? Math.max(width / 32, height / 65)
@@ -89,7 +87,7 @@ export default class AfterHoursRenderer {
         ctx.fillStyle = right;
         ctx.fillRect(innerRight, bounds.y, outerRight - innerRight, bounds.height);
         const screen = camera.worldToScreen(model.player.position);
-        ctx.globalCompositeOperation = 'screen';
+        if (this.context.renderer.quality?.quality !== 'performance') ctx.globalCompositeOperation = 'screen';
         halo(ctx, screen.x, screen.y, camera.pixelsPerUnit * 9.2, 'rgba(235, 157, 78, .27)');
         ctx.restore();
     }

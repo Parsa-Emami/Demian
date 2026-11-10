@@ -112,3 +112,25 @@ test('tile drawing includes bleed and finite placement in the shared world coord
     for (const call of calls) assert(call.slice(1).every(Number.isFinite));
     stream.dispose();
 });
+
+test('returning to a camera view retries a tile whose previous fetch is still aborting', async () => {
+    let release;
+    let firstUrl;
+    const requested = [];
+    const stream = new CafeArtStream({ quality: 'performance', loader: async (url) => {
+        requested.push(url);
+        if (!firstUrl) {
+            firstUrl = url;
+            return new Promise(done => { release = () => done(bitmap()); });
+        }
+        return bitmap();
+    } });
+    stream.prepare(camera()); await Promise.resolve();
+    stream.prepare(camera(-119.16));
+    stream.prepare(camera());
+    release();
+    await settle(stream);
+    assert.equal(requested.filter(url => url === firstUrl).length, 2);
+    assert.ok(stream.ready.size > 0);
+    stream.dispose();
+});

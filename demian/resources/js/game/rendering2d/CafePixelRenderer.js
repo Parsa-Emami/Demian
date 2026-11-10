@@ -7,10 +7,10 @@ import CafeArtStream from './CafeArtStream.js';
  * Canvas keeps the existing character controls and sprites deterministic and fast.
  */
 export default class CafePixelRenderer {
-    constructor({ bounds = CAFE_BOUNDS, colliders = CAFE_STATIC_COLLIDERS, detail = false, quality = 'auto', detected = detail ? 'high' : 'balanced' } = {}) {
+    constructor({ bounds = CAFE_BOUNDS, colliders = CAFE_STATIC_COLLIDERS, detail = false, quality = 'auto', detected = detail ? 'high' : 'balanced', onTileReady = null } = {}) {
         this.bounds = bounds; this.colliders = colliders;
         this.detail = detail;
-        this.stream = new CafeArtStream({ quality, detected });
+        this.stream = new CafeArtStream({ quality, detected, onTileReady });
         void preloadFbxCafeArt();
     }
     get revision() { return `${fbxCafeArtRevision()}:${this.stream.revision}`; }

@@ -17,7 +17,14 @@ export default class DinoRunEnvironment {
     async load() {
         const image = new Image(); image.decoding = 'async';
         image.src = new URL('assets/environments/cafe-runner-v1/interior.webp', document.baseURI).href;
-        try { await image.decode(); this.image = image; } catch { this.image = null; }
+        try {
+            if (typeof image.decode === 'function') await image.decode();
+            else if (!image.complete) await new Promise((resolve, reject) => {
+                image.onload = resolve;
+                image.onerror = reject;
+            });
+            if (!this.disposed && image.naturalWidth) this.image = image;
+        } catch {}
     }
     drawFallback(ctx, w, ground, distance, s) {
         ctx.fillStyle = '#494e49'; ctx.fillRect(0, 0, w, ground);
@@ -43,10 +50,23 @@ export default class DinoRunEnvironment {
             const offset = mod(distance * s * .22, tileWidth);
             for (let x = -offset; x < w; x += tileWidth) ctx.drawImage(this.image, x, 0, tileWidth, tileHeight);
         } else this.drawFallback(ctx, w, ground, distance, s);
-        ctx.fillStyle = `rgba(14,27,35,${light.night * .28})`; ctx.fillRect(0, 0, w, h);
-        const floor = ctx.createLinearGradient(0, ground, 0, h);
-        floor.addColorStop(0, '#8d7b66'); floor.addColorStop(1, '#403d37');
-        ctx.fillStyle = floor; ctx.fillRect(0, ground, w, h - ground);
+        if (light.night > 0) {
+            ctx.fillStyle = `rgba(14,27,35,${light.night * .28})`;
+            ctx.fillRect(0, 0, w, ground);
+        }
+        if (this.gradientHeight !== h || this.gradientGround !== ground) {
+            this.gradientHeight = h;
+            this.gradientGround = ground;
+            this.floor = ctx.createLinearGradient(0, ground, 0, h);
+            this.floor.addColorStop(0, '#8d7b66');
+            this.floor.addColorStop(1, '#403d37');
+            this.vignette = ctx.createLinearGradient(0, 0, 0, h);
+            this.vignette.addColorStop(0, 'rgba(10,15,18,.40)');
+            this.vignette.addColorStop(.3, 'rgba(10,15,18,0)');
+            this.vignette.addColorStop(.82, 'rgba(10,15,18,0)');
+            this.vignette.addColorStop(1, 'rgba(10,15,18,.25)');
+        }
+        ctx.fillStyle = this.floor; ctx.fillRect(0, ground, w, h - ground);
         ctx.fillStyle = '#d0a46e'; ctx.fillRect(0, ground, w, Math.max(1, s * 1.5));
         ctx.strokeStyle = 'rgba(232,206,166,.10)'; ctx.lineWidth = 1;
         const tile = 100 * s, offset = mod(distance * s, tile);
@@ -63,15 +83,16 @@ export default class DinoRunEnvironment {
             }
             ctx.globalAlpha = 1;
         }
-        const vignette = ctx.createLinearGradient(0, 0, 0, h);
-        vignette.addColorStop(0, 'rgba(10,15,18,.40)'); vignette.addColorStop(.3, 'rgba(10,15,18,0)');
-        vignette.addColorStop(.82, 'rgba(10,15,18,0)'); vignette.addColorStop(1, 'rgba(10,15,18,.25)');
-        ctx.fillStyle = vignette; ctx.fillRect(0, 0, w, h); return light;
+        if (this.tier !== 'performance') {
+            ctx.fillStyle = this.vignette;
+            ctx.fillRect(0, 0, w, h);
+        }
+        return light;
     }
     drawObstacles(ctx, obstacles, { ground, scale: s }) {
         ctx.save(); ctx.translate(0, ground); ctx.scale(s, s);
         for (const o of obstacles) {
-            if (o.attacker) continue;
+            if (o.attacker || o.x + o.w < -12 || o.x > ctx.canvas.width / s + 12) continue;
             const x = o.x, y = -o.y - o.h;
             ctx.fillStyle = 'rgba(12,18,17,.30)'; ctx.beginPath(); ctx.ellipse(x + o.w / 2, 2, o.w * .72, 3, 0, 0, TAU); ctx.fill();
             if (o.appearance === 'hanging-sign') {
@@ -161,5 +182,5 @@ export default class DinoRunEnvironment {
         }
         ctx.globalAlpha = 1;
     }
-    dispose() { this.image = null; }
+    dispose() { this.disposed = true; this.image = null; }
 }

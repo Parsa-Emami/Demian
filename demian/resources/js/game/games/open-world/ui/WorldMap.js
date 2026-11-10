@@ -1,6 +1,7 @@
 import { UI_LAYER, assignUiLayer } from '../../../ui/UiLayer.js';
 import { PIXEL_PALETTE as P } from '../../../rendering2d/PixelPalette.js';
 import CafePixelRenderer from '../../../rendering2d/CafePixelRenderer.js';
+import { preloadFbxCafeArt } from '../../../rendering2d/FbxCafeAssets.js';
 import { cafeMapCamera } from './CafeMapProjection.js';
 import FbxCafeInspector from '../../../rendering3d/FbxCafeInspector.js';
 
@@ -21,7 +22,8 @@ export default class WorldMap {
         this.canvas = null;
         this.context = null;
         this.selectedId = null;
-        this.cafe = new CafePixelRenderer({ bounds: manifest.bounds });
+        this.drawRequest = null;
+        this.cafe = new CafePixelRenderer({ bounds: manifest.bounds, onTileReady: () => this.queueDraw() });
         this.mapZoom = 1;
         this.mapCenter = null;
         this.drag = null; this.dragMoved = false;
@@ -93,7 +95,7 @@ export default class WorldMap {
         });
         this.root.querySelector('[data-map-3d]').addEventListener('click', () => {
             this.inspector?.dispose();
-            this.inspector = new FbxCafeInspector(this.root, { playerPosition: this.playerPosition });
+            this.inspector = new FbxCafeInspector(this.root, { playerPosition: this.playerPosition, quality: this.profile?.quality });
             this.inspector.open();
         });
         this.closeButton = this.root.querySelector('[data-map-close]');
@@ -112,6 +114,7 @@ export default class WorldMap {
         this.canvas.addEventListener('pointercancel',this.boundUp);
         this.canvas.addEventListener('click', this.boundClick);
         this.host.append(this.root);
+        void preloadFbxCafeArt().then(() => this.queueDraw());
     }
 
     open(position = null) {
@@ -158,12 +161,28 @@ export default class WorldMap {
         this.draw();
     }
 
+    setQuality(profile) {
+        this.profile = profile;
+        this.cafe.setQuality(profile?.quality);
+        if (this.isOpen()) this.draw();
+    }
+
     resizeCanvas() {
         const rect = this.canvas.getBoundingClientRect();
-        const dpr = Math.min(globalThis.devicePixelRatio || 1, 2);
-        this.canvas.width = Math.max(320, Math.round(rect.width * dpr));
-        this.canvas.height = Math.max(220, Math.round(rect.height * dpr));
+        const dpr = Math.min(globalThis.devicePixelRatio || 1, this.profile?.maxPixelRatio ?? 1.35);
+        const width = Math.max(1, Math.round(rect.width * dpr));
+        const height = Math.max(1, Math.round(rect.height * dpr));
+        if (this.canvas.width !== width) this.canvas.width = width;
+        if (this.canvas.height !== height) this.canvas.height = height;
         return { width: this.canvas.width, height: this.canvas.height };
+    }
+
+    queueDraw() {
+        if (!this.isOpen() || this.drawRequest !== null) return;
+        this.drawRequest = requestAnimationFrame(() => {
+            this.drawRequest = null;
+            if (this.isOpen()) this.draw();
+        });
     }
 
     drawBackdrop(context,width,height) {
@@ -182,9 +201,12 @@ export default class WorldMap {
         this.cafe.prepare(mapCamera);
         const sceneKey = `${width}:${height}:${this.mapZoom}:${mapCamera.position.x}:${mapCamera.position.z}:${this.cafe.revision}`;
         if (!this.sceneCanvas || this.sceneKey !== sceneKey) {
-            this.sceneCanvas = document.createElement('canvas');
-            this.sceneCanvas.width = width; this.sceneCanvas.height = height;
-            this.cafe.draw(this.sceneCanvas.getContext('2d'), mapCamera, {});
+            this.sceneCanvas ??= document.createElement('canvas');
+            if (this.sceneCanvas.width !== width) this.sceneCanvas.width = width;
+            if (this.sceneCanvas.height !== height) this.sceneCanvas.height = height;
+            const scene = this.sceneCanvas.getContext('2d');
+            scene.clearRect(0, 0, width, height);
+            this.cafe.draw(scene, mapCamera, {});
             this.sceneKey = sceneKey;
         }
         context.drawImage(this.sceneCanvas, 0, 0);
@@ -285,8 +307,13 @@ export default class WorldMap {
     dispose() {
         this.cafe.dispose();
         this.close();
+        if (this.drawRequest !== null) cancelAnimationFrame(this.drawRequest);
         this.canvas?.removeEventListener('click', this.boundClick);
         for(const [type,handler]of [['wheel',this.boundWheel],['pointerdown',this.boundDown],['pointermove',this.boundMove],['pointerup',this.boundUp],['pointercancel',this.boundUp]])this.canvas?.removeEventListener(type,handler);
+        if (this.sceneCanvas) {
+            this.sceneCanvas.width = 1;
+            this.sceneCanvas.height = 1;
+        }
         this.sceneCanvas = null;
         this.root?.remove();
         this.root = null;

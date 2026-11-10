@@ -145,3 +145,64 @@ test('GameRuntime keeps requesting frames after a recoverable render error', () 
         console.error = originalConsoleError;
     }
 });
+
+test('30 Hz presentation keeps the original 60 Hz simulation and accumulates render delta', () => {
+    const { runtime } = createRuntime();
+    const game = createGame();
+    runtime.setGame(game);
+    runtime.setRenderRate(30);
+    runtime.step(0);
+    for (let frame = 0; frame < 60; frame++) runtime.step(1 / 60);
+    assert.equal(game.fixed.length, 60);
+    assert.equal(game.renders.length, 31);
+    assert.ok(Math.abs(game.renders.slice(1).reduce((sum, render) => sum + render.delta, 0) - 1) < 1e-9);
+});
+
+test('a hidden page cancels the pending frame and starts with zero elapsed time on return', () => {
+    const target = Object.assign(new EventTarget(), { hidden: false });
+    const callbacks = new Map();
+    let frame = 0;
+    const { runtime } = createRuntime({
+        visibilityTarget: target,
+        requestFrame(callback) { callbacks.set(++frame, callback); return frame; },
+        cancelFrame(id) { callbacks.delete(id); },
+    });
+    const runFrame = (timestamp) => {
+        const [id, callback] = callbacks.entries().next().value;
+        callbacks.delete(id);
+        callback(timestamp);
+    };
+    const game = createGame();
+    runtime.setGame(game);
+    runtime.start();
+    runFrame(0);
+    runFrame(1000 / 60);
+    assert.equal(game.fixed.length, 1);
+    target.hidden = true;
+    target.dispatchEvent(new Event('visibilitychange'));
+    assert.equal(callbacks.size, 0);
+    target.hidden = false;
+    target.dispatchEvent(new Event('visibilitychange'));
+    target.dispatchEvent(new Event('visibilitychange'));
+    assert.equal(callbacks.size, 1);
+    runFrame(10000);
+    assert.equal(game.fixed.length, 1);
+    assert.equal(game.renders.at(-1).delta, 0);
+    runtime.dispose();
+    assert.equal(callbacks.size, 0);
+});
+
+test('lost render surfaces freeze game time until the next clean frame', () => {
+    const callbacks = [];
+    let available = false;
+    const { runtime } = createRuntime({ canRender: () => available, requestFrame(callback) { callbacks.push(callback); return callbacks.length; } });
+    const game = createGame();
+    runtime.setGame(game);
+    runtime.start();
+    callbacks[0](100);
+    assert.equal(game.renders.length, 0);
+    available = true;
+    callbacks[1](2100);
+    assert.equal(game.fixed.length, 0);
+    assert.equal(game.renders.at(-1).delta, 0);
+});

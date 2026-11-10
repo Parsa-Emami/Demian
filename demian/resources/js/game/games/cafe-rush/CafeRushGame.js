@@ -66,12 +66,12 @@ export default class CafeRushGame extends BaseGame {
     }
 
     async preload(context) {
+        void preloadFbxCafeArt();
         const visuals = context.services.characterVisuals;
         const [player, setayesh, uzudi] = await Promise.all([
             visuals.createCanvasAvatar('amirreza', { player: true }),
             visuals.createCanvasAvatar('setayesh'),
             visuals.createCanvasAvatar('uzudi'),
-            preloadFbxCafeArt(),
         ]);
         this.avatars = { player, setayesh, uzudi };
     }

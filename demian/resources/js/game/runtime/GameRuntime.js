@@ -14,6 +14,8 @@ export default class GameRuntime {
         requestFrame = (callback) => window.requestAnimationFrame(callback),
         cancelFrame = (id) => window.cancelAnimationFrame(id),
         visibilityTarget = typeof document !== 'undefined' ? document : null,
+        canRender = () => true,
+        observeFrame = null,
     }) {
         this.inputRouter = inputRouter;
         this.eventBus = eventBus;
@@ -29,6 +31,10 @@ export default class GameRuntime {
         this.lastTimestamp = null;
         this.frameRequest = null;
         this.visibilityTarget = visibilityTarget;
+        this.canRender = canRender;
+        this.observeFrame = observeFrame;
+        this.renderInterval = 0;
+        this.resetRenderTiming();
         this.errorCounts = new Map();
         this.lastErrorReport = new Map();
 
@@ -43,6 +49,26 @@ export default class GameRuntime {
         this.lastTimestamp = null;
         this.errorCounts.clear();
         this.lastErrorReport.clear();
+        this.resetRenderTiming();
+    }
+
+    setRenderRate(rate) {
+        const interval = rate > 0 ? 1 / rate : 0;
+        if (this.renderInterval === interval) return;
+        this.renderInterval = interval;
+        this.resetRenderTiming();
+    }
+
+    resetRenderTiming() {
+        this.renderElapsed = 0;
+        this.renderDelta = 0;
+        this.firstRender = true;
+    }
+
+    scheduleFrame() {
+        if (this.running && !this.visibilityTarget?.hidden && this.frameRequest === null) {
+            this.frameRequest = this.requestFrame(this.tick);
+        }
     }
 
     start() {
@@ -51,34 +77,31 @@ export default class GameRuntime {
         }
 
         this.running = true;
-        this.frameRequest = this.requestFrame(this.tick);
+        this.scheduleFrame();
     }
 
     tick(timestamp) {
-        if (!this.running) {
-            return;
-        }
+        this.frameRequest = null;
+        if (!this.running || this.visibilityTarget?.hidden) return;
 
         try {
-            if (this.lastTimestamp === null) {
-                this.lastTimestamp = timestamp;
-            }
-
-            const frameDelta = Math.min(
-                Math.max((timestamp - this.lastTimestamp) / 1000, 0),
-                this.maxFrameDelta
-            );
+            const elapsed = this.lastTimestamp === null ? 0 : Math.max(0, (timestamp - this.lastTimestamp) / 1000);
             this.lastTimestamp = timestamp;
-
             this.inputRouter.poll?.();
+            if (!this.canRender()) {
+                this.lastTimestamp = null;
+                this.resetRenderTiming();
+                return;
+            }
             if (!this.paused) {
-                this.step(frameDelta, timestamp);
+                this.observeFrame?.(elapsed);
+                this.step(Math.min(elapsed, this.maxFrameDelta), timestamp);
             }
         } catch (error) {
             this.reportError('frame', error, timestamp);
         } finally {
             // A single render error must never permanently kill the arcade loop.
-            if (this.running) this.frameRequest = this.requestFrame(this.tick);
+            this.scheduleFrame();
         }
     }
 
@@ -106,9 +129,16 @@ export default class GameRuntime {
 
         const alpha = this.accumulator / this.fixedStep;
         game.update(frameDelta);
+        this.renderDelta += frameDelta;
+        this.renderElapsed += frameDelta;
+        if (!this.firstRender && this.renderElapsed + .0005 < this.renderInterval) return;
+        this.renderElapsed = this.renderInterval ? Math.max(0, this.renderElapsed - this.renderInterval) % this.renderInterval : 0;
+        const renderDelta = this.renderDelta;
+        this.renderDelta = 0;
+        this.firstRender = false;
 
         try {
-            game.render(alpha, frameDelta);
+            game.render(alpha, renderDelta);
             this.errorCounts.delete('render');
             this.lastErrorReport.delete('render');
         } catch (error) {
@@ -152,6 +182,7 @@ export default class GameRuntime {
 
         this.paused = false;
         this.lastTimestamp = null;
+        this.resetRenderTiming();
         if (notifyGame) {
             this.currentGame?.resume();
         }
@@ -160,6 +191,11 @@ export default class GameRuntime {
 
     onVisibilityChange() {
         this.lastTimestamp = null;
+        this.resetRenderTiming();
+        if (this.visibilityTarget?.hidden && this.frameRequest !== null) {
+            this.cancelFrame(this.frameRequest);
+            this.frameRequest = null;
+        } else this.scheduleFrame();
     }
 
     stop() {

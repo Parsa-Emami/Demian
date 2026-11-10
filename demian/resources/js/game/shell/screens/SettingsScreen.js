@@ -52,6 +52,7 @@ export default class SettingsScreen extends BaseScreen {
             ...readTouchControls(data),
             motion: data.get('motion'),
             quality: data.get('quality'),
+            frameRate: data.get('frameRate'),
             interfaceDensity: data.get('interfaceDensity'),
             hudScale: data.get('hudScale'),
             hudContrast: data.get('hudContrast'),

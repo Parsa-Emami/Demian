@@ -42,7 +42,7 @@ export default class DinoRunGame extends BaseGame {
         this.context = context;
         this.environment = new DinoRunEnvironment(context.services.performanceProfile);
         this.environment.reducedMotion = context.settings.resolvedReducedMotion();
-        await this.environment.load();
+        void this.environment.load();
         this.actor = { position: { x: RUNNER_CONFIG.playerX, z: 0 }, forward: { x: 1, z: 0 },
             speed: 0, grounded: true, airborne: false, jumpVelocity: 0,
             jumpForce: RUNNER_CONFIG.jumpSpeed / 100, motionState: 'idle' };
@@ -213,9 +213,8 @@ export default class DinoRunGame extends BaseGame {
     }
     resize() {
         if (!this.context) return;
-        const ratio = this.context.services.performanceProfile?.maxPixelRatio ?? 1.35;
-        this.context.renderer.setPresentationMode('smooth', { maxPixelRatio: ratio });
-        this.context.renderer.resize(ratio);
+        this.environment.tier = this.context.renderer.quality?.quality ?? 'balanced';
+        this.context.renderer.resizeSmooth();
         const { width, height } = this.context.renderer.logicalDimensions();
         this.width = width; this.height = height;
         this.scale = Math.min(height / 430, width / 420);
@@ -285,7 +284,6 @@ export default class DinoRunGame extends BaseGame {
     }
     pause() {} resume() {} applySettings() {
         if (this.environment && this.context) this.environment.reducedMotion = this.context.settings.resolvedReducedMotion();
-        this.resize();
     }
     async exit() {}
     dispose() { this.hud?.remove(); this.ready?.remove(); this.lessonPanel?.remove(); this.environment?.dispose(); this.attackAvatars?.clear(); this.environment = null; this.hud = null; this.context = null; this.avatar = null; }

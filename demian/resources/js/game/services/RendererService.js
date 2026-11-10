@@ -31,7 +31,7 @@ function createCanvas() {
 
 export function smoothPresentationGrid(width, height, deviceRatio = 1, maxPixelRatio = 1.35, budget = 1250000) {
     const w = Math.max(1, Number(width) || 1), h = Math.max(1, Number(height) || 1);
-    const density = Math.min(Math.max(1, Number(deviceRatio) || 1), Math.max(1, Number(maxPixelRatio) || 1),
+    const density = Math.min(Math.max(1, Number(deviceRatio) || 1), Math.max(.7, Number(maxPixelRatio) || 1),
         Math.sqrt(Math.max(1, budget) / (w * h)));
     return { logicalWidth: Math.max(1, Math.floor(w * density)), logicalHeight: Math.max(1, Math.floor(h * density)) };
 }
@@ -87,7 +87,34 @@ export default class RendererService {
         this.logicalHeight = this.referenceHeight;
         this.resizeFrame = null;
         this.frameOpen = false;
-        this.container.appendChild(this.canvas);
+        this.layoutDirty = true;
+        this.surfaceRevision = 0;
+        this.lostContexts = new Set();
+        this.recovery = assignUiLayer(document.createElement('p'), UI_LAYER.LOCAL_BASE);
+        this.recovery.className = 'render-recovery';
+        this.recovery.setAttribute('role', 'status');
+        this.recovery.hidden = true;
+        this.recovery.textContent = 'در حال بازیابی تصویر بازی…';
+        this.onContextLost = (event) => {
+            this.lostContexts.add(event.currentTarget);
+            this.container.dataset.renderState = 'recovering';
+            this.recovery.hidden = false;
+        };
+        this.onContextRestored = (event) => {
+            this.lostContexts.delete(event.currentTarget);
+            if (this.lostContexts.size === 0) {
+                this.container.dataset.renderState = 'ready';
+                this.recovery.hidden = true;
+                this.layoutDirty = true;
+                this.surfaceRevision++;
+                this.resize();
+            }
+        };
+        for (const surface of [this.canvas, this.bufferCanvas]) {
+            surface.addEventListener('contextlost', this.onContextLost);
+            surface.addEventListener('contextrestored', this.onContextRestored);
+        }
+        this.container.append(this.canvas, this.recovery);
 
         // Compatibility object consumed by PerformanceProfile. Rendering no
         // longer depends on a Three/WebGL renderer.
@@ -122,11 +149,25 @@ export default class RendererService {
     }
 
     setPresentationMode(mode = 'pixel', { maxPixelRatio = 1.35, pixelBudget = maxPixelRatio > 1.5 ? 2200000 : 1250000 } = {}) {
-        this.presentationMode = mode === 'smooth' ? 'smooth' : 'pixel';
-        this.smoothMaxPixelRatio = clamp(Number(maxPixelRatio) || 1.35, 1, 2);
-        this.smoothPixelBudget = clamp(Number(pixelBudget) || 1250000, 250000, 2200000);
+        const nextMode = mode === 'smooth' ? 'smooth' : 'pixel';
+        const nextRatio = clamp(Number(maxPixelRatio) || 1.35, .7, 2);
+        const nextBudget = clamp(Number(pixelBudget) || 1250000, 250000, 2200000);
+        if (nextMode === this.presentationMode && nextRatio === this.smoothMaxPixelRatio && nextBudget === this.smoothPixelBudget) return;
+        this.layoutDirty = true;
+        this.presentationMode = nextMode;
+        this.smoothMaxPixelRatio = nextRatio;
+        this.smoothPixelBudget = nextBudget;
         this.canvas.style.imageRendering = this.presentationMode === 'smooth' ? 'auto' : 'pixelated';
         this.container.dataset.presentationMode = this.presentationMode;
+    }
+
+    resizeSmooth() {
+        this.setPresentationMode('smooth', this.quality);
+        return this.resize(this.quality?.maxPixelRatio ?? 1.35);
+    }
+
+    isAvailable() {
+        return !this.lostContexts.size && !this.context2d.isContextLost?.() && !this.bufferContext.isContextLost?.();
     }
 
     choosePixelGrid(physicalWidth, physicalHeight) {
@@ -148,12 +189,17 @@ export default class RendererService {
     }
 
     resize(pixelRatio = this.pixelRatio) {
-        this.pixelRatio = finiteScale(pixelRatio, this.pixelRatio);
+        const ratio = finiteScale(pixelRatio, this.pixelRatio);
         const { width, height } = this.dimensions();
+        const deviceRatio = clamp(globalThis.devicePixelRatio || 1, 1, 2);
+        if (!this.layoutDirty && width === this.lastWidth && height === this.lastHeight
+            && deviceRatio === this.deviceRatio && ratio === this.pixelRatio) return this.size;
+        if (!this.isAvailable()) return this.size;
+        this.layoutDirty = false;
+        this.pixelRatio = ratio;
         this.lastWidth = width;
         this.lastHeight = height;
-
-        this.deviceRatio = clamp(globalThis.devicePixelRatio || 1, 1, 2);
+        this.deviceRatio = deviceRatio;
         const physicalWidth = Math.max(1, Math.round(width * this.deviceRatio));
         const physicalHeight = Math.max(1, Math.round(height * this.deviceRatio));
         const grid = this.presentationMode === 'smooth'
@@ -161,30 +207,28 @@ export default class RendererService {
                 Math.min(this.smoothMaxPixelRatio, this.pixelRatio), this.smoothPixelBudget), scale: null }
             : this.choosePixelGrid(physicalWidth, physicalHeight);
 
-        this.presentationScale = grid.scale ?? physicalWidth / grid.logicalWidth;
+        const visibleWidth = grid.scale === null ? grid.logicalWidth : physicalWidth;
+        const visibleHeight = grid.scale === null ? grid.logicalHeight : physicalHeight;
+        this.presentationScale = grid.scale ?? 1;
         this.logicalWidth = grid.logicalWidth;
         this.logicalHeight = grid.logicalHeight;
-        this.canvas.width = physicalWidth;
-        this.canvas.height = physicalHeight;
-        this.bufferCanvas.width = this.logicalWidth;
-        this.bufferCanvas.height = this.logicalHeight;
+        if (this.canvas.width !== visibleWidth) this.canvas.width = visibleWidth;
+        if (this.canvas.height !== visibleHeight) this.canvas.height = visibleHeight;
+        if (this.bufferCanvas.width !== this.logicalWidth) this.bufferCanvas.width = this.logicalWidth;
+        if (this.bufferCanvas.height !== this.logicalHeight) this.bufferCanvas.height = this.logicalHeight;
         this.configureContext(this.context2d);
         this.configureContext(this.bufferContext);
         this.container.dataset.rendererBackend = 'pixel-2d';
         this.container.dataset.pixelGrid = `${this.logicalWidth}x${this.logicalHeight}@${this.presentationScale}x`;
 
-        return {
-            width,
-            height,
-            logicalWidth: this.logicalWidth,
-            logicalHeight: this.logicalHeight,
-            presentationScale: this.presentationScale,
-        };
+        this.size = { width, height, logicalWidth: this.logicalWidth, logicalHeight: this.logicalHeight,
+            presentationScale: this.presentationScale };
+        return this.size;
     }
 
     configureContext(context) {
         context.imageSmoothingEnabled = this.presentationMode === 'smooth';
-        context.imageSmoothingQuality = 'high';
+        context.imageSmoothingQuality = this.quality?.quality === 'performance' ? 'medium' : 'high';
         context.textBaseline = 'middle';
         context.lineJoin = 'miter';
         context.lineCap = 'butt';
@@ -202,14 +246,8 @@ export default class RendererService {
 
     ensureSize() {
         const { width, height } = this.dimensions();
-        if (width !== this.lastWidth || height !== this.lastHeight) return this.resize(this.pixelRatio);
-        return {
-            width,
-            height,
-            logicalWidth: this.logicalWidth,
-            logicalHeight: this.logicalHeight,
-            presentationScale: this.presentationScale,
-        };
+        if (this.layoutDirty || width !== this.lastWidth || height !== this.lastHeight) return this.resize();
+        return this.size;
     }
 
     resetState({ clear = false } = {}) {
@@ -220,6 +258,7 @@ export default class RendererService {
         this.configureContext(this.bufferContext);
         this.configureContext(this.context2d);
         if (clear) {
+            this.surfaceRevision++;
             this.bufferContext.fillStyle = '#0b1020';
             this.bufferContext.fillRect(0, 0, this.logicalWidth, this.logicalHeight);
             this.present();
@@ -251,8 +290,10 @@ export default class RendererService {
 
         ctx.setTransform(1, 0, 0, 1, 0, 0);
         this.configureContext(ctx);
-        ctx.fillStyle = '#050816';
-        ctx.fillRect(0, 0, width, height);
+        if (this.presentationMode === 'pixel') {
+            ctx.fillStyle = '#050816';
+            ctx.fillRect(0, 0, width, height);
+        }
         ctx.drawImage(
             this.bufferCanvas,
             0,
@@ -280,7 +321,14 @@ export default class RendererService {
     dispose() {
         this.resizeObserver?.disconnect();
         if (this.resizeFrame !== null && typeof cancelAnimationFrame === 'function') cancelAnimationFrame(this.resizeFrame);
+        for (const surface of [this.canvas, this.bufferCanvas]) {
+            surface.removeEventListener('contextlost', this.onContextLost);
+            surface.removeEventListener('contextrestored', this.onContextRestored);
+        }
         this.canvas.remove();
+        this.recovery.remove();
+        this.canvas.width = 1;
+        this.canvas.height = 1;
         this.bufferCanvas.width = 1;
         this.bufferCanvas.height = 1;
     }

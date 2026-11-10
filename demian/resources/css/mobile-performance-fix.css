@@ -13,12 +13,6 @@ html, body {
     touch-action: none;
 }
 
-[data-game-canvas] {
-    transform: translateZ(0);
-    will-change: transform;
-    image-rendering: auto;
-}
-
 @media (max-width: 900px) {
     html, body {
         height: var(--demian-real-height, 100dvh);
@@ -30,4 +24,21 @@ html, body {
         height: var(--demian-real-height, 100dvh) !important;
         max-height: var(--demian-real-height, 100dvh) !important;
     }
+}
+
+.render-recovery {
+    position: absolute;
+    top: 50%;
+    inset-inline: 0;
+    width: fit-content;
+    max-width: calc(100% - 24px);
+    margin: 0 auto;
+    transform: translateY(-50%);
+    padding: 10px 16px;
+    border: 1px solid #ad8c57;
+    border-radius: 12px;
+    color: #fff3da;
+    background: #172520;
+    direction: rtl;
+    pointer-events: none;
 }

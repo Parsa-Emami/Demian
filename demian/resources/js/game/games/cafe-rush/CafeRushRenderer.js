@@ -19,21 +19,22 @@ export default class CafeRushRenderer {
     }
 
     resize() {
-        const ratio = this.context.services.performanceProfile?.maxPixelRatio ?? 1.35;
-        this.context.renderer.setPresentationMode('smooth', { maxPixelRatio: ratio });
-        this.scene.resize(ratio);
+        this.scene.resize();
     }
 
     render(model, avatars, cue, alpha, dt) {
         const camera = this.scene.camera;
         const ctx = this.scene.begin({ clear: '#29201c', deltaTime: dt });
         const board = camera.worldRect(BOARD.position, BOARD.extents);
-        const backdrop = ctx.createLinearGradient(0, 0, 0, camera.viewportHeight);
-        backdrop.addColorStop(0, '#413026');
-        backdrop.addColorStop(.54, '#2a201c');
-        backdrop.addColorStop(1, '#1b1716');
+        if (this.backdropHeight !== camera.viewportHeight) {
+            this.backdropHeight = camera.viewportHeight;
+            this.backdrop = ctx.createLinearGradient(0, 0, 0, camera.viewportHeight);
+            this.backdrop.addColorStop(0, '#413026');
+            this.backdrop.addColorStop(.54, '#2a201c');
+            this.backdrop.addColorStop(1, '#1b1716');
+        }
         ctx.save();
-        ctx.fillStyle = backdrop;
+        ctx.fillStyle = this.backdrop;
         ctx.beginPath();
         ctx.rect(0, 0, camera.viewportWidth, camera.viewportHeight);
         ctx.rect(board.x, board.y, board.width, board.height);

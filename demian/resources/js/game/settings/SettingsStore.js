@@ -15,6 +15,7 @@ export const DEFAULT_SETTINGS = Object.freeze({
     version: 1,
     motion: 'system',
     quality: 'auto',
+    frameRate: 'auto',
     hudVisible: true,
     hudScale: 'standard',
     hudContrast: 'standard',
@@ -28,6 +29,7 @@ const ENUMS = Object.freeze({
     hudScale: new Set(['standard', 'large', 'extra']),
     hudContrast: new Set(['standard', 'high']),
     motion: new Set(['system', 'full', 'reduced']),
+    frameRate: new Set(['auto', '30', '60']),
     quality: new Set(['auto', 'performance', 'balanced', 'high']),
     interfaceDensity: new Set(['comfortable', 'compact']),
 });

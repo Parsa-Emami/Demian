@@ -23,7 +23,7 @@ export default class CafeCrittersGame extends BaseGame {
         this.audio = new CafeCueAudio(CUES);
     }
 
-    preload() { return preloadFbxCafeArt(); }
+    preload() { void preloadFbxCafeArt(); }
 
     async enter(context) {
         this.context = context;

@@ -65,10 +65,8 @@ export default class AfterHoursGame extends BaseGame {
     }
 
     async preload(context) {
-        [this.avatar] = await Promise.all([
-            context.services.characterVisuals.createCanvasAvatar('darya', { player: true }),
-            preloadFbxCafeArt(),
-        ]);
+        void preloadFbxCafeArt();
+        this.avatar = await context.services.characterVisuals.createCanvasAvatar('darya', { player: true });
     }
 
     async enter(context) {
@@ -188,7 +186,7 @@ export default class AfterHoursGame extends BaseGame {
     }
 
     render(alpha, dt) { this.renderer.render(this.model, this.avatar, alpha, dt); }
-    resize() { this.renderer?.resize(this.model.player.position); }
+    resize({ reframe = true } = {}) { this.renderer?.resize(reframe ? this.model.player.position : null); }
     applySettings(settings) { this.audio.setEnabled(settings.soundEnabled); }
     pause() { if (this.model.status === 'running') this.audio.stop(); }
 
