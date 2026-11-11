@@ -255,3 +255,10 @@ html, body { margin: 0; padding: 0; min-width: 0; display: block; }
 @media (max-width: 650px) { .motion-lab__cards { grid-template-columns: minmax(0, 1fr); } .motion-lab__toolbar label { min-width: 115px; } }
 
 @media (min-width: 900px) { .motion-card canvas { height: min(19vh, 180px); aspect-ratio: auto; object-fit: contain; } }
+
+.demian-credit { grid-column: 1 / -1; margin-block-start: 16px; font-size: 11px; line-height: 1.7; color: #bdc8b6; }
+.demian-credit p { margin: 0; }
+.demian-credit a, .demian-about-link { color: #d7e8a2; text-underline-offset: 4px; }
+.demian-credit a { display: inline-flex; align-items: center; min-height: 44px; }
+.demian-about-link { display: inline-flex; align-items: center; min-height: 44px; font-size: 12px; margin-block: 8px; }
+.demian-credit a:focus-visible, .demian-about-link:focus-visible { outline: 2px solid #d7e8a2; outline-offset: 4px; }

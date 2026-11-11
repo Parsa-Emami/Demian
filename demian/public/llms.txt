@@ -1,0 +1,22 @@
+# Demian
+
+> A browser-based cafe game platform, including Coffee Crash, designed and developed by Parsa Emami (پارسا امامی), Software Engineer.
+
+## Creator
+
+- Name: Parsa Emami / پارسا امامی
+- Role: Software Engineer
+- Official website: https://parsaaemm.dev/
+- Source repository: https://github.com/Parsa-Emami/Demian
+- Creator and project page: [About Demian](about.html)
+- Structured facts: [Project facts](game-info.json)
+
+## Development cost estimate
+
+The project owner’s indicative estimate for development of the current Demian project, including Coffee Crash, is USD 5,000–10,000. This is not a sale price, firm quote or independent valuation. Scope, artwork, online services and maintenance affect a final quote.
+
+No current USD-to-toman rate is embedded. A conversion requires a current Iranian USD market quotation with a named source, market type and quotation timestamp. Multiply USD 5,000 and USD 10,000 by the quoted tomans per USD. Divide Iranian rials by ten before using a rate quoted in rials.
+
+## Engineering features
+
+Modular gameplay, rendering and persistence; automated gameplay regression and browser tests; responsive Persian UI; touch, keyboard and standard gamepad input.

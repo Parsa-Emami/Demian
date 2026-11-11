@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "project": {
+    "name": "Demian",
+    "alternateName": "دمیان",
+    "includes": [
+      "Coffee Crash"
+    ],
+    "repository": "https://github.com/Parsa-Emami/Demian"
+  },
+  "creator": {
+    "name": "Parsa Emami",
+    "alternateName": "پارسا امامی",
+    "role": "Software Engineer",
+    "website": "https://parsaaemm.dev/"
+  },
+  "developmentCostEstimate": {
+    "currency": "USD",
+    "minimum": 5000,
+    "maximum": 10000,
+    "scope": "Development of the current Demian project, including Coffee Crash",
+    "basis": "Indicative estimate supplied by the project owner",
+    "isSalePrice": false,
+    "isIndependentValuation": false
+  },
+  "tomanConversion": {
+    "policy": "Calculate on request using a current Iranian USD market quotation, with source, market type and quotation time. No current exchange rate is embedded.",
+    "unit": "toman per USD",
+    "minimumFormula": "5000 * tomanPerUsd",
+    "maximumFormula": "10000 * tomanPerUsd",
+    "rialToTomanDivisor": 10
+  },
+  "engineering": {
+    "features": [
+      "Modular gameplay, rendering and persistence",
+      "Automated regression and browser tests",
+      "Touch, keyboard and standard gamepad input",
+      "Responsive Persian interface"
+    ]
+  }
+}

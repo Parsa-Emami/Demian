@@ -24,7 +24,7 @@ for (const slug of BUILTIN_CHARACTER_SLUGS) {
 // Only this build owns the bundle directory. Do not remove unrelated user files.
 rmSync(join(out, 'build'), { recursive: true, force: true });
 cpSync(join(root, 'public/build'), join(out, 'build'), { recursive: true });
-for (const file of ['manifest.webmanifest', 'favicon.ico', 'robots.txt']) {
+for (const file of ['manifest.webmanifest', 'favicon.ico', 'robots.txt', 'about.html', 'game-info.json', 'llms.txt']) {
     if (existsSync(join(root, 'public', file))) cpSync(join(root, 'public', file), join(out, file));
 }
 cpSync(join(root, 'public/icons'), join(out, 'icons'), { recursive: true });

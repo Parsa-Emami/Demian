@@ -1,0 +1,52 @@
+{
+  "physicalPhoneMeasured": false,
+  "mode": "Headless Chromium; emulated phone dimensions; software rendering",
+  "profiles": [
+    {
+      "width": 320,
+      "height": 568,
+      "credit": "passed",
+      "estimate": "passed",
+      "newHostSubpath": "passed",
+      "metadata": "passed",
+      "pauseLink": "passed",
+      "horizontalOverflow": false,
+      "errors": []
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "credit": "passed",
+      "estimate": "passed",
+      "newHostSubpath": "passed",
+      "metadata": "passed",
+      "pauseLink": "passed",
+      "horizontalOverflow": false,
+      "errors": []
+    },
+    {
+      "width": 844,
+      "height": 390,
+      "credit": "passed",
+      "estimate": "passed",
+      "newHostSubpath": "passed",
+      "metadata": "passed",
+      "pauseLink": "passed",
+      "horizontalOverflow": false,
+      "errors": []
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "credit": "passed",
+      "estimate": "passed",
+      "newHostSubpath": "passed",
+      "metadata": "passed",
+      "pauseLink": "passed",
+      "horizontalOverflow": false,
+      "errors": []
+    }
+  ],
+  "browser": "153.0.8010.0",
+  "status": "passed"
+}

@@ -40,11 +40,14 @@ jobs:
       - run: npm run validate:build
       - run: npx playwright install --with-deps chromium --only-shell
       - run: npm run test:coffee-crash:browser
+      - run: npm run test:identity:browser
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: coffee-crash-browser-qa
-          path: demian/docs/release-v18-coffee-crash/browser
+          path: |
+            demian/docs/release-v18-coffee-crash/browser
+            demian/docs/project-identity/browser
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v4
         with:

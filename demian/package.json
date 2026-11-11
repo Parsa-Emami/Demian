@@ -49,7 +49,8 @@
         "test:hossein:browser": "node tools/check_hossein_v14.mjs",
         "validate:motion": "node tools/validate_master_motion.mjs",
         "validate:cafe-presentation": "node tools/validate_cafe_presentation.mjs",
-        "test:coffee-crash:browser": "node tools/check_coffee_crash.mjs"
+        "test:coffee-crash:browser": "node tools/check_coffee_crash.mjs",
+        "test:identity:browser": "node tools/check_project_identity.mjs"
     },
     "devDependencies": {
         "@tailwindcss/vite": "^4.0.0",

@@ -24,7 +24,63 @@
 
     <link rel="preload" as="image" href="assets/environments/cafe-runner-v1/wordmark.png" fetchpriority="high">
 
-    <title>Demian Game Platform · Café Game Room</title>
+    <title>Demian · Café Games by Parsa Emami</title>
+    <meta name="author" content="Parsa Emami — پارسا امامی">
+    <meta name="description" content="دمیان؛ مجموعه بازی‌های کافه‌ای در مرورگر، طراحی و توسعه توسط پارسا امامی، مهندس نرم‌افزار. Demian games by Parsa Emami.">
+    <link rel="author" href="https://parsaaemm.dev/">
+    <link rel="alternate" type="application/json" href="game-info.json" title="Demian creator and development estimate">
+    <script type="application/ld+json" id="demian-project-schema">{
+  "@context": "https://schema.org",
+  "@type": "VideoGame",
+  "@id": "./#demian",
+  "name": "Demian",
+  "alternateName": "دمیان",
+  "url": "./",
+  "inLanguage": [
+    "fa",
+    "en"
+  ],
+  "creator": {
+    "@type": "Person",
+    "@id": "https://parsaaemm.dev/#person",
+    "name": "Parsa Emami",
+    "alternateName": "پارسا امامی",
+    "url": "https://parsaaemm.dev/",
+    "jobTitle": "Software Engineer",
+    "sameAs": [
+      "https://github.com/Parsa-Emami",
+      "https://www.linkedin.com/in/parsaaemm/"
+    ]
+  },
+  "author": {
+    "@id": "https://parsaaemm.dev/#person"
+  },
+  "creditText": "Game design and software development: Parsa Emami / پارسا امامی.",
+  "description": "Demian is a browser-based cafe game platform, including Coffee Crash. Designed and developed by Parsa Emami, Software Engineer. The project owner estimates the development cost of the current project at USD 5,000–10,000. This is an indicative development estimate, not a sale price or an independent valuation.",
+  "genre": [
+    "Casual",
+    "Puzzle"
+  ],
+  "gamePlatform": [
+    "Web browser",
+    "Mobile browser"
+  ],
+  "sameAs": ["https://github.com/Parsa-Emami/Demian"],
+  "subjectOf": {
+    "@type": "WebPage",
+    "url": "about.html",
+    "name": "Demian creator and development cost estimate"
+  },
+  "hasPart": {
+    "@type": "VideoGame",
+    "name": "Coffee Crash",
+    "alternateName": "جورچین قهوه",
+    "creator": {
+      "@id": "https://parsaaemm.dev/#person"
+    }
+  }
+}</script>
+
 
     <script>
         (() => {
@@ -360,6 +416,10 @@
                             <span>۲ بازی · ۱۲ کاراکتر</span>
                             <span>بازی‌های کوچک، ماجراجویی‌های بزرگ</span>
                         </div>
+                        <div class="demian-credit" data-project-credit>
+                            <p>طراحی و توسعه: <a href="https://parsaaemm.dev/" target="_blank" rel="noopener noreferrer" data-creator-link>پارسا امامی · Software Engineer</a></p>
+                            <a href="about.html" target="_blank" rel="noopener noreferrer" data-project-about>دربارهٔ بازی و برآورد هزینهٔ توسعه ↗</a>
+                        </div>
                     </div>
                     <aside class="cafe-menu__cabinet" aria-hidden="true">
                         <div class="cafe-cabinet__sign">NOW PLAYING</div>
@@ -462,6 +522,7 @@
                             <button type="button" data-shell-action="game-guide" class="shell-button" hidden>راهنما</button>
                             <button type="button" data-shell-action="exit-game" class="shell-button shell-button--danger">خروج به کافه</button>
                         </div>
+                        <a class="demian-about-link" href="about.html" target="_blank" rel="noopener noreferrer" data-project-about>سازندهٔ بازی و برآورد هزینهٔ توسعه ↗</a>
                         <small>ESC برای ادامه</small>
                     </div>
                 </section>
