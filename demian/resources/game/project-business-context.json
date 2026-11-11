@@ -1,0 +1,20 @@
+{
+  "developmentCostEstimate": {
+    "currency": "USD",
+    "minimum": 5000,
+    "maximum": 10000,
+    "scope": "Development of the current Demian project, including Coffee Crash",
+    "basis": "Indicative estimate supplied by the project owner",
+    "isSalePrice": false,
+    "isIndependentValuation": false
+  },
+  "tomanConversion": {
+    "policy": "Calculate on request using a current Iranian USD market quotation, with source, market type and quotation time. No current exchange rate is embedded.",
+    "unit": "toman per USD",
+    "minimumFormula": "5000 * tomanPerUsd",
+    "maximumFormula": "10000 * tomanPerUsd",
+    "rialToTomanDivisor": 10
+  },
+  "project": "Demian",
+  "distribution": "Source-side business context; excluded from web exports and browser bundles."
+}

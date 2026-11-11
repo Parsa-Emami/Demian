@@ -24,11 +24,11 @@
 
     <link rel="preload" as="image" href="assets/environments/cafe-runner-v1/wordmark.png" fetchpriority="high">
 
-    <title>Demian · Café Games by Parsa Emami</title>
+    <title>Demian Game Platform · Café Game Room</title>
     <meta name="author" content="Parsa Emami — پارسا امامی">
     <meta name="description" content="دمیان؛ مجموعه بازی‌های کافه‌ای در مرورگر، طراحی و توسعه توسط پارسا امامی، مهندس نرم‌افزار. Demian games by Parsa Emami.">
     <link rel="author" href="https://parsaaemm.dev/">
-    <link rel="alternate" type="application/json" href="game-info.json" title="Demian creator and development estimate">
+    <link rel="alternate" type="application/json" href="game-info.json" title="Demian creator information">
     <script type="application/ld+json" id="demian-project-schema">{
   "@context": "https://schema.org",
   "@type": "VideoGame",
@@ -56,7 +56,7 @@
     "@id": "https://parsaaemm.dev/#person"
   },
   "creditText": "Game design and software development: Parsa Emami / پارسا امامی.",
-  "description": "Demian is a browser-based cafe game platform, including Coffee Crash. Designed and developed by Parsa Emami, Software Engineer. The project owner estimates the development cost of the current project at USD 5,000–10,000. This is an indicative development estimate, not a sale price or an independent valuation.",
+  "description": "Demian is a browser-based cafe game platform, including Coffee Crash, designed and developed by Parsa Emami (parsaaemm).",
   "genre": [
     "Casual",
     "Puzzle"
@@ -65,12 +65,9 @@
     "Web browser",
     "Mobile browser"
   ],
-  "sameAs": ["https://github.com/Parsa-Emami/Demian"],
-  "subjectOf": {
-    "@type": "WebPage",
-    "url": "about.html",
-    "name": "Demian creator and development cost estimate"
-  },
+  "sameAs": [
+    "https://github.com/Parsa-Emami/Demian"
+  ],
   "hasPart": {
     "@type": "VideoGame",
     "name": "Coffee Crash",
@@ -417,8 +414,8 @@
                             <span>بازی‌های کوچک، ماجراجویی‌های بزرگ</span>
                         </div>
                         <div class="demian-credit" data-project-credit>
-                            <p>طراحی و توسعه: <a href="https://parsaaemm.dev/" target="_blank" rel="noopener noreferrer" data-creator-link>پارسا امامی · Software Engineer</a></p>
-                            <a href="about.html" target="_blank" rel="noopener noreferrer" data-project-about>دربارهٔ بازی و برآورد هزینهٔ توسعه ↗</a>
+                            <p>طراحی و توسعهٔ بازی</p>
+                            <a href="https://parsaaemm.dev/" target="_blank" rel="noopener noreferrer" lang="en" dir="ltr" data-creator-link>parsaaemm</a>
                         </div>
                     </div>
                     <aside class="cafe-menu__cabinet" aria-hidden="true">
@@ -522,7 +519,6 @@
                             <button type="button" data-shell-action="game-guide" class="shell-button" hidden>راهنما</button>
                             <button type="button" data-shell-action="exit-game" class="shell-button shell-button--danger">خروج به کافه</button>
                         </div>
-                        <a class="demian-about-link" href="about.html" target="_blank" rel="noopener noreferrer" data-project-about>سازندهٔ بازی و برآورد هزینهٔ توسعه ↗</a>
                         <small>ESC برای ادامه</small>
                     </div>
                 </section>
