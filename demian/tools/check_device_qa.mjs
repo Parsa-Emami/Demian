@@ -51,6 +51,7 @@ try {
         const cell = page.locator('[data-coffee-cell="0"]');
         if (mobile) await cell.tap();
         else await cell.click();
+        if (mobile) await page.waitForFunction(() => window.demianGameApplication.deviceQa.session.report().eventToRenderSubmissionMs.count > 0);
         await page.waitForFunction(() => window.demianGameApplication.deviceQa.session.report().frameIntervalMs.count >= 10);
         const metrics = await page.evaluate(() => window.demianGameApplication.deviceQa.session.report());
         assert.equal(metrics.physicalPhoneVerified, false);
