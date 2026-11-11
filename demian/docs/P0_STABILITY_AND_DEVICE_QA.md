@@ -6,6 +6,8 @@ Laravel 13 interprets JSON-LD's `@context` as a Blade directive. The schema open
 
 Pages runs the reusable SQLite/MySQL backend matrix alongside the frontend build. Publication requires both jobs. Pull requests run the same checks without publication. Standalone backend checks include view-only branch changes, compile and lint cached views, and finish both database jobs even if one fails.
 
+Browser CI uses the Ubuntu 24.04 runner's installed system libraries and downloads the lockfile-matched Chromium shell. The previous `--with-deps` step stalled on Ubuntu mirror DNS failures while attempting optional font downloads; its logs confirmed the Chromium runtime libraries were already installed. Browser launch and the full browser suites remain mandatory, so missing runtime dependencies still fail verification.
+
 ## Physical-device status
 
 **Pending: no physical Android or iOS device has been measured in this task.** Viewport emulation is functional evidence only. CI cannot establish real-phone 60 FPS, touch-to-photon latency, resident memory or thermal stability.

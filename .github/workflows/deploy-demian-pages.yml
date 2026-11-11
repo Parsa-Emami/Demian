@@ -16,7 +16,7 @@ jobs:
   backend:
     uses: ./.github/workflows/arcade-backend.yml
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     defaults:
       run:
         working-directory: demian
@@ -42,7 +42,7 @@ jobs:
       - run: npm run build:static
       # Expected one atomic JavaScript bundle; bundle_mode: atomic
       - run: npm run validate:build
-      - run: npx playwright install --with-deps chromium --only-shell
+      - run: npx playwright install chromium --only-shell
       - run: npm run test:coffee-crash:browser
       - run: npm run test:identity:browser
       - run: npm run test:device-qa:browser
