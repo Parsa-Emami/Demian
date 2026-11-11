@@ -16,6 +16,7 @@ export default class GameRuntime {
         visibilityTarget = typeof document !== 'undefined' ? document : null,
         canRender = () => true,
         observeFrame = null,
+        observeRender = null,
     }) {
         this.inputRouter = inputRouter;
         this.eventBus = eventBus;
@@ -33,6 +34,7 @@ export default class GameRuntime {
         this.visibilityTarget = visibilityTarget;
         this.canRender = canRender;
         this.observeFrame = observeFrame;
+        this.observeRender = observeRender;
         this.renderInterval = 0;
         this.resetRenderTiming();
         this.errorCounts = new Map();
@@ -141,6 +143,7 @@ export default class GameRuntime {
             game.render(alpha, renderDelta);
             this.errorCounts.delete('render');
             this.lastErrorReport.delete('render');
+            this.observeRender?.(globalThis.performance?.now?.() ?? timestamp);
         } catch (error) {
             this.reportError('render', error, timestamp);
         }

@@ -1,12 +1,15 @@
 name: Arcade backend verification
 on:
+  workflow_call:
   push:
+    branches-ignore: [main]
     paths:
       - 'demian/app/**'
       - 'demian/config/**'
       - 'demian/database/**'
       - 'demian/routes/**'
       - 'demian/resources/game/**'
+      - 'demian/resources/views/**'
       - 'demian/tests/**'
       - 'demian/composer.*'
       - '.github/workflows/arcade-backend.yml'
@@ -20,6 +23,7 @@ jobs:
   replay-and-api:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         database: [sqlite, mysql]
     services:
@@ -46,6 +50,11 @@ jobs:
           extensions: mbstring, dom, xml, sqlite3, pdo_sqlite, pdo_mysql
           coverage: none
       - run: composer install --no-interaction --prefer-dist
+      - name: Compile and lint Blade views
+        run: |
+          php artisan view:cache
+          find storage/framework/views -name '*.php' -print0 | xargs -0 -r -n1 php -l
+          php artisan view:clear
       - run: vendor/bin/phpunit
         env:
           APP_ENV: testing

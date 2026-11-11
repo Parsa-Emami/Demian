@@ -29,6 +29,7 @@
     <meta name="description" content="دمیان؛ مجموعه بازی‌های کافه‌ای در مرورگر، طراحی و توسعه توسط پارسا امامی، مهندس نرم‌افزار. Demian games by Parsa Emami.">
     <link rel="author" href="https://parsaaemm.dev/">
     <link rel="alternate" type="application/json" href="game-info.json" title="Demian creator information">
+@verbatim
     <script type="application/ld+json" id="demian-project-schema">{
   "@context": "https://schema.org",
   "@type": "VideoGame",
@@ -77,6 +78,7 @@
     }
   }
 }</script>
+@endverbatim
 
 
     <script>

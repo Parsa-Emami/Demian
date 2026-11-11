@@ -3,6 +3,7 @@ import { mkdirSync, readFileSync, writeFileSync, cpSync, rmSync, existsSync } fr
 import { resolve, join, basename } from 'node:path';
 import { BUILTIN_CHARACTER_SLUGS, RETIRED_CHARACTER_SLUGS, characterPackVersion } from '../resources/js/game/characters/CharacterVisualContract.js';
 import { BUILTIN_CHARACTER_LABELS as labels } from '../resources/js/game/characters/manifests/CharacterManifestRegistry.js';
+import { renderStaticTemplate } from './static_template.mjs';
 const root = resolve(import.meta.dirname, '..');
 const out = resolve(root, process.argv.find((a) => a.startsWith('--out='))?.slice(6) ?? '_site');
 const arcadeApi = process.env.DEMIAN_ARCADE_API_URL?.trim() ?? '';
@@ -29,14 +30,7 @@ for (const file of ['manifest.webmanifest', 'favicon.ico', 'robots.txt', 'game-i
     if (existsSync(join(root, 'public', file))) cpSync(join(root, 'public', file), join(out, file));
 }
 cpSync(join(root, 'public/icons'), join(out, 'icons'), { recursive: true });
-let html = readFileSync(join(root, 'resources/views/demian.blade.php'), 'utf8');
-html = html.replace(/\{\{--[\s\S]*?--\}\}/g, '')
-    .replace(/@vite\([\s\S]*?\)/, `${(entry.css ?? []).map((c) => `<link rel="stylesheet" href="build/${c}">`).join('\n')}\n<script type="module" src="build/${entry.file}"></script>`)
-    .replace(/\{\{\s*csrf_token\(\)\s*\}\}/g, '')
-    .replace(/\{\{\s*route\('characters.index'\)\s*\}\}/g, 'characters.json')
-    .replace(/\{\{\s*url\('\/api\/v1\/events'\)\s*\}\}/g, 'api/v1/events')
-    .replace(/\{\{\s*url\('\/api\/v1\/arcade'\)\s*\}\}/g, arcadeApi);
-if (/@(?:vite|php|foreach|if)|\{\{/.test(html)) throw new Error('Unsupported template directive in static export.');
+const html = renderStaticTemplate(readFileSync(join(root, 'resources/views/demian.blade.php'), 'utf8'), { entry, arcadeApi });
 writeFileSync(join(out, 'index.html'), html);
 writeFileSync(join(out, 'characters.json'), JSON.stringify({ data: BUILTIN_CHARACTER_SLUGS.map((slug) => ({
     id: `builtin-${slug}`, name: labels[slug], slug, is_builtin: true, is_active: slug === 'darya',

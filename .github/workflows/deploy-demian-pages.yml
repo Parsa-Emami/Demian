@@ -2,15 +2,19 @@ name: Deploy Demian mobile release
 on:
   push:
     branches: [main]
+  pull_request:
+    branches: [main]
   workflow_dispatch:
 permissions:
   contents: read
   pages: write
   id-token: write
 concurrency:
-  group: demian-pages
+  group: demian-pages-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 jobs:
+  backend:
+    uses: ./.github/workflows/arcade-backend.yml
   build:
     runs-on: ubuntu-latest
     defaults:
@@ -41,6 +45,7 @@ jobs:
       - run: npx playwright install --with-deps chromium --only-shell
       - run: npm run test:coffee-crash:browser
       - run: npm run test:identity:browser
+      - run: npm run test:device-qa:browser
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -48,16 +53,18 @@ jobs:
           path: |
             demian/docs/release-v18-coffee-crash/browser
             demian/docs/project-identity/browser
+            demian/docs/p0-stability/browser
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v4
         with:
           path: demian/_site
   deploy:
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
-    needs: build
+    needs: [build, backend]
     steps:
       - name: Publish
         id: deployment

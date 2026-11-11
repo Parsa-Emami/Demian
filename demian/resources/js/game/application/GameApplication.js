@@ -18,6 +18,7 @@ import ControlLayoutService from '../controls/ControlLayoutService';
 import GameShell from '../shell/GameShell';
 import SessionStateMachine, { SESSION_STATES } from './SessionStateMachine';
 import ArcadeLeaderboardService from '../leaderboard/ArcadeLeaderboardService.js';
+import DeviceQaController from '../performance/DeviceQaController.js';
 
 const MENU_BACKDROP_GAME_ID = 'open-world';
 
@@ -75,6 +76,7 @@ export default class GameApplication {
             observeFrame: (seconds) => {
                 if (this.sessionState === SESSION_STATES.PLAYING && this.renderQuality.observe(seconds)) this.applyRenderQuality();
             },
+            observeRender: timestamp => this.deviceQa?.rendered(timestamp),
         });
         this.shell = new GameShell({
             root: this.root,
@@ -105,6 +107,10 @@ export default class GameApplication {
         this.resizeObserver = typeof ResizeObserver === 'function' ? new ResizeObserver(this.onResize) : null;
         this.resizeObserver?.observe(container);
         window.addEventListener('resize', this.onResize);
+        if (new URLSearchParams(window.location.search).get('deviceQa') === '1') {
+            this.deviceQa = new DeviceQaController(this);
+            this.deviceQa.mount();
+        }
     }
 
     get characterManager() {
@@ -487,6 +493,7 @@ export default class GameApplication {
         this.resizeObserver?.disconnect();
         if (this.layoutFrame !== null) window.cancelAnimationFrame(this.layoutFrame);
         this.unsubscribeSettings?.();
+        this.deviceQa?.dispose();
         this.runtime.dispose();
 
         if (this.activeGame) {

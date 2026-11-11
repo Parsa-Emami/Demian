@@ -1,0 +1,75 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import DeviceQaSession from '../../resources/js/game/performance/DeviceQaSession.js';
+
+test('device QA records raw render intervals, slow frames and input proxies without claiming physical evidence', () => {
+    const session = new DeviceQaSession({ now: () => 0 });
+    session.start({ deviceLabel: 'test' });
+    session.frame(0);
+    session.input(5, 8);
+    session.frame(20);
+    session.frame(70);
+    const report = session.stop();
+    assert.equal(report.activeGameplayMs, 70);
+    assert.equal(report.frameIntervalMs.count, 2);
+    assert.equal(report.frameIntervalMs.p95, 50);
+    assert.equal(report.slowFrames, 1);
+    assert.equal(report.estimatedMissedFrames, 2);
+    assert.equal(report.eventToDispatchMs.mean, 3);
+    assert.equal(report.eventToRenderSubmissionMs.mean, 15);
+    assert.equal(report.physicalPhoneVerified, false);
+    assert.equal(report.jsHeap.supported, false);
+    assert.equal(report.jsHeap.peakBytes, null);
+});
+
+test('pause, rotation, game switching and target-rate changes cannot inflate the active frame distribution', () => {
+    const session = new DeviceQaSession({ now: () => 0 });
+    session.start();
+    session.frame(0);
+    session.frame(16);
+    session.input(17, 18);
+    session.boundary('background');
+    session.frame(60000);
+    session.frame(60016);
+    session.frame(60050, 30);
+    session.frame(60083, 30);
+    const report = session.report();
+    assert.equal(report.frameIntervalMs.count, 3);
+    assert.equal(report.frameIntervalMs.max, 33);
+    assert.equal(report.slowFrames, 0);
+    assert.equal(report.eventToRenderSubmissionMs.count, 0);
+    assert.equal(report.discardedAtBoundaryInputSamples, 1);
+    assert.deepEqual(report.targetSegments.map(segment => segment.targetFps), [60, 60, 30]);
+});
+
+test('long sessions keep bounded storage, preserve stalled frames, reject invalid input and reset cleanly', () => {
+    let now = 0;
+    const session = new DeviceQaSession({ now: () => now });
+    session.start();
+    for (let i = 0; i < 10000; i++) session.input(1, 2);
+    session.input(NaN, 2);
+    session.input(3, 2);
+    for (let i = 0; i < 10000; i++) session.frame(i * 16);
+    session.frame(180000);
+    for (let i = 0; i < 1000; i++) session.boundary('marker');
+    session.sampleMemory(undefined);
+    session.sampleMemory(1024);
+    session.sampleMemory(2048);
+    session.sampleMemory(512);
+    now = 180001;
+    const report = session.stop();
+    assert.equal(report.droppedInputSamples, 9872);
+    assert.equal(report.eventToRenderSubmissionMs.count, 128);
+    assert.equal(report.markers.length, 100);
+    assert.equal(report.markerOverflow, 900);
+    assert.equal(session.frames.buckets.length, 1001);
+    assert.equal(report.frameIntervalMs.max, 20016);
+    assert.equal(report.jsHeap.peakBytes, 2048);
+    assert.equal(report.jsHeap.lastBytes, 512);
+    session.frame(200000);
+    assert.equal(session.report().frameIntervalMs.count, report.frameIntervalMs.count);
+    session.start();
+    assert.equal(session.report().frameIntervalMs.count, 0);
+    assert.equal(session.report().jsHeap.supported, false);
+    assert.equal(session.report().elapsedMs, 0);
+});
