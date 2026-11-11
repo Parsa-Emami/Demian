@@ -37,6 +37,13 @@ export const GAME_CATALOG = Object.freeze([
         orientation: 'any', accent: 'sage',
         environment: CAFE_ENVIRONMENT_ID, environmentLocked: true, referenceAssets: CAFE_REFERENCE_ASSET_ROOT,
     }),
+    Object.freeze({
+        id: 'coffee-crash', title: 'COFFEE CRASH', subtitle: 'جورچین قهوه',
+        description: 'خوراکی‌ها را جابه‌جا کن، ترکیب ویژه بساز و سفارش‌های دوازده مرحله را آماده کن.',
+        icon: '✧', phase: 18, status: 'available', available: true,
+        orientation: 'any', accent: 'coffee',
+        environment: CAFE_ENVIRONMENT_ID, environmentLocked: true, referenceAssets: CAFE_REFERENCE_ASSET_ROOT,
+    }),
 ]);
 
 export function findGameCatalogEntry(gameId) {

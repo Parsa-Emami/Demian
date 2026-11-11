@@ -38,6 +38,13 @@ jobs:
       - run: npm run build:static
       # Expected one atomic JavaScript bundle; bundle_mode: atomic
       - run: npm run validate:build
+      - run: npx playwright install --with-deps chromium --only-shell
+      - run: npm run test:coffee-crash:browser
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coffee-crash-browser-qa
+          path: demian/docs/release-v18-coffee-crash/browser
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v4
         with:

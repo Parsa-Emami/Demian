@@ -1,0 +1,209 @@
+{
+  "mode": "headless Chromium, emulated viewports and touch; software rendering",
+  "physicalPhoneMeasured": false,
+  "profiles": [
+    {
+      "name": "small-phone",
+      "width": 320,
+      "height": 568,
+      "geometry": {
+        "overflow": false,
+        "grid": {
+          "x": 22,
+          "y": 243.921875,
+          "width": 276,
+          "height": 315.75,
+          "top": 243.921875,
+          "right": 298,
+          "bottom": 559.671875,
+          "left": 22
+        },
+        "worktop": {
+          "x": 5,
+          "y": 60,
+          "width": 310,
+          "height": 498,
+          "top": 60,
+          "right": 315,
+          "bottom": 558,
+          "left": 5
+        },
+        "scrollHeight": 635,
+        "clientHeight": 496
+      },
+      "errors": [],
+      "swipeOrTap": "passed",
+      "pause": "passed",
+      "undo": "passed",
+      "hints": "passed",
+      "keyboard": "passed",
+      "gamepad": "not exercised",
+      "cleanup": "passed",
+      "guidePersistence": "passed",
+      "result": "passed"
+    },
+    {
+      "name": "phone",
+      "width": 390,
+      "height": 844,
+      "geometry": {
+        "overflow": false,
+        "grid": {
+          "x": 22,
+          "y": 243.921875,
+          "width": 346,
+          "height": 395.75,
+          "top": 243.921875,
+          "right": 368,
+          "bottom": 639.671875,
+          "left": 22
+        },
+        "worktop": {
+          "x": 5,
+          "y": 60,
+          "width": 380,
+          "height": 774,
+          "top": 60,
+          "right": 385,
+          "bottom": 834,
+          "left": 5
+        },
+        "scrollHeight": 772,
+        "clientHeight": 772
+      },
+      "errors": [],
+      "swipeOrTap": "passed",
+      "pause": "passed",
+      "undo": "passed",
+      "hints": "passed",
+      "keyboard": "passed",
+      "gamepad": "not exercised",
+      "cleanup": "passed",
+      "guidePersistence": "passed",
+      "result": "passed"
+    },
+    {
+      "name": "landscape",
+      "width": 844,
+      "height": 390,
+      "geometry": {
+        "overflow": false,
+        "grid": {
+          "x": 47,
+          "y": 89,
+          "width": 330,
+          "height": 377.5,
+          "top": 89,
+          "right": 377,
+          "bottom": 466.5,
+          "left": 47
+        },
+        "worktop": {
+          "x": 12,
+          "y": 60,
+          "width": 820,
+          "height": 320,
+          "top": 60,
+          "right": 832,
+          "bottom": 380,
+          "left": 12
+        },
+        "scrollHeight": 428,
+        "clientHeight": 318
+      },
+      "errors": [],
+      "swipeOrTap": "passed",
+      "pause": "passed",
+      "undo": "passed",
+      "hints": "passed",
+      "keyboard": "passed",
+      "gamepad": "not exercised",
+      "cleanup": "passed",
+      "guidePersistence": "passed",
+      "result": "passed"
+    },
+    {
+      "name": "desktop",
+      "width": 1440,
+      "height": 900,
+      "geometry": {
+        "overflow": false,
+        "grid": {
+          "x": 515,
+          "y": 267.125,
+          "width": 410,
+          "height": 468.875,
+          "top": 267.125,
+          "right": 925,
+          "bottom": 736,
+          "left": 515
+        },
+        "worktop": {
+          "x": 410,
+          "y": 60,
+          "width": 620,
+          "height": 830,
+          "top": 60,
+          "right": 1030,
+          "bottom": 890,
+          "left": 410
+        },
+        "scrollHeight": 828,
+        "clientHeight": 828
+      },
+      "errors": [],
+      "swipeOrTap": "passed",
+      "pause": "passed",
+      "undo": "passed",
+      "hints": "passed",
+      "keyboard": "passed",
+      "gamepad": "emulated standard mapping passed",
+      "cleanup": "passed",
+      "guidePersistence": "passed",
+      "result": "passed"
+    },
+    {
+      "name": "reduced-motion",
+      "width": 390,
+      "height": 844,
+      "reduced": true,
+      "geometry": {
+        "overflow": false,
+        "grid": {
+          "x": 22,
+          "y": 243.921875,
+          "width": 346,
+          "height": 395.75,
+          "top": 243.921875,
+          "right": 368,
+          "bottom": 639.671875,
+          "left": 22
+        },
+        "worktop": {
+          "x": 5,
+          "y": 60,
+          "width": 380,
+          "height": 774,
+          "top": 60,
+          "right": 385,
+          "bottom": 834,
+          "left": 5
+        },
+        "scrollHeight": 772,
+        "clientHeight": 772
+      },
+      "errors": [],
+      "swipeOrTap": "passed",
+      "pause": "passed",
+      "undo": "passed",
+      "hints": "passed",
+      "keyboard": "passed",
+      "gamepad": "not exercised",
+      "cleanup": "passed",
+      "guidePersistence": "passed",
+      "result": "passed"
+    }
+  ],
+  "browser": "153.0.8010.0",
+  "status": "passed"
+}

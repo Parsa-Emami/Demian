@@ -9,7 +9,7 @@ import { BUILTIN_CHARACTER_SLUGS } from '../resources/js/game/characters/Charact
 import { characterManifestEntry } from '../resources/js/game/characters/manifests/CharacterManifestRegistry.js';
 const root=resolve(import.meta.dirname,'..');
 const read=p=>readFileSync(join(root,p),'utf8');
-assert.deepEqual(GAME_CATALOG.map(g=>g.id),['open-world','dino-run','after-hours','cafe-rush','cafe-critters']);
+assert.deepEqual(GAME_CATALOG.map(g=>g.id),['open-world','dino-run','after-hours','cafe-rush','cafe-critters','coffee-crash']);
 assert(GAME_CATALOG.every(g=>g.orientation==='any'));
 const entries=JSON.parse(read('public/assets/characters/character-manifest-v4.json')).characters;
 assert.deepEqual(entries.map(c=>c.slug), BUILTIN_CHARACTER_SLUGS);

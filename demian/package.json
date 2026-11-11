@@ -48,12 +48,14 @@
         "build:hossein:v14": "python3 tools/prepare_hossein_sources_v14.py && python3 tools/build_character_pack_v14.py --characters hossein && python3 tools/build_runtime_character_packs.py --characters hossein --report docs/release-v14-hossein/runtime-packs.json",
         "test:hossein:browser": "node tools/check_hossein_v14.mjs",
         "validate:motion": "node tools/validate_master_motion.mjs",
-        "validate:cafe-presentation": "node tools/validate_cafe_presentation.mjs"
+        "validate:cafe-presentation": "node tools/validate_cafe_presentation.mjs",
+        "test:coffee-crash:browser": "node tools/check_coffee_crash.mjs"
     },
     "devDependencies": {
         "@tailwindcss/vite": "^4.0.0",
         "concurrently": "^9.0.1",
         "laravel-vite-plugin": "^3.1",
+        "playwright": "1.62.1",
         "tailwindcss": "^4.0.0",
         "vite": "^8.0.0"
     },
