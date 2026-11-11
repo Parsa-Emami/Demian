@@ -2,6 +2,28 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import GameRuntime from '../../resources/js/game/runtime/GameRuntime.js';
 
+test('render diagnostics observe successful submissions rather than skipped or failed renders', () => {
+    const rendered = [];
+    const { runtime } = createRuntime({ observeRender: timestamp => rendered.push(timestamp) });
+    const game = createGame();
+    runtime.setGame(game);
+    runtime.setRenderRate(30);
+    runtime.step(1 / 60);
+    runtime.step(1 / 60);
+    assert.equal(rendered.length, 1);
+    runtime.step(1 / 60);
+    assert.equal(rendered.length, 2);
+    game.render = () => { throw Error('intentional renderer failure'); };
+    const original = console.error;
+    console.error = () => {};
+    try {
+        runtime.step(1 / 30);
+        assert.equal(rendered.length, 2);
+    } finally {
+        console.error = original;
+    }
+});
+
 function createRuntime(overrides = {}) {
     const inputCalls = [];
     const inputRouter = {
