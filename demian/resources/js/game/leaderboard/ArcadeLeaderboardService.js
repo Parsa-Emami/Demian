@@ -80,7 +80,7 @@ export default class ArcadeLeaderboardService {
             return { status: retryable ? 'pending' : 'rejected', retryable, message: error.message };
         }
     }
-    async list(period = 'all') {
+    async list(period = 'weekly') {
         if (this.connected && period !== 'device') return { ...await this.request(`/leaderboards/dino-run?period=${encodeURIComponent(period)}&limit=20`), mode: 'online' };
         return { mode: 'device', data: this.localScores().map((row, index) => ({ ...row, rank: index + 1 })) };
     }
