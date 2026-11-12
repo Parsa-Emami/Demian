@@ -60,6 +60,7 @@ export function summarizeNetwork(requests) {
         const group = totals.byType[type] ?? { requests: 0, encodedBytes: 0 };
         group.requests++;
         group.encodedBytes += bytes;
+        totals.byType[type] = group;
         if (row.fromCache) totals.cacheHits++;
         if (row.error) totals.failedRequests.push({ url: row.url, reason: row.error });
         if (row.status >= 400) totals.httpErrors.push({ url: row.url, status: row.status });
