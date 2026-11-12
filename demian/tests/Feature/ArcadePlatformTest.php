@@ -113,7 +113,7 @@ final class ArcadePlatformTest extends TestCase
         $this->postJson('/api/v1/arcade/players', ['display_name' => '<script>'])->assertUnprocessable();
         $this->postJson('/api/v1/arcade/runs', [])->assertUnauthorized();
         $this->getJson('/api/v1/arcade/leaderboards/dino-run?period=unknown')->assertUnprocessable();
-        $this->assertSame(['all', 'daily:2026-12-31', 'weekly:2026-53'], LeaderboardService::periodKeys(CarbonImmutable::parse('2027-01-01T01:30:00+03:30')));
+        $this->assertSame(['all', 'daily:2026-12-31', 'weekly:tehran:2026-12-26'], LeaderboardService::periodKeys(CarbonImmutable::parse('2027-01-01T01:30:00+03:30')));
     }
 
     public function test_pruning_keeps_verified_records_and_best_scores(): void
