@@ -46,6 +46,14 @@ jobs:
       - run: npm run test:coffee-crash:browser
       - run: npm run test:identity:browser
       - run: npm run test:device-qa:browser
+      - name: Mobile-01 mid-tier phone laboratory baseline
+        run: npm run benchmark:mobile:ci
+        env:
+          DEMIAN_MOBILE_BENCH_PROFILE: mid-mobile
+      - name: Mobile-01 low-end phone laboratory baseline
+        run: npm run benchmark:mobile:ci
+        env:
+          DEMIAN_MOBILE_BENCH_PROFILE: low-mobile
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -54,6 +62,7 @@ jobs:
             demian/docs/release-v18-coffee-crash/browser
             demian/docs/project-identity/browser
             demian/docs/p0-stability/browser
+            demian/docs/mobile-01/baseline
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v4
         with:

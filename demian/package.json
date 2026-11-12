@@ -51,7 +51,9 @@
         "validate:cafe-presentation": "node tools/validate_cafe_presentation.mjs",
         "test:coffee-crash:browser": "node tools/check_coffee_crash.mjs",
         "test:identity:browser": "node tools/check_project_identity.mjs",
-        "test:device-qa:browser": "node tools/check_device_qa.mjs"
+        "test:device-qa:browser": "node tools/check_device_qa.mjs",
+        "benchmark:mobile": "node tools/benchmark_mobile.mjs",
+        "benchmark:mobile:ci": "node tools/benchmark_mobile.mjs"
     },
     "devDependencies": {
         "@tailwindcss/vite": "^4.0.0",
