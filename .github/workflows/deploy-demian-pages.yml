@@ -46,6 +46,10 @@ jobs:
       - run: npm run test:coffee-crash:browser
       - run: npm run test:identity:browser
       - run: npm run test:device-qa:browser
+      - name: Mobile-01 reproducible performance baseline
+        run: npm run benchmark:mobile:ci
+        env:
+          DEMIAN_MOBILE_BENCH_PROFILE: mid-mobile
       - uses: actions/upload-artifact@v4
         if: always()
         with:
