@@ -64,6 +64,6 @@ final class ArcadeController extends Controller
         $data = $request->validate(['period' => ['sometimes', Rule::in(['all', 'daily', 'weekly'])],
             'limit' => ['sometimes', 'integer', 'min:1', 'max:50']]);
 
-        return response()->json($service->read($data['period'] ?? 'all', (int) ($data['limit'] ?? 20)));
+        return response()->json($service->read($data['period'] ?? 'weekly', (int) ($data['limit'] ?? 20)));
     }
 }
