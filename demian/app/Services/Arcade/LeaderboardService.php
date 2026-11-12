@@ -35,7 +35,15 @@ final class LeaderboardService
             ->get(['p.id as player_id', 'p.display_name', 'e.score', 'e.achieved_at', 'r.character_slug', 'r.track_width']);
 
         return ['game_id' => 'dino-run', 'period' => $period, 'period_key' => $key,
-            'rules_version' => $rules['version'], 'verification' => 'server-replay', 'timezone' => 'UTC',
+            'rules_version' => $rules['version'], 'verification' => 'server-replay',
+            'timezone' => $period === 'weekly' ? $timezone : 'UTC',
+            'server_now' => $serverNow->copy()->utc()->toIso8601String(),
+            'season' => $period === 'weekly' ? [
+                'id' => $key,
+                'starts_at' => $weekStart->copy()->utc()->toIso8601String(),
+                'ends_at' => $weekStart->copy()->addWeek()->utc()->toIso8601String(),
+                'timezone' => $timezone,
+            ] : null,
             'data' => $rows->map(fn (object $row, int $i): array => ['rank' => $i + 1, 'player_id' => $row->player_id,
                 'display_name' => $row->display_name, 'score' => (int) $row->score,
                 'character_slug' => $row->character_slug, 'track_width' => (int) $row->track_width,
