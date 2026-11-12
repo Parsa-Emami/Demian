@@ -58,6 +58,7 @@ jobs:
             demian/docs/release-v18-coffee-crash/browser
             demian/docs/project-identity/browser
             demian/docs/p0-stability/browser
+            demian/docs/mobile-01/baseline
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v4
         with:
