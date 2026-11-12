@@ -22,7 +22,12 @@ final class LeaderboardService
     {
         $rules = app(RunnerReplayVerifier::class)->rules();
         $index = ['all' => 0, 'daily' => 1, 'weekly' => 2][$period];
-        $key = self::periodKeys(now())[$index];
+        $serverNow = now();
+        $key = self::periodKeys($serverNow)[$index];
+        $timezone = config('demian-arcade.season_timezone', 'Asia/Tehran');
+        $weekStart = $serverNow->copy()->setTimezone($timezone)
+            ->startOfWeek((int) config('demian-arcade.season_week_start_day', 6))
+            ->startOfDay();
         $rows = DB::table('arcade_leaderboard_entries as e')->join('arcade_players as p', 'p.id', '=', 'e.player_id')
             ->join('arcade_runs as r', 'r.id', '=', 'e.run_id')
             ->where('e.game_id', 'dino-run')->where('e.rules_version', $rules['version'])->where('e.period_key', $key)
