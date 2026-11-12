@@ -10,8 +10,12 @@ final class LeaderboardService
     public static function periodKeys(CarbonInterface $date): array
     {
         $utc = $date->copy()->utc();
+        $seasonStart = $utc->copy()
+            ->setTimezone(config('demian-arcade.season_timezone', 'Asia/Tehran'))
+            ->startOfWeek((int) config('demian-arcade.season_week_start_day', 6))
+            ->startOfDay();
 
-        return ['all', 'daily:'.$utc->format('Y-m-d'), 'weekly:'.$utc->format('o-W')];
+        return ['all', 'daily:'.$utc->format('Y-m-d'), 'weekly:tehran:'.$seasonStart->format('Y-m-d')];
     }
 
     public function read(string $period, int $limit): array
