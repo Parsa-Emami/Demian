@@ -47,6 +47,7 @@ if (!workerTemplate.includes('__DEMIAN_RELEASE_ID__')) throw new Error('PWA work
 writeFileSync(join(out, 'service-worker.js'),
     workerTemplate.replaceAll('__DEMIAN_RELEASE_ID__', releaseId));
 cpSync(join(root, 'tools/templates/offline.html'), join(out, 'offline.html'));
+cpSync(join(root, 'tools/templates/static-host.htaccess'), join(out, '.htaccess'));
 writeFileSync(join(out, 'characters.json'), JSON.stringify({ data: BUILTIN_CHARACTER_SLUGS.map((slug) => ({
     id: `builtin-${slug}`, name: labels[slug], slug, is_builtin: true, is_active: slug === 'darya',
     sprite_url: `assets/characters/${slug}/${slug}-spritesheet-v${characterPackVersion(slug)}-mobile.png`,
