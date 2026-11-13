@@ -14,7 +14,18 @@ export default class ArcadeLeaderboardService {
         this.profile = safeRead(storage, PROFILE_KEY, { display_name: 'بازیکن کافه' });
         this.identityKey = `demian.arcade.identity.v1:${this.baseUrl}`;
         this.identity = safeRead(storage, this.identityKey, null);
-        this.pending = null;
+        this.pendingKey = `demian.arcade.pending.v1:${this.baseUrl}`;
+        const saved = safeRead(storage, this.pendingKey, null);
+        // Replay evidence is never a client score; restore only for the same account.
+        this.pending = saved && saved.player_id === this.identity?.player_id
+            && typeof saved.id === 'string' && /^[0-9a-f-]{36}$/i.test(saved.id)
+            && Number.isInteger(saved.body?.ticks) && Array.isArray(saved.body?.transitions)
+            && saved.body.transitions.length > 0 && saved.body.transitions.length <= 12000
+            ? saved : null;
+    }
+    savePending(pending) {
+        this.pending = pending;
+        safeWrite(this.storage, this.pendingKey, pending);
     }
     get connected() { return Boolean(this.baseUrl); }
     get displayName() { return this.profile.display_name; }
@@ -43,6 +54,12 @@ export default class ArcadeLeaderboardService {
     }
     async start({ width, character, seed } = {}) {
         if (!this.connected || seed !== undefined) return { mode: 'practice', seed: seed ?? Date.now(), track_width: width };
+        // Do not overwrite a failed ranked run before its replay is accepted/rejected.
+        if (this.pending) {
+            await this.retry();
+            if (this.pending) return { mode: 'practice', seed: Date.now(), track_width: width,
+                reason: 'ارسال رکورد قبلی در انتظار اتصال است؛ دور جدید فعلاً تمرینی است.' };
+        }
         try {
             await this.ensureIdentity();
             const result = await this.request('/runs', { method: 'POST', authenticated: true,
@@ -50,7 +67,7 @@ export default class ArcadeLeaderboardService {
             if (result.rules_version !== rules.version) throw new Error('نسخهٔ قوانین تغییر کرده است.');
             return { ...result, mode: 'ranked' };
         } catch (error) {
-            if (error.status === 401) { this.identity = null; safeWrite(this.storage, this.identityKey, null); }
+            if (error.status === 401) { this.identity = null; safeWrite(this.storage, this.identityKey, null); this.savePending(null); }
             return { mode: 'practice', seed: Date.now(), track_width: width, reason: 'ارتباط آنلاین برقرار نشد؛ این دور روی دستگاه ثبت می‌شود.' };
         }
     }
@@ -66,17 +83,23 @@ export default class ArcadeLeaderboardService {
     async finish(run, model, replay, character) {
         this.recordLocal(model, character);
         if (run?.mode !== 'ranked' || !replay?.valid) return { status: 'practice', score: model.score };
-        this.pending = { id: run.run_id, body: replay.payload() }; return this.retry();
+        this.savePending({ id: run.run_id, body: replay.payload(), player_id: this.identity?.player_id });
+        return this.retry();
     }
     async retry() {
         if (!this.pending) return { status: 'practice' };
         const pending = this.pending;
         try {
             const result = await this.request(`/runs/${encodeURIComponent(pending.id)}/complete`, { method: 'POST', authenticated: true, body: pending.body });
-            if (this.pending === pending) this.pending = null; return result;
+            if (this.pending === pending) this.savePending(null);
+            return result;
         } catch (error) {
             const retryable = !error.status || error.status >= 500 || error.status === 429;
-            if (!retryable && this.pending === pending) this.pending = null;
+            if (!retryable && this.pending === pending) this.savePending(null);
+            if (error.status === 401) {
+                this.identity = null;
+                safeWrite(this.storage, this.identityKey, null);
+            }
             return { status: retryable ? 'pending' : 'rejected', retryable, message: error.message };
         }
     }
@@ -97,6 +120,7 @@ export default class ArcadeLeaderboardService {
             if (error.status === 401) {
                 this.identity = null;
                 safeWrite(this.storage, this.identityKey, null);
+                this.savePending(null);
             }
             return null; // Personal stats must never prevent public leaderboard.
         }
@@ -106,7 +130,7 @@ export default class ArcadeLeaderboardService {
             await this.request('/player', { method: 'DELETE', authenticated: true });
         }
         this.identity = null;
-        this.pending = null;
+        this.savePending(null);
         this.profile = { display_name: 'بازیکن کافه' };
         safeWrite(this.storage, this.identityKey, null);
         safeWrite(this.storage, PROFILE_KEY, this.profile);

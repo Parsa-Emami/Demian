@@ -80,14 +80,34 @@ final class ArcadeController extends Controller
         $window = $clock->snapshot($values['period'] ?? 'weekly');
         $player = $request->attributes->get('arcade_player');
         $rules = app(RunnerReplayVerifier::class)->rules();
-        $entry = DB::table('arcade_leaderboard_entries')
-            ->where('player_id', $player->id)
+        $scope = fn () => DB::table('arcade_leaderboard_entries')
             ->where('game_id', 'dino-run')
             ->where('rules_version', $rules['version'])
-            ->where('period_key', $window['period_key'])
-            ->first(['score', 'achieved_at']);
+            ->where('period_key', $window['period_key']);
+        $entry = $scope()->where('player_id', $player->id)->first(['id', 'score', 'achieved_at']);
+        $participants = $scope()->count();
+        $rank = null;
+        if ($entry) {
+            // Match public leaderboard ordering: score DESC, achieved_at ASC, id ASC.
+            // Count ahead on the server so players beyond the public top 20 have an exact rank.
+            $ahead = $scope()->where(function ($query) use ($entry): void {
+                $query->where('score', '>', $entry->score)
+                    ->orWhere(function ($tie) use ($entry): void {
+                        $tie->where('score', $entry->score)
+                            ->where(function ($earlier) use ($entry): void {
+                                $earlier->where('achieved_at', '<', $entry->achieved_at)
+                                    ->orWhere(function ($sameTime) use ($entry): void {
+                                        $sameTime->where('achieved_at', $entry->achieved_at)
+                                            ->where('id', '<', $entry->id);
+                                    });
+                            });
+                    });
+            })->count();
+            $rank = $ahead + 1;
+        }
 
         return response()->json(['game_id' => 'dino-run', ...$window,
+            'my_rank' => $rank, 'participants' => $participants,
             'best' => $entry ? ['score' => (int) $entry->score, 'achieved_at' => $entry->achieved_at] : null]);
     }
 
@@ -109,6 +129,6 @@ final class ArcadeController extends Controller
         $data = $request->validate(['period' => ['sometimes', Rule::in(['all', 'daily', 'weekly'])],
             'limit' => ['sometimes', 'integer', 'min:1', 'max:50']]);
 
-        return response()->json($service->read($data['period'] ?? 'all', (int) ($data['limit'] ?? 20)));
+        return response()->json($service->read($data['period'] ?? 'weekly', (int) ($data['limit'] ?? 20)));
     }
 }
