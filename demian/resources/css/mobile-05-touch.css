@@ -20,8 +20,6 @@ html.demian-forced-landscape .manager-shell[data-manager-shell] {
     left: 0 !important;
     bottom: auto !important;
     right: auto !important;
-    inset-block-end: auto !important;
-    inset-inline-end: auto !important;
 }
 html.demian-forced-landscape .manager-shell {
     /* CSS rotates the shell clockwise: physical top maps to logical left;
