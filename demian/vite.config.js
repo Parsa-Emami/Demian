@@ -12,6 +12,9 @@ import tailwindcss from '@tailwindcss/vite';
  * Disabling Rolldown code splitting removes that failure class completely.
  */
 export default defineConfig({
+    // Portable across root domains, GitHub project Pages and nested hosting.
+    // Absolute Vite CSS font URLs previously generated 404s under subpaths.
+    base: './',
     plugins: [
         laravel({
             input: ['resources/js/app.js'],
