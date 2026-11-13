@@ -232,6 +232,60 @@ final class ArcadePlatformTest extends TestCase
             ->assertOk()->assertJsonPath('my_rank', 1)->assertJsonPath('participants', 3);
     }
 
+    public function test_one_time_recovery_rotates_session_and_preserves_verified_scores(): void
+    {
+        $player = $this->identity('Recoverable');
+        $fixture = $this->fixtures()[0];
+        $run = $this->createRun($player, $fixture);
+        $this->withToken($player['token'])
+            ->postJson('/api/v1/arcade/runs/'.$run['run_id'].'/complete', $this->payload($fixture))
+            ->assertOk();
+        $url = '/api/v1/arcade/player/recovery-link';
+        $this->withToken('bad-token')->postJson($url)->assertUnauthorized();
+        $code = $this->withToken($player['token'])->postJson($url)->assertOk()
+            ->assertHeader('Cache-Control', 'no-store, private')
+            ->json('recovery_code');
+        $this->assertSame(64, strlen($code));
+        $this->assertDatabaseHas('arcade_players', [
+            'id' => $player['player_id'], 'recovery_hash' => hash('sha256', $code),
+        ]);
+        $this->getJson('/api/v1/arcade/player')->assertOk()
+            ->assertJsonMissingPath('recovery_hash');
+        $recovered = $this->postJson('/api/v1/arcade/players/recover', [
+            'recovery_code' => $code,
+        ])->assertOk()->assertHeader('Cache-Control', 'no-store, private')
+            ->assertJsonMissingPath('recovery_code')->json();
+        $this->assertSame($player['player_id'], $recovered['player_id']);
+        $this->assertNotSame($player['token'], $recovered['token']);
+        $this->withToken($player['token'])->getJson('/api/v1/arcade/player')
+            ->assertUnauthorized();
+        $this->withToken($recovered['token'])->getJson('/api/v1/arcade/player')
+            ->assertOk()->assertJsonPath('display_name', 'Recoverable')
+            ->assertJsonMissingPath('token_hash');
+        $this->getJson('/api/v1/arcade/player/best?period=weekly')
+            ->assertOk()->assertJsonPath('best.score', $fixture['expected']['score']);
+        $this->assertDatabaseCount('arcade_leaderboard_entries', 3);
+        $this->postJson('/api/v1/arcade/players/recover', [
+            'recovery_code' => $code,
+        ])->assertUnprocessable();
+        $this->assertDatabaseHas('arcade_players', ['id' => $player['player_id'], 'recovery_hash' => null]);
+    }
+
+    public function test_new_recovery_link_invalidates_previous_secret(): void
+    {
+        $player = $this->identity('Rotation');
+        $url = '/api/v1/arcade/player/recovery-link';
+        $first = $this->withToken($player['token'])->postJson($url)->assertOk()->json('recovery_code');
+        $second = $this->postJson($url)->assertOk()->json('recovery_code');
+        $this->assertNotSame($first, $second);
+        $this->postJson('/api/v1/arcade/players/recover', [
+            'recovery_code' => $first,
+        ])->assertUnprocessable();
+        $this->postJson('/api/v1/arcade/players/recover', [
+            'recovery_code' => $second,
+        ])->assertOk()->assertJsonPath('display_name', 'Rotation');
+    }
+
     public function test_player_can_read_and_erase_profile_with_cascading_ranked_records(): void
     {
         $player = $this->identity('WeekChampion');
