@@ -1,6 +1,7 @@
 import EventBus from '../core/EventBus';
 import PerformanceProfile from '../core/PerformanceProfile';
 import RenderQuality from '../performance/RenderQuality.js';
+import { resolveRenderFrameRate } from '../performance/FrameRatePolicy.js';
 import InputRouter from '../input/InputRouter';
 import GameRegistry from '../registry/GameRegistry';
 import { GAME_DEFINITIONS } from '../registry/GameDefinitions';
@@ -191,6 +192,7 @@ export default class GameApplication {
         }
         this.input.setContext('MENU');
         this.transitionSession(SESSION_STATES.MENU, { initial });
+        this.applyRenderQuality(); // 30 Hz presentation is sufficient for the menu backdrop.
         this.root.dataset.activeGame = this.activeGameId ?? '';
         this.applyOrientationPreference('any');
         await this.shell.showCafeMenu();
@@ -242,6 +244,7 @@ export default class GameApplication {
 
         this.paused = false;
         this.transitionSession(SESSION_STATES.PLAYING, { gameId: this.activeGameId });
+        this.applyRenderQuality(); // Restore gameplay frame-rate preference.
         this.root.dataset.activeGame = this.activeGameId;
         this.applyOrientationPreference(this.activeDefinition.orientation);
         this.input.setContext(this.activeDefinition.inputContext);
@@ -457,7 +460,11 @@ export default class GameApplication {
         const changed = this.rendererService.quality !== profile;
         this.rendererService.quality = profile;
         this.root.dataset.renderQuality = this.renderQuality.economical ? 'economy' : profile.quality;
-        const target = frameRate === 'auto' ? (this.renderQuality.economical ? 30 : 60) : Number(frameRate);
+        const target = resolveRenderFrameRate({
+            preference: frameRate,
+            economical: this.renderQuality.economical,
+            sessionState: this.sessionState,
+        });
         this.root.dataset.renderFps = String(target);
         this.runtime.setRenderRate(target);
         if (changed && this.activeGame) this.activeGame.resize?.({ reframe: false });
