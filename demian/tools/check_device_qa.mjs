@@ -42,6 +42,8 @@ try {
         assert.equal(await page.evaluate(() => Boolean(window.demianGameApplication.deviceQa)), false);
         await page.goto(`${base}?deviceQa=1`);
         await page.waitForFunction(() => window.demianGameApplication?.sessionState === 'menu', null, { timeout: 45000 });
+        assert.equal(await page.evaluate(() => window.demianGameApplication.root.dataset.renderFps), '30',
+            'idle menu should not render at full gameplay refresh rate');
         await page.locator('[data-device-qa] summary').click();
         await page.locator('[data-qa-device]').fill('Automated Chromium emulation');
         await page.locator('[data-qa-start]').click();
@@ -56,9 +58,13 @@ try {
         const metrics = await page.evaluate(() => window.demianGameApplication.deviceQa.session.report());
         assert.equal(metrics.physicalPhoneVerified, false);
         assert.ok(metrics.frameIntervalMs.max > 0);
+        assert.ok(metrics.frameCpuWorkMs.count > 0, 'opt-in QA must record frame CPU work');
+        assert.equal(metrics.physicalPhoneVerified, false);
         if (mobile) assert.ok(metrics.eventToRenderSubmissionMs.count > 0);
         else assert.equal(metrics.eventToRenderSubmissionMs.count, 0);
         await page.evaluate(() => window.demianGameApplication.pauseGame());
+        assert.equal(await page.evaluate(() => window.demianGameApplication.runtime.frameRequest), null,
+            'paused runtime must not keep scheduling requestAnimationFrame');
         const count = await page.evaluate(() => window.demianGameApplication.deviceQa.session.report().frameIntervalMs.count);
         await page.evaluate(() => new Promise(done => requestAnimationFrame(() => requestAnimationFrame(done))));
         assert.equal(await page.evaluate(() => window.demianGameApplication.deviceQa.session.report().frameIntervalMs.count), count);

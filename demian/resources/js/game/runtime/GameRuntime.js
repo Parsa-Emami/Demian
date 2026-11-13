@@ -13,10 +13,14 @@ export default class GameRuntime {
         maxSubSteps = 5,
         requestFrame = (callback) => window.requestAnimationFrame(callback),
         cancelFrame = (id) => window.cancelAnimationFrame(id),
+        scheduleIdlePoll = (callback, ms) => setTimeout(callback, ms),
+        cancelIdlePoll = (id) => clearTimeout(id),
+        idlePollIntervalMs = 125,
         visibilityTarget = typeof document !== 'undefined' ? document : null,
         canRender = () => true,
         observeFrame = null,
         observeRender = null,
+        observeWork = null,
     }) {
         this.inputRouter = inputRouter;
         this.eventBus = eventBus;
@@ -25,6 +29,10 @@ export default class GameRuntime {
         this.maxSubSteps = maxSubSteps;
         this.requestFrame = requestFrame;
         this.cancelFrame = cancelFrame;
+        this.scheduleIdlePoll = scheduleIdlePoll;
+        this.cancelIdlePoll = cancelIdlePoll;
+        this.idlePollIntervalMs = idlePollIntervalMs;
+        this.idlePollRequest = null;
         this.currentGame = null;
         this.running = false;
         this.paused = false;
@@ -35,6 +43,8 @@ export default class GameRuntime {
         this.canRender = canRender;
         this.observeFrame = observeFrame;
         this.observeRender = observeRender;
+        // Opt-in diagnostic only: avoid per-frame timer reads in production.
+        this.observeWork = observeWork;
         this.renderInterval = 0;
         this.resetRenderTiming();
         this.errorCounts = new Map();
@@ -42,6 +52,7 @@ export default class GameRuntime {
 
         this.tick = this.tick.bind(this);
         this.onVisibilityChange = this.onVisibilityChange.bind(this);
+        this.pollWhilePaused = this.pollWhilePaused.bind(this);
         this.visibilityTarget?.addEventListener('visibilitychange', this.onVisibilityChange);
     }
 
@@ -68,9 +79,31 @@ export default class GameRuntime {
     }
 
     scheduleFrame() {
-        if (this.running && !this.visibilityTarget?.hidden && this.frameRequest === null) {
+        if (this.running && !this.paused && !this.visibilityTarget?.hidden && this.frameRequest === null) {
             this.frameRequest = this.requestFrame(this.tick);
         }
+    }
+
+    schedulePausedInput() {
+        if (this.running && this.paused && !this.visibilityTarget?.hidden && this.idlePollRequest === null) {
+            // Gamepad pause/resume must remain usable, but no visual RAF or
+            // gameplay simulation is needed. Poll controllers only ~8 Hz.
+            this.idlePollRequest = this.scheduleIdlePoll(this.pollWhilePaused, this.idlePollIntervalMs);
+        }
+    }
+
+    cancelPausedInput() {
+        if (this.idlePollRequest !== null) {
+            this.cancelIdlePoll(this.idlePollRequest);
+            this.idlePollRequest = null;
+        }
+    }
+
+    pollWhilePaused() {
+        this.idlePollRequest = null;
+        if (!this.running || !this.paused || this.visibilityTarget?.hidden) return;
+        try { this.inputRouter.poll?.(); } catch (error) { this.reportError('input', error); }
+        finally { this.schedulePausedInput(); }
     }
 
     start() {
@@ -80,12 +113,20 @@ export default class GameRuntime {
 
         this.running = true;
         this.scheduleFrame();
+        this.schedulePausedInput();
     }
 
     tick(timestamp) {
         this.frameRequest = null;
         if (!this.running || this.visibilityTarget?.hidden) return;
+        if (this.paused) {
+            // A direct tick (legacy integrations/tests) may still poll gamepad
+            // navigation. Normal paused scheduling uses the slower idle timer.
+            this.inputRouter.poll?.();
+            return;
+        }
 
+        const workStartedAt = this.observeWork ? (globalThis.performance?.now?.() ?? Date.now()) : null;
         try {
             const elapsed = this.lastTimestamp === null ? 0 : Math.max(0, (timestamp - this.lastTimestamp) / 1000);
             this.lastTimestamp = timestamp;
@@ -102,6 +143,12 @@ export default class GameRuntime {
         } catch (error) {
             this.reportError('frame', error, timestamp);
         } finally {
+            if (workStartedAt !== null && !this.paused && !this.visibilityTarget?.hidden) {
+                const spentMs = Math.max(0, (globalThis.performance?.now?.() ?? Date.now()) - workStartedAt);
+                try { this.observeWork?.(spentMs); } catch {
+                    // Diagnostic collection must never interrupt gameplay.
+                }
+            }
             // A single render error must never permanently kill the arcade loop.
             this.scheduleFrame();
         }
@@ -172,9 +219,19 @@ export default class GameRuntime {
         }
 
         this.paused = true;
+        // A paused page must not submit empty RAF callbacks at the display
+        // refresh rate. This also applies to loading transitions and results.
+        if (this.frameRequest !== null) {
+            this.cancelFrame(this.frameRequest);
+            this.frameRequest = null;
+        }
+        this.lastTimestamp = null;
+        this.accumulator = 0;
+        this.resetRenderTiming();
         if (notifyGame) {
             this.currentGame?.pause();
         }
+        this.schedulePausedInput();
         this.eventBus?.emit('runtime:paused');
     }
 
@@ -184,26 +241,39 @@ export default class GameRuntime {
         }
 
         this.paused = false;
+        this.cancelPausedInput();
         this.lastTimestamp = null;
+        this.accumulator = 0;
         this.resetRenderTiming();
         if (notifyGame) {
             this.currentGame?.resume();
         }
+        this.scheduleFrame();
         this.eventBus?.emit('runtime:resumed');
     }
 
     onVisibilityChange() {
         this.lastTimestamp = null;
+        this.accumulator = 0;
         this.resetRenderTiming();
-        if (this.visibilityTarget?.hidden && this.frameRequest !== null) {
-            this.cancelFrame(this.frameRequest);
-            this.frameRequest = null;
-        } else this.scheduleFrame();
+        if (this.visibilityTarget?.hidden) {
+            this.cancelPausedInput();
+            if (this.frameRequest !== null) {
+                this.cancelFrame(this.frameRequest);
+                this.frameRequest = null;
+            }
+        } else {
+            this.scheduleFrame();
+            this.schedulePausedInput();
+        }
     }
 
     stop() {
         this.running = false;
+        this.cancelPausedInput();
         this.lastTimestamp = null;
+        this.accumulator = 0;
+        this.resetRenderTiming();
 
         if (this.frameRequest !== null) {
             this.cancelFrame(this.frameRequest);

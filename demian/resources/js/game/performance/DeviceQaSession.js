@@ -41,6 +41,7 @@ export default class DeviceQaSession {
         this.startedAt = this.now();
         this.endedAt = null;
         this.frames = new Distribution();
+        this.frameCpuWork = new Distribution();
         this.dispatchDelay = new Distribution();
         this.nextRenderDelay = new Distribution();
         this.pending = [];
@@ -104,6 +105,11 @@ export default class DeviceQaSession {
         this.pending.length = 0;
     }
 
+    sampleFrameWork(milliseconds) {
+        if (!this.running || !Number.isFinite(milliseconds) || milliseconds < 0) return;
+        this.frameCpuWork.add(milliseconds);
+    }
+
     sampleMemory(bytes) {
         if (!this.running || !Number.isFinite(bytes) || bytes <= 0) return;
         this.memory.supported = true;
@@ -127,6 +133,7 @@ export default class DeviceQaSession {
             schemaVersion: 1, evidenceType: 'unverified-browser-session', physicalPhoneVerified: false,
             metadata: { ...this.metadata }, elapsedMs: (this.endedAt ?? this.now()) - this.startedAt,
             activeGameplayMs: this.activeMs, frameIntervalMs: this.frames.snapshot(),
+            frameCpuWorkMs: this.frameCpuWork.snapshot(),
             averageRenderedFps: this.activeMs ? this.frames.count * 1000 / this.activeMs : null,
             slowFrames: this.slowFrames, estimatedMissedFrames: this.missedFrames,
             targetSegments: this.segments.map(segment => ({ ...segment })), segmentOverflow: this.segmentOverflow,
@@ -136,6 +143,7 @@ export default class DeviceQaSession {
             jsHeap: { ...this.memory }, markers: this.markers.map(marker => ({ ...marker })), markerOverflow: this.markerOverflow,
             limitations: ['Percentiles use 1 ms histogram buckets; intervals >= 1000 ms use the observed maximum.',
                 'Frames are successful game render submissions while playing, excluding lifecycle boundaries.',
+                'Frame CPU work measures JavaScript callback wall time (input, simulation, render submission); it is not GPU execution time, power draw or energy consumption.',
                 'Input latency is an event-to-render-submission proxy, not touch-to-photon latency or confirmed action response.',
                 'JS heap is browser-specific and excludes decoded images, GPU allocations and resident process memory.',
                 'Physical device, thermal state and OS memory require external evidence; this report never certifies them.'],

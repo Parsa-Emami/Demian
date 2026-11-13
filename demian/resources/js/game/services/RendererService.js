@@ -245,8 +245,17 @@ export default class RendererService {
     onObservedResize() { this.queueResize(); }
 
     ensureSize() {
+        // This runs for every game render. With ResizeObserver available,
+        // dimensions are already invalidated asynchronously; re-reading
+        // clientWidth/getBoundingClientRect here can force synchronous layout
+        // up to 60 times per second on mobile.
+        const deviceRatio = clamp(globalThis.devicePixelRatio || 1, 1, 2);
+        if (this.resizeObserver && !this.layoutDirty && this.size && deviceRatio === this.deviceRatio) {
+            return this.size;
+        }
         const { width, height } = this.dimensions();
-        if (this.layoutDirty || width !== this.lastWidth || height !== this.lastHeight) return this.resize();
+        if (this.layoutDirty || width !== this.lastWidth || height !== this.lastHeight
+            || deviceRatio !== this.deviceRatio) return this.resize();
         return this.size;
     }
 
