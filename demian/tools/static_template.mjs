@@ -6,6 +6,8 @@ export function renderStaticTemplate(template, { entry, arcadeApi = '' }) {
             return `\u0000DEMIAN_LITERAL_${literals.length - 1}\u0000`;
         })
         .replace(/@vite\([\s\S]*?\)/, `${(entry.css ?? []).map(c => `<link rel="stylesheet" href="build/${c}">`).join('\n')}\n<script type="module" src="build/${entry.file}"></script>`)
+        .replace('name="demian-static-release" content="false"',
+            'name="demian-static-release" content="true"')
         .replace(/\{\{\s*csrf_token\(\)\s*\}\}/g, '')
         .replace(/\{\{\s*route\('characters.index'\)\s*\}\}/g, 'characters.json')
         .replace(/\{\{\s*url\('\/api\/v1\/events'\)\s*\}\}/g, 'api/v1/events')
