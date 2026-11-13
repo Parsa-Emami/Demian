@@ -21,6 +21,17 @@ export default class ArcadeLeaderboardService {
         this.fetcher = fetcher; this.timeout = timeout;
         this.retryPromise = null;
         this.baseUrl = String(baseUrl).trim().replace(/\/$/, '');
+        // Never transmit account bearer capabilities over cleartext network.
+        // HTTP is permitted only for loopback development.
+        if (this.baseUrl) {
+            let endpoint;
+            try { endpoint = new URL(this.baseUrl); } catch {}
+            if (!endpoint || (endpoint.protocol !== 'https:' &&
+                !(endpoint.protocol === 'http:' &&
+                    ['localhost', '127.0.0.1', '[::1]'].includes(endpoint.hostname)))) {
+                this.baseUrl = '';
+            }
+        }
         this.profile = safeRead(storage, PROFILE_KEY, { display_name: 'بازیکن کافه' });
         this.identityKey = `demian.arcade.identity.v1:${this.baseUrl}`;
         this.accountMarkerKey = `demian.arcade.account-exists.v1:${this.baseUrl}`;
@@ -245,6 +256,9 @@ export default class ArcadeLeaderboardService {
         }
     }
     async eraseAccount() {
+        if (this.accountKnown && !this.connected) {
+            throw new Error('برای حذف حساب جهانی، اتصال به سرور لازم است.');
+        }
         if (this.connected && this.accountKnown && !this.identity?.token) {
             throw new Error('برای حذف کامل اطلاعات سرور، ابتدا حساب اصلی را بازیابی کن.');
         }
