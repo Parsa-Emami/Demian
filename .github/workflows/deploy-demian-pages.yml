@@ -40,6 +40,8 @@ jobs:
       - run: npm run validate:ui-layers
       - run: npm run validate:characters:v14
       - run: npm run build:static
+      - name: Validate optimized production assets
+        run: npm run validate:static-assets
       # Expected one atomic JavaScript bundle; bundle_mode: atomic
       - run: npm run validate:build
       - run: npx playwright install chromium --only-shell
@@ -63,6 +65,7 @@ jobs:
             demian/docs/project-identity/browser
             demian/docs/p0-stability/browser
             demian/docs/mobile-01/baseline
+            demian/docs/mobile-02/release-asset-report.json
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v4
         with:

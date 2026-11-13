@@ -17,6 +17,7 @@
         "validate:phase10": "node tools/validate_phase10.mjs",
         "validate:final": "node tools/validate_final.mjs",
         "validate:build": "node tools/validate_build_bundle.mjs",
+        "validate:static-assets": "node tools/check_static_assets.mjs",
         "validate:character-art": "npm run validate:characters:v14",
         "validate:character-art:strict": "npm run validate:characters:v14",
         "repair:character-art": "npm run build:characters:v14",

@@ -4,6 +4,8 @@ import { resolve, join, basename } from 'node:path';
 import { BUILTIN_CHARACTER_SLUGS, RETIRED_CHARACTER_SLUGS, characterPackVersion } from '../resources/js/game/characters/CharacterVisualContract.js';
 import { BUILTIN_CHARACTER_LABELS as labels } from '../resources/js/game/characters/manifests/CharacterManifestRegistry.js';
 import { renderStaticTemplate } from './static_template.mjs';
+import { shouldExportAsset } from './release_asset_policy.mjs';
+import { validateReleaseAssets } from './validate_release_assets.mjs';
 const root = resolve(import.meta.dirname, '..');
 const out = resolve(root, process.argv.find((a) => a.startsWith('--out='))?.slice(6) ?? '_site');
 const arcadeApi = process.env.DEMIAN_ARCADE_API_URL?.trim() ?? '';
@@ -13,8 +15,10 @@ const entry = JSON.parse(readFileSync(join(root, 'public/build/manifest.json'), 
 if (!entry?.file) throw new Error('Run npm run build first.');
 mkdirSync(out, { recursive: true });
 rmSync(join(out, 'assets'), { recursive: true, force: true });
-cpSync(join(root, 'public/assets'), join(out, 'assets'), { recursive: true,
-    filter: source => !basename(source).startsWith('.') && !/\.work\.|\.tmp$|[/\\]cafe\.glb$/.test(source) });
+// Keep source art and historical sprite packs in Git, never in the deploy artifact.
+const sourceAssets = join(root, 'public/assets');
+cpSync(sourceAssets, join(out, 'assets'), { recursive: true,
+    filter: source => shouldExportAsset(sourceAssets, source) });
 for (const slug of RETIRED_CHARACTER_SLUGS) {
     rmSync(join(out, 'assets/characters', slug), { recursive: true, force: true });
     rmSync(join(out, 'assets/characters/_legacy_archive', slug), { recursive: true, force: true });
@@ -39,4 +43,11 @@ writeFileSync(join(out, 'characters.json'), JSON.stringify({ data: BUILTIN_CHARA
     settings: { scale: 1, walk_speed: 3.55, run_speed: 6.9, jump_force: 6.8 },
 })) }, null, 2));
 writeFileSync(join(out, '.nojekyll'), '');
+const report = validateReleaseAssets({
+    root: out,
+    sourceAssets,
+    reportPath: join(root, 'docs/mobile-02/release-asset-report.json'),
+});
+console.log('Mobile-02 release: ' + report.output.fileCount + ' files, ' +
+    report.output.totalBytes + ' bytes (' + report.removedAssetBytes + ' asset bytes pruned).');
 console.log(`Static release: ${out}`);
