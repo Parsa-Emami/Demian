@@ -70,7 +70,12 @@ try {
         assert.equal(/برآورد|هزینه|Software Engineer/.test(await page.locator('[data-screen="cafe-menu"]').innerText()), false);
         await page.screenshot({ path: resolve(out, `credit-${width}x${height}.png`) });
         await context.route('https://parsaaemm.dev/', route => route.fulfill({ status: 200, contentType: 'text/html', body: '<title>Portfolio navigation target</title>' }));
-        const popupPromise = page.waitForEvent('popup');
+        // A target=_blank rel=noopener window is a separate top-level
+        // browsing context. Listen at context level so it is detected even
+        // when the opener relationship is intentionally absent.
+        assert.equal(await credit.getAttribute('target'), '_blank');
+        assert.match(await credit.getAttribute('rel'), /noopener/);
+        const popupPromise = context.waitForEvent('page', { timeout: 15000 });
         await credit.click();
         const portfolio = await popupPromise;
         await portfolio.waitForURL('https://parsaaemm.dev/', { waitUntil: 'commit' });
