@@ -88,9 +88,17 @@ export default class ArcadeLeaderboardService {
     }
     archiveRejected(pending, status) {
         const record = { ...pending, rejected_at: new Date().toISOString(), http_status: status };
-        this.rejected = [...this.rejected, record].slice(-10);
-        safeWrite(this.storage, this.rejectedKey, this.rejected);
+        const next = [...this.rejected, record].slice(-10);
+        // Write the archive before removing the live queue entry. On quota
+        // failure preserve the original evidence (fail closed).
+        try {
+            const serialized = JSON.stringify(next);
+            this.storage?.setItem(this.rejectedKey, serialized);
+            if (this.storage?.getItem(this.rejectedKey) !== serialized) return false;
+        } catch { return false; }
+        this.rejected = next;
         if (this.pending === pending) this.savePending(null);
+        return true;
     }
     get connected() { return Boolean(this.baseUrl); }
     get hasRecoveryRequired() {
