@@ -643,6 +643,7 @@
                         </label>
                         <p data-ranking-status role="status" aria-live="polite"></p>
                         <p class="ranking-panel__countdown" data-ranking-countdown role="timer" aria-live="off" hidden></p>
+                        <p data-ranking-personal-best aria-live="polite"></p>
                         <p class="ranking-panel__refresh-info">رتبه‌ها هر ۶۰ ثانیه به‌روزرسانی می‌شوند؛ رکوردها پس از پایان هفته آرشیو می‌شوند.</p>
                         <div class="ranking-panel__scroll"><table><thead><tr><th scope="col">رتبه</th><th scope="col">بازیکن</th><th scope="col">امتیاز</th></tr></thead><tbody data-ranking-rows></tbody></table></div>
                         <form data-ranking-name-form><label for="ranking-name">نام نمایشی</label><div><input id="ranking-name" name="display_name" minlength="2" maxlength="32" required autocomplete="nickname"><button type="submit" class="shell-button">ذخیره</button></div></form>
