@@ -80,7 +80,27 @@ export default class ArcadeLeaderboardService {
             return { status: retryable ? 'pending' : 'rejected', retryable, message: error.message };
         }
     }
-    async list(period = 'all') {
+    async games() {
+        if (!this.connected) return { games: [], mode: 'device' };
+        return { ...await this.request('/games'), mode: 'online' };
+    }
+    async currentPlayer() {
+        await this.ensureIdentity();
+        return this.request('/player', { authenticated: true });
+    }
+    async eraseAccount() {
+        if (this.identity?.token && this.connected) {
+            await this.request('/player', { method: 'DELETE', authenticated: true });
+        }
+        this.identity = null;
+        this.pending = null;
+        this.profile = { display_name: 'بازیکن کافه' };
+        safeWrite(this.storage, this.identityKey, null);
+        safeWrite(this.storage, PROFILE_KEY, this.profile);
+        safeWrite(this.storage, LOCAL_KEY, []);
+        return { status: 'deleted' };
+    }
+    async list(period = 'weekly') {
         if (this.connected && period !== 'device') return { ...await this.request(`/leaderboards/dino-run?period=${encodeURIComponent(period)}&limit=20`), mode: 'online' };
         return { mode: 'device', data: this.localScores().map((row, index) => ({ ...row, rank: index + 1 })) };
     }
