@@ -159,6 +159,21 @@ final class ArcadePlatformTest extends TestCase
         $this->assertDatabaseCount('arcade_runs', 0);
     }
 
+    public function test_weekly_personal_best_requires_authentication_and_only_reads_verified_score(): void
+    {
+        $player = $this->identity();
+        $url = '/api/v1/arcade/player/best?period=weekly';
+        $this->getJson($url)->assertUnauthorized();
+        $this->withToken($player['token'])->getJson($url)
+            ->assertOk()->assertJsonPath('best', null)->assertJsonStructure(['next_reset_at', 'seconds_remaining']);
+        $fixture = $this->fixtures()[0];
+        $run = $this->createRun($player, $fixture);
+        $this->postJson('/api/v1/arcade/runs/'.$run['run_id'].'/complete', $this->payload($fixture))->assertOk();
+        $this->getJson($url)->assertOk()->assertJsonPath('best.score', $fixture['expected']['score'])
+            ->assertJsonMissingPath('token_hash');
+        $this->getJson('/api/v1/arcade/player/best?period=other')->assertUnprocessable();
+    }
+
     public function test_player_can_read_and_erase_profile_with_cascading_ranked_records(): void
     {
         $player = $this->identity('WeekChampion');
