@@ -103,7 +103,8 @@ export default class LeaderboardScreen extends BaseScreen {
             const own = await ownScore;
             if (generation !== this.generation) return;
             this.personalBest.textContent = result.mode === 'online'
-                ? own?.best ? `رکورد تأییدشده شما در این دوره: ${new Intl.NumberFormat('fa-IR').format(own.best.score)}`
+                ? own?.best
+                    ? `رتبهٔ تأییدشده شما: ${own.my_rank == null ? '—' : new Intl.NumberFormat('fa-IR').format(own.my_rank)} از ${new Intl.NumberFormat('fa-IR').format(own.participants ?? 0)} · رکورد: ${new Intl.NumberFormat('fa-IR').format(own.best.score)}`
                     : 'هنوز رکورد تأییدشده‌ای برای این دوره نداری.'
                 : '';
         } catch {
