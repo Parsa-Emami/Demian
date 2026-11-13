@@ -96,7 +96,7 @@ export default class LeaderboardScreen extends BaseScreen {
     async beforeOpen() {
         this.form.elements.display_name.value = this.service.displayName;
         this.issueRecovery.disabled = !this.service.connected;
-        this.deleteAccount.disabled = !this.service.connected && !this.service.accountKnown;
+        this.deleteAccount.disabled = !this.service.connected;
         for (const control of this.recoveryForm.elements) control.disabled = !this.service.connected;
         this.recoveryForm.elements.recovery_code.value = this.service.recoveryOffer ?? '';
         this.recoveryLink.value = '';
