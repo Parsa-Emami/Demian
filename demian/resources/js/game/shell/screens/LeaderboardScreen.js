@@ -17,6 +17,7 @@ export default class LeaderboardScreen extends BaseScreen {
         this.receivedAtMs = 0;
         this.nextRefreshAt = 0;
         this.loading = false;
+        this.lastForcedRolloverKey = null;
         this.onPeriod = () => this.load();
         this.onSubmit = async event => {
             event.preventDefault();
@@ -42,19 +43,27 @@ export default class LeaderboardScreen extends BaseScreen {
         }
         this.period.value = this.service.connected ? 'weekly' : 'device';
         this.snapshot = null;
-        this.nextRefreshAt = Date.now() + 60000;
+        this.lastForcedRolloverKey = null;
+        this.nextRefreshAt = this.monotonicNow() + 60000;
         if (this.service.pending) await this.service.retry();
         await this.load();
         if (this.timer == null) this.timer = setInterval(() => this.tick(), 1000);
     }
 
+    monotonicNow() { return globalThis.performance?.now?.() ?? Date.now(); }
+
     tick() {
         const remaining = this.renderCountdown();
         if (this.element.hidden || globalThis.document?.visibilityState === 'hidden') return;
-        const now = Date.now();
+        const now = this.monotonicNow();
         // Poll every minute; at the weekly rollover refresh as soon as the
         // clock reaches zero instead of displaying the expired week's ranks.
-        if (remaining === 0 && this.period.value === 'weekly' && now < this.nextRefreshAt) {
+        const expiredKey = this.snapshot?.period_key;
+        if (remaining === 0 && this.period.value === 'weekly' && expiredKey
+            && this.lastForcedRolloverKey !== expiredKey) {
+            // At most one extra request per expired season, even if a stale API
+            // response keeps reporting the previous boundary for a few seconds.
+            this.lastForcedRolloverKey = expiredKey;
             this.nextRefreshAt = now;
         }
         if (!this.loading && now >= this.nextRefreshAt) void this.load();
@@ -64,7 +73,7 @@ export default class LeaderboardScreen extends BaseScreen {
         const isWeekly = this.period.value === 'weekly' && this.service.connected;
         this.countdown.hidden = !isWeekly;
         if (!isWeekly) return null;
-        const remaining = remainingWeeklySeconds(this.snapshot, this.receivedAtMs);
+        const remaining = remainingWeeklySeconds(this.snapshot, this.receivedAtMs, this.monotonicNow());
         this.countdown.textContent = remaining == null
             ? 'زمان پایان هفته در انتظار سرور'
             : `تا پایان رقابت این هفته: ${formatWeeklyCountdown(remaining)}`;
@@ -74,7 +83,7 @@ export default class LeaderboardScreen extends BaseScreen {
     async load() {
         const generation = ++this.generation;
         this.loading = true;
-        this.nextRefreshAt = Date.now() + 60000;
+        this.nextRefreshAt = this.monotonicNow() + 60000;
         this.status.textContent = 'در حال خواندن رکوردها…';
         this.personalBest.textContent = '';
         this.body.replaceChildren();
@@ -86,10 +95,10 @@ export default class LeaderboardScreen extends BaseScreen {
             const result = await this.service.list(this.period.value);
             if (generation !== this.generation) return;
             this.snapshot = result.mode === 'online' ? result : null;
-            this.receivedAtMs = Date.now();
+            this.receivedAtMs = this.monotonicNow();
             this.status.textContent = result.mode === 'device'
                 ? 'رکوردهای همین مرورگر؛ ثبت جهانی نشده‌اند.'
-                : 'امتیازهای تأییدشده توسط سرور · شروع هفته دوشنبه ساعت ۰۰:۰۰ UTC';
+                : 'امتیازهای تأییدشده توسط سرور · شروع هفته شنبه ساعت ۰۰:۰۰ به وقت تهران';
             if (!result.data.length) this.status.textContent += ' هنوز رکوردی ثبت نشده است.';
             for (const row of result.data) {
                 const tr = document.createElement('tr');

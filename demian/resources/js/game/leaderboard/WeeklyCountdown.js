@@ -2,8 +2,10 @@
  * The server is authoritative for weekly leaderboard boundaries. Clients may
  * disagree on wall time; calibrate from the response's UTC server_time.
  */
-export function remainingWeeklySeconds({ next_reset_at, server_time } = {},
+export function remainingWeeklySeconds(snapshot = {},
     receivedAtMs = Date.now(), nowMs = Date.now()) {
+    // Online UI renders before the first response and after visibility resets.
+    const { next_reset_at, server_time } = snapshot ?? {};
     const end = Date.parse(next_reset_at ?? '');
     const server = Date.parse(server_time ?? '');
     if (!Number.isFinite(end) || !Number.isFinite(server)) return null;
