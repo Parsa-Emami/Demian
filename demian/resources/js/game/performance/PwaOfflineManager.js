@@ -85,12 +85,15 @@ export default class PwaOfflineManager {
         for (const [id, name] of LABELS) {
             const row = this.document.createElement('div');
             row.className = 'demian-offline-manager__row';
+            row.dataset.offlineGame = id;
             const label = this.document.createElement('span');
             label.textContent = name;
             const state = this.document.createElement('small');
             state.textContent = 'دریافت نشده';
             const download = this.button('دریافت برای آفلاین', () => this.download(id));
+            download.dataset.offlineDownload = id;
             const remove = this.button('حذف', () => this.remove(id));
+            remove.dataset.offlineRemove = id;
             remove.hidden = true;
             row.append(label, state, download, remove);
             this.rows.append(row);
