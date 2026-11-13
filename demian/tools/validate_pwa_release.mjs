@@ -39,8 +39,8 @@ export function validatePwaRelease(release) {
         } else {
             const all = [...packs.core, ...packs.games.flatMap(game => game.files ?? [])];
             for (const item of all) {
-                if (!/^[a-zA-Z0-9][a-zA-Z0-9/_\\-.]*$/.test(item.path ?? '') ||
-                    item.path.includes('..') || /(^|\\/)api(\\/|$)/.test(item.path) ||
+                if (!/^[a-zA-Z0-9][a-zA-Z0-9/_.-]*$/.test(item.path ?? '') ||
+                    item.path.includes('..') || /(^|\/)api(\/|$)/.test(item.path) ||
                     !existsSync(join(root, item.path)) ||
                     !Number.isSafeInteger(item.bytes) || item.bytes < 0) {
                     failures.push('Unsafe or missing offline pack asset: ' + String(item.path));
