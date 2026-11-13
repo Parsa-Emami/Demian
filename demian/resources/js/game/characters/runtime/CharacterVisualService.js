@@ -10,7 +10,7 @@ import { orderedSpriteVariants, characterRuntimeVariants, CHARACTER_ASSET_TIMEOU
 import {
     SpriteLoadGate, spriteCacheBudgetBytes, cachedSpriteBytes, trimSpriteCache,
 } from './SpriteMemoryPolicy.js';
-import { abortedError, isAborted, withTransientRetry } from './MobileNetworkPolicy.js';
+import { abortedError, isAborted, isTransientAssetError, withTransientRetry } from './MobileNetworkPolicy.js';
 
 const STORAGE_KEY = 'demian.character.slug.v1';
 const LOAD_TIMEOUT_MS = CHARACTER_ASSET_TIMEOUT_MS;
@@ -48,6 +48,8 @@ export default class CharacterVisualService {
         this.counters = { hits: 0, misses: 0, fallbacks: 0, evictions: 0,
             failedPairs: 0, transientRetries: 0, backgroundCancelled: 0 };
         this.unsubscribe = [];
+        this.onOnline = () => this.clearTransientFailures();
+        globalThis.window?.addEventListener?.('online', this.onOnline);
 
         if (eventBus?.on) {
             this.unsubscribe.push(eventBus.on('character:selected', ({ record } = {}) => {
@@ -169,6 +171,12 @@ export default class CharacterVisualService {
             }
         }
         throw lastError ?? new Error(`Character sprite pack could not be loaded for ${normalizedSlug}.`);
+    }
+
+    clearTransientFailures() {
+        for (const [key, failure] of this.failedPairs) {
+            if (isTransientAssetError(failure.error)) this.failedPairs.delete(key);
+        }
     }
 
     cancelBackgroundLoads() {
@@ -320,6 +328,7 @@ export default class CharacterVisualService {
         this.pendingLoadMeta.clear();
         for (const controller of this.controllers) controller.abort();
         this.controllers.clear();
+        globalThis.window?.removeEventListener?.('online', this.onOnline);
         this.unsubscribe.forEach((callback) => callback?.());
         this.unsubscribe = [];
         this.packPromises.clear();
