@@ -43,7 +43,7 @@ final class CompetitionClock
             'server_time' => $now->toIso8601String(),
             'starts_at' => $start?->toIso8601String(),
             'next_reset_at' => $end?->toIso8601String(),
-            'seconds_remaining' => $end ? max(0, $now->diffInSeconds($end)) : null,
+            'seconds_remaining' => $end ? max(0, (int) ceil($now->diffInSeconds($end))) : null,
         ];
     }
 }
