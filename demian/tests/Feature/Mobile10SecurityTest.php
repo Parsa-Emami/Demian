@@ -95,6 +95,65 @@ final class Mobile10SecurityTest extends TestCase
         $this->postJson('/api/v1/arcade/player/recovery-link')->assertStatus(429);
     }
 
+
+    public function test_long_lived_backup_recovers_expired_session_and_revokes_both_recovery_grants(): void
+    {
+        $this->withoutMiddleware(ThrottleRequests::class);
+        $player = $this->postJson('/api/v1/arcade/players', ['display_name' => 'Backup'])
+            ->assertCreated()->json();
+        $this->withToken($player['token']);
+        $backup = $this->postJson('/api/v1/arcade/player/backup-code')->assertOk()
+            ->assertHeader('Cache-Control', 'no-store, private')->json();
+        $link = $this->postJson('/api/v1/arcade/player/recovery-link')
+            ->assertOk()->json('recovery_code');
+
+        $this->assertSame(64, strlen($backup['backup_code']));
+        $this->assertNotNull($backup['backup_expires_at']);
+        $this->assertDatabaseHas('arcade_players', ['id' => $player['player_id'],
+            'backup_hash' => hash('sha256', $backup['backup_code'])]);
+        DB::table('arcade_players')->where('id', $player['player_id'])
+            ->update(['token_expires_at' => now()->subSecond()]);
+        $this->getJson('/api/v1/arcade/player')->assertUnauthorized();
+
+        $new = $this->postJson('/api/v1/arcade/players/recover',
+            ['recovery_code' => $backup['backup_code']])->assertOk()->json();
+        $this->assertSame($player['player_id'], $new['player_id']);
+        $this->assertNotSame($player['token'], $new['token']);
+        $this->postJson('/api/v1/arcade/players/recover',
+            ['recovery_code' => $backup['backup_code']])->assertUnprocessable();
+        $this->postJson('/api/v1/arcade/players/recover',
+            ['recovery_code' => $link])->assertUnprocessable();
+        $this->withToken($new['token'])->getJson('/api/v1/arcade/player')
+            ->assertOk()->assertJsonPath('player_id', $player['player_id']);
+        $this->assertDatabaseHas('arcade_players', ['id' => $player['player_id'],
+            'backup_hash' => null, 'recovery_hash' => null]);
+    }
+
+    public function test_expired_backup_is_rejected_and_cannot_rotate_a_live_session(): void
+    {
+        $this->withoutMiddleware(ThrottleRequests::class);
+        $player = $this->postJson('/api/v1/arcade/players', ['display_name' => 'OldBackup'])
+            ->assertCreated()->json();
+        $code = $this->withToken($player['token'])->postJson('/api/v1/arcade/player/backup-code')
+            ->assertOk()->json('backup_code');
+        DB::table('arcade_players')->where('id', $player['player_id'])
+            ->update(['backup_expires_at' => now()->subSecond()]);
+        $this->postJson('/api/v1/arcade/players/recover', ['recovery_code' => $code])
+            ->assertUnprocessable();
+        $this->withToken($player['token'])->getJson('/api/v1/arcade/player')->assertOk();
+    }
+
+    public function test_backup_code_issuance_is_bounded_per_player(): void
+    {
+        $this->withoutMiddleware(ThrottleRequests::class);
+        $player = $this->postJson('/api/v1/arcade/players', ['display_name' => 'BackupLimit'])
+            ->assertCreated()->json();
+        $this->withToken($player['token']);
+        $this->postJson('/api/v1/arcade/player/backup-code')->assertOk();
+        $this->postJson('/api/v1/arcade/player/backup-code')->assertOk();
+        $this->postJson('/api/v1/arcade/player/backup-code')->assertStatus(429);
+    }
+
     public function test_cors_includes_authenticated_account_deletion_verb(): void
     {
         $this->assertContains('DELETE', config('cors.allowed_methods'));
