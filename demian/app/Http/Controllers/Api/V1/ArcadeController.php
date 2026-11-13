@@ -45,19 +45,23 @@ final class ArcadeController extends Controller
     public function register(Request $request): JsonResponse
     {
         $name = $this->name($request); $token = Str::random(64);
-        $player = ArcadePlayer::query()->create(['display_name' => $name, 'token_hash' => hash('sha256', $token)]);
+        $expires = now()->addDays((int) config('demian-arcade.player_session_days'));
+        $player = ArcadePlayer::query()->create(['display_name' => $name,
+            'token_hash' => hash('sha256', $token), 'token_expires_at' => $expires]);
 
-        return response()->json(['player_id' => $player->id, 'display_name' => $player->display_name, 'token' => $token], 201);
+        return response()->json(['player_id' => $player->id, 'display_name' => $player->display_name,
+            'token' => $token, 'token_expires_at' => $expires->toIso8601String()], 201);
     }
 
     public function issueRecoveryLink(Request $request): JsonResponse
     {
         $player = $request->attributes->get('arcade_player');
         $secret = Str::random(64);
-        $player->update(['recovery_hash' => hash('sha256', $secret)]);
+        $expires = now()->addMinutes((int) config('demian-arcade.recovery_link_minutes'));
+        $player->update(['recovery_hash' => hash('sha256', $secret), 'recovery_expires_at' => $expires]);
 
         // Only return the secret at issue time. Never persist or log plaintext.
-        return response()->json(['recovery_code' => $secret])
+        return response()->json(['recovery_code' => $secret, 'recovery_expires_at' => $expires->toIso8601String()])
             ->header('Cache-Control', 'no-store, private');
     }
 
@@ -71,14 +75,17 @@ final class ArcadeController extends Controller
         $session = DB::transaction(function () use ($secretHash): array {
             $player = ArcadePlayer::query()->where('recovery_hash', $secretHash)
                 ->lockForUpdate()->first();
-            abort_unless($player, 422, 'Recovery link expired or already used.');
+            abort_unless($player && $player->recovery_expires_at?->isFuture(), 422,
+                'Recovery link expired or already used.');
             $token = Str::random(64);
             // Rotate the active token, consume the one-time recovery secret,
             // and leave all prior verified scores and run history untouched.
-            $player->update(['token_hash' => hash('sha256', $token), 'recovery_hash' => null]);
+            $expires = now()->addDays((int) config('demian-arcade.player_session_days'));
+            $player->update(['token_hash' => hash('sha256', $token),
+                'token_expires_at' => $expires, 'recovery_hash' => null, 'recovery_expires_at' => null]);
 
             return ['player_id' => $player->id, 'display_name' => $player->display_name,
-                'token' => $token];
+                'token' => $token, 'token_expires_at' => $expires->toIso8601String()];
         }, 3);
 
         return response()->json($session)->header('Cache-Control', 'no-store, private');
@@ -96,7 +103,8 @@ final class ArcadeController extends Controller
     {
         $player = $request->attributes->get('arcade_player');
 
-        return response()->json(['player_id' => $player->id, 'display_name' => $player->display_name]);
+        return response()->json(['player_id' => $player->id, 'display_name' => $player->display_name,
+            'token_expires_at' => $player->token_expires_at?->toIso8601String()]);
     }
 
     public function erase(Request $request): JsonResponse
