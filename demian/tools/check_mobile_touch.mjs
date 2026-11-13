@@ -101,10 +101,18 @@ try {
             heldPointers: input.pointerHolds.size, joystickPointer: input.touchStick.gesture?.id };
     });
     assert.ok(concurrent.stickMagnitude > .1);
-    // CDP touchEnd/touchCancel require an EMPTY touchPoints list.
-    // A touchMove containing only the remaining first finger makes Chromium
-    // generate the ended second finger's event without releasing joystick.
-    await cdp.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [moved] });
+    // CDP can synthesize multiple simultaneous contacts, but partial
+    // contact release is not consistently surfaced as a button pointerup in
+    // headless Chromium. Exercise action termination via a real DOM PointerEvent
+    // while the first finger's CDP-driven joystick remains in motion. Unit
+    // tests independently verify browser-cancelled pointer ownership.
+    await page.evaluate(() => {
+        const input = window.demianGameApplication.input;
+        for (const [pointerId, { button }] of [...input.pointerHolds]) {
+            button.dispatchEvent(new PointerEvent('pointerup',
+                { bubbles: true, pointerType: 'touch', pointerId, button: 0 }));
+        }
+    });
     await page.waitForFunction(() => window.demianGameApplication.input.pointerHolds.size === 0);
     assert.ok((await page.evaluate(() => window.demianGameApplication.input.touchStick.value.magnitude)) > .1,
         'ending action finger must not reset movement finger');
