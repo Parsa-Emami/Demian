@@ -124,6 +124,8 @@ export default class ArcadeLeaderboardService {
         if (!/^[A-Za-z0-9]{64}$/.test(result.recovery_code ?? '')) {
             throw new Error('پاسخ بازیابی سرور نامعتبر بود.');
         }
+        this.recoveryExpiresAt = typeof result.recovery_expires_at === 'string'
+            ? result.recovery_expires_at : null;
         url.hash = `demian-recover=${result.recovery_code}`;
         return url.toString();
     }
