@@ -93,6 +93,10 @@ test('worker only downloads on explicit message, refuses private API caching, an
     assert.match(sw, /DEMIAN_PACK_REMOVE/);
     assert.match(sw, /request\.headers\.has\('Authorization'\)/);
     assert.match(sw, /request\.credentials === 'include'/);
+    assert.match(sw, /request\.credentials === 'include' && !publicStatic/);
+    assert.match(sw, /\['image', 'font', 'style', 'script'\]/);
+    const visual = readFileSync(new URL('../../../resources/js/game/characters/runtime/CharacterVisualService.js', import.meta.url), 'utf8');
+    assert.match(visual, /navigator\?\.onLine === false/);
     assert.match(sw, /isReady\(CORE_CACHE, 'core'\)/);
     assert.match(sw, /await caches\.delete\(cacheName\)/);
     assert.match(sw, /event\.waitUntil\(self\.skipWaiting\(\)\)/);
