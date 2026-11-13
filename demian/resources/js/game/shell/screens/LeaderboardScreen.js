@@ -10,6 +10,7 @@ export default class LeaderboardScreen extends BaseScreen {
         this.body = this.element.querySelector('[data-ranking-rows]');
         this.status = this.element.querySelector('[data-ranking-status]');
         this.countdown = this.element.querySelector('[data-ranking-countdown]');
+        this.personalBest = this.element.querySelector('[data-ranking-personal-best]');
         this.form = this.element.querySelector('[data-ranking-name-form]');
         this.timer = null;
         this.snapshot = null;
@@ -74,10 +75,13 @@ export default class LeaderboardScreen extends BaseScreen {
         this.loading = true;
         this.nextRefreshAt = Date.now() + 60000;
         this.status.textContent = 'در حال خواندن رکوردها…';
+        this.personalBest.textContent = '';
         this.body.replaceChildren();
         this.snapshot = null;
         this.renderCountdown();
         try {
+            const ownScore = this.period.value !== 'device'
+                ? this.service.personalBest(this.period.value) : Promise.resolve(null);
             const result = await this.service.list(this.period.value);
             if (generation !== this.generation) return;
             this.snapshot = result.mode === 'online' ? result : null;
@@ -96,6 +100,12 @@ export default class LeaderboardScreen extends BaseScreen {
                 this.body.append(tr);
             }
             this.renderCountdown();
+            const own = await ownScore;
+            if (generation !== this.generation) return;
+            this.personalBest.textContent = result.mode === 'online'
+                ? own?.best ? `رکورد تأییدشده شما در این دوره: ${new Intl.NumberFormat('fa-IR').format(own.best.score)}`
+                    : 'هنوز رکورد تأییدشده‌ای برای این دوره نداری.'
+                : '';
         } catch {
             if (generation === this.generation) {
                 this.status.textContent = 'سرور در دسترس نیست. «این دستگاه» را انتخاب کن یا دوباره تلاش کن.';
