@@ -37,3 +37,10 @@ test('PWA validation rejects missing deployment files without accepting a local 
     assert.throws(() => validatePwaRelease(new URL('../../../tools/templates/', import.meta.url).pathname),
         /PWA hosting validation failed/);
 });
+
+test('PWA update notice never blocks unrelated menu targets', () => {
+    const css = read('../../../resources/css/pwa-update.css');
+    assert.match(css, /pointer-events:\s*none/);
+    assert.match(css, /\.demian-pwa-update button\s*\{[^}]*pointer-events:\s*auto/s);
+    assert.match(css, /top:\s*max\(/);
+});
