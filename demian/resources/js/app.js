@@ -10,6 +10,7 @@ import '../css/coffee-crash.css';
 import '../css/touch-controls.css';
 import '../css/game-hud.css';
 import '../css/device-qa.css';
+import '../css/mobile-05-touch.css';
 import GameApplication from './game/application/GameApplication';
 import CharacterManagerUI from './ui/CharacterManagerUI';
 import SidebarController from './ui/SidebarController';
