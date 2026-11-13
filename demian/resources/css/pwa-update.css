@@ -3,7 +3,10 @@
     position: fixed;
     inset-inline: max(12px, env(safe-area-inset-left, 0px))
         max(12px, env(safe-area-inset-right, 0px));
-    bottom: max(18px, env(safe-area-inset-bottom, 0px));
+    /* Keep the creator link and footer usable under update notifications. */
+    top: max(14px, env(safe-area-inset-top, 0px));
+    bottom: auto;
+    pointer-events: none;
     z-index: var(--z-system-overlay, 99999);
     margin-inline: auto;
     max-width: 440px;
@@ -20,6 +23,8 @@
     font-family: 'Vazirmatn', system-ui, sans-serif;
 }
 .demian-pwa-update button {
+    /* Only the deliberate action can intercept gameplay/menu touches. */
+    pointer-events: auto;
     font: inherit;
     padding: 8px 14px;
     background: #306858;
