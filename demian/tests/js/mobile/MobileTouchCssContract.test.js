@@ -22,6 +22,8 @@ test('safe-area edges remap physically for 90 degree CSS landscape', () => {
 
 test('touch-action overrides are constrained to control surfaces; no global scroll lock', () => {
     assert.match(mobileCss, /\[data-control-surface\]/);
+    assert.match(mobileCss, /\.manager-shell \.manager-stage\s*\{\s*touch-action:\s*auto/);
+    assert.match(mobileCss, /\.manager-shell \.demian-scene\s*,/);
     assert.match(mobileCss, /touch-action:\s*none/);
     assert.doesNotMatch(mobileCss, /\b(?:html|body)\s*\{[^}]*touch-action:\s*none/);
 });
