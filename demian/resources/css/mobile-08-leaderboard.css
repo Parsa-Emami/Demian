@@ -1,0 +1,27 @@
+/* Mobile-08: weekly competition status, readable on narrow portrait phones. */
+.ranking-panel__countdown {
+    margin: 10px 0;
+    padding: 10px 12px;
+    border: 1px solid rgba(151, 211, 190, .42);
+    border-radius: 12px;
+    background: rgba(34, 75, 64, .6);
+    color: #edf9ef;
+    font-family: 'Vazirmatn', system-ui, sans-serif;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.8;
+    text-align: center;
+    overflow-wrap: anywhere;
+}
+.ranking-panel__refresh-info {
+    font-size: .8rem;
+    line-height: 1.8;
+    color: #c7d4cd;
+    margin: 6px 0 12px;
+}
+.ranking-panel [data-ranking-personal-best] {
+    font-weight: 700;
+    font-size: .9rem;
+    color: #dbf7e4;
+    line-height: 1.8;
+    margin-block: 4px 12px;
+}
