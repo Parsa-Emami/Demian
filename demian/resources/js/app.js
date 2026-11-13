@@ -12,6 +12,7 @@ import '../css/game-hud.css';
 import '../css/device-qa.css';
 import '../css/mobile-05-touch.css';
 import '../css/pwa-update.css';
+import '../css/mobile-08-leaderboard.css';
 import GameApplication from './game/application/GameApplication';
 import CharacterManagerUI from './ui/CharacterManagerUI';
 import SidebarController from './ui/SidebarController';

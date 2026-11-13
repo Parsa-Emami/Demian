@@ -125,4 +125,72 @@ final class ArcadePlatformTest extends TestCase
         $this->assertDatabaseCount('arcade_replays', 0); $this->assertDatabaseCount('arcade_leaderboard_entries', 3);
         $this->assertDatabaseHas('arcade_runs', ['id' => $run['run_id'], 'status' => 'verified']);
     }
+    public function test_weekly_countdown_uses_monday_utc_and_keeps_prior_week_history(): void
+    {
+        $clock = app(\App\Services\Arcade\CompetitionClock::class);
+        $edge = CarbonImmutable::parse('2027-01-03T23:59:50Z');
+        $snapshot = $clock->snapshot('weekly', $edge);
+        $this->assertSame('weekly:2026-53', $snapshot['period_key']);
+        $this->assertSame('2026-12-28T00:00:00+00:00', $snapshot['starts_at']);
+        $this->assertSame('2027-01-04T00:00:00+00:00', $snapshot['next_reset_at']);
+        $this->assertSame(10, $snapshot['seconds_remaining']);
+        $next = $clock->snapshot('weekly', $edge->addSeconds(11));
+        $this->assertSame('weekly:2027-01', $next['period_key']);
+        $this->assertSame(604799, $next['seconds_remaining']);
+        $this->assertNull($clock->snapshot('all', $edge)['next_reset_at']);
+        $this->assertSame('2027-01-04T00:00:00+00:00', $clock->snapshot('daily', $edge)['next_reset_at']);
+    }
+
+    public function test_games_endpoint_never_licenses_unverified_mini_game_scores(): void
+    {
+        $games = $this->getJson('/api/v1/arcade/games')->assertOk()->json('games');
+        $this->assertCount(6, $games);
+        $ranked = array_values(array_filter($games, fn (array $game): bool => $game['ranked']));
+        $this->assertSame(['dino-run'], array_column($ranked, 'game_id'));
+        $this->assertSame('server-replay', $ranked[0]['verification']);
+        $this->getJson('/api/v1/arcade/leaderboards/dino-run?period=weekly')
+            ->assertOk()->assertJsonPath('period', 'weekly')
+            ->assertJsonStructure(['server_time', 'next_reset_at', 'seconds_remaining', 'data']);
+        $player = $this->identity();
+        $request = ['request_id' => (string) Str::uuid(), 'game_id' => 'cafe-rush',
+            'rules_version' => app(RunnerReplayVerifier::class)->rules()['version'],
+            'character_slug' => 'darya', 'track_width' => 420];
+        $this->withToken($player['token'])->postJson('/api/v1/arcade/runs', $request)->assertUnprocessable();
+        $this->assertDatabaseCount('arcade_runs', 0);
+    }
+
+    public function test_weekly_personal_best_requires_authentication_and_only_reads_verified_score(): void
+    {
+        $player = $this->identity();
+        $url = '/api/v1/arcade/player/best?period=weekly';
+        $this->getJson($url)->assertUnauthorized();
+        $this->withToken($player['token'])->getJson($url)
+            ->assertOk()->assertJsonPath('best', null)->assertJsonStructure(['next_reset_at', 'seconds_remaining']);
+        $fixture = $this->fixtures()[0];
+        $run = $this->createRun($player, $fixture);
+        $this->postJson('/api/v1/arcade/runs/'.$run['run_id'].'/complete', $this->payload($fixture))->assertOk();
+        $this->getJson($url)->assertOk()->assertJsonPath('best.score', $fixture['expected']['score'])
+            ->assertJsonMissingPath('token_hash');
+        $this->getJson('/api/v1/arcade/player/best?period=other')->assertUnprocessable();
+    }
+
+    public function test_player_can_read_and_erase_profile_with_cascading_ranked_records(): void
+    {
+        $player = $this->identity('WeekChampion');
+        $this->getJson('/api/v1/arcade/player')->assertUnauthorized();
+        $this->withToken($player['token'])->getJson('/api/v1/arcade/player')
+            ->assertOk()->assertJsonPath('display_name', 'WeekChampion')
+            ->assertJsonMissingPath('token_hash');
+        $fixture = $this->fixtures()[0];
+        $run = $this->createRun($player, $fixture);
+        $this->postJson('/api/v1/arcade/runs/'.$run['run_id'].'/complete', $this->payload($fixture))->assertOk();
+        $this->assertDatabaseCount('arcade_leaderboard_entries', 3);
+        $this->deleteJson('/api/v1/arcade/player')->assertOk()->assertJsonPath('status', 'deleted');
+        $this->assertDatabaseCount('arcade_players', 0);
+        $this->assertDatabaseCount('arcade_runs', 0);
+        $this->assertDatabaseCount('arcade_replays', 0);
+        $this->assertDatabaseCount('arcade_leaderboard_entries', 0);
+        $this->getJson('/api/v1/arcade/player')->assertUnauthorized();
+    }
+
 }
