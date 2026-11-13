@@ -37,6 +37,7 @@ const report = { status: 'pending', physicalPhoneMeasured: false, browser: null,
         'Safe-area insets are zero in this emulated display; rotated remapping is separately asserted in CSS and must be tested on a notch device.',
         'Game score or weekly leaderboard are unaffected by these tests.',
     ] };
+mkdirSync(output, { recursive: true });
 let browser, context, page;
 const getRect = async locator => {
     const b = await locator.boundingBox();
@@ -103,7 +104,7 @@ try {
     });
     report.scenarios.push({ name: 'portrait-forced-landscape-two-finger-cancel',
         status: 'passed', concurrent, stick: joystick.bounds, jump: action.bounds });
-    await page.screenshot({ path: resolve(output, 'portrait.png').replace('/browser/', '/browser/') }).catch(() => {});
+    await page.screenshot({ path: resolve(output, 'portrait.png') });
     // The gesture system must also reset when the operating system backgrounds
     // the page or orientation changes without delivering pointerup.
     await page.evaluate(() => {
@@ -125,7 +126,7 @@ try {
     assert.ok(within(landscapeAction.bounds, 844, 390), 'landscape action outside screen');
     report.scenarios.push({ name: 'landscape-reflow-and-target-sizes', status: 'passed',
         stick: landscapeStick.bounds, jump: landscapeAction.bounds });
-    await page.screenshot({ path: resolve(output, 'landscape.png') }).catch(() => {});
+    await page.screenshot({ path: resolve(output, 'landscape.png') });
     // Rotation/blur clears all input, regardless of whether a pointerup arrives.
     await page.evaluate(() => {
         const i = window.demianGameApplication.input;
