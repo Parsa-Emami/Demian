@@ -46,7 +46,8 @@ jobs:
       - run: npm run validate:build
       - run: npx playwright install chromium --only-shell
       - run: npm run test:coffee-crash:browser
-      - run: npm run test:identity:browser
+      - name: Project identity browser QA (bounded)
+        run: timeout --signal=TERM --kill-after=10s 180s npm run test:identity:browser
       - run: npm run test:device-qa:browser
       - name: Mobile-04 Save-Data + network recovery regression
         run: npm run test:mobile-network:browser
