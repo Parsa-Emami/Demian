@@ -46,7 +46,8 @@ self.addEventListener('fetch', (event) => {
     // Never intercept score submissions, tokens or API responses, even when
     // a same-origin API is hosted under the installation scope.
     if (/(^|\/)api(\/|$)/.test(url.pathname) ||
-        request.headers.has('Authorization') || request.credentials === 'include') return;
+        request.headers.has('Authorization') ||
+        (request.mode !== 'navigate' && request.credentials === 'include')) return;
 
     if (request.mode === 'navigate') {
         event.respondWith((async () => {
