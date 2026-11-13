@@ -639,9 +639,11 @@
                         <p class="shell-kicker">DEMIAN · CAFÉ RUN</p>
                         <h2 id="ranking-title">لیدربورد کافه</h2>
                         <label>بازهٔ رکوردها
-                            <select data-ranking-period><option value="all">همیشه</option><option value="daily">امروز</option><option value="weekly">این هفته</option><option value="device">این دستگاه</option></select>
+                            <select data-ranking-period><option value="weekly">این هفته</option><option value="daily">امروز</option><option value="all">همیشه</option><option value="device">این دستگاه</option></select>
                         </label>
                         <p data-ranking-status role="status" aria-live="polite"></p>
+                        <p class="ranking-panel__countdown" data-ranking-countdown role="timer" aria-live="off" hidden></p>
+                        <p class="ranking-panel__refresh-info">رتبه‌ها هر ۶۰ ثانیه به‌روزرسانی می‌شوند؛ رکوردها پس از پایان هفته آرشیو می‌شوند.</p>
                         <div class="ranking-panel__scroll"><table><thead><tr><th scope="col">رتبه</th><th scope="col">بازیکن</th><th scope="col">امتیاز</th></tr></thead><tbody data-ranking-rows></tbody></table></div>
                         <form data-ranking-name-form><label for="ranking-name">نام نمایشی</label><div><input id="ranking-name" name="display_name" minlength="2" maxlength="32" required autocomplete="nickname"><button type="submit" class="shell-button">ذخیره</button></div></form>
                         <button type="button" data-shell-action="close-modal" class="shell-button shell-button--primary" data-screen-autofocus>بستن</button>
