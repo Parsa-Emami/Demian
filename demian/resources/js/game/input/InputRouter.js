@@ -65,7 +65,11 @@ export default class InputRouter {
         this.onPointerUp = this.onPointerUp.bind(this);
         this.onClick = this.onClick.bind(this);
         this.clearTouch = this.clearTouch.bind(this);
-        this.onPointerDevice = (event) => this.setDevice(event.pointerType === 'touch' ? 'touch' : 'keyboard');
+        this.onPointerDevice = (event) => {
+            if (event.pointerType === 'touch') this.setDevice('touch');
+            else if (event.pointerType === 'mouse') this.setDevice('keyboard');
+        };
+        this.onPageHide = () => this.onBlur();
         this.orientation = window.matchMedia?.('(orientation: portrait)');
         this.orientation?.addEventListener?.('change', this.clearTouch);
         this.touchRoot?.addEventListener('sidebar:changed', this.clearTouch);
@@ -73,6 +77,13 @@ export default class InputRouter {
         window.addEventListener('keydown', this.onKeyDown);
         window.addEventListener('keyup', this.onKeyUp);
         window.addEventListener('blur', this.onBlur);
+        window.addEventListener('pagehide', this.onPageHide);
+        window.addEventListener('orientationchange', this.clearTouch);
+        this.root.addEventListener('mobile:layout-changed', this.clearTouch);
+        // Capture on window as a fallback when a touch ends outside a control
+        // or the target element is removed before its pointerup bubbles.
+        window.addEventListener('pointerup', this.onPointerUp, true);
+        window.addEventListener('pointercancel', this.onPointerUp, true);
         document.addEventListener('visibilitychange', this.onVisibilityChange = () => {
             if (document.hidden) {
                 this.onBlur();
@@ -194,13 +205,18 @@ export default class InputRouter {
 
         event.preventDefault();
         event.stopPropagation();
-        button.setPointerCapture?.(event.pointerId);
+        try {
+            button.setPointerCapture?.(event.pointerId);
+        } catch {
+            // Capturing can fail if a control is detached during navigation.
+            // Window-level pointer termination remains a safety fallback.
+        }
         const holdAction = button.dataset.inputHold;
         const pressAction = button.dataset.inputPress;
         const toggle = (holdAction === 'run' && this.touchControls.touchRunMode === 'toggle') ||
             (holdAction === 'duck' && this.touchControls.touchSlideMode === 'toggle');
         const action = toggle ? undefined : holdAction;
-        this.pointerHolds.set(event.pointerId, { action, button });
+        this.pointerHolds.set(event.pointerId, { action, button, pressAction });
         if (toggle) this.toggleHold(holdAction, button);
         else {
             if (action) this.virtualHeld.add(action);
@@ -218,7 +234,13 @@ export default class InputRouter {
         const binding = this.pointerHolds.get(event.pointerId);
         if (!binding) return;
         this.pointerHolds.delete(event.pointerId);
-        const { action, button } = binding;
+        const { action, button, pressAction } = binding;
+        // A canceled gesture must not queue a jump or interaction that fires
+        // after the user has already left the control.
+        if (['pointercancel', 'lostpointercapture'].includes(event.type) && pressAction &&
+            ![...this.pointerHolds.values()].some(entry => entry.pressAction === pressAction)) {
+            this.virtualPressed.delete(pressAction);
+        }
         if (action && !this.latchedHolds.has(action) &&
             ![...this.pointerHolds.values()].some(entry => entry.action === action)) {
             this.virtualHeld.delete(action);
@@ -250,7 +272,12 @@ export default class InputRouter {
         const buttons = new Set(this.latchedHolds.values());
         for (const [id, { button }] of captures) {
             buttons.add(button);
-            if (button.hasPointerCapture?.(id)) button.releasePointerCapture(id);
+            try {
+                if (button.hasPointerCapture?.(id)) button.releasePointerCapture(id);
+            } catch {
+                // The button can be detached by a modal, route change or
+                // orientation switch before its capture has been released.
+            }
         }
         for (const button of buttons) {
             button.classList.remove('is-pressed');
@@ -369,6 +396,11 @@ export default class InputRouter {
         window.removeEventListener('keydown', this.onKeyDown);
         window.removeEventListener('keyup', this.onKeyUp);
         window.removeEventListener('blur', this.onBlur);
+        window.removeEventListener('pagehide', this.onPageHide);
+        window.removeEventListener('orientationchange', this.clearTouch);
+        this.root.removeEventListener('mobile:layout-changed', this.clearTouch);
+        window.removeEventListener('pointerup', this.onPointerUp, true);
+        window.removeEventListener('pointercancel', this.onPointerUp, true);
         document.removeEventListener('visibilitychange', this.onVisibilityChange);
         this.root.removeEventListener('click', this.onClick);
         this.root.removeEventListener('pointerdown', this.onPointerDevice, true);
