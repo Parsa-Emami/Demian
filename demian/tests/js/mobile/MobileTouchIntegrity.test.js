@@ -138,6 +138,54 @@ test('joystick owns one pointer; second finger can press an independent action',
     assert.equal(captures.size, 0);
 });
 
+test('joystick releases when pointer capture fails and finger ends outside the original zone', () => {
+    const listeners = new Map(), windowListeners = new Map();
+    const win = {
+        addEventListener: (type, handler) => windowListeners.set(type, handler),
+        removeEventListener: type => windowListeners.delete(type),
+    };
+    const classes = new Set(), style = new Map();
+    const knob = { style: { setProperty: (k,v) => style.set(k,v), removeProperty: k => style.delete(k) } };
+    const base = {
+        querySelector: () => knob,
+        contains: () => true,
+        getBoundingClientRect: () => ({ left: 5, top: 5, width: 100, height: 100 }),
+        classList: { add: v => classes.add(v), remove: v => classes.delete(v) },
+        style: { setProperty: (k,v) => style.set(k,v), removeProperty: k => style.delete(k) },
+    };
+    const zone = {
+        ownerDocument: { defaultView: win },
+        querySelector: () => base,
+        addEventListener: (type, handler) => listeners.set(type, handler),
+        removeEventListener: type => listeners.delete(type),
+        setPointerCapture: () => { throw new Error('DOM detached'); },
+        hasPointerCapture: () => false,
+    };
+    const router = routerStub();
+    router.contexts = new Map([['OPEN_WORLD', { analog: { xAxis: 'x', zAxis: 'z' } }]]);
+    router.bindings = { context: (_name, def) => def };
+    router.contextName = 'OPEN_WORLD';
+    router.touchControls.touchStickMode = 'fixed';
+    router.touchControls.touchDeadZone = 10;
+    router.touchControls.touchSensitivity = 100;
+    const stick = new TouchStick(zone, router);
+    router.analog = stick.value;
+    const event = (x,y) => ({ pointerId:42, button:0, target:base, clientX:x, clientY:y,
+        stopPropagation() {}, preventDefault() {} });
+    try {
+        listeners.get('pointerdown')(event(55,55));
+        listeners.get('pointermove')(event(85,55));
+        assert.ok(stick.value.magnitude > 0);
+        windowListeners.get('pointerup')(event(240,55));
+        assert.equal(stick.value.magnitude, 0);
+        assert.equal(stick.gesture, null);
+    } finally {
+        stick.dispose();
+        assert.equal(windowListeners.size, 0);
+        assert.equal(listeners.size, 0);
+    }
+});
+
 test('visual-viewport keyboard shrink does not falsely rotate the physical phone; unchanged layout is deduplicated', () => {
     const previous = { window: globalThis.window, document: globalThis.document,
         CustomEvent: globalThis.CustomEvent };
