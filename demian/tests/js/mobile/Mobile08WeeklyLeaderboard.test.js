@@ -76,3 +76,53 @@ test('account deletion retains local identity on a failed network request', asyn
     await assert.rejects(service.eraseAccount(), /offline/);
     assert.equal(service.identity.token, 'secret');
 });
+
+test('failed ranked replay persists across reload, retries once and clears only on server acceptance', async () => {
+    const values = new Map();
+    const storage = { getItem: key => values.get(key) ?? null,
+        setItem: (key, value) => values.set(key, value) };
+    const baseUrl = 'https://api.test/api/v1/arcade';
+    const first = new ArcadeLeaderboardService({ baseUrl, storage,
+        fetcher: async () => { throw new Error('offline'); } });
+    first.identity = { player_id: 'owner-1', token: 'secret' };
+    storage.setItem(first.identityKey, JSON.stringify(first.identity));
+    const ranked = { run_id: '00000000-0000-4000-8000-000000000001', mode: 'ranked' };
+    const response = await first.finish(ranked, { score: 25 }, {
+        valid: true, payload: () => ({ ticks: 100, transitions: [{ tick: 0, mask: 0 }] }),
+    }, 'darya');
+    assert.equal(response.status, 'pending');
+    assert.ok(first.pending);
+    const calls = [];
+    const second = new ArcadeLeaderboardService({ baseUrl, storage,
+        fetcher: async (url, options) => {
+            calls.push({ url, options });
+            return { ok: true, json: async () => ({ status: 'verified', score: 25 }) };
+        } });
+    assert.equal(second.pending.id, ranked.run_id);
+    const accepted = await second.retry();
+    assert.equal(accepted.status, 'verified');
+    assert.equal(calls.length, 1);
+    assert.match(calls[0].url, /\/runs\/00000000-0000-4000-8000-000000000001\/complete$/);
+    assert.equal(calls[0].options.method, 'POST');
+    assert.equal(second.pending, null);
+    assert.equal(JSON.parse(values.get(second.pendingKey)), null);
+});
+
+test('persisted replay cannot be reused by a different identity or replaced when offline', async () => {
+    const values = new Map();
+    const storage = { getItem: key => values.get(key) ?? null,
+        setItem: (key, value) => values.set(key, value) };
+    const baseUrl = 'https://api.test/api/v1/arcade';
+    const first = new ArcadeLeaderboardService({ baseUrl, storage,
+        fetcher: async () => { throw new Error('offline'); } });
+    first.identity = { player_id: 'p1', token: 'one' };
+    storage.setItem(first.identityKey, JSON.stringify(first.identity));
+    first.savePending({ id: '00000000-0000-4000-8000-000000000001', player_id: 'p1',
+        body: { ticks: 10, transitions: [{ tick: 0, mask: 0 }] } });
+    const practice = await first.start({ width: 420, character: 'darya' });
+    assert.equal(practice.mode, 'practice');
+    assert.equal(first.pending.player_id, 'p1');
+    storage.setItem(first.identityKey, JSON.stringify({ player_id: 'p2', token: 'two' }));
+    const other = new ArcadeLeaderboardService({ baseUrl, storage });
+    assert.equal(other.pending, null);
+});
