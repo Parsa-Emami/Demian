@@ -17,6 +17,7 @@ export default class GameRuntime {
         canRender = () => true,
         observeFrame = null,
         observeRender = null,
+        observeWork = null,
     }) {
         this.inputRouter = inputRouter;
         this.eventBus = eventBus;
@@ -35,6 +36,8 @@ export default class GameRuntime {
         this.canRender = canRender;
         this.observeFrame = observeFrame;
         this.observeRender = observeRender;
+        // Opt-in diagnostic only: avoid per-frame timer reads in production.
+        this.observeWork = observeWork;
         this.renderInterval = 0;
         this.resetRenderTiming();
         this.errorCounts = new Map();
@@ -86,6 +89,7 @@ export default class GameRuntime {
         this.frameRequest = null;
         if (!this.running || this.paused || this.visibilityTarget?.hidden) return;
 
+        const workStartedAt = this.observeWork ? (globalThis.performance?.now?.() ?? Date.now()) : null;
         try {
             const elapsed = this.lastTimestamp === null ? 0 : Math.max(0, (timestamp - this.lastTimestamp) / 1000);
             this.lastTimestamp = timestamp;
@@ -102,6 +106,12 @@ export default class GameRuntime {
         } catch (error) {
             this.reportError('frame', error, timestamp);
         } finally {
+            if (workStartedAt !== null && !this.paused && !this.visibilityTarget?.hidden) {
+                const spentMs = Math.max(0, (globalThis.performance?.now?.() ?? Date.now()) - workStartedAt);
+                try { this.observeWork?.(spentMs); } catch {
+                    // Diagnostic collection must never interrupt gameplay.
+                }
+            }
             // A single render error must never permanently kill the arcade loop.
             this.scheduleFrame();
         }
