@@ -50,6 +50,40 @@ final class ArcadeController extends Controller
         return response()->json(['player_id' => $player->id, 'display_name' => $player->display_name, 'token' => $token], 201);
     }
 
+    public function issueRecoveryLink(Request $request): JsonResponse
+    {
+        $player = $request->attributes->get('arcade_player');
+        $secret = Str::random(64);
+        $player->update(['recovery_hash' => hash('sha256', $secret)]);
+
+        // Only return the secret at issue time. Never persist or log plaintext.
+        return response()->json(['recovery_code' => $secret])
+            ->header('Cache-Control', 'no-store, private');
+    }
+
+    public function recover(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'recovery_code' => ['required', 'string', 'size:64', 'regex:/^[A-Za-z0-9]{64}$/'],
+        ]);
+        $secretHash = hash('sha256', $validated['recovery_code']);
+
+        $session = DB::transaction(function () use ($secretHash): array {
+            $player = ArcadePlayer::query()->where('recovery_hash', $secretHash)
+                ->lockForUpdate()->first();
+            abort_unless($player, 422, 'Recovery link expired or already used.');
+            $token = Str::random(64);
+            // Rotate the active token, consume the one-time recovery secret,
+            // and leave all prior verified scores and run history untouched.
+            $player->update(['token_hash' => hash('sha256', $token), 'recovery_hash' => null]);
+
+            return ['player_id' => $player->id, 'display_name' => $player->display_name,
+                'token' => $token];
+        }, 3);
+
+        return response()->json($session)->header('Cache-Control', 'no-store, private');
+    }
+
     public function rename(Request $request): JsonResponse
     {
         $name = $this->name($request); $player = $request->attributes->get('arcade_player');

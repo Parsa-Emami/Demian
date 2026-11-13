@@ -12,8 +12,11 @@ Route::prefix('v1/arcade')->middleware([LimitArcadePayload::class, 'throttle:120
     Route::get('/games', [ArcadeController::class, 'games']);
     Route::get('/leaderboards/dino-run', [ArcadeController::class, 'leaderboard']);
     Route::post('/players', [ArcadeController::class, 'register'])->middleware('throttle:5,1');
+    Route::post('/players/recover', [ArcadeController::class, 'recover'])->middleware('throttle:3,1');
     Route::middleware(AuthenticateArcadePlayer::class)->group(function (): void {
         Route::get('/player', [ArcadeController::class, 'me']);
+        Route::post('/player/recovery-link', [ArcadeController::class, 'issueRecoveryLink'])
+            ->middleware('throttle:3,1');
         Route::get('/player/best', [ArcadeController::class, 'personalBest']);
         Route::patch('/player', [ArcadeController::class, 'rename'])->middleware('throttle:5,1');
         Route::delete('/player', [ArcadeController::class, 'erase'])->middleware('throttle:arcade-profile-delete');

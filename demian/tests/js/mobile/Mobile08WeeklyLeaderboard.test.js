@@ -127,3 +127,76 @@ test('persisted replay cannot be reused by a different identity or replaced when
     const other = new ArcadeLeaderboardService({ baseUrl, storage });
     assert.equal(other.pending, null);
 });
+
+test('recovery link is explicit, HTTPS-only and one-time secret is never persisted in identity', async () => {
+    const code = 'R'.repeat(64);
+    const values = new Map();
+    const storage = { getItem: key => values.get(key) ?? null,
+        setItem: (key, value) => values.set(key, value) };
+    const calls = [];
+    const service = new ArcadeLeaderboardService({
+        baseUrl: 'https://api.test/api/v1/arcade', storage,
+        fetcher: async (url, options) => {
+            calls.push({ url, options });
+            return { ok: true, json: async () => ({ recovery_code: code }) };
+        },
+    });
+    service.identity = { token: 'T'.repeat(64), player_id: 'owner' };
+    storage.setItem(service.identityKey, JSON.stringify(service.identity));
+    const link = await service.issueRecoveryLink('https://play.test/game/');
+    assert.equal(link, 'https://play.test/game/#demian-recover=' + code);
+    assert.equal(calls.length, 1);
+    assert.match(calls[0].url, /\/player\/recovery-link$/);
+    assert.equal(calls[0].options.method, 'POST');
+    assert.equal(calls[0].options.headers.Authorization, 'Bearer ' + 'T'.repeat(64));
+    assert.equal(values.get(service.identityKey).includes(code), false);
+    await assert.rejects(service.issueRecoveryLink('http://untrusted.test/game/'), /امن/);
+});
+
+test('recovering account rotates local session without saving consumed secret', async () => {
+    const code = 'Q'.repeat(64), token = 'N'.repeat(64), values = new Map();
+    const storage = { getItem: key => values.get(key) ?? null,
+        setItem: (key, value) => values.set(key, value) };
+    const calls = [];
+    const service = new ArcadeLeaderboardService({
+        baseUrl: 'https://api.test/api/v1/arcade', storage,
+        fetcher: async (url, options) => {
+            calls.push({ url, options });
+            return { ok: true, json: async () => ({
+                player_id: 'restored', token, display_name: 'Recovered',
+            }) };
+        },
+    });
+    service.identity = { player_id: 'old', token: 'O'.repeat(64) };
+    storage.setItem(service.identityKey, JSON.stringify(service.identity));
+    const player = await service.recoverAccount(code);
+    assert.equal(player.player_id, 'restored');
+    assert.equal(service.displayName, 'Recovered');
+    assert.equal(service.identity.token, token);
+    assert.equal(JSON.parse(values.get(service.identityKey)).token, token);
+    assert.equal(values.get(service.identityKey).includes(code), false);
+    assert.equal(calls.length, 1);
+    assert.match(calls[0].url, /\/players\/recover$/);
+    assert.equal(calls[0].options.method, 'POST');
+    assert.equal(calls[0].options.headers.Authorization, undefined);
+    assert.deepEqual(JSON.parse(calls[0].options.body), { recovery_code: code });
+    await assert.rejects(service.recoverAccount('invalid'), /۶۴/);
+});
+
+test('account switching never discards a failed ranked replay', async () => {
+    const values = new Map();
+    const storage = { getItem: key => values.get(key) ?? null,
+        setItem: (key, value) => values.set(key, value) };
+    const service = new ArcadeLeaderboardService({
+        baseUrl: 'https://api.test/api/v1/arcade', storage,
+        fetcher: async () => { throw new Error('offline'); },
+    });
+    service.identity = { player_id: 'owner', token: 'T'.repeat(64) };
+    service.savePending({
+        player_id: 'owner', id: '00000000-0000-4000-8000-000000000001',
+        body: { ticks: 50, transitions: [{ tick: 0, mask: 0 }] },
+    });
+    await assert.rejects(service.recoverAccount('R'.repeat(64)), /رکورد/);
+    assert.equal(service.identity.player_id, 'owner');
+    assert.equal(service.pending.player_id, 'owner');
+});

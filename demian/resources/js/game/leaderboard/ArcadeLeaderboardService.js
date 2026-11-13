@@ -14,6 +14,15 @@ export default class ArcadeLeaderboardService {
         this.profile = safeRead(storage, PROFILE_KEY, { display_name: 'بازیکن کافه' });
         this.identityKey = `demian.arcade.identity.v1:${this.baseUrl}`;
         this.identity = safeRead(storage, this.identityKey, null);
+        // URL fragments stay client-side. Strip them immediately, but never
+        // redeem a bearer recovery capability without an explicit UI action.
+        const fragment = globalThis.location?.hash ?? '';
+        const match = /^#demian-recover=([A-Za-z0-9]{64})$/.exec(fragment);
+        this.recoveryOffer = match?.[1] ?? null;
+        if (match && globalThis.history?.replaceState) {
+            globalThis.history.replaceState(globalThis.history.state, '',
+                globalThis.location.pathname + globalThis.location.search);
+        }
         this.pendingKey = `demian.arcade.pending.v1:${this.baseUrl}`;
         const saved = safeRead(storage, this.pendingKey, null);
         // Replay evidence is never a client score; restore only for the same account.
@@ -45,6 +54,49 @@ export default class ArcadeLeaderboardService {
         if (this.identity?.token) return this.identity;
         this.identity = await this.request('/players', { method: 'POST', body: { display_name: this.displayName } });
         safeWrite(this.storage, this.identityKey, this.identity); return this.identity;
+    }
+    async issueRecoveryLink(pageUrl = globalThis.location?.href) {
+        if (!pageUrl) throw new Error('لینک صفحه در دسترس نیست.');
+        const url = new URL(pageUrl);
+        const local = ['localhost', '127.0.0.1', '[::1]'].includes(url.hostname);
+        if (url.protocol !== 'https:' && !(local && url.protocol === 'http:')) {
+            throw new Error('بازیابی حساب فقط در اتصال امن در دسترس است.');
+        }
+        await this.ensureIdentity();
+        const result = await this.request('/player/recovery-link', {
+            method: 'POST', authenticated: true,
+        });
+        if (!/^[A-Za-z0-9]{64}$/.test(result.recovery_code ?? '')) {
+            throw new Error('پاسخ بازیابی سرور نامعتبر بود.');
+        }
+        url.hash = `demian-recover=${result.recovery_code}`;
+        return url.toString();
+    }
+    async recoverAccount(code) {
+        const value = String(code ?? '').trim();
+        if (!/^[A-Za-z0-9]{64}$/.test(value)) {
+            throw new Error('کد بازیابی ۶۴ نویسهٔ معتبر لازم دارد.');
+        }
+        if (this.pending) {
+            await this.retry();
+            if (this.pending) throw new Error('ابتدا ارسال رکورد قبلی را تکمیل کن؛ رکورد تأییدنشده نباید حذف شود.');
+        }
+        const response = await this.request('/players/recover', {
+            method: 'POST', body: { recovery_code: value },
+        });
+        if (typeof response.token !== 'string' || response.token.length !== 64
+            || typeof response.player_id !== 'string'
+            || typeof response.display_name !== 'string') {
+            throw new Error('پاسخ بازیابی سرور نامعتبر بود.');
+        }
+        // Never put the recovery code or the complete raw response in storage.
+        this.identity = { token: response.token, player_id: response.player_id };
+        this.profile = { display_name: response.display_name };
+        this.savePending(null);
+        safeWrite(this.storage, this.identityKey, this.identity);
+        safeWrite(this.storage, PROFILE_KEY, this.profile);
+        this.recoveryOffer = null;
+        return { player_id: this.identity.player_id, display_name: this.displayName };
     }
     async rename(name) {
         const value = String(name).trim();
