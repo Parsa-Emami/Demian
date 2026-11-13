@@ -33,7 +33,7 @@ npm run test:mobile-pwa:browser
 npm run test:mobile-09:browser
 ~~~
 
-The new Playwright test uses a real headless Chromium browser at a relocated hosting subpath. It downloads a Dino Run pack from the UI, checks CacheStorage isolation, disables the network, reloads the full game from offline storage, launches a local practice session, reconnects, deletes the pack, and verifies the expected offline fallback. Unit tests cover six manifest entries, size bounds, invalid/missing assets, worker progress/errors and no API caching. CI uploads the evidence under docs/mobile-09/browser.
+The new Playwright test uses a real headless Chromium browser at a relocated hosting subpath. It downloads all six individual packs from the UI, verifies the shared-core CacheStorage isolation, disables networking, reloads from the offline shell, launches every game in local practice mode, reconnects, removes all six packs, and verifies the expected safe offline fallback. Unit tests cover six manifest entries, size bounds, invalid/missing assets, worker progress/errors and no API caching. CI uploads the evidence under docs/mobile-09/browser.
 
 ## Release and safety gates
 
