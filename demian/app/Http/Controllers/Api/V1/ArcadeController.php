@@ -9,6 +9,8 @@ use App\Models\ArcadePlayer;
 use App\Models\ArcadeRun;
 use App\Services\Arcade\ArcadeRunService;
 use App\Services\Arcade\LeaderboardService;
+use App\Services\Arcade\CompetitionClock;
+use App\Services\Arcade\RankedGameCatalog;
 use App\Services\Arcade\RunnerReplayVerifier;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -25,9 +27,18 @@ final class ArcadeController extends Controller
         return $request->validate(['display_name' => ['required', 'string', 'min:2', 'max:32', 'regex:/^[\pL\pN _\-\x{200C}]+$/u']])['display_name'];
     }
 
-    public function rules(RunnerReplayVerifier $verifier): JsonResponse
+    public function rules(RunnerReplayVerifier $verifier, RankedGameCatalog $catalog, CompetitionClock $clock): JsonResponse
     {
-        return response()->json(['game_id' => 'dino-run', 'rules' => $verifier->rules(), 'characters' => config('demian-arcade.characters')]);
+        return response()->json(['game_id' => 'dino-run', 'rules' => $verifier->rules(),
+            'characters' => config('demian-arcade.characters'),
+            'games' => $catalog->publicList(),
+            'weekly' => $clock->snapshot('weekly')]);
+    }
+
+    public function games(RankedGameCatalog $catalog, CompetitionClock $clock): JsonResponse
+    {
+        return response()->json(['games' => $catalog->publicList(),
+            'weekly' => $clock->snapshot('weekly'), 'refresh_seconds' => 60]);
     }
 
     public function register(Request $request): JsonResponse
@@ -44,6 +55,22 @@ final class ArcadeController extends Controller
         $player->update(['display_name' => $name]);
 
         return response()->json(['player_id' => $player->id, 'display_name' => $player->display_name]);
+    }
+
+    public function me(Request $request): JsonResponse
+    {
+        $player = $request->attributes->get('arcade_player');
+
+        return response()->json(['player_id' => $player->id, 'display_name' => $player->display_name]);
+    }
+
+    public function erase(Request $request): JsonResponse
+    {
+        $player = $request->attributes->get('arcade_player');
+        // FK cascade removes runs, replay inputs and all leaderboard entries.
+        $player->delete();
+
+        return response()->json(['status' => 'deleted']);
     }
 
     public function start(StartArcadeRunRequest $request, ArcadeRunService $service): JsonResponse
