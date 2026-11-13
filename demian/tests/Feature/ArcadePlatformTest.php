@@ -113,7 +113,7 @@ final class ArcadePlatformTest extends TestCase
         $this->postJson('/api/v1/arcade/players', ['display_name' => '<script>'])->assertUnprocessable();
         $this->postJson('/api/v1/arcade/runs', [])->assertUnauthorized();
         $this->getJson('/api/v1/arcade/leaderboards/dino-run?period=unknown')->assertUnprocessable();
-        $this->assertSame(['all', 'daily:2026-12-31', 'weekly:2026-53'], LeaderboardService::periodKeys(CarbonImmutable::parse('2027-01-01T01:30:00+03:30')));
+        $this->assertSame(['all', 'daily:2026-12-31', 'weekly:tehran:2026-12-26'], LeaderboardService::periodKeys(CarbonImmutable::parse('2027-01-01T01:30:00+03:30')));
     }
 
     public function test_pruning_keeps_verified_records_and_best_scores(): void
@@ -125,20 +125,49 @@ final class ArcadePlatformTest extends TestCase
         $this->assertDatabaseCount('arcade_replays', 0); $this->assertDatabaseCount('arcade_leaderboard_entries', 3);
         $this->assertDatabaseHas('arcade_runs', ['id' => $run['run_id'], 'status' => 'verified']);
     }
-    public function test_weekly_countdown_uses_monday_utc_and_keeps_prior_week_history(): void
+    public function test_weekly_countdown_uses_saturday_tehran_and_preserves_history(): void
     {
         $clock = app(\App\Services\Arcade\CompetitionClock::class);
-        $edge = CarbonImmutable::parse('2027-01-03T23:59:50Z');
+        $edge = CarbonImmutable::parse('2027-01-08T20:29:50Z');
         $snapshot = $clock->snapshot('weekly', $edge);
-        $this->assertSame('weekly:2026-53', $snapshot['period_key']);
-        $this->assertSame('2026-12-28T00:00:00+00:00', $snapshot['starts_at']);
-        $this->assertSame('2027-01-04T00:00:00+00:00', $snapshot['next_reset_at']);
+        $this->assertSame('weekly:tehran:2027-01-02', $snapshot['period_key']);
+        $this->assertSame('Asia/Tehran', $snapshot['timezone']);
+        $this->assertSame('2027-01-01T20:30:00+00:00', $snapshot['starts_at']);
+        $this->assertSame('2027-01-08T20:30:00+00:00', $snapshot['next_reset_at']);
         $this->assertSame(10, $snapshot['seconds_remaining']);
         $next = $clock->snapshot('weekly', $edge->addSeconds(11));
-        $this->assertSame('weekly:2027-01', $next['period_key']);
+        $this->assertSame('weekly:tehran:2027-01-09', $next['period_key']);
         $this->assertSame(604799, $next['seconds_remaining']);
         $this->assertNull($clock->snapshot('all', $edge)['next_reset_at']);
-        $this->assertSame('2027-01-04T00:00:00+00:00', $clock->snapshot('daily', $edge)['next_reset_at']);
+        $this->assertSame('2027-01-09T00:00:00+00:00', $clock->snapshot('daily', $edge)['next_reset_at']);
+    }
+
+    public function test_backfill_reconstructs_tehran_weekly_bests_without_deleting_legacy_rows(): void
+    {
+        $player = $this->identity('Backfill');
+        $fixture = $this->fixtures()[0];
+        $run = $this->createRun($player, $fixture);
+        $this->withToken($player['token'])
+            ->postJson('/api/v1/arcade/runs/'.$run['run_id'].'/complete', $this->payload($fixture))
+            ->assertOk();
+
+        $verified = ArcadeRun::query()->findOrFail($run['run_id']);
+        $weeklyKey = LeaderboardService::periodKeys($verified->started_at)[2];
+        DB::table('arcade_leaderboard_entries')->where('period_key', $weeklyKey)->delete();
+        $legacyKey = 'weekly:'.CarbonImmutable::instance($verified->started_at)->utc()->format('o-W');
+        DB::table('arcade_leaderboard_entries')->insert([
+            'game_id' => 'dino-run', 'rules_version' => $verified->rules_version,
+            'period_key' => $legacyKey, 'player_id' => $player['player_id'],
+            'run_id' => $verified->id, 'score' => $verified->score,
+            'achieved_at' => $verified->started_at,
+        ]);
+
+        $migration = require base_path('database/migrations/2026_11_13_000000_backfill_tehran_arcade_weekly_seasons.php');
+        $migration->up();
+        $migration->up(); // idempotent across interrupted/retried maintenance runs.
+        $this->assertDatabaseHas('arcade_leaderboard_entries', ['player_id' => $player['player_id'], 'period_key' => $weeklyKey, 'score' => $verified->score]);
+        $this->assertDatabaseHas('arcade_leaderboard_entries', ['player_id' => $player['player_id'], 'period_key' => $legacyKey]);
+        $this->assertDatabaseCount('arcade_leaderboard_entries', 4);
     }
 
     public function test_games_endpoint_never_licenses_unverified_mini_game_scores(): void

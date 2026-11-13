@@ -16,6 +16,7 @@ test('countdown ignores incorrect phone wall clock and expires at the server bou
     assert.equal(remainingWeeklySeconds(period, received, received + 10000), 0);
     assert.equal(remainingWeeklySeconds(period, received, received + 999999), 0);
     assert.equal(remainingWeeklySeconds({ next_reset_at: 'invalid' }), null);
+    assert.equal(remainingWeeklySeconds(null), null); // Online initial loading must never crash.
     assert.match(formatWeeklyCountdown(90061), /^۱ روز، ۰۱:۰۱:۰۱$/);
 });
 

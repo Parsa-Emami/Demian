@@ -6,10 +6,10 @@ use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
 
 /**
- * Competition boundaries are UTC. Weekly high scores reset logically at
- * Monday 00:00 UTC; historical weeks remain queryable in the database.
- * Scoring is attributed to the *run start*, avoiding a last-second replay
- * being moved into a new week's competition at completion time.
+ * Weekly seasons reset Saturday 00:00 Asia/Tehran (Friday 20:30 UTC at
+ * the current statutory UTC+03:30 offset); daily periods remain UTC.
+ * A run belongs to its starting season, never its completion season.
+ * Historical period keys stay stored without destructive reset jobs.
  */
 final class CompetitionClock
 {
@@ -17,7 +17,8 @@ final class CompetitionClock
     {
         $utc = CarbonImmutable::instance($date)->utc();
 
-        return ['all', 'daily:'.$utc->format('Y-m-d'), 'weekly:'.$utc->format('o-W')];
+        $seasonStart = $utc->setTimezone('Asia/Tehran')->startOfWeek(CarbonImmutable::SATURDAY);
+        return ['all', 'daily:'.$utc->format('Y-m-d'), 'weekly:tehran:'.$seasonStart->format('Y-m-d')];
     }
 
     public function snapshot(string $period, ?CarbonInterface $at = null): array
@@ -25,21 +26,24 @@ final class CompetitionClock
         $now = $at ? CarbonImmutable::instance($at)->utc() : CarbonImmutable::now('UTC');
         $index = ['all' => 0, 'daily' => 1, 'weekly' => 2][$period]
             ?? throw new \InvalidArgumentException('Unsupported competition period.');
+        $seasonStart = $period === 'weekly'
+            ? $now->setTimezone('Asia/Tehran')->startOfWeek(CarbonImmutable::SATURDAY)
+            : null;
         $start = match ($period) {
             'daily' => $now->startOfDay(),
-            'weekly' => $now->startOfWeek(CarbonImmutable::MONDAY),
+            'weekly' => $seasonStart->utc(),
             default => null,
         };
         $end = match ($period) {
             'daily' => $start->addDay(),
-            'weekly' => $start->addWeek(),
+            'weekly' => $seasonStart->addWeek()->utc(),
             default => null,
         };
 
         return [
             'period' => $period,
             'period_key' => self::periodKeys($now)[$index],
-            'timezone' => 'UTC',
+            'timezone' => $period === 'weekly' ? 'Asia/Tehran' : 'UTC',
             'server_time' => $now->toIso8601String(),
             'starts_at' => $start?->toIso8601String(),
             'next_reset_at' => $end?->toIso8601String(),

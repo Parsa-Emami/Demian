@@ -9,9 +9,9 @@ Production score verification exists for **DINO RUN only**. No other game may su
 - No third-party profile API, phone number or Instagram handle required. Registration collects only 2–32-character display name and generates a random token (only a hash is stored in DB).
 - Profile self-service: authenticated GET/PATCH/DELETE `/api/v1/arcade/player`; DELETE cascades all player runs, replay events and leaderboard entries.
 - Verified per-player best: authenticated `GET /api/v1/arcade/player/best?period=weekly` never exposes hashes or other players' private information.
-- Leaderboard: `GET /api/v1/arcade/leaderboards/dino-run?period=weekly` includes server UTC time, current ISO week key, Monday UTC start, next Monday UTC reset and seconds remaining; score order is descending, with earlier result winning ties.
-- No destructive weekly resets. Every completed run contributes to an immutable `weekly:YYYY-WW` period key by **run start time**; a new week uses a new key and historical leaderboard rows remain in DB.
-- Mobile UI defaults to weekly verified board, refreshes every 60s while visible/open, and renders a second-by-second countdown calibrated to server time, not the user's untrusted phone clock. The user's verified weekly high score is shown alongside public standings.
+- Leaderboard: `GET /api/v1/arcade/leaderboards/dino-run?period=weekly` includes UTC server time, Saturday 00:00 Asia/Tehran competition key, UTC start/end timestamps, and seconds remaining; score order is descending, with earlier result winning ties.
+- No destructive weekly resets. Every completed run contributes to an immutable `weekly:tehran:YYYY-MM-DD` period key by **run start time**; a new week uses a new key and historical leaderboard rows remain in DB.
+- Mobile UI defaults to weekly verified board, refreshes every 60s while visible/open, and renders a second-by-second countdown calibrated to server time, not the user's untrusted phone clock. The user's exact verified weekly rank and high score are shown alongside public standings. Pending runner evidence is owner-bound and can be retried after browser reload.
 - Server replay calculation (seed, ordered transitions, tick count) and run idempotency are unchanged. Unsupported games still return 422 instead of publishing unverified scores.
 - Frontend device-only scores remain clearly labeled **not worldwide verified**, even if users are offline.
 
@@ -27,11 +27,19 @@ Laravel API  ──  MySQL (players / runs / replays / best scores)
           ├── Rate Limit, 256 KiB payload cap
           ├── Token hash authentication
           ├── Server-seeded 60 Hz replay validation (DINO RUN only)
-          ├── UTC weekly index; no destructive reset cron
+          ├── Saturday Tehran weekly index (UTC timestamps); no destructive reset cron
           └── Scheduled replay pruning (only old replay payloads, never best scores)
 ```
 
 **Not real-time multiplayer.** Players play independently; rankings refresh every 60 seconds. WebSockets, Redis and PHP long-lived workers are not necessary for the initial limited concurrency target. Host choice is made from measured p95 API latency and database load.
+
+## Weekly contract migration (non-destructive)
+
+Issue #8 defines a **Saturday 00:00 Asia/Tehran** weekly reset, not an ISO Monday UTC week. The migration `2026_11_13_000000_backfill_tehran_arcade_weekly_seasons.php` reconstructs per-player weekly bests from **verified runs** (not legacy aggregates), and retains all prior `weekly:YYYY-WW` keys for audit. Re-running backfill is safe. The 24-character Tehran keys fit the current schema.
+
+**Schedule a maintenance window** while switching code and migrations: stop ranked submissions, back up MySQL and rehearse restoration before executing `php artisan migrate --force`; verify current season and legacy row counts before resuming. Never delete historical period rows as part of a reset. If the API has already been deployed with ISO-Monday week keys, do not assume the new week matches the old week; review the backfill report against historical verified runs.
+
+The public weekly API includes `timezone: Asia/Tehran`, but `server_time`, `starts_at`, and `next_reset_at` remain ISO 8601 **UTC instants**. Client countdown must derive from server time, not local device timezone. Daily and all-time periods retain their existing semantics.
 
 ## Deployment boundaries
 
@@ -56,7 +64,7 @@ For static-only hosting without an API the game is **practice/local mode**; no c
 ## Test and release matrix
 
 - `php artisan test --filter=ArcadePlatformTest` under SQLite and MySQL.
-- Explicit year-end / Monday UTC rollover tests, server countdown, no history deletion, own-score authorization, deletion cascade, invalid game rejection and idempotent replays.
+- Explicit year-end / Saturday Tehran rollover tests, server countdown, no history deletion, own-score authorization, deletion cascade, invalid game rejection and idempotent replays.
 - `npm run test:ci` including `Mobile08WeeklyLeaderboard.test.js` for clock skew, browser-only scores and identity erasure on failures.
 - All previous Mobile-01..07 production build, network/font/PWA browser and six-game simulated phone tests must remain green.
 - Actual Android/iPhone tests #7 and deployment/monitoring of the real private host remain outside CI.
