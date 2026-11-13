@@ -54,6 +54,8 @@ jobs:
         run: npm run test:mobile-touch:browser
       - name: Mobile-07 root/subpath fonts, PWA offline and reconnect
         run: npm run test:mobile-pwa:browser
+      - name: Mobile-09 selective offline game downloads, reload and cleanup
+        run: npm run test:mobile-09:browser
       - name: Mobile-01 mid-tier phone laboratory baseline
         run: npm run benchmark:mobile:ci
         env:
@@ -73,6 +75,7 @@ jobs:
             demian/docs/mobile-04/browser
             demian/docs/mobile-05/browser
             demian/docs/mobile-07/browser
+            demian/docs/mobile-09/browser
             demian/docs/mobile-01/baseline
             demian/docs/mobile-02/release-asset-report.json
       - uses: actions/configure-pages@v5
