@@ -127,7 +127,7 @@ final class ArcadePlatformTest extends TestCase
     }
     public function test_weekly_countdown_uses_monday_utc_and_keeps_prior_week_history(): void
     {
-        $clock = app(\\App\\Services\\Arcade\\CompetitionClock::class);
+        $clock = app(\App\Services\Arcade\CompetitionClock::class);
         $edge = CarbonImmutable::parse('2027-01-03T23:59:50Z');
         $snapshot = $clock->snapshot('weekly', $edge);
         $this->assertSame('weekly:2026-53', $snapshot['period_key']);
