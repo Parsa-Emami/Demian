@@ -68,6 +68,10 @@ export default class DeviceQaController {
             `${this.app.activeGameId}:${this.app.root.dataset.renderQuality}`);
     }
 
+    frameWork(milliseconds) {
+        if (this.isPlaying()) this.session.sampleFrameWork(milliseconds);
+    }
+
     download() {
         const report = this.session.report();
         if (!report) return;
