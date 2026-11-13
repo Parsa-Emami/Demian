@@ -234,6 +234,8 @@ final class ArcadePlatformTest extends TestCase
 
     public function test_one_time_recovery_rotates_session_and_preserves_verified_scores(): void
     {
+        // Keep rate limiters enabled in production; isolate this security contract from shared test counters.
+        $this->withoutMiddleware(\Illuminate\Routing\Middleware\ThrottleRequests::class);
         $player = $this->identity('Recoverable');
         $fixture = $this->fixtures()[0];
         $run = $this->createRun($player, $fixture);
@@ -273,6 +275,8 @@ final class ArcadePlatformTest extends TestCase
 
     public function test_new_recovery_link_invalidates_previous_secret(): void
     {
+        // Keep rate limiters enabled in production; isolate this security contract from shared test counters.
+        $this->withoutMiddleware(\Illuminate\Routing\Middleware\ThrottleRequests::class);
         $player = $this->identity('Rotation');
         $url = '/api/v1/arcade/player/recovery-link';
         $first = $this->withToken($player['token'])->postJson($url)->assertOk()->json('recovery_code');
