@@ -9,6 +9,6 @@ final class ArcadePlayer extends Model
 {
     use HasUuids;
 
-    protected $fillable = ['display_name', 'token_hash'];
-    protected $hidden = ['token_hash'];
+    protected $fillable = ['display_name', 'token_hash', 'recovery_hash'];
+    protected $hidden = ['token_hash', 'recovery_hash'];
 }
