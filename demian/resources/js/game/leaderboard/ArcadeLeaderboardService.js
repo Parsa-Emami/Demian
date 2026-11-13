@@ -7,13 +7,33 @@ const safeWrite = (storage, key, value) => { try { storage?.setItem(key, JSON.st
 
 export default class ArcadeLeaderboardService {
     constructor({ baseUrl = globalThis.document?.querySelector('meta[name="demian-arcade-api"]')?.content ?? '',
-        storage, fetcher = globalThis.fetch?.bind(globalThis), timeout = 8000 } = {}) {
+        storage, identityStorage, fetcher = globalThis.fetch?.bind(globalThis), timeout = 8000 } = {}) {
+        const injectedStorage = storage !== undefined;
         if (storage === undefined) { try { storage = globalThis.localStorage; } catch { storage = null; } }
-        this.storage = storage; this.fetcher = fetcher; this.timeout = timeout;
+        // Ranked replay evidence is durable, but bearer credentials are not
+        // persisted in localStorage on real devices. Tests can inject a store.
+        if (identityStorage === undefined) {
+            if (injectedStorage) identityStorage = storage;
+            else { try { identityStorage = globalThis.sessionStorage; } catch { identityStorage = null; } }
+        }
+        this.storage = storage;
+        this.identityStorage = identityStorage;
+        this.fetcher = fetcher; this.timeout = timeout;
+        this.retryPromise = null;
         this.baseUrl = String(baseUrl).trim().replace(/\/$/, '');
         this.profile = safeRead(storage, PROFILE_KEY, { display_name: 'بازیکن کافه' });
         this.identityKey = `demian.arcade.identity.v1:${this.baseUrl}`;
-        this.identity = safeRead(storage, this.identityKey, null);
+        this.identity = safeRead(identityStorage, this.identityKey, null);
+        // Migrate a legacy saved bearer once, then erase it from persistent
+        // storage. Account identity is still server-verified on every request.
+        if (!injectedStorage) {
+            const legacy = safeRead(storage, this.identityKey, null);
+            if (!this.identity?.token && legacy?.token) {
+                this.identity = legacy;
+                safeWrite(identityStorage, this.identityKey, legacy);
+            }
+            try { storage?.removeItem(this.identityKey); } catch {}
+        }
         // URL fragments stay client-side. Strip them immediately, but never
         // redeem a bearer recovery capability without an explicit UI action.
         const fragment = globalThis.location?.hash ?? '';
@@ -26,7 +46,7 @@ export default class ArcadeLeaderboardService {
         this.pendingKey = `demian.arcade.pending.v1:${this.baseUrl}`;
         const saved = safeRead(storage, this.pendingKey, null);
         // Replay evidence is never a client score; restore only for the same account.
-        this.pending = saved && saved.player_id === this.identity?.player_id
+        this.pending = saved
             && typeof saved.id === 'string' && /^[0-9a-f-]{36}$/i.test(saved.id)
             && Number.isInteger(saved.body?.ticks) && Array.isArray(saved.body?.transitions)
             && saved.body.transitions.length > 0 && saved.body.transitions.length <= 12000
@@ -37,12 +57,15 @@ export default class ArcadeLeaderboardService {
         safeWrite(this.storage, this.pendingKey, pending);
     }
     get connected() { return Boolean(this.baseUrl); }
+    get hasRecoveryRequired() {
+        return Boolean(this.pending && (!this.identity?.token || this.pending.player_id !== this.identity.player_id));
+    }
     get displayName() { return this.profile.display_name; }
     async request(path, { method = 'GET', body, authenticated = false } = {}) {
         if (!this.connected || !this.fetcher) throw new Error('لیدربورد آنلاین پیکربندی نشده است.');
         const controller = new AbortController(); const timer = setTimeout(() => controller.abort(), this.timeout);
         try {
-            const response = await this.fetcher(`${this.baseUrl}${path}`, { method, credentials: 'omit',
+            const response = await this.fetcher(`${this.baseUrl}${path}`, { method, credentials: 'omit', cache: 'no-store', referrerPolicy: 'no-referrer',
                 headers: { Accept: 'application/json', ...(body ? { 'Content-Type': 'application/json' } : {}),
                     ...(authenticated ? { Authorization: `Bearer ${this.identity?.token ?? ''}` } : {}) },
                 ...(body ? { body: JSON.stringify(body) } : {}), signal: controller.signal });
@@ -52,8 +75,10 @@ export default class ArcadeLeaderboardService {
     }
     async ensureIdentity() {
         if (this.identity?.token) return this.identity;
+        if (this.pending) throw new Error('مدرک امتیاز قبلی باقی است؛ ابتدا همان حساب را بازیابی کن.');
         this.identity = await this.request('/players', { method: 'POST', body: { display_name: this.displayName } });
-        safeWrite(this.storage, this.identityKey, this.identity); return this.identity;
+        safeWrite(this.identityStorage, this.identityKey, this.identity);
+        return this.identity;
     }
     async issueRecoveryLink(pageUrl = globalThis.location?.href) {
         if (!pageUrl) throw new Error('لینک صفحه در دسترس نیست.');
@@ -77,7 +102,7 @@ export default class ArcadeLeaderboardService {
         if (!/^[A-Za-z0-9]{64}$/.test(value)) {
             throw new Error('کد بازیابی ۶۴ نویسهٔ معتبر لازم دارد.');
         }
-        if (this.pending) {
+        if (this.pending && !this.hasRecoveryRequired) {
             await this.retry();
             if (this.pending) throw new Error('ابتدا ارسال رکورد قبلی را تکمیل کن؛ رکورد تأییدنشده نباید حذف شود.');
         }
@@ -90,10 +115,12 @@ export default class ArcadeLeaderboardService {
             throw new Error('پاسخ بازیابی سرور نامعتبر بود.');
         }
         // Never put the recovery code or the complete raw response in storage.
-        this.identity = { token: response.token, player_id: response.player_id };
+        this.identity = { token: response.token, player_id: response.player_id,
+            token_expires_at: response.token_expires_at };
         this.profile = { display_name: response.display_name };
-        this.savePending(null);
-        safeWrite(this.storage, this.identityKey, this.identity);
+        // Pending evidence remains stored even if the recovery capability
+        // belonged to a different player. Only an exact owner may submit it.
+        safeWrite(this.identityStorage, this.identityKey, this.identity);
         safeWrite(this.storage, PROFILE_KEY, this.profile);
         this.recoveryOffer = null;
         return { player_id: this.identity.player_id, display_name: this.displayName };
@@ -106,6 +133,8 @@ export default class ArcadeLeaderboardService {
     }
     async start({ width, character, seed } = {}) {
         if (!this.connected || seed !== undefined) return { mode: 'practice', seed: seed ?? Date.now(), track_width: width };
+        if (this.hasRecoveryRequired) return { mode: 'practice', seed: Date.now(), track_width: width,
+            reason: 'مدرک امتیاز قبلی محفوظ است؛ برای ارسال آن باید حساب اصلی را بازیابی کنی.' };
         // Do not overwrite a failed ranked run before its replay is accepted/rejected.
         if (this.pending) {
             await this.retry();
@@ -119,7 +148,7 @@ export default class ArcadeLeaderboardService {
             if (result.rules_version !== rules.version) throw new Error('نسخهٔ قوانین تغییر کرده است.');
             return { ...result, mode: 'ranked' };
         } catch (error) {
-            if (error.status === 401) { this.identity = null; safeWrite(this.storage, this.identityKey, null); this.savePending(null); }
+            if (error.status === 401) { this.identity = null; safeWrite(this.identityStorage, this.identityKey, null); }
             return { mode: 'practice', seed: Date.now(), track_width: width, reason: 'ارتباط آنلاین برقرار نشد؛ این دور روی دستگاه ثبت می‌شود.' };
         }
     }
@@ -139,7 +168,17 @@ export default class ArcadeLeaderboardService {
         return this.retry();
     }
     async retry() {
+        // At most one in-flight POST per tab, even when the menu and the
+        // connectivity event request a retry simultaneously.
+        if (this.retryPromise) return this.retryPromise;
+        this.retryPromise = this.retryPending();
+        try { return await this.retryPromise; }
+        finally { this.retryPromise = null; }
+    }
+    async retryPending() {
         if (!this.pending) return { status: 'practice' };
+        if (this.hasRecoveryRequired) return { status: 'pending', retryable: false,
+            message: 'برای ارسال این مدرک، حساب اصلی را بازیابی کن.' };
         const pending = this.pending;
         try {
             const result = await this.request(`/runs/${encodeURIComponent(pending.id)}/complete`, { method: 'POST', authenticated: true, body: pending.body });
@@ -147,12 +186,14 @@ export default class ArcadeLeaderboardService {
             return result;
         } catch (error) {
             const retryable = !error.status || error.status >= 500 || error.status === 429;
-            if (!retryable && this.pending === pending) this.savePending(null);
             if (error.status === 401) {
                 this.identity = null;
-                safeWrite(this.storage, this.identityKey, null);
+                safeWrite(this.identityStorage, this.identityKey, null);
             }
-            return { status: retryable ? 'pending' : 'rejected', retryable, message: error.message };
+            // Never silently discard rejected evidence. A 410 from an expired
+            // run cannot be turned into a verified score by re-submission.
+            return { status: retryable || error.status === 401 ? 'pending' : 'rejected',
+                retryable: retryable && error.status !== 401, message: error.message };
         }
     }
     async games() {
@@ -171,8 +212,7 @@ export default class ArcadeLeaderboardService {
         } catch (error) {
             if (error.status === 401) {
                 this.identity = null;
-                safeWrite(this.storage, this.identityKey, null);
-                this.savePending(null);
+                safeWrite(this.identityStorage, this.identityKey, null);
             }
             return null; // Personal stats must never prevent public leaderboard.
         }
@@ -184,7 +224,8 @@ export default class ArcadeLeaderboardService {
         this.identity = null;
         this.savePending(null);
         this.profile = { display_name: 'بازیکن کافه' };
-        safeWrite(this.storage, this.identityKey, null);
+        safeWrite(this.identityStorage, this.identityKey, null);
+        try { this.storage?.removeItem?.(this.identityKey); } catch {}
         safeWrite(this.storage, PROFILE_KEY, this.profile);
         safeWrite(this.storage, LOCAL_KEY, []);
         return { status: 'deleted' };
