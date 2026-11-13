@@ -92,7 +92,9 @@ test('single-flight still shares a decode and LRU evicts without breaking existi
     assert.equal(service.memorySnapshot().cacheBytesEstimated, 8 * MiB);
     assert.equal(service.memorySnapshot().loader.highWatermark, 1);
     assert.equal(service.memorySnapshot().evictions, 1);
-    assert.equal(await service.loadPack('negar', 'lite'), first === service.packCache.get('negar:lite') ? first : service.packCache.get('negar:lite'));
+    const reloaded = await service.loadPack('negar', 'lite');
+    assert.notEqual(reloaded, first, 'evicted pack is decoded only when needed again');
+    assert.deepEqual(requests, ['negar:lite', 'darya:lite', 'setayesh:lite', 'negar:lite']);
     service.dispose();
     assert.equal(service.packCache.size, 0);
 });
