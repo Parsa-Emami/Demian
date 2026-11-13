@@ -82,6 +82,19 @@ final class Mobile10SecurityTest extends TestCase
             ['recovery_code' => $two])->assertOk();
     }
 
+
+    public function test_recovery_issuance_is_limited_per_player_even_if_ip_throttles_are_disabled(): void
+    {
+        $this->withoutMiddleware(ThrottleRequests::class);
+        $player = $this->postJson('/api/v1/arcade/players', ['display_name' => 'Limited'])
+            ->assertCreated()->json();
+        $this->withToken($player['token']);
+        for ($i = 0; $i < 3; $i++) {
+            $this->postJson('/api/v1/arcade/player/recovery-link')->assertOk();
+        }
+        $this->postJson('/api/v1/arcade/player/recovery-link')->assertStatus(429);
+    }
+
     public function test_cors_includes_authenticated_account_deletion_verb(): void
     {
         $this->assertContains('DELETE', config('cors.allowed_methods'));
