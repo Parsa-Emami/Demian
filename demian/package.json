@@ -54,6 +54,7 @@
         "test:identity:browser": "node tools/check_project_identity.mjs",
         "test:device-qa:browser": "node tools/check_device_qa.mjs",
         "test:mobile-network:browser": "node tools/check_mobile_network_resilience.mjs",
+        "test:mobile-touch:browser": "node tools/check_mobile_touch.mjs",
         "benchmark:mobile": "node tools/benchmark_mobile.mjs",
         "benchmark:mobile:ci": "node tools/benchmark_mobile.mjs"
     },
