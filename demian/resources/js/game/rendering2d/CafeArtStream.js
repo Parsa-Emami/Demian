@@ -1,6 +1,7 @@
 import art from '../../../game/cafe-art.json' with { type: 'json' };
 import { CAFE_BOUNDS } from '../shared/cafe/CafeWalkthroughScene.js';
 import { fbxCafeAssetUrl, fbxFloorplanImage } from './FbxCafeAssets.js';
+import { optionalAssetPolicy, withTransientRetry } from '../characters/runtime/MobileNetworkPolicy.js';
 
 import { renderQualityProfile as cafeQualityProfile } from '../performance/RenderQuality.js';
 
@@ -41,7 +42,11 @@ export function visibleCafeTiles(camera, level, padding = 0) {
 
 async function loadTile(url, { signal }) {
     const response = await fetch(url, { signal });
-    if (!response.ok) throw Error('Cafe tile unavailable');
+    if (!response.ok) {
+        const error = new Error('Cafe tile unavailable');
+        error.status = response.status;
+        throw error;
+    }
     const blob = await response.blob();
     if (typeof createImageBitmap === 'function') {
         try { return await createImageBitmap(blob); }
@@ -61,6 +66,22 @@ export default class CafeArtStream {
         this.revision = 0; this.generation = 0; this.disposed = false;
         this.loadedBytes = 0; this.level = null;
         this.viewKey = null; this.retryAt = Infinity;
+        this.onConnectionChange = () => {
+            this.viewKey = null;
+            this.retryAt = 0;
+            const policy = optionalAssetPolicy();
+            if (policy.deferBackground) {
+                for (const entry of this.active.values()) entry.controller.abort();
+            } else {
+                // A failed tile may have been unreachable solely due to a
+                // disconnected radio. New network conditions warrant retry.
+                this.failed.clear();
+            }
+        };
+        globalThis.document?.addEventListener?.('visibilitychange', this.onConnectionChange);
+        globalThis.window?.addEventListener?.('online', this.onConnectionChange);
+        globalThis.window?.addEventListener?.('offline', this.onConnectionChange);
+        globalThis.navigator?.connection?.addEventListener?.('change', this.onConnectionChange);
     }
 
     setQuality(preference) {
@@ -76,13 +97,17 @@ export default class CafeArtStream {
 
     prepare(camera, padding = 0) {
         if (this.disposed) return;
+        const network = optionalAssetPolicy();
         const viewKey = [camera.position.x, camera.position.z, camera.pixelsPerUnit,
-            camera.viewportWidth, camera.viewportHeight, padding, this.profile.quality].join(':');
+            camera.viewportWidth, camera.viewportHeight, padding, this.profile.quality, network.reason].join(':');
         const now = this.clock();
         if (this.viewKey === viewKey && now < this.retryAt) return;
         this.viewKey = viewKey; this.retryAt = Infinity;
-        this.level = cafeArtLevel(camera, this.profile);
-        const tiles = visibleCafeTiles(camera, this.level, padding).slice(0, this.profile.maxTiles);
+        // Low-bandwidth and hidden/offline sessions keep the inexpensive
+        // floorplan preview. High-resolution tiles are always optional.
+        this.level = network.deferBackground ? null : cafeArtLevel(camera, this.profile);
+        const budget = network.reason === 'limited-3g' ? Math.min(2, this.profile.maxTiles) : this.profile.maxTiles;
+        const tiles = visibleCafeTiles(camera, this.level, padding).slice(0, budget);
         for (const tile of tiles) {
             const retry = this.failed.get(tile.id);
             if (retry > now) this.retryAt = Math.min(this.retryAt, retry);
@@ -107,7 +132,11 @@ export default class CafeArtStream {
     }
 
     pump() {
-        while (!this.disposed && this.active.size < this.profile.concurrency && this.queue.length) {
+        const network = optionalAssetPolicy();
+        if (network.deferBackground) return;
+        const concurrency = network.reason === 'limited-3g'
+            ? Math.min(1, this.profile.concurrency) : this.profile.concurrency;
+        while (!this.disposed && this.active.size < concurrency && this.queue.length) {
             if (this.ready.size + this.active.size >= this.profile.maxTiles) {
                 const victim = [...this.ready.keys()].find(id => !this.desired.has(id));
                 if (!victim) return;
@@ -120,7 +149,10 @@ export default class CafeArtStream {
             const entry = { controller: new AbortController(), generation: this.generation };
             this.active.set(tile.id, entry);
             entry.timer = setTimeout(() => { entry.timedOut = true; entry.controller.abort(); }, 8000);
-            entry.promise = Promise.resolve().then(() => this.loader(fbxCafeAssetUrl(tile.file), { signal: entry.controller.signal }))
+            entry.promise = Promise.resolve().then(() => withTransientRetry(
+                () => this.loader(fbxCafeAssetUrl(tile.file), { signal: entry.controller.signal }),
+                { signal: entry.controller.signal, attempts: 2, baseDelayMs: 250 },
+            ))
                 .then(image => {
                     if (!image) throw Error('Cafe tile did not decode');
                     if (this.disposed || entry.generation !== this.generation || !this.desired.has(tile.id) || entry.controller.signal.aborted) { image.close?.(); return; }
@@ -161,6 +193,10 @@ export default class CafeArtStream {
 
     dispose() {
         this.disposed = true; this.generation++;
+        globalThis.document?.removeEventListener?.('visibilitychange', this.onConnectionChange);
+        globalThis.window?.removeEventListener?.('online', this.onConnectionChange);
+        globalThis.window?.removeEventListener?.('offline', this.onConnectionChange);
+        globalThis.navigator?.connection?.removeEventListener?.('change', this.onConnectionChange);
         for (const entry of this.active.values()) entry.controller.abort();
         for (const id of this.ready.keys()) this.evict(id);
         this.queue = []; this.desired.clear(); this.failed.clear();
