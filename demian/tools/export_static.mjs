@@ -40,10 +40,21 @@ const html = renderStaticTemplate(readFileSync(join(root, 'resources/views/demia
 writeFileSync(join(out, 'index.html'), html);
 // A content-derived service-worker version makes installs deterministic and
 // avoids activating an incompatible cached shell during a live ranked run.
-const releaseId = createHash('sha256').update(JSON.stringify({
-    entry: entry.file, css: entry.css ?? [],
-})).digest('hex').slice(0, 16);
-const offlinePacks = buildOfflinePackManifest({ release: out, entry, releaseId });
+const provisional = buildOfflinePackManifest({ release: out, entry,
+    releaseId: '0000000000000000' });
+// Hash the actual offline-critical assets as well as the atomic app bundle.
+// Art-only changes now force a new offline release instead of mixing packs.
+const resourcePaths = [...new Set([
+    ...provisional.core.map(row => row.path),
+    ...provisional.games.flatMap(game => game.files.map(row => row.path)),
+])].sort();
+const fingerprint = createHash('sha256');
+for (const path of resourcePaths) {
+    fingerprint.update(path);
+    fingerprint.update(createHash('sha256').update(readFileSync(join(out, path))).digest());
+}
+const releaseId = fingerprint.digest('hex').slice(0, 16);
+const offlinePacks = { ...provisional, release: releaseId };
 writeFileSync(join(out, 'offline-packs.json'), JSON.stringify(offlinePacks, null, 2) + '\n');
 const workerTemplate = readFileSync(join(root, 'tools/templates/service-worker.js'), 'utf8');
 if (!workerTemplate.includes('__DEMIAN_RELEASE_ID__')) throw new Error('PWA worker version placeholder missing.');
