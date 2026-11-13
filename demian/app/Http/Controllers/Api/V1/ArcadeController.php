@@ -72,6 +72,22 @@ final class ArcadeController extends Controller
             ->header('Cache-Control', 'no-store, private');
     }
 
+    public function issueBackupCode(Request $request): JsonResponse
+    {
+        $player = $request->attributes->get('arcade_player');
+        $limitKey = 'arcade:backup-issue:'.$player->id;
+        abort_if(RateLimiter::tooManyAttempts($limitKey, 2), 429, 'Backup code issuance temporarily limited.');
+        RateLimiter::hit($limitKey, 3600);
+        $secret = Str::random(64);
+        $expires = now()->addDays((int) config('demian-arcade.backup_code_days'));
+        // User must save this once, outside the app. Only a hash is persisted.
+        $player->update(['backup_hash' => hash('sha256', $secret), 'backup_expires_at' => $expires]);
+
+        return response()->json(['backup_code' => $secret,
+            'backup_expires_at' => $expires->toIso8601String()])
+            ->header('Cache-Control', 'no-store, private');
+    }
+
     public function recover(Request $request): JsonResponse
     {
         $validated = $request->validate([
@@ -80,16 +96,22 @@ final class ArcadeController extends Controller
         $secretHash = hash('sha256', $validated['recovery_code']);
 
         $session = DB::transaction(function () use ($secretHash): array {
-            $player = ArcadePlayer::query()->where('recovery_hash', $secretHash)
-                ->lockForUpdate()->first();
-            abort_unless($player && $player->recovery_expires_at?->isFuture(), 422,
-                'Recovery link expired or already used.');
+            $player = ArcadePlayer::query()->where(function ($query) use ($secretHash): void {
+                $query->where('recovery_hash', $secretHash)->orWhere('backup_hash', $secretHash);
+            })->lockForUpdate()->first();
+            $linkValid = $player && $player->recovery_hash === $secretHash
+                && $player->recovery_expires_at?->isFuture();
+            $backupValid = $player && $player->backup_hash === $secretHash
+                && $player->backup_expires_at?->isFuture();
+            abort_unless($linkValid || $backupValid, 422,
+                'Recovery code expired or already used.');
             $token = Str::random(64);
             // Rotate the active token, consume the one-time recovery secret,
             // and leave all prior verified scores and run history untouched.
             $expires = now()->addDays((int) config('demian-arcade.player_session_days'));
             $player->update(['token_hash' => hash('sha256', $token),
-                'token_expires_at' => $expires, 'recovery_hash' => null, 'recovery_expires_at' => null]);
+                'token_expires_at' => $expires, 'recovery_hash' => null, 'recovery_expires_at' => null,
+                'backup_hash' => null, 'backup_expires_at' => null]);
 
             return ['player_id' => $player->id, 'display_name' => $player->display_name,
                 'token' => $token, 'token_expires_at' => $expires->toIso8601String()];
