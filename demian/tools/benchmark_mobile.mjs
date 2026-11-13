@@ -216,6 +216,7 @@ try {
             const net = networkFor(phase);
             const row = { gameId: id, launchMs, measuredAtState: 'playing',
                 render: qa, network: net, browserMetrics: afterMetrics,
+                spriteCache: await page.evaluate(() => window.demianGameApplication.characterVisuals?.memorySnapshot() ?? null),
                 metricDeltas: delta(beforeMetrics, afterMetrics), advisory: evaluateAdvisoryBudget({
                     renderP95: qa?.frameIntervalMs?.p95, targetFps: qa?.targetSegments?.[0]?.targetFps ?? 60,
                     touchP95: qa?.eventToRenderSubmissionMs?.p95,
