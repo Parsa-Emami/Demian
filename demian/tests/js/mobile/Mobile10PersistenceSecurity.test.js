@@ -101,3 +101,25 @@ test('real browser defaults migrate legacy localStorage bearer into session stor
         else globalThis.sessionStorage = priorSession;
     }
 });
+
+test('configured cleartext third-party arcade API cannot receive a bearer', async () => {
+    let requests = 0;
+    const service = new ArcadeLeaderboardService({ baseUrl: 'http://unsafe.example.test/api/v1/arcade',
+        storage: makeStorage(), fetcher: async () => { requests++; throw new Error('unexpected'); } });
+    service.identity = { player_id: 'owner', token: 'T'.repeat(64) };
+    const practice = await service.start({ width: 420, character: 'darya' });
+    assert.equal(practice.mode, 'practice');
+    assert.equal(requests, 0);
+    assert.equal(service.connected, false);
+});
+
+test('server-side erasure is forbidden when account marker survives without bearer', async () => {
+    const storage = makeStorage();
+    const service = new ArcadeLeaderboardService({ baseUrl, storage, fetcher: async () => {
+        throw new Error('must not contact server');
+    } });
+    storage.setItem(service.accountMarkerKey, 'true');
+    service.accountKnown = true;
+    await assert.rejects(service.eraseAccount(), /بازیابی/);
+    assert.equal(storage.getItem(service.accountMarkerKey), 'true');
+});
