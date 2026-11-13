@@ -62,12 +62,19 @@ try {
     await page.waitForFunction(() =>
         document.querySelector('[data-offline-game="dino-run"] small')?.textContent.includes('آمادهٔ اجرای آفلاین'),
         null, { timeout: 120000 });
+    for (const game of manifest.games) {
+        if (game.id === 'dino-run') continue;
+        await page.locator('[data-offline-download="' + game.id + '"]').click();
+        await page.waitForFunction(id =>
+            document.querySelector('[data-offline-game="' + id + '"] small')?.textContent.includes('آمادهٔ اجرای آفلاین'),
+            game.id, { timeout: 120000 });
+    }
     const saved = await page.evaluate(async () => {
         const keys = await caches.keys();
         return { keys, usages: keys.filter(name => name.startsWith('demian-core-v1-') ||
             name.startsWith('demian-game-v1-')) };
     });
-    assert.equal(saved.usages.length, 2, JSON.stringify(saved));
+    assert.equal(saved.usages.length, manifest.games.length + 1, JSON.stringify(saved));
     assert.equal(saved.keys.filter(name => name.startsWith('demian-offline-v1-')).length, 1);
     assert.ok(saved.keys.every(key => !key.includes('api')));
     await context.setOffline(true);
@@ -75,21 +82,27 @@ try {
     await page.waitForFunction(() => window.demianGameApplication?.sessionState === 'menu',
         null, { timeout: 90000 });
     assert.equal(await page.locator('h1').filter({ hasText: 'دمیان فعلاً آفلاین است' }).count(), 0);
-    // Player explicitly requests a local practice round; no forged ranked POST.
-    await page.evaluate(() => window.demianGameApplication.launchGame('dino-run', { seed: 127 }));
-    await page.waitForFunction(() => window.demianGameApplication?.sessionState === 'playing',
-        null, { timeout: 60000 });
+    // Exercise every game's offline start with explicitly local practice.
+    report.playableOfflineModes = [];
+    for (const game of manifest.games) {
+        await page.evaluate(id => window.demianGameApplication.launchGame(id, { seed: 127 }), game.id);
+        await page.waitForFunction(() => window.demianGameApplication?.sessionState === 'playing',
+            null, { timeout: 60000 });
+        report.playableOfflineModes.push(game.id);
+        await page.evaluate(() => window.demianGameApplication.showMenu());
+        await page.waitForFunction(() => window.demianGameApplication?.sessionState === 'menu');
+    }
     report.offlineGameplay = 'passed';
     await context.setOffline(false);
-    await page.evaluate(() => window.demianGameApplication.showMenu());
-    await page.waitForFunction(() => window.demianGameApplication?.sessionState === 'menu');
     await page.locator('[data-screen="cafe-menu"] [data-shell-action="play"]').click();
-    const remove = page.locator('[data-offline-remove="dino-run"]');
-    await remove.waitFor({ state: 'visible', timeout: 25000 });
-    await remove.click();
-    await page.waitForFunction(() =>
-        document.querySelector('[data-offline-game="dino-run"] small')?.textContent.includes('دریافت نشده'),
-        null, { timeout: 30000 });
+    for (const game of manifest.games) {
+        const remove = page.locator('[data-offline-remove="' + game.id + '"]');
+        await remove.waitFor({ state: 'visible', timeout: 25000 });
+        await remove.click();
+        await page.waitForFunction(id =>
+            document.querySelector('[data-offline-game="' + id + '"] small')?.textContent.includes('دریافت نشده'),
+            game.id, { timeout: 30000 });
+    }
     const keysAfter = await page.evaluate(() => caches.keys());
     assert.ok(keysAfter.every(key => !key.startsWith('demian-core-v1-') &&
         !key.startsWith('demian-game-v1-')), JSON.stringify(keysAfter));
@@ -115,5 +128,5 @@ if (report.status !== 'passed') {
     console.error('Mobile-09 offline PWA browser QA failed:', report.errors);
     process.exitCode = 1;
 } else {
-    console.log('Mobile-09 selective offline pack + real offline practice + cleanup: passed');
+    console.log('Mobile-09 six selectable offline modes + real practice + cleanup: passed');
 }
