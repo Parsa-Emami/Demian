@@ -61,6 +61,11 @@ export default class ArcadeLeaderboardService {
             safeWrite(storage, this.accountMarkerKey, true);
         }
         this.pendingKey = `demian.arcade.pending.v1:${this.baseUrl}`;
+        this.rejectedKey = `demian.arcade.rejected.v1:${this.baseUrl}`;
+        const history = safeRead(storage, this.rejectedKey, []);
+        // Keep a bounded audit trail without allowing a rejected run to block
+        // every future ranked attempt. This is local evidence, not a score.
+        this.rejected = Array.isArray(history) ? history.slice(-10) : [];
         const saved = safeRead(storage, this.pendingKey, null);
         // Replay evidence is never a client score; restore only for the same account.
         this.pending = saved
@@ -80,6 +85,12 @@ export default class ArcadeLeaderboardService {
             this.pendingIsDurable = false;
         }
         return this.pendingIsDurable;
+    }
+    archiveRejected(pending, status) {
+        const record = { ...pending, rejected_at: new Date().toISOString(), http_status: status };
+        this.rejected = [...this.rejected, record].slice(-10);
+        safeWrite(this.storage, this.rejectedKey, this.rejected);
+        if (this.pending === pending) this.savePending(null);
     }
     get connected() { return Boolean(this.baseUrl); }
     get hasRecoveryRequired() {
@@ -230,9 +241,11 @@ export default class ArcadeLeaderboardService {
                 this.identity = null;
                 safeWrite(this.identityStorage, this.identityKey, null);
             }
-            // Never silently discard rejected evidence. A 410 from an expired
-            // run cannot be turned into a verified score by re-submission.
-            return { status: retryable || error.status === 401 ? 'pending' : 'rejected',
+            // Terminal failures are retained in a bounded, inspectable local
+            // archive. They must not indefinitely block new ranked runs.
+            const terminal = !retryable && error.status !== 401;
+            if (terminal && this.pending === pending) this.archiveRejected(pending, error.status);
+            return { status: terminal ? 'rejected' : 'pending',
                 retryable: retryable && error.status !== 401, message: error.message };
         }
     }
@@ -269,6 +282,8 @@ export default class ArcadeLeaderboardService {
         }
         this.identity = null;
         this.savePending(null);
+        this.rejected = [];
+        safeWrite(this.storage, this.rejectedKey, []);
         this.accountKnown = false;
         safeWrite(this.storage, this.accountMarkerKey, false);
         this.profile = { display_name: 'بازیکن کافه' };
