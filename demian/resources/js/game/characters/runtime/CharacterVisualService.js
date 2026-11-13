@@ -236,7 +236,9 @@ export default class CharacterVisualService {
         }, LOAD_TIMEOUT_MS);
         try {
             const response = await fetch(pair.atlasUrl, {
-                cache: 'default',
+                // Revalidate atlas JSON so its sprite_rev always matches the
+                // matching PNG across atomic deployments; 304 remains cacheable.
+                cache: 'no-cache',
                 credentials: 'same-origin',
                 headers: { Accept: 'application/json' },
                 signal: controller.signal,
