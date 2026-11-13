@@ -104,6 +104,7 @@ test('invalid geometry never returns NaN joystick movement during rapid rotation
 test('joystick owns one pointer; second finger can press an independent action', () => {
     const router = routerStub();
     router.contexts = new Map([['OPEN_WORLD', { analog: { xAxis: 'x', zAxis: 'z' } }]]);
+    router.bindings = { context: (_name, definition) => definition };
     router.contextName = 'OPEN_WORLD';
     router.touchControls.touchStickMode = 'fixed';
     router.touchControls.touchDeadZone = 10;
