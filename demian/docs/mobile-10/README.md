@@ -44,10 +44,13 @@ the ranked API is an independently deployed Laravel service.
    from bearer identity (`sessionStorage`). Old `localStorage` bearers are
    migrated once and removed. Cross-origin HTTP API URLs are rejected except
    for localhost development; fetches omit credentials/referrers and caching.
-5. Replays persist before network submission, are bound to the submitting owner,
-   and cannot silently vanish on an HTTP 401 or 410. Lost authentication never
-   silently creates a new ranked account. Non-durable storage failure is
-   surfaced to the player; the server remains authoritative.
+5. Replays persist before network submission and are bound to their owner.
+   HTTP 401 keeps the owner-bound pending record for recovery. A definitive
+   HTTP 4xx rejection is moved to a bounded (10-record) local evidence archive
+   **before** the pending entry is cleared; if archival fails, the pending
+   record is retained. Failed browser quota writes are surfaced to the player.
+   An archived rejection never becomes a verified score or blocks future ranked
+   games. The server remains authoritative.
 6. Concurrent retry calls in a single tab share one in-flight request. Across
    tabs, server-side idempotency remains mandatory.
 7. Account erasure is exposed in the leaderboard UI behind explicit confirmation.
