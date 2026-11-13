@@ -12,6 +12,11 @@ export default class LeaderboardScreen extends BaseScreen {
         this.countdown = this.element.querySelector('[data-ranking-countdown]');
         this.personalBest = this.element.querySelector('[data-ranking-personal-best]');
         this.form = this.element.querySelector('[data-ranking-name-form]');
+        this.recovery = this.element.querySelector('[data-ranking-recovery]');
+        this.recoveryForm = this.element.querySelector('[data-ranking-recover-form]');
+        this.issueRecovery = this.element.querySelector('[data-ranking-issue-recovery]');
+        this.recoveryLink = this.element.querySelector('[data-ranking-recovery-link]');
+        this.recoveryStatus = this.element.querySelector('[data-ranking-recovery-status]');
         this.timer = null;
         this.snapshot = null;
         this.receivedAtMs = 0;
@@ -32,12 +37,53 @@ export default class LeaderboardScreen extends BaseScreen {
                 button.disabled = false;
             }
         };
+        this.onIssueRecovery = async () => {
+            this.issueRecovery.disabled = true;
+            this.recoveryLink.value = '';
+            try {
+                const link = await this.service.issueRecoveryLink();
+                this.recoveryLink.value = link;
+                this.recoveryLink.focus();
+                this.recoveryLink.select();
+                this.recoveryStatus.textContent = 'لینک فقط یک بار قابل استفاده است؛ آن را در جای امنی ذخیره کنید. ساخت لینک تازه، لینک قبلی را باطل می‌کند.';
+            } catch (error) {
+                this.recoveryStatus.textContent = error.message;
+            } finally {
+                this.issueRecovery.disabled = false;
+            }
+        };
+        this.onRecover = async event => {
+            event.preventDefault();
+            const button = this.recoveryForm.querySelector('button[type="submit"]');
+            button.disabled = true;
+            try {
+                const code = this.recoveryForm.elements.recovery_code.value;
+                const recovered = await this.service.recoverAccount(code);
+                this.recoveryForm.reset();
+                this.form.elements.display_name.value = recovered.display_name;
+                await this.load();
+                this.recoveryStatus.textContent = 'حساب بازیابی شد؛ نشست قبلی و لینک یک‌بارمصرف باطل شدند.';
+            } catch (error) {
+                this.recoveryStatus.textContent = error.message;
+            } finally {
+                button.disabled = false;
+            }
+        };
+        this.issueRecovery.addEventListener('click', this.onIssueRecovery);
+        this.recoveryForm.addEventListener('submit', this.onRecover);
         this.period.addEventListener('change', this.onPeriod);
         this.form.addEventListener('submit', this.onSubmit);
     }
 
     async beforeOpen() {
         this.form.elements.display_name.value = this.service.displayName;
+        this.issueRecovery.disabled = !this.service.connected;
+        for (const control of this.recoveryForm.elements) control.disabled = !this.service.connected;
+        this.recoveryForm.elements.recovery_code.value = this.service.recoveryOffer ?? '';
+        this.recoveryLink.value = '';
+        this.recoveryStatus.textContent = this.service.recoveryOffer
+            ? 'کد بازیابی لینک شناسایی شد؛ برای تعویض حساب روی «بازیابی حساب» بزنید.'
+            : '';
         for (const option of this.period.options) {
             option.disabled = !this.service.connected && option.value !== 'device';
         }
@@ -131,6 +177,7 @@ export default class LeaderboardScreen extends BaseScreen {
         this.generation++;
         this.loading = false;
         this.snapshot = null;
+        this.recoveryLink.value = '';
         if (this.timer != null) clearInterval(this.timer);
         this.timer = null;
     }
@@ -139,6 +186,8 @@ export default class LeaderboardScreen extends BaseScreen {
         this.generation++;
         if (this.timer != null) clearInterval(this.timer);
         this.timer = null;
+        this.issueRecovery.removeEventListener('click', this.onIssueRecovery);
+        this.recoveryForm.removeEventListener('submit', this.onRecover);
         this.period.removeEventListener('change', this.onPeriod);
         this.form.removeEventListener('submit', this.onSubmit);
         super.dispose();
