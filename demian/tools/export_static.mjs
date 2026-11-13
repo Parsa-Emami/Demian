@@ -40,6 +40,12 @@ const html = renderStaticTemplate(readFileSync(join(root, 'resources/views/demia
 writeFileSync(join(out, 'index.html'), html);
 // A content-derived service-worker version makes installs deterministic and
 // avoids activating an incompatible cached shell during a live ranked run.
+writeFileSync(join(out, 'characters.json'), JSON.stringify({ data: BUILTIN_CHARACTER_SLUGS.map((slug) => ({
+    id: `builtin-${slug}`, name: labels[slug], slug, is_builtin: true, is_active: slug === 'darya',
+    sprite_url: `assets/characters/${slug}/${slug}-spritesheet-v${characterPackVersion(slug)}-mobile.png`,
+    atlas_url: `assets/characters/${slug}/${slug}-atlas-v${characterPackVersion(slug)}-mobile.json`,
+    settings: { scale: 1, walk_speed: 3.55, run_speed: 6.9, jump_force: 6.8 },
+})) }, null, 2));
 const provisional = buildOfflinePackManifest({ release: out, entry,
     releaseId: '0000000000000000' });
 // Hash the actual offline-critical assets as well as the atomic app bundle.
@@ -62,12 +68,6 @@ writeFileSync(join(out, 'service-worker.js'),
     workerTemplate.replaceAll('__DEMIAN_RELEASE_ID__', releaseId));
 cpSync(join(root, 'tools/templates/offline.html'), join(out, 'offline.html'));
 cpSync(join(root, 'tools/templates/static-host.htaccess'), join(out, '.htaccess'));
-writeFileSync(join(out, 'characters.json'), JSON.stringify({ data: BUILTIN_CHARACTER_SLUGS.map((slug) => ({
-    id: `builtin-${slug}`, name: labels[slug], slug, is_builtin: true, is_active: slug === 'darya',
-    sprite_url: `assets/characters/${slug}/${slug}-spritesheet-v${characterPackVersion(slug)}-mobile.png`,
-    atlas_url: `assets/characters/${slug}/${slug}-atlas-v${characterPackVersion(slug)}-mobile.json`,
-    settings: { scale: 1, walk_speed: 3.55, run_speed: 6.9, jump_force: 6.8 },
-})) }, null, 2));
 writeFileSync(join(out, '.nojekyll'), '');
 const report = validateReleaseAssets({
     root: out,
