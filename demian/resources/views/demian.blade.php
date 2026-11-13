@@ -660,6 +660,7 @@
                                 <button type="submit" class="shell-button">بازیابی حساب</button>
                             </form>
                             <p data-ranking-recovery-status role="status" aria-live="polite"></p>
+                            <button type="button" data-ranking-delete-account class="shell-button shell-button--ghost">حذف کامل حساب و رکوردهای سرور</button>
                         </div>
                         <button type="button" data-shell-action="close-modal" class="shell-button shell-button--primary" data-screen-autofocus>بستن</button>
                     </div>
