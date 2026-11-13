@@ -13,7 +13,8 @@ final class AuthenticateArcadePlayer
     {
         $token = $request->bearerToken();
         abort_unless(is_string($token) && strlen($token) === 64, 401, 'Invalid player token.');
-        $player = ArcadePlayer::query()->where('token_hash', hash('sha256', $token))->first();
+        $player = ArcadePlayer::query()->where('token_hash', hash('sha256', $token))
+            ->where('token_expires_at', '>', now())->first();
         abort_unless($player, 401, 'Invalid player token.');
         $request->attributes->set('arcade_player', $player);
 

@@ -125,7 +125,11 @@ test('persisted replay cannot be reused by a different identity or replaced when
     assert.equal(first.pending.player_id, 'p1');
     storage.setItem(first.identityKey, JSON.stringify({ player_id: 'p2', token: 'two' }));
     const other = new ArcadeLeaderboardService({ baseUrl, storage });
-    assert.equal(other.pending, null);
+    // Never silently delete a different account's durable evidence.
+    assert.equal(other.pending.player_id, 'p1');
+    assert.equal(other.hasRecoveryRequired, true);
+    const blocked = await other.retry();
+    assert.equal(blocked.status, 'pending');
 });
 
 test('recovery link is explicit, HTTPS-only and one-time secret is never persisted in identity', async () => {
