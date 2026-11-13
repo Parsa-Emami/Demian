@@ -1,4 +1,10 @@
 export function readStick(dx, dy, radius, deadZone, sensitivity) {
+    // Defensive handling for geometry changing during rotation, browser zoom,
+    // or temporarily zero-sized controls. Never introduce NaN movement.
+    if (![dx, dy, radius, deadZone, sensitivity].every(Number.isFinite) ||
+        radius <= 0 || sensitivity <= 0 || deadZone < 0 || deadZone >= 1) {
+        return { x: 0, z: 0, magnitude: 0, offsetX: 0, offsetY: 0 };
+    }
     const length = Math.hypot(dx, dy);
     const reach = Math.min(1, length / radius);
     const magnitude = Math.pow(Math.max(0, (reach - deadZone) / (1 - deadZone)), 1 / sensitivity);
@@ -24,6 +30,11 @@ export default class TouchStick {
             lostpointercapture: event => this.release(event),
         };
         for (const [type, listener] of Object.entries(this.listeners)) zone.addEventListener(type, listener);
+        this.ownerWindow = zone.ownerDocument?.defaultView ?? globalThis.window;
+        // A detached stick or rejected pointer capture may prevent pointerup
+        // from bubbling through the zone. Catch termination at the window.
+        this.ownerWindow?.addEventListener?.('pointerup', this.listeners.pointerup, true);
+        this.ownerWindow?.addEventListener?.('pointercancel', this.listeners.pointercancel, true);
     }
 
     press(event) {
@@ -46,7 +57,12 @@ export default class TouchStick {
             this.base.style.setProperty('--stick-origin-x', `${rotated ? y : x}px`);
             this.base.style.setProperty('--stick-origin-y', `${rotated ? -x : y}px`);
         }
-        this.zone.setPointerCapture?.(event.pointerId);
+        try {
+            this.zone.setPointerCapture?.(event.pointerId);
+        } catch {
+            // If capture fails (e.g., detached node), InputRouter still resets
+            // all gestures on window-level termination or layout change.
+        }
         this.base.classList.add('is-active');
         this.move(event);
         event.stopPropagation();
@@ -74,11 +90,16 @@ export default class TouchStick {
     }
 
     reset() {
-        if (!this.gesture) return;
-        const { id } = this.gesture;
+        const id = this.gesture?.id;
+        // Reset analog even if capture was lost before the gesture record
+        // could be cleaned up. The object identity is shared with InputRouter.
         this.gesture = null;
         Object.assign(this.value, { x: 0, z: 0, magnitude: 0 });
-        if (this.zone.hasPointerCapture?.(id)) this.zone.releasePointerCapture(id);
+        try {
+            if (id != null && this.zone.hasPointerCapture?.(id)) this.zone.releasePointerCapture(id);
+        } catch {
+            // Release may throw when a control is removed during navigation.
+        }
         this.base.classList.remove('is-active');
         for (const property of ['--stick-force', '--stick-origin-x', '--stick-origin-y']) this.base.style.removeProperty(property);
         this.knob.style.removeProperty('--stick-x');
@@ -88,5 +109,7 @@ export default class TouchStick {
     dispose() {
         this.reset();
         for (const [type, listener] of Object.entries(this.listeners)) this.zone.removeEventListener(type, listener);
+        this.ownerWindow?.removeEventListener?.('pointerup', this.listeners.pointerup, true);
+        this.ownerWindow?.removeEventListener?.('pointercancel', this.listeners.pointercancel, true);
     }
 }

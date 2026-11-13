@@ -1,0 +1,80 @@
+/*
+ * Mobile-05 — touch hit-testing and safe-area correctness.
+ *
+ * Limit gesture suppression to gameplay controls, not menus, sheets or
+ * scrollable modals. Maintain CSS safe area variables for both physical
+ * landscape and the 90deg logical landscape fallback on iOS Safari.
+ */
+.manager-shell {
+    --mobile05-safe-top: max(12px, env(safe-area-inset-top, 0px));
+    --mobile05-safe-right: max(14px, env(safe-area-inset-right, 0px));
+    --mobile05-safe-bottom: max(16px, env(safe-area-inset-bottom, 0px));
+    --mobile05-safe-left: max(14px, env(safe-area-inset-left, 0px));
+}
+/* When a reduced logical height is combined with an inherited
+ * inset:0 and a 90deg transform, some mobile layouts anchor the fixed root
+ * to the physical viewport bottom, shifting the entire rotated scene off
+ * screen. Force a single physical top-left anchor before transformation. */
+html.demian-forced-landscape .manager-shell[data-manager-shell] {
+    top: 0 !important;
+    left: 0 !important;
+    bottom: auto !important;
+    right: auto !important;
+}
+html.demian-forced-landscape .manager-shell {
+    /* CSS rotates the shell clockwise: physical top maps to logical left;
+       physical bottom to logical right; physical left to logical bottom. */
+    --mobile05-safe-top: max(12px, env(safe-area-inset-right, 0px));
+    --mobile05-safe-right: max(14px, env(safe-area-inset-bottom, 0px));
+    --mobile05-safe-bottom: max(16px, env(safe-area-inset-left, 0px));
+    --mobile05-safe-left: max(14px, env(safe-area-inset-top, 0px));
+}
+/* The legacy stage-wide touch-action:none also blocked scroll gestures in
+ * menus and character sheets. Only the canvas and actual gameplay controls
+ * should consume touches; allow browser-managed scroll in overlays. */
+.manager-shell .manager-stage { touch-action: auto; }
+.manager-shell .demian-scene,
+.manager-shell .demian-scene canvas { touch-action: none; }
+
+.manager-shell {
+    --touch-safe-left: var(--mobile05-safe-left);
+    --touch-safe-right: var(--mobile05-safe-right);
+    --touch-safe-bottom: var(--mobile05-safe-bottom);
+    --readout-top: var(--mobile05-safe-top);
+    --readout-right: var(--mobile05-safe-right);
+    --readout-left: var(--mobile05-safe-left);
+    --readout-bottom: var(--mobile05-safe-bottom);
+}
+.manager-shell .play-toolbar {
+    top: var(--mobile05-safe-top);
+    left: var(--mobile05-safe-left);
+}
+.manager-shell .runner-hud {
+    right: var(--mobile05-safe-right);
+}
+.manager-shell .runner-controls {
+    left: var(--mobile05-safe-left);
+    right: var(--mobile05-safe-right);
+}
+.manager-shell [data-control-surface] :is(
+    .virtual-stick, .touch-stick-zone, [data-input-hold], [data-input-press]
+) {
+    touch-action: none;
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+}
+/* Only pointer-enabled actions are interactive; decorative layers must not
+   steal a second finger from the joystick while the first performs an action. */
+.manager-shell [data-control-surface] [data-input-hold],
+.manager-shell [data-control-surface] [data-input-press] {
+    min-width: 44px;
+    min-height: 44px;
+}
+@media (pointer: coarse) {
+    .manager-shell [data-control-surface] [data-input-hold],
+    .manager-shell [data-control-surface] [data-input-press] {
+        min-width: 48px;
+        min-height: 48px;
+    }
+}

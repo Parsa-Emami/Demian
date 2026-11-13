@@ -50,6 +50,8 @@ jobs:
       - run: npm run test:device-qa:browser
       - name: Mobile-04 Save-Data + network recovery regression
         run: npm run test:mobile-network:browser
+      - name: Mobile-05 multitouch and orientation browser regression
+        run: npm run test:mobile-touch:browser
       - name: Mobile-01 mid-tier phone laboratory baseline
         run: npm run benchmark:mobile:ci
         env:
@@ -67,6 +69,7 @@ jobs:
             demian/docs/project-identity/browser
             demian/docs/p0-stability/browser
             demian/docs/mobile-04/browser
+            demian/docs/mobile-05/browser
             demian/docs/mobile-01/baseline
             demian/docs/mobile-02/release-asset-report.json
       - uses: actions/configure-pages@v5

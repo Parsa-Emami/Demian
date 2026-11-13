@@ -36,7 +36,7 @@ export default class MobileGameUI {
         this.orientationHint = root.querySelector('[data-orientation-hint]');
         this.isExpanded = false;
         this.isMobileDevice = isLikelyMobileDevice();
-        this.lastForcedLandscape = null;
+        this.lastLayoutSignature = null;
         this.attributeObserver = null;
 
         this.onActionsToggle = this.onActionsToggle.bind(this);
@@ -244,7 +244,10 @@ export default class MobileGameUI {
             1,
             Math.round(window.visualViewport?.height ?? window.innerHeight)
         );
-        const physicalPortrait = viewportHeight > viewportWidth;
+        // The visual viewport shrinks when a virtual keyboard opens. That
+        // must not be confused with a physical device orientation change.
+        const physicalPortrait = window.matchMedia?.('(orientation: portrait)').matches
+            ?? window.innerHeight > window.innerWidth;
         const preference = this.orientationPreference();
         const mode = this.viewportMode();
         const forcedLandscape = shouldForceLandscape({
@@ -277,27 +280,19 @@ export default class MobileGameUI {
             this.orientationHint.setAttribute('aria-hidden', 'true');
         }
 
-        if (this.lastForcedLandscape !== forcedLandscape) {
-            this.lastForcedLandscape = forcedLandscape;
+        // Geometry changes invalidate old pointer coordinates, but repeated
+        // viewport callbacks with identical dimensions should not interrupt
+        // an active joystick gesture or trigger redundant expensive resizes.
+        const signature = [
+            logicalWidth, logicalHeight, viewportTop, viewportLeft,
+            forcedLandscape, physicalPortrait, mode,
+        ].join(':');
+        if (signature !== this.lastLayoutSignature) {
+            this.lastLayoutSignature = signature;
             this.root.dispatchEvent(new CustomEvent('mobile:layout-changed', {
                 bubbles: true,
-                detail: {
-                    forcedLandscape,
-                    width: logicalWidth,
-                    height: logicalHeight,
-                },
+                detail: { forcedLandscape, width: logicalWidth, height: logicalHeight },
             }));
-        } else {
-            window.requestAnimationFrame(() => {
-                this.root.dispatchEvent(new CustomEvent('mobile:layout-changed', {
-                    bubbles: true,
-                    detail: {
-                        forcedLandscape,
-                        width: logicalWidth,
-                        height: logicalHeight,
-                    },
-                }));
-            });
         }
     }
 
