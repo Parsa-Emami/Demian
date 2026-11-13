@@ -146,11 +146,31 @@ try {
     await page.waitForFunction(() =>
         document.querySelector('[data-character-manager]')?.dataset.forcedLandscape === 'true');
     const forcedStick = await getRect(stick), forcedAction = await getRect(jump);
-    assert.ok(within(forcedStick.bounds, 390, 844), 'rotated stick outside physical viewport');
-    assert.ok(within(forcedAction.bounds, 390, 844), 'rotated jump outside physical viewport');
-    report.scenarios.push({ name: 'css-rotation-fallback-hitboxes', status: 'passed',
-        stick: forcedStick.bounds, jump: forcedAction.bounds });
+    const layout = await page.evaluate(() => {
+        const root = document.querySelector('[data-character-manager]');
+        const stage = root.querySelector('.manager-stage');
+        const rect = element => {
+            const r = element?.getBoundingClientRect();
+            return r ? { x: r.x, y: r.y, width: r.width, height: r.height } : null;
+        };
+        return { viewport: [innerWidth, innerHeight],
+            root: rect(root), stage: rect(stage),
+            styles: {
+                rootHeight: getComputedStyle(root).height,
+                stageHeight: getComputedStyle(stage).height,
+                rootTransform: getComputedStyle(root).transform,
+                orientation: root.dataset.orientation,
+                forced: root.dataset.forcedLandscape,
+            } };
+    });
+    report.scenarios.push({ name: 'css-rotation-fallback-hitboxes', status: 'measured',
+        stick: forcedStick.bounds, jump: forcedAction.bounds, layout });
     await page.screenshot({ path: resolve(output, 'forced-landscape.png') });
+    assert.ok(within(forcedStick.bounds, 390, 844),
+        'rotated stick outside physical viewport: ' + JSON.stringify({ stick: forcedStick.bounds, layout }));
+    assert.ok(within(forcedAction.bounds, 390, 844),
+        'rotated jump outside physical viewport: ' + JSON.stringify({ jump: forcedAction.bounds, layout }));
+    report.scenarios.at(-1).status = 'passed';
     await page.evaluate(() => {
         document.querySelector('[data-character-manager]').dataset.gameOrientation = 'any';
     });
