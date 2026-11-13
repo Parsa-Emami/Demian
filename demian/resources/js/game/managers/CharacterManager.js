@@ -8,6 +8,7 @@ import {
     characterRuntimeVariants,
     orderedSpriteVariants,
 } from '../characters/runtime/CharacterRuntimePolicy.js';
+import { optionalAssetPolicy } from '../characters/runtime/MobileNetworkPolicy.js';
 import {
     BUILTIN_CHARACTER_SLUGS,
     builtinCharacterAssetPair,
@@ -95,6 +96,19 @@ export default class CharacterManager {
         this.disposed = false;
         this.hydrationGeneration = 0;
         this.npcLimit = Math.max(2, Number(performanceProfile?.npcCount ?? 3));
+        this.onOptionalNetworkChange = () => {
+            const network = optionalAssetPolicy();
+            if (network.deferBackground) {
+                ++this.hydrationGeneration;
+                this.visualService?.cancelBackgroundLoads?.();
+                return;
+            }
+            if (!this.disposed && this.activeRecord) this.startBackgroundHydration();
+        };
+        globalThis.document?.addEventListener?.('visibilitychange', this.onOptionalNetworkChange);
+        globalThis.window?.addEventListener?.('online', this.onOptionalNetworkChange);
+        globalThis.window?.addEventListener?.('offline', this.onOptionalNetworkChange);
+        globalThis.navigator?.connection?.addEventListener?.('change', this.onOptionalNetworkChange);
     }
 
     async boot({ preferredSlug = null } = {}) {
@@ -193,7 +207,11 @@ export default class CharacterManager {
     } = {}) {
         if (this.disposed || generation !== this.hydrationGeneration) return;
 
-        const roster = this.rosterRecords(activeId);
+        const policy = optionalAssetPolicy();
+        // Critical player sprite is always loaded; optional NPCs are deferred on
+        // Save-Data, 2G, offline and hidden tabs, or limited to one on 3G.
+        const roster = this.rosterRecords(activeId).slice(0,
+            1 + Math.min(this.npcLimit, policy.maxBackgroundNpcs));
         const active = roster[0];
 
         if (active) {
@@ -209,12 +227,17 @@ export default class CharacterManager {
 
             const record = roster[index];
             try {
-                await this.ensureEntity(record, index, { variant: this.runtimeVariants.npc });
+                if (background && (optionalAssetPolicy().deferBackground ||
+                    generation !== this.hydrationGeneration)) break;
+                await this.ensureEntity(record, index, {
+                    variant: this.runtimeVariants.npc, background,
+                });
                 if (background) {
                     this.emitRosterChanged();
                     await new Promise((resolve) => globalThis.setTimeout(resolve, 0));
                 }
             } catch (error) {
+                if (error?.name === 'AbortError') break;
                 console.warn('NPC character could not be loaded.', error);
             }
         }
@@ -222,6 +245,10 @@ export default class CharacterManager {
 
     startBackgroundHydration(activeId = this.activeRecord?.id) {
         const generation = ++this.hydrationGeneration;
+        // Invalidate old optional work on rapid character switches and scene
+        // transitions without touching a promoted foreground sprite request.
+        this.visualService?.cancelBackgroundLoads?.();
+        if (optionalAssetPolicy().deferBackground) return;
         const run = async () => {
             if (this.disposed || generation !== this.hydrationGeneration) return;
             await this.populateWorld(activeId, { background: true, generation });
@@ -255,18 +282,20 @@ export default class CharacterManager {
         return this.characters;
     }
 
-    async ensureEntity(record, spawnIndex = 0, { variant = this.runtimeVariants.npc } = {}) {
+    async ensureEntity(record, spawnIndex = 0, {
+        variant = this.runtimeVariants.npc, background = false,
+    } = {}) {
         const key = String(record.id);
         const existing = this.entities.get(key);
-        if (existing) return this.ensureEntityVariant(record, existing, variant);
+        if (existing) return this.ensureEntityVariant(record, existing, variant, { background });
 
         const pending = this.entityPromises.get(key);
         if (pending) {
             const entity = await pending;
-            return this.ensureEntityVariant(record, entity, variant);
+            return this.ensureEntityVariant(record, entity, variant, { background });
         }
 
-        const creation = this.createEntity(record, spawnIndex, variant, key)
+        const creation = this.createEntity(record, spawnIndex, variant, key, { background })
             .finally(() => this.entityPromises.delete(key));
         this.entityPromises.set(key, creation);
         return await creation;
@@ -276,7 +305,7 @@ export default class CharacterManager {
         return { lite: 1, compact: 2, runtime: 3, mobile: 4, desktop: 5, detail: 6, custom: 6 }[variant] ?? 0;
     }
 
-    async ensureEntityVariant(record, entity, variant) {
+    async ensureEntityVariant(record, entity, variant, { background = false } = {}) {
         const currentVariant = entity.runtimeSpriteVariant ?? 'compact';
         const downgradeNpc = variant === 'lite' && entity !== this.activeEntity && !entity.isPlayerControlled;
         if (currentVariant === variant || (!downgradeNpc && this.variantRank(variant) <= this.variantRank(currentVariant))) {
@@ -285,7 +314,7 @@ export default class CharacterManager {
 
         let assets;
         try {
-            assets = await this.loadCharacterAssets(record, { preferredVariant: variant });
+            assets = await this.loadCharacterAssets(record, { preferredVariant: variant, background });
         } catch (error) {
             console.warn('Higher-resolution character asset could not be loaded; keeping current visuals.', {
                 slug: record.slug,
@@ -306,11 +335,12 @@ export default class CharacterManager {
         return entity;
     }
 
-    async createEntity(record, spawnIndex, variant, key) {
+    async createEntity(record, spawnIndex, variant, key, { background = false } = {}) {
         let assets;
         try {
-            assets = await this.loadCharacterAssets(record, { preferredVariant: variant });
+            assets = await this.loadCharacterAssets(record, { preferredVariant: variant, background });
         } catch (error) {
+            if (background && error?.name === 'AbortError') throw error;
             console.warn('Character assets were unavailable; using the built-in pixel fallback.', {
                 slug: record.slug,
                 error,
@@ -748,11 +778,13 @@ export default class CharacterManager {
         return { texture, atlas, spriteUrl: null, atlasUrl: null, fallback: true };
     }
 
-    async loadCharacterAssets(record, { preferredVariant = this.runtimeVariants.active } = {}) {
+    async loadCharacterAssets(record, {
+        preferredVariant = this.runtimeVariants.active, background = false,
+    } = {}) {
         if (this.visualService && BUILTIN_SLUGS.has(record.slug)) {
             // The runner and world share decoded image packs; each entity owns
             // only its cheap texture view, so disposing it cannot break another.
-            const pack = await this.visualService.loadPack(record.slug, preferredVariant);
+            const pack = await this.visualService.loadPack(record.slug, preferredVariant, { background });
             const texture = new THREE.Texture(pack.image);
             texture.colorSpace = THREE.SRGBColorSpace;
             texture.magFilter = THREE.NearestFilter;
@@ -898,6 +930,11 @@ export default class CharacterManager {
         this.disposed = true;
         this.selectionGeneration += 1;
         this.hydrationGeneration += 1;
+        this.visualService?.cancelBackgroundLoads?.();
+        globalThis.document?.removeEventListener?.('visibilitychange', this.onOptionalNetworkChange);
+        globalThis.window?.removeEventListener?.('online', this.onOptionalNetworkChange);
+        globalThis.window?.removeEventListener?.('offline', this.onOptionalNetworkChange);
+        globalThis.navigator?.connection?.removeEventListener?.('change', this.onOptionalNetworkChange);
         this.assetPromises.clear();
         this.entityPromises.clear();
         [...this.entities.keys()].forEach((key) => this.disposeEntity(key));
