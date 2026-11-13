@@ -35,7 +35,7 @@ body { background: var(--release-bg); }
 .manager-shell .cafe-menu__ambient, .manager-shell .cafe-menu__cabinet { display: none; }
 .manager-shell .shell-screen--cafe { background: linear-gradient(160deg, rgba(17,27,25,.96), rgba(17,27,25,.88)); }
 .manager-shell .cafe-menu__content { width: min(100%, 540px); margin: auto; padding: 32px; background: none; text-align: right; }
-.manager-shell .cafe-menu__title { font-family: ui-sans-serif, system-ui, sans-serif; font-size: clamp(48px, 10vw, 88px); line-height: 1.08; letter-spacing: -.065em; color: #f2efe4; text-shadow: none; }
+.manager-shell .cafe-menu__title { font-family: 'Vazirmatn', system-ui, sans-serif; font-size: clamp(48px, 10vw, 88px); line-height: 1.08; letter-spacing: -.065em; color: #f2efe4; text-shadow: none; }
 .manager-shell .cafe-menu__title b { color: #d7e8a2; }
 .manager-shell .cafe-menu__eyebrow { color: #aebfa7; letter-spacing: .15em; font-size: 10px; }
 .manager-shell .cafe-menu__lead { font-size: 14px; line-height: 1.8; color: #bec7b7; }
