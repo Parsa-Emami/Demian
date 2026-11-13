@@ -8,6 +8,7 @@ This release strengthens the existing Canvas2D renderer and 60 Hz fixed-step gam
 
 - The shared `GameRuntime` **cancels pending requestAnimationFrame** on `pause()`, does not schedule frames while paused or while the tab is hidden, and restarts exactly one RAF on `resume()`.
 - `resume()`, `visibilitychange` and `stop()` discard stale simulation accumulator and timestamps. Returning after a long background interval cannot fast-forward gameplay or trigger catch-up spikes.
+- Gamepad pause/resume navigation remains active through one cancellable **125 ms (~8 Hz) idle input poll**, rather than a 60/120 Hz visual RAF loop. Idle input polling stops completely while the tab is hidden or the runtime stops, and never updates game simulation.
 - A rendering error continues to be recoverable. `start()` and `resume()` are idempotent.
 
 Browsers usually pause RAF when tabs are hidden, but not when an app is merely in a paused menu. Explicit cancellation prevents useless callback work in the latter case.
