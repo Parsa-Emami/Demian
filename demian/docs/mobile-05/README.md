@@ -16,7 +16,7 @@ Scope: harden existing InputRouter, TouchStick, MobileGameUI and CSS touch surfa
 ## Automated tests
 
 - `tests/js/mobile/MobileTouchIntegrity.test.js`: two independent pointers, repeated hold references, cancelled vs released button presses, capture-loss, detachment-safe reset, joystick ownership, zero geometry, and keyboard-induced VisualViewport resize with physical orientation preserved.
-- `tools/check_mobile_touch.mjs`: Playwright **optimized static release** Android-like touch emulation at 390x844 and 844x390, simultaneous CDP touch events for stick+action, action-finger release without movement loss, `touchCancel` neutral state, pagehide/blur resets, forced landscape transition, target hitbox >44px and viewport containment. Reports screenshots & JSON in `docs/mobile-05/browser/`.
+- `tools/check_mobile_touch.mjs`: Playwright **optimized static release** Android-like touch emulation at 390x844 and 844x390, simultaneous CDP touch events for stick+action, controlled DOM `pointerup` of only the action finger while the CDP-driven stick remains active (because headless CDP partial-contact release is inconsistent), `touchCancel` neutral state, pagehide/blur resets, forced landscape transition, target hitbox >44px and viewport containment. Reports screenshots & JSON in `docs/mobile-05/browser/`.
 - Existing JavaScript tests, Motion/Character/Café static validation, Coffee Crash/Identity/Device QA browser tests, Mobile-04 network recovery regression and both Mobile-01 six-game lab profiles remain required in CI.
 - PHP SQLite and MySQL backend suites remain required, although Mobile-05 does not change their code.
 
