@@ -25,7 +25,7 @@ export default class ArcadeLeaderboardService {
         // HTTP is permitted only for loopback development.
         if (this.baseUrl) {
             let endpoint;
-            try { endpoint = new URL(this.baseUrl); } catch {}
+            try { endpoint = new URL(this.baseUrl, globalThis.location?.href ?? 'https://localhost/'); } catch {}
             if (!endpoint || (endpoint.protocol !== 'https:' &&
                 !(endpoint.protocol === 'http:' &&
                     ['localhost', '127.0.0.1', '[::1]'].includes(endpoint.hostname)))) {
