@@ -216,6 +216,7 @@ try {
             const net = networkFor(phase);
             const row = { gameId: id, launchMs, measuredAtState: 'playing',
                 render: qa, network: net, browserMetrics: afterMetrics,
+                spriteCache: await page.evaluate(() => window.demianGameApplication.characterVisuals?.memorySnapshot() ?? null),
                 metricDeltas: delta(beforeMetrics, afterMetrics), advisory: evaluateAdvisoryBudget({
                     renderP95: qa?.frameIntervalMs?.p95, targetFps: qa?.targetSegments?.[0]?.targetFps ?? 60,
                     touchP95: qa?.eventToRenderSubmissionMs?.p95,
@@ -237,6 +238,7 @@ try {
     report.warmMenu = {
         bootMs: Math.round(nodePerformance.now() - warmStarted),
         network: await at('warm-menu'), browserMetrics: await captureMetrics(cdp),
+        spriteCache: await page.evaluate(() => window.demianGameApplication.characterVisuals?.memorySnapshot() ?? null),
     };
     report.errors.push(...pageErrors.map(message => ({ stage: 'javascript', message })));
     report.status = report.errors.length || report.games.length !== MOBILE_GAME_IDS.length ? 'failed' : 'passed';
