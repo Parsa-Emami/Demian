@@ -245,6 +245,9 @@ export default class ArcadeLeaderboardService {
         }
     }
     async eraseAccount() {
+        if (this.connected && this.accountKnown && !this.identity?.token) {
+            throw new Error('برای حذف کامل اطلاعات سرور، ابتدا حساب اصلی را بازیابی کن.');
+        }
         if (this.identity?.token && this.connected) {
             await this.request('/player', { method: 'DELETE', authenticated: true });
         }
