@@ -174,6 +174,33 @@ final class ArcadePlatformTest extends TestCase
         $this->getJson('/api/v1/arcade/player/best?period=other')->assertUnprocessable();
     }
 
+    public function test_personal_rank_follows_public_tie_breaks_and_weekly_is_default(): void
+    {
+        $players = [$this->identity('First'), $this->identity('Second'), $this->identity('Third')];
+        $fixture = $this->fixtures()[0];
+        $sameStart = now()->subMinutes(5);
+        foreach ($players as $player) {
+            $run = $this->createRun($player, $fixture);
+            ArcadeRun::query()->findOrFail($run['run_id'])->update(['started_at' => $sameStart]);
+            $this->withToken($player['token'])
+                ->postJson('/api/v1/arcade/runs/'.$run['run_id'].'/complete', $this->payload($fixture))
+                ->assertOk();
+        }
+
+        $this->getJson('/api/v1/arcade/leaderboards/dino-run')
+            ->assertOk()->assertJsonPath('period', 'weekly')
+            ->assertJsonPath('data.1.display_name', 'Second');
+        $this->withToken($players[1]['token'])->getJson('/api/v1/arcade/player/best')
+            ->assertOk()->assertJsonPath('my_rank', 2)
+            ->assertJsonPath('participants', 3)
+            ->assertJsonPath('best.score', $fixture['expected']['score'])
+            ->assertJsonMissingPath('token_hash');
+        $this->withToken($players[2]['token'])->getJson('/api/v1/arcade/player/best?period=weekly')
+            ->assertOk()->assertJsonPath('my_rank', 3);
+        $this->withToken($players[0]['token'])->getJson('/api/v1/arcade/player/best?period=all')
+            ->assertOk()->assertJsonPath('my_rank', 1)->assertJsonPath('participants', 3);
+    }
+
     public function test_player_can_read_and_erase_profile_with_cascading_ranked_records(): void
     {
         $player = $this->identity('WeekChampion');
