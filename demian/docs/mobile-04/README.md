@@ -27,10 +27,11 @@ Mobile-first Demian remains an **atomic static web game**. Gameplay starts local
 - Atlas JSON continues to use `cache: 'no-cache'` so its embedded image revision stays synchronized with the versioned PNG. This permits normal 304 revalidation and avoids an old atlas/new PNG mismatch.
 - HTMLImageElement `fetchPriority` is a **hint only**: `high` for required player images and `low` for optional NPCs. Unsupported browsers simply ignore it.
 - The existing Mobile-03 single-flight image decode and LRU decoded reference budget are preserved.
+- **Café tiles:** reuse the distance-sorted, viewport-only `CafeArtStream` rather than creating a second fetcher. With Save-Data/2G, hidden or offline the game keeps its lightweight preview and skips optional detailed tiles. On 3G, load at most two detailed tiles (one concurrent request). Network changes cancel obsolete tile fetches and refresh the view/cooldown; new tiles resume when conditions improve. Existing decoded tile and concurrency budgets remain enforced. Transient tile errors receive one bounded retry before normal cooldown.
 
 ### Tests and diagnostics
 
-Unit tests: `tests/js/mobile/MobileNetworkResilience.test.js` covering Save-Data, 2G, 3G, hidden/offline, missing API fallback, HTTP classification, retry, cancellation during backoff, optional scene cancellation, single-flight promotion, reconnect cooldown and critical loads.
+Unit tests: `tests/js/mobile/MobileNetworkResilience.test.js` covering Save-Data, 2G, 3G, hidden/offline, missing API fallback, HTTP classification, retry, cancellation during backoff, optional scene cancellation, single-flight promotion, reconnect cooldown and critical loads. Additional `tests/js/mobile/CafeArtNetworkPolicy.test.js` exercises preview-only and 3G budgets, tile cancellation, and reconnect.
 
 Real browser integration: `npm run test:mobile-network:browser` serves the **optimized production `_site`**, emulates touch + 2G Save-Data, boots to menu and launches Open World with **one active player, no optional NPC downloads**. It then simulates a 4G connection change, requires optional NPC hydration to resume without reload, and fails on uncaught JavaScript exceptions. JSON evidence: `docs/mobile-04/browser/save-data-resume.json`. These tests remain browser emulations, **not real-phone proof**.
 
@@ -56,7 +57,7 @@ DEMIAN_MOBILE_BENCH_PROFILE=low-mobile npm run benchmark:mobile
 - Foreground sprites continue to load and decode when the browser reports offline; high priority cannot be canceled by optional background cancellation.
 - Optional queued and active requests are canceled safely and do not trigger infinite fallback/retry.
 - Existing visual scale, frame integrity, CPU/GPU pipeline and score verification are unchanged.
-- The mechanism does **not guarantee** smaller initial transfer: Mobile-01 network bytes and cold/warm boot timings must be compared on the same test profile. Further optimizations to game environment tiles and offline PWA caches belong to later dedicated PRs.
+- The mechanism does **not guarantee** smaller initial transfer: Mobile-01 network bytes and cold/warm boot timings must be compared on the same test profile. Further changes to the format/size of environment tiles and PWA offline caches belong to later dedicated PRs.
 - Actual radio, cellular handoff, 15-minute thermal/battery, WebKit/iOS memory and native touch performance still need physical Android/iPhone testing ([Issue #7](https://github.com/Parsa-Emami/Demian/issues/7)).
 - Nested hosting paths may still exhibit the known independent font problem ([Issue #12](https://github.com/Parsa-Emami/Demian/issues/12)).
 
