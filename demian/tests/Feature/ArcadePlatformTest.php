@@ -176,6 +176,8 @@ final class ArcadePlatformTest extends TestCase
 
     public function test_personal_rank_follows_public_tie_breaks_and_weekly_is_default(): void
     {
+        // Ranking is tested separately from registration throttling; keep live throttles unchanged.
+        $this->withoutMiddleware(\Illuminate\Routing\Middleware\ThrottleRequests::class);
         $players = [$this->identity('First'), $this->identity('Second'), $this->identity('Third')];
         $fixture = $this->fixtures()[0];
         $sameStart = now()->subMinutes(5);
