@@ -45,8 +45,11 @@ test('server refusal preserves rejected replay rather than claiming success', as
     const response = await service.retry();
     assert.equal(response.status, 'rejected');
     assert.equal(response.retryable, false);
-    assert.ok(service.pending);
-    assert.ok(storage.getItem(service.pendingKey));
+    assert.equal(service.pending, null);
+    assert.equal(service.rejected.length, 1);
+    assert.equal(service.rejected[0].http_status, 410);
+    assert.equal(service.rejected[0].player_id, 'owner');
+    assert.ok(storage.getItem(service.rejectedKey));
 });
 
 test('concurrent connectivity/menu retries share one in-flight POST', async () => {
@@ -122,4 +125,22 @@ test('server-side erasure is forbidden when account marker survives without bear
     service.accountKnown = true;
     await assert.rejects(service.eraseAccount(), /بازیابی/);
     assert.equal(storage.getItem(service.accountMarkerKey), 'true');
+});
+
+test('rejected-evidence archive storage failure preserves pending replay', async () => {
+    const storage = makeStorage();
+    const originalSet = storage.setItem;
+    storage.setItem = (key, value) => {
+        if (key.includes('.rejected.')) throw new Error('QuotaExceededError');
+        originalSet(key, value);
+    };
+    const service = new ArcadeLeaderboardService({ baseUrl, storage, fetcher: async () => ({
+        ok: false, status: 422,
+    }) });
+    saved(service);
+    const result = await service.retry();
+    assert.equal(result.status, 'rejected');
+    assert.equal(service.rejected.length, 0);
+    assert.equal(service.pending.player_id, 'owner');
+    assert.ok(storage.getItem(service.pendingKey));
 });
