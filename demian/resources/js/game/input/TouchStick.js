@@ -30,6 +30,11 @@ export default class TouchStick {
             lostpointercapture: event => this.release(event),
         };
         for (const [type, listener] of Object.entries(this.listeners)) zone.addEventListener(type, listener);
+        this.ownerWindow = zone.ownerDocument?.defaultView ?? globalThis.window;
+        // A detached stick or rejected pointer capture may prevent pointerup
+        // from bubbling through the zone. Catch termination at the window.
+        this.ownerWindow?.addEventListener?.('pointerup', this.listeners.pointerup, true);
+        this.ownerWindow?.addEventListener?.('pointercancel', this.listeners.pointercancel, true);
     }
 
     press(event) {
@@ -104,5 +109,7 @@ export default class TouchStick {
     dispose() {
         this.reset();
         for (const [type, listener] of Object.entries(this.listeners)) this.zone.removeEventListener(type, listener);
+        this.ownerWindow?.removeEventListener?.('pointerup', this.listeners.pointerup, true);
+        this.ownerWindow?.removeEventListener?.('pointercancel', this.listeners.pointercancel, true);
     }
 }
