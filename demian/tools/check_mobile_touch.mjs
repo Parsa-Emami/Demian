@@ -38,6 +38,9 @@ const report = { status: 'pending', physicalPhoneMeasured: false, browser: null,
         'Game score or weekly leaderboard are unaffected by these tests.',
     ] };
 mkdirSync(output, { recursive: true });
+async function rootOrientation(page) {
+    return page.evaluate(() => document.querySelector('[data-character-manager]')?.dataset.forcedLandscape);
+}
 let browser, context, page;
 const getRect = async locator => {
     const b = await locator.boundingBox();
@@ -66,7 +69,12 @@ try {
     await page.evaluate(() => window.demianGameApplication.launchGame('open-world'));
     await page.waitForFunction(() => window.demianGameApplication?.sessionState === 'playing',
         null, { timeout: 120000 });
-    await page.waitForFunction(() => document.querySelector('[data-character-manager]')?.dataset.forcedLandscape === 'true');
+    // All six published game definitions currently use orientation:'any'.
+    // Portrait is first-class; never change the actual product to locked
+    // landscape merely to make this browser test pass.
+    await page.waitForFunction(() =>
+        document.querySelector('[data-character-manager]')?.dataset.physicalOrientation === 'portrait');
+    assert.equal(await rootOrientation(page), 'false');
 
     const root = page.locator('[data-character-manager]');
     const stick = page.locator('[data-virtual-stick]');
@@ -102,7 +110,7 @@ try {
         const input = window.demianGameApplication.input;
         return input.touchStick.value.magnitude === 0 && input.pointerHolds.size === 0;
     });
-    report.scenarios.push({ name: 'portrait-forced-landscape-two-finger-cancel',
+    report.scenarios.push({ name: 'portrait-two-finger-cancel',
         status: 'passed', concurrent, stick: joystick.bounds, jump: action.bounds });
     await page.screenshot({ path: resolve(output, 'portrait.png') });
     // The gesture system must also reset when the operating system backgrounds
@@ -117,6 +125,26 @@ try {
         const i = window.demianGameApplication.input;
         return [i.virtualHeld.size, i.virtualPressed.size, i.pointerHolds.size, i.touchStick.value.magnitude];
     }), [0, 0, 0, 0]);
+
+    // Exercise the existing CSS rotation fallback *without* modifying game
+    // definitions: temporarily request landscape while the physical phone
+    // is portrait. Input must remain inside the actual screen after rotate.
+    await page.evaluate(() => {
+        document.querySelector('[data-character-manager]').dataset.gameOrientation = 'landscape';
+    });
+    await page.waitForFunction(() =>
+        document.querySelector('[data-character-manager]')?.dataset.forcedLandscape === 'true');
+    const forcedStick = await getRect(stick), forcedAction = await getRect(jump);
+    assert.ok(within(forcedStick.bounds, 390, 844), 'rotated stick outside physical viewport');
+    assert.ok(within(forcedAction.bounds, 390, 844), 'rotated jump outside physical viewport');
+    report.scenarios.push({ name: 'css-rotation-fallback-hitboxes', status: 'passed',
+        stick: forcedStick.bounds, jump: forcedAction.bounds });
+    await page.screenshot({ path: resolve(output, 'forced-landscape.png') });
+    await page.evaluate(() => {
+        document.querySelector('[data-character-manager]').dataset.gameOrientation = 'any';
+    });
+    await page.waitForFunction(() =>
+        document.querySelector('[data-character-manager]')?.dataset.forcedLandscape === 'false');
 
     await page.setViewportSize({ width: 844, height: 390 });
     await page.waitForFunction(() => document.querySelector('[data-character-manager]')?.dataset.forcedLandscape === 'false');
