@@ -46,7 +46,13 @@ export default class LeaderboardScreen extends BaseScreen {
                 this.recoveryLink.value = link;
                 this.recoveryLink.focus();
                 this.recoveryLink.select();
-                this.recoveryStatus.textContent = 'لینک فقط یک بار و تا زمان انقضای اعلام‌شده از سمت سرور قابل استفاده است. آن را در جای امن ذخیره کن؛ ساخت لینک تازه، قبلی را باطل می‌کند.';
+                const expires = Date.parse(this.service.recoveryExpiresAt ?? '');
+                this.recoveryStatus.textContent = 'لینک یک‌بارمصرف است و ' +
+                    (Number.isFinite(expires)
+                        ? 'تا ' + new Intl.DateTimeFormat('fa-IR', { dateStyle: 'medium',
+                            timeStyle: 'short' }).format(expires) + ' اعتبار دارد. '
+                        : 'تاریخ انقضای آن را سرور تعیین می‌کند. ') +
+                    'آن را امن نگهداری کن؛ ساخت لینک تازه، قبلی را باطل می‌کند.';
             } catch (error) {
                 this.recoveryStatus.textContent = error.message;
             } finally {
