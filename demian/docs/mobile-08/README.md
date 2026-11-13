@@ -33,6 +33,16 @@ Laravel API  ──  MySQL (players / runs / replays / best scores)
 
 **Not real-time multiplayer.** Players play independently; rankings refresh every 60 seconds. WebSockets, Redis and PHP long-lived workers are not necessary for the initial limited concurrency target. Host choice is made from measured p95 API latency and database load.
 
+## One-time account recovery (opt-in)
+
+Nicknames are not authentication credentials. The leaderboard now offers an explicit **generate recovery link** control for authenticated players. The Laravel API stores only a SHA-256 hash of a 64-character random secret. The link contains this one-time secret in the URL **fragment** (not in the HTTP request path or query), and its bearer capability is never saved with the ordinary player session. A new link replaces the old one; redeeming it consumes the secret and atomically rotates the active API bearer token. Previous sessions stop working; verified scores, rankings and immutable run history stay associated with the same player ID.
+
+To restore on a new device, open the link, then explicitly submit the prefilled code on the leaderboard; no automatic redemption occurs. The browser clears the fragment with `history.replaceState` immediately after parsing. A code can alternatively be pasted into the password field. The feature requires HTTPS (except local development), with `POST /api/v1/arcade/player/recovery-link` under existing bearer auth and a rate-limited `POST /api/v1/arcade/players/recover` redemption API. Both sensitive responses use `Cache-Control: no-store`. A logged-out device can recover even when it has no previous nickname. Recovery cannot proceed while an unsubmitted server-verified replay remains pending for the current account.
+
+**Security:** A recovery link is a bearer credential: anyone holding an unused link can take over the account. Keep it in a password manager, never post it publicly, and generate a fresh link if one was exposed. Do not log request bodies, fragments or API tokens. Client session tokens are still persisted in origin-scoped localStorage, so XSS prevention, HTTPS, strict API CORS, CSP and third-party script control are required before a public production launch. No email/SMS/Instagram identity is claimed, and this is not a verified multi-factor recovery scheme.
+
+The new nullable `arcade_players.recovery_hash` migration supports existing accounts without forcing an immediate recovery secret. Existing users can generate a link when they next open the connected leaderboard.
+
 ## Weekly contract migration (non-destructive)
 
 Issue #8 defines a **Saturday 00:00 Asia/Tehran** weekly reset, not an ISO Monday UTC week. The migration `2026_11_13_000000_backfill_tehran_arcade_weekly_seasons.php` reconstructs per-player weekly bests from **verified runs** (not legacy aggregates), and retains all prior `weekly:YYYY-WW` keys for audit. Re-running backfill is safe. The 24-character Tehran keys fit the current schema.
