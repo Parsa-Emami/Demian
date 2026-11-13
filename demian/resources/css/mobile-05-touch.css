@@ -19,6 +19,13 @@ html.demian-forced-landscape .manager-shell {
     --mobile05-safe-bottom: max(16px, env(safe-area-inset-left, 0px));
     --mobile05-safe-left: max(14px, env(safe-area-inset-top, 0px));
 }
+/* The legacy stage-wide touch-action:none also blocked scroll gestures in
+ * menus and character sheets. Only the canvas and actual gameplay controls
+ * should consume touches; allow browser-managed scroll in overlays. */
+.manager-shell .manager-stage { touch-action: auto; }
+.manager-shell .demian-scene,
+.manager-shell .demian-scene canvas { touch-action: none; }
+
 .manager-shell {
     --touch-safe-left: var(--mobile05-safe-left);
     --touch-safe-right: var(--mobile05-safe-right);
