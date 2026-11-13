@@ -71,6 +71,8 @@ export default class DeviceQaController {
     download() {
         const report = this.session.report();
         if (!report) return;
+        report.spriteCache = this.app.characterVisuals?.memorySnapshot() ?? null;
+        report.limitations.push('Sprite cache decoded pixel bytes are estimates for retained references, not native/GPU memory.');
         const url = URL.createObjectURL(new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' }));
         const link = document.createElement('a');
         link.href = url;
