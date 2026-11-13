@@ -164,7 +164,9 @@ export default class GameApplication {
 
                 this.eventBus.emit('application:ready', {
                     gameId: this.activeGameId,
-                    sessionState: this.sessionState,
+                    // Initial settings subscription runs before SessionStateMachine
+            // construction; treat the boot screen as an idle 30 Hz surface.
+            sessionState: this.session?.state ?? 'booting',
                 });
                 return this;
             })();
