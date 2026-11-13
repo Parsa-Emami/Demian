@@ -10,6 +10,7 @@ final class RankedGameCatalog
      * Adding a verifier is a separate, test-gated change per mini-game.
      */
     public const GAMES = [
+        'open-world' => ['title' => 'OPEN WORLD', 'ranked' => false, 'verification' => null],
         'dino-run' => ['title' => 'DINO RUN', 'ranked' => true, 'verification' => 'server-replay'],
         'after-hours' => ['title' => 'AFTER HOURS', 'ranked' => false, 'verification' => null],
         'cafe-rush' => ['title' => 'CAFÉ RUSH', 'ranked' => false, 'verification' => null],
