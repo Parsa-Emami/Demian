@@ -15,7 +15,7 @@ final class Mobile10SecurityTest extends TestCase
     public function test_new_token_has_absolute_expiry_and_expired_token_cannot_access_player_or_delete(): void
     {
         $player = $this->postJson('/api/v1/arcade/players', ['display_name' => 'Secure'])
-            ->assertCreated()->assertHeader('Cache-Control', 'no-store')
+            ->assertCreated()->assertHeader('Cache-Control', 'no-store, private')
             ->json();
         $this->assertNotNull($player['token_expires_at']);
         $this->assertSame(64, strlen($player['token']));
