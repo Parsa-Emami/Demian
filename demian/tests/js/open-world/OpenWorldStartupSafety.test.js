@@ -27,7 +27,9 @@ test('character startup has network timeouts and serial background hydration', a
 
 test('selected compact NPCs are upgraded without leaking timed-out textures', async () => {
     const source = await readFile(managerUrl, 'utf8');
-    assert.match(source, /ensureEntityVariant\(record, existing, variant\)/);
+    // Optional NPC requests now carry background priority through the
+    // shared entity upgrade path; foreground requests still upgrade safely.
+    assert.match(source, /ensureEntityVariant\(record, existing, variant, \{ background \}\)/);
     assert.match(source, /entity\.replaceVisualAssets\(assets\.texture, assets\.atlas\)/);
     assert.match(source, /if \(settled\) \{\s*texture\.dispose\(\)/);
 });
