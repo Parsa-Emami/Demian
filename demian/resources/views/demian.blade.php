@@ -653,6 +653,11 @@
                             <label for="ranking-recovery-link">این لینک به حساب شما دسترسی می‌دهد؛ فقط نزد خودتان نگه دارید.
                                 <input id="ranking-recovery-link" data-ranking-recovery-link type="text" readonly autocomplete="off" spellcheck="false">
                             </label>
+                            <p>برای بازیابی پس از بستن مرورگر، یک کد پشتیبان بلندمدت بساز و در مدیر رمز عبور یا محل امن خارج از بازی نگهدار. کد فقط یک بار مصرف می‌شود.</p>
+                            <button type="button" data-ranking-issue-backup class="shell-button shell-button--ghost">ساخت کد پشتیبان حساب</button>
+                            <label for="ranking-backup-code">کد پشتیبان (فقط اکنون نمایش داده می‌شود)
+                                <input id="ranking-backup-code" data-ranking-backup-code type="text" readonly autocomplete="off" spellcheck="false">
+                            </label>
                             <form data-ranking-recover-form>
                                 <label for="ranking-recovery-code">کد بازیابی ذخیره‌شده یا دریافت‌شده از لینک
                                     <input id="ranking-recovery-code" name="recovery_code" type="password" minlength="64" maxlength="64" required autocomplete="off" spellcheck="false">
