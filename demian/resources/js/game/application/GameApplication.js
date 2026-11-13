@@ -110,6 +110,9 @@ export default class GameApplication {
         window.addEventListener('resize', this.onResize);
         if (new URLSearchParams(window.location.search).get('deviceQa') === '1') {
             this.deviceQa = new DeviceQaController(this);
+            // The extra performance.now() calls exist only in explicitly
+            // enabled device QA sessions, never for ordinary players.
+            this.runtime.observeWork = milliseconds => this.deviceQa?.frameWork(milliseconds);
             this.deviceQa.mount();
         }
     }
