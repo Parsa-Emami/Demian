@@ -15,6 +15,7 @@ use App\Services\Arcade\RunnerReplayVerifier;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
@@ -56,6 +57,12 @@ final class ArcadeController extends Controller
     public function issueRecoveryLink(Request $request): JsonResponse
     {
         $player = $request->attributes->get('arcade_player');
+        // Enforce a per-account budget in addition to the IP/route throttle.
+        // Reissuing revokes the prior secret rather than accumulating grants.
+        $limitKey = 'arcade:recovery-issue:'.$player->id;
+        abort_if(RateLimiter::tooManyAttempts($limitKey, 3), 429,
+            'Recovery link issuance temporarily limited.');
+        RateLimiter::hit($limitKey, 3600);
         $secret = Str::random(64);
         $expires = now()->addMinutes((int) config('demian-arcade.recovery_link_minutes'));
         $player->update(['recovery_hash' => hash('sha256', $secret), 'recovery_expires_at' => $expires]);
