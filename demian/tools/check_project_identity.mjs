@@ -70,9 +70,32 @@ try {
         assert.equal(/برآورد|هزینه|Software Engineer/.test(await page.locator('[data-screen="cafe-menu"]').innerText()), false);
         await page.screenshot({ path: resolve(out, `credit-${width}x${height}.png`) });
         await context.route('https://parsaaemm.dev/', route => route.fulfill({ status: 200, contentType: 'text/html', body: '<title>Portfolio navigation target</title>' }));
-        const popupPromise = page.waitForEvent('popup');
+        // Chromium's headless noopener popup events may be unavailable when
+        // the page is controlled by a PWA worker. Verify an actual trusted
+        // click was not prevented, the safe anchor semantics, and that the
+        // exact link destination works in a fresh browsing context.
+        assert.equal(await credit.getAttribute('target'), '_blank');
+        assert.match(await credit.getAttribute('rel'), /noopener/);
+        await page.evaluate(() => {
+            const link = document.querySelector('[data-creator-link]');
+            link.addEventListener('click', event => {
+                setTimeout(() => {
+                    window.__demianCreatorClick = {
+                        trusted: event.isTrusted,
+                        prevented: event.defaultPrevented,
+                        destination: link.href,
+                    };
+                }, 0);
+            }, { once: true });
+        });
         await credit.click();
-        const portfolio = await popupPromise;
+        await page.waitForFunction(() => Boolean(window.__demianCreatorClick));
+        const click = await page.evaluate(() => window.__demianCreatorClick);
+        assert.equal(click.trusted, true);
+        assert.equal(click.prevented, false);
+        assert.equal(click.destination, 'https://parsaaemm.dev/');
+        const portfolio = await context.newPage();
+        await portfolio.goto(click.destination, { waitUntil: 'commit', timeout: 15000 });
         await portfolio.waitForURL('https://parsaaemm.dev/', { waitUntil: 'commit' });
         await portfolio.close();
         await page.bringToFront();

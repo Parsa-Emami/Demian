@@ -11,11 +11,13 @@ import '../css/touch-controls.css';
 import '../css/game-hud.css';
 import '../css/device-qa.css';
 import '../css/mobile-05-touch.css';
+import '../css/pwa-update.css';
 import GameApplication from './game/application/GameApplication';
 import CharacterManagerUI from './ui/CharacterManagerUI';
 import SidebarController from './ui/SidebarController';
 import MobileGameUI from './ui/MobileGameUI';
 import MobilePerformanceManager from './game/performance/MobilePerformanceManager.js';
+import registerDemianPwa from './game/performance/PwaUpdateController.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
     new MobilePerformanceManager().mount();
@@ -57,16 +59,23 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // Exposed for diagnostics and later shell integration, not game logic.
         window.demianGameApplication = application;
+        // Static hosting/PWA is optional. Never block gameplay startup.
+        void registerDemianPwa({ app: application });
     } catch (error) {
         console.error('Demian Game Platform could not start:', error);
-        sceneContainer.innerHTML = `
-            <div class="flex h-full items-center justify-center p-6">
-                <div class="arcade-error">
-                    <strong>موتور بازی اجرا نشد</strong>
-                    <span>${error.message ?? 'خطای ناشناخته'}</span>
-                    <small>فایل‌های public/assets/characters/darya را بررسی کن.</small>
-                </div>
-            </div>
-        `;
+        // Do not put error.message into innerHTML: errors may include a URL
+        // or other untrusted network payload. Keep all visible text inert.
+        sceneContainer.replaceChildren();
+        const panel = document.createElement('div');
+        panel.className = 'arcade-error';
+        panel.setAttribute('role', 'alert');
+        const heading = document.createElement('strong');
+        heading.textContent = 'موتور بازی اجرا نشد';
+        const detail = document.createElement('span');
+        detail.textContent = error instanceof Error ? error.message.slice(0, 300) : 'خطای ناشناخته';
+        const hint = document.createElement('small');
+        hint.textContent = 'اتصال اینترنت و فایل‌های بازی را بررسی کن و دوباره تلاش کن.';
+        panel.append(heading, detail, hint);
+        sceneContainer.append(panel);
     }
 });

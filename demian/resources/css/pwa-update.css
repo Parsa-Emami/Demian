@@ -1,0 +1,43 @@
+/* PWA update is intentionally surfaced only in the menu, not over a game. */
+.demian-pwa-update {
+    position: fixed;
+    inset-inline: max(12px, env(safe-area-inset-left, 0px))
+        max(12px, env(safe-area-inset-right, 0px));
+    /* Keep the creator link and footer usable under update notifications. */
+    top: max(14px, env(safe-area-inset-top, 0px));
+    bottom: auto;
+    pointer-events: none;
+    z-index: var(--z-system-overlay, 99999);
+    margin-inline: auto;
+    max-width: 440px;
+    border: 1px solid #9ad5c0;
+    border-radius: 14px;
+    background: #132922;
+    box-shadow: 0 15px 35px #000a;
+    color: #f4f9f5;
+    padding: 12px 16px;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    justify-content: space-between;
+    font-family: 'Vazirmatn', system-ui, sans-serif;
+}
+.demian-pwa-update button {
+    /* Only the deliberate action can intercept gameplay/menu touches. */
+    pointer-events: auto;
+    font: inherit;
+    padding: 8px 14px;
+    background: #306858;
+    color: white;
+    border: 1px solid #abe2ce;
+    border-radius: 10px;
+    min-height: 44px;
+    flex-shrink: 0;
+}
+.demian-pwa-update button:focus-visible {
+    outline: 3px solid #ffe099;
+    outline-offset: 2px;
+}
+@media (max-width: 420px) {
+    .demian-pwa-update { font-size: .84rem; }
+}

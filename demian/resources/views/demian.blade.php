@@ -7,9 +7,8 @@
         content="width=device-width, initial-scale=1.0, viewport-fit=cover"
     >
     <meta name="theme-color" content="#111b19">
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
+    <meta name="demian-static-release" content="false">
+    <!-- Server response headers, not HTML meta tags, control production caching. -->
     {{-- <meta name="screen-orientation" content="landscape">
     <meta name="x5-orientation" content="landscape">
     <meta name="full-screen" content="yes">
