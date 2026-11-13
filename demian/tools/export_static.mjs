@@ -7,6 +7,7 @@ import { BUILTIN_CHARACTER_LABELS as labels } from '../resources/js/game/charact
 import { renderStaticTemplate } from './static_template.mjs';
 import { shouldExportAsset } from './release_asset_policy.mjs';
 import { validateReleaseAssets } from './validate_release_assets.mjs';
+import { buildOfflinePackManifest } from './offline_pack_manifest.mjs';
 const root = resolve(import.meta.dirname, '..');
 const out = resolve(root, process.argv.find((a) => a.startsWith('--out='))?.slice(6) ?? '_site');
 const arcadeApi = process.env.DEMIAN_ARCADE_API_URL?.trim() ?? '';
@@ -42,6 +43,8 @@ writeFileSync(join(out, 'index.html'), html);
 const releaseId = createHash('sha256').update(JSON.stringify({
     entry: entry.file, css: entry.css ?? [],
 })).digest('hex').slice(0, 16);
+const offlinePacks = buildOfflinePackManifest({ release: out, entry, releaseId });
+writeFileSync(join(out, 'offline-packs.json'), JSON.stringify(offlinePacks, null, 2) + '\n');
 const workerTemplate = readFileSync(join(root, 'tools/templates/service-worker.js'), 'utf8');
 if (!workerTemplate.includes('__DEMIAN_RELEASE_ID__')) throw new Error('PWA worker version placeholder missing.');
 writeFileSync(join(out, 'service-worker.js'),
