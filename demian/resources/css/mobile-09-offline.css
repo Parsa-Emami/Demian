@@ -1,0 +1,50 @@
+/* Mobile-09: offline controls live inside the game selection, never over the canvas. */
+.demian-offline-manager {
+    margin: 1.25rem auto;
+    padding: clamp(.9rem, 3vw, 1.4rem);
+    max-width: 980px;
+    border: 1px solid rgba(168, 224, 205, .38);
+    border-radius: 18px;
+    background: rgba(11, 28, 32, .93);
+    color: #e7f4ed;
+    text-align: right;
+    direction: rtl;
+}
+.demian-offline-manager h3 { margin: 0 0 .55rem; font-size: 1.12rem; }
+.demian-offline-manager p { line-height: 1.7; margin: .35rem 0 1rem; }
+.demian-offline-manager__games {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+    gap: .55rem;
+}
+.demian-offline-manager__row {
+    border-radius: 12px;
+    border: 1px solid rgba(168, 224, 205, .23);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .4rem .65rem;
+    padding: .8rem;
+    min-width: 0;
+}
+.demian-offline-manager__row span {
+    font-weight: 700;
+    flex: 1 1 100%;
+    direction: ltr;
+    text-align: right;
+}
+.demian-offline-manager__row small { flex: 1 1 100%; color: #d1e7dc; }
+.demian-offline-manager__row button { flex: 1 1 auto; min-height: 44px; }
+.demian-offline-manager__toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .6rem;
+    margin-block: 1rem;
+}
+.demian-offline-manager button[hidden] { display: none; }
+.demian-offline-manager button:focus-visible { outline: 3px solid #f5dd90; outline-offset: 3px; }
+.demian-offline-manager button:disabled { opacity: .55; cursor: not-allowed; }
+@media (max-width: 480px) {
+    .demian-offline-manager__games { grid-template-columns: 1fr; }
+    .demian-offline-manager__toolbar > button { flex: 1 1 auto; }
+}

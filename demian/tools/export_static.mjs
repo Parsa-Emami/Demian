@@ -7,6 +7,7 @@ import { BUILTIN_CHARACTER_LABELS as labels } from '../resources/js/game/charact
 import { renderStaticTemplate } from './static_template.mjs';
 import { shouldExportAsset } from './release_asset_policy.mjs';
 import { validateReleaseAssets } from './validate_release_assets.mjs';
+import { buildOfflinePackManifest } from './offline_pack_manifest.mjs';
 const root = resolve(import.meta.dirname, '..');
 const out = resolve(root, process.argv.find((a) => a.startsWith('--out='))?.slice(6) ?? '_site');
 const arcadeApi = process.env.DEMIAN_ARCADE_API_URL?.trim() ?? '';
@@ -39,21 +40,34 @@ const html = renderStaticTemplate(readFileSync(join(root, 'resources/views/demia
 writeFileSync(join(out, 'index.html'), html);
 // A content-derived service-worker version makes installs deterministic and
 // avoids activating an incompatible cached shell during a live ranked run.
-const releaseId = createHash('sha256').update(JSON.stringify({
-    entry: entry.file, css: entry.css ?? [],
-})).digest('hex').slice(0, 16);
-const workerTemplate = readFileSync(join(root, 'tools/templates/service-worker.js'), 'utf8');
-if (!workerTemplate.includes('__DEMIAN_RELEASE_ID__')) throw new Error('PWA worker version placeholder missing.');
-writeFileSync(join(out, 'service-worker.js'),
-    workerTemplate.replaceAll('__DEMIAN_RELEASE_ID__', releaseId));
-cpSync(join(root, 'tools/templates/offline.html'), join(out, 'offline.html'));
-cpSync(join(root, 'tools/templates/static-host.htaccess'), join(out, '.htaccess'));
 writeFileSync(join(out, 'characters.json'), JSON.stringify({ data: BUILTIN_CHARACTER_SLUGS.map((slug) => ({
     id: `builtin-${slug}`, name: labels[slug], slug, is_builtin: true, is_active: slug === 'darya',
     sprite_url: `assets/characters/${slug}/${slug}-spritesheet-v${characterPackVersion(slug)}-mobile.png`,
     atlas_url: `assets/characters/${slug}/${slug}-atlas-v${characterPackVersion(slug)}-mobile.json`,
     settings: { scale: 1, walk_speed: 3.55, run_speed: 6.9, jump_force: 6.8 },
 })) }, null, 2));
+const provisional = buildOfflinePackManifest({ release: out, entry,
+    releaseId: '0000000000000000' });
+// Hash the actual offline-critical assets as well as the atomic app bundle.
+// Art-only changes now force a new offline release instead of mixing packs.
+const resourcePaths = [...new Set([
+    ...provisional.core.map(row => row.path),
+    ...provisional.games.flatMap(game => game.files.map(row => row.path)),
+])].sort();
+const fingerprint = createHash('sha256');
+for (const path of resourcePaths) {
+    fingerprint.update(path);
+    fingerprint.update(createHash('sha256').update(readFileSync(join(out, path))).digest());
+}
+const releaseId = fingerprint.digest('hex').slice(0, 16);
+const offlinePacks = { ...provisional, release: releaseId };
+writeFileSync(join(out, 'offline-packs.json'), JSON.stringify(offlinePacks, null, 2) + '\n');
+const workerTemplate = readFileSync(join(root, 'tools/templates/service-worker.js'), 'utf8');
+if (!workerTemplate.includes('__DEMIAN_RELEASE_ID__')) throw new Error('PWA worker version placeholder missing.');
+writeFileSync(join(out, 'service-worker.js'),
+    workerTemplate.replaceAll('__DEMIAN_RELEASE_ID__', releaseId));
+cpSync(join(root, 'tools/templates/offline.html'), join(out, 'offline.html'));
+cpSync(join(root, 'tools/templates/static-host.htaccess'), join(out, '.htaccess'));
 writeFileSync(join(out, '.nojekyll'), '');
 const report = validateReleaseAssets({
     root: out,

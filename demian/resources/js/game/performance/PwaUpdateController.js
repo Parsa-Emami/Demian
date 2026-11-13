@@ -1,3 +1,4 @@
+import PwaOfflineManager from './PwaOfflineManager.js';
 /**
  * Mobile-07: install/update the small, scoped offline-fallback worker.
  * Never force a reload while a ranked run is in progress. Players explicitly
@@ -24,10 +25,14 @@ export default function registerDemianPwa({
         updateViaCache: 'none',
     }).then(registration => {
         let accepted = false;
+        let reloadPending = false;
+        const offline = new PwaOfflineManager({ app, registration, documentRef, navigatorRef,
+            windowRef: globalThis.window });
+        void offline.mount().catch(error => console.warn('Offline pack UI unavailable:', error));
         let toast = null;
         const cleanToast = () => { toast?.remove(); toast = null; };
         const showUpdate = () => {
-            if (!registration.waiting || app?.sessionState !== 'menu' || toast) return;
+            if (!registration.waiting || app?.sessionState !== 'menu' || app?.leaderboards?.pending || toast) return;
             toast = documentRef.createElement('aside');
             toast.className = 'demian-pwa-update';
             toast.setAttribute('role', 'status');
@@ -38,7 +43,7 @@ export default function registerDemianPwa({
             button.type = 'button';
             button.textContent = 'به‌روزرسانی';
             button.addEventListener('click', () => {
-                if (app?.sessionState !== 'menu' || !registration.waiting) return;
+                if (app?.sessionState !== 'menu' || app?.leaderboards?.pending || !registration.waiting) return;
                 accepted = true;
                 button.disabled = true;
                 registration.waiting.postMessage({ type: 'DEMIAN_ACTIVATE_UPDATE' });
@@ -47,11 +52,16 @@ export default function registerDemianPwa({
             documentRef.body.append(toast);
         };
         const onSession = () => {
+            if (app?.sessionState === 'menu' && reloadPending) {
+                locationRef.reload(); return;
+            }
             if (app?.sessionState === 'menu') showUpdate();
             else cleanToast();
         };
         const onController = () => {
-            if (accepted) locationRef.reload();
+            if (!accepted) return;
+            if (app?.sessionState === 'menu') locationRef.reload();
+            else reloadPending = true;
         };
         const onInstalling = () => {
             const worker = registration.installing;
@@ -67,6 +77,7 @@ export default function registerDemianPwa({
         return {
             registration,
             dispose() {
+                offline.dispose();
                 unsubscribe?.();
                 registration.removeEventListener('updatefound', onInstalling);
                 navigatorRef.serviceWorker.removeEventListener('controllerchange', onController);

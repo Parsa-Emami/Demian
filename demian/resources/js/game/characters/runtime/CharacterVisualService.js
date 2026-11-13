@@ -105,7 +105,11 @@ export default class CharacterVisualService {
     async loadPack(slug, preferredVariant = this.runtimeVariant({ player: true }), { background = false } = {}) {
         if (this.disposed) throw new Error('Sprite service disposed');
         const normalizedSlug = BUILTIN_CHARACTER_SLUGS.includes(slug) ? slug : this.activeSlug;
-        const variants = orderedSpriteVariants(normalizeSpriteVariant(preferredVariant));
+        // A downloaded offline pack deliberately contains the small lite art.
+        // Prefer it immediately when disconnected instead of retrying uncached
+        // high-resolution PNGs and delaying an offline gameplay launch.
+        const variants = orderedSpriteVariants(globalThis.navigator?.onLine === false
+            ? 'lite' : normalizeSpriteVariant(preferredVariant));
         let lastError = null;
 
         for (const variant of variants) {

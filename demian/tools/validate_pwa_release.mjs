@@ -16,6 +16,7 @@ export function validatePwaRelease(release) {
     const sw = read('service-worker.js');
     const offline = read('offline.html');
     const manifest = read('manifest.webmanifest');
+    const packJson = read('offline-packs.json');
     read('.htaccess');
     if (!html.includes('name="demian-static-release" content="true"')) {
         failures.push('Static export PWA marker missing');
@@ -28,6 +29,34 @@ export function validatePwaRelease(release) {
         failures.push('Missing navigation offline fallback strategy');
     }
     if (!offline.includes('دمیان فعلاً آفلاین است')) failures.push('Offline explanation missing');
+    try {
+        const packs = JSON.parse(packJson);
+        const version = /const RELEASE_ID = '([a-f0-9]{16})'/.exec(sw)?.[1];
+        if (!version || packs.release !== version || packs.schema !== 1 ||
+            !Array.isArray(packs.core) || !Array.isArray(packs.games) ||
+            packs.games.length !== 6 || packs.maxPackBytes > 96 * 1048576) {
+            failures.push('Offline packs do not match the current bounded PWA release');
+        } else {
+            const all = [...packs.core, ...packs.games.flatMap(game => game.files ?? [])];
+            for (const item of all) {
+                if (!/^[a-zA-Z0-9][a-zA-Z0-9/_.-]*$/.test(item.path ?? '') ||
+                    item.path.includes('..') || /(^|\/)api(\/|$)/.test(item.path) ||
+                    !existsSync(join(root, item.path)) ||
+                    !Number.isSafeInteger(item.bytes) || item.bytes < 0) {
+                    failures.push('Unsafe or missing offline pack asset: ' + String(item.path));
+                    continue;
+                }
+            }
+            for (const game of packs.games) {
+                if (!/^(open-world|dino-run|after-hours|cafe-rush|cafe-critters|coffee-crash)$/.test(game.id) ||
+                    game.totalBytes !== packs.coreBytes + game.bytes ||
+                    game.totalBytes > packs.maxPackBytes) {
+                    failures.push('Invalid offline game budget: ' + game.id);
+                }
+            }
+        }
+    } catch { failures.push('Invalid offline pack manifest JSON'); }
+
     try {
         const parsed = JSON.parse(manifest);
         if (parsed.start_url !== './' || parsed.scope !== './' || parsed.display !== 'standalone') {

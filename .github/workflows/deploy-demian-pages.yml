@@ -46,7 +46,8 @@ jobs:
       - run: npm run validate:build
       - run: npx playwright install chromium --only-shell
       - run: npm run test:coffee-crash:browser
-      - run: npm run test:identity:browser
+      - name: Project identity browser QA (bounded)
+        run: timeout --signal=TERM --kill-after=10s 180s npm run test:identity:browser
       - run: npm run test:device-qa:browser
       - name: Mobile-04 Save-Data + network recovery regression
         run: npm run test:mobile-network:browser
@@ -54,6 +55,8 @@ jobs:
         run: npm run test:mobile-touch:browser
       - name: Mobile-07 root/subpath fonts, PWA offline and reconnect
         run: npm run test:mobile-pwa:browser
+      - name: Mobile-09 selective offline game downloads, reload and cleanup
+        run: npm run test:mobile-09:browser
       - name: Mobile-01 mid-tier phone laboratory baseline
         run: npm run benchmark:mobile:ci
         env:
@@ -73,6 +76,7 @@ jobs:
             demian/docs/mobile-04/browser
             demian/docs/mobile-05/browser
             demian/docs/mobile-07/browser
+            demian/docs/mobile-09/browser
             demian/docs/mobile-01/baseline
             demian/docs/mobile-02/release-asset-report.json
       - uses: actions/configure-pages@v5
