@@ -68,7 +68,7 @@ export default class GameRuntime {
     }
 
     scheduleFrame() {
-        if (this.running && !this.visibilityTarget?.hidden && this.frameRequest === null) {
+        if (this.running && !this.paused && !this.visibilityTarget?.hidden && this.frameRequest === null) {
             this.frameRequest = this.requestFrame(this.tick);
         }
     }
@@ -84,7 +84,7 @@ export default class GameRuntime {
 
     tick(timestamp) {
         this.frameRequest = null;
-        if (!this.running || this.visibilityTarget?.hidden) return;
+        if (!this.running || this.paused || this.visibilityTarget?.hidden) return;
 
         try {
             const elapsed = this.lastTimestamp === null ? 0 : Math.max(0, (timestamp - this.lastTimestamp) / 1000);
@@ -172,6 +172,15 @@ export default class GameRuntime {
         }
 
         this.paused = true;
+        // A paused page must not submit empty RAF callbacks at the display
+        // refresh rate. This also applies to loading transitions and results.
+        if (this.frameRequest !== null) {
+            this.cancelFrame(this.frameRequest);
+            this.frameRequest = null;
+        }
+        this.lastTimestamp = null;
+        this.accumulator = 0;
+        this.resetRenderTiming();
         if (notifyGame) {
             this.currentGame?.pause();
         }
@@ -185,15 +194,18 @@ export default class GameRuntime {
 
         this.paused = false;
         this.lastTimestamp = null;
+        this.accumulator = 0;
         this.resetRenderTiming();
         if (notifyGame) {
             this.currentGame?.resume();
         }
+        this.scheduleFrame();
         this.eventBus?.emit('runtime:resumed');
     }
 
     onVisibilityChange() {
         this.lastTimestamp = null;
+        this.accumulator = 0;
         this.resetRenderTiming();
         if (this.visibilityTarget?.hidden && this.frameRequest !== null) {
             this.cancelFrame(this.frameRequest);
@@ -204,6 +216,8 @@ export default class GameRuntime {
     stop() {
         this.running = false;
         this.lastTimestamp = null;
+        this.accumulator = 0;
+        this.resetRenderTiming();
 
         if (this.frameRequest !== null) {
             this.cancelFrame(this.frameRequest);
