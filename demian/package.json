@@ -17,7 +17,7 @@
         "validate:phase10": "node tools/validate_phase10.mjs",
         "validate:final": "node tools/validate_final.mjs",
         "validate:build": "node tools/validate_build_bundle.mjs",
-        "validate:static-assets": "node tools/check_static_assets.mjs",
+        "validate:static-assets": "node tools/check_static_assets.mjs && node tools/validate_pwa_release.mjs",
         "validate:character-art": "npm run validate:characters:v14",
         "validate:character-art:strict": "npm run validate:characters:v14",
         "repair:character-art": "npm run build:characters:v14",
@@ -55,6 +55,7 @@
         "test:device-qa:browser": "node tools/check_device_qa.mjs",
         "test:mobile-network:browser": "node tools/check_mobile_network_resilience.mjs",
         "test:mobile-touch:browser": "node tools/check_mobile_touch.mjs",
+        "test:mobile-pwa:browser": "node tools/check_production_pwa.mjs",
         "benchmark:mobile": "node tools/benchmark_mobile.mjs",
         "benchmark:mobile:ci": "node tools/benchmark_mobile.mjs"
     },
