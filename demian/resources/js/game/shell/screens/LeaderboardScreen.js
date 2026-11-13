@@ -43,6 +43,7 @@ export default class LeaderboardScreen extends BaseScreen {
         this.period.value = this.service.connected ? 'weekly' : 'device';
         this.snapshot = null;
         this.nextRefreshAt = Date.now() + 60000;
+        if (this.service.pending) await this.service.retry();
         await this.load();
         if (this.timer == null) this.timer = setInterval(() => this.tick(), 1000);
     }
