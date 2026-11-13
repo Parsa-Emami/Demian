@@ -238,6 +238,7 @@ try {
     report.warmMenu = {
         bootMs: Math.round(nodePerformance.now() - warmStarted),
         network: await at('warm-menu'), browserMetrics: await captureMetrics(cdp),
+        spriteCache: await page.evaluate(() => window.demianGameApplication.characterVisuals?.memorySnapshot() ?? null),
     };
     report.errors.push(...pageErrors.map(message => ({ stage: 'javascript', message })));
     report.status = report.errors.length || report.games.length !== MOBILE_GAME_IDS.length ? 'failed' : 'passed';
