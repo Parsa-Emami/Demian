@@ -20,6 +20,15 @@ test('safe-area edges remap physically for 90 degree CSS landscape', () => {
     assert.match(rule, /--mobile05-safe-top:\s*max\(12px, env\(safe-area-inset-right/);
 });
 
+test('RTL CSS landscape uses a physical top-left anchor without conflicting logical inline offsets', () => {
+    const rule = mobileCss.match(/html\\.demian-forced-landscape \\.manager-shell\\[data-manager-shell\\] \\{([\\s\\S]*?)\\}/)?.[1] ?? '';
+    assert.match(rule, /top:\\s*0\\s*!important/);
+    assert.match(rule, /left:\\s*0\\s*!important/);
+    assert.match(rule, /bottom:\\s*auto\\s*!important/);
+    assert.match(rule, /right:\\s*auto\\s*!important/);
+    assert.doesNotMatch(rule, /inset-inline-end|inset-block-end/);
+});
+
 test('touch-action overrides are constrained to control surfaces; no global scroll lock', () => {
     assert.match(mobileCss, /\[data-control-surface\]/);
     assert.match(mobileCss, /\.manager-shell \.manager-stage\s*\{\s*touch-action:\s*auto/);
