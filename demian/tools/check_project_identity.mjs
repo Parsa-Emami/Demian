@@ -88,8 +88,12 @@ try {
                 }, 0);
             }, { once: true });
         });
-        await credit.click();
-        await page.waitForFunction(() => Boolean(window.__demianCreatorClick));
+        // Do not await the external noopener popup's navigation: a remote
+        // destination may never finish loading in CI. The trusted click and
+        // destination are independently checked below, and the destination is
+        // opened under an intercepted local response.
+        await credit.click({ noWaitAfter: true, timeout: 12000 });
+        await page.waitForFunction(() => Boolean(window.__demianCreatorClick), null, { timeout: 10000 });
         const click = await page.evaluate(() => window.__demianCreatorClick);
         assert.equal(click.trusted, true);
         assert.equal(click.prevented, false);
