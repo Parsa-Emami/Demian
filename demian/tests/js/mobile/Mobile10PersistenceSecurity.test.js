@@ -144,3 +144,25 @@ test('rejected-evidence archive storage failure preserves pending replay', async
     assert.equal(service.pending.player_id, 'owner');
     assert.ok(storage.getItem(service.pendingKey));
 });
+
+test('backup code is delivered once and never persisted with identity or replay', async () => {
+    const storage = makeStorage();
+    const code = 'B'.repeat(64);
+    const requests = [];
+    const service = new ArcadeLeaderboardService({ baseUrl, storage,
+        fetcher: async (url, opts) => {
+            requests.push({ url, opts });
+            return { ok: true, json: async () => ({ backup_code: code,
+                backup_expires_at: '2027-01-01T00:00:00Z' }) };
+        },
+    });
+    service.identity = { player_id: 'owner', token: 'T'.repeat(64) };
+    const returned = await service.issueBackupCode();
+    assert.equal(returned, code);
+    assert.equal(requests.length, 1);
+    assert.match(requests[0].url, /\/player\/backup-code$/);
+    assert.equal(requests[0].opts.headers.Authorization, 'Bearer ' + 'T'.repeat(64));
+    assert.equal(requests[0].opts.cache, 'no-store');
+    assert.equal(requests[0].opts.referrerPolicy, 'no-referrer');
+    assert.equal([...storage.values.values()].join('').includes(code), false);
+});
