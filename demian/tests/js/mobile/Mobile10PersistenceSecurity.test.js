@@ -166,3 +166,16 @@ test('backup code is delivered once and never persisted with identity or replay'
     assert.equal(requests[0].opts.referrerPolicy, 'no-referrer');
     assert.equal([...storage.values.values()].join('').includes(code), false);
 });
+
+test('secure same-origin relative API routing remains available for reverse-proxy hosting', () => {
+    const previous = globalThis.location;
+    globalThis.location = { href: 'https://play.example.test/Demian/' };
+    try {
+        const service = new ArcadeLeaderboardService({ baseUrl: '/api/v1/arcade', storage: makeStorage() });
+        assert.equal(service.connected, true);
+        assert.equal(service.baseUrl, '/api/v1/arcade');
+    } finally {
+        if (previous === undefined) delete globalThis.location;
+        else globalThis.location = previous;
+    }
+});
