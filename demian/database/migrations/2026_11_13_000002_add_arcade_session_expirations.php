@@ -12,6 +12,8 @@ return new class extends Migration
         Schema::table('arcade_players', function (Blueprint $table): void {
             $table->timestamp('token_expires_at')->nullable()->index();
             $table->timestamp('recovery_expires_at')->nullable();
+            $table->char('backup_hash', 64)->nullable()->unique();
+            $table->timestamp('backup_expires_at')->nullable();
         });
 
         // Migration policy: existing bearer tokens get a bounded 30-day
@@ -26,7 +28,8 @@ return new class extends Migration
     {
         Schema::table('arcade_players', function (Blueprint $table): void {
             $table->dropIndex(['token_expires_at']);
-            $table->dropColumn(['token_expires_at', 'recovery_expires_at']);
+            $table->dropUnique(['backup_hash']);
+            $table->dropColumn(['token_expires_at', 'recovery_expires_at', 'backup_hash', 'backup_expires_at']);
         });
     }
 };
