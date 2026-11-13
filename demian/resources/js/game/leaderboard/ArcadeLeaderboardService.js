@@ -148,6 +148,19 @@ export default class ArcadeLeaderboardService {
         url.hash = `demian-recover=${result.recovery_code}`;
         return url.toString();
     }
+    async issueBackupCode() {
+        await this.ensureIdentity();
+        const result = await this.request('/player/backup-code', {
+            method: 'POST', authenticated: true,
+        });
+        if (!/^[A-Za-z0-9]{64}$/.test(result.backup_code ?? '') ||
+            !Number.isFinite(Date.parse(result.backup_expires_at ?? ''))) {
+            throw new Error('کد پشتیبان یا تاریخ انقضای سرور نامعتبر است.');
+        }
+        // Never write backup material to localStorage/sessionStorage.
+        this.backupExpiresAt = result.backup_expires_at;
+        return result.backup_code;
+    }
     async recoverAccount(code) {
         const value = String(code ?? '').trim();
         if (!/^[A-Za-z0-9]{64}$/.test(value)) {
