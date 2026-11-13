@@ -14,6 +14,7 @@ use App\Services\Arcade\RankedGameCatalog;
 use App\Services\Arcade\RunnerReplayVerifier;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
@@ -71,6 +72,23 @@ final class ArcadeController extends Controller
         $player->delete();
 
         return response()->json(['status' => 'deleted']);
+    }
+
+    public function personalBest(Request $request, CompetitionClock $clock): JsonResponse
+    {
+        $values = $request->validate(['period' => ['sometimes', Rule::in(['all', 'daily', 'weekly'])]]);
+        $window = $clock->snapshot($values['period'] ?? 'weekly');
+        $player = $request->attributes->get('arcade_player');
+        $rules = app(RunnerReplayVerifier::class)->rules();
+        $entry = DB::table('arcade_leaderboard_entries')
+            ->where('player_id', $player->id)
+            ->where('game_id', 'dino-run')
+            ->where('rules_version', $rules['version'])
+            ->where('period_key', $window['period_key'])
+            ->first(['score', 'achieved_at']);
+
+        return response()->json(['game_id' => 'dino-run', ...$window,
+            'best' => $entry ? ['score' => (int) $entry->score, 'achieved_at' => $entry->achieved_at] : null]);
     }
 
     public function start(StartArcadeRunRequest $request, ArcadeRunService $service): JsonResponse
