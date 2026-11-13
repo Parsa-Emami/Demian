@@ -21,11 +21,12 @@ test('safe-area edges remap physically for 90 degree CSS landscape', () => {
 });
 
 test('RTL CSS landscape uses a physical top-left anchor without conflicting logical inline offsets', () => {
-    const rule = mobileCss.match(/html\\.demian-forced-landscape \\.manager-shell\\[data-manager-shell\\] \\{([\\s\\S]*?)\\}/)?.[1] ?? '';
-    assert.match(rule, /top:\\s*0\\s*!important/);
-    assert.match(rule, /left:\\s*0\\s*!important/);
-    assert.match(rule, /bottom:\\s*auto\\s*!important/);
-    assert.match(rule, /right:\\s*auto\\s*!important/);
+    const selector = 'html.demian-forced-landscape .manager-shell[data-manager-shell] {';
+    const rule = mobileCss.split(selector)[1]?.split('}')[0] ?? '';
+    for (const declaration of [
+        'top: 0 !important;', 'left: 0 !important;',
+        'bottom: auto !important;', 'right: auto !important;',
+    ]) assert.ok(rule.includes(declaration), declaration);
     assert.doesNotMatch(rule, /inset-inline-end|inset-block-end/);
 });
 
