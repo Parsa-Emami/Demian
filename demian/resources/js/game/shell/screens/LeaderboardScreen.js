@@ -18,6 +18,8 @@ export default class LeaderboardScreen extends BaseScreen {
         this.recoveryLink = this.element.querySelector('[data-ranking-recovery-link]');
         this.recoveryStatus = this.element.querySelector('[data-ranking-recovery-status]');
         this.deleteAccount = this.element.querySelector('[data-ranking-delete-account]');
+        this.issueBackup = this.element.querySelector('[data-ranking-issue-backup]');
+        this.backupCode = this.element.querySelector('[data-ranking-backup-code]');
         this.timer = null;
         this.snapshot = null;
         this.receivedAtMs = 0;
@@ -69,7 +71,8 @@ export default class LeaderboardScreen extends BaseScreen {
                 this.recoveryForm.reset();
                 this.form.elements.display_name.value = recovered.display_name;
                 await this.load();
-                this.recoveryStatus.textContent = 'حساب بازیابی شد؛ نشست قبلی و لینک یک‌بارمصرف باطل شدند.';
+                this.backupCode.value = '';
+                this.recoveryStatus.textContent = 'حساب بازیابی شد؛ نشست قبلی، لینک کوتاه‌مدت و کد پشتیبان مصرف شدند. برای بازیابی بعدی کد تازه بساز.';
             } catch (error) {
                 this.recoveryStatus.textContent = error.message;
             } finally {
@@ -82,6 +85,7 @@ export default class LeaderboardScreen extends BaseScreen {
             try {
                 await this.service.eraseAccount();
                 this.recoveryLink.value = '';
+                this.backupCode.value = '';
                 this.recoveryForm.reset();
                 this.recoveryStatus.textContent = 'حساب و داده‌های آن پس از تأیید سرور حذف شدند.';
                 this.form.elements.display_name.value = this.service.displayName;
@@ -92,6 +96,26 @@ export default class LeaderboardScreen extends BaseScreen {
                 this.deleteAccount.disabled = false;
             }
         };
+        this.onIssueBackup = async () => {
+            this.issueBackup.disabled = true;
+            this.backupCode.value = '';
+            try {
+                this.backupCode.value = await this.service.issueBackupCode();
+                this.backupCode.focus();
+                this.backupCode.select();
+                const expires = Date.parse(this.service.backupExpiresAt ?? '');
+                this.recoveryStatus.textContent = 'کد پشتیبان یک‌بارمصرف را خارج از دستگاه امن نگهدار. انقضا: ' +
+                    (Number.isFinite(expires)
+                        ? new Intl.DateTimeFormat('fa-IR', { dateStyle: 'medium',
+                            timeStyle: 'short' }).format(expires) : 'طبق زمان سرور') +
+                    '. ساخت کد تازه، کد قبلی را باطل می‌کند.';
+            } catch (error) {
+                this.recoveryStatus.textContent = error.message;
+            } finally {
+                this.issueBackup.disabled = false;
+            }
+        };
+        this.issueBackup?.addEventListener('click', this.onIssueBackup);
         this.deleteAccount?.addEventListener('click', this.onDeleteAccount);
         this.issueRecovery.addEventListener('click', this.onIssueRecovery);
         this.recoveryForm.addEventListener('submit', this.onRecover);
@@ -102,6 +126,8 @@ export default class LeaderboardScreen extends BaseScreen {
     async beforeOpen() {
         this.form.elements.display_name.value = this.service.displayName;
         this.issueRecovery.disabled = !this.service.connected;
+        this.issueBackup.disabled = !this.service.connected;
+        this.backupCode.value = '';
         this.deleteAccount.disabled = !this.service.connected;
         for (const control of this.recoveryForm.elements) control.disabled = !this.service.connected;
         this.recoveryForm.elements.recovery_code.value = this.service.recoveryOffer ?? '';
@@ -205,6 +231,7 @@ export default class LeaderboardScreen extends BaseScreen {
         this.loading = false;
         this.snapshot = null;
         this.recoveryLink.value = '';
+        this.backupCode.value = '';
         if (this.timer != null) clearInterval(this.timer);
         this.timer = null;
     }
@@ -213,6 +240,7 @@ export default class LeaderboardScreen extends BaseScreen {
         this.generation++;
         if (this.timer != null) clearInterval(this.timer);
         this.timer = null;
+        this.issueBackup?.removeEventListener('click', this.onIssueBackup);
         this.deleteAccount?.removeEventListener('click', this.onDeleteAccount);
         this.issueRecovery.removeEventListener('click', this.onIssueRecovery);
         this.recoveryForm.removeEventListener('submit', this.onRecover);
