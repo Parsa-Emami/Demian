@@ -1,6 +1,7 @@
 /** MIT. Build a portable static release without PHP or a database. */
 import { mkdirSync, readFileSync, writeFileSync, cpSync, rmSync, existsSync } from 'node:fs';
 import { resolve, join, basename } from 'node:path';
+import { createHash } from 'node:crypto';
 import { BUILTIN_CHARACTER_SLUGS, RETIRED_CHARACTER_SLUGS, characterPackVersion } from '../resources/js/game/characters/CharacterVisualContract.js';
 import { BUILTIN_CHARACTER_LABELS as labels } from '../resources/js/game/characters/manifests/CharacterManifestRegistry.js';
 import { renderStaticTemplate } from './static_template.mjs';
@@ -36,6 +37,16 @@ for (const file of ['manifest.webmanifest', 'favicon.ico', 'robots.txt', 'game-i
 cpSync(join(root, 'public/icons'), join(out, 'icons'), { recursive: true });
 const html = renderStaticTemplate(readFileSync(join(root, 'resources/views/demian.blade.php'), 'utf8'), { entry, arcadeApi });
 writeFileSync(join(out, 'index.html'), html);
+// A content-derived service-worker version makes installs deterministic and
+// avoids activating an incompatible cached shell during a live ranked run.
+const releaseId = createHash('sha256').update(JSON.stringify({
+    entry: entry.file, css: entry.css ?? [],
+})).digest('hex').slice(0, 16);
+const workerTemplate = readFileSync(join(root, 'tools/templates/service-worker.js'), 'utf8');
+if (!workerTemplate.includes('__DEMIAN_RELEASE_ID__')) throw new Error('PWA worker version placeholder missing.');
+writeFileSync(join(out, 'service-worker.js'),
+    workerTemplate.replaceAll('__DEMIAN_RELEASE_ID__', releaseId));
+cpSync(join(root, 'tools/templates/offline.html'), join(out, 'offline.html'));
 writeFileSync(join(out, 'characters.json'), JSON.stringify({ data: BUILTIN_CHARACTER_SLUGS.map((slug) => ({
     id: `builtin-${slug}`, name: labels[slug], slug, is_builtin: true, is_active: slug === 'darya',
     sprite_url: `assets/characters/${slug}/${slug}-spritesheet-v${characterPackVersion(slug)}-mobile.png`,
