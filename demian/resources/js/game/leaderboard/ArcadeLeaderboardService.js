@@ -88,6 +88,19 @@ export default class ArcadeLeaderboardService {
         await this.ensureIdentity();
         return this.request('/player', { authenticated: true });
     }
+    async personalBest(period = 'weekly') {
+        if (!this.connected || !this.identity?.token) return null;
+        try {
+            return await this.request(`/player/best?period=${encodeURIComponent(period)}`,
+                { authenticated: true });
+        } catch (error) {
+            if (error.status === 401) {
+                this.identity = null;
+                safeWrite(this.storage, this.identityKey, null);
+            }
+            return null; // Personal stats must never prevent public leaderboard.
+        }
+    }
     async eraseAccount() {
         if (this.identity?.token && this.connected) {
             await this.request('/player', { method: 'DELETE', authenticated: true });
