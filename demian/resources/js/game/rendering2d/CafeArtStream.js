@@ -58,9 +58,11 @@ async function loadTile(url, { signal }) {
 }
 
 export default class CafeArtStream {
-    constructor({ quality = 'auto', detected = 'balanced', loader = loadTile, clock = Date.now, onTileReady = null } = {}) {
+    constructor({ quality = 'auto', detected = 'balanced', loader = loadTile, clock = Date.now,
+        onTileReady = null, networkPolicy = optionalAssetPolicy } = {}) {
         this.profile = cafeQualityProfile(quality, detected); this.detected = detected;
         this.loader = loader; this.clock = clock; this.onTileReady = onTileReady;
+        this.networkPolicy = networkPolicy;
         this.ready = new Map(); this.active = new Map(); this.failed = new Map();
         this.queue = []; this.desired = new Set();
         this.revision = 0; this.generation = 0; this.disposed = false;
@@ -69,7 +71,7 @@ export default class CafeArtStream {
         this.onConnectionChange = () => {
             this.viewKey = null;
             this.retryAt = 0;
-            const policy = optionalAssetPolicy();
+            const policy = this.networkPolicy();
             if (policy.deferBackground) {
                 for (const entry of this.active.values()) entry.controller.abort();
             } else {
@@ -97,7 +99,7 @@ export default class CafeArtStream {
 
     prepare(camera, padding = 0) {
         if (this.disposed) return;
-        const network = optionalAssetPolicy();
+        const network = this.networkPolicy();
         const viewKey = [camera.position.x, camera.position.z, camera.pixelsPerUnit,
             camera.viewportWidth, camera.viewportHeight, padding, this.profile.quality, network.reason].join(':');
         const now = this.clock();
@@ -132,7 +134,7 @@ export default class CafeArtStream {
     }
 
     pump() {
-        const network = optionalAssetPolicy();
+        const network = this.networkPolicy();
         if (network.deferBackground) return;
         const concurrency = network.reason === 'limited-3g'
             ? Math.min(1, this.profile.concurrency) : this.profile.concurrency;
