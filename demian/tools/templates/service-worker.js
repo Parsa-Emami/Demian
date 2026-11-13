@@ -179,9 +179,13 @@ self.addEventListener('fetch', event => {
     const url = new URL(request.url);
     if (request.method !== 'GET' || url.origin !== scope.origin ||
         !url.pathname.startsWith(scope.pathname)) return;
+    // Browsers often use credentials:'include' even for ordinary <img> and
+    // font requests. Public, allowlisted static assets may be served offline,
+    // but private JSON/fetch GETs and all authenticated/API calls are bypassed.
+    const publicStatic = ['image', 'font', 'style', 'script'].includes(request.destination);
     if (/(^|\/)api(\/|$)/.test(url.pathname) ||
         request.headers.has('Authorization') ||
-        (request.mode !== 'navigate' && request.credentials === 'include')) return;
+        (request.mode !== 'navigate' && request.credentials === 'include' && !publicStatic)) return;
     if (request.mode === 'navigate') {
         event.respondWith((async () => {
             try {
