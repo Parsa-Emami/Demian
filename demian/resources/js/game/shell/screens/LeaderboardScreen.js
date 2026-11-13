@@ -17,6 +17,7 @@ export default class LeaderboardScreen extends BaseScreen {
         this.issueRecovery = this.element.querySelector('[data-ranking-issue-recovery]');
         this.recoveryLink = this.element.querySelector('[data-ranking-recovery-link]');
         this.recoveryStatus = this.element.querySelector('[data-ranking-recovery-status]');
+        this.deleteAccount = this.element.querySelector('[data-ranking-delete-account]');
         this.timer = null;
         this.snapshot = null;
         this.receivedAtMs = 0;
@@ -45,7 +46,7 @@ export default class LeaderboardScreen extends BaseScreen {
                 this.recoveryLink.value = link;
                 this.recoveryLink.focus();
                 this.recoveryLink.select();
-                this.recoveryStatus.textContent = 'لینک فقط یک بار قابل استفاده است؛ آن را در جای امنی ذخیره کنید. ساخت لینک تازه، لینک قبلی را باطل می‌کند.';
+                this.recoveryStatus.textContent = 'لینک فقط یک بار و تا زمان انقضای اعلام‌شده از سمت سرور قابل استفاده است. آن را در جای امن ذخیره کن؛ ساخت لینک تازه، قبلی را باطل می‌کند.';
             } catch (error) {
                 this.recoveryStatus.textContent = error.message;
             } finally {
@@ -69,6 +70,23 @@ export default class LeaderboardScreen extends BaseScreen {
                 button.disabled = false;
             }
         };
+        this.onDeleteAccount = async () => {
+            if (!globalThis.confirm?.('حساب، تمام رکوردهای جهانی و داده‌های این دستگاه برای همیشه حذف می‌شوند. ادامه می‌دهی؟')) return;
+            this.deleteAccount.disabled = true;
+            try {
+                await this.service.eraseAccount();
+                this.recoveryLink.value = '';
+                this.recoveryForm.reset();
+                this.recoveryStatus.textContent = 'حساب و داده‌های آن پس از تأیید سرور حذف شدند.';
+                this.form.elements.display_name.value = this.service.displayName;
+                await this.load();
+            } catch (error) {
+                this.recoveryStatus.textContent = error.message;
+            } finally {
+                this.deleteAccount.disabled = false;
+            }
+        };
+        this.deleteAccount?.addEventListener('click', this.onDeleteAccount);
         this.issueRecovery.addEventListener('click', this.onIssueRecovery);
         this.recoveryForm.addEventListener('submit', this.onRecover);
         this.period.addEventListener('change', this.onPeriod);
@@ -78,12 +96,15 @@ export default class LeaderboardScreen extends BaseScreen {
     async beforeOpen() {
         this.form.elements.display_name.value = this.service.displayName;
         this.issueRecovery.disabled = !this.service.connected;
+        this.deleteAccount.disabled = !this.service.connected && !this.service.accountKnown;
         for (const control of this.recoveryForm.elements) control.disabled = !this.service.connected;
         this.recoveryForm.elements.recovery_code.value = this.service.recoveryOffer ?? '';
         this.recoveryLink.value = '';
         this.recoveryStatus.textContent = this.service.recoveryOffer
             ? 'کد بازیابی لینک شناسایی شد؛ برای تعویض حساب روی «بازیابی حساب» بزنید.'
-            : '';
+            : this.service.needsAccountRestore
+                ? 'حساب قبلی در این نشست باز نیست. برای حفظ رکوردهای آن باید با کد بازیابی وارد شوی.'
+                : 'توکن ورود فقط در نشست مرورگر نگهداری می‌شود. قبل از بستن مرورگر، لینک بازیابی را دریافت و امن ذخیره کن.';
         for (const option of this.period.options) {
             option.disabled = !this.service.connected && option.value !== 'device';
         }
@@ -186,6 +207,7 @@ export default class LeaderboardScreen extends BaseScreen {
         this.generation++;
         if (this.timer != null) clearInterval(this.timer);
         this.timer = null;
+        this.deleteAccount?.removeEventListener('click', this.onDeleteAccount);
         this.issueRecovery.removeEventListener('click', this.onIssueRecovery);
         this.recoveryForm.removeEventListener('submit', this.onRecover);
         this.period.removeEventListener('change', this.onPeriod);
