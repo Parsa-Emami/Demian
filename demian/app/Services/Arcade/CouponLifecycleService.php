@@ -260,4 +260,37 @@ final class CouponLifecycleService
             $this->event((int) $coupon->id, 'account_erased', 'system');
         }
     }
+
+    /** Operator incident response; never silently re-credit captured payments. */
+    public function revoke(int $couponId, string $reason): array
+    {
+        if (! in_array($reason, ['fraud', 'policy', 'incident'], true)) {
+            throw new \InvalidArgumentException('Invalid coupon revocation reason.');
+        }
+
+        return DB::transaction(function () use ($couponId, $reason): array {
+            $coupon = DB::table('arcade_coupons')->where('id', $couponId)->lockForUpdate()->first();
+            if (! $coupon) {
+                throw new RuntimeException('Coupon record does not exist.');
+            }
+            if ($coupon->status === 'redeemed') {
+                throw new RuntimeException('Captured discount requires a separate audited refund.');
+            }
+            if ($coupon->status === 'revoked') {
+                return ['coupon_id' => $couponId, 'status' => 'already_revoked'];
+            }
+
+            DB::table('arcade_coupon_reservations')->where('coupon_id', $couponId)
+                ->where('state', 'reserved')->update([
+                    'state' => 'released', 'updated_at' => now(),
+                ]);
+            DB::table('arcade_coupons')->where('id', $couponId)->update([
+                'status' => 'revoked', 'code_ciphertext' => null, 'updated_at' => now(),
+            ]);
+            $this->event($couponId, 'revoked', 'operator', null, ['reason' => $reason]);
+
+            return ['coupon_id' => $couponId, 'status' => 'revoked'];
+        }, 3);
+    }
+
 }
