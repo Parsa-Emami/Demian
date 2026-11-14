@@ -86,6 +86,18 @@ try {
                 const registration = await navigator.serviceWorker?.getRegistration();
                 return Boolean(registration?.active && navigator.serviceWorker.controller);
             }, null, { timeout: 20000 });
+            // A worker can become the controller before install-time cache
+            // writes are observable in Chromium. Wait for the actual offline
+            // fallback to exist rather than asserting immediately after control.
+            await page.waitForFunction(async () => {
+                const names = (await caches.keys()).filter(
+                    k => k.startsWith('demian-offline-v1-'));
+                if (names.length !== 1) return false;
+                const cached = await caches.open(names[0]);
+                const requests = await cached.keys();
+                return requests.some(request =>
+                    new URL(request.url).pathname.endsWith('/offline.html'));
+            }, null, { timeout: 20000 });
             const cache = await page.evaluate(async () => {
                 const keys = (await caches.keys()).filter(k => k.startsWith('demian-offline-v1-'));
                 const entries = [];
