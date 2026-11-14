@@ -252,6 +252,46 @@ final class ArcadeAntiCheatTest extends TestCase
         $this->assertDatabaseCount('arcade_cheat_review_events',5);
     }
 
+    public function test_false_positive_clearance_requires_separately_audited_release_of_active_hold(): void
+    {
+        [$player,$report]=$this->flaggedPlayer();
+        $reviewer=$this->staff('super_admin');
+        $anti=app(ArcadeAntiCheat::class);
+        $anti->review($report->id,$reviewer,1,'confirmed',
+            'Manual review established concern before restrictions');
+        $anti->setHold($report->id,$reviewer,1,12,
+            'Manual temporary new run hold pending review');
+
+        try {
+            $anti->review($report->id,$reviewer,1,'reopen',
+                'New evidence contradicts the earlier decision');
+            // A reopening is allowed; clearing is not allowed while hold active.
+            $anti->review($report->id,$reviewer,1,'cleared',
+                'Independent human review finds harmless input pattern');
+            $this->fail('Clearing a case silently left its manual hold active.');
+        } catch (HttpException $expected) {
+            $this->assertSame(409,$expected->getStatusCode());
+        }
+        $this->assertDatabaseHas('arcade_anticheat_holds',[
+            'player_id'=>$player->id,'report_id'=>$report->id,
+        ]);
+        $this->assertDatabaseHas('arcade_cheat_reports',[
+            'id'=>$report->id,'status'=>'open',
+        ]);
+        $anti->setHold($report->id,$reviewer,1,null,
+            'Human reviewer releases the new run restriction');
+        $anti->review($report->id,$reviewer,1,'cleared',
+            'Independent human review finds harmless input pattern');
+        $this->assertDatabaseMissing('arcade_anticheat_holds',[
+            'player_id'=>$player->id,
+        ]);
+        $this->assertDatabaseHas('arcade_cheat_reports',[
+            'id'=>$report->id,'status'=>'cleared',
+        ]);
+        $anti->assertStartAllowed($player->id);
+        $this->assertDatabaseCount('arcade_cheat_review_events',5);
+    }
+
     public function test_false_positive_review_stays_closed_even_if_signal_recurs(): void
     {
         [$player,$report]=$this->flaggedPlayer();

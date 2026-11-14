@@ -260,6 +260,15 @@ final class ArcadeAntiCheat
                 'Invalid review transition.');
             abort_if($decision === 'investigating'
                 && $report->status === 'investigating', 409, 'Already under review.');
+            // A cleared false-positive cannot keep a silently active new-run
+            // restriction. Reviewer must first release the manual hold using
+            // the separately authenticated, journaled hold operation.
+            if ($decision === 'cleared') {
+                abort_if(DB::table('arcade_anticheat_holds')
+                    ->where('report_id', $reportId)
+                    ->where('expires_at', '>', now())->exists(), 409,
+                    'Release the active hold before clearing this report.');
+            }
             $next = $decision === 'reopen' ? 'open' : $decision;
             DB::table('arcade_cheat_reports')->where('id', $reportId)->update([
                 'status' => $next, 'reviewed_by' => $actorId,
