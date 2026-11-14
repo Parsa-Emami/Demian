@@ -35,7 +35,10 @@ final class ArcadeCashierStaffCommand extends Command
         }
 
         try {
-            $result = DB::transaction(function () use ($action, $username): string {
+            // Never keep a database transaction open while prompting a human.
+            $hashedPassword = in_array($action, ['create', 'reset-password'], true)
+                ? $this->securePassword() : null;
+            $result = DB::transaction(function () use ($action, $username, $hashedPassword): string {
                 $staff = DB::table('arcade_cashier_staff')
                     ->where('username', $username)->lockForUpdate()->first();
                 $now = now()->utc()->toDateTimeString();
@@ -49,7 +52,7 @@ final class ArcadeCashierStaffCommand extends Command
                         || ! in_array($role, ['cashier', 'manager'], true)) {
                         throw new \InvalidArgumentException('Invalid branch/role/display-name.');
                     }
-                    $hash = $this->securePassword();
+                    $hash = $hashedPassword;
                     $id = DB::table('arcade_cashier_staff')->insertGetId([
                         'username' => $username, 'display_name' => $name,
                         'password_hash' => $hash, 'branch_id' => $branch,
@@ -66,7 +69,7 @@ final class ArcadeCashierStaffCommand extends Command
                 } elseif ($action === 'enable') {
                     $updates['is_active'] = true;
                 } else {
-                    $updates['password_hash'] = $this->securePassword();
+                    $updates['password_hash'] = $hashedPassword;
                 }
                 DB::table('arcade_cashier_staff')->where('id', $staff->id)->update($updates);
                 return $action.' #'.$staff->id;
