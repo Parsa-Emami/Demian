@@ -79,7 +79,8 @@ final class ArcadeAntiCheatTest extends TestCase
         for($i=0;$i<4;$i++) {
             $anti->rejected($player,null,422,'203.0.113.42');
         }
-        $report=DB::table('arcade_cheat_reports')->first();
+        $report=DB::table('arcade_cheat_reports')
+            ->where('player_id', $player->id)->first();
         $this->assertNotNull($report);
         return [$player,$report];
     }
