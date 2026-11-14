@@ -21,3 +21,21 @@ Artisan::command('inspire', function () {
 \Illuminate\Support\Facades\Schedule::command('arcade:seal-weeks --apply')
     ->hourlyAt(10)->withoutOverlapping(30)->onOneServer()
     ->when(fn (): bool => (bool) config('demian-arcade.weekly_settlement_enabled', false));
+
+
+// Issuance is opt-in only. Automatic issuance starts after explicit approval
+// of all discount policy limits AND store integration in staging.
+\Illuminate\Support\Facades\Schedule::command('arcade:coupons:issue --pending --apply')
+    ->hourlyAt(20)->withoutOverlapping(30)->onOneServer()
+    ->when(fn (): bool => (bool) config('demian-coupons.issuance_enabled', false)
+        && (bool) config('demian-coupons.policy_approved', false));
+
+// Prevent unbounded growth of anti-replay nonce table after its validity window.
+\Illuminate\Support\Facades\Artisan::command('arcade:coupons:prune-nonces', function (): void {
+    $deleted = \Illuminate\Support\Facades\DB::table('arcade_coupon_request_nonces')
+        ->where('expires_at', '<', now()->subMinute())->delete();
+    $this->info("Pruned expired store auth nonces: {$deleted}");
+})->purpose('Remove expired HMAC request nonces; never delete live anti-replay evidence.');
+\Illuminate\Support\Facades\Schedule::command('arcade:coupons:prune-nonces')
+    ->dailyAt('03:20')->withoutOverlapping()
+    ->when(fn (): bool => (bool) config('demian-coupons.store_enabled', false));
