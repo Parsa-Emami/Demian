@@ -104,7 +104,7 @@ final class ArcadeTurnRunService
                 ? $data['frames'] : $data['actions'],
         ], JSON_THROW_ON_ERROR));
 
-        return DB::transaction(function () use ($player, $run, $data, $hash): array {
+        return DB::transaction(function () use ($player, $run, $data, $hash, $frameProof): array {
             ArcadePlayer::query()->lockForUpdate()->findOrFail($player->id);
             $locked = ArcadeRun::query()->lockForUpdate()->findOrFail($run->id);
             if ($locked->status === 'verified') {
