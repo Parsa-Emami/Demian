@@ -79,7 +79,8 @@ jobs:
             }
             exit($hasApi ? 0 : 1);
           '
-          tar -czf "$RUNNER_TEMP/cpanel-api.tar.gz" \
+          # Never ship precomputed configuration/routes from a CI environment.
+          tar --exclude='bootstrap/cache/*.php' -czf "$RUNNER_TEMP/cpanel-api.tar.gz" \
             artisan app bootstrap config database routes resources/game \
             resources/views src public/index.php public/.htaccess \
             composer.json composer.lock vendor
