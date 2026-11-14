@@ -303,7 +303,7 @@ final class ArcadeAntiCheat
                 $action = 'hold_released';
                 $expires = null;
             } else {
-                abort_unless(! $existing || $existing->expires_at <= now()
+                abort_unless(! $existing || \Carbon\CarbonImmutable::parse($existing->expires_at, 'UTC')->lte(now())
                     || (int) $existing->report_id === $reportId,
                     409, 'Another confirmed case already owns this active hold.');
                 $expires = now()->addHours($hours);
