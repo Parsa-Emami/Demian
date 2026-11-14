@@ -7,6 +7,7 @@ use App\Http\Controllers\Cafe\CashierController;
 use App\Http\Middleware\AuthenticateCafeCashier;
 use App\Http\Middleware\RequireCafePermission;
 use App\Http\Controllers\Cafe\CafeAdminController;
+use App\Http\Controllers\Cafe\CafeGiftController;
 
 // Authorized cafe staff use Laravel's CSRF-protected web session middleware,
 // including when the API host is in API-only mode. Never open character studio.
@@ -35,6 +36,13 @@ Route::prefix('cashier')->name('cashier.')->group(function (): void {
         Route::post('/admin/coupons/revoke', [CafeAdminController::class, 'revoke'])
             ->middleware([RequireCafePermission::class.':coupon.revoke',
                 'throttle:arcade-cashier-admin'])->name('coupons.revoke');
+        // Phase 11: gift issuance is a sub-operation of the 8th top-level
+        // permission, coupon management. No additional admin grant is added.
+        Route::get('/admin/gifts', [CafeGiftController::class, 'index'])
+            ->middleware(RequireCafePermission::class.':coupon.revoke')->name('gifts');
+        Route::post('/admin/gifts/issue', [CafeGiftController::class, 'issue'])
+            ->middleware([RequireCafePermission::class.':coupon.revoke',
+                'throttle:arcade-cashier-admin'])->name('gifts.issue');
         Route::get('/admin/audit', [CafeAdminController::class, 'audit'])
             ->middleware(RequireCafePermission::class.':audit.ledger')->name('audit');
         Route::get('/admin/readiness', [CafeAdminController::class, 'readiness'])
