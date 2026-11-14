@@ -144,8 +144,10 @@ export default class OpenWorldGame extends BaseGame {
             context, gameId: 'open-world',
             position: () => this.characterManager.position(),
             onStart: async () => {
-                // The route trial always starts at the canonical entrance.
-                // Fast-travel and stored discovery are not trusted as proof.
+                // Ranked world state is never restored from persisted progress.
+                // Close the map before the fixed-tick challenge clock starts.
+                this.hud.closeMap();
+                this.setMapOpen(false);
                 await this.chunkManager.ensureAround(this.manifest.spawn);
                 this.characterManager.setPosition(this.manifest.spawn);
                 this.focusCharacter({ close: true, follow: true });
@@ -282,8 +284,17 @@ export default class OpenWorldGame extends BaseGame {
                 priority: 3,
                 metadata: { kind: 'save-point', point },
                 action: () => {
+                    if (this.worldChallengeLocked()) {
+                        // A ranked checkpoint is a transient server-verifiable
+                        // interaction, NOT a persistent local save/fast-travel unlock.
+                        const accepted = this.routeChallenge?.state === 'running'
+                            && this.routeChallenge.checkpoint(point.id);
+                        this.context.app.shell.toast(accepted
+                            ? `مقصد رقابتی «${point.label}» ثبت شد.`
+                            : 'این نقطه مقصد فعلی چالش نیست.', accepted ? 'success' : 'info');
+                        return accepted;
+                    }
                     this.savePoints.activate(point.id);
-                    this.routeChallenge?.checkpoint(point.id);
                     this.context.app.shell.toast(`${point.label} فعال و بازی ذخیره شد.`, 'success');
                     return true;
                 },
@@ -312,8 +323,13 @@ export default class OpenWorldGame extends BaseGame {
         this.hud.mount();
     }
 
+    /** No persisted progression, teleport, quick-save, or map access during a ranked run. */
+    worldChallengeLocked() {
+        return ['starting', 'running', 'submitting'].includes(this.routeChallenge?.state);
+    }
+
     async fastTravel(point) {
-        if (this.routeChallenge?.state === 'running') {
+        if (this.worldChallengeLocked()) {
             this.context.app.shell.toast('سفر سریع در چالش رقابتی مجاز نیست.', 'info');
             return false;
         }
@@ -454,6 +470,10 @@ export default class OpenWorldGame extends BaseGame {
     }
 
     setMapOpen(open) {
+        if (open && this.worldChallengeLocked()) {
+            this.hud?.closeMap();
+            return;
+        }
         if (this.mapOpen === open) return;
         this.mapOpen = open;
         this.context.root.dataset.touchMapOpen = String(open);
@@ -461,9 +481,10 @@ export default class OpenWorldGame extends BaseGame {
     }
 
     fixedUpdate(deltaTime, input) {
-        if (input.toggleMap) this.hud.toggleMap();
+        if (input.toggleMap && !this.worldChallengeLocked()) this.hud.toggleMap();
         this.setMapOpen(this.hud?.isMapOpen() ?? this.mapOpen);
-        if (input.quickSave && this.context?.app?.sessionState === 'playing') {
+        if (input.quickSave && !this.worldChallengeLocked()
+            && this.context?.app?.sessionState === 'playing') {
             this.savePoints.save({ reason: 'quick-save' });
             this.context.app.shell.toast('پیشرفت Open World ذخیره شد.', 'success');
         }
