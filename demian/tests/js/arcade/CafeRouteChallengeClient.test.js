@@ -62,7 +62,7 @@ test('route challenge records engine coordinates and authentic checkpoints befor
         services: { leaderboards: {
             startTurnRun: async () => ({
                 mode: 'ranked', run_id: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
-                game_id: 'open-world', rules_version: 'open-world-route-v1',
+                game_id: 'open-world', rules_version: 'open-world-route-v2',
                 seed: 7, goals,
             }),
             finishTurnRun: async (run, actions, ticks) => {

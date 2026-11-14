@@ -1,6 +1,6 @@
 # Step 09 — Verified Cafe Route Trials: After Hours, Cafe Rush and Open World
 
-**Scope:** This introduces **finite, opt-in, server-verifiable route-trial challenges** within three games that did not previously have a meaningful rankable score. It does not retroactively verify historic local high scores or claim a full 1:1 PHP simulation of After Hours shadow AI, Cafe Rush tray/cooking/mistake scoring, or unrestricted Open World movement and saves. Those original casual scores stay unranked. Phase 2 Step 09 may only be declared fully complete when those mechanics are independently replayed and tested to approved acceptance criteria.
+**Scope:** This file documents the legacy finite route challenges and the Open World route-v2 mode. After Hours and Cafe Rush now also have separately versioned **original-game 60Hz gameplay replayers** under `after-hours-frames-v1` and `cafe-rush-frames-v1`. Old `*-route-v1` records remain archived, but new frames score only exact original game rules; see `STEP_09_ORIGINAL_GAME_PROGRESS.md`. Unrestricted Open World exploration never becomes a ranked score. All flags remain OFF pending release acceptance.
 
 ## Player flow
 
@@ -17,7 +17,7 @@
 |---|---|---|---|---|
 | After Hours | `after-hours-route-v1` | both seed-selected shift cards then escape at exit | 300s | Shadow AI and power state run in the client but are not reconstructed in the PHP route score |
 | Cafe Rush | `cafe-rush-route-v1` | first two real orders: ticket, original recipe station, matching table | 120s | PHP proof validates geometry/sequence, NOT every ticket schedule, tray collision, spill and combo from local model |
-| Open World | `open-world-route-v1` | counter, lounge, arcade save-point interactions | 240s | This is a new timed time trial. Free exploration, world save and free travel do not count as verified score |
+| Open World | `open-world-route-v2` | counter, lounge, arcade save-point interactions | 240s | This is a new timed time trial. Free exploration, world save and free travel do not count as verified score |
 
 The canonical collision snapshot `resources/server/cafe_geometry_v5.json` is derived from `resources/js/game/shared/cafe/FbxCafeData.js`, with FBX source SHA, 317 collider records and 523 floor rows. Tests compare these resources and generate legal routes from the real JavaScript navigation/collision engine; PHP validates those independently. An FBX geometry change MUST update both the snapshot and tests before the verifier can accept a newer layout. Do not silently swap geometry versions.
 
@@ -50,9 +50,25 @@ Do not mistake successful GitHub Pages frontend deployment for a live cPanel Lar
 
 ## Remaining for full original-game Step 09 completion
 
-- **After Hours:** port deterministic pathfinding/FBX shadow patrol, chase and memory; power-circuit state and card interactions, and exact escape/caught/timeout score formula into the independent PHP verifier, with JS↔PHP differential fixtures.
-- **Cafe Rush:** independently simulate ticket arrival/expiry, recipe prep timing, pickup/tray balance, spills, wrong table, combos and full score—not only checkpoint travel.
+- **After Hours:** original fixed-tick shadow AI, cards, power and scoring are implemented with JS/PHP differential and true escape tests. Remaining: staging device/host validation and anti-bot fairness review.
+- **Cafe Rush:** original 60Hz ticket, tray, spills and combo verification is implemented. Remaining: staging device/host validation and anti-bot fairness review.
 - **Open World:** product acceptance is now possible for a bounded route challenge; adding any other world-score objectives needs its own explicit versioned verifier and security review.
 - **Fraud/financial:** assessed anti-bot measures and physical UAT must be completed before enabling any discount-eligible game. Keep Issue #39 open until these requirements are proven.
 
-**Truthful release status:** Additional route-trial modes implemented behind disabled flags. Original free-play scoring verification for the three games remains incomplete; do not mark the full Step 09 as done.
+**Truthful release status:** Original After Hours/Café Rush server verification is implemented behind disabled flags; finite Open World route-v2 is implemented and unrelated exploration remains unranked. Human/financial anti-bot and physical staging UAT are **not yet certified**, so do not activate coupon prizes.
+
+## Open World route-v2 acceptance
+
+The bounded ranked objective is **three physical save-point interactions in fixed
+order**, from the canonical café entrance: counter, lounge, arcade. This is a
+deterministic time trial, NOT the player's unrestricted world discovery.
+Fixed order preserves identical route geometry across server-issued seeds and
+avoids an unfair score advantage from shorter shuffled paths.
+
+Version `open-world-route-v2` rejects checkpoint claims from behind FBX walls
+or furniture, in addition to 60Hz monotonic time, bounded speed, swept geometry,
+actual interaction proximity and terminal progress. Local saves and fast travel
+are disabled throughout the ranked client state; only transient proof events
+advance the round. Legacy `-v1` results remain archived under their original
+rules_version and are not silently rescored. Do not enable this rollout during
+an unsettled old-version season; apply at a season boundary after UAT.

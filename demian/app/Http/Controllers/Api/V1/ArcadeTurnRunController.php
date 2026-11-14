@@ -60,6 +60,7 @@ final class ArcadeTurnRunController extends Controller
         $run = $service->start($request->attributes->get('arcade_player'),
             $request->validated());
         $challenge = isset(\App\Services\Arcade\CafeRouteReplayVerifier::VERSIONS[$run->game_id])
+            && $run->rules_version === \App\Services\Arcade\CafeRouteReplayVerifier::VERSIONS[$run->game_id]
             ? app(\App\Services\Arcade\CafeRouteReplayVerifier::class)
                 ->goals($run->game_id, (int) $run->seed) : null;
         return response()->json([

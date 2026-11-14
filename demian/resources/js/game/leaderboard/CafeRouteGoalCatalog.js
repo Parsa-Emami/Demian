@@ -1,7 +1,7 @@
 export const CAFE_ROUTE_VERSIONS = Object.freeze({
     'after-hours': 'after-hours-route-v1',
     'cafe-rush': 'cafe-rush-route-v1',
-    'open-world': 'open-world-route-v1',
+    'open-world': 'open-world-route-v2',
 });
 
 const TITLES = Object.freeze({

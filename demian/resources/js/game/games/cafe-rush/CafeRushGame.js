@@ -2,7 +2,7 @@ import BaseGame from '../../contracts/BaseGame.js';
 import { preloadFbxCafeArt } from '../../rendering2d/FbxCafeAssets.js';
 import CafeCueAudio from '../../shared/cafe/CafeCueAudio.js';
 import CafeRushModel from './CafeRushModel.js';
-import RankedRouteChallenge from '../../leaderboard/RankedRouteChallenge.js';
+import RankedGameplayChallenge from '../../leaderboard/RankedGameplayChallenge.js';
 import CafeRushRenderer from './CafeRushRenderer.js';
 import CafeRushUi, { rushDigits } from './CafeRushUi.js';
 import { RECIPES, RUSH_GUESTS, RUSH_RULES, VIP_AT } from './CafeRushMap.js';
@@ -81,10 +81,9 @@ export default class CafeRushGame extends BaseGame {
         this.context = context;
         this.renderer = new CafeRushRenderer(context);
         this.ui = new CafeRushUi(context.root, (action) => this.handleDialog(action));
-        this.routeChallenge = new RankedRouteChallenge({
+        this.gameplayChallenge = new RankedGameplayChallenge({
             context, gameId: 'cafe-rush',
-            position: () => this.model.player.position,
-            onStart: async (run) => {
+            onStart: async run => {
                 this.model.reset('standard', run.seed % 3);
                 this.model.start();
                 if (this.ui.dialog.open) this.closeDialog();
@@ -93,7 +92,7 @@ export default class CafeRushGame extends BaseGame {
                 this.ui.update(this.model, this.notice);
             },
         });
-        this.routeChallenge.mount();
+        this.gameplayChallenge.mount();
         this.syncAvatars(0);
         this.resize();
     }
@@ -161,26 +160,21 @@ export default class CafeRushGame extends BaseGame {
 
     fixedUpdate(dt, input) {
         if (this.ui.dialog.open || this.model.status !== 'running') return;
-        this.model.advance(dt, input);
-        this.routeChallenge?.tick(dt);
+        const controls = this.gameplayChallenge?.prepareInput(input) ?? input;
+        this.model.advance(dt, controls);
+        this.gameplayChallenge?.tick(controls);
         this.syncAvatars(dt);
         this.consumeEvents();
-        if (this.model.status === 'finished') this.finish();
+        if (this.model.status === 'finished') {
+            // A completed shift may earn a legitimate partial score without
+            // meeting the quota. Server accepts only real verified deliveries.
+            void this.gameplayChallenge?.finish(this.model.result().delivered > 0);
+            this.finish();
+        }
     }
 
     consumeEvents() {
         for (const event of this.model.drainEvents()) {
-            if (event.order?.id >= 1 && event.order?.id <= 2) {
-                const id = 'order' + event.order.id + '-';
-                if (event.type === 'accepted' && event.order.state === 'accepted') {
-                    this.routeChallenge?.checkpoint(id + '0-tickets');
-                } else if (event.type === 'preparing' && event.order.state === 'preparing') {
-                    const station = RECIPES[event.order.recipe].station;
-                    this.routeChallenge?.checkpoint(id + '1-' + station);
-                } else if (event.type === 'served') {
-                    this.routeChallenge?.checkpoint(id + '2-table-' + event.order.table);
-                }
-            }
             this.audio.play(event.type, event.point, this.model.player.position);
             const label = noticeFor(event);
             if (label && (event.type !== 'arrival' || this.model.elapsed >= this.noticeUntil)) {
@@ -230,6 +224,7 @@ export default class CafeRushGame extends BaseGame {
     }
 
     dispose() {
+        this.gameplayChallenge?.stop();
         this.ui?.dispose();
         this.audio.dispose();
         this.renderer?.dispose();

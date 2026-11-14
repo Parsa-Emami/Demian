@@ -8,6 +8,12 @@ return [
     // Financial prize acceptance is independent from public verified rankings.
     'critters_prizes_enabled' => (bool) env('DEMIAN_ARCADE_CRITTERS_PRIZES_ENABLED', false),
     'coffee_prizes_enabled' => (bool) env('DEMIAN_ARCADE_COFFEE_PRIZES_ENABLED', false),
+    // Original-game input-frame replay gates. OFF until differential UAT and
+    // owner acceptance; route flags are mutually exclusive with gameplay mode.
+    'gameplay_ranked_enabled' => [
+        'after-hours' => (bool) env('DEMIAN_AFTER_HOURS_GAMEPLAY_RANKED', false),
+        'cafe-rush' => (bool) env('DEMIAN_CAFE_RUSH_GAMEPLAY_RANKED', false),
+    ],
     // Separate opt-in for bounded route-trials; casual game scores stay local.
     'route_ranked_enabled' => [
         'after-hours' => (bool) env('DEMIAN_AFTER_HOURS_ROUTE_RANKED', false),

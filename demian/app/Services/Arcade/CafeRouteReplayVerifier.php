@@ -17,7 +17,7 @@ final class CafeRouteReplayVerifier
     public const VERSIONS = [
         'after-hours' => 'after-hours-route-v1',
         'cafe-rush' => 'cafe-rush-route-v1',
-        'open-world' => 'open-world-route-v1',
+        'open-world' => 'open-world-route-v2',
     ];
     public const MAX_ACTIONS = 6500;
 
@@ -154,8 +154,10 @@ final class CafeRouteReplayVerifier
                 }
                 $goal = $goals[$goalIndex];
                 if (hypot($position['x'] - $goal['x'],
-                    $position['z'] - $goal['z']) >= 2.25) {
-                    $this->invalid('Cannot claim an out-of-reach checkpoint.');
+                    $position['z'] - $goal['z']) >= 2.25
+                    || ($game === 'open-world'
+                        && ! $this->geometry->canSee($position, $goal))) {
+                    $this->invalid('Cannot claim an out-of-reach or occluded checkpoint.');
                 }
                 $goalTick = $entry['tick'];
                 $goalIndex++;

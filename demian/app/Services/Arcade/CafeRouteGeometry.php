@@ -29,6 +29,12 @@ final class CafeRouteGeometry
         return $this->snapshot = $data;
     }
 
+    /** Immutable server-bundled FBX collider geometry for authoritative physics. */
+    public function colliders(): array
+    {
+        return $this->data()['colliders'];
+    }
+
     public function identity(): array
     {
         $data = $this->data();
@@ -82,6 +88,38 @@ final class CafeRouteGeometry
                 $lower = (float) $position[$axis] - (float) $half[$axis];
                 $upper = (float) $position[$axis] + (float) $half[$axis];
                 if (abs($delta) < 1e-12) {
+                    if ($start < $lower || $start > $upper) continue 2;
+                } else {
+                    $a = ($lower - $start) / $delta;
+                    $b = ($upper - $start) / $delta;
+                    $entry = max($entry, min($a, $b));
+                    $exit = min($exit, max($a, $b));
+                    if ($entry > $exit) continue 2;
+                }
+            }
+            if ($entry <= $exit) return false;
+        }
+        return true;
+    }
+
+    /**
+     * The original AfterHoursShadow hears through furniture but not through
+     * sound-blocking FBX walls; exact equivalent of ground.soundClear().
+     */
+    public function canHear(array $from, array $to): bool
+    {
+        foreach ($this->data()['colliders'] as $collider) {
+            if (($collider['kind'] ?? null) !== 'wall') continue;
+            $position = $collider['position'];
+            $half = $collider['half_extents'];
+            $entry = 0.0;
+            $exit = 1.0;
+            foreach (['x', 'z'] as $axis) {
+                $start = (float) $from[$axis];
+                $delta = (float) $to[$axis] - $start;
+                $lower = (float) $position[$axis] - (float) $half[$axis];
+                $upper = (float) $position[$axis] + (float) $half[$axis];
+                if (abs($delta) < 1e-8) {
                     if ($start < $lower || $start > $upper) continue 2;
                 } else {
                     $a = ($lower - $start) / $delta;

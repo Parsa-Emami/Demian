@@ -3,6 +3,7 @@ import { RUSH_SPOTS } from '../resources/js/game/games/cafe-rush/CafeRushMap.js'
 
 const seed = Number(process.argv[2] ?? 7);
 const difficulty = process.argv[3] ?? 'standard';
+const scenario = process.argv[4] ?? 'normal';
 if (!Number.isSafeInteger(seed) || seed < 1) throw new Error('Invalid seed.');
 const model = new CafeRushModel();
 model.reset(difficulty, seed % 3);
@@ -12,12 +13,16 @@ const byId = new Map(RUSH_SPOTS.map(spot => [spot.id, spot]));
 const distance = (a,b) => Math.hypot(a.x-b.x, a.z-b.z);
 const round = x => Math.round(x * 10000) / 10000;
 const actions = [];
+const transitions = [];
+let previousControl = null;
 let goalId = null;
 let path = [];
 let frame = 0;
 let lastInteracted = -100;
 let stuck = 0;
 let previous = { ...model.player.position };
+let carryingFrames = 0;
+let deliberateSpill = false;
 
 function targetId() {
     const carried = model.carriedOrder;
@@ -79,6 +84,32 @@ for (frame = 1; frame <= 7200; frame++) {
             input.z = dz / length;
         }
     }
+    // Differential stress path: provoke a REAL source-model spill by a hard
+    // reverse under high carrying speed, then let the game recover naturally.
+    if (scenario === 'spill' && !deliberateSpill && model.tray) {
+        if (carryingFrames < 25) {
+            input.run = true;
+            carryingFrames++;
+        } else if (model.player.speed > 7.25) {
+            input.x = -model.player.forward.x;
+            input.z = -model.player.forward.z;
+            input.run = true;
+            deliberateSpill = true;
+        } else {
+            input.run = true;
+            carryingFrames++;
+        }
+    }
+    // Original-game ranked contract: quantize the player's input BEFORE
+    // advancing the actual source model so PHP sees identical axes.
+    input.x = Math.round(input.x * 1000) / 1000;
+    input.z = Math.round(input.z * 1000) / 1000;
+    const control = [frame, input.x, input.z, Number(Boolean(input.run)),
+        Number(Boolean(input.interact))];
+    if (!previousControl
+        || control.slice(1).some((value,index) => value !== previousControl[index+1])
+    ) transitions.push(control);
+    previousControl = control;
     // Snapshot the actual engine position immediately before interaction.
     // The interaction itself takes the next tick, preserving strict ordering.
     if (input.interact && frame > 1 && (actions.at(-1)?.tick ?? -1) < frame - 1) {
@@ -105,8 +136,13 @@ for (frame = 1; frame <= 7200; frame++) {
     previous = { ...model.player.position };
 }
 const result = model.result();
+if (transitions.at(-1)?.[0] !== 7200) {
+    // Tick 7200 is the closing shift frame: no move or interaction occurs.
+    const [,x,z,run] = previousControl;
+    transitions.push([7200,x,z,run,0]);
+}
 model.dispose();
 process.stdout.write(JSON.stringify({
-    seed, difficulty, ticks:7200, actions, original_js:result,
+    seed, difficulty, scenario, ticks:7200, actions, transitions, original_js:result,
     evidence:{ frames:frame-1, actions:actions.length },
 }));
