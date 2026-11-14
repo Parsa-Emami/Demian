@@ -313,4 +313,38 @@ final class ArcadeAntiCheatTest extends TestCase
             '--json'=>true,'--max-high'=>1,
         ])->assertFailed();
     }
+    public function test_manual_hold_cannot_be_released_or_reassigned_using_a_different_case(): void
+    {
+        [$player,$first]=$this->flaggedPlayer();
+        $reviewer=$this->staff('super_admin');
+        $anti=app(ArcadeAntiCheat::class);
+        $anti->review($first->id,$reviewer,1,'confirmed',
+            'Independent original replay evidence checked');
+        for($i=0;$i<10;$i++) {
+            $anti->started($this->newRun($player),'192.0.2.123');
+        }
+        $second=DB::table('arcade_cheat_reports')->where('signal','start_velocity')
+            ->first();
+        $this->assertNotNull($second);
+        $anti->review($second->id,$reviewer,1,'confirmed',
+            'Reviewed separate high-velocity start behavior');
+        $anti->setHold($first->id,$reviewer,1,24,
+            'Temporary restriction tied to the first case');
+        foreach([null,24] as $duration){
+            try {
+                $anti->setHold($second->id,$reviewer,1,$duration,
+                    'Wrong case cannot override the existing manual hold');
+                $this->fail('A different report changed the existing case hold.');
+            }catch(HttpException $expected){
+                $this->assertSame(409,$expected->getStatusCode());
+            }
+        }
+        $this->assertDatabaseHas('arcade_anticheat_holds',[
+            'player_id'=>$player->id,'report_id'=>$first->id,
+        ]);
+        $anti->setHold($first->id,$reviewer,1,null,
+            'Release after verifying the case owner and evidence');
+        $this->assertDatabaseCount('arcade_anticheat_holds',0);
+    }
+
 }
