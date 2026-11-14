@@ -126,7 +126,7 @@ final class CouponIssuanceTest extends TestCase
         $row = DB::table('arcade_coupons')->first();
         $response = $this->withToken($players[0]['token'])
             ->getJson('/api/v1/arcade/player/coupons')
-            ->assertOk()->assertHeader('Cache-Control', 'private, no-store')->json('data.0');
+            ->assertOk()->assertHeader('Cache-Control', 'no-store, private')->json('data.0');
         $this->assertMatchesRegularExpression('/^DMC-[A-F0-9]{32}$/D', $response['code']);
         $this->assertSame(hash('sha256', $response['code']), $row->code_hash);
         $this->assertSame($response['code'], Crypt::decryptString($row->code_ciphertext));
@@ -194,17 +194,19 @@ final class CouponIssuanceTest extends TestCase
     {
         $this->sealed(1);
         $this->issue();
+        // MySQL auto-increments are not reset by RefreshDatabase transactions.
+        $id = (int) DB::table('arcade_coupons')->value('id');
         $this->artisan('arcade:revoke-coupon', [
-            '--id' => '1', '--reason' => 'fraud',
+            '--id' => (string) $id, '--reason' => 'fraud',
         ])->assertFailed();
-        $this->assertDatabaseHas('arcade_coupons', ['id' => 1, 'status' => 'issued']);
+        $this->assertDatabaseHas('arcade_coupons', ['id' => $id, 'status' => 'issued']);
         $this->artisan('arcade:revoke-coupon', [
-            '--id' => '1', '--reason' => 'fraud', '--apply' => true,
+            '--id' => (string) $id, '--reason' => 'fraud', '--apply' => true,
         ])->assertSuccessful();
         $this->artisan('arcade:revoke-coupon', [
-            '--id' => '1', '--reason' => 'fraud', '--apply' => true,
+            '--id' => (string) $id, '--reason' => 'fraud', '--apply' => true,
         ])->assertSuccessful();
-        $this->assertDatabaseHas('arcade_coupons', ['id' => 1, 'status' => 'revoked']);
+        $this->assertDatabaseHas('arcade_coupons', ['id' => $id, 'status' => 'revoked']);
         $this->assertSame(1, DB::table('arcade_coupon_events')
             ->where('event_type', 'revoked')->count());
     }
