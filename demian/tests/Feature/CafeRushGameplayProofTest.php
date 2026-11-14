@@ -119,27 +119,32 @@ final class CafeRushGameplayProofTest extends TestCase
     }
     public function test_actual_headless_js_game_score_matches_independent_php_gameplay_replay(): void
     {
-        $node = new Process([
-            'node', base_path('tools/generate_rush_gameplay_fixture.mjs'), '7',
-        ]);
-        $node->setTimeout(60);
-        $node->mustRun();
-        $fixture = json_decode($node->getOutput(), true, flags: JSON_THROW_ON_ERROR);
-        $this->assertSame(7200, $fixture['ticks']);
-        $this->assertGreaterThan(0, $fixture['original_js']['delivered'],
-            'The headless model must actually serve at least one order.');
-        $result = app(CafeRushGameplayReplayVerifier::class)->verify(
-            $fixture['seed'], $fixture['ticks'], $fixture['actions']);
-        $this->assertSame($fixture['original_js']['score'], $result['score']);
-        $this->assertSame($fixture['original_js']['delivered'], $result['passed']);
-        $this->assertSame($fixture['original_js']['bestCombo'],
-            $result['details']['best_combo']);
-        $this->assertSame($fixture['original_js']['expired'],
-            $result['details']['expired']);
-        $this->assertSame($fixture['original_js']['spills'],
-            $result['details']['spills']);
-        $this->assertSame($fixture['original_js']['vipServed'],
-            $result['details']['vip_served']);
+        foreach ([[7, 'standard'], [11, 'easy'], [8, 'hard']] as [$seed, $difficulty]) {
+            $node = new Process([
+                'node', base_path('tools/generate_rush_gameplay_fixture.mjs'),
+                (string)$seed, $difficulty,
+            ]);
+            $node->setTimeout(60);
+            $node->mustRun();
+            $fixture = json_decode($node->getOutput(), true, flags: JSON_THROW_ON_ERROR);
+            $this->assertSame(7200, $fixture['ticks']);
+            $this->assertSame($difficulty, $fixture['difficulty']);
+            $this->assertGreaterThan(0, $fixture['original_js']['delivered'],
+                'The headless model must actually serve orders for '.$difficulty);
+            $result = app(CafeRushGameplayReplayVerifier::class)->verify(
+                $fixture['seed'], $fixture['ticks'], $fixture['actions'], $difficulty);
+            $this->assertSame($fixture['original_js']['score'],
+                $result['score'], 'Server/client score mismatch on '.$difficulty);
+            $this->assertSame($fixture['original_js']['delivered'], $result['passed']);
+            $this->assertSame($fixture['original_js']['bestCombo'],
+                $result['details']['best_combo']);
+            $this->assertSame($fixture['original_js']['expired'],
+                $result['details']['expired']);
+            $this->assertSame($fixture['original_js']['spills'],
+                $result['details']['spills']);
+            $this->assertSame($fixture['original_js']['vipServed'],
+                $result['details']['vip_served']);
+        }
     }
 
 }
