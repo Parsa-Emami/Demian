@@ -26,13 +26,16 @@ final class ArcadeRunService
                 return $existing;
             }
 
+            app(ArcadeAntiCheat::class)->assertStartAllowed($player->id);
             app(WeeklySettlementService::class)->assertOpenForCompletion(now());
 
-            return ArcadeRun::query()->create(['player_id' => $player->id, 'request_id' => $data['request_id'],
+            $run = ArcadeRun::query()->create(['player_id' => $player->id, 'request_id' => $data['request_id'],
                 'game_id' => $data['game_id'], 'rules_version' => $rules['version'], 'character_slug' => $data['character_slug'],
                 'seed' => random_int(1, 4294967295), 'track_width' => $data['track_width'], 'status' => 'started',
                 'started_at' => now(), 'expires_at' => now()->addSeconds($rules['maxTicks'] / $rules['tickRate']
                     + config('demian-arcade.completion_grace_seconds'))]);
+            app(ArcadeAntiCheat::class)->started($run, request()->ip());
+            return $run;
         }, 3);
     }
 
@@ -71,6 +74,8 @@ final class ArcadeRunService
                     ['run_id' => $locked->id, 'score' => $locked->score, 'achieved_at' => $locked->started_at]);
             }
 
+            app(ArcadeAntiCheat::class)->verified($locked,
+                count($data['transitions']), request()->ip());
             return $this->result($locked);
         }, 3);
     }

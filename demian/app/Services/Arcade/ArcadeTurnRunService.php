@@ -72,8 +72,9 @@ final class ArcadeTurnRunService
                     409, 'Run identifier already used.');
                 return $existing;
             }
+            app(ArcadeAntiCheat::class)->assertStartAllowed($player->id);
             app(WeeklySettlementService::class)->assertOpenForCompletion(now());
-            return ArcadeRun::query()->create([
+            $run = ArcadeRun::query()->create([
                 'player_id' => $player->id, 'request_id' => $data['request_id'],
                 'game_id' => $data['game_id'],
                 'rules_version' => $data['rules_version'],
@@ -83,6 +84,8 @@ final class ArcadeTurnRunService
                     $this->maximumTicks($data['game_id']) / 60
                     + (int) config('demian-arcade.completion_grace_seconds')),
             ]);
+            app(ArcadeAntiCheat::class)->started($run, request()->ip());
+            return $run;
         }, 3);
     }
 
@@ -159,6 +162,9 @@ final class ArcadeTurnRunService
                     ]);
                 }
             }
+            app(ArcadeAntiCheat::class)->verified($locked,
+                count($frameProof ? $data['frames'] : $data['actions']),
+                request()->ip());
             return $this->result($locked);
         }, 3);
     }
