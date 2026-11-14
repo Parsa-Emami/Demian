@@ -19,6 +19,7 @@
 @endif
 @if (in_array('audit.ledger', $permissions, true))
   <a class="button secondary" href="{{ route('cashier.audit') }}">ممیزی جوایز</a>
+  <a class="button secondary" href="{{ route('cashier.anticheat') }}">پایش ضدتقلب</a>
 @endif
 @if (in_array('operations.readiness', $permissions, true))
   <a class="button secondary" href="{{ route('cashier.readiness') }}">آمادگی انتشار</a>

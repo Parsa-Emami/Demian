@@ -27,3 +27,13 @@ Artisan::command('inspire', function () {
     ->when(fn (): bool => (bool) config('demian-coupons.auto_issue_enabled', false)
         && (bool) config('demian-coupons.issue_enabled', false)
         && (bool) config('demian-coupons.policy_approved', false));
+
+
+// General anti-cheat is opt-in; production must provide a real persistent
+// cache/cron runner and review staff. No prize/score mutation is scheduled.
+\Illuminate\Support\Facades\Schedule::command('arcade:anticheat:monitor --json')
+    ->everyFifteenMinutes()->withoutOverlapping(10)->onOneServer()
+    ->when(fn (): bool => (bool) config('demian-arcade.anticheat.enabled', false));
+\Illuminate\Support\Facades\Schedule::command('arcade:anticheat:prune --json')
+    ->dailyAt('03:40')->withoutOverlapping(30)->onOneServer()
+    ->when(fn (): bool => (bool) config('demian-arcade.anticheat.enabled', false));

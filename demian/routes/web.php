@@ -8,6 +8,7 @@ use App\Http\Middleware\AuthenticateCafeCashier;
 use App\Http\Middleware\RequireCafePermission;
 use App\Http\Controllers\Cafe\CafeAdminController;
 use App\Http\Controllers\Cafe\CafeGiftController;
+use App\Http\Controllers\Cafe\CafeAntiCheatController;
 
 // Authorized cafe staff use Laravel's CSRF-protected web session middleware,
 // including when the API host is in API-only mode. Never open character studio.
@@ -43,6 +44,19 @@ Route::prefix('cashier')->name('cashier.')->group(function (): void {
         Route::post('/admin/gifts/issue', [CafeGiftController::class, 'issue'])
             ->middleware([RequireCafePermission::class.':coupon.revoke',
                 'throttle:arcade-cashier-admin'])->name('gifts.issue');
+        // Anti-cheat reads reuse existing ledger-audit capability; privileged
+        // decisions require super-admin fresh password and CSRF.
+        Route::get('/admin/anti-cheat', [CafeAntiCheatController::class, 'index'])
+            ->middleware(RequireCafePermission::class.':audit.ledger')
+            ->name('anticheat');
+        Route::post('/admin/anti-cheat/{reportId}/review',
+            [CafeAntiCheatController::class, 'review'])->whereNumber('reportId')
+            ->middleware([RequireCafePermission::class.':audit.ledger',
+                'throttle:arcade-cashier-admin'])->name('anticheat.review');
+        Route::post('/admin/anti-cheat/{reportId}/hold',
+            [CafeAntiCheatController::class, 'hold'])->whereNumber('reportId')
+            ->middleware([RequireCafePermission::class.':audit.ledger',
+                'throttle:arcade-cashier-admin'])->name('anticheat.hold');
         Route::get('/admin/audit', [CafeAdminController::class, 'audit'])
             ->middleware(RequireCafePermission::class.':audit.ledger')->name('audit');
         Route::get('/admin/readiness', [CafeAdminController::class, 'readiness'])
