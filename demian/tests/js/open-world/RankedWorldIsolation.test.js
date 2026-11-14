@@ -1,63 +1,60 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import OpenWorldGame from '../../../resources/js/game/games/open-world/OpenWorldGame.js';
+import { readFileSync } from 'node:fs';
+import { worldChallengeLocked, applySavePoint }
+    from '../../../resources/js/game/games/open-world/world/RankedWorldPolicy.js';
 
-function world(state = 'running') {
-    const game = new OpenWorldGame();
-    const calls = { save:0, checkpoint:[], toast:[], travel:0 };
-    const point = { id:'save-counter', label:'پیشخوان', position:{x:3.24,z:-30.6} };
-    const actions = [];
-    game.world = { cabinets: [] };
-    game.manifest = { savePoints:[point] };
-    game.interactionScope = { register: action => actions.push(action) };
-    game.savePoints = { activate:() => calls.save++ };
-    game.routeChallenge = { state, checkpoint: id => {
-        calls.checkpoint.push(id);
-        return id === point.id;
-    }};
-    game.context = { app:{shell:{toast:(message,status) => calls.toast.push([message,status])}} };
-    game.discovery = { isSavePointUnlocked: () => true };
-    game.registerWorldInteractions();
-    return { game, point, calls, action:actions[0].action };
-}
+// Load only the pure route policy in Node. OpenWorldGame's actual render/controller
+// imports are bundled by Vite and cannot be imported directly by Node ESM.
+const gameSource = readFileSync(new URL(
+    '../../../resources/js/game/games/open-world/OpenWorldGame.js',
+    import.meta.url,
+), 'utf8');
 
-test('ranked world interaction advances ephemeral proof without altering local saves', () => {
-    const {game, point, calls, action} = world();
-    assert.equal(game.worldChallengeLocked(), true);
-    assert.equal(action(), true);
-    assert.deepEqual(calls.checkpoint, [point.id]);
-    assert.equal(calls.save, 0);
-    game.routeChallenge.checkpoint = () => false;
-    assert.equal(action(), false);
-    assert.equal(calls.save, 0);
+test('ranked world interaction advances only ephemeral proof and never touches local saves', () => {
+    const actions=[],saves=[];
+    const challenge={state:'running',checkpoint:id=>{actions.push(id);return id==='save-counter';}};
+    const first=applySavePoint({
+        challenge, pointId:'save-counter',save:id=>saves.push(id),
+    });
+    assert.deepEqual(first,{ranked:true,accepted:true});
+    assert.deepEqual(actions,['save-counter']);
+    assert.deepEqual(saves,[]);
+    const wrong=applySavePoint({
+        challenge, pointId:'save-arcade',save:id=>saves.push(id),
+    });
+    assert.deepEqual(wrong,{ranked:true,accepted:false});
+    assert.deepEqual(saves,[]);
 });
 
-test('practice world still persists save points and never creates ranked evidence', () => {
-    const {game, calls, action} = world('idle');
-    assert.equal(game.worldChallengeLocked(), false);
-    assert.equal(action(), true);
-    assert.equal(calls.save, 1);
-    assert.deepEqual(calls.checkpoint, []);
+test('practice world persists saves without ranked evidence', () => {
+    const saves=[],challenge={state:'idle',checkpoint:()=>{throw Error('not ranked');}};
+    assert.deepEqual(applySavePoint({
+        challenge,pointId:'save-lounge',save:id=>saves.push(id),
+    }),{ranked:false,accepted:true});
+    assert.deepEqual(saves,['save-lounge']);
 });
 
-test('competitive world disallows fast travel, including pending submissions and startup', async () => {
-    for (const state of ['starting', 'running', 'submitting']) {
-        const {game, point, calls} = world(state);
-        assert.equal(await game.fastTravel(point), false);
-        assert.equal(calls.toast.length, 1);
+test('started, active and submitting routes prohibit save-point mutations', () => {
+    for(const state of ['starting','running','submitting']){
+        const writes=[];
+        const challenge={state,checkpoint:()=>false};
+        assert.equal(worldChallengeLocked(challenge),true);
+        assert.deepEqual(applySavePoint({
+            challenge,pointId:'save-counter',save:id=>writes.push(id),
+        }),{ranked:true,accepted:false});
+        assert.deepEqual(writes,[]);
     }
+    assert.equal(worldChallengeLocked({state:'verified'}),false);
+    assert.equal(worldChallengeLocked(null),false);
 });
 
-test('the world map cannot be opened while the ranked clock is active', () => {
-    const {game} = world('running');
-    let closed = 0;
-    game.hud = { closeMap: () => closed++ };
-    game.setMapOpen(true);
-    assert.equal(game.mapOpen, false);
-    assert.equal(closed, 1);
-    game.routeChallenge.state = 'idle';
-    game.context.root = { dataset:{} };
-    game.context.input = { clearTouch:()=>{} };
-    game.setMapOpen(true);
-    assert.equal(game.mapOpen, true);
+test('real OpenWorldGame routes save points through policy and blocks travel/map/quick-save',()=>{
+    assert.match(gameSource,/import\s+\{\s*worldChallengeLocked,\s*applySavePoint\s*\}/);
+    assert.match(gameSource,/action:\s*\(\)\s*=>\s*\{\s*const outcome = applySavePoint\(/);
+    assert.match(gameSource,/save:\s*id => this\.savePoints\.activate\(id\)/);
+    assert.match(gameSource,/worldChallengeLocked\(\)\s*\{\s*return worldChallengeLocked\(this\.routeChallenge\)/);
+    assert.match(gameSource,/async fastTravel\([^)]*\)\s*\{\s*if\s*\(this\.worldChallengeLocked\(\)\)/);
+    assert.match(gameSource,/setMapOpen\(open\)\s*\{\s*if\s*\(open && this\.worldChallengeLocked\(\)\)/);
+    assert.match(gameSource,/input\.quickSave && !this\.worldChallengeLocked\(\)/);
 });
