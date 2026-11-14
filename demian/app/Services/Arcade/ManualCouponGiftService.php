@@ -5,6 +5,8 @@ namespace App\Services\Arcade;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Validation\ValidationException;
 use RuntimeException;
 
@@ -65,7 +67,7 @@ final class ManualCouponGiftService
         $terms = $this->terms();
         $fields = $this->canonical($input);
         $requestKey = (string) $input['request_key'];
-        if (! preg_match('/^[a-f0-9-]{36}$/D', $requestKey)) {
+        if (! Str::isUuid($requestKey)) {
             throw ValidationException::withMessages(['request_key' => 'Invalid request identifier.']);
         }
         if ($fields['percent'] < 1 || $fields['percent'] > $terms['gift_max_percent']
@@ -83,7 +85,8 @@ final class ManualCouponGiftService
         }
         $digest = hash('sha256', json_encode($fields, JSON_THROW_ON_ERROR));
 
-        return DB::transaction(function () use ($staffId, $sessionVersion,
+        try {
+            return DB::transaction(function () use ($staffId, $sessionVersion,
             $requestKey, $digest, $fields, $terms): array {
             $actor = DB::table('arcade_cashier_staff')->where('id', $staffId)
                 ->lockForUpdate()->first();
@@ -165,7 +168,12 @@ final class ManualCouponGiftService
                 'status' => 'issued', 'idempotent_replay' => false,
                 'recipient_id' => $fields['player_id'],
             ];
-        }, 3);
+            }, 3);
+        } catch (UniqueConstraintViolationException) {
+            // DB unique keys remain authoritative if workers race on request
+            // UUID or CSPRNG digest. Never leak low-level SQL into cashier UI.
+            abort(409, 'This gift request has already been processed.');
+        }
     }
 
     private function receipt(object $gift, object $coupon, bool $replayed): array
