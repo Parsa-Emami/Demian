@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Services\Arcade\CafeCrittersReplayVerifier;
+use App\Services\Arcade\CoffeeCrashReplayVerifier;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -14,7 +15,7 @@ final class StartTurnRunRequest extends FormRequest
     {
         return [
             'request_id' => ['required', 'uuid'],
-            'game_id' => ['required', Rule::in([CafeCrittersReplayVerifier::GAME_ID])],
+            'game_id' => ['required', Rule::in([CafeCrittersReplayVerifier::GAME_ID, CoffeeCrashReplayVerifier::GAME_ID])],
             'rules_version' => ['required', 'string', 'max:40'],
         ];
     }
