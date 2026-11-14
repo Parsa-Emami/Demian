@@ -45,6 +45,25 @@ final class CpanelConcurrentReadinessTest extends TestCase
         $this->assertDatabaseCount('arcade_runs', 50);
     }
 
+
+    public function test_fifty_players_can_issue_distinct_backup_codes_behind_one_nat(): void
+    {
+        $players = [];
+        for ($i = 0; $i < 50; $i++) {
+            $players[] = $this->postJson('/api/v1/arcade/players',
+                ['display_name' => 'Backup '.$i])->assertCreated()->json();
+        }
+        $codes = [];
+        foreach ($players as $player) {
+            $codes[] = $this->withToken($player['token'])
+                ->postJson('/api/v1/arcade/player/backup-code')
+                ->assertOk()->json('backup_code');
+        }
+
+        $this->assertCount(50, array_unique($codes));
+        $this->assertDatabaseCount('arcade_players', 50);
+    }
+
     public function test_ranked_index_exists_with_descending_score_order(): void
     {
         if (DB::getDriverName() === 'sqlite') {
