@@ -418,7 +418,7 @@ final class InCafeRedemptionTest extends TestCase
         $coupon = $this->voucher();
         $this->asCashier($this->staff());
         $this->post('/cashier/lookup', ['code' => $coupon['code']])
-            ->assertOk()->assertHeader('Cache-Control', 'private, no-store, max-age=0')
+            ->assertOk()->assertHeader('Cache-Control', 'max-age=0, no-store, private')
             ->assertHeader('X-Frame-Options', 'DENY')
             ->assertHeader('X-Content-Type-Options', 'nosniff');
         $this->assertDatabaseCount('arcade_coupon_redemptions', 0);
