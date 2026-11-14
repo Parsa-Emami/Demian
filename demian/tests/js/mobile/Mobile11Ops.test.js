@@ -13,6 +13,7 @@ const nginx = read('../../../ops/mobile-11/nginx.conf.example');
 const cpanelRelease = read('../../../ops/cpanel/deploy.sh');
 const cpanelWorkflow = read('../../../../.github/workflows/cpanel-api-deploy.yml');
 const cpanelLoad = read('../../../tools/load/cpanel_50_active.js');
+const cpanelWrites = read('../../../tools/load/cpanel_50_writes_staging.js');
 const webRoutes = read('../../../routes/web.php');
 
 
@@ -140,4 +141,13 @@ test('50 concurrent VUs remain staging-only and read-only', () => {
     assert.match(cpanelLoad, /DEMIAN_LOAD_APPROVED/);
     assert.doesNotMatch(cpanelLoad, /http\.post\s*\(/);
     assert.doesNotMatch(cpanelLoad, /http\.del\s*\(/);
+});
+
+test('50 parallel write requests require staging-only approval and erase test accounts', () => {
+    assert.match(cpanelWrites, /vus: 50/);
+    assert.match(cpanelWrites, /DEMIAN_WRITE_LOAD_APPROVED/);
+    assert.match(cpanelWrites, /DEMIAN_TARGET/);
+    assert.match(cpanelWrites, /per-vu-iterations/);
+    assert.match(cpanelWrites, /http\.del\(/);
+    assert.match(cpanelWrites, /start idempotency failed/);
 });
