@@ -132,4 +132,78 @@ final class OriginalGameplayRankedApiTest extends TestCase
             ])->assertUnprocessable();
         $this->assertDatabaseCount('arcade_replays',0);
     }
+    public function test_original_cafe_rush_completed_shift_is_verified_once_and_replay_mutation_is_rejected(): void
+    {
+        $node=new \Symfony\Component\Process\Process([
+            'node',base_path('tools/generate_rush_gameplay_fixture.mjs'),'7','standard',
+        ]);
+        $node->setTimeout(70);
+        $node->mustRun();
+        $fixture=json_decode($node->getOutput(),true,flags:JSON_THROW_ON_ERROR);
+        $this->assertGreaterThan(0,$fixture['original_js']['delivered']);
+
+        config()->set('demian-arcade.gameplay_ranked_enabled.cafe-rush',true);
+        $owner=$this->player();
+        $run=$this->start($owner,'cafe-rush',CafeRushFrameReplayVerifier::VERSION,
+            (string) Str::uuid());
+        // CI fixture seed must equal the server-issued seed for an
+        // independently versioned, deterministic rules test. Only tests can
+        // modify this row; the public API NEVER accepts a client seed.
+        DB::table('arcade_runs')->where('id',$run['run_id'])->update(['seed'=>7]);
+        $this->travel(121)->seconds();
+        $url='/api/v1/arcade/turn-runs/'.$run['run_id'].'/complete';
+        $proof=['ticks'=>7200,'frames'=>$fixture['transitions']];
+        $first=$this->withToken($owner['token'])->postJson($url,
+            [...$proof,'score'=>100000000])->assertOk()
+            ->assertJsonPath('status','verified')
+            ->assertJsonPath('verification','server-replay');
+        $this->assertSame($fixture['original_js']['score'],$first->json('score'));
+        $this->assertSame($fixture['original_js']['delivered'],$first->json('passed'));
+        $this->assertSame($first->json('score'),
+            $this->withToken($owner['token'])->postJson($url,$proof)->assertOk()->json('score'));
+
+        $tampered=$proof;
+        $tampered['frames'][1][1]=$tampered['frames'][1][1]===1?0.5:1;
+        $this->withToken($owner['token'])->postJson($url,$tampered)->assertStatus(409);
+        $this->assertDatabaseCount('arcade_replays',1);
+        $this->assertDatabaseCount('arcade_leaderboard_entries',3);
+        $this->assertDatabaseHas('arcade_runs',[
+            'id'=>$run['run_id'],'status'=>'verified',
+            'rules_version'=>CafeRushFrameReplayVerifier::VERSION,
+            'score'=>$fixture['original_js']['score'],
+        ]);
+        $this->getJson('/api/v1/arcade/leaderboards/cafe-rush')
+            ->assertOk()->assertJsonPath('rules_version',CafeRushFrameReplayVerifier::VERSION)
+            ->assertJsonPath('data.0.score',$fixture['original_js']['score']);
+        $this->assertFalse(app(RankedGameCatalog::class)->supportsPrizes('cafe-rush'));
+    }
+
+    public function test_gameplay_replay_early_completion_is_rejected_before_scoring(): void
+    {
+        config()->set('demian-arcade.gameplay_ranked_enabled.cafe-rush',true);
+        $owner=$this->player();
+        $run=$this->start($owner,'cafe-rush',CafeRushFrameReplayVerifier::VERSION,
+            (string)Str::uuid());
+        $this->withToken($owner['token'])->postJson(
+            '/api/v1/arcade/turn-runs/'.$run['run_id'].'/complete',[
+                'ticks'=>7200,'frames'=>[[1,0,0,0,0],[7200,0,0,0,0]],
+            ])->assertUnprocessable();
+        $this->assertDatabaseCount('arcade_replays',0);
+    }
+
+    public function test_original_game_finished_run_cannot_be_replayed_on_another_account(): void
+    {
+        config()->set('demian-arcade.gameplay_ranked_enabled.cafe-rush',true);
+        $playerA=$this->player();
+        $playerB=$this->player('Second User');
+        $run=$this->start($playerA,'cafe-rush',CafeRushFrameReplayVerifier::VERSION,
+            (string)Str::uuid());
+        $this->travel(121)->seconds();
+        $this->withToken($playerB['token'])->postJson(
+            '/api/v1/arcade/turn-runs/'.$run['run_id'].'/complete',[
+                'ticks'=>7200,'frames'=>[[1,0,0,0,0],[7200,0,0,0,0]],
+            ])->assertNotFound();
+        $this->assertDatabaseCount('arcade_leaderboard_entries',0);
+    }
+
 }
