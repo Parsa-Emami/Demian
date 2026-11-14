@@ -65,6 +65,7 @@ test('load test has explicit authorization, tight rate bounds and never writes',
 
 test('frontend API URL remains explicit, never forces staging endpoints on visitors', () => {
     assert.match(pages, /vars.DEMIAN_ARCADE_API_URL/);
+    assert.match(pages, /vars.DEMIAN_ARCADE_ENABLE_RANKED == 'true'/);
     assert.match(pages, /github.ref == 'refs\/heads\/main'/);
     assert.match(pages, /\|\| ''/);
 });
