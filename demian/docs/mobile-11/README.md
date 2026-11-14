@@ -70,7 +70,7 @@ The backend's MySQL matrix now executes `ops/mobile-11/ci_mysql_restore.sh` afte
 
 ## 4. Connecting GitHub Pages after staging proof
 
-The static exporter uses `DEMIAN_ARCADE_API_URL` only if it matches an HTTPS arcade API. Set repository variable `DEMIAN_ARCADE_API_URL=https://api.example.com/api/v1/arcade` **only after** production HTTPS, CORS and DB tests pass. The Pages workflow injects that variable on `main`; PR static builds stay offline-only. If unset, the existing PWA stays in practice mode.
+The static exporter uses `DEMIAN_ARCADE_API_URL` only if it matches an HTTPS arcade API. After all production release gates pass, set **both** repository variables `DEMIAN_ARCADE_API_URL=https://api.example.com/api/v1/arcade` and `DEMIAN_ARCADE_ENABLE_RANKED=true`. The flag defaults to disabled, so an accidentally configured URL alone cannot activate ranked mode. Keep the flag disabled until production HTTPS, CORS and DB tests pass. The Pages workflow injects that variable on `main`; PR static builds stay offline-only. If unset, the existing PWA stays in practice mode.
 
 Verify public leaderboard data, explicit recovery codes, authenticated `POST /runs`, idempotent `POST /runs/{id}/complete` and `DELETE /player` for a disposable test account. An unverified mini-game must never appear as ranked.
 
