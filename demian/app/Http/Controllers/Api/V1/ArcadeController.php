@@ -139,8 +139,13 @@ final class ArcadeController extends Controller
     public function erase(Request $request): JsonResponse
     {
         $player = $request->attributes->get('arcade_player');
-        // FK cascade removes runs, replay inputs and all leaderboard entries.
-        $player->delete();
+        // Lock player before coupon rows (same lock order as checkout).
+        // Revoke unspent bearer capabilities before cascade/null-on-delete.
+        DB::transaction(function () use ($player): void {
+            $locked = ArcadePlayer::query()->whereKey($player->id)->lockForUpdate()->firstOrFail();
+            app(\App\Services\Arcade\CouponLifecycleService::class)->revokeForErasure($locked->id);
+            $locked->delete();
+        }, 3);
 
         return response()->json(['status' => 'deleted']);
     }

@@ -75,5 +75,11 @@ class AppServiceProvider extends ServiceProvider
 
             return Limit::perMinute(2)->by('arcade-profile-delete:'.$subject);
         });
+        RateLimiter::for('arcade-coupon-owner', static fn (Request $request): Limit =>
+            Limit::perMinute(10)->by('arcade:coupons:owner:'.self::arcadeTokenBucket($request)));
+        RateLimiter::for('arcade-coupon-store', static fn (Request $request): array => [
+            Limit::perMinute(240)->by('arcade:coupons:store:'.$request->ip()),
+            Limit::perHour(2500)->by('arcade:coupons:store:hour:'.$request->ip()),
+        ]);
     }
 }
