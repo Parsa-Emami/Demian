@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\V1\EventSessionController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\V1\ArcadeController;
 use App\Http\Controllers\Api\V1\ArcadeHealthController;
+use App\Http\Controllers\Api\V1\ArcadeTurnRunController;
 use App\Http\Controllers\Api\V1\CouponController;
 use App\Http\Middleware\AuthenticateArcadePlayer;
 use App\Http\Middleware\LimitArcadePayload;
@@ -29,6 +30,13 @@ Route::prefix('v1/arcade')->middleware([LimitArcadePayload::class, 'throttle:arc
         Route::get('/player/best', [ArcadeController::class, 'personalBest']);
         Route::patch('/player', [ArcadeController::class, 'rename'])->middleware('throttle:arcade-player-rename');
         Route::delete('/player', [ArcadeController::class, 'erase'])->middleware('throttle:arcade-profile-delete');
+        // Independent server-replay endpoint for games whose action verifier
+        // has passed differential tests. Unverified games are rejected (422).
+        Route::post('/turn-runs', [ArcadeTurnRunController::class, 'start'])
+            ->middleware('throttle:arcade-run-start');
+        Route::post('/turn-runs/{run}/complete',
+            [ArcadeTurnRunController::class, 'complete'])
+            ->middleware('throttle:arcade-run-complete');
         Route::post('/runs', [ArcadeController::class, 'start'])->middleware('throttle:arcade-run-start');
         Route::post('/runs/{run}/complete', [ArcadeController::class, 'complete'])->middleware('throttle:arcade-run-complete');
     });
