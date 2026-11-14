@@ -87,7 +87,7 @@ final class CafeCrittersRankedReplayTest extends TestCase
                 ->postJson('/api/v1/arcade/turn-runs', [
                     'request_id' => (string) Str::uuid(), 'game_id' => $game,
                     'rules_version' => CafeCrittersReplayVerifier::VERSION,
-                ])->assertUnprocessable();
+                ])->assertStatus($game === 'coffee-crash' ? 503 : 422);
         }
         $this->assertDatabaseCount('arcade_runs', 0);
     }
