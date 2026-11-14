@@ -21,6 +21,7 @@ import OpenWorldChunkRenderer from './render/OpenWorldChunkRenderer.js';
 import OpenWorldPixelRenderer from './render/OpenWorldPixelRenderer.js';
 import AiBudgetScheduler from './entities/AiBudgetScheduler.js';
 import WorldDiscovery from './world/WorldDiscovery.js';
+import RankedRouteChallenge from '../../leaderboard/RankedRouteChallenge.js';
 import OpenWorldSaveStore from './persistence/OpenWorldSaveStore.js';
 import SavePointSystem from './persistence/SavePointSystem.js';
 import OpenWorldHud from './ui/OpenWorldHud.js';
@@ -139,6 +140,18 @@ export default class OpenWorldGame extends BaseGame {
         this.characterManager.setPosition(this.manifest.spawn);
         this.registerWorldInteractions();
         this.mountUi();
+        this.routeChallenge = new RankedRouteChallenge({
+            context, gameId: 'open-world',
+            position: () => this.characterManager.position(),
+            onStart: async () => {
+                // The route trial always starts at the canonical entrance.
+                // Fast-travel and stored discovery are not trusted as proof.
+                await this.chunkManager.ensureAround(this.manifest.spawn);
+                this.characterManager.setPosition(this.manifest.spawn);
+                this.focusCharacter({ close: true, follow: true });
+            },
+        });
+        this.routeChallenge.mount();
         this.resize();
         this.updateStreaming(true);
 
@@ -270,6 +283,7 @@ export default class OpenWorldGame extends BaseGame {
                 metadata: { kind: 'save-point', point },
                 action: () => {
                     this.savePoints.activate(point.id);
+                    this.routeChallenge?.checkpoint(point.id);
                     this.context.app.shell.toast(`${point.label} فعال و بازی ذخیره شد.`, 'success');
                     return true;
                 },
@@ -299,6 +313,10 @@ export default class OpenWorldGame extends BaseGame {
     }
 
     async fastTravel(point) {
+        if (this.routeChallenge?.state === 'running') {
+            this.context.app.shell.toast('سفر سریع در چالش رقابتی مجاز نیست.', 'info');
+            return false;
+        }
         if (!this.discovery.isSavePointUnlocked(point.id)) return false;
         const target = safeCafeTravelPosition(point.position, this.navigationGrid, this.manifest.spawn);
         await this.chunkManager.ensureAround(target);
@@ -452,6 +470,11 @@ export default class OpenWorldGame extends BaseGame {
         const basis = this.cameraController.movementBasis();
         const gameplayInput = this.context?.app?.sessionState === 'playing' && this.context.root.dataset.sidebarState !== 'expanded' && !this.mapOpen ? input : {};
         this.characterManager.update(deltaTime, gameplayInput, basis);
+        if (gameplayInput !== input || this.mapOpen) {
+            // Paused/map interactions do not accrue ranked movement time.
+        } else {
+            this.routeChallenge?.tick(deltaTime);
+        }
         this.abilityHud?.update(this.characterManager.activeEntity);
         this.actionHud?.update(this.characterManager.activeEntity);
         this.updateInteraction(gameplayInput);
@@ -556,6 +579,7 @@ export default class OpenWorldGame extends BaseGame {
     }
 
     async exit() {
+        this.routeChallenge?.stop();
         this.setMapOpen(false);
         this.abilityHud?.dispose();
         this.actionHud?.dispose();

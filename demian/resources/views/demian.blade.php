@@ -643,6 +643,9 @@
                                 <option value="dino-run">Dino Run</option>
                                 <option value="cafe-critters" disabled>Café Critters</option>
                                 <option value="coffee-crash" disabled>Coffee Crash</option>
+                                <option value="after-hours" disabled>After Hours · Route Trial</option>
+                                <option value="cafe-rush" disabled>Café Rush · Route Trial</option>
+                                <option value="open-world" disabled>Open World · Route Trial</option>
                             </select>
                         </label>
                         <label>بازهٔ رکوردها
