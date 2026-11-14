@@ -64,6 +64,29 @@ final class CouponIssuanceService
                 || ! $period->snapshot_hash) {
                 throw new RuntimeException('Weekly rankings are not sealed.');
             }
+            // Recompute the exact canonical Phase 7b technical ranking digest.
+            // The seal is not merely a status flag: altered ranks, missing
+            // entrants or fabricated winners must never mint monetary value.
+            $snapshotRows = DB::table('arcade_weekly_results')
+                ->where('period_key', $periodKey)
+                ->orderBy('game_id')->orderBy('technical_rank')->get();
+            $canonical = [];
+            foreach ($snapshotRows as $row) {
+                $canonical[] = [
+                    'period_key' => $row->period_key, 'game_id' => $row->game_id,
+                    'rules_version' => $row->rules_version, 'player_id' => $row->player_id,
+                    'run_id' => $row->run_id, 'score' => (int) $row->score,
+                    'achieved_at' => $row->achieved_at,
+                    'technical_rank' => (int) $row->technical_rank,
+                    'created_at' => $row->created_at,
+                ];
+            }
+            if (count($canonical) !== (int) $period->participants
+                || ! hash_equals($period->snapshot_hash,
+                    hash('sha256', json_encode($canonical, JSON_THROW_ON_ERROR)))) {
+                throw new RuntimeException('Sealed technical ranking checksum mismatch.');
+            }
+
             $existing = DB::table('arcade_reward_batches')->where('period_key', $periodKey)->first();
             if ($existing) {
                 if ($existing->settlement_hash !== $period->snapshot_hash
@@ -89,6 +112,18 @@ final class CouponIssuanceService
                     || $winner->prize_rank < 1 || $winner->prize_rank > 10
                     || isset($seen[$winner->player_id])) {
                     throw new RuntimeException('Incomplete or duplicated sealed winner.');
+                }
+                $rankingProof = DB::table('arcade_weekly_results')
+                    ->where('period_key', $periodKey)
+                    ->where('game_id', $winner->game_id)
+                    ->where('rules_version', $winner->rules_version)
+                    ->where('technical_rank', $winner->technical_rank)
+                    ->where('player_id', $winner->player_id)
+                    ->where('run_id', $winner->run_id)
+                    ->where('score', $winner->score)
+                    ->where('achieved_at', $winner->achieved_at)->exists();
+                if (! $rankingProof) {
+                    throw new RuntimeException('Prize winner has no exact sealed technical rank.');
                 }
                 $verified = DB::table('arcade_runs')->where('id', $winner->run_id)->first();
                 if (! (new RankedGameCatalog())->supportsRanked($winner->game_id)
