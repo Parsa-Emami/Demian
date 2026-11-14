@@ -68,9 +68,24 @@ final class CouponLedgerAudit
                         || (int) $coupon->active_reservation_id !== (int) $active->first()?->id))
                 || ($status === 'issued' && ($active->count() !== 0 || $receipts->count() !== 0))
                 || ($status === 'revoked' && $active->count() !== 0)
-                || ($status === 'redeemed'
-                    && ($receipts->count() !== 1 || $committed->count() !== 1
-                        || $receipts->first()?->order_hash !== $committed->first()?->order_hash))) {
+                || ($status === 'redeemed' && $receipts->count() !== 1)
+                || ($status === 'redeemed' && $receipts->first()?->channel === 'shop'
+                    && ($committed->count() !== 1
+                        || $receipts->first()?->order_hash !== $committed->first()?->order_hash))
+                || ($status === 'redeemed' && $receipts->first()?->channel === 'in_cafe'
+                    && ($committed->count() !== 0 || $active->count() !== 0
+                        || $receipts->first()?->reservation_id !== null
+                        || ! DB::table('arcade_cashier_requests')
+                            ->where('coupon_id', $id)
+                            ->where('redemption_id', $receipts->first()?->id)
+                            ->where('cashier_id', $receipts->first()?->cashier_id)
+                            ->where('ticket_hash', $receipts->first()?->order_hash)->exists()
+                        || ! DB::table('arcade_cashier_staff')
+                            ->where('id', $receipts->first()?->cashier_id)
+                            ->where('branch_id', $receipts->first()?->branch_id)->exists()
+                        || ! DB::table('arcade_coupon_events')
+                            ->where('coupon_id', $id)
+                            ->where('event_type', 'redeemed_in_cafe')->exists()))) {
                 $issues[] = "Coupon #{$id} reservation/redemption ledger mismatch.";
             }
             if (! DB::table('arcade_coupon_events')->where('coupon_id', $id)
@@ -84,6 +99,8 @@ final class CouponLedgerAudit
             'coupons' => $coupons->count(),
             'redemptions' => DB::table('arcade_coupon_redemptions')->count(),
             'shop_events' => DB::table('arcade_coupon_shop_requests')->count(),
+            'cafe_redemptions' => DB::table('arcade_coupon_redemptions')
+                ->where('channel', 'in_cafe')->count(),
             'issues' => $issues,
         ];
     }
