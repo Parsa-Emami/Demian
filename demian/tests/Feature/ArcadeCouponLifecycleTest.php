@@ -308,6 +308,8 @@ final class ArcadeCouponLifecycleTest extends TestCase
         [$p, $code] = $this->issueOne();
         $this->travel(31)->days();
         $this->store('quote', $this->checkout($p, $code))->assertStatus(422);
+        DB::table('arcade_players')->where('id', $p['player_id'])
+            ->update(['token_expires_at' => now()->addDay()]);
         $this->withToken($p['token'])->getJson('/api/v1/arcade/player/coupons')
             ->assertJsonPath('coupons.0.status', 'expired')->assertJsonPath('coupons.0.code', null);
         $this->assertDatabaseCount('arcade_coupon_events', 1);
