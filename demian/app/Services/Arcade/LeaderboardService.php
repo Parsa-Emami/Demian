@@ -20,9 +20,11 @@ final class LeaderboardService
     public function readForGame(string $gameId, string $period, int $limit): array
     {
         abort_unless(app(RankedGameCatalog::class)->supportsRanked($gameId), 404);
-        $rulesVersion = $gameId === 'cafe-critters'
-            ? CafeCrittersReplayVerifier::VERSION
-            : app(RunnerReplayVerifier::class)->rules()['version'];
+        $rulesVersion = match ($gameId) {
+            'cafe-critters' => CafeCrittersReplayVerifier::VERSION,
+            'coffee-crash' => CoffeeCrashReplayVerifier::VERSION,
+            default => app(RunnerReplayVerifier::class)->rules()['version'],
+        };
         $window = app(CompetitionClock::class)->snapshot($period);
         $key = $window['period_key'];
         $rows = DB::table('arcade_leaderboard_entries as e')->join('arcade_players as p', 'p.id', '=', 'e.player_id')
