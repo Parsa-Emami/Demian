@@ -89,7 +89,7 @@ for (frame = 1; frame <= 7200; frame++) {
         // Replayed server interactions have no client-entered target or
         // arbitrary order number. Server recomputes the nearest valid station.
         actions.push({ tick:frame, kind:'interact' });
-    } else if (frame % 10 === 0) {
+    } else if (frame % 10 === 0 && frame < 7200) {
         const at = model.player.position;
         actions.push({ tick:frame, kind:'move', x:round(at.x), z:round(at.z) });
     }
