@@ -71,6 +71,14 @@ final class CafeProductionReadiness
                 config('demian-coupons.policy_approved') === true);
             $key = config('demian-coupons.cafe_receipt_hash_key');
             $add('receipt_hmac_key_present', is_string($key) && strlen($key) >= 32);
+            if (config('demian-coupons.manual_gifts_enabled') === true) {
+                try {
+                    app(ManualCouponGiftService::class)->terms();
+                    $add('manual_gift_policy_bounded', true);
+                } catch (\Throwable) {
+                    $add('manual_gift_policy_bounded', false);
+                }
+            }
         }
         $ok = count(array_filter($checks, static fn (array $x): bool => ! $x['passed'])) === 0;
 

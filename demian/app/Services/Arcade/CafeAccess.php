@@ -19,7 +19,7 @@ final class CafeAccess
         'report.global',
         'staff.disable',
         'staff.enable',
-        'coupon.revoke',
+        'coupon.revoke', // permission 8: coupon management (revocation + manual gifts)
         'audit.ledger',
         'operations.readiness',
     ];
@@ -47,6 +47,17 @@ final class CafeAccess
             && (bool) ($staff->is_active ?? false)
             && in_array($ability, self::CAPABILITIES, true)
             && in_array($ability, self::abilities((string) ($staff->role ?? '')), true);
+    }
+
+    /** Phase 11 sub-operation of existing coupon-management permission #8.
+     *  It does NOT expand the 10-capability model or the admin's three grants.
+     */
+    public static function authorizeGift(?object $staff): void
+    {
+        abort_unless($staff !== null
+            && ($staff->role ?? null) === 'super_admin'
+            && self::allows($staff, 'coupon.revoke'), 403,
+            'Only an active superadministrator may issue manual gifts.');
     }
 
     public static function authorize(?object $staff, string $ability): void

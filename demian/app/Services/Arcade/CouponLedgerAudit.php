@@ -20,15 +20,42 @@ final class CouponLedgerAudit
 
         foreach ($coupons as $coupon) {
             $id = (int) $coupon->id;
-            $winner = DB::table('arcade_weekly_winners')->where('id', $coupon->winner_id)->first();
-            $period = $winner ? DB::table('arcade_weekly_periods')
-                ->where('period_key', $winner->period_key)->first() : null;
-            if (! $winner || ! $period || $period->status !== 'sealed'
-                || $period->snapshot_hash === null
-                || ($coupon->player_id !== null && $coupon->player_id !== $winner->player_id)
-                || ! isset($ranks[(int) ($winner->prize_rank ?? 0)])
-                || (int) $coupon->discount_percent !== $ranks[(int) ($winner->prize_rank ?? 0)]) {
-                $issues[] = "Coupon #{$id} has an invalid archived winner or policy.";
+            if ($coupon->source === 'gift') {
+                $gift = DB::table('arcade_coupon_gifts')
+                    ->where('id', $coupon->gift_id)->first();
+                if ($coupon->winner_id !== null || ! $gift
+                    || $gift->request_digest === null
+                    || ! preg_match('/^[a-f0-9]{64}$/D', $gift->request_digest)
+                    || ($coupon->player_id !== null
+                        && $gift->player_id !== $coupon->player_id)
+                    || (int) $coupon->discount_percent < 1
+                    || (int) $coupon->discount_percent > 30
+                    || (int) $coupon->min_order_minor < 1
+                    || (int) $coupon->max_discount_minor < 1
+                    || $coupon->expires_at <= $coupon->issued_at
+                    || ! DB::table('arcade_cashier_staff')
+                        ->where('id', $gift?->issuer_id)->exists()
+                    || ! DB::table('arcade_cashier_admin_events')
+                        ->where('actor_id', $gift?->issuer_id)
+                        ->where('event_type', 'coupon_gift_issued')
+                        ->where('details->gift_id', $gift?->id)->exists()) {
+                    $issues[] = "Coupon #{$id} has invalid manual gift provenance.";
+                }
+            } elseif ($coupon->source === 'weekly') {
+                $winner = DB::table('arcade_weekly_winners')
+                    ->where('id', $coupon->winner_id)->first();
+                $period = $winner ? DB::table('arcade_weekly_periods')
+                    ->where('period_key', $winner->period_key)->first() : null;
+                if ($coupon->gift_id !== null || ! $winner || ! $period
+                    || $period->status !== 'sealed'
+                    || $period->snapshot_hash === null
+                    || ($coupon->player_id !== null && $coupon->player_id !== $winner->player_id)
+                    || ! isset($ranks[(int) ($winner->prize_rank ?? 0)])
+                    || (int) $coupon->discount_percent !== $ranks[(int) ($winner->prize_rank ?? 0)]) {
+                    $issues[] = "Coupon #{$id} has an invalid archived winner or policy.";
+                }
+            } else {
+                $issues[] = "Coupon #{$id} has an unknown issuance source.";
             }
             $status = $coupon->status;
             if (! in_array($status, ['issued', 'reserved', 'redeemed', 'revoked'], true)) {
@@ -94,9 +121,19 @@ final class CouponLedgerAudit
             }
         }
 
+        // Every gift provenance row must correspond to exactly one coupon.
+        // The DB UNIQUE(gift_id) blocks doubles; this detects missing links.
+        $giftCount = DB::table('arcade_coupon_gifts')->count();
+        $giftCouponCount = DB::table('arcade_coupons')
+            ->where('source', 'gift')->count();
+        if ($giftCount !== $giftCouponCount) {
+            $issues[] = 'Manual gift attribution count mismatch.';
+        }
+
         return [
             'status' => $issues ? 'failed' : 'passed',
             'coupons' => $coupons->count(),
+            'manual_gifts' => DB::table('arcade_coupon_gifts')->count(),
             'redemptions' => DB::table('arcade_coupon_redemptions')->count(),
             'shop_events' => DB::table('arcade_coupon_shop_requests')->count(),
             'cafe_redemptions' => DB::table('arcade_coupon_redemptions')

@@ -176,8 +176,10 @@ export default class LeaderboardScreen extends BaseScreen {
             for (const coupon of coupons) {
                 const item = document.createElement('li');
                 const title = document.createElement('strong');
+                const isGift = coupon.source === 'gift';
                 title.textContent = 'تخفیف ' + String(coupon.discount_percent ?? '—')
-                    + '٪ · رتبه جایزه ' + String(coupon.prize_rank ?? '—');
+                    + '٪ · ' + (isGift ? 'هدیه اختصاصی کافه'
+                        : 'رتبه جایزه ' + String(coupon.prize_rank ?? '—'));
                 item.append(title);
                 const state = document.createElement('p');
                 const labels = { issued: 'معتبر', reserved: 'رزروشده',

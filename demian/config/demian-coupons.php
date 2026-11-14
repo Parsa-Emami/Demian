@@ -7,6 +7,12 @@ return [
     'issue_enabled' => (bool) env('DEMIAN_COUPONS_ISSUE_ENABLED', false),
     // Online merchant endpoints are retired; no real e-commerce integration.
     'shop_enabled' => false,
+    // Separately gated manual gifts; weekly issuance is an independent switch.
+    'manual_gifts_enabled' => (bool) env('DEMIAN_COUPONS_MANUAL_GIFTS_ENABLED', false),
+    'gift_max_percent' => 30,
+    'gift_max_valid_days' => 30,
+    'gift_issuer_daily_limit' => 20,
+    'gift_recipient_daily_limit' => 1,
     'cafe_enabled' => (bool) env('DEMIAN_COUPONS_CAFE_ENABLED', false),
     'cafe_receipt_hash_key' => env('DEMIAN_COUPONS_CAFE_RECEIPT_HASH_KEY', ''),
     'cafe_session_hours' => 8,

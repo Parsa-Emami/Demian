@@ -109,9 +109,11 @@ final class CouponIssuanceService
     public function listForPlayer(string $playerId): array
     {
         return DB::table('arcade_coupons as c')
-            ->join('arcade_weekly_winners as w', 'w.id', '=', 'c.winner_id')
+            ->leftJoin('arcade_weekly_winners as w', 'w.id', '=', 'c.winner_id')
+            ->leftJoin('arcade_coupon_gifts as g', 'g.id', '=', 'c.gift_id')
             ->where('c.player_id', $playerId)->orderByDesc('c.id')
-            ->get(['c.*', 'w.period_key', 'w.game_id', 'w.prize_rank'])
+            ->get(['c.*', 'w.period_key', 'w.game_id', 'w.prize_rank',
+                'g.reason as gift_reason'])
             ->map(function ($coupon): array {
                 $expired = CarbonImmutable::parse($coupon->expires_at, 'UTC')->lte(CarbonImmutable::now('UTC'));
                 $status = $expired && $coupon->status !== 'redeemed' && $coupon->status !== 'revoked'
@@ -119,8 +121,12 @@ final class CouponIssuanceService
                 $showCode = in_array($status, ['issued', 'reserved'], true);
                 return [
                     'coupon_id' => $coupon->id,
+                    'source' => $coupon->source,
+                    'gift_reason' => $coupon->source === 'gift' ? $coupon->gift_reason : null,
                     'period_key' => $coupon->period_key, 'game_id' => $coupon->game_id,
-                    'prize_rank' => (int) $coupon->prize_rank, 'discount_percent' => (int) $coupon->discount_percent,
+                    'prize_rank' => $coupon->prize_rank === null
+                        ? null : (int) $coupon->prize_rank,
+                    'discount_percent' => (int) $coupon->discount_percent,
                     'currency' => $coupon->currency, 'min_order_minor' => (int) $coupon->min_order_minor,
                     'max_discount_minor' => (int) $coupon->max_discount_minor,
                     'expires_at' => CarbonImmutable::parse($coupon->expires_at, 'UTC')->toIso8601String(),
