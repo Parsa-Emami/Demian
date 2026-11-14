@@ -26,6 +26,8 @@ final class ArcadeRunService
                 return $existing;
             }
 
+            app(WeeklySettlementService::class)->assertOpenForCompletion(now());
+
             return ArcadeRun::query()->create(['player_id' => $player->id, 'request_id' => $data['request_id'],
                 'game_id' => $data['game_id'], 'rules_version' => $rules['version'], 'character_slug' => $data['character_slug'],
                 'seed' => random_int(1, 4294967295), 'track_width' => $data['track_width'], 'status' => 'started',
@@ -49,6 +51,7 @@ final class ArcadeRunService
             }
             abort_unless($locked->status === 'started' && $locked->expires_at->isFuture(), 410, 'Run expired.');
             abort_unless($locked->rules_version === $this->verifier->rules()['version'], 409, 'Rules changed. Start a new run.');
+            app(WeeklySettlementService::class)->assertOpenForCompletion($locked->started_at);
             $elapsed = abs($locked->started_at->diffInMilliseconds(now()));
             abort_if($data['ticks'] * 1000 / 60 > $elapsed + 2000, 422, 'Replay is ahead of server time.');
             $score = $this->verifier->verify($locked->seed, $locked->track_width, $data['ticks'], $data['transitions']);
