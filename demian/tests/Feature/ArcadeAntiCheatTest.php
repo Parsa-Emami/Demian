@@ -347,4 +347,28 @@ final class ArcadeAntiCheatTest extends TestCase
         $this->assertDatabaseCount('arcade_anticheat_holds',0);
     }
 
+    public function test_expired_resolved_cases_are_purged_but_active_investigations_are_retained(): void
+    {
+        [$clearedPlayer,$cleared]=$this->flaggedPlayer();
+        $root=$this->staff('super_admin');
+        $anti=app(ArcadeAntiCheat::class);
+        $anti->review($cleared->id,$root,1,'cleared',
+            'Client timezone mismatch confirmed as false positive');
+        DB::table('arcade_cheat_reports')->where('id',$cleared->id)->update([
+            'last_seen'=>now()->subDays(370),
+        ]);
+        [$openPlayer,$open]=$this->flaggedPlayer();
+        DB::table('arcade_cheat_reports')->where('id',$open->id)->update([
+            'last_seen'=>now()->subDays(370),
+        ]);
+        $this->assertDatabaseCount('arcade_cheat_reports',2);
+        $result=$anti->prune();
+        $this->assertSame(1,$result['resolved_reports']);
+        $this->assertDatabaseMissing('arcade_cheat_reports',['id'=>$cleared->id]);
+        $this->assertDatabaseHas('arcade_cheat_reports',[
+            'id'=>$open->id,'status'=>'open',
+        ]);
+        $this->assertDatabaseCount('arcade_cheat_review_events',0);
+    }
+
 }
