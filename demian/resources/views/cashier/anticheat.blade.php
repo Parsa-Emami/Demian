@@ -41,11 +41,10 @@
 <section class="panel">
 <h2>ثبت تصمیم انسانی (فقط سوپرادمین)</h2>
 <p class="muted">برای هر تصمیم توضیح واقعی، رمز عبور فعلی و تأیید مجدد لازم است. تصمیم تأیید تخلف خودش امتیاز یا جایزه را حذف نمی‌کند.</p>
-<form method="post" id="review-form" action="{{ url('/cashier/admin/anti-cheat/1/review') }}" autocomplete="off">
+<form method="post" action="{{ route('cashier.anticheat.review') }}" autocomplete="off">
 @csrf
 <label for="review-id">شناسه پرونده</label>
-<input id="review-id" name="report_id_display" type="number" min="1" required
- oninput="this.form.action='{{ url('/cashier/admin/anti-cheat') }}/'+this.value+'/review'">
+<input id="review-id" name="report_id" type="number" min="1" required>
 <label for="decision">تصمیم</label>
 <select name="decision" id="decision" required>
 <option value="investigating">شروع بررسی</option>
@@ -64,11 +63,10 @@
 <section class="panel">
 <h2>محدودیت موقت ثبت مسابقه جدید</h2>
 <p class="muted">فقط روی پرونده با تخلف تأییدشده، حداکثر ۷ روز؛ امکان تکمیل مسابقه‌های شروع‌شده، رتبه‌ها و کوپن‌ها را تغییر نمی‌دهد.</p>
-<form method="post" action="{{ url('/cashier/admin/anti-cheat/1/hold') }}" autocomplete="off">
+<form method="post" action="{{ route('cashier.anticheat.hold') }}" autocomplete="off">
 @csrf
 <label for="hold-id">شناسه پرونده تأیید‌شده</label>
-<input id="hold-id" type="number" min="1" required
- oninput="this.form.action='{{ url('/cashier/admin/anti-cheat') }}/'+this.value+'/hold'">
+<input id="hold-id" name="report_id" type="number" min="1" required>
 <label for="hold-action">عملیات</label>
 <select id="hold-action" name="operation"><option value="apply">اعمال محدودیت</option><option value="release">رفع محدودیت</option></select>
 <label for="hold-hours">مدت (ساعت، ۱ تا ۱۶۸؛ فقط برای اعمال)</label>

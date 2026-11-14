@@ -56,32 +56,34 @@ final class CafeAntiCheatController extends Controller
         return $staff;
     }
 
-    public function review(Request $request, int $reportId,
+    public function review(Request $request,
         ArcadeAntiCheat $antiCheat): RedirectResponse
     {
         $staff = $this->stepUp($request);
         $data = $request->validate([
+            'report_id' => ['required','integer','min:1'],
             'decision' => ['required','in:investigating,cleared,confirmed,reopen'],
             'note' => ['required','string','min:12','max:500'],
         ]);
-        $antiCheat->review($reportId,(int)$staff->id,
+        $antiCheat->review((int)$data['report_id'],(int)$staff->id,
             (int)$request->session()->get('cafe_staff_version'),
             $data['decision'],$data['note']);
         return redirect()->route('cashier.anticheat')->with('notice',
             'تصمیم بررسی انسانی با تاریخچه قابل ممیزی ثبت شد.');
     }
 
-    public function hold(Request $request, int $reportId,
+    public function hold(Request $request,
         ArcadeAntiCheat $antiCheat): RedirectResponse
     {
         $staff = $this->stepUp($request);
         $data = $request->validate([
+            'report_id' => ['required','integer','min:1'],
             'operation' => ['required','in:apply,release'],
             'hours' => ['required_if:operation,apply','nullable',
                 'integer','between:1,168'],
             'note' => ['required','string','min:12','max:500'],
         ]);
-        $antiCheat->setHold($reportId,(int)$staff->id,
+        $antiCheat->setHold((int)$data['report_id'],(int)$staff->id,
             (int)$request->session()->get('cafe_staff_version'),
             $data['operation'] === 'apply' ? (int)$data['hours'] : null,
             $data['note']);

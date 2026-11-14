@@ -8,6 +8,12 @@ return new class extends Migration
 {
     public function up(): void
     {
+        Schema::table('arcade_runs', function (Blueprint $table): void {
+            $table->index(['game_id','rules_version','status','completed_at'],
+                'ac_score_baseline');
+            $table->index(['replay_hash','game_id','rules_version'],
+                'ac_replay_duplicates');
+        });
         // Observations are short-lived, sanitized counters, never request bodies,
         // raw addresses, identity bearer tokens, or user agents.
         Schema::create('arcade_anticheat_observations', function (Blueprint $table): void {
@@ -87,5 +93,9 @@ return new class extends Migration
         Schema::dropIfExists('arcade_cheat_review_events');
         Schema::dropIfExists('arcade_cheat_reports');
         Schema::dropIfExists('arcade_anticheat_observations');
+        Schema::table('arcade_runs', function (Blueprint $table): void {
+            $table->dropIndex('ac_score_baseline');
+            $table->dropIndex('ac_replay_duplicates');
+        });
     }
 };

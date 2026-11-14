@@ -174,8 +174,9 @@ final class ArcadeAntiCheat
 
         // A single excellent score is not intrinsically fraud. Require a
         // representative history and use only coarse, deterministic limits.
-        $history = (clone $previous)->orderBy('score')->limit(300)
+        $history = (clone $previous)->orderByDesc('completed_at')->limit(300)
             ->pluck('score')->map(static fn ($n): int => (int) $n)->all();
+        sort($history, SORT_NUMERIC);
         if (count($history) >= $this->setting('score_outlier_min_history', 20)) {
             $median = $history[intdiv(count($history), 2)];
             $ratio = $this->setting('score_outlier_ratio', 4);
@@ -284,8 +285,10 @@ final class ArcadeAntiCheat
             $report = DB::table('arcade_cheat_reports')
                 ->where('id', $reportId)->lockForUpdate()->first();
             abort_unless($report && $report->player_id, 404);
-            abort_unless($report->status === 'confirmed', 409,
-                'A reviewer must confirm the report before restricting starts.');
+            if ($hours !== null) {
+                abort_unless($report->status === 'confirmed', 409,
+                    'A reviewer must confirm the report before restricting starts.');
+            }
             // Run starts lock this same player row before checking an active hold.
             ArcadePlayer::query()->whereKey($report->player_id)
                 ->lockForUpdate()->firstOrFail();
