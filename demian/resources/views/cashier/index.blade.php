@@ -21,6 +21,7 @@
   <a class="button secondary" href="{{ route('cashier.readiness') }}">آمادگی انتشار</a>
 @endif
 </div>
+<h2>اعتبارسنجی حضوری کد تخفیف</h2>
 <p class="muted">کد مشتری را وارد کنید. مشاهده و بررسی کد به معنای مصرف آن نیست.</p>
 @if ($errors->any())<div class="alert" role="alert">{{ $errors->first() }}</div>@endif
 @if (session('receipt'))
