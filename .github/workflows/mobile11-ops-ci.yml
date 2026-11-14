@@ -39,7 +39,9 @@ jobs:
       - name: Check approved read-only load profile
         run: node --check demian/tools/load/mobile11_read_only.js
       - name: Validate actual 50-live-client load profile
-        run: node --check demian/tools/load/cpanel_50_active.js
+        run: |
+          node --check demian/tools/load/cpanel_50_active.js
+          node --check demian/tools/load/cpanel_50_writes_staging.js
       - name: Run release and integrity guard tests
         working-directory: demian
         run: node --test tests/js/mobile/Mobile11Ops.test.js
