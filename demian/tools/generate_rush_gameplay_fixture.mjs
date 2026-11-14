@@ -65,7 +65,7 @@ for (frame = 1; frame <= 7200; frame++) {
     }
     if (path.length > 0 && distance(pos, path[0]) < 0.24) path.shift();
     let input = { x:0, z:0, run:false, interact:false };
-    if (shouldInteract(goal) && frame - lastInteracted > 12) {
+    if (frame < 7200 && shouldInteract(goal) && frame - lastInteracted > 12) {
         input.interact = true;
         lastInteracted = frame;
     } else if (goal && !shouldInteract(goal) && path.length > 0) {
@@ -80,7 +80,7 @@ for (frame = 1; frame <= 7200; frame++) {
     }
     // Snapshot the actual engine position immediately before interaction.
     // The interaction itself takes the next tick, preserving strict ordering.
-    if (input.interact && (actions.at(-1)?.tick ?? -1) < frame - 1) {
+    if (input.interact && frame > 1 && (actions.at(-1)?.tick ?? -1) < frame - 1) {
         actions.push({ tick:frame-1, kind:'move',
             x:round(pos.x), z:round(pos.z) });
     }
