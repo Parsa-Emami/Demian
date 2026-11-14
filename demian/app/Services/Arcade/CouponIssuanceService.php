@@ -176,7 +176,7 @@ final class CouponIssuanceService
             }
             DB::table('arcade_coupons')->where('id', $couponId)->update([
                 'status' => 'revoked', 'active_reservation_id' => null, 'revoked_at' => now(),
-                'updated_at' => now(),
+                'code_ciphertext' => null, 'updated_at' => now(),
             ]);
             $this->audit($couponId, 'revoked', ['reason' => $reason]);
             return ['status' => 'revoked', 'coupon_id' => $couponId];
