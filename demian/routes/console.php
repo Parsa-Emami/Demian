@@ -14,3 +14,10 @@ Artisan::command('inspire', function () {
 })->purpose('Expire abandoned arcade runs and remove old replay payloads.');
 
 \Illuminate\Support\Facades\Schedule::command('arcade:prune')->daily()->withoutOverlapping();
+
+
+// Snapshot-only: no vouchers are issued. Enable only after reviewing policy,
+// verifying a persistent shared lock cache and completing production migration.
+\Illuminate\Support\Facades\Schedule::command('arcade:seal-weeks --apply')
+    ->hourlyAt(10)->withoutOverlapping(30)->onOneServer()
+    ->when(fn (): bool => (bool) config('demian-arcade.weekly_settlement_enabled', false));
