@@ -44,11 +44,11 @@ class AppServiceProvider extends ServiceProvider
             Limit::perMinute(500)->by('arcade:start:ip:'.$request->ip()),
         ]);
         RateLimiter::for('arcade-run-complete', static fn (Request $request): array => [
-            Limit::perMinute(20)->by('arcade:complete:player:'.$request->attributes->get('arcade_player')?->id),
+            Limit::perMinute(20)->by('arcade:complete:player:'.self::arcadeTokenBucket($request)),
             Limit::perMinute(500)->by('arcade:complete:ip:'.$request->ip()),
         ]);
         RateLimiter::for('arcade-player-rename', static fn (Request $request): Limit =>
-            Limit::perMinute(5)->by('arcade:rename:'.$request->attributes->get('arcade_player')?->id));
+            Limit::perMinute(5)->by('arcade:rename:'.self::arcadeTokenBucket($request)));
 
         // A destructive operation must have its own rate-limit bucket.
         // Numeric throttle:2,1 could share a guest/IP bucket with unrelated
