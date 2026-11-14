@@ -2,9 +2,10 @@ import CafeRushModel from '../resources/js/game/games/cafe-rush/CafeRushModel.js
 import { RUSH_SPOTS } from '../resources/js/game/games/cafe-rush/CafeRushMap.js';
 
 const seed = Number(process.argv[2] ?? 7);
+const difficulty = process.argv[3] ?? 'standard';
 if (!Number.isSafeInteger(seed) || seed < 1) throw new Error('Invalid seed.');
 const model = new CafeRushModel();
-model.reset('standard', seed % 3);
+model.reset(difficulty, seed % 3);
 model.start();
 
 const byId = new Map(RUSH_SPOTS.map(spot => [spot.id, spot]));
@@ -106,6 +107,6 @@ for (frame = 1; frame <= 7200; frame++) {
 const result = model.result();
 model.dispose();
 process.stdout.write(JSON.stringify({
-    seed, ticks:7200, actions, original_js:result,
+    seed, difficulty, ticks:7200, actions, original_js:result,
     evidence:{ frames:frame-1, actions:actions.length },
 }));
