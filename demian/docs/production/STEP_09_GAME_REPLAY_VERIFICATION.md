@@ -2,21 +2,21 @@
 
 ## Scope and truthful implementation status
 
-The roadmap requires replay/score verification on **five games beyond Dino Run**. The original-game scoring milestone is still **2/5**: Café Critters and Coffee Crash have deterministic server verifiers. A subsequent commit added **three separately labeled, bounded route-trial challenges** for After Hours, Café Rush and Open World. Their independent route results do **not** verify the original games' scores, and this phase is not complete. Games without an end-to-end deterministic verifier MUST stay unranked and must not enter the weekly coupon selection.
+The roadmap requires independently verifiable scores for **five games beyond Dino Run**. Café Critters and Coffee Crash are already backend-replayed. After Hours and Café Rush now include **new versioned original-game 60Hz input replayers** (shadow AI, power and original cards; full tray/ticket/spill physics respectively) with authenticated, fail-closed API integration. Open World uses an explicit finite three-checkpoint time trial, `open-world-route-v2`, not unrestricted exploration. **All new ranked modes remain disabled by default. None of these three games is eligible for financial coupon awards.** Full physical staging/anti-bot/operator acceptance is separate from implementation.
 
 | Game | Status | Evidence / limitation |
 | --- | --- | --- |
 | Dino Run | Existing production-tested verifier | Fixed-tick physics, runner replay with server-generated seed |
 | Café Critters | Implemented, gated OFF by default | Every valid action (`select`, `invite`, `next`), 3 canonical guests, server-generated rotation, strict ticks and terminal proof; standard difficulty only |
 | Coffee Crash | Implemented, gated OFF by default | Server-issued seed, actual 7x8 board, xorshift32, swaps, cascades, specials, undo, score and level-1 terminal proof; PHP scorer compared with real JS model across multiple seeds |
-| After Hours | **Route-trial verifier only (OFF by default); original game UNVERIFIED** | Separate FBX-collision route challenge exists, but the original shadow AI, power state, cards, physics and difficulty-specific scoring are not reconstructed |
-| Café Rush | **Route-trial verifier only (OFF by default); original game UNVERIFIED** | Separate station-route challenge exists, not the original orders, ticket schedule, preparation, tray physics, spills and combos |
-| Open World | **Route-trial verifier only (OFF by default); original exploration UNRANKED** | Independent finite three-checkpoint challenge exists; unrestricted exploratory progress is never accepted as a score-bearing round |
+| After Hours | **Original 60Hz PHP shadow/gameplay verifier implemented, OFF by default** | Source JS vs independent PHP AI/navigation/physics parity; verified authentic escape, signed version `after-hours-frames-v1` and authenticated ledger replay. Unranked until staging approval. |
+| Café Rush | **Original 60Hz PHP ticket/tray/score verifier implemented, OFF by default** | Original source JS vs PHP parity in three difficulties, versioned `cafe-rush-frames-v1`, authenticated score recording and duplicate protection. Live UI and financial UAT pending. |
+| Open World | **Finite time-trial v2, OFF by default; exploration remains unranked** | Three physically ordered save-point interactions, swept FBX movement and LOS, bounded ticks, locally saved progression / fast-travel isolated from ranked trial. |
 
 ## Server-authoritative contract
 
 - Client requests `POST /api/v1/arcade/turn-runs` with its game ID, new request UUID and version. The API authenticates the arcade bearer, verifies game-level rollout approval and server weekly period, issues immutable server seed / run ID / expiration and supports exact start retry.
-- Client submits `POST /api/v1/arcade/turn-runs/{run}/complete` with only bounded `ticks` and an ordered event history (`actions`). The server verifies owner, game/version, status/expiry, time elapsed and every action using its independent verifier, recomputes the score, persists proof under `arcade_replays`, and atomically updates per-game daily, all-time and weekly personal bests. A different replay on the same run receives HTTP 409.
+- Client submits `POST /api/v1/arcade/turn-runs/{run}/complete` with bounded `ticks` and strictly one of `actions` (route/turn games) or compact normalized `frames` (original After Hours/Café Rush). The server verifies owner, game/version, status/expiry, time elapsed and every action using its independent verifier, recomputes the score, persists proof under `arcade_replays`, and atomically updates per-game daily, all-time and weekly personal bests. A different replay on the same run receives HTTP 409.
 - Public leaderboard paths `GET /api/v1/arcade/leaderboards/{cafe-critters|coffee-crash}` are hidden (404) unless the corresponding feature flag is enabled. `/api/v1/arcade/games` advertises ranked only when the game's flag is on. Scores from client-side practice games are not accepted.
 - The winning model is strictly server-backed; no submitted score, localStorage number, screenshots, cookies or user-controlled seed can create a ranked result.
 - Separate `rules_version` per game so archives and historical scores are never silently rescored with a different model. Existing Dino Run and coupon/weekly tables are unchanged.
@@ -52,15 +52,20 @@ Never turn these on merely because a CI run is green. On first enable, both the 
 5. Validate real wall-clock pacing, expired run behavior, account revocation, closed weeks, server restart, DB lock races and actual budget/latency under realistic authorized traffic.
 6. Perform anti-bot design review before moving to financial prizes. Document sign-off, release SHA, challenge rules, monitoring and actual cashier redemption implications.
 
-## Remaining Step 09 work
+## Step 09 engineering completion and production boundary
 
-**After Hours**: extract a headless authoritative rules core shared with/rendering-independent client; port collision/navigation, shadow AI and switch state to deterministic server replay. Use seeded map, bounded tick inputs and differential fixtures.
+The original After Hours shadow/score engine and Café Rush 60Hz tray/ticket
+simulations now have independently versioned PHP verifiers and corresponding
+recorded frontend input transports. Open World has a finite v2 objective,
+default-disabled with no local save/teleport score sources. See
+`STEP_09_ORIGINAL_GAME_PROGRESS.md` for exact tests, external UAT gates and
+anti-bot limitations.
 
-**Café Rush**: extract deterministic ticket creation, station processing, tray physics, collisions and timing; verify server replay with deterministic seed and input protocol; test spills, VIP, score combos and insufficient-time cheating.
-
-**Open World**: product sign-off for a bounded competitive objective first; separate offline exploration progress from verified timed challenge; implement finite world state, signed seed and server challenge replay before eligibility.
-
-Status is incremental: **2/5 original-game verifiers implemented behind disabled rollout gates; 3/5 original-game verifiers remain outstanding**. The additional route-trial modes do not close Issue #39. Route trials expose `ranked_scope: route-trial` in the public game catalog. Their financial prize eligibility is **hard-coded FALSE**, even if a legacy `DEMIAN_*_ROUTE_PRIZES` environment flag is set. This invariant must remain until original-game parity, abuse review, physical UAT and explicit commercial release approval.
+Do not enable live ranked flags or vouchers merely because CI is green.
+The standing verification boundary remains: authentic physical-device UAT,
+50-user host-specific concurrency/latency acceptance, operator fairness approval
+for Open World and independent bot/fraud review have not been certified by
+source-code tests. All three financial prize gates are hard-locked FALSE.
 
 ## Next phase after finishing Step 09
 
