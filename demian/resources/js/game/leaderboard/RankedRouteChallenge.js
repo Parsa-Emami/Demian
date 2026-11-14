@@ -55,6 +55,10 @@ export default class RankedRouteChallenge {
     }
 
     async start() {
+        if (this.context.app?.sessionState !== 'playing') {
+            this.setMessage('این چالش تنها هنگام اجرای فعال بازی قابل شروع است.');
+            return;
+        }
         if (this.state === 'starting' || this.state === 'running'
             || this.state === 'submitting') return;
         const nonce = ++this.nonce;
@@ -132,7 +136,8 @@ export default class RankedRouteChallenge {
         const p = this.position?.();
         if (!p || Math.hypot(p.x - goal.x, p.z - goal.z) >= 2.0) return false;
         const minTick = this.actions.at(-1)?.tick ?? -1;
-        if (this.frame - this.lastMoveFrame > 10) this.recordMove();
+        // Record exact physical position at the interaction, not an old sample.
+        this.recordMove();
         const checkTick = Math.max(this.frame, (this.actions.at(-1)?.tick ?? -1) + 1);
         if (checkTick >= CAFE_ROUTE_LIMITS[this.gameId]) return false;
         this.actions.push({ tick: checkTick, kind: 'checkpoint', target });

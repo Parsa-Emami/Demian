@@ -9,6 +9,7 @@ import '../css/cafe-critters.css';
 import '../css/coffee-crash.css';
 import '../css/touch-controls.css';
 import '../css/game-hud.css';
+import '../css/ranked-route-challenge.css';
 import '../css/device-qa.css';
 import '../css/mobile-05-touch.css';
 import '../css/pwa-update.css';
