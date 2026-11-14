@@ -121,6 +121,15 @@ final class CouponLedgerAudit
             }
         }
 
+        // Every gift provenance row must correspond to exactly one coupon.
+        // The DB UNIQUE(gift_id) blocks doubles; this detects missing links.
+        $giftCount = DB::table('arcade_coupon_gifts')->count();
+        $giftCouponCount = DB::table('arcade_coupons')
+            ->where('source', 'gift')->count();
+        if ($giftCount !== $giftCouponCount) {
+            $issues[] = 'Manual gift attribution count mismatch.';
+        }
+
         return [
             'status' => $issues ? 'failed' : 'passed',
             'coupons' => $coupons->count(),
