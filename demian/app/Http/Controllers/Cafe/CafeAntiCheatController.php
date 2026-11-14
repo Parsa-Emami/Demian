@@ -31,11 +31,12 @@ final class CafeAntiCheatController extends Controller
             'reports' => $query->limit(100)->get([
                 'id','player_id','run_id','signal','severity','risk_score',
                 'status','hits','first_seen','last_seen','reviewed_at',
+                'evidence',
             ]),
             'reviews' => DB::table('arcade_cheat_review_events')
                 ->orderByDesc('id')->limit(50)
                 ->get(['id','report_id','actor_id','action','previous_status',
-                    'next_status','created_at']),
+                    'next_status','created_at','note']),
             'activeHolds' => DB::table('arcade_anticheat_holds')
                 ->where('expires_at','>',now())->count(),
             'canReview' => $staff->role === 'super_admin',

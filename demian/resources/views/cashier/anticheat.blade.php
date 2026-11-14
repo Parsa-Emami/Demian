@@ -23,17 +23,22 @@
 </section>
 <section class="panel">
 <h2>۱۰۰ پرونده آخر (شناسه‌های داخلی)</h2>
-<table><thead><tr><th>پرونده</th><th>حساب / بازی</th><th>نشانه / ریسک</th><th>وضعیت</th><th>تکرار / زمان</th></tr></thead><tbody>
+<table><thead><tr><th>پرونده</th><th>حساب / بازی</th><th>نشانه / ریسک</th><th>شواهد سروری</th><th>وضعیت</th><th>تکرار / زمان</th></tr></thead><tbody>
 @forelse($reports as $report)
 <tr>
 <td>#{{ $report->id }}</td>
 <td><small>{{ $report->player_id ?? 'حذف شده' }}</small><p><small>{{ $report->run_id ?? '—' }}</small></p></td>
 <td>{{ $report->signal }} · {{ $report->severity }} ({{ $report->risk_score }})</td>
+<td>
+@foreach((json_decode($report->evidence, true) ?: []) as $key => $value)
+  <small>{{ $key }}: {{ is_bool($value) ? ($value ? 'yes' : 'no') : $value }}</small>
+@endforeach
+</td>
 <td>{{ $report->status }}</td>
 <td>{{ $report->hits }} · {{ $report->last_seen }}</td>
 </tr>
 @empty
-<tr><td colspan="5">هنوز پرونده‌ای ثبت نشده است.</td></tr>
+<tr><td colspan="6">هنوز پرونده‌ای ثبت نشده است.</td></tr>
 @endforelse
 </tbody></table>
 </section>
@@ -82,13 +87,13 @@
 @endif
 <section class="panel">
 <h2>۵۰ رویداد آخر ممیزی</h2>
-<table><thead><tr><th>پرونده</th><th>عامل</th><th>تصمیم</th><th>از / به</th><th>زمان</th></tr></thead><tbody>
+<table><thead><tr><th>پرونده</th><th>عامل</th><th>تصمیم</th><th>از / به</th><th>دلیل ثبت‌شده</th><th>زمان</th></tr></thead><tbody>
 @forelse($reviews as $event)
 <tr><td>#{{ $event->report_id }}</td><td>{{ $event->actor_id ?? '—' }}</td>
 <td>{{ $event->action }}</td><td>{{ $event->previous_status }} / {{ $event->next_status }}</td>
-<td>{{ $event->created_at }}</td></tr>
+<td>{{ $event->note }}</td><td>{{ $event->created_at }}</td></tr>
 @empty
-<tr><td colspan="5">هنوز تصمیم انسانی ثبت نشده است.</td></tr>
+<tr><td colspan="6">هنوز تصمیم انسانی ثبت نشده است.</td></tr>
 @endforelse
 </tbody></table>
 </section>
