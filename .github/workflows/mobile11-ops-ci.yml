@@ -29,6 +29,7 @@ jobs:
         run: |
           bash -n demian/ops/mobile-11/release.sh
           bash -n demian/ops/mobile-11/backup_mysql.sh
+          bash -n demian/ops/mobile-11/ci_mysql_restore.sh
       - name: Check approved read-only load profile
         run: node --check demian/tools/load/mobile11_read_only.js
       - name: Run release and integrity guard tests
