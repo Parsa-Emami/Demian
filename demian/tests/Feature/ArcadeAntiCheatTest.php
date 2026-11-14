@@ -40,7 +40,7 @@ final class ArcadeAntiCheatTest extends TestCase
         return ArcadePlayer::query()->findOrFail($id);
     }
 
-    private function run(ArcadePlayer $player, string $status = 'started',
+    private function newRun(ArcadePlayer $player, string $status = 'started',
         string $game = 'dino-run', int $score = 0, ?string $replayHash = null): ArcadeRun
     {
         return ArcadeRun::query()->create([
@@ -87,7 +87,7 @@ final class ArcadeAntiCheatTest extends TestCase
     public function test_disabled_mode_never_creates_telemetry_or_changes_scores(): void
     {
         config()->set('demian-arcade.anticheat.enabled', false);
-        $player=$this->player();$run=$this->run($player);
+        $player=$this->player();$run=$this->newRun($player);
         $anti=app(ArcadeAntiCheat::class);
         $anti->assertStartAllowed($player->id);
         $anti->started($run,'198.51.100.9');
@@ -102,7 +102,7 @@ final class ArcadeAntiCheatTest extends TestCase
         $player=$this->player();
         $anti=app(ArcadeAntiCheat::class);
         for($i=0;$i<12;$i++){
-            $anti->started($this->run($player), '203.0.113.4');
+            $anti->started($this->newRun($player), '203.0.113.4');
         }
         $this->assertDatabaseHas('arcade_cheat_reports',[
             'player_id'=>$player->id,'signal'=>'start_velocity',
@@ -127,7 +127,7 @@ final class ArcadeAntiCheatTest extends TestCase
         $players=[];
         for($i=0;$i<12;$i++){
             $p=$this->player();$players[]=$p;
-            $anti->started($this->run($p),'2001:db8::9');
+            $anti->started($this->newRun($p),'2001:db8::9');
         }
         $this->assertDatabaseHas('arcade_cheat_reports',[
             'signal'=>'shared_network_cohort','status'=>'open',
@@ -158,11 +158,11 @@ final class ArcadeAntiCheatTest extends TestCase
         $anti=app(ArcadeAntiCheat::class);
         for($i=0;$i<20;$i++){
             $owner=$this->player();
-            $this->run($owner,'verified','cafe-rush',100,
+            $this->newRun($owner,'verified','cafe-rush',100,
                 $i===0 ? str_repeat('f',64) : hash('sha256','score-history-'.$i));
         }
         $suspect=$this->player();
-        $target=$this->run($suspect,'verified','cafe-rush',2200,str_repeat('f',64));
+        $target=$this->newRun($suspect,'verified','cafe-rush',2200,str_repeat('f',64));
         $anti->verified($target,985,'198.51.100.7');
         $signals=DB::table('arcade_cheat_reports')
             ->where('player_id',$suspect->id)->pluck('signal')->all();
