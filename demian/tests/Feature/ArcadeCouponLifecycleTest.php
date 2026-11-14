@@ -50,6 +50,7 @@ final class ArcadeCouponLifecycleTest extends TestCase
             'snapshot_hash' => str_repeat('f', 64),
             'created_at' => now(), 'updated_at' => now(),
         ]);
+        $snapshot = [];
         foreach ($players as $i => $player) {
             $rank = $ranks[$i] ?? ($i + 1);
             $runId = (string) Str::uuid();
@@ -74,7 +75,18 @@ final class ArcadeCouponLifecycleTest extends TestCase
                 'technical_rank' => $rank, 'prize_rank' => $rank,
                 'previous_winner' => false, 'created_at' => now(),
             ]);
+            $row = [
+                'period_key' => self::WEEK, 'game_id' => 'dino-run',
+                'rules_version' => 'cafe-runner-v2',
+                'player_id' => $player['player_id'], 'run_id' => $runId,
+                'score' => 1000 - $i, 'achieved_at' => '2026-11-17 10:00:00',
+                'technical_rank' => $rank, 'created_at' => now()->utc()->toDateTimeString(),
+            ];
+            DB::table('arcade_weekly_results')->insert($row);
+            $snapshot[] = $row;
         }
+        DB::table('arcade_weekly_periods')->where('period_key', self::WEEK)
+            ->update(['snapshot_hash' => hash('sha256', json_encode($snapshot, JSON_THROW_ON_ERROR))]);
     }
 
     private function issueOne(int $rank = 1): array
@@ -379,6 +391,31 @@ final class ArcadeCouponLifecycleTest extends TestCase
         $p = $this->player();
         $this->sealed([$p]);
         $this->withToken($p['token'])->deleteJson('/api/v1/arcade/player')->assertOk();
+        $this->expectException(\RuntimeException::class);
+        app(CouponIssuanceService::class)->issue(self::WEEK);
+    }
+
+
+    public function test_tampered_sealed_technical_ranking_cannot_issue_real_value(): void
+    {
+        $p = $this->player();
+        $this->sealed([$p]);
+        DB::table('arcade_weekly_results')->update(['score' => 999999]);
+        try {
+            app(CouponIssuanceService::class)->issue(self::WEEK);
+            $this->fail('Issued code from modified seal.');
+        } catch (\RuntimeException $expected) {
+            $this->assertStringContainsString('checksum', $expected->getMessage());
+        }
+        $this->assertDatabaseCount('arcade_coupons', 0);
+        $this->assertDatabaseCount('arcade_reward_batches', 0);
+    }
+
+    public function test_forged_winner_technical_placement_cannot_issue_real_value(): void
+    {
+        $p = $this->player();
+        $this->sealed([$p]);
+        DB::table('arcade_weekly_winners')->update(['technical_rank' => 77]);
         $this->expectException(\RuntimeException::class);
         app(CouponIssuanceService::class)->issue(self::WEEK);
     }
