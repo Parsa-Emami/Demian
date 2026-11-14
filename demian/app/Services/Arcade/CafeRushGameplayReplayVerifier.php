@@ -278,10 +278,14 @@ final class CafeRushGameplayReplayVerifier
             }
             $schedule($now);
         }
-        if ($index !== count($actions)
-            || $moves < 24 || self::TICKS - $lastMoveTick > 30
-            || $delivered < 1) {
-            $this->reject('Incomplete original Cafe Rush gameplay evidence.');
+        if ($index !== count($actions)) {
+            $this->reject('Invalid or out-of-range action sequence.');
+        }
+        if ($moves < 24 || self::TICKS - $lastMoveTick > 30) {
+            $this->reject('Insufficient continuous movement evidence.');
+        }
+        if ($delivered < 1) {
+            $this->reject('Original gameplay completed without verified delivery.');
         }
         return ['score'=>$score, 'ticks'=>self::TICKS, 'passed'=>$delivered,
             'details'=>['vip_served'=>$vipServed, 'best_combo'=>$bestCombo,
