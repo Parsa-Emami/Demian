@@ -4,6 +4,7 @@ namespace App\Services\Arcade;
 
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
+use Carbon\CarbonImmutable;
 use RuntimeException;
 
 /**
@@ -89,6 +90,18 @@ final class CouponIssuanceService
                     || isset($seen[$winner->player_id])) {
                     throw new RuntimeException('Incomplete or duplicated sealed winner.');
                 }
+                $verified = DB::table('arcade_runs')->where('id', $winner->run_id)->first();
+                if (! (new RankedGameCatalog())->supportsRanked($winner->game_id)
+                    || ! $verified || $verified->status !== 'verified'
+                    || ! $verified->replay_hash || ! $verified->completed_at
+                    || $verified->player_id !== $winner->player_id
+                    || $verified->game_id !== $winner->game_id
+                    || $verified->rules_version !== $winner->rules_version
+                    || (int) $verified->score !== (int) $winner->score
+                    || CarbonImmutable::parse($verified->started_at, 'UTC')->getTimestamp()
+                        !== CarbonImmutable::parse($winner->achieved_at, 'UTC')->getTimestamp()) {
+                    throw new RuntimeException('Archived winner has no matching verified run.');
+                }
                 $seen[$winner->player_id] = true;
             }
 
@@ -141,4 +154,23 @@ final class CouponIssuanceService
             return ['period_key' => $periodKey, 'status' => 'issued', 'coupons' => $winners->count()];
         }, 3);
     }
+
+    /** Retry skipped completed weeks in order; each batch is atomic. */
+    public function issuePending(int $max = 26): array
+    {
+        $this->policy();
+        $weeks = DB::table('arcade_weekly_periods as p')
+            ->leftJoin('arcade_reward_batches as b', 'p.period_key', '=', 'b.period_key')
+            ->where('p.status', 'sealed')->whereNull('b.period_key')
+            ->orderBy('p.period_key')->limit(max(1, min($max, 26)))
+            ->pluck('p.period_key')->all();
+
+        $results = [];
+        foreach ($weeks as $week) {
+            $results[] = $this->issue($week);
+        }
+
+        return $results;
+    }
+
 }
