@@ -3,6 +3,7 @@
 namespace App\Services\Arcade;
 
 use Illuminate\Support\Facades\DB;
+use App\Services\Arcade\CafeAccess;
 use RuntimeException;
 
 /**
@@ -88,8 +89,7 @@ final class InCafeCouponService
             // spend, and the next request always observes the suspension.
             $cashier = DB::table('arcade_cashier_staff')->where('id', $cashierId)
                 ->lockForUpdate()->first();
-            abort_unless($cashier && $cashier->is_active
-                && in_array($cashier->role, ['cashier', 'manager'], true),
+            abort_unless(CafeAccess::allows($cashier, 'coupon.redeem'),
                 403, 'Inactive cashier credentials.');
 
             $ticketHash = $this->receiptHash($cashier->branch_id, $ticket);

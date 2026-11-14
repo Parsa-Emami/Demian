@@ -5,6 +5,7 @@ namespace App\Http\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use App\Services\Arcade\CafeAccess;
 use Symfony\Component\HttpFoundation\Response;
 
 /** Separate, short-lived session, never the arcade player's bearer token. */
@@ -27,7 +28,8 @@ final class AuthenticateCafeCashier
             return redirect()->route('cashier.login');
         }
         $staff = DB::table('arcade_cashier_staff')->where('id', $id)->first();
-        if (! $staff || ! $staff->is_active || (int) $staff->session_version !== $version) {
+        if (! $staff || ! $staff->is_active || ! CafeAccess::knownRole($staff->role)
+            || (int) $staff->session_version !== $version) {
             $request->session()->invalidate();
             $request->session()->regenerateToken();
             return redirect()->route('cashier.login');

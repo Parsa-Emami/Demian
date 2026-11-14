@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Cafe;
 
 use App\Http\Controllers\Controller;
 use App\Services\Arcade\InCafeCouponService;
+use App\Services\Arcade\CafeAccess;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -32,7 +33,7 @@ final class CashierController extends Controller
         $username = Str::lower($data['username']);
         $staff = DB::table('arcade_cashier_staff')->where('username', $username)->first();
 
-        if (! $staff || ! $staff->is_active || ! Hash::check($data['password'], $staff->password_hash)) {
+        if (! $staff || ! $staff->is_active || ! CafeAccess::knownRole($staff->role) || ! Hash::check($data['password'], $staff->password_hash)) {
             return back()->withErrors([
                 'username' => 'نام کاربری یا رمز عبور معتبر نیست.',
             ])->onlyInput('username');
@@ -59,11 +60,14 @@ final class CashierController extends Controller
 
     public function index(Request $request): View
     {
-        return view('cashier.index', ['staff' => $request->attributes->get('cafe_staff')]);
+        $staff = $request->attributes->get('cafe_staff');
+        return view('cashier.index', ['staff' => $staff,
+            'permissions' => CafeAccess::abilities($staff->role)]);
     }
 
     public function lookup(Request $request, InCafeCouponService $service): View
     {
+        CafeAccess::authorize($request->attributes->get('cafe_staff'), 'coupon.lookup');
         $data = $request->validate([
             'code' => ['required', 'string', 'regex:/^DMC-[A-F0-9]{32}$/D'],
         ]);
@@ -86,6 +90,7 @@ final class CashierController extends Controller
             'confirmed' => ['accepted'],
         ]);
         $staff = $request->attributes->get('cafe_staff');
+        CafeAccess::authorize($staff, 'coupon.redeem');
         $result = $service->redeem((int) $staff->id, $data['code'],
             $data['ticket_ref'], (int) $data['subtotal_minor'], $data['request_key']);
 
@@ -95,10 +100,11 @@ final class CashierController extends Controller
     public function report(Request $request, InCafeCouponService $service): View
     {
         $staff = $request->attributes->get('cafe_staff');
-        abort_unless($staff->role === 'manager', 403);
+        CafeAccess::authorize($staff, 'report.branch');
         return view('cashier.report', [
             'staff' => $staff,
             'records' => $service->recent($staff->branch_id),
+            'global' => false,
         ]);
     }
 }

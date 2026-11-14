@@ -82,17 +82,17 @@ final class CafeAdminController extends Controller
             'records' => $records, 'global' => true]);
     }
 
-    public function revoke(Request $request, int $couponId,
-        CafeStaffAdminService $service): RedirectResponse
+    public function revoke(Request $request, CafeStaffAdminService $service): RedirectResponse
     {
         $staff = $this->actor($request, 'coupon.revoke');
         $data = $request->validate([
+            'coupon_id' => ['required', 'integer', 'min:1'],
             'reason' => ['required', 'in:fraud,policy,incident'],
         ]);
         $this->reauthenticated($request, $staff);
         try {
             $service->revokeCoupon((int) $staff->id,
-                (int) $request->session()->get('cafe_staff_version'), $couponId,
+                (int) $request->session()->get('cafe_staff_version'), (int) $data['coupon_id'],
                 $data['reason']);
         } catch (RuntimeException) {
             abort(409, 'Voucher cannot be revoked after redemption or deletion.');
