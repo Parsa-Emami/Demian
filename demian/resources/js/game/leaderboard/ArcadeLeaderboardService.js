@@ -73,7 +73,7 @@ export default class ArcadeLeaderboardService {
             && Number.isInteger(saved.body?.ticks)
             && (saved.kind === 'turn'
                 ? Array.isArray(saved.body?.actions) && saved.body.actions.length >= 12
-                    && saved.body.actions.length <= 240
+                    && saved.body.actions.length <= 6500
                 : Array.isArray(saved.body?.transitions) && saved.body.transitions.length > 0
                     && saved.body.transitions.length <= 12000)
             ? saved : null;
@@ -224,7 +224,8 @@ export default class ArcadeLeaderboardService {
     }
     async startTurnRun(gameId = 'cafe-critters') {
         const practice = { mode: 'practice', reason: 'این بازی در حالت تمرینی اجرا می‌شود.' };
-        if (!['cafe-critters', 'coffee-crash'].includes(gameId) || !this.connected) return practice;
+        if (!['cafe-critters', 'coffee-crash',
+            'after-hours', 'cafe-rush', 'open-world'].includes(gameId) || !this.connected) return practice;
         if (this.needsAccountRestore) return { ...practice,
             reason: 'برای ارسال امتیاز آنلاین ابتدا حساب اصلی را بازیابی کن.' };
         if (this.pending) {
@@ -234,8 +235,13 @@ export default class ArcadeLeaderboardService {
         }
         try {
             await this.ensureIdentity();
-            const expectedVersion = gameId === 'coffee-crash'
-                ? 'coffee-crash-replay-v1' : 'cafe-critters-replay-v1';
+            const expectedVersion = ({
+                'coffee-crash': 'coffee-crash-replay-v1',
+                'cafe-critters': 'cafe-critters-replay-v1',
+                'after-hours': 'after-hours-route-v1',
+                'cafe-rush': 'cafe-rush-route-v1',
+                'open-world': 'open-world-route-v1',
+            })[gameId];
             const response = await this.request('/turn-runs', {
                 method: 'POST', authenticated: true,
                 body: { request_id: crypto.randomUUID(), game_id: gameId,
@@ -255,7 +261,8 @@ export default class ArcadeLeaderboardService {
     }
     async finishTurnRun(run, actions, ticks) {
         if (run?.mode !== 'ranked'
-            || !['cafe-critters', 'coffee-crash'].includes(run.game_id)
+            || !['cafe-critters', 'coffee-crash',
+                'after-hours', 'cafe-rush', 'open-world'].includes(run.game_id)
             || !Array.isArray(actions) || !Number.isInteger(ticks)) {
             return { status: 'practice' };
         }
@@ -379,7 +386,8 @@ export default class ArcadeLeaderboardService {
         return { status: 'deleted' };
     }
     async list(period = 'weekly', gameId = 'dino-run') {
-        const games = ['dino-run', 'cafe-critters', 'coffee-crash'];
+        const games = ['dino-run', 'cafe-critters', 'coffee-crash',
+            'after-hours', 'cafe-rush', 'open-world'];
         if (!games.includes(gameId)) throw new Error('Unknown ranked game.');
         if (this.connected && period !== 'device') {
             return { ...await this.request(
