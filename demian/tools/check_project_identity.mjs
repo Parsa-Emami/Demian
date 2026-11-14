@@ -102,14 +102,26 @@ try {
         await portfolio.goto(click.destination, { waitUntil: 'commit', timeout: 15000 });
         await portfolio.waitForURL('https://parsaaemm.dev/', { waitUntil: 'commit' });
         await portfolio.close();
-        await page.bringToFront();
-        await page.evaluate(() => window.demianGameApplication.launchGame('coffee-crash'));
-        await page.locator('[data-coffee-dialog-action="start"]').click();
-        await page.evaluate(() => window.demianGameApplication.pauseGame());
-        assert.equal(await page.locator('[data-screen="pause"] [data-project-about]').count(), 0);
-        assert.equal(/برآورد|هزینه/.test(await page.locator('[data-screen="pause"]').innerText()), false);
-        assert.equal(await page.evaluate(() => window.demianGameApplication.sessionState), 'paused');
+        // A noopener link creates an auxiliary tab. Browser focus changes can
+        // starve animation-frame-based game transitions in a background tab,
+        // especially at the desktop viewport. Verify gameplay on a fresh,
+        // foreground page so these independent contracts cannot interfere.
+        await page.close();
+        for (const auxiliaryPage of context.pages()) {
+            await auxiliaryPage.close();
+        }
+        const gamePage = await context.newPage();
+        gamePage.on('pageerror', error => errors.push(error.message));
+        await gamePage.goto(base);
+        await gamePage.waitForFunction(() => window.demianGameApplication?.sessionState === 'menu', null, { timeout: 45000 });
+        await gamePage.evaluate(() => window.demianGameApplication.launchGame('coffee-crash').then(() => true));
+        await gamePage.locator('[data-coffee-dialog-action="start"]').click();
+        await gamePage.evaluate(() => window.demianGameApplication.pauseGame());
+        assert.equal(await gamePage.locator('[data-screen="pause"] [data-project-about]').count(), 0);
+        assert.equal(/برآورد|هزینه/.test(await gamePage.locator('[data-screen="pause"]').innerText()), false);
+        assert.equal(await gamePage.evaluate(() => window.demianGameApplication.sessionState), 'paused');
         assert.deepEqual(errors, []);
+        await gamePage.close();
         report.profiles.push({ width, height, centeredCredit: 'passed', publicPricingRemoved: 'passed', removedAboutPage: 'passed', newHostSubpath: 'passed', metadata: 'passed', websiteLink: 'passed', horizontalOverflow: false, errors });
         console.log(`Demian project identity ${width}x${height}: passed`);
         await context.close();
