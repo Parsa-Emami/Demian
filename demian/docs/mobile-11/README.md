@@ -64,6 +64,10 @@ Before every production migration:
 
 Avoid printing tokens, credentials, raw SQL dumps or actual replay payloads in public CI logs.
 
+### MySQL logical restore exercised in GitHub CI
+
+The backend's MySQL matrix now executes `ops/mobile-11/ci_mysql_restore.sh` after the feature suite. This script refuses to run unless it is in GitHub CI, uses the local test MySQL schema `demian_test`, and has testing credentials. It creates a player, verified run, replay and leaderboard entry; performs `mysqldump`; restores those four related records into a **separate disposable** database; runs `arcade:integrity`; verifies row counts; then deletes the restored test player and asserts that foreign-key cascades remove the dependent records. This tests **logical** backup/restore and referential integrity, not encryption/offsite transfer or recovery timing on an actual production host.
+
 ## 4. Connecting GitHub Pages after staging proof
 
 The static exporter uses `DEMIAN_ARCADE_API_URL` only if it matches an HTTPS arcade API. Set repository variable `DEMIAN_ARCADE_API_URL=https://api.example.com/api/v1/arcade` **only after** production HTTPS, CORS and DB tests pass. The Pages workflow injects that variable on `main`; PR static builds stay offline-only. If unset, the existing PWA stays in practice mode.
