@@ -275,4 +275,45 @@ final class CafeCrittersRankedReplayTest extends TestCase
         }
     }
 
+    public function test_verified_scores_enter_rankings_but_not_financial_prizes_without_separate_approval(): void
+    {
+        config()->set('demian-arcade.critters_prizes_enabled', false);
+        $this->assertTrue(app(RankedGameCatalog::class)->supportsRanked('cafe-critters'));
+        $this->assertFalse(app(RankedGameCatalog::class)->supportsPrizes('cafe-critters'));
+        $player = $this->player();
+        $run = $this->started($player);
+        $this->travel(7)->seconds();
+        $this->withToken($player['token'])->postJson(
+            '/api/v1/arcade/turn-runs/'.$run['run_id'].'/complete',
+            $this->replay($run['seed'])
+        )->assertOk();
+        $this->travelTo(CarbonImmutable::parse('2026-11-21T12:00:00Z'));
+        $result = app(\App\Services\Arcade\WeeklySettlementService::class)->seal('2026-11-14');
+        $this->assertSame(1, $result['participants']);
+        $this->assertSame(0, $result['winners']);
+        $this->assertDatabaseCount('arcade_weekly_results', 1);
+        $this->assertDatabaseCount('arcade_weekly_winners', 0);
+    }
+
+    public function test_financial_awards_require_explicit_opt_in_even_after_ranked_verification(): void
+    {
+        config()->set('demian-arcade.critters_prizes_enabled', true);
+        $this->assertTrue(app(RankedGameCatalog::class)->supportsPrizes('cafe-critters'));
+        $player = $this->player();
+        $run = $this->started($player);
+        $this->travel(7)->seconds();
+        $this->withToken($player['token'])->postJson(
+            '/api/v1/arcade/turn-runs/'.$run['run_id'].'/complete',
+            $this->replay($run['seed'])
+        )->assertOk();
+        $this->travelTo(CarbonImmutable::parse('2026-11-21T12:00:00Z'));
+        $result = app(\App\Services\Arcade\WeeklySettlementService::class)->seal('2026-11-14');
+        $this->assertSame(1, $result['participants']);
+        $this->assertSame(1, $result['winners']);
+        $this->assertDatabaseHas('arcade_weekly_winners', [
+            'game_id' => 'cafe-critters', 'prize_rank' => 1,
+            'player_id' => $player['player_id'],
+        ]);
+    }
+
 }
