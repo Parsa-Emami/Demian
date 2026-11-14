@@ -4,6 +4,7 @@ return [
     'rules_path' => resource_path('game/runner-rules.json'),
     // Reward-bearing Critters trials are opt-in only after end-to-end UAT.
     'critters_ranked_enabled' => (bool) env('DEMIAN_ARCADE_CRITTERS_RANKED_ENABLED', false),
+    'coffee_ranked_enabled' => (bool) env('DEMIAN_ARCADE_COFFEE_RANKED_ENABLED', false),
     'api_only' => env('DEMIAN_ARCADE_API_ONLY', false),
     // Disabled by default until production migration and award policy approval.
     'weekly_settlement_enabled' => (bool) env('DEMIAN_ARCADE_WEEKLY_SETTLEMENT_ENABLED', false),
