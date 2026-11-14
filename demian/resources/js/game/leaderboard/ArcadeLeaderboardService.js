@@ -378,8 +378,16 @@ export default class ArcadeLeaderboardService {
         safeWrite(this.storage, LOCAL_KEY, []);
         return { status: 'deleted' };
     }
-    async list(period = 'weekly') {
-        if (this.connected && period !== 'device') return { ...await this.request(`/leaderboards/dino-run?period=${encodeURIComponent(period)}&limit=20`), mode: 'online' };
-        return { mode: 'device', data: this.localScores().map((row, index) => ({ ...row, rank: index + 1 })) };
+    async list(period = 'weekly', gameId = 'dino-run') {
+        const games = ['dino-run', 'cafe-critters', 'coffee-crash'];
+        if (!games.includes(gameId)) throw new Error('Unknown ranked game.');
+        if (this.connected && period !== 'device') {
+            return { ...await this.request(
+                `/leaderboards/${gameId}?period=${encodeURIComponent(period)}&limit=20`
+            ), mode: 'online' };
+        }
+        // Dino is the only game with legacy device leaderboard storage.
+        return { mode: 'device', data: gameId === 'dino-run'
+            ? this.localScores().map((row, index) => ({ ...row, rank: index + 1 })) : [] };
     }
 }
