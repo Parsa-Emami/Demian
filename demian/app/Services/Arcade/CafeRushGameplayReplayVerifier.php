@@ -22,6 +22,11 @@ final class CafeRushGameplayReplayVerifier
     public const TICKS = 7200;
     public const MAX_ACTIONS = 6500;
     private const SPAWN = ['x' => -0.35, 'z' => -25.3];
+    private const DIFFICULTIES = [
+        'easy' => ['capacity'=>1, 'patience'=>33.0, 'cadence'=>12.0, 'quota'=>4],
+        'standard' => ['capacity'=>2, 'patience'=>31.0, 'cadence'=>8.2, 'quota'=>6],
+        'hard' => ['capacity'=>3, 'patience'=>29.0, 'cadence'=>6.6, 'quota'=>8],
+    ];
     private const MENU = ['tea', 'cake', 'espresso', 'tea', 'espresso', 'cake'];
     private const TABLES = [1, 2, 1, 2, 1, 2, 2, 1];
     private const RECIPES = [
@@ -49,13 +54,15 @@ final class CafeRushGameplayReplayVerifier
      * Original game has a 120s duration. This verifier does not accept
      * arbitrary claimed scores, orders, combo, VIP, finish or elapsed seconds.
      */
-    public function verify(int $seed, int $ticks, array $actions): array
+    public function verify(int $seed, int $ticks, array $actions, string $difficulty = 'standard'): array
     {
         if ($seed < 1 || $ticks !== self::TICKS
+            || ! isset(self::DIFFICULTIES[$difficulty])
             || count($actions) < 24 || count($actions) > self::MAX_ACTIONS) {
             $this->reject('Invalid original Cafe Rush proof bounds.');
         }
         $variation = $seed % 3;
+        $rules = self::DIFFICULTIES[$difficulty];
         $position = self::SPAWN;
         $lastTick = -1;
         $lastMoveTick = 0;
@@ -81,7 +88,7 @@ final class CafeRushGameplayReplayVerifier
         $index = 0;
 
         $addTicket = static function (bool $vip, float $now) use (
-            &$orders, &$regularNumber, &$ticketNumber, &$nextTicketAt, &$vipIssued, $variation
+            &$orders, &$regularNumber, &$ticketNumber, &$nextTicketAt, &$vipIssued, $variation, $rules
         ): void {
             $menuIndex = $regularNumber + $variation;
             $recipe = $vip ? 'vip' : self::MENU[$menuIndex % count(self::MENU)];
@@ -89,20 +96,19 @@ final class CafeRushGameplayReplayVerifier
             $orders[] = [
                 'id'=>++$ticketNumber, 'recipe'=>$recipe, 'table'=>$table,
                 'vip'=>$vip, 'state'=>'waiting',
-                'due'=>min(120.0, $now + ($vip ? 30.0 : 31.0)),
+                'due'=>min(120.0, $now + ($vip ? 30.0 : $rules['patience'])),
                 'readyAt'=>0.0,
             ];
             if ($vip) $vipIssued = true;
             else {
                 $regularNumber++;
-                $nextTicketAt = $now + 8.2;
+                $nextTicketAt = $now + $rules['cadence'];
             }
         };
         $schedule = static function (float $now) use (
-            &$orders, &$vipIssued, &$nextTicketAt, $addTicket
+            &$orders, &$vipIssued, &$nextTicketAt, $addTicket, $rules
         ): void {
-            // Standard difficulty: capacity 2, patience 31s, cadence 8.2s.
-            if (count($orders) >= 2) return;
+            if (count($orders) >= $rules['capacity']) return;
             if ($now >= 90.0 && ! $vipIssued) $addTicket(true, $now);
             elseif ($now >= $nextTicketAt && ($now < 77.0
                 || ($vipIssued && $now < 108.0))) $addTicket(false, $now);
