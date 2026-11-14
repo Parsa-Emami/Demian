@@ -72,8 +72,12 @@ export default class ArcadeLeaderboardService {
             && typeof saved.id === 'string' && /^[0-9a-f-]{36}$/i.test(saved.id)
             && Number.isInteger(saved.body?.ticks)
             && (saved.kind === 'turn'
-                ? Array.isArray(saved.body?.actions) && saved.body.actions.length >= 12
-                    && saved.body.actions.length <= 6500
+                ? (
+                    (Array.isArray(saved.body?.actions) && saved.body.actions.length >= 12
+                        && saved.body.actions.length <= 6500)
+                    || (Array.isArray(saved.body?.frames) && saved.body.frames.length >= 2
+                        && saved.body.frames.length <= 7200)
+                )
                 : Array.isArray(saved.body?.transitions) && saved.body.transitions.length > 0
                     && saved.body.transitions.length <= 12000)
             ? saved : null;
@@ -222,10 +226,11 @@ export default class ArcadeLeaderboardService {
             return { mode: 'practice', seed: Date.now(), track_width: width, reason: 'ارتباط آنلاین برقرار نشد؛ این دور روی دستگاه ثبت می‌شود.' };
         }
     }
-    async startTurnRun(gameId = 'cafe-critters') {
+    async startTurnRun(gameId = 'cafe-critters', { gameplay = false } = {}) {
         const practice = { mode: 'practice', reason: 'این بازی در حالت تمرینی اجرا می‌شود.' };
         if (!['cafe-critters', 'coffee-crash',
-            'after-hours', 'cafe-rush', 'open-world'].includes(gameId) || !this.connected) return practice;
+            'after-hours', 'cafe-rush', 'open-world'].includes(gameId) || !this.connected
+            || (gameplay && !['after-hours', 'cafe-rush'].includes(gameId))) return practice;
         if (this.needsAccountRestore) return { ...practice,
             reason: 'برای ارسال امتیاز آنلاین ابتدا حساب اصلی را بازیابی کن.' };
         if (this.pending) {
@@ -235,7 +240,10 @@ export default class ArcadeLeaderboardService {
         }
         try {
             await this.ensureIdentity();
-            const expectedVersion = ({
+            const expectedVersion = gameplay ? ({
+                'after-hours': 'after-hours-frames-v1',
+                'cafe-rush': 'cafe-rush-frames-v1',
+            })[gameId] : ({
                 'coffee-crash': 'coffee-crash-replay-v1',
                 'cafe-critters': 'cafe-critters-replay-v1',
                 'after-hours': 'after-hours-route-v1',
@@ -259,21 +267,31 @@ export default class ArcadeLeaderboardService {
             return practice;
         }
     }
-    async finishTurnRun(run, actions, ticks) {
+    async finishTurnRun(run, actions, ticks, proofKind = 'actions') {
+        const gameplayVersion = ({
+            'after-hours': 'after-hours-frames-v1',
+            'cafe-rush': 'cafe-rush-frames-v1',
+        })[run?.game_id];
         if (run?.mode !== 'ranked'
             || !['cafe-critters', 'coffee-crash',
                 'after-hours', 'cafe-rush', 'open-world'].includes(run.game_id)
-            || !Array.isArray(actions) || !Number.isInteger(ticks)) {
+            || !Array.isArray(actions) || !Number.isInteger(ticks)
+            || !['actions', 'frames'].includes(proofKind)
+            || (proofKind === 'frames' && run.rules_version !== gameplayVersion)) {
             return { status: 'practice' };
         }
+        const body = { ticks, [proofKind]: actions.map(action =>
+            proofKind === 'frames' ? [...action] : { ...action }) };
         const durable = this.savePending({ id: run.run_id, kind: 'turn',
-            body: { ticks, actions: actions.map(action => ({ ...action })) },
-            player_id: this.identity?.player_id });
+            body, player_id: this.identity?.player_id });
         const result = await this.retry();
         return !durable && result.status !== 'verified'
             ? { status: 'pending', retryable: true,
                 message: 'مدرک بازپخش هنوز ذخیره و ارسال نشده است.' }
             : result;
+    }
+    async finishGameplayRun(run, frames, ticks) {
+        return this.finishTurnRun(run, frames, ticks, 'frames');
     }
     localScores() {
         const rows = safeRead(this.storage, LOCAL_KEY, []);
