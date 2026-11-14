@@ -54,7 +54,7 @@ final class CafeProductionReadiness
                         ->where('is_active', true)->exists());
                 $add('active_cashier', ! $requireLive
                     || DB::table('arcade_cashier_staff')->whereIn('role',
-                        ['cashier', 'manager', 'super_admin'])->where('is_active', true)->exists());
+                        ['cashier', 'manager'])->where('is_active', true)->exists());
                 if ($requireLive) {
                     $audit = app(CouponLedgerAudit::class)->inspect();
                     $add('coupon_ledger_clean', $audit['status'] === 'passed');
