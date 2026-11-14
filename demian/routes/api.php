@@ -14,13 +14,13 @@ Route::prefix('v1/arcade')->middleware([LimitArcadePayload::class, 'throttle:arc
     Route::get('/games', [ArcadeController::class, 'games']);
     Route::get('/leaderboards/dino-run', [ArcadeController::class, 'leaderboard']);
     Route::post('/players', [ArcadeController::class, 'register'])->middleware('throttle:arcade-registration');
-    Route::post('/players/recover', [ArcadeController::class, 'recover'])->middleware('throttle:3,1');
+    Route::post('/players/recover', [ArcadeController::class, 'recover'])->middleware('throttle:arcade-account-recover');
     Route::middleware(AuthenticateArcadePlayer::class)->group(function (): void {
         Route::get('/player', [ArcadeController::class, 'me']);
         Route::post('/player/recovery-link', [ArcadeController::class, 'issueRecoveryLink'])
-            ->middleware('throttle:3,1');
+            ->middleware('throttle:arcade-recovery-issue');
         Route::post('/player/backup-code', [ArcadeController::class, 'issueBackupCode'])
-            ->middleware('throttle:2,1');
+            ->middleware('throttle:arcade-backup-issue');
         Route::get('/player/best', [ArcadeController::class, 'personalBest']);
         Route::patch('/player', [ArcadeController::class, 'rename'])->middleware('throttle:arcade-player-rename');
         Route::delete('/player', [ArcadeController::class, 'erase'])->middleware('throttle:arcade-profile-delete');
