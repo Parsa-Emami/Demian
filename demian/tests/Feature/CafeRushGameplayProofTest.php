@@ -63,9 +63,12 @@ final class CafeRushGameplayProofTest extends TestCase
         $proof = $this->legalProof();
         $result = app(CafeRushGameplayReplayVerifier::class)->verify(
             $proof['seed'], $proof['ticks'], $proof['actions']);
-        $this->assertSame(200, $result['score']);
-        $this->assertSame(2, $result['passed']);
-        $this->assertSame(2, $result['details']['best_combo']);
+        // The scripted route proves one legal service. The second order
+        // expires on this deliberately slow circuit; no fabricated delivery
+        // or combo credit is allowed merely because the route was visited.
+        $this->assertSame(100, $result['score']);
+        $this->assertSame(1, $result['passed']);
+        $this->assertSame(1, $result['details']['best_combo']);
         $this->assertFalse($result['details']['vip_served']);
         $this->assertSame(0, $result['details']['spills']);
     }
