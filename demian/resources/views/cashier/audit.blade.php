@@ -13,4 +13,22 @@
 <ul>@foreach ($result['issues'] as $issue)<li>{{ $issue }}</li>@endforeach</ul>
 @endif
 </section>
+<section class="panel">
+<h2>تاریخچه اقدامات مدیریتی اخیر</h2>
+<p class="muted">۵۰ رویداد آخر، بدون نمایش رمز عبور، کلید یا کد تخفیف.</p>
+<table>
+<thead><tr><th>رویداد</th><th>عامل</th><th>هدف</th><th>زمان</th></tr></thead>
+<tbody>
+@forelse ($events as $event)
+<tr>
+<td>{{ $event->event_type }}</td>
+<td>{{ $event->actor_id ?? 'CLI' }}</td>
+<td>{{ $event->subject_id ?? '—' }}</td>
+<td>{{ $event->created_at }}</td>
+</tr>
+@empty
+<tr><td colspan="4">هنوز رویداد مدیریتی ثبت نشده است.</td></tr>
+@endforelse
+</tbody></table>
+</section>
 @endsection
