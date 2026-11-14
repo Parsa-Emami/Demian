@@ -35,4 +35,19 @@ final class RankedGameCatalog
         if ($id === 'coffee-crash') return config('demian-arcade.coffee_ranked_enabled') === true;
         return (self::GAMES[$id]['ranked'] ?? false) === true;
     }
+    /** A verified leaderboard does not automatically authorize financial prizes.
+     *  Puzzle solvers may automate public answers even with valid server replay.
+     *  Commercial eligibility requires a separately approved rollout gate.
+     */
+    public function supportsPrizes(string $id): bool
+    {
+        if (! $this->supportsRanked($id)) return false;
+        return match ($id) {
+            'dino-run' => true,
+            'cafe-critters' => config('demian-arcade.critters_prizes_enabled') === true,
+            'coffee-crash' => config('demian-arcade.coffee_prizes_enabled') === true,
+            default => false,
+        };
+    }
+
 }
