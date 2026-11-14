@@ -638,6 +638,13 @@
                     <div class="shell-modal ranking-panel">
                         <p class="shell-kicker">DEMIAN · CAFÉ RUN</p>
                         <h2 id="ranking-title">لیدربورد کافه</h2>
+                        <label>انتخاب بازی دارای بازپخش سروری
+                            <select data-ranking-game aria-label="بازی رقابتی">
+                                <option value="dino-run">Dino Run</option>
+                                <option value="cafe-critters" disabled>Café Critters</option>
+                                <option value="coffee-crash" disabled>Coffee Crash</option>
+                            </select>
+                        </label>
                         <label>بازهٔ رکوردها
                             <select data-ranking-period><option value="weekly">این هفته</option><option value="daily">امروز</option><option value="all">همیشه</option><option value="device">این دستگاه</option></select>
                         </label>
