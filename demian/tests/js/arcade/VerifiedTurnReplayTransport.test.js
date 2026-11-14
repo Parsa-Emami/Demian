@@ -100,5 +100,5 @@ test('offline API never promises unverified scores', async () => {
     assert.equal((await service.startTurnRun('cafe-critters')).mode, 'practice');
     assert.deepEqual((await service.list('device', 'coffee-crash')).data, []);
     assert.deepEqual((await service.list('device', 'cafe-critters')).data, []);
-    await assert.rejects(service.list('weekly', 'open-world'), /Unknown ranked game/);
+    await assert.rejects(service.list('weekly', 'unimplemented-ranked-game'), /Unknown ranked game/);
 });
