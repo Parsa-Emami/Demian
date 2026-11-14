@@ -1,0 +1,120 @@
+name: Demian cPanel Laravel API (manual and gated)
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: "Isolated cPanel environment"
+        type: choice
+        required: true
+        options: [staging, production]
+      production_acknowledgement:
+        description: "Production only: DEPLOY_PRODUCTION_WITH_BACKUP"
+        type: string
+        required: false
+      backup_receipt:
+        description: "Independent encrypted offsite backup + restore receipt (production)"
+        type: string
+        required: false
+permissions:
+  contents: read
+concurrency:
+  group: demian-cpanel-${{ inputs.target }}
+  cancel-in-progress: false
+jobs:
+  verify:
+    uses: ./.github/workflows/arcade-backend.yml
+  package:
+    needs: verify
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: mbstring, dom, xml, pdo_mysql, curl, fileinfo
+          coverage: none
+      - name: Install locked PHP production dependencies
+        working-directory: demian
+        run: composer install --no-interaction --no-dev --prefer-dist --optimize-autoloader
+      - name: Prepare secure, backend-only Laravel artifact
+        shell: bash
+        working-directory: demian
+        run: |
+          set -Eeuo pipefail
+          # Never ship precomputed configuration/routes from a CI environment.
+          tar --exclude='bootstrap/cache/*.php' -czf "$RUNNER_TEMP/demian-cpanel.tar.gz" \
+            artisan app bootstrap config database routes resources/game \
+            resources/views src public/index.php public/.htaccess \
+            composer.json composer.lock vendor
+          test -s "$RUNNER_TEMP/demian-cpanel.tar.gz"
+          tar -tzf "$RUNNER_TEMP/demian-cpanel.tar.gz" > "$RUNNER_TEMP/cpanel-entries.txt"
+          if grep -Eq '(^|/)([.]env|[.]git)(/|$)' "$RUNNER_TEMP/cpanel-entries.txt"; then
+            echo "Forbidden metadata/secret in cPanel artifact" >&2; exit 1
+          fi
+          grep -Fx 'artisan' "$RUNNER_TEMP/cpanel-entries.txt" >/dev/null
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cpanel-api-release
+          path: ${{ runner.temp }}/demian-cpanel.tar.gz
+          if-no-files-found: error
+          retention-days: 2
+  deploy:
+    needs: package
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    environment:
+      name: cpanel-${{ inputs.target }}
+      url: ${{ vars.CPANEL_API_ORIGIN }}
+    env:
+      CPANEL_TARGET: ${{ inputs.target }}
+      CPANEL_CONFIRM: ${{ inputs.production_acknowledgement }}
+      BACKUP_RECEIPT: ${{ inputs.backup_receipt || '-' }}
+      CPANEL_HOST: ${{ vars.CPANEL_SSH_HOST }}
+      CPANEL_USER: ${{ vars.CPANEL_SSH_USER }}
+      CPANEL_ROOT: ${{ vars.CPANEL_API_ROOT }}
+      CPANEL_PHP_BIN: ${{ vars.CPANEL_PHP_BIN }}
+      CPANEL_API_ORIGIN: ${{ vars.CPANEL_API_ORIGIN }}
+      CPANEL_SSH_KEY: ${{ secrets.CPANEL_DEPLOY_SSH_KEY }}
+      CPANEL_KNOWN_HOSTS: ${{ secrets.CPANEL_SSH_KNOWN_HOSTS }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: cpanel-api-release
+          path: .cpanel-release
+      - name: Require separate production approval and hosting configuration
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          [[ "$CPANEL_HOST" =~ ^[A-Za-z0-9.-]+$ ]]
+          [[ "$CPANEL_USER" =~ ^[A-Za-z_][A-Za-z0-9_-]*$ ]]
+          [[ "$CPANEL_ROOT" == "/home/$CPANEL_USER/"* && "$CPANEL_ROOT" != *..* ]]
+          [[ "$CPANEL_PHP_BIN" =~ ^[A-Za-z0-9_./-]+$ ]]
+          url_re='^https://[A-Za-z0-9.-]+(:[0-9]+)?$'
+          [[ "$CPANEL_API_ORIGIN" =~ $url_re ]]
+          [[ -n "$CPANEL_SSH_KEY" && -n "$CPANEL_KNOWN_HOSTS" ]]
+          [[ "$BACKUP_RECEIPT" =~ ^[A-Za-z0-9_.:-]+$ ]]
+          if [[ "$CPANEL_TARGET" == production ]]; then
+            [[ "$CPANEL_CONFIRM" == DEPLOY_PRODUCTION_WITH_BACKUP ]]
+            [[ "$BACKUP_RECEIPT" != "-" && ${#BACKUP_RECEIPT} -ge 8 ]]
+          fi
+      - name: Securely upload and deploy as unprivileged cPanel user
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          key="$RUNNER_TEMP/cpanel_key"
+          hosts="$RUNNER_TEMP/cpanel_hosts"
+          printf '%s\n' "$CPANEL_SSH_KEY" > "$key"
+          printf '%s\n' "$CPANEL_KNOWN_HOSTS" > "$hosts"
+          chmod 600 "$key" "$hosts"
+          ssh_flags=(-i "$key" -o IdentitiesOnly=yes -o BatchMode=yes \
+            -o StrictHostKeyChecking=yes -o "UserKnownHostsFile=$hosts")
+          ssh "${ssh_flags[@]}" "$CPANEL_USER@$CPANEL_HOST" "mkdir -p '$CPANEL_ROOT/incoming'"
+          scp "${ssh_flags[@]}" .cpanel-release/demian-cpanel.tar.gz \
+            "$CPANEL_USER@$CPANEL_HOST:$CPANEL_ROOT/incoming/$GITHUB_SHA.tar.gz"
+          ssh "${ssh_flags[@]}" "$CPANEL_USER@$CPANEL_HOST" \
+            "bash -s -- '$GITHUB_SHA' '$CPANEL_ROOT' '$CPANEL_API_ORIGIN' '$CPANEL_TARGET' '$CPANEL_PHP_BIN' '$BACKUP_RECEIPT'" \
+            < demian/ops/cpanel/deploy.sh
+      - name: Public read-only API smoke (bounded)
+        run: node demian/tools/smoke_arcade_api.mjs --base-url="$CPANEL_API_ORIGIN/api/v1/arcade" --users=20 --p95-ms=1500

@@ -5,6 +5,9 @@ on:
       - '.github/workflows/mobile11-**'
       - '.github/workflows/deploy-demian-pages.yml'
       - 'demian/ops/mobile-11/**'
+      - 'demian/ops/cpanel/**'
+      - '.github/workflows/cpanel-api-deploy.yml'
+      - 'demian/tools/load/cpanel_50_active.js'
       - 'demian/tests/js/mobile/Mobile11Ops.test.js'
       - 'demian/tools/smoke_arcade_api.mjs'
       - 'demian/tools/load/**'
@@ -13,6 +16,8 @@ on:
     paths:
       - '.github/workflows/mobile11-**'
       - 'demian/ops/mobile-11/**'
+      - 'demian/ops/cpanel/**'
+      - '.github/workflows/cpanel-api-deploy.yml'
       - 'demian/tests/js/mobile/Mobile11Ops.test.js'
       - 'demian/tools/load/**'
 permissions:
@@ -30,8 +35,60 @@ jobs:
           bash -n demian/ops/mobile-11/release.sh
           bash -n demian/ops/mobile-11/backup_mysql.sh
           bash -n demian/ops/mobile-11/ci_mysql_restore.sh
+          bash -n demian/ops/cpanel/deploy.sh
       - name: Check approved read-only load profile
         run: node --check demian/tools/load/mobile11_read_only.js
+      - name: Validate actual 50-live-client load profile
+        run: |
+          node --check demian/tools/load/cpanel_50_active.js
+          node --check demian/tools/load/cpanel_50_writes_staging.js
       - name: Run release and integrity guard tests
         working-directory: demian
         run: node --test tests/js/mobile/Mobile11Ops.test.js
+
+  cpanel-runtime:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: mbstring, dom, xml, pdo_mysql, curl, fileinfo
+          coverage: none
+      - name: Locked production dependencies and API-only route isolation
+        working-directory: demian
+        env:
+          APP_ENV: production
+          APP_DEBUG: 'false'
+          APP_KEY: base64:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
+          DEMIAN_ARCADE_API_ONLY: 'true'
+          CACHE_STORE: array
+          DB_CONNECTION: sqlite
+          DB_DATABASE: ':memory:'
+        run: |
+          set -Eeuo pipefail
+          composer install --no-interaction --no-dev --prefer-dist --optimize-autoloader
+          php artisan optimize
+          php artisan route:list --json | php -r '
+            $routes = json_decode(stream_get_contents(STDIN), true);
+            if (!is_array($routes)) exit(1);
+            $hasApi = false;
+            foreach ($routes as $route) {
+              $uri = $route["uri"] ?? "";
+              if ($uri === "/" || $uri === "characters" ||
+                  str_starts_with($uri, "characters/")) exit(1);
+              if ($uri === "api/v1/arcade/health") $hasApi = true;
+            }
+            exit($hasApi ? 0 : 1);
+          '
+          # Never ship precomputed configuration/routes from a CI environment.
+          tar --exclude='bootstrap/cache/*.php' -czf "$RUNNER_TEMP/cpanel-api.tar.gz" \
+            artisan app bootstrap config database routes resources/game \
+            resources/views src public/index.php public/.htaccess \
+            composer.json composer.lock vendor
+          test -s "$RUNNER_TEMP/cpanel-api.tar.gz"
+          tar -tzf "$RUNNER_TEMP/cpanel-api.tar.gz" > "$RUNNER_TEMP/cpanel-entries.txt"
+          grep -Fx 'artisan' "$RUNNER_TEMP/cpanel-entries.txt" >/dev/null
+          if grep -Eq '(^|/)([.]env|[.]git)(/|$)' "$RUNNER_TEMP/cpanel-entries.txt"; then
+            echo "Forbidden secret file in release" >&2; exit 1
+          fi

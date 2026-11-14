@@ -2,6 +2,7 @@
 
 return [
     'rules_path' => resource_path('game/runner-rules.json'),
+    'api_only' => env('DEMIAN_ARCADE_API_ONLY', false),
     'replay_retention_days' => 30,
     'completion_grace_seconds' => 300,
     // An absolute limit on bearer capabilities, not a refresh-token grant.

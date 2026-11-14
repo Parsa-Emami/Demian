@@ -59,7 +59,12 @@ final class ArcadeRunService
                 $key = ['game_id' => $locked->game_id, 'rules_version' => $locked->rules_version,
                     'period_key' => $period, 'player_id' => $player->id];
                 $best = DB::table('arcade_leaderboard_entries')->where($key)->first();
-                if (! $best || $locked->score > $best->score) DB::table('arcade_leaderboard_entries')->updateOrInsert($key,
+                // For equal scores, an earlier-started verified run wins.
+                // This matches public ordering regardless of completion order.
+                $better = ! $best || $locked->score > $best->score
+                    || ($locked->score === (int) $best->score
+                        && $locked->started_at->lt(\Carbon\CarbonImmutable::parse($best->achieved_at, 'UTC')));
+                if ($better) DB::table('arcade_leaderboard_entries')->updateOrInsert($key,
                     ['run_id' => $locked->id, 'score' => $locked->score, 'achieved_at' => $locked->started_at]);
             }
 

@@ -309,4 +309,30 @@ final class ArcadePlatformTest extends TestCase
         $this->getJson('/api/v1/arcade/player')->assertUnauthorized();
     }
 
+
+    public function test_equal_score_uses_earliest_started_verified_run_even_when_completed_second(): void
+    {
+        $this->travelTo(CarbonImmutable::parse('2026-11-17T12:00:00Z'));
+        $player = $this->identity('Tie Runner');
+        $fixture = $this->fixtures()[0];
+        $earlier = $this->createRun($player, $fixture);
+        $later = $this->createRun($player, $fixture);
+        $baseSeconds = (int) ceil($fixture['ticks'] / 60) + 15;
+        $earlyAt = now()->subSeconds($baseSeconds + 60);
+        $lateAt = now()->subSeconds($baseSeconds);
+        ArcadeRun::query()->findOrFail($earlier['run_id'])->update(['started_at' => $earlyAt]);
+        ArcadeRun::query()->findOrFail($later['run_id'])->update(['started_at' => $lateAt]);
+        $this->withToken($player['token'])
+            ->postJson('/api/v1/arcade/runs/'.$later['run_id'].'/complete', $this->payload($fixture))
+            ->assertOk();
+        $this->postJson('/api/v1/arcade/runs/'.$earlier['run_id'].'/complete', $this->payload($fixture))
+            ->assertOk();
+        $entries = DB::table('arcade_leaderboard_entries')
+            ->where('player_id', $player['player_id'])->get();
+        $this->assertCount(3, $entries);
+        foreach ($entries as $entry) {
+            $this->assertSame($earlier['run_id'], $entry->run_id);
+        }
+    }
+
 }
