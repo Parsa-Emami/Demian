@@ -84,16 +84,6 @@ for (frame = 1; frame <= 7200; frame++) {
             input.z = dz / length;
         }
     }
-    // Original-game ranked contract: quantize the player's input BEFORE
-    // advancing the actual source model so PHP sees identical axes.
-    input.x = Math.round(input.x * 1000) / 1000;
-    input.z = Math.round(input.z * 1000) / 1000;
-    const control = [frame, input.x, input.z, Number(Boolean(input.run)),
-        Number(Boolean(input.interact))];
-    if (!previousControl
-        || control.slice(1).some((value,index) => value !== previousControl[index+1])
-    ) transitions.push(control);
-    previousControl = control;
     // Differential stress path: provoke a REAL source-model spill by a hard
     // reverse under high carrying speed, then let the game recover naturally.
     if (scenario === 'spill' && !deliberateSpill && model.tray) {
@@ -110,6 +100,16 @@ for (frame = 1; frame <= 7200; frame++) {
             carryingFrames++;
         }
     }
+    // Original-game ranked contract: quantize the player's input BEFORE
+    // advancing the actual source model so PHP sees identical axes.
+    input.x = Math.round(input.x * 1000) / 1000;
+    input.z = Math.round(input.z * 1000) / 1000;
+    const control = [frame, input.x, input.z, Number(Boolean(input.run)),
+        Number(Boolean(input.interact))];
+    if (!previousControl
+        || control.slice(1).some((value,index) => value !== previousControl[index+1])
+    ) transitions.push(control);
+    previousControl = control;
     // Snapshot the actual engine position immediately before interaction.
     // The interaction itself takes the next tick, preserving strict ordering.
     if (input.interact && frame > 1 && (actions.at(-1)?.tick ?? -1) < frame - 1) {
