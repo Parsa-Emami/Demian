@@ -70,8 +70,12 @@ export default class ArcadeLeaderboardService {
         // Replay evidence is never a client score; restore only for the same account.
         this.pending = saved
             && typeof saved.id === 'string' && /^[0-9a-f-]{36}$/i.test(saved.id)
-            && Number.isInteger(saved.body?.ticks) && Array.isArray(saved.body?.transitions)
-            && saved.body.transitions.length > 0 && saved.body.transitions.length <= 12000
+            && Number.isInteger(saved.body?.ticks)
+            && (saved.kind === 'turn'
+                ? Array.isArray(saved.body?.actions) && saved.body.actions.length >= 12
+                    && saved.body.actions.length <= 240
+                : Array.isArray(saved.body?.transitions) && saved.body.transitions.length > 0
+                    && saved.body.transitions.length <= 12000)
             ? saved : null;
     }
     savePending(pending) {
@@ -218,6 +222,49 @@ export default class ArcadeLeaderboardService {
             return { mode: 'practice', seed: Date.now(), track_width: width, reason: 'ارتباط آنلاین برقرار نشد؛ این دور روی دستگاه ثبت می‌شود.' };
         }
     }
+    async startTurnRun(gameId = 'cafe-critters') {
+        const practice = { mode: 'practice', reason: 'این بازی در حالت تمرینی اجرا می‌شود.' };
+        if (gameId !== 'cafe-critters' || !this.connected) return practice;
+        if (this.needsAccountRestore) return { ...practice,
+            reason: 'برای ارسال امتیاز آنلاین ابتدا حساب اصلی را بازیابی کن.' };
+        if (this.pending) {
+            await this.retry();
+            if (this.pending) return { ...practice,
+                reason: 'ثبت مدرک قبلی هنوز نهایی نشده است.' };
+        }
+        try {
+            await this.ensureIdentity();
+            const response = await this.request('/turn-runs', {
+                method: 'POST', authenticated: true,
+                body: { request_id: crypto.randomUUID(), game_id: gameId,
+                    rules_version: 'cafe-critters-replay-v1' },
+            });
+            if (response.game_id !== gameId
+                || response.rules_version !== 'cafe-critters-replay-v1'
+                || !Number.isSafeInteger(response.seed)) throw new Error('نسخه یا بذر سرور نامعتبر است.');
+            return { ...response, mode: 'ranked' };
+        } catch (error) {
+            if (error.status === 401) {
+                this.identity = null;
+                safeWrite(this.identityStorage, this.identityKey, null);
+            }
+            return practice;
+        }
+    }
+    async finishTurnRun(run, actions, ticks) {
+        if (run?.mode !== 'ranked' || run.game_id !== 'cafe-critters'
+            || !Array.isArray(actions) || !Number.isInteger(ticks)) {
+            return { status: 'practice' };
+        }
+        const durable = this.savePending({ id: run.run_id, kind: 'turn',
+            body: { ticks, actions: actions.map(action => ({ ...action })) },
+            player_id: this.identity?.player_id });
+        const result = await this.retry();
+        return !durable && result.status !== 'verified'
+            ? { status: 'pending', retryable: true,
+                message: 'مدرک بازپخش هنوز ذخیره و ارسال نشده است.' }
+            : result;
+    }
     localScores() {
         const rows = safeRead(this.storage, LOCAL_KEY, []);
         return Array.isArray(rows) ? rows.filter(row => Number.isFinite(row.score) && typeof row.display_name === 'string' && typeof row.achieved_at === 'string') : [];
@@ -253,7 +300,8 @@ export default class ArcadeLeaderboardService {
             message: 'برای ارسال این مدرک، حساب اصلی را بازیابی کن.' };
         const pending = this.pending;
         try {
-            const result = await this.request(`/runs/${encodeURIComponent(pending.id)}/complete`, { method: 'POST', authenticated: true, body: pending.body });
+            const prefix = pending.kind === 'turn' ? 'turn-runs' : 'runs';
+            const result = await this.request(`/${prefix}/${encodeURIComponent(pending.id)}/complete`, { method: 'POST', authenticated: true, body: pending.body });
             if (this.pending === pending) this.savePending(null);
             return result;
         } catch (error) {
