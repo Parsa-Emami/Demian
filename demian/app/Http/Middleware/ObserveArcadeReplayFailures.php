@@ -18,18 +18,19 @@ use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
  */
 final class ObserveArcadeReplayFailures
 {
-    public function handle(Request $request, Closure $next,
-        ArcadeAntiCheat $antiCheat): Response
+    public function __construct(private readonly ArcadeAntiCheat $antiCheat) {}
+
+    public function handle(Request $request, Closure $next): Response
     {
         try {
             $response = $next($request);
         } catch (\Throwable $error) {
             $code = $error instanceof ValidationException ? 422
                 : ($error instanceof HttpExceptionInterface ? $error->getStatusCode() : 0);
-            $this->record($antiCheat, $request, $code);
+            $this->record($this->antiCheat, $request, $code);
             throw $error;
         }
-        $this->record($antiCheat, $request, $response->getStatusCode());
+        $this->record($this->antiCheat, $request, $response->getStatusCode());
         return $response;
     }
 
