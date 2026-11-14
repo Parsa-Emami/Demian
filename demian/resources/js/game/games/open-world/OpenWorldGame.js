@@ -21,6 +21,7 @@ import OpenWorldChunkRenderer from './render/OpenWorldChunkRenderer.js';
 import OpenWorldPixelRenderer from './render/OpenWorldPixelRenderer.js';
 import AiBudgetScheduler from './entities/AiBudgetScheduler.js';
 import WorldDiscovery from './world/WorldDiscovery.js';
+import { worldChallengeLocked, applySavePoint } from './world/RankedWorldPolicy.js';
 import RankedRouteChallenge from '../../leaderboard/RankedRouteChallenge.js';
 import OpenWorldSaveStore from './persistence/OpenWorldSaveStore.js';
 import SavePointSystem from './persistence/SavePointSystem.js';
@@ -284,19 +285,19 @@ export default class OpenWorldGame extends BaseGame {
                 priority: 3,
                 metadata: { kind: 'save-point', point },
                 action: () => {
-                    if (this.worldChallengeLocked()) {
-                        // A ranked checkpoint is a transient server-verifiable
-                        // interaction, NOT a persistent local save/fast-travel unlock.
-                        const accepted = this.routeChallenge?.state === 'running'
-                            && this.routeChallenge.checkpoint(point.id);
-                        this.context.app.shell.toast(accepted
+                    const outcome = applySavePoint({
+                        challenge: this.routeChallenge, pointId: point.id,
+                        save: id => this.savePoints.activate(id),
+                    });
+                    if (outcome.ranked) {
+                        this.context.app.shell.toast(outcome.accepted
                             ? `مقصد رقابتی «${point.label}» ثبت شد.`
-                            : 'این نقطه مقصد فعلی چالش نیست.', accepted ? 'success' : 'info');
-                        return accepted;
+                            : 'این نقطه مقصد فعلی چالش نیست.',
+                        outcome.accepted ? 'success' : 'info');
+                    } else {
+                        this.context.app.shell.toast(`${point.label} فعال و بازی ذخیره شد.`, 'success');
                     }
-                    this.savePoints.activate(point.id);
-                    this.context.app.shell.toast(`${point.label} فعال و بازی ذخیره شد.`, 'success');
-                    return true;
+                    return outcome.accepted;
                 },
             });
         });
@@ -325,7 +326,7 @@ export default class OpenWorldGame extends BaseGame {
 
     /** No persisted progression, teleport, quick-save, or map access during a ranked run. */
     worldChallengeLocked() {
-        return ['starting', 'running', 'submitting'].includes(this.routeChallenge?.state);
+        return worldChallengeLocked(this.routeChallenge);
     }
 
     async fastTravel(point) {
