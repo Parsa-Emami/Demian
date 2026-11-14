@@ -42,7 +42,8 @@ jobs:
         working-directory: demian
         run: |
           set -Eeuo pipefail
-          tar -czf "$RUNNER_TEMP/demian-cpanel.tar.gz" \
+          # Never ship precomputed configuration/routes from a CI environment.
+          tar --exclude='bootstrap/cache/*.php' -czf "$RUNNER_TEMP/demian-cpanel.tar.gz" \
             artisan app bootstrap config database routes resources/game \
             resources/views src public/index.php public/.htaccess \
             composer.json composer.lock vendor
