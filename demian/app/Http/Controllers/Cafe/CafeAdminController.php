@@ -108,6 +108,8 @@ final class CafeAdminController extends Controller
 
         return view('cashier.audit', [
             'staff' => $staff, 'result' => $audit->inspect(),
+            'events' => DB::table('arcade_cashier_admin_events')->orderByDesc('id')
+                ->limit(50)->get(['id', 'actor_id', 'subject_id', 'event_type', 'created_at']),
         ]);
     }
 
