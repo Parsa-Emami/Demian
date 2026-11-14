@@ -255,4 +255,25 @@ final class CafeRouteChallengeReplayTest extends TestCase
             $this->assertFalse(app(RankedGameCatalog::class)->supportsPrizes($game));
         }
     }
+
+    public function test_route_only_scores_are_not_eligible_for_real_coupons_even_when_flags_are_enabled(): void
+    {
+        $catalog = app(RankedGameCatalog::class);
+        foreach (self::GAMES as $game) {
+            config()->set('demian-arcade.route_ranked_enabled.'.$game, true);
+            config()->set('demian-arcade.route_prizes_enabled.'.$game, true);
+
+            $this->assertTrue($catalog->supportsRanked($game));
+            $this->assertFalse($catalog->supportsPrizes($game),
+                'A route trial must not award an original-game coupon: '.$game);
+            $entry = collect($catalog->publicList())
+                ->firstWhere('game_id', $game);
+            $this->assertSame('route-trial', $entry['ranked_scope']);
+            $this->assertSame('server-replay', $entry['verification']);
+        }
+        $dino = collect($catalog->publicList())->firstWhere('game_id', 'dino-run');
+        $this->assertSame('original-game', $dino['ranked_scope']);
+        $this->assertTrue($catalog->supportsPrizes('dino-run'));
+    }
+
 }

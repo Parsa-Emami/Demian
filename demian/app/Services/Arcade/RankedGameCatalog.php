@@ -22,6 +22,8 @@ final class RankedGameCatalog
     {
         return array_map(
             fn (string $id, array $game): array => ['game_id' => $id, ...$game,
+                'ranked_scope' => isset(CafeRouteReplayVerifier::VERSIONS[$id])
+                    ? 'route-trial' : 'original-game',
                 ...(in_array($id, ['cafe-critters', 'coffee-crash', 'after-hours', 'cafe-rush', 'open-world'], true) && $this->supportsRanked($id)
                     ? ['ranked' => true, 'verification' => 'server-replay'] : [])],
             array_keys(self::GAMES),
@@ -49,8 +51,9 @@ final class RankedGameCatalog
             'dino-run' => true,
             'cafe-critters' => config('demian-arcade.critters_prizes_enabled') === true,
             'coffee-crash' => config('demian-arcade.coffee_prizes_enabled') === true,
-            'after-hours', 'cafe-rush', 'open-world' =>
-                config('demian-arcade.route_prizes_enabled.'.$id) === true,
+            // A separate route challenge cannot authorize coupons for the original game.
+            // Until real-game replay and anti-bot acceptance, this is code-locked OFF.
+            'after-hours', 'cafe-rush', 'open-world' => false,
             default => false,
         };
     }

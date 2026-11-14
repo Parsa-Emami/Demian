@@ -2,16 +2,16 @@
 
 ## Scope and truthful implementation status
 
-The roadmap requires replay/score verification on **five games beyond Dino Run**. This incremental change ships two real, versioned, independently replayed backends. It does NOT complete all five. Games without an end-to-end deterministic verifier MUST stay unranked and must not enter the weekly coupon selection.
+The roadmap requires replay/score verification on **five games beyond Dino Run**. The original-game scoring milestone is still **2/5**: Café Critters and Coffee Crash have deterministic server verifiers. A subsequent commit added **three separately labeled, bounded route-trial challenges** for After Hours, Café Rush and Open World. Their independent route results do **not** verify the original games' scores, and this phase is not complete. Games without an end-to-end deterministic verifier MUST stay unranked and must not enter the weekly coupon selection.
 
 | Game | Status | Evidence / limitation |
 | --- | --- | --- |
 | Dino Run | Existing production-tested verifier | Fixed-tick physics, runner replay with server-generated seed |
 | Café Critters | Implemented, gated OFF by default | Every valid action (`select`, `invite`, `next`), 3 canonical guests, server-generated rotation, strict ticks and terminal proof; standard difficulty only |
 | Coffee Crash | Implemented, gated OFF by default | Server-issued seed, actual 7x8 board, xorshift32, swaps, cascades, specials, undo, score and level-1 terminal proof; PHP scorer compared with real JS model across multiple seeds |
-| After Hours | **NOT VERIFIED / NOT RANKED** | Requires server-side replay of map collisions, shadow AI, power state, cards, physics and elapsed time for each difficulty |
-| Café Rush | **NOT VERIFIED / NOT RANKED** | Requires server-side simulation of path collision, orders, ticket timing, preparation, tray physics, spills and combos |
-| Open World | **NOT VERIFIED / NOT RANKED** | Exploratory world has no approved finite competitive score/round. First define a signed-off score objective and replayable deterministic event/physics model |
+| After Hours | **Route-trial verifier only (OFF by default); original game UNVERIFIED** | Separate FBX-collision route challenge exists, but the original shadow AI, power state, cards, physics and difficulty-specific scoring are not reconstructed |
+| Café Rush | **Route-trial verifier only (OFF by default); original game UNVERIFIED** | Separate station-route challenge exists, not the original orders, ticket schedule, preparation, tray physics, spills and combos |
+| Open World | **Route-trial verifier only (OFF by default); original exploration UNRANKED** | Independent finite three-checkpoint challenge exists; unrestricted exploratory progress is never accepted as a score-bearing round |
 
 ## Server-authoritative contract
 
@@ -60,4 +60,10 @@ Never turn these on merely because a CI run is green. On first enable, both the 
 
 **Open World**: product sign-off for a bounded competitive objective first; separate offline exploration progress from verified timed challenge; implement finite world state, signed seed and server challenge replay before eligibility.
 
-Status is incremental: **2/5 implemented behind disabled rollout gates; 3/5 remain outstanding**. GitHub Pages publishing a frontend is NOT proof of live Laravel hosting, real MySQL production acceptance, or anti-bot fairness.
+Status is incremental: **2/5 original-game verifiers implemented behind disabled rollout gates; 3/5 original-game verifiers remain outstanding**. The additional route-trial modes do not close Issue #39. Route trials expose `ranked_scope: route-trial` in the public game catalog. Their financial prize eligibility is **hard-coded FALSE**, even if a legacy `DEMIAN_*_ROUTE_PRIZES` environment flag is set. This invariant must remain until original-game parity, abuse review, physical UAT and explicit commercial release approval.
+
+## Next phase after finishing Step 09
+
+**Phase 2 · Step 10 — General Anti-Cheat.** Once all five original-game replay verifiers are complete and their tests pass: add audited suspicious activity reports (`CheatReports` or existing equivalent), bounded per-account/IP velocity detection, anomaly scoring with documented false-positive policy, controlled quarantine and review/appeal workflows, replay evidence retention, abuse dashboards, rate limits and incident alerts. Never auto-revoke a verified score or real coupon on an unreviewed heuristic alone.
+
+**Step 09 exit criteria (still unmet):** headless deterministic original-game rules for After Hours and Café Rush with JS/PHP parity across difficulties; an explicitly product-approved finite original Open World competition; replay invalidation and concurrency tests; QA and authorized anti-bot acceptance; operator approval before enabling financial prizes. GitHub Pages publishing a frontend is NOT proof of live Laravel hosting, real MySQL production acceptance, or anti-bot fairness.

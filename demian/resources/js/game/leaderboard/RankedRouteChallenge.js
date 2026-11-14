@@ -1,4 +1,4 @@
-import { cafeRouteGoals, CAFE_ROUTE_LIMITS } from './CafeRouteGoalCatalog.js';
+import { cafeRouteGoals, CAFE_ROUTE_LIMITS, CAFE_ROUTE_VERSIONS } from './CafeRouteGoalCatalog.js';
 
 /**
  * Explicit opt-in timed route challenge. The original casual game keeps its
@@ -73,11 +73,21 @@ export default class RankedRouteChallenge {
             if (run?.mode !== 'ranked') throw new Error(
                 'چالش رقابتی هنوز فعال نیست. می‌توانی بازی را تمرینی ادامه بدهی.'
             );
+            // A stale client must never record an authoritative replay against a
+            // different rules version or route geometry, even if IDs still match.
+            if (run.game_id !== this.gameId
+                || run.rules_version !== CAFE_ROUTE_VERSIONS[this.gameId]
+                || !Number.isSafeInteger(run.seed) || run.seed < 0) {
+                throw new Error('نسخه یا شناسه چالش سرور با بازی مطابقت ندارد.');
+            }
             const goals = cafeRouteGoals(this.gameId, run.seed);
-            if (Array.isArray(run.goals) && (
-                run.goals.length !== goals.length
-                || run.goals.some((goal, i) => goal.id !== goals[i].id)
-            )) throw new Error('قوانین سرور و کلاینت همخوان نیست.');
+            if (!Array.isArray(run.goals) || run.goals.length !== goals.length
+                || run.goals.some((goal, i) => !goal
+                    || goal.id !== goals[i].id
+                    || !Number.isFinite(goal.x) || !Number.isFinite(goal.z)
+                    || Math.abs(goal.x - goals[i].x) > 1e-5
+                    || Math.abs(goal.z - goals[i].z) > 1e-5)
+            ) throw new Error('قوانین سرور و کلاینت همخوان نیست.');
             await this.onStart?.(run);
             if (nonce !== this.nonce) return;
             this.run = run;

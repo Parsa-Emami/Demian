@@ -114,3 +114,31 @@ test('stale route requests cannot resurrect a disposed run', async () => {
     assert.equal(trial.state, 'idle');
     assert.deepEqual(trial.actions, []);
 });
+
+test('server challenge must have the same game/version and exact seed-based goal coordinates', async () => {
+    const goals = cafeRouteGoals('open-world', 7);
+    const run = {
+        mode: 'ranked', game_id: 'open-world',
+        rules_version: CAFE_ROUTE_VERSIONS['open-world'], seed: 7,
+        goals,
+    };
+    for (const override of [
+        { rules_version: 'stale-untrusted-version' },
+        { game_id: 'after-hours' },
+        { seed: -1 },
+        { goals: goals.map((goal, index) => index === 0
+            ? { ...goal, x: goal.x + 1 } : goal) },
+        { goals: undefined },
+    ]) {
+        const context = { app: { sessionState: 'playing' },
+            services: { leaderboards: { startTurnRun: async () => ({ ...run, ...override }) } } };
+        const trial = new RankedRouteChallenge({
+            context, gameId: 'open-world',
+            position: () => ({ x: .36, z: -4.68 }),
+        });
+        await trial.start();
+        assert.equal(trial.state, 'idle');
+        assert.equal(trial.run, null);
+        assert.deepEqual(trial.actions, []);
+    }
+});

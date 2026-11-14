@@ -14,6 +14,8 @@ return [
         'cafe-rush' => (bool) env('DEMIAN_CAFE_RUSH_ROUTE_RANKED', false),
         'open-world' => (bool) env('DEMIAN_OPEN_WORLD_ROUTE_RANKED', false),
     ],
+    // Legacy operator variables are intentionally NON-OPERATIVE: route-only proofs
+    // are not certified original-game scores, so even true cannot issue coupons.
     'route_prizes_enabled' => [
         'after-hours' => (bool) env('DEMIAN_AFTER_HOURS_ROUTE_PRIZES', false),
         'cafe-rush' => (bool) env('DEMIAN_CAFE_RUSH_ROUTE_PRIZES', false),
