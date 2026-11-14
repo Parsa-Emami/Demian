@@ -647,6 +647,13 @@
                         <p class="ranking-panel__refresh-info">رتبه‌ها هر ۶۰ ثانیه به‌روزرسانی می‌شوند؛ رکوردها پس از پایان هفته آرشیو می‌شوند.</p>
                         <div class="ranking-panel__scroll"><table><thead><tr><th scope="col">رتبه</th><th scope="col">بازیکن</th><th scope="col">امتیاز</th></tr></thead><tbody data-ranking-rows></tbody></table></div>
                         <form data-ranking-name-form><label for="ranking-name">نام نمایشی</label><div><input id="ranking-name" name="display_name" minlength="2" maxlength="32" required autocomplete="nickname"><button type="submit" class="shell-button">ذخیره</button></div></form>
+                        <section data-ranking-rewards class="ranking-panel__rewards" aria-label="جوایز کافه">
+                            <h3>کدهای تخفیف من</h3>
+                            <p class="ranking-panel__refresh-info">کد و درصد تخفیف فقط برای صاحب حساب نمایش داده می‌شود. هنگام خرید حضوری آن را به صندوق‌دار کافه نشان دهید.</p>
+                            <p data-ranking-reward-status role="status" aria-live="polite">برای دیدن جوایز، حساب آنلاین خود را بازیابی کنید.</p>
+                            <ul data-ranking-reward-list></ul>
+                            <button type="button" data-ranking-reward-refresh class="shell-button shell-button--ghost">به‌روزرسانی جوایز</button>
+                        </section>
                         <div data-ranking-recovery>
                             <p>بازیابی حساب روی دستگاه دیگر (فقط با کد یک‌بارمصرف؛ بدون شمارهٔ تلفن)</p>
                             <button type="button" data-ranking-issue-recovery class="shell-button shell-button--ghost">ساخت لینک بازیابی یک‌بارمصرف</button>

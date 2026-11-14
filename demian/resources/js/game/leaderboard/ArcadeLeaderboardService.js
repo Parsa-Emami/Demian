@@ -278,6 +278,19 @@ export default class ArcadeLeaderboardService {
         await this.ensureIdentity();
         return this.request('/player', { authenticated: true });
     }
+    async myCoupons() {
+        if (!this.connected || !this.identity?.token) return [];
+        try {
+            const data = await this.request('/player/coupons', { authenticated: true });
+            return Array.isArray(data.data) ? data.data : [];
+        } catch (error) {
+            if (error.status === 401) {
+                this.identity = null;
+                safeWrite(this.identityStorage, this.identityKey, null);
+            }
+            throw error;
+        }
+    }
     async personalBest(period = 'weekly') {
         if (!this.connected || !this.identity?.token) return null;
         try {

@@ -1,3 +1,8 @@
+> SUPERSEDED for live redemption: Phase 9 uses an authenticated physical cafe cashier,
+> NOT an online merchant API. The online routes below have been removed (404).
+> Use IN_CAFE_COUPONS_PHASE_9.md in this directory for current operation.
+> The old integration below is retained as a historical design record only.
+
 # Phase 8 — Secure, single-use checkout coupons
 
 ## Scope and activation
