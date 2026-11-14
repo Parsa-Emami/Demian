@@ -223,4 +223,42 @@ final class CouponIssuanceTest extends TestCase
         ])->assertSuccessful();
         $this->assertDatabaseCount('arcade_coupons', 1);
     }
+
+    public function test_account_erasure_purges_encrypted_capability_and_audit_stays_valid(): void
+    {
+        $players = $this->sealed(1);
+        $this->issue();
+        $this->assertNotNull(DB::table('arcade_coupons')->value('code_ciphertext'));
+        $this->withToken($players[0]['token'])
+            ->deleteJson('/api/v1/arcade/player')->assertOk();
+        $this->assertNull(DB::table('arcade_coupons')->value('code_ciphertext'));
+        $this->assertDatabaseHas('arcade_coupons', ['status' => 'revoked', 'player_id' => null]);
+        $this->assertSame('passed', app(\App\Services\Arcade\CouponLedgerAudit::class)->inspect()['status']);
+        $this->artisan('arcade:audit-coupons', ['--json' => true])->assertSuccessful();
+    }
+
+    public function test_readonly_coupon_ledger_audit_detects_modified_digest(): void
+    {
+        $this->sealed(1);
+        $this->issue();
+        $audit = app(\App\Services\Arcade\CouponLedgerAudit::class);
+        $this->assertSame('passed', $audit->inspect()['status']);
+        DB::table('arcade_coupons')->update(['code_hash' => str_repeat('a', 64)]);
+        $this->assertSame('failed', $audit->inspect()['status']);
+        $this->artisan('arcade:audit-coupons', ['--json' => true])->assertFailed();
+    }
+
+    public function test_operator_revocation_destroys_secret_without_erasing_ledger(): void
+    {
+        $this->sealed(1);
+        $this->issue();
+        $id = (int) DB::table('arcade_coupons')->value('id');
+        $this->artisan('arcade:revoke-coupon', [
+            '--id' => (string) $id, '--reason' => 'fraud', '--apply' => true,
+        ])->assertSuccessful();
+        $this->assertNull(DB::table('arcade_coupons')->where('id', $id)->value('code_ciphertext'));
+        $this->assertSame('passed', app(\App\Services\Arcade\CouponLedgerAudit::class)->inspect()['status']);
+        $this->assertDatabaseCount('arcade_coupons', 1);
+    }
+
 }
