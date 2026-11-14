@@ -38,7 +38,7 @@ final class CouponLedgerAudit
                     || ! DB::table('arcade_cashier_admin_events')
                         ->where('actor_id', $gift?->issuer_id)
                         ->where('event_type', 'coupon_gift_issued')
-                        ->where('details', 'like', '%"gift_id":'.$gift?->id.'%')->exists()) {
+                        ->where('details->gift_id', $gift?->id)->exists()) {
                     $issues[] = "Coupon #{$id} has invalid manual gift provenance.";
                 }
             } elseif ($coupon->source === 'weekly') {
