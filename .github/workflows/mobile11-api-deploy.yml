@@ -84,7 +84,8 @@ jobs:
           [[ "$API_HOST" =~ ^[A-Za-z0-9.-]+$ ]]
           [[ "$API_USER" =~ ^[A-Za-z_][A-Za-z0-9_-]*$ ]]
           [[ "$API_ROOT" =~ ^/srv/[A-Za-z0-9_./-]+$ && "$API_ROOT" != *..* ]]
-          [[ "$API_BASE_URL" =~ ^https://[A-Za-z0-9.-]+(:[0-9]+)?$ ]]
+          url_re='^https://[A-Za-z0-9.-]+(:[0-9]+)?$'
+          [[ "$API_BASE_URL" =~ $url_re ]]
           [[ -n "$SSH_KEY" && -n "$SSH_KNOWN_HOSTS" ]]
           [[ "$BACKUP_RECEIPT" =~ ^[A-Za-z0-9_.:-]+$ ]]
           if [[ "$DEPLOY_TARGET" == production ]]; then
