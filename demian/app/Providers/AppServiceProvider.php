@@ -81,5 +81,20 @@ class AppServiceProvider extends ServiceProvider
 
             return Limit::perMinute(2)->by('arcade-profile-delete:'.$subject);
         });
+        RateLimiter::for('arcade-cashier-login', static fn (Request $request): array => [
+            Limit::perMinute(5)->by('cashier:login:ip:'.$request->ip()),
+            Limit::perMinute(5)->by('cashier:login:username:'.
+                hash('sha256', strtolower((string) $request->input('username')))),
+        ]);
+        RateLimiter::for('arcade-cashier-lookup', static fn (Request $request): array => [
+            Limit::perMinute(20)->by('cashier:lookup:session:'.hash('sha256',
+                (string) $request->session()->get('cafe_staff_id'))),
+            Limit::perMinute(120)->by('cashier:lookup:ip:'.$request->ip()),
+        ]);
+        RateLimiter::for('arcade-cashier-redeem', static fn (Request $request): array => [
+            Limit::perMinute(10)->by('cashier:redeem:session:'.hash('sha256',
+                (string) $request->session()->get('cafe_staff_id'))),
+            Limit::perMinute(120)->by('cashier:redeem:ip:'.$request->ip()),
+        ]);
     }
 }
