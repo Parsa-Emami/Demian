@@ -25,6 +25,13 @@ The roadmap requires replay/score verification on **five games beyond Dino Run**
 
 DEMIAN_ARCADE_CRITTERS_RANKED_ENABLED=false
 DEMIAN_ARCADE_COFFEE_RANKED_ENABLED=false
+DEMIAN_ARCADE_CRITTERS_PRIZES_ENABLED=false
+DEMIAN_ARCADE_COFFEE_PRIZES_ENABLED=false
+
+**Prize flags are separate from ranked verification flags.** A game can have a verified
+weekly score and a complete settlement snapshot without being selected for financial
+coupon rewards. `WeeklySettlementService` filters the award selector using
+`RankedGameCatalog::supportsPrizes`, not merely `supportsRanked`.
 
 Never turn these on merely because a CI run is green. On first enable, both the browser build and PHP verifier version must be deployed together, and the commercial operator must sign off on their fairness and prize eligibility. Do NOT switch the gate off while a week containing that game's verified records remains open/awaiting settlement, or the fail-closed weekly seal may abort; coordinate a versioned rollout at a season boundary.
 
