@@ -9,6 +9,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Symfony\Component\Process\Process;
 use Tests\TestCase;
 
 final class CafeCrittersRankedReplayTest extends TestCase
@@ -257,4 +258,21 @@ final class CafeCrittersRankedReplayTest extends TestCase
         $this->assertSame(['dino-run', 'cafe-critters'],
             array_values(array_map(fn (array $x) => $x['game_id'], $ranked)));
     }
+    public function test_real_javascript_critters_model_actions_match_php_for_six_seeds(): void
+    {
+        $process = new Process(['node', base_path('tools/generate_critters_replay_fixtures.mjs')]);
+        $process->run();
+        $this->assertTrue($process->isSuccessful(), $process->getErrorOutput());
+        $cases = json_decode($process->getOutput(), true, flags: JSON_THROW_ON_ERROR);
+        $this->assertCount(6, $cases);
+        foreach ($cases as $case) {
+            $this->assertSame($case['target_ids'],
+                app(CafeCrittersReplayVerifier::class)->targetIds($case['seed']));
+            $this->assertSame($case['expected'],
+                app(CafeCrittersReplayVerifier::class)->verify(
+                    $case['seed'], $case['ticks'], $case['actions']
+                ));
+        }
+    }
+
 }
