@@ -10,6 +10,11 @@ const deploy = read('../../../../.github/workflows/mobile11-api-deploy.yml');
 const load = read('../../../tools/load/mobile11_read_only.js');
 const pages = read('../../../../.github/workflows/deploy-demian-pages.yml');
 const nginx = read('../../../ops/mobile-11/nginx.conf.example');
+const cpanelRelease = read('../../../ops/cpanel/deploy.sh');
+const cpanelWorkflow = read('../../../../.github/workflows/cpanel-api-deploy.yml');
+const cpanelLoad = read('../../../tools/load/cpanel_50_active.js');
+const webRoutes = read('../../../routes/web.php');
+
 
 test('production deployment is manual, gated and pinned to explicit SSH host keys', () => {
     assert.match(deploy, /workflow_dispatch:/);
@@ -106,4 +111,33 @@ test('public API reverse proxy must never expose administrative web routes', () 
     assert.match(nginx, /location \/ \{ return 404; \}/);
     assert.match(nginx, /location ~ \\\.php\$ \{ return 404; \}/);
     assert.match(nginx, /Strict-Transport-Security/);
+});
+
+test('cPanel deployment requires a user-owned home, explicit PHP binary and API-only host', () => {
+    assert.match(cpanelRelease, /\$HOME/);
+    assert.match(cpanelRelease, /DEMIAN_ARCADE_API_ONLY=true/);
+    assert.match(cpanelRelease, /route:list --json/);
+    assert.match(cpanelRelease, /artisan optimize/);
+    assert.match(cpanelRelease, /artisan migrate --force/);
+    assert.match(cpanelRelease, /arcade:integrity --json/);
+    assert.match(cpanelRelease, /rollback\(\)/);
+    assert.match(cpanelRelease, /origin.*api\/v1\/arcade\/health/);
+});
+test('cPanel CI deployment is manual, approved, pinned to known hosts and packages no .env', () => {
+    assert.match(cpanelWorkflow, /workflow_dispatch:/);
+    assert.doesNotMatch(cpanelWorkflow, /\n  push:/);
+    assert.match(cpanelWorkflow, /cpanel-\$\{\{ inputs.target \}\}/);
+    assert.match(cpanelWorkflow, /CPANEL_SSH_KNOWN_HOSTS/);
+    assert.match(cpanelWorkflow, /StrictHostKeyChecking=yes/);
+    assert.match(cpanelWorkflow, /DEPLOY_PRODUCTION_WITH_BACKUP/);
+    assert.match(cpanelWorkflow, /--no-dev/);
+    assert.match(cpanelWorkflow, /public\/index.php public\/\.htaccess/);
+    assert.match(webRoutes, /demian-arcade\.api_only/);
+});
+test('50 concurrent VUs remain staging-only and read-only', () => {
+    assert.match(cpanelLoad, /vus: 50/);
+    assert.match(cpanelLoad, /DEMIAN_TARGET/);
+    assert.match(cpanelLoad, /DEMIAN_LOAD_APPROVED/);
+    assert.doesNotMatch(cpanelLoad, /http\.post\s*\(/);
+    assert.doesNotMatch(cpanelLoad, /http\.del\s*\(/);
 });
