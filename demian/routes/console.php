@@ -21,3 +21,9 @@ Artisan::command('inspire', function () {
 \Illuminate\Support\Facades\Schedule::command('arcade:seal-weeks --apply')
     ->hourlyAt(10)->withoutOverlapping(30)->onOneServer()
     ->when(fn (): bool => (bool) config('demian-arcade.weekly_settlement_enabled', false));
+
+\Illuminate\Support\Facades\Schedule::command('arcade:issue-pending-coupons --apply')
+    ->hourlyAt(25)->withoutOverlapping(30)->onOneServer()
+    ->when(fn (): bool => (bool) config('demian-coupons.auto_issue_enabled', false)
+        && (bool) config('demian-coupons.issue_enabled', false)
+        && (bool) config('demian-coupons.policy_approved', false));
