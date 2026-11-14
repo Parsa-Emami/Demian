@@ -3,6 +3,7 @@ import { RUSH_SPOTS } from '../resources/js/game/games/cafe-rush/CafeRushMap.js'
 
 const seed = Number(process.argv[2] ?? 7);
 const difficulty = process.argv[3] ?? 'standard';
+const scenario = process.argv[4] ?? 'normal';
 if (!Number.isSafeInteger(seed) || seed < 1) throw new Error('Invalid seed.');
 const model = new CafeRushModel();
 model.reset(difficulty, seed % 3);
@@ -20,6 +21,8 @@ let frame = 0;
 let lastInteracted = -100;
 let stuck = 0;
 let previous = { ...model.player.position };
+let carryingFrames = 0;
+let deliberateSpill = false;
 
 function targetId() {
     const carried = model.carriedOrder;
@@ -91,6 +94,22 @@ for (frame = 1; frame <= 7200; frame++) {
         || control.slice(1).some((value,index) => value !== previousControl[index+1])
     ) transitions.push(control);
     previousControl = control;
+    // Differential stress path: provoke a REAL source-model spill by a hard
+    // reverse under high carrying speed, then let the game recover naturally.
+    if (scenario === 'spill' && !deliberateSpill && model.tray) {
+        if (carryingFrames < 25) {
+            input.run = true;
+            carryingFrames++;
+        } else if (model.player.speed > 7.25) {
+            input.x = -model.player.forward.x;
+            input.z = -model.player.forward.z;
+            input.run = true;
+            deliberateSpill = true;
+        } else {
+            input.run = true;
+            carryingFrames++;
+        }
+    }
     // Snapshot the actual engine position immediately before interaction.
     // The interaction itself takes the next tick, preserving strict ordering.
     if (input.interact && frame > 1 && (actions.at(-1)?.tick ?? -1) < frame - 1) {
@@ -124,6 +143,6 @@ if (transitions.at(-1)?.[0] !== 7200) {
 }
 model.dispose();
 process.stdout.write(JSON.stringify({
-    seed, difficulty, ticks:7200, actions, transitions, original_js:result,
+    seed, difficulty, scenario, ticks:7200, actions, transitions, original_js:result,
     evidence:{ frames:frame-1, actions:actions.length },
 }));
