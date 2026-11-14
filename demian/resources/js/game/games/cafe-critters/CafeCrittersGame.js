@@ -21,6 +21,10 @@ export default class CafeCrittersGame extends BaseGame {
         super();
         this.model = new CafeCrittersModel();
         this.audio = new CafeCueAudio(CUES);
+        this.rankRun = null;
+        this.rankActions = [];
+        this.rankTicks = 0;
+        this.sessionNonce = 0;
     }
 
     preload() { void preloadFbxCafeArt(); }
@@ -37,6 +41,10 @@ export default class CafeCrittersGame extends BaseGame {
     }
 
     startSession() {
+        this.sessionNonce++;
+        this.rankRun = null;
+        this.rankActions = [];
+        this.rankTicks = 0;
         this.model.reset(progress.difficulty, progress.discoveries(), rotation);
         this.ui.update(this.model);
         this.openDialog('entry', { difficulty: progress.difficulty, guide: progress.showGuide });
@@ -74,13 +82,51 @@ export default class CafeCrittersGame extends BaseGame {
             const difficulty = this.ui.difficulty;
             const known = progress.discoveries();
             progress.saveEntry(difficulty, action === 'skip-guide');
-            this.model.reset(difficulty, known, rotation);
-            if (known.length === CRITTERS.length) rotation = (rotation + TURN_PAGES) % CRITTERS.length;
-            this.model.start();
             this.audio.unlock();
-            this.ui.update(this.model);
-            this.ui.focusChoice({ resetScroll: true });
+            void this.beginRound(difficulty, known);
         }
+    }
+
+    async beginRound(difficulty, known) {
+        const nonce = ++this.sessionNonce;
+        const leaderboard = this.context?.services?.leaderboards;
+        // Server replay v1 uses standard difficulty and server-chosen rotation;
+        // other difficulties remain untouched practice modes.
+        const run = difficulty === 'standard' && leaderboard
+            ? await leaderboard.startTurnRun('cafe-critters')
+            : { mode: 'practice' };
+        if (!this.context || nonce !== this.sessionNonce) return;
+        this.rankRun = run;
+        this.rankActions = [];
+        this.rankTicks = 0;
+        if (run.mode === 'ranked') {
+            // In the original model, a fully discovered album uses the provided
+            // deterministic rotation rather than the local unseen guest order.
+            this.model.reset('standard', CRITTERS.map(guest => guest.id),
+                run.seed % CRITTERS.length);
+            this.context.app.shell.toast('این دور با بازپخش سروری امتیازدهی می‌شود.', 'info');
+        } else {
+            this.model.reset(difficulty, known, rotation);
+            if (known.length === CRITTERS.length) {
+                rotation = (rotation + TURN_PAGES) % CRITTERS.length;
+            }
+        }
+        this.model.start();
+        this.ui.update(this.model);
+        this.ui.focusChoice({ resetScroll: true });
+    }
+
+    recordRankedAction(kind, extra = {}) {
+        if (this.rankRun?.mode !== 'ranked') return;
+        const lastTick = this.rankActions.at(-1)?.tick ?? -1;
+        const tick = Math.max(this.rankTicks, lastTick + 1);
+        if (tick >= 240 * 60 || this.rankActions.length >= 240) {
+            // The round may still complete as local practice, but cannot
+            // publish a truncated replay or an unbounded event stream.
+            this.rankRun = { mode: 'practice' };
+            return;
+        }
+        this.rankActions.push({ tick, kind, ...extra });
     }
 
     get acceptingInput() {
@@ -89,6 +135,7 @@ export default class CafeCrittersGame extends BaseGame {
 
     choose(field, option) {
         if (!this.acceptingInput || !this.model.select(field, option)) return;
+        this.recordRankedAction('select', { field, option });
         this.audio.play('arrange');
         this.ui.update(this.model);
     }
@@ -100,6 +147,7 @@ export default class CafeCrittersGame extends BaseGame {
         } else if (action === 'invite') {
             const result = this.model.invite();
             if (!result) return;
+            this.recordRankedAction('invite');
             this.audio.unlock();
             if (result.type === 'discovery') {
                 progress.record(result.guest.id);
@@ -110,6 +158,7 @@ export default class CafeCrittersGame extends BaseGame {
             this.ui.update(this.model);
             if (result.type === 'discovery') this.ui.buttons.next.focus({ preventScroll: true });
         } else if (action === 'next' && this.model.next()) {
+            this.recordRankedAction('next');
             if (this.model.status === 'finished') this.finish();
             else {
                 this.ui.update(this.model);
@@ -121,6 +170,7 @@ export default class CafeCrittersGame extends BaseGame {
     fixedUpdate(dt) {
         if (!this.acceptingInput || this.model.status !== 'playing') return;
         this.model.advance(dt);
+        if (this.rankRun?.mode === 'ranked') this.rankTicks++;
         this.ui.updateTime(this.model.remaining);
         if (this.model.status === 'finished') this.finish();
     }
@@ -142,6 +192,10 @@ export default class CafeCrittersGame extends BaseGame {
                 : result.newPages ? 'صفحه‌ها و یادگاری‌های تازه در دفترچه ثبت شدند.' : 'دفترچه برای نوبت بعد آماده است.',
             score: `${num(result.found)} / ${num(result.goal)}`,
             won: result.won,
+            ranking: result.won && this.rankRun?.mode === 'ranked'
+                ? this.context.services.leaderboards.finishTurnRun(this.rankRun,
+                    this.rankActions, (this.rankActions.at(-1)?.tick ?? 0) + 1)
+                : { status: 'practice' },
             stats: {
                 'درجهٔ سختی': this.model.rules.label,
                 'دفترچهٔ مهمان‌ها': `${num(result.discovered)} / ${num(CRITTERS.length)}`,
@@ -152,6 +206,9 @@ export default class CafeCrittersGame extends BaseGame {
     }
 
     dispose() {
+        this.sessionNonce++;
+        this.rankRun = null;
+        this.rankActions = [];
         this.ui?.dispose();
         this.renderer?.dispose();
         this.audio.dispose();
