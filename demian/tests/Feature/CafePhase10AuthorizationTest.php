@@ -136,7 +136,7 @@ final class CafePhase10AuthorizationTest extends TestCase
             ->assertSee('3 از ۱۰ مجوز')->assertDontSee('ابطال اضطراری کد');
         $this->get('/cashier/admin/staff')->assertOk()
             ->assertSee($ownUsername)->assertDontSee($otherUsername)
-            ->assertDontSee('رمز سوپرادمین');
+            ->assertDontSee('name="password"', false);
         $this->get('/cashier/report')->assertOk();
         $this->post('/cashier/lookup', ['code' => $coupon['code']])->assertOk()
             ->assertDontSee('ثبت قطعی مصرف کد');
@@ -296,8 +296,7 @@ final class CafePhase10AuthorizationTest extends TestCase
         $this->assertSame('live_activation', $result['mode']);
         $checks = collect($result['checks'])->keyBy('check');
         $this->assertFalse($checks['active_superadmin']['passed']);
-        $this->assertFalse($checks['db_mysql']['passed'] || $checks['environment_target']['passed']
-            && $checks['secure_session_cookie']['passed']);
+        $this->assertTrue($checks['receipt_hmac_key_present']['passed']);
         $this->artisan('arcade:cafe:preflight', [
             '--target' => 'production', '--require-live' => true, '--json' => true,
         ])->assertFailed();
