@@ -20,6 +20,11 @@ export default class LeaderboardScreen extends BaseScreen {
         this.deleteAccount = this.element.querySelector('[data-ranking-delete-account]');
         this.issueBackup = this.element.querySelector('[data-ranking-issue-backup]');
         this.backupCode = this.element.querySelector('[data-ranking-backup-code]');
+        this.rewardList = this.element.querySelector('[data-ranking-reward-list]');
+        this.rewardStatus = this.element.querySelector('[data-ranking-reward-status]');
+        this.rewardRefresh = this.element.querySelector('[data-ranking-reward-refresh]');
+        this.onRewardRefresh = () => void this.loadCoupons();
+        this.rewardRefresh?.addEventListener('click', this.onRewardRefresh);
         this.timer = null;
         this.snapshot = null;
         this.receivedAtMs = 0;
@@ -146,7 +151,62 @@ export default class LeaderboardScreen extends BaseScreen {
         this.nextRefreshAt = this.monotonicNow() + 60000;
         if (this.service.pending) await this.service.retry();
         await this.load();
+        await this.loadCoupons();
         if (this.timer == null) this.timer = setInterval(() => this.tick(), 1000);
+    }
+
+    async loadCoupons() {
+        if (!this.rewardList || !this.rewardStatus) return;
+        const generation = this.generation;
+        this.rewardList.replaceChildren();
+        if (!this.service.connected || !this.service.identity?.token) {
+            this.rewardStatus.textContent = this.service.needsAccountRestore
+                ? 'برای نمایش جوایز، ابتدا حساب اصلی را بازیابی کنید.'
+                : 'برای نمایش جوایز، حساب آنلاین لازم است.';
+            return;
+        }
+        this.rewardStatus.textContent = 'در حال دریافت جوایز خصوصی از سرور…';
+        if (this.rewardRefresh) this.rewardRefresh.disabled = true;
+        try {
+            const coupons = await this.service.myCoupons();
+            if (generation !== this.generation) return;
+            this.rewardStatus.textContent = coupons.length
+                ? 'کدهای اختصاصی شما؛ هنگام خرید حضوری به صندوق‌دار نشان دهید.'
+                : 'هنوز هیچ کد تخفیفی صادر نشده است.';
+            for (const coupon of coupons) {
+                const item = document.createElement('li');
+                const title = document.createElement('strong');
+                title.textContent = 'تخفیف ' + String(coupon.discount_percent ?? '—')
+                    + '٪ · رتبه جایزه ' + String(coupon.prize_rank ?? '—');
+                item.append(title);
+                const state = document.createElement('p');
+                const labels = { issued: 'معتبر', reserved: 'رزروشده',
+                    redeemed: 'مصرف‌شده', expired: 'منقضی‌شده', revoked: 'لغوشده' };
+                state.textContent = (labels[coupon.status] ?? 'غیرفعال') + ' · انقضا: '
+                    + String(coupon.expires_at ?? '—') + ' · سقف: '
+                    + String(coupon.max_discount_minor ?? '—') + ' '
+                    + String(coupon.currency ?? '');
+                item.append(state);
+                if (typeof coupon.code === 'string' && /^DMC-[A-F0-9]{32}$/.test(coupon.code)) {
+                    const field = document.createElement('input');
+                    field.type = 'text'; field.readOnly = true;
+                    field.autocomplete = 'off'; field.spellcheck = false;
+                    field.setAttribute('aria-label', 'کد تخفیف حضوری');
+                    field.value = coupon.code;
+                    field.addEventListener('focus', () => field.select());
+                    item.append(field);
+                }
+                this.rewardList.append(item);
+            }
+        } catch {
+            if (generation === this.generation) {
+                this.rewardStatus.textContent = 'دریافت جوایز ممکن نشد؛ اتصال یا حساب را بررسی کنید.';
+            }
+        } finally {
+            if (generation === this.generation && this.rewardRefresh) {
+                this.rewardRefresh.disabled = false;
+            }
+        }
     }
 
     monotonicNow() { return globalThis.performance?.now?.() ?? Date.now(); }
@@ -232,6 +292,8 @@ export default class LeaderboardScreen extends BaseScreen {
         this.snapshot = null;
         this.recoveryLink.value = '';
         this.backupCode.value = '';
+        this.rewardList?.replaceChildren();
+        if (this.rewardStatus) this.rewardStatus.textContent = '';
         if (this.timer != null) clearInterval(this.timer);
         this.timer = null;
     }
@@ -246,6 +308,7 @@ export default class LeaderboardScreen extends BaseScreen {
         this.recoveryForm.removeEventListener('submit', this.onRecover);
         this.period.removeEventListener('change', this.onPeriod);
         this.form.removeEventListener('submit', this.onSubmit);
+        this.rewardRefresh?.removeEventListener('click', this.onRewardRefresh);
         super.dispose();
     }
 }
