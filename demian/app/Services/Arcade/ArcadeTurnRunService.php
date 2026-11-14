@@ -16,6 +16,8 @@ final class ArcadeTurnRunService
 
     public function start(ArcadePlayer $player, array $data): ArcadeRun
     {
+        abort_unless(config('demian-arcade.critters_ranked_enabled') === true,
+            503, 'Cafe Critters ranked replay is not enabled.');
         abort_unless($data['game_id'] === CafeCrittersReplayVerifier::GAME_ID
             && $data['rules_version'] === CafeCrittersReplayVerifier::VERSION, 409,
             'Refresh game rules before starting a ranked replay.');
@@ -47,6 +49,8 @@ final class ArcadeTurnRunService
 
     public function complete(ArcadePlayer $player, ArcadeRun $run, array $data): array
     {
+        abort_unless(config('demian-arcade.critters_ranked_enabled') === true,
+            503, 'Cafe Critters ranked replay is not enabled.');
         abort_unless($run->player_id === $player->id
             && $run->game_id === CafeCrittersReplayVerifier::GAME_ID, 404);
         $hash = hash('sha256', json_encode([
