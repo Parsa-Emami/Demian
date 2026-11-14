@@ -23,6 +23,7 @@ final class RankedGameCatalog
         return array_map(
             fn (string $id, array $game): array => ['game_id' => $id, ...$game,
                 'ranked_scope' => isset(CafeRouteReplayVerifier::VERSIONS[$id])
+                    && config('demian-arcade.gameplay_ranked_enabled.'.$id) !== true
                     ? 'route-trial' : 'original-game',
                 ...(in_array($id, ['cafe-critters', 'coffee-crash', 'after-hours', 'cafe-rush', 'open-world'], true) && $this->supportsRanked($id)
                     ? ['ranked' => true, 'verification' => 'server-replay'] : [])],
@@ -36,7 +37,8 @@ final class RankedGameCatalog
         if ($id === 'cafe-critters') return config('demian-arcade.critters_ranked_enabled') === true;
         if ($id === 'coffee-crash') return config('demian-arcade.coffee_ranked_enabled') === true;
         if (isset(CafeRouteReplayVerifier::VERSIONS[$id])) {
-            return config('demian-arcade.route_ranked_enabled.'.$id) === true;
+            return config('demian-arcade.gameplay_ranked_enabled.'.$id) === true
+                || config('demian-arcade.route_ranked_enabled.'.$id) === true;
         }
         return (self::GAMES[$id]['ranked'] ?? false) === true;
     }

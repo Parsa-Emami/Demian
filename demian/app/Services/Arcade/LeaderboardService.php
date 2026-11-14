@@ -23,7 +23,11 @@ final class LeaderboardService
         $rulesVersion = match ($gameId) {
             'cafe-critters' => CafeCrittersReplayVerifier::VERSION,
             'coffee-crash' => CoffeeCrashReplayVerifier::VERSION,
-            'after-hours', 'cafe-rush', 'open-world' => CafeRouteReplayVerifier::VERSIONS[$gameId],
+            'after-hours' => config('demian-arcade.gameplay_ranked_enabled.after-hours')
+                ? AfterHoursFrameReplayVerifier::VERSION : CafeRouteReplayVerifier::VERSIONS[$gameId],
+            'cafe-rush' => config('demian-arcade.gameplay_ranked_enabled.cafe-rush')
+                ? CafeRushFrameReplayVerifier::VERSION : CafeRouteReplayVerifier::VERSIONS[$gameId],
+            'open-world' => CafeRouteReplayVerifier::VERSIONS[$gameId],
             default => app(RunnerReplayVerifier::class)->rules()['version'],
         };
         $window = app(CompetitionClock::class)->snapshot($period);
