@@ -42,7 +42,7 @@ jobs:
       - name: Build static release (API opt-in only after provisioning)
         run: npm run build:static
         env:
-          DEMIAN_ARCADE_API_URL: ${{ github.ref == 'refs/heads/main' && vars.DEMIAN_ARCADE_API_URL || '' }}
+          DEMIAN_ARCADE_API_URL: ${{ github.ref == 'refs/heads/main' && vars.DEMIAN_ARCADE_ENABLE_RANKED == 'true' && vars.DEMIAN_ARCADE_API_URL || '' }}
       - name: Validate optimized production assets
         run: npm run validate:static-assets
       # Expected one atomic JavaScript bundle; bundle_mode: atomic
