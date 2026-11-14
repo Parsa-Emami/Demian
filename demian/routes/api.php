@@ -16,6 +16,7 @@ Route::prefix('v1/arcade')->middleware([LimitArcadePayload::class, 'throttle:arc
     Route::get('/games', [ArcadeController::class, 'games']);
     Route::get('/leaderboards/dino-run', [ArcadeController::class, 'leaderboard']);
     Route::get('/leaderboards/cafe-critters', [ArcadeTurnRunController::class, 'leaderboard']);
+    Route::get('/leaderboards/coffee-crash', [ArcadeTurnRunController::class, 'coffeeLeaderboard']);
     Route::post('/players', [ArcadeController::class, 'register'])->middleware('throttle:arcade-registration');
     Route::post('/players/recover', [ArcadeController::class, 'recover'])->middleware('throttle:arcade-account-recover');
     // Online checkout routes intentionally retired. Only authenticated
