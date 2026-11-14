@@ -21,6 +21,10 @@ final class CouponShopService
     public function authenticate(Request $request): string
     {
         abort_unless(config('demian-coupons.shop_enabled') === true, 503, 'Coupon shop integration disabled.');
+        // TLS termination must be configured via trusted proxies; never
+        // accept a signed coupon + order payload over cleartext in production.
+        abort_unless($request->isSecure() || ! app()->environment('production'),
+            403, 'HTTPS is required for merchant coupons.');
         $this->policy->approved();
 
         if (strlen($request->getContent()) > 4096

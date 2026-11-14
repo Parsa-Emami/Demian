@@ -136,7 +136,13 @@ final class CouponIssuanceService
         $coupons = DB::table('arcade_coupons')->where('player_id', $playerId)
             ->orderBy('id')->lockForUpdate()->get();
         foreach ($coupons as $coupon) {
-            if (! in_array($coupon->status, ['issued', 'reserved'], true)) continue;
+            // Always purge redeemable material on erasure, even if already
+            // captured. Preserve only the hash and nonsecret order ledger.
+            if (! in_array($coupon->status, ['issued', 'reserved'], true)) {
+                DB::table('arcade_coupons')->where('id', $coupon->id)
+                    ->update(['code_ciphertext' => null, 'updated_at' => now()]);
+                continue;
+            }
             if ($coupon->status === 'reserved' && $coupon->active_reservation_id) {
                 DB::table('arcade_coupon_reservations')->where('id', $coupon->active_reservation_id)
                     ->where('status', 'reserved')->update([
@@ -144,7 +150,8 @@ final class CouponIssuanceService
                     ]);
             }
             DB::table('arcade_coupons')->where('id', $coupon->id)->update([
-                'status' => 'revoked', 'active_reservation_id' => null, 'revoked_at' => now(),
+                'status' => 'revoked', 'code_ciphertext' => null,
+                'active_reservation_id' => null, 'revoked_at' => now(),
                 'updated_at' => now(),
             ]);
             $this->audit((int) $coupon->id, 'revoked', ['reason' => 'account_erasure']);
