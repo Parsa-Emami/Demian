@@ -248,7 +248,7 @@ export default class ArcadeLeaderboardService {
                 'cafe-critters': 'cafe-critters-replay-v1',
                 'after-hours': 'after-hours-route-v1',
                 'cafe-rush': 'cafe-rush-route-v1',
-                'open-world': 'open-world-route-v1',
+                'open-world': 'open-world-route-v2',
             })[gameId];
             const response = await this.request('/turn-runs', {
                 method: 'POST', authenticated: true,
