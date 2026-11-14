@@ -21,7 +21,9 @@ final class RankedGameCatalog
     public function publicList(): array
     {
         return array_map(
-            static fn (string $id, array $game): array => ['game_id' => $id, ...$game],
+            fn (string $id, array $game): array => ['game_id' => $id, ...$game,
+                ...($id === 'cafe-critters' && $this->supportsRanked($id)
+                    ? ['ranked' => true, 'verification' => 'server-replay'] : [])],
             array_keys(self::GAMES),
             array_values(self::GAMES),
         );
@@ -29,6 +31,9 @@ final class RankedGameCatalog
 
     public function supportsRanked(string $id): bool
     {
+        if ($id === 'cafe-critters') {
+            return config('demian-arcade.critters_ranked_enabled') === true;
+        }
         return (self::GAMES[$id]['ranked'] ?? false) === true;
     }
 }
