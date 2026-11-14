@@ -16,14 +16,8 @@ Route::prefix('v1/arcade')->middleware([LimitArcadePayload::class, 'throttle:arc
     Route::get('/leaderboards/dino-run', [ArcadeController::class, 'leaderboard']);
     Route::post('/players', [ArcadeController::class, 'register'])->middleware('throttle:arcade-registration');
     Route::post('/players/recover', [ArcadeController::class, 'recover'])->middleware('throttle:arcade-account-recover');
-    // The merchant interface never trusts browser-submitted discounts.
-    // Exact-path raw-payload HMAC verification happens before JSON validation.
-    Route::prefix('shop/coupons')->middleware('throttle:arcade-shop')->group(function (): void {
-        Route::post('/quote', [CouponController::class, 'quote']);
-        Route::post('/reserve', [CouponController::class, 'reserve']);
-        Route::post('/commit', [CouponController::class, 'commit']);
-        Route::post('/cancel', [CouponController::class, 'cancel']);
-    });
+    // Online checkout routes intentionally retired. Only authenticated
+    // in-cafe staff may redeem coupons through CSRF-protected web routes.
     Route::middleware(AuthenticateArcadePlayer::class)->group(function (): void {
         Route::get('/player/coupons', [CouponController::class, 'wallet'])
             ->middleware('throttle:arcade-coupon-wallet');

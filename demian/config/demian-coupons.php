@@ -5,7 +5,11 @@ return [
     // actual shop contract, discount policy and security/operations rollout.
     'policy_approved' => (bool) env('DEMIAN_COUPONS_POLICY_APPROVED', false),
     'issue_enabled' => (bool) env('DEMIAN_COUPONS_ISSUE_ENABLED', false),
-    'shop_enabled' => (bool) env('DEMIAN_COUPONS_SHOP_ENABLED', false),
+    // Online merchant endpoints are retired; no real e-commerce integration.
+    'shop_enabled' => false,
+    'cafe_enabled' => (bool) env('DEMIAN_COUPONS_CAFE_ENABLED', false),
+    'cafe_receipt_hash_key' => env('DEMIAN_COUPONS_CAFE_RECEIPT_HASH_KEY', ''),
+    'cafe_session_hours' => 8,
     'auto_issue_enabled' => (bool) env('DEMIAN_COUPONS_AUTO_ISSUE_ENABLED', false),
     'policy_version' => env('DEMIAN_COUPONS_POLICY_VERSION', ''),
     // Proposed award tiers; do not change tiers after a week is issued.
