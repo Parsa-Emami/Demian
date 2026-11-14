@@ -224,7 +224,7 @@ export default class ArcadeLeaderboardService {
     }
     async startTurnRun(gameId = 'cafe-critters') {
         const practice = { mode: 'practice', reason: 'این بازی در حالت تمرینی اجرا می‌شود.' };
-        if (gameId !== 'cafe-critters' || !this.connected) return practice;
+        if (!['cafe-critters', 'coffee-crash'].includes(gameId) || !this.connected) return practice;
         if (this.needsAccountRestore) return { ...practice,
             reason: 'برای ارسال امتیاز آنلاین ابتدا حساب اصلی را بازیابی کن.' };
         if (this.pending) {
@@ -234,13 +234,15 @@ export default class ArcadeLeaderboardService {
         }
         try {
             await this.ensureIdentity();
+            const expectedVersion = gameId === 'coffee-crash'
+                ? 'coffee-crash-replay-v1' : 'cafe-critters-replay-v1';
             const response = await this.request('/turn-runs', {
                 method: 'POST', authenticated: true,
                 body: { request_id: crypto.randomUUID(), game_id: gameId,
-                    rules_version: 'cafe-critters-replay-v1' },
+                    rules_version: expectedVersion },
             });
             if (response.game_id !== gameId
-                || response.rules_version !== 'cafe-critters-replay-v1'
+                || response.rules_version !== expectedVersion
                 || !Number.isSafeInteger(response.seed)) throw new Error('نسخه یا بذر سرور نامعتبر است.');
             return { ...response, mode: 'ranked' };
         } catch (error) {
@@ -252,7 +254,8 @@ export default class ArcadeLeaderboardService {
         }
     }
     async finishTurnRun(run, actions, ticks) {
-        if (run?.mode !== 'ranked' || run.game_id !== 'cafe-critters'
+        if (run?.mode !== 'ranked'
+            || !['cafe-critters', 'coffee-crash'].includes(run.game_id)
             || !Array.isArray(actions) || !Number.isInteger(ticks)) {
             return { status: 'practice' };
         }
