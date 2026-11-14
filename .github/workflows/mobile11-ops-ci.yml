@@ -1,0 +1,36 @@
+name: Mobile-11 operations contracts
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/mobile11-**'
+      - '.github/workflows/deploy-demian-pages.yml'
+      - 'demian/ops/mobile-11/**'
+      - 'demian/tests/js/mobile/Mobile11Ops.test.js'
+      - 'demian/tools/smoke_arcade_api.mjs'
+      - 'demian/tools/load/**'
+  push:
+    branches-ignore: [main]
+    paths:
+      - '.github/workflows/mobile11-**'
+      - 'demian/ops/mobile-11/**'
+      - 'demian/tests/js/mobile/Mobile11Ops.test.js'
+      - 'demian/tools/load/**'
+permissions:
+  contents: read
+jobs:
+  contract:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Validate release shell syntax
+        run: |
+          bash -n demian/ops/mobile-11/release.sh
+          bash -n demian/ops/mobile-11/backup_mysql.sh
+      - name: Check approved read-only load profile
+        run: node --check demian/tools/load/mobile11_read_only.js
+      - name: Run release and integrity guard tests
+        working-directory: demian
+        run: node --test tests/js/mobile/Mobile11Ops.test.js
