@@ -166,7 +166,9 @@ export default class CafeRushGame extends BaseGame {
         this.syncAvatars(dt);
         this.consumeEvents();
         if (this.model.status === 'finished') {
-            void this.gameplayChallenge?.finish(this.model.result().won);
+            // A completed shift may earn a legitimate partial score without
+            // meeting the quota. Server accepts only real verified deliveries.
+            void this.gameplayChallenge?.finish(this.model.result().delivered > 0);
             this.finish();
         }
     }
