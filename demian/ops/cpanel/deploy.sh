@@ -52,9 +52,13 @@ grep -Fx 'DB_CONNECTION=mysql' "$env_file" >/dev/null || exit 1
 
 archive="$root/incoming/$sha.tar.gz"
 [[ -s "$archive" ]] || { echo "Release artifact missing" >&2; exit 1; }
-if tar -tzf "$archive" | grep -Eq '(^/|(^|/)[.][.](/|$))'; then
+entries="$root/incoming/$sha.entries"
+trap 'rm -f -- "$entries"' EXIT
+tar -tzf "$archive" > "$entries"
+if grep -Eq '(^/|(^|/)[.][.](/|$))' "$entries"; then
     echo "Unsafe artifact paths" >&2; exit 1
 fi
+rm -f "$entries"
 
 release="$root/releases/$sha"
 tmp="$root/releases/.$sha.tmp.$$"
