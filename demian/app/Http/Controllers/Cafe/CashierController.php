@@ -76,6 +76,7 @@ final class CashierController extends Controller
             'details' => $service->inspect($data['code']),
             'code' => $data['code'],
             'requestKey' => (string) Str::uuid(),
+            'canRedeem' => CafeAccess::allows($request->attributes->get('cafe_staff'), 'coupon.redeem'),
         ]);
     }
 

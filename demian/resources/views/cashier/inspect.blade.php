@@ -23,7 +23,7 @@
   <div class="card">سقف تخفیف<strong>{{ number_format($details['cap_minor']) }}</strong></div>
   <div class="card">انقضای کد (UTC)<strong>{{ $details['expires_at'] }}</strong></div>
 </div>
-@if ($details['state'] === 'valid')
+@if ($details['state'] === 'valid' && $canRedeem)
 <hr style="border:0;border-top:1px solid #415557;margin:28px 0">
 <h2>تأیید نهایی مصرف حضوری</h2>
 <p class="muted">بعد از بررسی سفارش در صندوق، شماره فاکتور داخلی و مبلغ قبل از تخفیف را ثبت کنید. این عملیات برگشت‌ناپذیر است؛ فقط پس از نهایی‌شدن خرید تأیید کنید.</p>
