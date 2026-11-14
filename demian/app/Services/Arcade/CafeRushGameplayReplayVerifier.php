@@ -199,7 +199,7 @@ final class CafeRushGameplayReplayVerifier
                     foreach (self::SPOTS as $id=>$spot) {
                         $gap = hypot($position['x']-$spot['x'],
                             $position['z']-$spot['z']);
-                        if ($gap < $distance) {
+                        if ($gap < $distance && $this->geometry->canSee($position, $spot)) {
                             $distance = $gap;
                             $nearest = ['id'=>$id, ...$spot];
                         }
@@ -211,13 +211,18 @@ final class CafeRushGameplayReplayVerifier
                                 if ($order['state'] === 'accepted') $accepted = true;
                             }
                             if (! $accepted) {
-                                foreach ($orders as &$order) {
-                                    if ($order['state'] === 'waiting') {
-                                        $order['state'] = 'accepted';
+                                // JS waitingOrder prioritizes a queued VIP over
+                                // any regular order regardless of insertion order.
+                                $choice = null;
+                                foreach ($orders as $i=>$order) {
+                                    if ($order['state'] !== 'waiting') continue;
+                                    if ($choice === null) $choice = $i;
+                                    if ($order['vip']) {
+                                        $choice = $i;
                                         break;
                                     }
                                 }
-                                unset($order);
+                                if ($choice !== null) $orders[$choice]['state'] = 'accepted';
                             }
                         } elseif ($nearest['kind'] === 'station' && $tray === null) {
                             $existing = null;
