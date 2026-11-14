@@ -17,6 +17,11 @@ export default class CoffeeCrashGame extends BaseGame {
             miss: [250, 190, .1, .035, 'sine'], win: [520, 1040, .32, .08, 'triangle'] });
         this.frames = [];
         this.wait = 0;
+        this.rankRun = null;
+        this.rankActions = [];
+        this.rankSeconds = 0;
+        this.startNonce = 0;
+        this.startingRanked = false;
     }
     preload() { return preloadFbxCafeArt(); }
     async enter(context) {
@@ -28,6 +33,11 @@ export default class CoffeeCrashGame extends BaseGame {
         });
     }
     startSession() {
+        this.startNonce++;
+        this.rankRun = null;
+        this.rankActions = [];
+        this.rankSeconds = 0;
+        this.startingRanked = false;
         this.frames = [];
         this.wait = 0;
         this.finished = false;
@@ -56,11 +66,46 @@ export default class CoffeeCrashGame extends BaseGame {
         if (entry && action === 'close') { void this.context.app.exitGame().catch(() => undefined); return; }
         if (!entry) return;
         if (action === 'skip') this.store.hideGuide();
-        this.model.reset(level);
         this.audio.unlock();
+        void this.beginRound(level);
+    }
+    async beginRound(level) {
+        const nonce = ++this.startNonce;
+        this.startingRanked = true;
+        this.ui.block(true);
+        const leaderboard = this.context?.services?.leaderboards;
+        const run = level === 1 && leaderboard
+            ? await leaderboard.startTurnRun('coffee-crash')
+            : { mode: 'practice' };
+        if (!this.context || nonce !== this.startNonce) return;
+        this.rankRun = run;
+        this.rankActions = [];
+        this.rankSeconds = 0;
+        this.model.reset(level);
+        if (run.mode === 'ranked') {
+            // Use the server-issued seed with the SAME model generator; the
+            // PHP verifier replays each swap from this initial board.
+            this.model.rng = run.seed;
+            this.model.generate();
+            this.context.app.shell.toast('این مرحله با بازپخش سروری امتیازدهی می‌شود.', 'info');
+        }
+        this.startingRanked = false;
+        this.ui.block(false);
         this.redraw();
         this.ui.focus(0);
     }
+
+    recordRankAction(kind, data = {}) {
+        if (this.rankRun?.mode !== 'ranked') return;
+        const last = this.rankActions.at(-1)?.tick ?? -1;
+        const tick = Math.max(Math.floor(this.rankSeconds * 60), last + 1);
+        if (this.rankActions.length >= 40 || tick >= 18000) {
+            this.rankRun = { mode: 'practice' };
+            return;
+        }
+        this.rankActions.push({ tick, kind, ...data });
+    }
+
     showGuide() { this.openDialog('help'); }
     select(index) {
         if (!this.acceptingInput) return;
@@ -74,6 +119,7 @@ export default class CoffeeCrashGame extends BaseGame {
         if (!this.acceptingInput || !adjacent(a, b)) return;
         this.audio.unlock();
         const result = this.model.swap(a, b);
+        if (result.accepted) this.recordRankAction('swap', { a, b });
         this.ui.select(null);
         if (!result.frames.length) return;
         this.frames = result.frames;
@@ -87,6 +133,7 @@ export default class CoffeeCrashGame extends BaseGame {
         if (action === 'help') this.openDialog('help');
         if (action === 'hint') this.ui.hint(this.model.findMove());
         if (action === 'undo' && this.model.undo()) {
+            this.recordRankAction('undo');
             this.ui.select(null);
             this.redraw();
             this.ui.say('حرکت قبل برگشت. بازگشت این مرحله استفاده شد.');
@@ -94,6 +141,7 @@ export default class CoffeeCrashGame extends BaseGame {
     }
     redraw() { this.ui.draw(this.model.frame('settled'), this.model, this.store); }
     fixedUpdate(dt) {
+        if (this.startingRanked) return;
         if (this.context.app.sessionState !== 'playing' || this.ui.dialog.open || !this.ui.blocked) return;
         this.wait -= Math.max(0, dt);
         if (this.wait > 0) return;
@@ -110,6 +158,13 @@ export default class CoffeeCrashGame extends BaseGame {
         this.redraw();
         if (this.model.status !== 'playing') this.finish();
         else if (this.ui.nodes.feedback.textContent === 'سفارش در حال آماده شدن…') this.ui.say('ترکیب بعدی را پیدا کن.');
+    }
+    update(dt) {
+        if (this.rankRun?.mode === 'ranked' && !this.startingRanked
+            && this.context?.app?.sessionState === 'playing'
+            && !this.ui.dialog.open && this.model.status === 'playing') {
+            this.rankSeconds += Math.max(0, dt);
+        }
     }
     render(_alpha, dt) { this.renderer.render(dt); }
     resize() { this.renderer?.resize(); }
@@ -129,9 +184,13 @@ export default class CoffeeCrashGame extends BaseGame {
             title: won ? 'سفارش آماده است!' : 'این نوبت تمام شد',
             subtitle: won ? `${'★'.repeat(this.model.stars)} · مرحلهٔ ${digits.format(this.store.unlocked)} در انتخاب مرحله در دسترس است.` : 'دوباره امتحان کن؛ دنبال ترکیب‌های چهارتایی و پنج‌تایی بگرد.',
             won, score: digits.format(this.model.score),
+            ranking: this.rankRun?.mode === 'ranked'
+                ? this.context.services.leaderboards.finishTurnRun(this.rankRun,
+                    this.rankActions, (this.rankActions.at(-1)?.tick ?? 0) + 1)
+                : { status: 'practice' },
             stats: { 'مرحله': digits.format(this.model.level.id), 'حرکت باقی‌مانده': digits.format(this.model.moves),
                 'بیشترین آبشار': digits.format(this.model.bestChain), 'ستاره': digits.format(this.model.stars) },
         });
     }
-    dispose() { this.frames = []; this.ui?.dispose(); this.renderer?.dispose(); this.audio.dispose(); }
+    dispose() { this.startNonce++; this.rankRun = null; this.rankActions = []; this.frames = []; this.ui?.dispose(); this.renderer?.dispose(); this.audio.dispose(); }
 }

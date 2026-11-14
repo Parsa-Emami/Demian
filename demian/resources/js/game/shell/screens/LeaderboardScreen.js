@@ -7,6 +7,7 @@ export default class LeaderboardScreen extends BaseScreen {
         this.service = service;
         this.generation = 0;
         this.period = this.element.querySelector('[data-ranking-period]');
+        this.game = this.element.querySelector('[data-ranking-game]');
         this.body = this.element.querySelector('[data-ranking-rows]');
         this.status = this.element.querySelector('[data-ranking-status]');
         this.countdown = this.element.querySelector('[data-ranking-countdown]');
@@ -32,6 +33,7 @@ export default class LeaderboardScreen extends BaseScreen {
         this.loading = false;
         this.lastForcedRolloverKey = null;
         this.onPeriod = () => this.load();
+        this.onGame = () => this.load();
         this.onSubmit = async event => {
             event.preventDefault();
             const button = this.form.querySelector('button');
@@ -125,6 +127,7 @@ export default class LeaderboardScreen extends BaseScreen {
         this.issueRecovery.addEventListener('click', this.onIssueRecovery);
         this.recoveryForm.addEventListener('submit', this.onRecover);
         this.period.addEventListener('change', this.onPeriod);
+        this.game?.addEventListener('change', this.onGame);
         this.form.addEventListener('submit', this.onSubmit);
     }
 
@@ -146,6 +149,20 @@ export default class LeaderboardScreen extends BaseScreen {
             option.disabled = !this.service.connected && option.value !== 'device';
         }
         this.period.value = this.service.connected ? 'weekly' : 'device';
+        if (this.game) {
+            const options = [...this.game.options];
+            options.forEach(option => { option.disabled = option.value !== 'dino-run'; });
+            this.game.value = 'dino-run';
+            if (this.service.connected) {
+                try {
+                    const catalog = await this.service.games();
+                    for (const option of options) {
+                        option.disabled = !catalog.games?.some(game =>
+                            game.game_id === option.value && game.ranked === true);
+                    }
+                } catch { /* preserve safe default */ }
+            }
+        }
         this.snapshot = null;
         this.lastForcedRolloverKey = null;
         this.nextRefreshAt = this.monotonicNow() + 60000;
@@ -251,9 +268,10 @@ export default class LeaderboardScreen extends BaseScreen {
         this.snapshot = null;
         this.renderCountdown();
         try {
-            const ownScore = this.period.value !== 'device'
+            const activeGame = this.game?.value ?? 'dino-run';
+            const ownScore = this.period.value !== 'device' && activeGame === 'dino-run'
                 ? this.service.personalBest(this.period.value) : Promise.resolve(null);
-            const result = await this.service.list(this.period.value);
+            const result = await this.service.list(this.period.value, activeGame);
             if (generation !== this.generation) return;
             this.snapshot = result.mode === 'online' ? result : null;
             this.receivedAtMs = this.monotonicNow();
@@ -273,7 +291,9 @@ export default class LeaderboardScreen extends BaseScreen {
             this.renderCountdown();
             const own = await ownScore;
             if (generation !== this.generation) return;
-            this.personalBest.textContent = result.mode === 'online'
+            this.personalBest.textContent = result.mode === 'online' && activeGame !== 'dino-run'
+                ? 'این جدول فقط نتایج بازپخش‌شده و تأییدشده توسط سرور را نمایش می‌دهد.'
+                : result.mode === 'online'
                 ? own?.best
                     ? `رتبهٔ تأییدشده شما: ${own.my_rank == null ? '—' : new Intl.NumberFormat('fa-IR').format(own.my_rank)} از ${new Intl.NumberFormat('fa-IR').format(own.participants ?? 0)} · رکورد: ${new Intl.NumberFormat('fa-IR').format(own.best.score)}`
                     : 'هنوز رکورد تأییدشده‌ای برای این دوره نداری.'
@@ -309,6 +329,7 @@ export default class LeaderboardScreen extends BaseScreen {
         this.issueRecovery.removeEventListener('click', this.onIssueRecovery);
         this.recoveryForm.removeEventListener('submit', this.onRecover);
         this.period.removeEventListener('change', this.onPeriod);
+        this.game?.removeEventListener('change', this.onGame);
         this.form.removeEventListener('submit', this.onSubmit);
         this.rewardRefresh?.removeEventListener('click', this.onRewardRefresh);
         super.dispose();
