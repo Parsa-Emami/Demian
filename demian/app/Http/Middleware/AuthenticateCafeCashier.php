@@ -34,6 +34,17 @@ final class AuthenticateCafeCashier
         }
         $request->attributes->set('cafe_staff', $staff);
 
-        return $next($request);
+        $response = $next($request);
+        // The inspection page includes the customer's bearer coupon code.
+        // Never allow a browser or intermediary to cache or frame it.
+        $response->headers->set('Cache-Control', 'private, no-store, max-age=0');
+        $response->headers->set('Pragma', 'no-cache');
+        $response->headers->set('X-Content-Type-Options', 'nosniff');
+        $response->headers->set('X-Frame-Options', 'DENY');
+        $response->headers->set('Content-Security-Policy',
+            "default-src 'none'; style-src 'unsafe-inline'; form-action 'self'; "
+            ."base-uri 'none'; frame-ancestors 'none'");
+
+        return $response;
     }
 }
