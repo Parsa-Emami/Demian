@@ -340,4 +340,47 @@ final class ArcadeCouponLifecycleTest extends TestCase
         ])->assertSuccessful();
         $this->assertDatabaseCount('arcade_coupons', 1);
     }
+
+    public function test_readonly_audit_detects_policy_and_coupon_evidence_tampering(): void
+    {
+        [$p, $code] = $this->issueOne();
+        $audit = app(\App\Services\Arcade\CouponIntegrityAudit::class);
+        $this->assertSame('passed', $audit->inspect()['status']);
+        $this->artisan('arcade:coupons:audit', ['--json' => true])->assertSuccessful();
+        DB::table('arcade_coupons')->update(['code_hash' => str_repeat('a', 64)]);
+        $this->assertSame('failed', $audit->inspect()['status']);
+        $this->artisan('arcade:coupons:audit', ['--json' => true])->assertFailed();
+    }
+
+    public function test_catch_up_issues_each_sealed_week_once(): void
+    {
+        $p = $this->player();
+        $this->sealed([$p]);
+        $issuer = app(CouponIssuanceService::class);
+        $results = $issuer->issuePending();
+        $this->assertCount(1, $results);
+        $this->assertSame('issued', $results[0]['status']);
+        $this->assertSame([], $issuer->issuePending());
+        $this->assertDatabaseCount('arcade_reward_batches', 1);
+        $this->assertDatabaseCount('arcade_coupon_events', 1);
+    }
+
+    public function test_issuance_fails_when_archived_winner_has_lost_server_verification(): void
+    {
+        $p = $this->player();
+        $this->sealed([$p]);
+        DB::table('arcade_runs')->update(['status' => 'started']);
+        $this->expectException(\RuntimeException::class);
+        app(CouponIssuanceService::class)->issue(self::WEEK);
+    }
+
+    public function test_erased_winner_cannot_receive_fresh_code_from_stale_archive(): void
+    {
+        $p = $this->player();
+        $this->sealed([$p]);
+        $this->withToken($p['token'])->deleteJson('/api/v1/arcade/player')->assertOk();
+        $this->expectException(\RuntimeException::class);
+        app(CouponIssuanceService::class)->issue(self::WEEK);
+    }
+
 }
