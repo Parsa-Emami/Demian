@@ -27,6 +27,23 @@ return [
         'cafe-rush' => (bool) env('DEMIAN_CAFE_RUSH_ROUTE_PRIZES', false),
         'open-world' => (bool) env('DEMIAN_OPEN_WORLD_ROUTE_PRIZES', false),
     ],
+    // Phase 2 Step 10. Collection and human review are opt-in at deployment;
+    // no heuristic may automatically delete a score, ban a player or revoke
+    // cash-equivalent vouchers. The operator has a separate password-protected
+    // ability to place a bounded NEW-run-only hold after confirming a report.
+    'anticheat' => [
+        'enabled' => (bool) env('DEMIAN_ANTICHEAT_ENABLED', false),
+        'observation_retention_days' => 30,
+        'start_burst_count' => 10,
+        'start_burst_minutes' => 10,
+        'rejection_burst_count' => 4,
+        'rejection_burst_minutes' => 15,
+        'ip_cohort_accounts' => 12,
+        'ip_cohort_minutes' => 30,
+        'replay_clone_days' => 7,
+        'score_outlier_min_history' => 20,
+        'score_outlier_ratio' => 4,
+    ],
     'api_only' => env('DEMIAN_ARCADE_API_ONLY', false),
     // Disabled by default until production migration and award policy approval.
     'weekly_settlement_enabled' => (bool) env('DEMIAN_ARCADE_WEEKLY_SETTLEMENT_ENABLED', false),
