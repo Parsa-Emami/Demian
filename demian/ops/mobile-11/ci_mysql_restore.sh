@@ -15,6 +15,7 @@ tmp="$(mktemp -d)"
 trap 'rm -rf -- "$tmp"' EXIT
 php artisan migrate:fresh --force --no-interaction
 mysql -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USERNAME" "$DB_DATABASE" <<'SQL'
+SET @fixture_started_at = DATE_SUB(UTC_TIMESTAMP(), INTERVAL 30 SECOND);
 INSERT INTO arcade_players
     (id, display_name, token_hash, token_expires_at, created_at, updated_at)
 VALUES
@@ -31,7 +32,7 @@ VALUES
      '11111111-1111-4111-8111-111111111111',
      '33333333-3333-4333-8333-333333333333', 'dino-run', 'restore-fixture',
      'darya', 12345, 420, 'verified', 42, 100, 1, REPEAT('b',64),
-     DATE_SUB(UTC_TIMESTAMP(), INTERVAL 30 SECOND),
+     @fixture_started_at,
      DATE_ADD(UTC_TIMESTAMP(), INTERVAL 5 MINUTE),
      UTC_TIMESTAMP(), UTC_TIMESTAMP(), UTC_TIMESTAMP());
 
@@ -45,7 +46,7 @@ VALUES
     ('11111111-1111-4111-8111-111111111111',
      '22222222-2222-4222-8222-222222222222',
      'dino-run', 'restore-fixture', 'all', 42,
-     DATE_SUB(UTC_TIMESTAMP(), INTERVAL 30 SECOND));
+     @fixture_started_at);
 SQL
 
 php artisan arcade:integrity --json
