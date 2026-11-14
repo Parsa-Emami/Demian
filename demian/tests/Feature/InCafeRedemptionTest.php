@@ -395,4 +395,41 @@ final class InCafeRedemptionTest extends TestCase
         $svc->redeem($this->staff(), $coupon['code'], 'ticket-00001', 10000,
             (string) Str::uuid());
     }
+
+    public function test_sql_unique_constraint_is_last_line_of_defense_against_double_spend(): void
+    {
+        $coupon = $this->voucher();
+        $staff = $this->staff();
+        app(InCafeCouponService::class)->redeem($staff, $coupon['code'],
+            'ticket-00001', 10000, (string) Str::uuid());
+        $original = DB::table('arcade_coupon_redemptions')->first();
+        $this->expectException(\Illuminate\Database\QueryException::class);
+        DB::table('arcade_coupon_redemptions')->insert([
+            'coupon_id' => $coupon['id'], 'reservation_id' => null,
+            'order_hash' => str_repeat('a', 64), 'channel' => 'in_cafe',
+            'cashier_id' => $staff, 'branch_id' => 'cafe-main',
+            'currency' => $original->currency, 'subtotal_minor' => 10000,
+            'discount_minor' => 3000, 'redeemed_at' => now(),
+        ]);
+    }
+
+    public function test_cafe_inspection_page_never_gets_cached_or_embedded(): void
+    {
+        $coupon = $this->voucher();
+        $this->asCashier($this->staff());
+        $this->post('/cashier/lookup', ['code' => $coupon['code']])
+            ->assertOk()->assertHeader('Cache-Control', 'private, no-store, max-age=0')
+            ->assertHeader('X-Frame-Options', 'DENY')
+            ->assertHeader('X-Content-Type-Options', 'nosniff');
+        $this->assertDatabaseCount('arcade_coupon_redemptions', 0);
+    }
+
+    public function test_physical_coupon_page_requires_laravel_web_csrf_middleware(): void
+    {
+        $route = \Illuminate\Support\Facades\Route::getRoutes()->getByName('cashier.redeem');
+        $this->assertNotNull($route);
+        $this->assertContains('web', $route->gatherMiddleware());
+        $this->assertNotContains('api', $route->gatherMiddleware());
+    }
+
 }
