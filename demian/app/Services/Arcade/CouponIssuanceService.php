@@ -33,6 +33,26 @@ final class CouponIssuanceService
                 throw new RuntimeException('Only verified sealed weekly results can issue coupons.');
             }
 
+            // Reconstruct Phase 7b's canonical sealed snapshot. A forged
+            // winner, deleted run or altered score must not mint real value.
+            $snapshot = [];
+            $entries = DB::table('arcade_weekly_results')->where('period_key', $periodKey)
+                ->orderBy('game_id')->orderBy('technical_rank')->get();
+            foreach ($entries as $row) {
+                $snapshot[] = [
+                    'period_key' => $row->period_key, 'game_id' => $row->game_id,
+                    'rules_version' => $row->rules_version, 'player_id' => $row->player_id,
+                    'run_id' => $row->run_id, 'score' => (int) $row->score,
+                    'achieved_at' => $row->achieved_at, 'technical_rank' => (int) $row->technical_rank,
+                    'created_at' => $row->created_at,
+                ];
+            }
+            $digest = hash('sha256', json_encode($snapshot, JSON_THROW_ON_ERROR));
+            if (count($snapshot) !== (int) $period->participants
+                || ! hash_equals($period->snapshot_hash, $digest)) {
+                throw new RuntimeException('Sealed technical ranking checksum mismatch.');
+            }
+
             $winners = DB::table('arcade_weekly_winners')->where('period_key', $periodKey)
                 ->orderBy('id')->lockForUpdate()->get();
             if ($winners->count() !== (int) $period->winner_count) {
@@ -46,6 +66,17 @@ final class CouponIssuanceService
                     || ! isset($terms['ranks'][(int) $winner->prize_rank])
                     || ! DB::table('arcade_players')->where('id', $winner->player_id)->exists()) {
                     throw new RuntimeException('Award is incomplete or its player was erased.');
+                }
+                // Prove the prize refers to this sealed technical placement.
+                if (! (new RankedGameCatalog())->supportsRanked($winner->game_id)
+                    || ! DB::table('arcade_weekly_results')
+                        ->where('period_key', $periodKey)->where('game_id', $winner->game_id)
+                        ->where('technical_rank', $winner->technical_rank)
+                        ->where('rules_version', $winner->rules_version)
+                        ->where('player_id', $winner->player_id)
+                        ->where('run_id', $winner->run_id)
+                        ->where('score', $winner->score)->exists()) {
+                    throw new RuntimeException('Weekly award has no matching verified snapshot proof.');
                 }
                 if (DB::table('arcade_coupons')->where('winner_id', $winner->id)->exists()) {
                     $existing++;
