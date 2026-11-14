@@ -47,9 +47,11 @@ jobs:
             resources/views src public/index.php public/.htaccess \
             composer.json composer.lock vendor
           test -s "$RUNNER_TEMP/demian-cpanel.tar.gz"
-          ! tar -tzf "$RUNNER_TEMP/demian-cpanel.tar.gz" | \
-            grep -Eq '(^|/)([.]env|[.]git)(/|$)'
-          tar -tzf "$RUNNER_TEMP/demian-cpanel.tar.gz" | grep -qx 'artisan'
+          tar -tzf "$RUNNER_TEMP/demian-cpanel.tar.gz" > "$RUNNER_TEMP/cpanel-entries.txt"
+          if grep -Eq '(^|/)([.]env|[.]git)(/|$)' "$RUNNER_TEMP/cpanel-entries.txt"; then
+            echo "Forbidden metadata/secret in cPanel artifact" >&2; exit 1
+          fi
+          grep -Fx 'artisan' "$RUNNER_TEMP/cpanel-entries.txt" >/dev/null
       - uses: actions/upload-artifact@v4
         with:
           name: cpanel-api-release
