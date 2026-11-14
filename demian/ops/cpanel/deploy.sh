@@ -97,6 +97,14 @@ fi
     cd "$release"
     "$php_bin" artisan migrate --force --no-interaction
     "$php_bin" artisan arcade:integrity --json
+    "$php_bin" artisan arcade:audit-coupons --json
+    # Code rollout is allowed with financial features safely disabled.
+    # Any attempt to enable physical redemption must pass all live gates.
+    if grep -Fx 'DEMIAN_COUPONS_CAFE_ENABLED=true' "$env_file" >/dev/null; then
+        "$php_bin" artisan arcade:cafe:preflight --target="$target" --require-live --json
+    else
+        "$php_bin" artisan arcade:cafe:preflight --target="$target" --json
+    fi
 )
 
 previous=""
@@ -130,6 +138,14 @@ if ! (
     # This must not expose Laravel's non-API character management routes.
     status="$(curl -sS -o /dev/null -w '%{http_code}' --max-time 15 "$origin/characters")"
     [[ "$status" == 404 ]]
+    # A cashier URL must be reachable only when the cafe is explicitly enabled.
+    # This is a nonmutating check; no real discount is issued/redeemed.
+    cashier_status="$(curl -sS -o /dev/null -w '%{http_code}' --max-time 15 "$origin/cashier/login")"
+    if grep -Fx 'DEMIAN_COUPONS_CAFE_ENABLED=true' "$env_file" >/dev/null; then
+        [[ "$cashier_status" == 200 ]]
+    else
+        [[ "$cashier_status" == 503 ]]
+    fi
 ); then
     rollback
     echo "Smoke failed. Previous code restored; migrations were NOT reversed." >&2
