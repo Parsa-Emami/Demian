@@ -4,6 +4,10 @@ use App\Http\Controllers\CharacterController;
 use App\Http\Controllers\CharacterStudioController;
 use Illuminate\Support\Facades\Route;
 
+// The public cPanel instance is an API-only origin. The character-management
+// web routes belong to a different trust zone and must not be exposed there.
+if (config('demian-arcade.api_only', false)) return;
+
 Route::get('/', [CharacterStudioController::class, 'index'])->name('studio');
 
 Route::prefix('characters')
