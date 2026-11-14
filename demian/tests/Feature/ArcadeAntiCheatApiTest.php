@@ -17,6 +17,7 @@ final class ArcadeAntiCheatApiTest extends TestCase
         parent::setUp();
         config()->set('demian-arcade.anticheat.enabled',true);
         config()->set('demian-arcade.critters_ranked_enabled',true);
+        config()->set('demian-coupons.cafe_enabled',true);
     }
 
     private function player(): array

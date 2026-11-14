@@ -215,6 +215,9 @@ final class ArcadeAntiCheatTest extends TestCase
             'id'=>$report->id,'status'=>'confirmed','reviewed_by'=>$root,
         ]);
         $this->assertDatabaseCount('arcade_cheat_review_events',2);
+        // Management write throttles are intentionally strict: after one
+        // failed step-up and two reviewed writes, the next minute starts.
+        $this->travel(61)->seconds();
 
         $this->post(route('cashier.anticheat.hold'),[
             'report_id'=>$report->id,'operation'=>'apply','hours'=>24,
