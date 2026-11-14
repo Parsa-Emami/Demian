@@ -14,7 +14,8 @@ return new class extends Migration
                 ->on('arcade_weekly_periods')->restrictOnDelete();
             $table->char('settlement_hash', 64);
             $table->char('policy_hash', 64);
-            $table->json('policy_snapshot');
+            // Preserve exact canonical bytes for SHA-256 across MySQL JSON and SQLite.
+            $table->longText('policy_snapshot');
             $table->unsignedInteger('coupon_count');
             $table->timestamp('issued_at');
             $table->timestamps();
