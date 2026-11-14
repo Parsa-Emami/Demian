@@ -14,17 +14,25 @@ final class LeaderboardService
 
     public function read(string $period, int $limit): array
     {
-        $rules = app(RunnerReplayVerifier::class)->rules();
+        return $this->readForGame('dino-run', $period, $limit);
+    }
+
+    public function readForGame(string $gameId, string $period, int $limit): array
+    {
+        abort_unless(app(RankedGameCatalog::class)->supportsRanked($gameId), 404);
+        $rulesVersion = $gameId === 'cafe-critters'
+            ? CafeCrittersReplayVerifier::VERSION
+            : app(RunnerReplayVerifier::class)->rules()['version'];
         $window = app(CompetitionClock::class)->snapshot($period);
         $key = $window['period_key'];
         $rows = DB::table('arcade_leaderboard_entries as e')->join('arcade_players as p', 'p.id', '=', 'e.player_id')
             ->join('arcade_runs as r', 'r.id', '=', 'e.run_id')
-            ->where('e.game_id', 'dino-run')->where('e.rules_version', $rules['version'])->where('e.period_key', $key)
+            ->where('e.game_id', $gameId)->where('e.rules_version', $rulesVersion)->where('e.period_key', $key)
             ->orderByDesc('e.score')->orderBy('e.achieved_at')->orderBy('e.id')->limit($limit)
             ->get(['p.id as player_id', 'p.display_name', 'e.score', 'e.achieved_at', 'r.character_slug', 'r.track_width']);
 
-        return ['game_id' => 'dino-run', ...$window,
-            'rules_version' => $rules['version'], 'verification' => 'server-replay',
+        return ['game_id' => $gameId, ...$window,
+            'rules_version' => $rulesVersion, 'verification' => 'server-replay',
             'data' => $rows->map(fn (object $row, int $i): array => ['rank' => $i + 1, 'player_id' => $row->player_id,
                 'display_name' => $row->display_name, 'score' => (int) $row->score,
                 'character_slug' => $row->character_slug, 'track_width' => (int) $row->track_width,
