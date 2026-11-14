@@ -82,8 +82,9 @@ final class CoffeeCrashReplayParityTest extends TestCase
         $this->getJson('/api/v1/arcade/leaderboards/coffee-crash')
             ->assertOk()->assertJsonPath('game_id', 'coffee-crash')
             ->assertJsonPath('data.0.score', $fixture['expected']['score']);
+        // Other unenabled game leaderboards stay hidden even when Coffee is live.
         $this->getJson('/api/v1/arcade/leaderboards/cafe-critters')
-            ->assertOk()->assertJsonCount(0, 'data');
+            ->assertNotFound();
     }
 
     public function test_modified_swap_and_truncated_replay_are_rejected(): void
