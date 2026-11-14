@@ -102,7 +102,9 @@ try {
         await portfolio.goto(click.destination, { waitUntil: 'commit', timeout: 15000 });
         await portfolio.waitForURL('https://parsaaemm.dev/', { waitUntil: 'commit' });
         await portfolio.close();
-        await page.bringToFront();
+        // Headless page evaluation does not require foreground focus. Calling
+        // bringToFront() after a noopener popup can block indefinitely on CI
+        // desktop profiles; keep the original page/context alive instead.
         await page.evaluate(() => window.demianGameApplication.launchGame('coffee-crash'));
         await page.locator('[data-coffee-dialog-action="start"]').click();
         await page.evaluate(() => window.demianGameApplication.pauseGame());
