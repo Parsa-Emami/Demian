@@ -355,11 +355,22 @@ final class ArcadeAntiCheat
     public function prune(): array
     {
         $days = $this->setting('observation_retention_days', 30);
+        $observations = DB::table('arcade_anticheat_observations')
+            ->where('created_at','<',now()->subDays($days))->delete();
+        $expiredHolds = DB::table('arcade_anticheat_holds')
+            ->where('expires_at','<=',now())->delete();
+        // GDPR-style data minimization: do not keep resolved cases forever.
+        // Never purge unresolved reports or cases with an active hold.
+        $closedDays = $this->setting('closed_report_retention_days', 365);
+        $resolved = DB::table('arcade_cheat_reports')
+            ->whereIn('status', ['cleared', 'confirmed'])
+            ->where('last_seen', '<', now()->subDays($closedDays))
+            ->whereNotIn('id', DB::table('arcade_anticheat_holds')
+                ->select('report_id'))->delete();
         return [
-            'observations' => DB::table('arcade_anticheat_observations')
-                ->where('created_at','<',now()->subDays($days))->delete(),
-            'expired_holds' => DB::table('arcade_anticheat_holds')
-                ->where('expires_at','<=',now())->delete(),
+            'observations' => $observations,
+            'expired_holds' => $expiredHolds,
+            'resolved_reports' => $resolved,
         ];
     }
 }

@@ -71,9 +71,11 @@ decision and NOT a probability that a human cheated.
   The same player row is locked for new start decisions and the review hold
   write. Release and natural expiry preserve historical verified data.
 - Account deletion cascades to anti-cheat observations, reports and holds.
-  Observations older than 30 days and expired holds are pruned. Longer
-  retention of reviewed cases requires separate local privacy/governance
-  approval; the software does not silently purge confirmed historical cases.
+  Observations older than 30 days and expired holds are pruned.
+  Resolved or cleared reports older than 365 days are also purged with their
+  review events if no hold references them; unresolved cases remain for
+  investigation. Obtain local legal/privacy retention approval before enabling
+  the feature in production.
 
 ## Deployment and verification
 

@@ -34,6 +34,9 @@ return [
     'anticheat' => [
         'enabled' => (bool) env('DEMIAN_ANTICHEAT_ENABLED', false),
         'observation_retention_days' => 30,
+        // A reviewed/dismissed case's bounded evidence expires after one year;
+        // unresolved cases are retained for human resolution.
+        'closed_report_retention_days' => 365,
         'start_burst_count' => 10,
         'start_burst_minutes' => 10,
         'rejection_burst_count' => 4,
