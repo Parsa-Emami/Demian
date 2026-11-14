@@ -78,6 +78,12 @@ for (frame = 1; frame <= 7200; frame++) {
             input.z = dz / length;
         }
     }
+    // Snapshot the actual engine position immediately before interaction.
+    // The interaction itself takes the next tick, preserving strict ordering.
+    if (input.interact && (actions.at(-1)?.tick ?? -1) < frame - 1) {
+        actions.push({ tick:frame-1, kind:'move',
+            x:round(pos.x), z:round(pos.z) });
+    }
     model.advance(1/60, input);
     if (input.interact) {
         // Replayed server interactions have no client-entered target or
