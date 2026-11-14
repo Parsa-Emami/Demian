@@ -206,4 +206,40 @@ final class OriginalGameplayRankedApiTest extends TestCase
         $this->assertDatabaseCount('arcade_leaderboard_entries',0);
     }
 
+    public function test_original_after_hours_genuine_shadow_safe_escape_is_persisted_as_an_authoritative_score(): void
+    {
+        $node=new \Symfony\Component\Process\Process([
+            'node',base_path('tools/generate_after_hours_winning_fixture.mjs'),
+        ]);
+        $node->setTimeout(90);
+        $node->mustRun();
+        $data=json_decode($node->getOutput(),true,flags:JSON_THROW_ON_ERROR);
+        $this->assertNotNull($data['winner']);
+        $fixture=$data['winner'];
+        config()->set('demian-arcade.gameplay_ranked_enabled.after-hours',true);
+        $owner=$this->player();
+        $run=$this->start($owner,'after-hours',AfterHoursFrameReplayVerifier::VERSION,
+            (string)Str::uuid());
+        DB::table('arcade_runs')->where('id',$run['run_id'])->update([
+            'seed'=>$fixture['seed'],
+        ]);
+        $this->travel((int)ceil($fixture['ticks']/60)+2)->seconds();
+        $url='/api/v1/arcade/turn-runs/'.$run['run_id'].'/complete';
+        $proof=['ticks'=>$fixture['ticks'],'frames'=>$fixture['frames']];
+        $this->withToken($owner['token'])->postJson($url,$proof)->assertOk()
+            ->assertJsonPath('score',$fixture['score'])
+            ->assertJsonPath('passed',2)
+            ->assertJsonPath('status','verified')
+            ->assertJsonPath('rules_version',AfterHoursFrameReplayVerifier::VERSION);
+        $this->withToken($owner['token'])->postJson($url,$proof)->assertOk()
+            ->assertJsonPath('score',$fixture['score']);
+        $this->assertDatabaseCount('arcade_replays',1);
+        $this->assertDatabaseCount('arcade_leaderboard_entries',3);
+        $this->getJson('/api/v1/arcade/leaderboards/after-hours')
+            ->assertOk()
+            ->assertJsonPath('rules_version',AfterHoursFrameReplayVerifier::VERSION)
+            ->assertJsonPath('data.0.score',$fixture['score']);
+        $this->assertFalse(app(RankedGameCatalog::class)->supportsPrizes('after-hours'));
+    }
+
 }
