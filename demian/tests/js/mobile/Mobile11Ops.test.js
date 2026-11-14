@@ -9,6 +9,7 @@ const backup = read('../../../ops/mobile-11/backup_mysql.sh');
 const deploy = read('../../../../.github/workflows/mobile11-api-deploy.yml');
 const load = read('../../../tools/load/mobile11_read_only.js');
 const pages = read('../../../../.github/workflows/deploy-demian-pages.yml');
+const nginx = read('../../../ops/mobile-11/nginx.conf.example');
 
 test('production deployment is manual, gated and pinned to explicit SSH host keys', () => {
     assert.match(deploy, /workflow_dispatch:/);
@@ -94,4 +95,14 @@ test('smoke fails on degraded responses, not only HTTP errors', async () => {
     });
     assert.equal(summarize(rows).passed, false);
     assert.equal(summarize(rows).errors, 3);
+});
+
+test('public API reverse proxy must never expose administrative web routes', () => {
+    assert.match(nginx, /location \^~ \/api\//);
+    assert.match(nginx, /location = \/up/);
+    assert.match(nginx, /location = \/index\.php/);
+    assert.match(nginx, /internal;/);
+    assert.match(nginx, /location \/ \{ return 404; \}/);
+    assert.match(nginx, /location ~ \\\.php\$ \{ return 404; \}/);
+    assert.match(nginx, /Strict-Transport-Security/);
 });
