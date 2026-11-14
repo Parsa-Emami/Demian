@@ -281,7 +281,10 @@ final class CafeRushFrameReplayVerifier
         int $seed,int $ticks,array $transitions,string $difficulty='standard'
     ): array {
         $result=$this->simulate($seed,$ticks,$transitions,$difficulty);
-        if(!$result['won'])$this->reject('Original Cafe Rush quota not reached.');
+        // The original game always produces a score when the 120s shift ends,
+        // even when the difficulty quota is missed. Require real successful
+        // service, but never turn a genuine partial score into a fake win.
+        if($result['passed']<1)$this->reject('No original Cafe Rush delivery verified.');
         return ['score'=>$result['score'],'ticks'=>$ticks,'passed'=>$result['passed']];
     }
 }
