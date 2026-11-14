@@ -170,7 +170,13 @@ final class WeeklySettlementService
             $historical = DB::table('arcade_weekly_winners')
                 ->where('period_key', '<', $key)->whereNotNull('player_id')
                 ->pluck('player_id')->all();
-            $winners = $this->selector->select($rankings, $historical);
+            // Not every verified ranked score is eligible for cash-equivalent cafe
+                        // coupons. Preserve its read-only ranking snapshot regardless,
+                        // but prevent provisional game modes from receiving awards.
+                        $prizeRankings = array_filter($rankings,
+                            fn (array $entries, string $gameId): bool => $rankable->supportsPrizes($gameId),
+                            ARRAY_FILTER_USE_BOTH);
+                        $winners = $this->selector->select($prizeRankings, $historical);
 
             $snapshot = [];
             ksort($rankings, SORT_STRING);
