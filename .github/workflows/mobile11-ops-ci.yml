@@ -84,7 +84,8 @@ jobs:
             resources/views src public/index.php public/.htaccess \
             composer.json composer.lock vendor
           test -s "$RUNNER_TEMP/cpanel-api.tar.gz"
-          tar -tzf "$RUNNER_TEMP/cpanel-api.tar.gz" | grep -qx 'artisan'
-          if tar -tzf "$RUNNER_TEMP/cpanel-api.tar.gz" | grep -Eq '(^|/)([.]env|[.]git)(/|$)'; then
+          tar -tzf "$RUNNER_TEMP/cpanel-api.tar.gz" > "$RUNNER_TEMP/cpanel-entries.txt"
+          grep -Fx 'artisan' "$RUNNER_TEMP/cpanel-entries.txt" >/dev/null
+          if grep -Eq '(^|/)([.]env|[.]git)(/|$)' "$RUNNER_TEMP/cpanel-entries.txt"; then
             echo "Forbidden secret file in release" >&2; exit 1
           fi
