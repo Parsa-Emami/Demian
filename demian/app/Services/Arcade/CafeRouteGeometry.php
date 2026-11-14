@@ -103,6 +103,38 @@ final class CafeRouteGeometry
     }
 
     /**
+     * The original AfterHoursShadow hears through furniture but not through
+     * sound-blocking FBX walls; exact equivalent of ground.soundClear().
+     */
+    public function canHear(array $from, array $to): bool
+    {
+        foreach ($this->data()['colliders'] as $collider) {
+            if (($collider['kind'] ?? null) !== 'wall') continue;
+            $position = $collider['position'];
+            $half = $collider['half_extents'];
+            $entry = 0.0;
+            $exit = 1.0;
+            foreach (['x', 'z'] as $axis) {
+                $start = (float) $from[$axis];
+                $delta = (float) $to[$axis] - $start;
+                $lower = (float) $position[$axis] - (float) $half[$axis];
+                $upper = (float) $position[$axis] + (float) $half[$axis];
+                if (abs($delta) < 1e-8) {
+                    if ($start < $lower || $start > $upper) continue 2;
+                } else {
+                    $a = ($lower - $start) / $delta;
+                    $b = ($upper - $start) / $delta;
+                    $entry = max($entry, min($a, $b));
+                    $exit = min($exit, max($a, $b));
+                    if ($entry > $exit) continue 2;
+                }
+            }
+            if ($entry <= $exit) return false;
+        }
+        return true;
+    }
+
+    /**
      * Conservative full-segment collision. Never accept a path merely because
      * its endpoints are valid on opposite sides of a wall or closed room.
      * Samples are <=0.18 units, finer than FBX floor cell size.
