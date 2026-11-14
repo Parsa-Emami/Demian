@@ -12,14 +12,29 @@ use Illuminate\Support\Facades\DB;
  */
 final class ArcadeTurnRunService
 {
-    public function __construct(private readonly CafeCrittersReplayVerifier $critters) {}
+    public function __construct(private readonly CafeCrittersReplayVerifier $critters,
+        private readonly CoffeeCrashReplayVerifier $coffee) {}
+
+    private function version(string $game): string
+    {
+        return match ($game) {
+            CafeCrittersReplayVerifier::GAME_ID => CafeCrittersReplayVerifier::VERSION,
+            CoffeeCrashReplayVerifier::GAME_ID => CoffeeCrashReplayVerifier::VERSION,
+            default => abort(422, 'No trusted verifier for this game.'),
+        };
+    }
+
+    private function maximumTicks(string $game): int
+    {
+        return $game === CoffeeCrashReplayVerifier::GAME_ID
+            ? CoffeeCrashReplayVerifier::MAX_TICKS : CafeCrittersReplayVerifier::MAX_TICKS;
+    }
 
     public function start(ArcadePlayer $player, array $data): ArcadeRun
     {
-        abort_unless(config('demian-arcade.critters_ranked_enabled') === true,
-            503, 'Cafe Critters ranked replay is not enabled.');
-        abort_unless($data['game_id'] === CafeCrittersReplayVerifier::GAME_ID
-            && $data['rules_version'] === CafeCrittersReplayVerifier::VERSION, 409,
+        abort_unless(app(RankedGameCatalog::class)->supportsRanked($data['game_id']),
+            503, 'This game has not passed ranked verification gates.');
+        abort_unless($data['rules_version'] === $this->version($data['game_id']), 409,
             'Refresh game rules before starting a ranked replay.');
 
         return DB::transaction(function () use ($player, $data): ArcadeRun {
@@ -36,12 +51,12 @@ final class ArcadeTurnRunService
             app(WeeklySettlementService::class)->assertOpenForCompletion(now());
             return ArcadeRun::query()->create([
                 'player_id' => $player->id, 'request_id' => $data['request_id'],
-                'game_id' => CafeCrittersReplayVerifier::GAME_ID,
-                'rules_version' => CafeCrittersReplayVerifier::VERSION,
+                'game_id' => $data['game_id'],
+                'rules_version' => $this->version($data['game_id']),
                 'character_slug' => 'darya', 'track_width' => 420,
                 'seed' => random_int(1, 2147483647), 'status' => 'started',
                 'started_at' => now(), 'expires_at' => now()->addSeconds(
-                    CafeCrittersReplayVerifier::MAX_TICKS / 60
+                    $this->maximumTicks($data['game_id']) / 60
                     + (int) config('demian-arcade.completion_grace_seconds')),
             ]);
         }, 3);
@@ -49,10 +64,11 @@ final class ArcadeTurnRunService
 
     public function complete(ArcadePlayer $player, ArcadeRun $run, array $data): array
     {
-        abort_unless(config('demian-arcade.critters_ranked_enabled') === true,
-            503, 'Cafe Critters ranked replay is not enabled.');
         abort_unless($run->player_id === $player->id
-            && $run->game_id === CafeCrittersReplayVerifier::GAME_ID, 404);
+            && in_array($run->game_id, [CafeCrittersReplayVerifier::GAME_ID,
+                CoffeeCrashReplayVerifier::GAME_ID], true), 404);
+        abort_unless(app(RankedGameCatalog::class)->supportsRanked($run->game_id),
+            503, 'This game has not passed ranked verification gates.');
         $hash = hash('sha256', json_encode([
             'ticks' => $data['ticks'], 'actions' => $data['actions']
         ], JSON_THROW_ON_ERROR));
@@ -67,14 +83,15 @@ final class ArcadeTurnRunService
             }
             abort_unless($locked->status === 'started' && $locked->expires_at->isFuture(),
                 410, 'Run expired.');
-            abort_unless($locked->rules_version === CafeCrittersReplayVerifier::VERSION,
+            abort_unless($locked->rules_version === $this->version($locked->game_id),
                 409, 'Rules version changed.');
             app(WeeklySettlementService::class)->assertOpenForCompletion($locked->started_at);
             $elapsed = abs($locked->started_at->diffInMilliseconds(now()));
             abort_if($data['ticks'] * 1000 / 60 > $elapsed + 2000, 422,
                 'Replay is ahead of server wall-clock time.');
-            $verified = $this->critters->verify(
-                (int) $locked->seed, $data['ticks'], $data['actions']);
+            $verified = $locked->game_id === CoffeeCrashReplayVerifier::GAME_ID
+                ? $this->coffee->verify((int) $locked->seed, $data['ticks'], $data['actions'])
+                : $this->critters->verify((int) $locked->seed, $data['ticks'], $data['actions']);
             $locked->fill([...$verified, 'status' => 'verified',
                 'replay_hash' => $hash, 'completed_at' => now()])->save();
             // Current arcade_replays.transitions is an event-evidence JSON column.
