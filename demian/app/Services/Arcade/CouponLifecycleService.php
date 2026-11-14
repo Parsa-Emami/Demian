@@ -63,7 +63,7 @@ final class CouponLifecycleService
     private function accountLock(string $playerId): void
     {
         abort_unless(DB::table('arcade_players')->where('id', $playerId)
-            ->lockForUpdate()->exists(), 422, 'Invalid or unavailable coupon.');
+            ->lockForUpdate()->first(['id']) !== null, 422, 'Invalid or unavailable coupon.');
     }
 
     /**
@@ -92,26 +92,27 @@ final class CouponLifecycleService
         return DB::transaction(function () use ($code, $playerId, $orderId, $total, $currency, $merchant): array {
             $this->accountLock($playerId);
             $coupon = $this->coupon($code, $playerId, true);
-            $discount = $this->checkQuote($coupon, $total, $currency);
-
             $previous = DB::table('arcade_coupon_reservations')
                 ->where('merchant_id', $merchant)->where('order_id', $orderId)->first();
             if ($previous) {
                 abort_unless((int) $previous->coupon_id === (int) $coupon->id
                     && (int) $previous->order_total_minor === $total
-                    && (int) $previous->discount_minor === $discount
                     && $previous->currency === $currency, 409,
                     'Order identifier has already been used.');
-                if ($previous->state === 'captured') {
-                    return ['status' => 'captured', ...$this->summary($coupon, $total, $discount)];
+                if ($previous->state === 'captured' && $coupon->status === 'redeemed') {
+                    return ['status' => 'captured', ...$this->summary($coupon, $total,
+                        (int) $previous->discount_minor)];
                 }
                 abort_unless($previous->state === 'reserved'
-                    && $previous->expires_at > now()->utc()->toDateTimeString(), 409,
+                    && $coupon->status === 'reserved'
+                    && $previous->expires_at > now()->utc()->toDateTimeString()
+                    && $coupon->expires_at > now()->utc()->toDateTimeString(), 409,
                     'Order identifier is no longer reservable.');
 
                 return ['status' => 'reserved', 'reserve_expires_at' => $previous->expires_at,
-                    ...$this->summary($coupon, $total, $discount)];
+                    ...$this->summary($coupon, $total, (int) $previous->discount_minor)];
             }
+            $discount = $this->checkQuote($coupon, $total, $currency);
 
             if ($coupon->status === 'reserved') {
                 $active = DB::table('arcade_coupon_reservations')
@@ -130,13 +131,17 @@ final class CouponLifecycleService
             $expires = now()->utc()->addMinutes((int) config('demian-coupons.reserve_minutes', 15));
             // An order id is unique even after release or expiration. This
             // prevents one paid order being recycled for multiple coupons.
-            DB::table('arcade_coupon_reservations')->insert([
-                'coupon_id' => $coupon->id, 'merchant_id' => $merchant,
-                'order_id' => $orderId, 'state' => 'reserved',
-                'currency' => $currency, 'order_total_minor' => $total,
-                'discount_minor' => $discount, 'expires_at' => $expires->toDateTimeString(),
-                'created_at' => now(), 'updated_at' => now(),
-            ]);
+            try {
+                DB::table('arcade_coupon_reservations')->insert([
+                    'coupon_id' => $coupon->id, 'merchant_id' => $merchant,
+                    'order_id' => $orderId, 'state' => 'reserved',
+                    'currency' => $currency, 'order_total_minor' => $total,
+                    'discount_minor' => $discount, 'expires_at' => $expires->toDateTimeString(),
+                    'created_at' => now(), 'updated_at' => now(),
+                ]);
+            } catch (\Illuminate\Database\UniqueConstraintViolationException $e) {
+                abort(409, 'Order identifier has already been used.');
+            }
             DB::table('arcade_coupons')->where('id', $coupon->id)
                 ->update(['status' => 'reserved', 'updated_at' => now()]);
             $this->event((int) $coupon->id, 'reserved', 'store', $orderId,
