@@ -81,8 +81,9 @@ final class InCafeCouponService
     {
         $this->enabled();
 
-        return DB::transaction(function () use ($cashierId, $code, $ticket,
-            $subtotal, $requestKey): array {
+        try {
+            return DB::transaction(function () use ($cashierId, $code, $ticket,
+                $subtotal, $requestKey): array {
             // Staff lock first; suspending the cashier waits for any in-flight
             // spend, and the next request always observes the suspension.
             $cashier = DB::table('arcade_cashier_staff')->where('id', $cashierId)
@@ -147,7 +148,12 @@ final class InCafeCouponService
 
             $receipt = DB::table('arcade_coupon_redemptions')->where('id', $receiptId)->first();
             return $this->result($receipt, false);
-        }, 3);
+            }, 3);
+        } catch (\Illuminate\Database\UniqueConstraintViolationException) {
+            // Even if two PHP workers raced past prechecks, the DB unique
+            // indexes are authoritative; surface a safe HTTP conflict.
+            abort(409, 'Coupon or cafe receipt has already been used.');
+        }
     }
 
     private function result(object $receipt, bool $retried): array
