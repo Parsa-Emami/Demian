@@ -65,4 +65,24 @@ final class CafeRushFullFrameParityTest extends TestCase
         app(CafeRushFrameReplayVerifier::class)->simulate(
             $case['seed'],7200,$case['transitions'],'standard');
     }
+    public function test_real_js_tray_spill_recovery_matches_independent_php_replay(): void
+    {
+        $node=new Process(['node',
+            base_path('tools/generate_rush_gameplay_fixture.mjs'),
+            '7','standard','spill']);
+        $node->setTimeout(70);
+        $node->mustRun();
+        $fixture=json_decode($node->getOutput(),true,flags:JSON_THROW_ON_ERROR);
+        $this->assertGreaterThan(0,$fixture['original_js']['spills'],
+            'Fixture must provoke an actual source game spill, not invent one.');
+        $php=app(CafeRushFrameReplayVerifier::class)->simulate(
+            7,7200,$fixture['transitions'],'standard');
+        $js=$fixture['original_js'];
+        $this->assertSame($js['score'],$php['score']);
+        $this->assertSame($js['delivered'],$php['passed']);
+        $this->assertSame($js['spills'],$php['details']['spills']);
+        $this->assertSame($js['bestCombo'],$php['details']['best_combo']);
+        $this->assertSame($js['expired'],$php['details']['expired']);
+    }
+
 }
