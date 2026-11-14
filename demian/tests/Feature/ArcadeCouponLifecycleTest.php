@@ -420,4 +420,41 @@ final class ArcadeCouponLifecycleTest extends TestCase
         app(CouponIssuanceService::class)->issue(self::WEEK);
     }
 
+
+    public function test_operator_can_revoke_unspent_code_but_never_redeemed_payment(): void
+    {
+        [$p, $code] = $this->issueOne();
+        $couponId = (int) DB::table('arcade_coupons')->value('id');
+        $this->artisan('arcade:coupons:revoke', [
+            '--id' => (string) $couponId, '--reason' => 'fraud',
+        ])->assertFailed();
+        $this->store('reserve', $this->checkout($p, $code))->assertOk();
+        $this->artisan('arcade:coupons:revoke', [
+            '--id' => (string) $couponId, '--reason' => 'fraud', '--apply' => true,
+        ])->assertSuccessful();
+        $this->assertDatabaseHas('arcade_coupons', [
+            'id' => $couponId, 'status' => 'revoked', 'code_ciphertext' => null,
+        ]);
+        $this->assertDatabaseHas('arcade_coupon_reservations', ['state' => 'released']);
+        $this->store('capture', $this->checkout($p, $code))->assertStatus(409);
+        $this->assertSame('passed',
+            app(\App\Services\Arcade\CouponIntegrityAudit::class)->inspect()['status']);
+        $this->artisan('arcade:coupons:revoke', [
+            '--id' => (string) $couponId, '--reason' => 'fraud', '--apply' => true,
+        ])->assertSuccessful();
+    }
+
+    public function test_operator_cannot_revoke_already_captured_order(): void
+    {
+        [$p, $code] = $this->issueOne();
+        $body = $this->checkout($p, $code);
+        $this->store('reserve', $body)->assertOk();
+        $this->store('capture', $body)->assertOk();
+        $this->artisan('arcade:coupons:revoke', [
+            '--id' => (string) DB::table('arcade_coupons')->value('id'),
+            '--reason' => 'incident', '--apply' => true,
+        ])->assertFailed();
+        $this->assertDatabaseHas('arcade_coupons', ['status' => 'redeemed']);
+    }
+
 }
