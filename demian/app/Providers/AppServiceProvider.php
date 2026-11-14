@@ -91,6 +91,13 @@ class AppServiceProvider extends ServiceProvider
                 (string) $request->session()->get('cafe_staff_id'))),
             Limit::perMinute(120)->by('cashier:lookup:ip:'.$request->ip()),
         ]);
+        RateLimiter::for('arcade-cashier-admin', static fn (Request $request): array => [
+            Limit::perMinute(3)->by('cashier:admin:id:'.
+                (string) $request->session()->get('cafe_staff_id')),
+            Limit::perHour(30)->by('cashier:admin:hour:id:'.
+                (string) $request->session()->get('cafe_staff_id')),
+            Limit::perMinute(30)->by('cashier:admin:ip:'.$request->ip()),
+        ]);
         RateLimiter::for('arcade-cashier-redeem', static fn (Request $request): array => [
             Limit::perMinute(10)->by('cashier:redeem:session:'.hash('sha256',
                 (string) $request->session()->get('cafe_staff_id'))),

@@ -1,5 +1,7 @@
 # Demian Phase 8 correction + Phase 9 — In-cafe discounts
 
+For Phase 10 admin/superadmin RBAC and production gates see PHASE_10_CAFE_RBAC_DEPLOYMENT.md in this directory.
+
 ## Only physical in-cafe redemption is supported
 
 The weekly, sealed leaderboard selects winners and Phase 8 issues a 128-bit encrypted one-time voucher with the approved proposed tiers (1st: 30%, 2nd–3rd: 20%, 4th–10th: 10%). An authenticated winner opens the game leaderboard and sees their own voucher code, percentage, expiry, minimum bill and maximum discount. The customer presents the code **in person** at the café. There is no e-commerce website, payment gateway, online order integration, or self-service redemption.
