@@ -292,18 +292,26 @@ final class ArcadeAntiCheat
             // Run starts lock this same player row before checking an active hold.
             ArcadePlayer::query()->whereKey($report->player_id)
                 ->lockForUpdate()->firstOrFail();
+            $existing = DB::table('arcade_anticheat_holds')
+                ->where('player_id', $report->player_id)->lockForUpdate()->first();
             if ($hours === null) {
+                abort_unless($existing && (int) $existing->report_id === $reportId,
+                    409, 'Only the case owning a hold can release it.');
                 DB::table('arcade_anticheat_holds')
-                    ->where('player_id', $report->player_id)->delete();
+                    ->where('player_id', $report->player_id)
+                    ->where('report_id', $reportId)->delete();
                 $action = 'hold_released';
                 $expires = null;
             } else {
+                abort_unless(! $existing || $existing->expires_at <= now()
+                    || (int) $existing->report_id === $reportId,
+                    409, 'Another confirmed case already owns this active hold.');
                 $expires = now()->addHours($hours);
                 DB::table('arcade_anticheat_holds')->updateOrInsert(
                     ['player_id' => $report->player_id], [
                         'report_id' => $reportId, 'actor_id' => $actorId,
                         'expires_at' => $expires, 'updated_at' => now(),
-                        'created_at' => now(),
+                        'created_at' => $existing?->created_at ?? now(),
                     ]);
                 $action = 'hold_applied';
             }
