@@ -14,6 +14,19 @@ class AppServiceProvider extends ServiceProvider
         //
     }
 
+    /**
+     * Throttling can execute before custom authentication middleware.
+     * Never key an authenticated request bucket by a nullable player attribute.
+     * Use the SHA-256 digest of the bearer instead: fixed length, no plaintext.
+     */
+    private static function arcadeTokenBucket(Request $request): string
+    {
+        $bearer = $request->bearerToken();
+        return is_string($bearer) && preg_match('/^[A-Za-z0-9]{64}$/D', $bearer)
+            ? 'token:'.hash('sha256', $bearer)
+            : 'guest:'.$request->ip();
+    }
+
     public function boot(): void
     {
         // Shared public IPs (schools, mobile carriers and game cafés) must not
@@ -27,7 +40,7 @@ class AppServiceProvider extends ServiceProvider
             Limit::perHour(180)->by('arcade:registration:hour:'.$request->ip()),
         ]);
         RateLimiter::for('arcade-run-start', static fn (Request $request): array => [
-            Limit::perMinute(10)->by('arcade:start:player:'.$request->attributes->get('arcade_player')?->id),
+            Limit::perMinute(10)->by('arcade:start:player:'.self::arcadeTokenBucket($request)),
             Limit::perMinute(500)->by('arcade:start:ip:'.$request->ip()),
         ]);
         RateLimiter::for('arcade-run-complete', static fn (Request $request): array => [
