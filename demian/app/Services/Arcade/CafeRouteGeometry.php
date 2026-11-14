@@ -29,6 +29,12 @@ final class CafeRouteGeometry
         return $this->snapshot = $data;
     }
 
+    /** Immutable server-bundled FBX collider geometry for authoritative physics. */
+    public function colliders(): array
+    {
+        return $this->data()['colliders'];
+    }
+
     public function identity(): array
     {
         $data = $this->data();
