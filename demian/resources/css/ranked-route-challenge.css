@@ -1,0 +1,67 @@
+/* Step 09 verified, opt-in route trials; stays below game/pause dialogs. */
+.ranked-route-challenge {
+    position: absolute;
+    z-index: 7;
+    inset-inline-end: max(12px, env(safe-area-inset-right));
+    inset-block-end: calc(92px + env(safe-area-inset-bottom));
+    width: min(275px, calc(100% - 24px));
+    max-height: min(195px, 30vh);
+    overflow: auto;
+    padding: 12px;
+    border: 1px solid rgba(34,211,238,.58);
+    border-block-start: 3px solid #22d3ee;
+    border-radius: 12px;
+    background: rgba(9,17,27,.95);
+    color: #ecfeff;
+    box-shadow: 0 14px 36px rgba(0,0,0,.42);
+    direction: rtl;
+    text-align: start;
+    pointer-events: auto;
+    font-size: .78rem;
+}
+.ranked-route-challenge h3 {
+    margin: 0 0 5px;
+    font-size: .92rem;
+    font-weight: 800;
+    color: #a5f3fc;
+}
+.ranked-route-challenge p {
+    margin: 5px 0;
+    line-height: 1.5;
+}
+.ranked-route-challenge [role="status"] {
+    font-weight: 700;
+    color: #fef3c7;
+}
+.ranked-route-challenge button {
+    width: 100%;
+    min-height: 44px;
+    margin-block-start: 7px;
+    padding: 8px 12px;
+    border: 1px solid #67e8f9;
+    border-radius: 8px;
+    background: rgba(8,145,178,.3);
+    color: #fff;
+    cursor: pointer;
+    font-weight: 750;
+}
+.ranked-route-challenge button:focus-visible {
+    outline: 3px solid #fef08a;
+    outline-offset: 2px;
+}
+.ranked-route-challenge button:disabled {
+    opacity: .55;
+    cursor: not-allowed;
+}
+@media (max-width: 600px) {
+    .ranked-route-challenge {
+        inset-block-end: calc(158px + env(safe-area-inset-bottom));
+        max-height: min(150px, 25vh);
+        width: min(235px, calc(100% - 24px));
+        padding: 9px;
+        font-size: .71rem;
+    }
+}
+@media (prefers-reduced-motion: reduce) {
+    .ranked-route-challenge * { transition: none !important; animation: none !important; }
+}

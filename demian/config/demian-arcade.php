@@ -8,6 +8,17 @@ return [
     // Financial prize acceptance is independent from public verified rankings.
     'critters_prizes_enabled' => (bool) env('DEMIAN_ARCADE_CRITTERS_PRIZES_ENABLED', false),
     'coffee_prizes_enabled' => (bool) env('DEMIAN_ARCADE_COFFEE_PRIZES_ENABLED', false),
+    // Separate opt-in for bounded route-trials; casual game scores stay local.
+    'route_ranked_enabled' => [
+        'after-hours' => (bool) env('DEMIAN_AFTER_HOURS_ROUTE_RANKED', false),
+        'cafe-rush' => (bool) env('DEMIAN_CAFE_RUSH_ROUTE_RANKED', false),
+        'open-world' => (bool) env('DEMIAN_OPEN_WORLD_ROUTE_RANKED', false),
+    ],
+    'route_prizes_enabled' => [
+        'after-hours' => (bool) env('DEMIAN_AFTER_HOURS_ROUTE_PRIZES', false),
+        'cafe-rush' => (bool) env('DEMIAN_CAFE_RUSH_ROUTE_PRIZES', false),
+        'open-world' => (bool) env('DEMIAN_OPEN_WORLD_ROUTE_PRIZES', false),
+    ],
     'api_only' => env('DEMIAN_ARCADE_API_ONLY', false),
     // Disabled by default until production migration and award policy approval.
     'weekly_settlement_enabled' => (bool) env('DEMIAN_ARCADE_WEEKLY_SETTLEMENT_ENABLED', false),

@@ -2,6 +2,7 @@ import BaseGame from '../../contracts/BaseGame.js';
 import { preloadFbxCafeArt } from '../../rendering2d/FbxCafeAssets.js';
 import CafeCueAudio from '../../shared/cafe/CafeCueAudio.js';
 import AfterHoursModel from './AfterHoursModel.js';
+import RankedRouteChallenge from '../../leaderboard/RankedRouteChallenge.js';
 import AfterHoursRenderer from './AfterHoursRenderer.js';
 import AfterHoursUi, { shiftTime } from './AfterHoursUi.js';
 import { CIRCUITS, SHIFT_LAYOUTS, SHIFT_RULES, distance } from './AfterHoursMap.js';
@@ -73,6 +74,19 @@ export default class AfterHoursGame extends BaseGame {
         this.context = context;
         this.renderer = new AfterHoursRenderer(context);
         this.ui = new AfterHoursUi(context.root, (action, value) => this.handleDialog(action, value));
+        this.routeChallenge = new RankedRouteChallenge({
+            context, gameId: 'after-hours',
+            position: () => this.model.player.position,
+            onStart: async (run) => {
+                this.model.reset('standard', run.seed % SHIFT_LAYOUTS.length);
+                this.model.start();
+                if (this.ui.dialog.open) this.closeDialog();
+                this.avatar.sync(this.model.player, 0);
+                this.renderer.scene.camera.jumpTo(this.model.player.position);
+                this.ui.update(this.model, this.radio);
+            },
+        });
+        this.routeChallenge.mount();
         this.avatar.sync(this.model.player);
         this.resize();
     }
@@ -146,6 +160,7 @@ export default class AfterHoursGame extends BaseGame {
             return;
         }
         this.model.advance(dt, input);
+        this.routeChallenge?.tick(dt);
         this.avatar.sync(this.model.player, dt);
         const shadow = this.model.shadow;
         this.shadowSteps += distance(shadow.previous, shadow.position);
@@ -161,6 +176,8 @@ export default class AfterHoursGame extends BaseGame {
 
     consumeEvents() {
         for (const event of this.model.drainEvents()) {
+            if (event.type === 'card') this.routeChallenge?.checkpoint(event.point?.id);
+            if (event.type === 'escaped') this.routeChallenge?.checkpoint('exit');
             this.audio.play(event.type, event.point, this.model.player.position);
             if (event.type === 'power') {
                 const dark = CIRCUITS.find((circuit) => circuit.id === this.model.darkCircuit);
@@ -215,6 +232,7 @@ export default class AfterHoursGame extends BaseGame {
     }
 
     dispose() {
+        this.routeChallenge?.stop();
         this.ui?.dispose();
         this.audio.dispose();
         this.renderer?.dispose();

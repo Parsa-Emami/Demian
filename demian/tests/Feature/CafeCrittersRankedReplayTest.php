@@ -78,7 +78,7 @@ final class CafeCrittersRankedReplayTest extends TestCase
         $this->assertDatabaseCount('arcade_runs', 0);
     }
 
-    public function test_only_critters_has_a_turn_replay_verifier(): void
+    public function test_only_critters_is_enabled_while_other_ranked_verifiers_are_gated(): void
     {
         $player = $this->player();
         $this->assertTrue(app(RankedGameCatalog::class)->supportsRanked('cafe-critters'));
@@ -88,7 +88,7 @@ final class CafeCrittersRankedReplayTest extends TestCase
                 ->postJson('/api/v1/arcade/turn-runs', [
                     'request_id' => (string) Str::uuid(), 'game_id' => $game,
                     'rules_version' => CafeCrittersReplayVerifier::VERSION,
-                ])->assertStatus($game === 'coffee-crash' ? 503 : 422);
+                ])->assertStatus(503);
         }
         $this->assertDatabaseCount('arcade_runs', 0);
     }

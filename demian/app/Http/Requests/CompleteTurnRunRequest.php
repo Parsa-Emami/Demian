@@ -16,18 +16,21 @@ final class CompleteTurnRunRequest extends FormRequest
         return [
             'ticks' => ['required', 'integer', 'min:1',
                 'max:'.max(CafeCrittersReplayVerifier::MAX_TICKS,
-                    CoffeeCrashReplayVerifier::MAX_TICKS)],
+                    CoffeeCrashReplayVerifier::MAX_TICKS, 300*60)],
             'actions' => ['required', 'array', 'min:1',
-                'max:'.CafeCrittersReplayVerifier::MAX_ACTIONS],
-            'actions.*' => ['required', 'array:tick,kind,field,option,a,b'],
+                'max:'.\App\Services\Arcade\CafeRouteReplayVerifier::MAX_ACTIONS],
+            'actions.*' => ['required', 'array:tick,kind,field,option,a,b,x,z,target'],
             'actions.*.tick' => ['required', 'integer', 'min:0',
                 'max:'.(max(CafeCrittersReplayVerifier::MAX_TICKS,
-                    CoffeeCrashReplayVerifier::MAX_TICKS) - 1)],
-            'actions.*.kind' => ['required', Rule::in(['select', 'invite', 'next', 'swap', 'undo'])],
+                    CoffeeCrashReplayVerifier::MAX_TICKS, 300*60) - 1)],
+            'actions.*.kind' => ['required', Rule::in(['select', 'invite', 'next', 'swap', 'undo', 'move', 'checkpoint'])],
             'actions.*.field' => ['nullable', 'string', 'max:12'],
             'actions.*.option' => ['nullable', 'string', 'max:16'],
             'actions.*.a' => ['nullable', 'integer', 'min:0', 'max:55'],
             'actions.*.b' => ['nullable', 'integer', 'min:0', 'max:55'],
+            'actions.*.x' => ['nullable', 'numeric', 'between:-200,200'],
+            'actions.*.z' => ['nullable', 'numeric', 'between:-200,200'],
+            'actions.*.target' => ['nullable', 'string', 'max:45'],
         ];
     }
 }
