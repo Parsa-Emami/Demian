@@ -61,7 +61,10 @@ Required per-environment server files: `$ROOT/shared/.env` and writable `$ROOT/s
 - [ ] Run read-only **50 active VUs** on authorized staging:
   `DEMIAN_BASE_URL=https://api-staging.example.com DEMIAN_TARGET=staging DEMIAN_LOAD_APPROVED=YES k6 run demian/tools/load/cpanel_50_active.js`
   This polls 3 endpoints every ~60 seconds per VU over 3 minutes; p95 <1,000 ms and error ratio <1% are *acceptance targets*, not claimed results. Monitor 429, 500/503/508, CPU throttling, EP/IO hits, MySQL threads and PHP process queueing.
-- [ ] Independently run a bounded **50 simultaneous write/replay completion** staging-only test with pre-created disposable identities and known-good deterministic replays. This remains a required external test; the read-only test **does not** certify it. Reset staging data afterwards. No such test may target player production data.
+- [ ] Run the opt-in **50 parallel staging database-write** profile:
+  `DEMIAN_BASE_URL=https://api-staging.example.com DEMIAN_TARGET=staging DEMIAN_LOAD_APPROVED=YES DEMIAN_WRITE_LOAD_APPROVED=YES k6 run demian/tools/load/cpanel_50_writes_staging.js`
+  It creates 50 temporary players in parallel, starts and idempotently retries one run per player, and deletes those accounts. It needs explicit owner authorization and a disposable staging schema; audit and clean up leftover test accounts after network failure. It does **not** submit verified scoring replays.
+- [ ] Independently run a bounded **50 simultaneous verified replay completion** staging-only test using pre-created disposable identities and known-good server-seeded play traces. This remains a separate required host test; the preceding read-only and account-write scenarios do not certify it. Never target real production player data.
 - [ ] Configure production backups/alerts and repeat staging checks. Only then manually approve production deploy and set **both** `DEMIAN_ARCADE_API_URL=https://api.example.com/api/v1/arcade` and `DEMIAN_ARCADE_ENABLE_RANKED=true` repository variables for the static Pages build.
 - [ ] Physical Android/iOS QA (Mobile-12) before public release.
 
