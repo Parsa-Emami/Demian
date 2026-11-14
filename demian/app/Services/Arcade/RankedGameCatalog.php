@@ -22,7 +22,7 @@ final class RankedGameCatalog
     {
         return array_map(
             fn (string $id, array $game): array => ['game_id' => $id, ...$game,
-                ...(in_array($id, ['cafe-critters', 'coffee-crash'], true) && $this->supportsRanked($id)
+                ...(in_array($id, ['cafe-critters', 'coffee-crash', 'after-hours', 'cafe-rush', 'open-world'], true) && $this->supportsRanked($id)
                     ? ['ranked' => true, 'verification' => 'server-replay'] : [])],
             array_keys(self::GAMES),
             array_values(self::GAMES),
@@ -33,6 +33,9 @@ final class RankedGameCatalog
     {
         if ($id === 'cafe-critters') return config('demian-arcade.critters_ranked_enabled') === true;
         if ($id === 'coffee-crash') return config('demian-arcade.coffee_ranked_enabled') === true;
+        if (isset(CafeRouteReplayVerifier::VERSIONS[$id])) {
+            return config('demian-arcade.route_ranked_enabled.'.$id) === true;
+        }
         return (self::GAMES[$id]['ranked'] ?? false) === true;
     }
     /** A verified leaderboard does not automatically authorize financial prizes.
@@ -46,6 +49,8 @@ final class RankedGameCatalog
             'dino-run' => true,
             'cafe-critters' => config('demian-arcade.critters_prizes_enabled') === true,
             'coffee-crash' => config('demian-arcade.coffee_prizes_enabled') === true,
+            'after-hours', 'cafe-rush', 'open-world' =>
+                config('demian-arcade.route_prizes_enabled.'.$id) === true,
             default => false,
         };
     }

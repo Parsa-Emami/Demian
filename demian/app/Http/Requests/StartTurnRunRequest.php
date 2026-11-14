@@ -15,7 +15,8 @@ final class StartTurnRunRequest extends FormRequest
     {
         return [
             'request_id' => ['required', 'uuid'],
-            'game_id' => ['required', Rule::in([CafeCrittersReplayVerifier::GAME_ID, CoffeeCrashReplayVerifier::GAME_ID])],
+            'game_id' => ['required', Rule::in([CafeCrittersReplayVerifier::GAME_ID, CoffeeCrashReplayVerifier::GAME_ID,
+                ...array_keys(\App\Services\Arcade\CafeRouteReplayVerifier::VERSIONS)])],
             'rules_version' => ['required', 'string', 'max:40'],
         ];
     }

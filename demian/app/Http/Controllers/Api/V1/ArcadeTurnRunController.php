@@ -40,6 +40,21 @@ final class ArcadeTurnRunController extends Controller
         ));
     }
 
+    /** Read-only verified route-trial ranking; hidden when rollout flag is OFF. */
+    public function routeLeaderboard(Request $request, string $gameId,
+        LeaderboardService $service): JsonResponse
+    {
+        abort_unless(isset(\App\Services\Arcade\CafeRouteReplayVerifier::VERSIONS[$gameId]),
+            404);
+        $data = $request->validate([
+            'period' => ['sometimes', Rule::in(['all', 'daily', 'weekly'])],
+            'limit' => ['sometimes', 'integer', 'min:1', 'max:50'],
+        ]);
+        return response()->json($service->readForGame(
+            $gameId, $data['period'] ?? 'weekly', (int) ($data['limit'] ?? 20)
+        ));
+    }
+
     public function start(StartTurnRunRequest $request, ArcadeTurnRunService $service): JsonResponse
     {
         $run = $service->start($request->attributes->get('arcade_player'),
