@@ -16,6 +16,27 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        // Shared public IPs (schools, mobile carriers and game cafés) must not
+        // cause unrelated authenticated players to compete for the same
+        // 10/20 per-minute run submission bucket.
+        RateLimiter::for('arcade-public-ip', static fn (Request $request): Limit =>
+            Limit::perMinute(1200)->by('arcade:ip:'.$request->ip()));
+
+        RateLimiter::for('arcade-registration', static fn (Request $request): array => [
+            Limit::perMinute(60)->by('arcade:registration:minute:'.$request->ip()),
+            Limit::perHour(180)->by('arcade:registration:hour:'.$request->ip()),
+        ]);
+        RateLimiter::for('arcade-run-start', static fn (Request $request): array => [
+            Limit::perMinute(10)->by('arcade:start:player:'.$request->attributes->get('arcade_player')?->id),
+            Limit::perMinute(500)->by('arcade:start:ip:'.$request->ip()),
+        ]);
+        RateLimiter::for('arcade-run-complete', static fn (Request $request): array => [
+            Limit::perMinute(20)->by('arcade:complete:player:'.$request->attributes->get('arcade_player')?->id),
+            Limit::perMinute(500)->by('arcade:complete:ip:'.$request->ip()),
+        ]);
+        RateLimiter::for('arcade-player-rename', static fn (Request $request): Limit =>
+            Limit::perMinute(5)->by('arcade:rename:'.$request->attributes->get('arcade_player')?->id));
+
         // A destructive operation must have its own rate-limit bucket.
         // Numeric throttle:2,1 could share a guest/IP bucket with unrelated
         // arcade routes, causing a valid account deletion to be rate-limited.
