@@ -271,4 +271,34 @@ final class CouponShopTest extends TestCase
         ])->assertStatus(409);
         $this->assertDatabaseCount('arcade_coupon_redemptions', 0);
     }
+
+    public function test_merchant_checkout_rejects_cleartext_transport_in_production(): void
+    {
+        $code = $this->issueCoupons()[0]['code'];
+        $original = $this->app->environment();
+        $this->app->instance('env', 'production');
+        try {
+            $this->signed('quote', $this->price($code))->assertForbidden();
+            $this->assertDatabaseCount('arcade_coupon_shop_requests', 0);
+        } finally {
+            $this->app->instance('env', $original);
+        }
+    }
+
+    public function test_redeemed_coupon_lose_decryptable_secret_after_player_erasure(): void
+    {
+        $player = $this->issueCoupons()[0];
+        $this->signed('reserve', $this->order($player['code']))->assertCreated();
+        $this->signed('commit', [
+            'code' => $player['code'], 'order_ref' => 'shop-order-00001',
+        ])->assertOk();
+        $this->withToken($player['token'])->deleteJson('/api/v1/arcade/player')->assertOk();
+        $this->assertNull(DB::table('arcade_coupons')->value('code_ciphertext'));
+        $this->assertDatabaseHas('arcade_coupons', [
+            'status' => 'redeemed', 'player_id' => null,
+        ]);
+        $this->assertDatabaseCount('arcade_coupon_redemptions', 1);
+        $this->assertSame('passed', app(\App\Services\Arcade\CouponLedgerAudit::class)->inspect()['status']);
+    }
+
 }
