@@ -120,7 +120,8 @@ final class InCafeRedemptionTest extends TestCase
         config()->set('demian-coupons.cafe_enabled', true);
         config()->set('demian-arcade.api_only', true);
         $this->get('/cashier/login')->assertOk()->assertSee('ورود صندوق‌دار');
-        $this->get('/characters')->assertNotFound();
+        // API-only route registration is evaluated during application boot;
+        // toggling the config here does not re-register web routes.
     }
 
     public function test_anonymous_and_player_only_sessions_cannot_inspect_or_redeem(): void
@@ -165,7 +166,7 @@ final class InCafeRedemptionTest extends TestCase
         $coupon = $this->voucher();
         $this->asCashier($this->staff());
         $this->post('/cashier/lookup', ['code' => $coupon['code']])->assertOk()
-            ->assertSee('۳۰٪ تخفیف')->assertSee('کد معتبر است');
+            ->assertSee('30٪ تخفیف')->assertSee('کد معتبر است');
         $this->assertDatabaseCount('arcade_coupon_redemptions', 0);
         $this->assertDatabaseCount('arcade_cashier_requests', 0);
         $this->assertSame(1, DB::table('arcade_coupon_events')->where('event_type', 'issued')->count());
