@@ -12,6 +12,8 @@ const byId = new Map(RUSH_SPOTS.map(spot => [spot.id, spot]));
 const distance = (a,b) => Math.hypot(a.x-b.x, a.z-b.z);
 const round = x => Math.round(x * 10000) / 10000;
 const actions = [];
+const transitions = [];
+let previousControl = null;
 let goalId = null;
 let path = [];
 let frame = 0;
@@ -79,6 +81,16 @@ for (frame = 1; frame <= 7200; frame++) {
             input.z = dz / length;
         }
     }
+    // Original-game ranked contract: quantize the player's input BEFORE
+    // advancing the actual source model so PHP sees identical axes.
+    input.x = Math.round(input.x * 1000) / 1000;
+    input.z = Math.round(input.z * 1000) / 1000;
+    const control = [frame, input.x, input.z, Number(Boolean(input.run)),
+        Number(Boolean(input.interact))];
+    if (!previousControl
+        || control.slice(1).some((value,index) => value !== previousControl[index+1])
+    ) transitions.push(control);
+    previousControl = control;
     // Snapshot the actual engine position immediately before interaction.
     // The interaction itself takes the next tick, preserving strict ordering.
     if (input.interact && frame > 1 && (actions.at(-1)?.tick ?? -1) < frame - 1) {
@@ -105,8 +117,13 @@ for (frame = 1; frame <= 7200; frame++) {
     previous = { ...model.player.position };
 }
 const result = model.result();
+if (transitions.at(-1)?.[0] !== 7200) {
+    // Tick 7200 is the closing shift frame: no move or interaction occurs.
+    const [,x,z,run] = previousControl;
+    transitions.push([7200,x,z,run,0]);
+}
 model.dispose();
 process.stdout.write(JSON.stringify({
-    seed, difficulty, ticks:7200, actions, original_js:result,
+    seed, difficulty, ticks:7200, actions, transitions, original_js:result,
     evidence:{ frames:frame-1, actions:actions.length },
 }));
