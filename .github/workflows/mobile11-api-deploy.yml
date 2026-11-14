@@ -1,0 +1,114 @@
+name: Mobile-11 authorized API deployment
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: "Explicit environment: staging or production"
+        required: true
+        type: choice
+        options: [staging, production]
+      production_acknowledgement:
+        description: "For production type: DEPLOY_PRODUCTION_WITH_BACKUP"
+        required: false
+        type: string
+      backup_receipt:
+        description: "Off-host encrypted backup + restore-drill reference (production required)"
+        required: false
+        type: string
+permissions:
+  contents: read
+concurrency:
+  group: demian-api-${{ inputs.target }}
+  cancel-in-progress: false
+jobs:
+  verify:
+    uses: ./.github/workflows/arcade-backend.yml
+  package:
+    needs: verify
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, dom, xml, pdo_mysql, curl
+          coverage: none
+      - name: Build locked production PHP dependencies
+        working-directory: demian
+        run: composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader
+      - name: Package backend-only release (no .env or frontend art)
+        working-directory: demian
+        run: |
+          tar -czf "$RUNNER_TEMP/demian-api.tar.gz" \
+            artisan app bootstrap config database routes resources/game \
+            resources/views src public/index.php public/.htaccess composer.json composer.lock vendor
+          test -s "$RUNNER_TEMP/demian-api.tar.gz"
+          tar -tzf "$RUNNER_TEMP/demian-api.tar.gz" | grep -qx 'artisan'
+          if tar -tzf "$RUNNER_TEMP/demian-api.tar.gz" | grep -Eq '(^|/)([.]env|[.]git)(/|$)'; then
+            echo "Secret or Git metadata found in artifact" >&2; exit 1
+          fi
+      - uses: actions/upload-artifact@v4
+        with:
+          name: demian-api-release
+          path: ${{ runner.temp }}/demian-api.tar.gz
+          if-no-files-found: error
+          retention-days: 2
+  deploy:
+    needs: package
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    environment:
+      name: ${{ inputs.target }}
+      url: ${{ vars.API_BASE_URL }}
+    env:
+      DEPLOY_TARGET: ${{ inputs.target }}
+      DEPLOY_ACK: ${{ inputs.production_acknowledgement }}
+      BACKUP_RECEIPT: ${{ inputs.backup_receipt || '-' }}
+      API_HOST: ${{ vars.API_DEPLOY_HOST }}
+      API_USER: ${{ vars.API_DEPLOY_USER }}
+      API_ROOT: ${{ vars.API_DEPLOY_ROOT }}
+      API_BASE_URL: ${{ vars.API_BASE_URL }}
+      SSH_KEY: ${{ secrets.API_DEPLOY_SSH_KEY }}
+      SSH_KNOWN_HOSTS: ${{ secrets.API_SSH_KNOWN_HOSTS }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: demian-api-release
+          path: .mobile11-artifact
+      - name: Fail closed on missing host, pinned key or production approval
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          [[ "$API_HOST" =~ ^[A-Za-z0-9.-]+$ ]]
+          [[ "$API_USER" =~ ^[A-Za-z_][A-Za-z0-9_-]*$ ]]
+          [[ "$API_ROOT" =~ ^/srv/[A-Za-z0-9_./-]+$ && "$API_ROOT" != *..* ]]
+          url_re='^https://[A-Za-z0-9.-]+(:[0-9]+)?$'
+          [[ "$API_BASE_URL" =~ $url_re ]]
+          [[ -n "$SSH_KEY" && -n "$SSH_KNOWN_HOSTS" ]]
+          [[ "$BACKUP_RECEIPT" =~ ^[A-Za-z0-9_.:-]+$ ]]
+          if [[ "$DEPLOY_TARGET" == production ]]; then
+            [[ "$DEPLOY_ACK" == DEPLOY_PRODUCTION_WITH_BACKUP ]]
+            [[ "$BACKUP_RECEIPT" != "-" && ${#BACKUP_RECEIPT} -ge 8 ]]
+          fi
+      - name: Upload immutable artifact with pinned SSH host identity
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          key="$RUNNER_TEMP/demian_mobile11_key"
+          hosts="$RUNNER_TEMP/demian_mobile11_hosts"
+          printf '%s\n' "$SSH_KEY" > "$key"
+          printf '%s\n' "$SSH_KNOWN_HOSTS" > "$hosts"
+          chmod 600 "$key" "$hosts"
+          ssh_args=(-i "$key" -o IdentitiesOnly=yes -o BatchMode=yes
+            -o StrictHostKeyChecking=yes -o "UserKnownHostsFile=$hosts")
+          ssh "${ssh_args[@]}" "$API_USER@$API_HOST" "mkdir -p '$API_ROOT/.incoming'"
+          rsync -az -e "ssh -i $key -o IdentitiesOnly=yes -o BatchMode=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile=$hosts" \
+            .mobile11-artifact/demian-api.tar.gz \
+            "$API_USER@$API_HOST:$API_ROOT/.incoming/$GITHUB_SHA.tar.gz"
+          ssh "${ssh_args[@]}" "$API_USER@$API_HOST" \
+            "bash -s -- '$GITHUB_SHA' '$API_ROOT' '$API_BASE_URL' '$DEPLOY_TARGET' '$BACKUP_RECEIPT'" \
+            < demian/ops/mobile-11/release.sh
+      - name: Bounded read-only public API smoke after release
+        run: node demian/tools/smoke_arcade_api.mjs --base-url="$API_BASE_URL/api/v1/arcade" --users=10 --p95-ms=1500

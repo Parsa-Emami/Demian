@@ -67,3 +67,22 @@ jobs:
           DB_PASSWORD: arcade-test-password
           CACHE_STORE: array
           SESSION_DRIVER: array
+      - name: Mobile-11 MySQL disposable backup/restore integrity drill
+        if: matrix.database == 'mysql'
+        run: |
+          if ! command -v mysql >/dev/null || ! command -v mysqldump >/dev/null; then
+            sudo apt-get update -qq
+            sudo apt-get install -y default-mysql-client
+          fi
+          bash ops/mobile-11/ci_mysql_restore.sh
+        env:
+          APP_ENV: testing
+          APP_KEY: base64:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
+          DB_CONNECTION: mysql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_DATABASE: demian_test
+          DB_USERNAME: root
+          DB_PASSWORD: arcade-test-password
+          CACHE_STORE: array
+          SESSION_DRIVER: array
