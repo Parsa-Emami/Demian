@@ -128,13 +128,17 @@ final class CouponIssuanceService
 
     public function listForPlayer(string $playerId): array
     {
-        return DB::table('arcade_coupons as c')
+        $query = DB::table('arcade_coupons as c')
             ->leftJoin('arcade_weekly_winners as w', 'w.id', '=', 'c.winner_id')
             ->leftJoin('arcade_coupon_gifts as g', 'g.id', '=', 'c.gift_id')
             ->where('c.player_id', $playerId)->orderByDesc('c.id')
             ->get(['c.*', 'w.period_key', 'w.game_id', 'w.prize_rank',
-                'g.reason as gift_reason'])
-            ->map(function ($coupon): array {
+                'g.reason as gift_reason']);
+        $delivery = app(CouponDeliverySupportService::class)
+            ->statusesForCoupons($query->pluck('id')->all());
+        $enabled = config('demian-coupons.delivery_support_enabled') === true;
+
+        return $query->map(function ($coupon) use ($delivery, $enabled): array {
                 $expired = CarbonImmutable::parse($coupon->expires_at, 'UTC')->lte(CarbonImmutable::now('UTC'));
                 $status = $expired && $coupon->status !== 'redeemed' && $coupon->status !== 'revoked'
                     ? 'expired' : $coupon->status;
@@ -151,6 +155,13 @@ final class CouponIssuanceService
                     'max_discount_minor' => (int) $coupon->max_discount_minor,
                     'expires_at' => CarbonImmutable::parse($coupon->expires_at, 'UTC')->toIso8601String(),
                     'status' => $status,
+                    'support_enabled' => $enabled,
+                    'acknowledged_at' => isset($delivery['receipts'][$coupon->id])
+                        ? CarbonImmutable::parse(
+                            $delivery['receipts'][$coupon->id]->acknowledged_at, 'UTC'
+                        )->toIso8601String() : null,
+                    'case_id' => $delivery['cases'][$coupon->id]->id ?? null,
+                    'case_status' => $delivery['cases'][$coupon->id]->status ?? null,
                     'code' => $showCode ? Crypt::decryptString($coupon->code_ciphertext) : null,
                 ];
             })->all();
@@ -159,6 +170,8 @@ final class CouponIssuanceService
     /** The deletion caller holds a player row lock and a DB transaction. */
     public function revokeForDeletedPlayer(string $playerId): void
     {
+        // Strip free-text support history within the same erasure transaction.
+        app(CouponDeliverySupportService::class)->erasePrivateNotes($playerId);
         $coupons = DB::table('arcade_coupons')->where('player_id', $playerId)
             ->orderBy('id')->lockForUpdate()->get();
         foreach ($coupons as $coupon) {

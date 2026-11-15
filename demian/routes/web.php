@@ -10,6 +10,7 @@ use App\Http\Controllers\Cafe\CafeAdminController;
 use App\Http\Controllers\Cafe\CafeGiftController;
 use App\Http\Controllers\Cafe\CafeAntiCheatController;
 use App\Http\Controllers\Cafe\CafeRewardCampaignController;
+use App\Http\Controllers\Cafe\CafeCouponSupportController;
 
 // Authorized cafe staff use Laravel's CSRF-protected web session middleware,
 // including when the API host is in API-only mode. Never open character studio.
@@ -45,6 +46,15 @@ Route::prefix('cashier')->name('cashier.')->group(function (): void {
         Route::post('/admin/gifts/issue', [CafeGiftController::class, 'issue'])
             ->middleware([RequireCafePermission::class.':coupon.revoke',
                 'throttle:arcade-cashier-admin'])->name('gifts.issue');
+        Route::get('/admin/coupon-support', [CafeCouponSupportController::class, 'index'])
+            ->middleware(RequireCafePermission::class.':coupon.revoke')
+            ->name('coupon-support');
+        Route::post('/admin/coupon-support/{caseId}/decision',
+            [CafeCouponSupportController::class, 'decide'])
+            ->whereNumber('caseId')
+            ->middleware(['throttle:arcade-cashier-admin',
+                RequireCafePermission::class.':coupon.revoke'])
+            ->name('coupon-support.decide');
         Route::get('/admin/campaigns', [CafeRewardCampaignController::class, 'index'])
             ->middleware(RequireCafePermission::class.':coupon.revoke')->name('campaigns');
         Route::post('/admin/campaigns', [CafeRewardCampaignController::class, 'create'])

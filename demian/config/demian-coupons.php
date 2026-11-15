@@ -6,6 +6,8 @@ return [
     'policy_approved' => (bool) env('DEMIAN_COUPONS_POLICY_APPROVED', false),
     'issue_enabled' => (bool) env('DEMIAN_COUPONS_ISSUE_ENABLED', false),
     'campaigns_enabled' => (bool) env('DEMIAN_COUPONS_CAMPAIGNS_ENABLED', false),
+    // Step 16: owner acknowledgement and support cases, independently OFF.
+    'delivery_support_enabled' => (bool) env('DEMIAN_COUPONS_DELIVERY_SUPPORT_ENABLED', false),
     // Online merchant endpoints are retired; no real e-commerce integration.
     'shop_enabled' => false,
     // Separately gated manual gifts; weekly issuance is an independent switch.
