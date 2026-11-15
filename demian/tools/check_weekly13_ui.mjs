@@ -160,7 +160,7 @@ try {
     assert.equal(await leaderboard.locator('[data-ranking-game]').inputValue(), 'all-games');
     assert.match(await leaderboard.locator('[data-ranking-status]').innerText(), /موقت/);
     assert.match(await leaderboard.locator('[data-ranking-personal-best]').innerText(), /۲۷/);
-    assert.match(await leaderboard.locator('[data-ranking-rows] tr').first().innerText(), /۱۰۰۰/);
+    assert.match(await leaderboard.locator('[data-ranking-rows] tr').first().innerText(), /۱[٬\s]?۰۰۰/);
     assert.equal(await leaderboard.locator('script').count(), 0,
         'untrusted player names must remain text, not executable HTML');
     await leaderboard.locator('[data-ranking-week]').selectOption('2026-11-07');
