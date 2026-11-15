@@ -49,7 +49,7 @@ export function assetDecision(relativeAssetPath, { directory = false } = {}) {
     if (pack && pack[1] === segments[1]) {
         if ((pack[2] === 'spritesheet' && !['png', 'webp'].includes(pack[5])) ||
             (pack[2] === 'atlas' && pack[5] !== 'json')) return { keep: false, reason: 'invalid-pack-extension' };
-        if (pack[5] === 'webp' && !['runtime', 'detail'].includes(pack[4])) {
+        if (pack[5] === 'webp' && !['lite', 'runtime', 'detail'].includes(pack[4])) {
             return { keep: false, reason: 'unsupported-webp-variant' };
         }
         if (Number(pack[3]) !== characterPackVersion(segments[1])) {

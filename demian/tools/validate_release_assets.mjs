@@ -68,7 +68,7 @@ export function validateReleaseAssets({ root, sourceAssets = null, reportPath = 
                 const expectedPng = slug + '-spritesheet-v' + version + '-' + variant + '.png';
                 const expectedWebp = expectedPng.replace(/\.png$/, '.webp');
                 const declared = data.meta?.image;
-                const webp = ['runtime', 'detail'].includes(variant) && declared === expectedWebp;
+                const webp = ['lite', 'runtime', 'detail'].includes(variant) && declared === expectedWebp;
                 if (declared !== expectedPng && !webp) {
                     errors.push('Invalid atlas image reference: ' + atlas);
                 } else {

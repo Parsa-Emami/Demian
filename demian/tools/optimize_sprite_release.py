@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Release-only, pixel-exact character atlas optimization.
 
-Only runtime/detail variants are candidates. PNG source art and the repository
+Only lite/runtime/detail variants are candidates. PNG source art and the repository
 are immutable. A WebP replaces a shipped PNG only if it is strictly smaller
 and decoded RGBA pixels remain identical. No lossy quality settings.
 """
@@ -12,7 +12,7 @@ from pathlib import Path
 
 from PIL import Image, ImageChops
 
-VARIANTS = ("runtime", "detail")
+VARIANTS = ("lite", "runtime", "detail")
 MIN_SAVINGS = 0.02
 Image.MAX_IMAGE_PIXELS = 32_000_000
 

@@ -41,7 +41,15 @@ export function buildOfflinePackManifest({ release, entry, releaseId } = {}) {
         const base = 'assets/characters/' + slug + '/' + slug;
         corePaths.push(base + '-preview-v' + version + '.png');
         corePaths.push(base + '-atlas-v' + version + '-lite.json');
-        corePaths.push(base + '-spritesheet-v' + version + '-lite.png');
+        // The release-only lossless encoder may replace the lite PNG with an
+        // identical RGBA WebP. The offline core must reference the file that
+        // actually ships and must not accidentally cache duplicate formats.
+        const png = base + '-spritesheet-v' + version + '-lite.png';
+        const webp = base + '-spritesheet-v' + version + '-lite.webp';
+        const hasPng = existsSync(join(release, png));
+        const hasWebp = existsSync(join(release, webp));
+        if (hasPng === hasWebp) throw new Error('Missing or ambiguous offline lite atlas: ' + slug);
+        corePaths.push(hasWebp ? webp : png);
     }
     const core = unique(corePaths);
     const artRoot = 'assets/environments/demian-fbx/polished-v1/';

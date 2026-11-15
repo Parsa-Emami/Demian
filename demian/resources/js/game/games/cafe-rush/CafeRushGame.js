@@ -68,13 +68,10 @@ export default class CafeRushGame extends BaseGame {
 
     async preload(context) {
         void preloadFbxCafeArt();
-        const visuals = context.services.characterVisuals;
-        const [player, setayesh, uzudi] = await Promise.all([
-            visuals.createCanvasAvatar('amirreza', { player: true }),
-            visuals.createCanvasAvatar('setayesh'),
-            visuals.createCanvasAvatar('uzudi'),
-        ]);
-        this.avatars = { player, setayesh, uzudi };
+        const player = await context.services.characterVisuals.createCanvasAvatar(
+            'amirreza', { player: true });
+        // Optional staff art must never block entry into the round.
+        this.avatars = { player, setayesh: null, uzudi: null };
     }
 
     async enter(context) {
@@ -95,12 +92,33 @@ export default class CafeRushGame extends BaseGame {
         this.gameplayChallenge.mount();
         this.syncAvatars(0);
         this.resize();
+        this.hydrateStaff(context);
+    }
+
+    hydrateStaff(context) {
+        const schedule = globalThis.requestIdleCallback
+            ? callback => globalThis.requestIdleCallback(callback, { timeout: 1200 })
+            : callback => globalThis.setTimeout(callback, 0);
+        schedule(() => {
+            if (this.context !== context || this.disposed) return;
+            for (const slug of ['setayesh', 'uzudi']) {
+                void context.services.characterVisuals.createCanvasAvatar(slug,
+                    { variant: 'lite', background: true }).then(avatar => {
+                    if (this.context !== context || this.disposed) return;
+                    this.avatars[slug] = avatar;
+                    avatar.sync(STAFF[slug], 0);
+                }).catch(() => {
+                    // The staff proxy remains in the scene if network is slow
+                    // or artwork is absent; never block orders or score.
+                });
+            }
+        });
     }
 
     syncAvatars(dt) {
         this.avatars.player.sync(this.model.player, dt);
-        this.avatars.setayesh.sync(STAFF.setayesh, dt);
-        if (dt === 0 || this.model.elapsed >= VIP_AT) this.avatars.uzudi.sync(STAFF.uzudi, dt);
+        this.avatars.setayesh?.sync(STAFF.setayesh, dt);
+        if (dt === 0 || this.model.elapsed >= VIP_AT) this.avatars.uzudi?.sync(STAFF.uzudi, dt);
     }
 
     startSession() {
@@ -224,11 +242,14 @@ export default class CafeRushGame extends BaseGame {
     }
 
     dispose() {
+        this.disposed = true;
         this.gameplayChallenge?.stop();
         this.ui?.dispose();
         this.audio.dispose();
         this.renderer?.dispose();
         this.model.dispose();
         if (this.context) delete this.context.root.dataset.shiftDialog;
+        this.context = null;
+        this.avatars = null;
     }
 }

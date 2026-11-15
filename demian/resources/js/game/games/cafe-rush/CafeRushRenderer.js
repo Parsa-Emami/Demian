@@ -1,7 +1,7 @@
 import CafeGameRenderer2D from '../../rendering2d/CafeGameRenderer2D.js';
 import { drawSpriteCharacter } from '../../rendering2d/PixelActorRenderer.js';
 import { CAFE_STATIC_COLLIDERS } from '../../shared/cafe/CafeReferenceLayout.js';
-import { RECIPES, RUSH_BOUNDS, RUSH_SPOTS, VIP_AT, rushObjective } from './CafeRushMap.js';
+import { RECIPES, RUSH_BOUNDS, RUSH_SPOTS, RUSH_GUESTS, VIP_AT, rushObjective } from './CafeRushMap.js';
 
 const BOARD = {
     position: { x: 0, z: (RUSH_BOUNDS.minZ + RUSH_BOUNDS.maxZ) / 2 },
@@ -52,8 +52,22 @@ export default class CafeRushRenderer {
 
         const cast = [avatars.player, avatars.setayesh];
         if (model.elapsed >= VIP_AT) cast.push(avatars.uzudi);
-        cast.sort((first, second) => first.position.z - second.position.z);
-        for (const avatar of cast) drawSpriteCharacter(ctx, camera, avatar, { alpha, player: false });
+        cast.filter(Boolean).sort((first, second) =>
+            first.position.z - second.position.z).forEach(avatar =>
+            drawSpriteCharacter(ctx, camera, avatar, { alpha, player: false }));
+        for (const slug of model.elapsed >= VIP_AT ? ['setayesh', 'uzudi'] : ['setayesh']) {
+            if (avatars[slug]) continue;
+            const at = camera.worldToScreen(RUSH_GUESTS[slug]);
+            const radius = Math.max(6, camera.pixelsPerUnit * .55);
+            ctx.save();
+            ctx.fillStyle = '#785747';
+            ctx.strokeStyle = '#e8c59b';
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.ellipse(at.x, at.y - radius * 1.5, radius, radius * 1.7, 0, 0, Math.PI * 2);
+            ctx.fill(); ctx.stroke();
+            ctx.restore();
+        }
         const carried = model.carriedOrder;
         if (carried) this.drawTray(ctx, camera, model, carried);
         const objective = rushObjective(model);

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtempSync, mkdirSync, writeFileSync, rmSync, truncateSync, readFileSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, writeFileSync, rmSync, truncateSync, readFileSync, renameSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, dirname } from 'node:path';
 import { buildOfflinePackManifest, OFFLINE_GAME_IDS, OFFLINE_MAX_PACK_BYTES } from '../../../tools/offline_pack_manifest.mjs';
@@ -54,6 +54,19 @@ test('six portable offline bundles share one complete core and contain no creden
         assert.ok(pack.files.every(f => !f.path.includes('api/') && !f.path.startsWith('/')));
     }
     assert.ok(manifest.games.find(g => g.id === 'open-world').files.some(f => f.path.includes('lod-1024/')));
+});
+
+test('mobile fast release selects actual pixel-exact lite WebP in offline core and rejects duplicate formats', t => {
+    const { root, write } = fixture(); t.after(() => rmSync(root, { recursive: true, force: true }));
+    const slug = BUILTIN_CHARACTER_SLUGS[0], packVersion = characterPackVersion(slug);
+    const base = 'assets/characters/' + slug + '/' + slug + '-spritesheet-v' + packVersion + '-lite';
+    renameSync(join(root, base + '.png'), join(root, base + '.webp'));
+    const manifest = buildOfflinePackManifest({ release: root, entry, releaseId: version });
+    assert.ok(manifest.core.some(f => f.path === base + '.webp'));
+    assert.ok(!manifest.core.some(f => f.path === base + '.png'));
+    write(base + '.png');
+    assert.throws(() => buildOfflinePackManifest({ release: root, entry, releaseId: version }),
+        /Missing or ambiguous offline lite atlas/);
 });
 
 test('a broken or oversized release fails before any offline manifest is published', t => {

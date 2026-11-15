@@ -26,12 +26,12 @@ function runAssetPairTest(image, revision = 'a'.repeat(64)) {
 }
 
 test('Step 18: release policy accepts only declared runtime/detail WebP alongside original source PNG', () => {
-    for (const variant of ['runtime', 'detail']) {
+    for (const variant of ['lite', 'runtime', 'detail']) {
         for (const ext of ['png', 'webp']) {
             assert.equal(assetDecision('characters/darya/darya-spritesheet-v14-' + variant + '.' + ext).keep, true);
         }
     }
-    assert.equal(assetDecision('characters/darya/darya-spritesheet-v14-lite.webp').keep, false);
+    assert.equal(assetDecision('characters/darya/darya-spritesheet-v14-lite.webp').keep, true);
     assert.equal(assetDecision('characters/darya/darya-spritesheet-v14-mobile.webp').keep, false);
     assert.equal(assetDecision('characters/darya/darya-spritesheet-v14-desktop.webp').keep, false);
     assert.equal(assetDecision('characters/darya/darya-spritesheet-v13-runtime.webp').keep, false);

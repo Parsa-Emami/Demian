@@ -33,7 +33,7 @@ const server = createServer((req, res) => {
 const wait = (page, predicate, timeout = 45000) => page.waitForFunction(predicate, null, { timeout });
 const report = {
     schema: 1, status: 'pending', physicalDeviceVerified: false,
-    firstMenuMs: null, firstMenuAssetRequests: [], games: [], errors: [],
+    firstMenuMs: null, firstMenuAssetRequests: [], games: [], mobile4g: null, errors: [],
     limitations: [
         'Chromium emulation does not measure physical iOS Safari or Android Chrome startup.',
         'On-device GPU memory, PSS/RSS, energy, 15-minute thermal conditions and touch-to-photon remain external gates.',
@@ -99,6 +99,52 @@ try {
             'Game assets must be released before returning to the menu.');
     }
     assert.deepEqual(report.errors, [], 'No uncaught errors in full boot/game/menu cycle.');
+
+    // A second, genuinely cold browser has no prior sprite or JS cache.
+    // Chromium CDP throttles both request latency and throughput. This is a
+    // reproducible laboratory budget for *time from tap to first playable
+    // game state*, not an SLA for arbitrary physical phones or 2G/3G.
+    const mobile = await browser.newContext({
+        viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true,
+        deviceScaleFactor: 2, serviceWorkers: 'block',
+    });
+    try {
+        const phone = await mobile.newPage();
+        phone.on('pageerror', error => report.errors.push(error.message));
+        const cdp = await mobile.newCDPSession(phone);
+        await cdp.send('Network.enable');
+        await cdp.send('Network.emulateNetworkConditions', {
+            offline: false, latency: 80,
+            downloadThroughput: 8 * 1024 * 1024 / 8,
+            uploadThroughput: 2 * 1024 * 1024 / 8,
+        });
+        report.mobile4g = {
+            emulated: true, physicalPhoneVerified: false,
+            latencyMs: 80, throughputMbps: 8, launches: [],
+        };
+        await phone.goto(origin + '/', { waitUntil: 'domcontentloaded', timeout: 60000 });
+        await wait(phone, () => window.demianGameApplication?.sessionState === 'menu', 30000);
+        const requested = [];
+        phone.on('request', request => {
+            if (request.url().includes('/assets/characters/')) requested.push(request.url());
+        });
+        for (const game of ['dino-run', 'cafe-rush', 'open-world']) {
+            const index = requested.length;
+            const started = Date.now();
+            await phone.evaluate(id => window.demianGameApplication.launchGame(id), game);
+            await wait(phone, () => window.demianGameApplication?.sessionState === 'playing', 30000);
+            const elapsedMs = Date.now() - started;
+            const firstRequests = requested.slice(index).map(value => new URL(value).pathname);
+            report.mobile4g.launches.push({ game, elapsedMs, firstRequests });
+            assert.ok(firstRequests.every(url => !/-spritesheet-v\d+-(detail|runtime)\.(png|webp)$/.test(url)),
+                '4G phone first paint fetched an unnecessary multi-MB atlas: ' + JSON.stringify(firstRequests));
+            assert.ok(elapsedMs < 2000, '4G simulated first game launch exceeded 2s: ' + game +
+                ' (' + elapsedMs + 'ms)');
+            await phone.evaluate(() => window.demianGameApplication.showMenu());
+            await wait(phone, () => window.demianGameApplication?.sessionState === 'menu');
+        }
+    } finally { await mobile.close(); }
+    assert.deepEqual(report.errors, [], 'No uncaught errors in throttled 4G game cycle.');
     report.status = 'passed';
 } catch (error) {
     report.errors.push(error.stack ?? String(error));

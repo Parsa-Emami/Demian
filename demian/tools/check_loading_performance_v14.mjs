@@ -83,6 +83,12 @@ try {
         assert.ok(!sheets.some((url) => /-(desktop|mobile|compact)\.png/.test(url)));
         assert.deepEqual(errors, []);
         if (scenario === 'failed-runtime-image') {
+            // Runtime sheets are not fetched during the mobile critical path
+            // anymore. Explicitly exercise a later optional upgrade and its
+            // bounded 503 fallback, while keeping the first player frame lite.
+            await page.evaluate(async () => {
+                await window.demianGameApplication.characterVisuals.loadPack('negar', 'runtime');
+            });
             // Simulate two overlapping selections resolving in the opposite order.
             const selected = await page.evaluate(async () => {
                 const app = window.demianGameApplication, manager = app.activeGame.characterManager;
