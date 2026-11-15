@@ -105,7 +105,8 @@ export default class GameApplication {
             this.shell.showPause(this.activeDefinition);
             this.shell.toast('خطای موتور بازی؛ برای جلوگیری از ثبت امتیاز نادرست، بازی متوقف شد. دور را دوباره شروع کنید.', 'error');
         });
-        this.menuBackdropGameId = MENU_BACKDROP_GAME_ID;
+        this.menuBackdropGameId = MENU_BACKDROP_GAME_ID; // Only loaded when a player actually enters that game.
+        this.loadingTimings = [];
 
         this.onResize = this.handleLayoutChange.bind(this);
         this.unsubscribeSettings = this.settings.subscribe(
@@ -148,6 +149,7 @@ export default class GameApplication {
 
         if (!this.bootPromise) {
             this.bootPromise = (async () => {
+                const bootStartedAt = globalThis.performance?.now?.() ?? Date.now();
                 this.shell.boot();
                 this.controlLayouts.boot();
                 await this.shell.showBoot({
@@ -155,22 +157,17 @@ export default class GameApplication {
                     message: 'در حال آماده‌سازی دمیان…',
                 });
 
-                // Animation loading is progressive enhancement and never blocks the game.
+                // Boot the menu before the expensive optional Open World
+                // chunks, player sprites and remote character API. Each game
+                // is loaded only when selected, not just to draw a backdrop.
                 this.animation.boot();
-                this.shell.setBootProgress(18, 'در حال آماده‌سازی تصویر کافه…');
-                this.eventBus.emit('application:boot-step', { progress: 18 });
-
-                this.shell.setBootProgress(34, 'در حال بارگذاری Café Demian…');
-                await this.performGameSwitch(this.menuBackdropGameId, {
-                    initial: true,
-                    menuBackdrop: true,
-                });
-
+                this.shell.setBootProgress(88, 'منو آماده است…');
                 this.runtime.start();
-                this.shell.setBootProgress(88, 'تقریباً آماده‌ایم…');
-                this.synchronizeUi();
                 await this.enterMenuState({ initial: true });
-                this.shell.setBootProgress(100, 'آماده');
+                const bootReadyMs = Math.max(0, (globalThis.performance?.now?.() ?? Date.now()) - bootStartedAt);
+                this.loadingTimings.push({ type: 'menu', durationMs: bootReadyMs });
+                if (this.loadingTimings.length > 24) this.loadingTimings.shift();
+                this.eventBus.emit('application:boot-timing', { durationMs: bootReadyMs });
 
                 this.eventBus.emit('application:ready', {
                     gameId: this.activeGameId,
@@ -194,25 +191,32 @@ export default class GameApplication {
     async enterMenuState({ initial = false } = {}) {
         if (this.disposed) return;
 
-        if (this.activeGameId !== this.menuBackdropGameId || !this.activeGame) {
-            await this.performGameSwitch(this.menuBackdropGameId, {
-                menuBackdrop: true,
-                fromExit: true,
-            });
-        }
-
+        // Menu has its own lightweight HTML/CSS screen. Keeping a full
+        // Open World instance alive as a decorative backdrop costs network
+        // images, decoded textures, chunk work and a blocking round trip when
+        // leaving other mini-games.
+        const previousGame = this.activeGame;
+        const previousGameId = this.activeGameId;
+        this.runtime.setGame(null);
+        this.activeGame = null;
+        this.activeGameId = null;
+        this.activeDefinition = null;
         this.paused = false;
-        if (this.runtime.paused) {
-            this.runtime.resume();
-        }
+        if (this.runtime.paused) this.runtime.resume({ notifyGame: false });
         this.input.setContext('MENU');
         this.transitionSession(SESSION_STATES.MENU, { initial });
-        this.applyRenderQuality(); // 30 Hz presentation is sufficient for the menu backdrop.
-        this.root.dataset.activeGame = this.activeGameId ?? '';
+        this.applyRenderQuality(); // 30Hz UI poll, no game simulation.
+        this.root.dataset.activeGame = '';
+        this.root.dataset.gameEnvironment = '';
         this.applyOrientationPreference('any');
         await this.shell.showCafeMenu();
-        this.activeGame?.enterMenuMode?.();
         this.eventBus.emit('application:menu-shown', { initial });
+        // Cleanup is subsequent to showing the menu, not a condition for it.
+        if (previousGame) {
+            try { await previousGame.exit(); }
+            catch (error) { console.warn(`Game "${previousGameId}" exit hook failed.`, error); }
+            finally { previousGame.dispose(); }
+        }
     }
 
     launchGame(gameId, params = {}) {
@@ -224,6 +228,7 @@ export default class GameApplication {
                 throw new Error(`Game "${gameId}" is not available in this phase.`);
             }
 
+            const loadingStartedAt = globalThis.performance?.now?.() ?? Date.now();
             this.transitionSession(SESSION_STATES.LOADING, { gameId });
             await this.shell.showLoading(gameId, {
                 progress: 8,
@@ -241,6 +246,10 @@ export default class GameApplication {
             }
 
             await this.beginGameSession(params);
+            const durationMs = Math.max(0, (globalThis.performance?.now?.() ?? Date.now()) - loadingStartedAt);
+            this.loadingTimings.push({ type: 'game', gameId, durationMs });
+            if (this.loadingTimings.length > 24) this.loadingTimings.shift();
+            this.eventBus.emit('game:load-timing', { gameId, durationMs });
             return this.activeGame;
         });
 

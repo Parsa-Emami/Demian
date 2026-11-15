@@ -109,7 +109,10 @@ export default class OpenWorldGame extends BaseGame {
 
         this.discovery.discoverChunk(this.partition.chunkAt(this.manifest.spawn)?.id);
         this.discovery.unlockSavePoint('save-entrance');
-        await this.chunkManager.ensureAround(this.manifest.spawn);
+        // The café is already visible. Stream nearby LOD chunks in the
+        // background rather than blocking the first playable frame on all
+        // surrounding tiles. Ranked routes still await required chunks.
+        this.chunkManager.update(this.manifest.spawn);
 
         this.repository = new CharacterRepository({
             baseUrl: context.options.apiBase,

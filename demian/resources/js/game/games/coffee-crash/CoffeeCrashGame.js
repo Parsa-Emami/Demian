@@ -23,7 +23,12 @@ export default class CoffeeCrashGame extends BaseGame {
         this.startNonce = 0;
         this.startingRanked = false;
     }
-    preload() { return preloadFbxCafeArt(); }
+    preload() {
+        // Decorative FBX art may take up to 12 seconds to decode on a weak
+        // connection. The renderer has a fallback: don't block the first
+        // playable move waiting on the preview.
+        void preloadFbxCafeArt();
+    }
     async enter(context) {
         this.context = context;
         this.renderer = new CoffeeCrashRenderer(context);

@@ -36,7 +36,10 @@ export default class BaseScreen {
         const motion = this.animation?.animate(this.element, {
             opacity: [0, 1],
             y: [12, 0],
-            duration: this.layer === 'modal' ? 220 : 320,
+            // Boot/loading indicator transitions never add fixed waits
+            // after all critical assets are already ready.
+            duration: this.layer === 'modal' ? 220
+                : ['boot', 'loading'].includes(this.id) ? 0 : 160,
             ease: 'out(4)',
         });
         await this.animation?.finished?.(motion);
@@ -64,7 +67,7 @@ export default class BaseScreen {
         const motion = this.animation?.animate(this.element, {
             opacity: [1, 0],
             y: [0, this.layer === 'modal' ? 8 : -8],
-            duration: 160,
+            duration: this.layer === 'modal' ? 160 : 0,
             ease: 'in(2)',
         });
         await this.animation?.finished?.(motion);
