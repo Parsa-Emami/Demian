@@ -9,6 +9,7 @@ import PauseScreen from './screens/PauseScreen';
 import SettingsScreen from './screens/SettingsScreen';
 import ResultsScreen from './screens/ResultsScreen';
 import LeaderboardScreen from './screens/LeaderboardScreen.js';
+import CouponWalletScreen from './screens/CouponWalletScreen.js';
 
 const SCREEN_IDS = Object.freeze({
     BOOT: 'boot',
@@ -19,6 +20,7 @@ const SCREEN_IDS = Object.freeze({
     SETTINGS: 'settings',
     RESULTS: 'results',
     LEADERBOARD: 'leaderboard',
+    COUPONS: 'coupon-wallet',
     MOTION: 'motion-comparison',
 });
 
@@ -65,6 +67,7 @@ export default class GameShell {
         this.settingsScreen = new SettingsScreen({ id: SCREEN_IDS.SETTINGS, element: screen(SCREEN_IDS.SETTINGS), animation: this.animation, settings: this.settings, input: this.app.input });
         this.resultsScreen = new ResultsScreen({ id: SCREEN_IDS.RESULTS, element: screen(SCREEN_IDS.RESULTS), animation: this.animation });
         this.leaderboardScreen = new LeaderboardScreen({ id: SCREEN_IDS.LEADERBOARD, element: screen(SCREEN_IDS.LEADERBOARD), animation: this.animation, service: this.app.leaderboards });
+        this.couponWalletScreen = new CouponWalletScreen({ id: SCREEN_IDS.COUPONS, element: screen(SCREEN_IDS.COUPONS), animation: this.animation, service: this.app.leaderboards });
 
         this.motionScreen = new MotionComparisonScreen({ id: SCREEN_IDS.MOTION, element: screen(SCREEN_IDS.MOTION), animation: this.animation, visuals: this.app.characterVisuals, settings: this.settings });
 
@@ -78,6 +81,7 @@ export default class GameShell {
             this.settingsScreen,
             this.resultsScreen,
             this.leaderboardScreen,
+            this.couponWalletScreen,
         ].forEach((entry) => this.manager.register(entry));
 
         this.root.addEventListener('click', this.onClick);
@@ -171,6 +175,14 @@ export default class GameShell {
                 if (this.app.sessionState === 'playing') this.app.pauseGame();
                 await this.manager.show(SCREEN_IDS.LEADERBOARD);
                 break;
+            case 'rewards':
+                if (this.app.sessionState === 'playing') this.app.pauseGame();
+                await this.manager.show(SCREEN_IDS.COUPONS);
+                break;
+            case 'wallet-to-leaderboard':
+                await this.manager.closeTopModal('restore');
+                await this.manager.show(SCREEN_IDS.LEADERBOARD);
+                break;
             case 'retry-ranking': {
                 button.disabled = true;
                 const payload = this.resultsScreen.payload;
@@ -245,7 +257,8 @@ export default class GameShell {
         if (event.repeat || isTypingTarget(event.target) || event.key !== 'Escape') return;
 
         const topModal = this.manager.modalStack.at(-1);
-        if (topModal === SCREEN_IDS.LEADERBOARD || topModal === SCREEN_IDS.MOTION) {
+        if (topModal === SCREEN_IDS.LEADERBOARD || topModal === SCREEN_IDS.COUPONS
+            || topModal === SCREEN_IDS.MOTION) {
             event.preventDefault(); this.manager.closeTopModal('escape'); return;
         }
         if (topModal === SCREEN_IDS.SETTINGS) {

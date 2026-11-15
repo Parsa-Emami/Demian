@@ -9,6 +9,8 @@ use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Str;
 use RuntimeException;
 use Tests\TestCase;
@@ -132,6 +134,28 @@ final class CouponIssuanceTest extends TestCase
         $this->assertSame($response['code'], Crypt::decryptString($row->code_ciphertext));
         $this->assertStringNotContainsString($response['code'], $row->code_ciphertext);
         $this->assertSame('issued', $response['status']);
+    }
+
+    public function test_in_app_wallet_returns_private_codes_and_discount_amount_without_email_or_notifications(): void
+    {
+        Mail::fake();
+        Notification::fake();
+        $players = $this->sealed(2);
+        $this->issue();
+        $result = $this->withToken($players[0]['token'])
+            ->getJson('/api/v1/arcade/player/coupons')
+            ->assertOk()->assertHeader('Cache-Control', 'no-store, private')
+            ->assertJsonPath('data.0.discount_percent', 30)
+            ->assertJsonPath('data.0.max_discount_minor', 5000)
+            ->assertJsonPath('data.0.currency', 'IRR')
+            ->assertJsonPath('data.0.status', 'issued')->json();
+        $this->assertMatchesRegularExpression('/^DMC-[A-F0-9]{32}$/D', $result['data'][0]['code']);
+        $this->assertSame(1, count($result['data']));
+        $this->withToken('incorrect')->getJson('/api/v1/arcade/player/coupons')
+            ->assertUnauthorized();
+        Mail::assertNothingOutgoing();
+        Notification::assertNothingSent();
+        $this->assertDatabaseCount('arcade_coupons', 2);
     }
 
     public function test_another_player_cannot_list_or_use_anothers_wallet_endpoint(): void

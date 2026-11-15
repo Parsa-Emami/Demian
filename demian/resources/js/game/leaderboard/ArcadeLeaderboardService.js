@@ -354,6 +354,46 @@ export default class ArcadeLeaderboardService {
         await this.ensureIdentity();
         return this.request('/player', { authenticated: true });
     }
+    /** Step 13: public verified preview / immutable archived comparative ranks. */
+    async weeklyRanking(week = '') {
+        if (!this.connected) throw new Error('لیدربورد مشترک به سرور آنلاین نیاز دارد.');
+        if (week && !/^\d{4}-\d{2}-\d{2}$/.test(week)) {
+            throw new Error('تاریخ هفته معتبر نیست.');
+        }
+        const query = week ? '?week=' + encodeURIComponent(week) : '';
+        return { ...await this.request('/competition/leaderboard' + query), mode: 'online' };
+    }
+
+    /** At most twelve known seasons; no client-generated arbitrary range. */
+    async weeklyWeeks() {
+        if (!this.connected) return [];
+        const data = await this.request('/competition/leaderboard/weeks');
+        return Array.isArray(data.weeks) ? data.weeks : [];
+    }
+
+    /**
+     * Authenticated rank is computed by the server from the bearer identity,
+     * including positions below the public top 20. Never send a player ID.
+     */
+    async myWeeklyRanking(week = '') {
+        if (!this.connected || !this.identity?.token) return null;
+        if (week && !/^\d{4}-\d{2}-\d{2}$/.test(week)) {
+            throw new Error('تاریخ هفته معتبر نیست.');
+        }
+        const query = week ? '?week=' + encodeURIComponent(week) : '';
+        try {
+            return await this.request('/player/competition/leaderboard' + query,
+                { authenticated: true });
+        } catch (error) {
+            if (error.status === 401) {
+                this.identity = null;
+                safeWrite(this.identityStorage, this.identityKey, null);
+            }
+            // Failure of a private rank lookup cannot erase the public table.
+            return null;
+        }
+    }
+
     async myCoupons() {
         if (!this.connected || !this.identity?.token) return [];
         try {

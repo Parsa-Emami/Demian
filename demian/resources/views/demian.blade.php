@@ -406,7 +406,8 @@
                             <button type="button" data-shell-action="settings" class="shell-button shell-button--ghost">
                                 <span>تنظیمات</span><b aria-hidden="true">⚙</b>
                             </button>
-                            <button type="button" data-shell-action="leaderboard" class="shell-button shell-button--ghost">لیدربورد کافه <b aria-hidden="true">♛</b></button>
+                            <button type="button" data-shell-action="leaderboard" class="shell-button shell-button--ghost">لیدربورد هفتگی <b aria-hidden="true">♛</b></button>
+                            <button type="button" data-shell-action="rewards" class="shell-button shell-button--ghost">تخفیف‌های من <b aria-hidden="true">٪</b></button>
                         </div>
                         <button type="button" data-shell-action="motion-comparison" class="shell-button shell-button--ghost">مقایسهٔ الگوی حرکت</button>
                         <button type="button" data-sidebar-toggle class="shell-button shell-button--ghost menu-character-button">انتخاب کاراکتر <span aria-hidden="true">◉</span></button>
@@ -640,6 +641,7 @@
                         <h2 id="ranking-title">لیدربورد کافه</h2>
                         <label>انتخاب بازی دارای بازپخش سروری
                             <select data-ranking-game aria-label="بازی رقابتی">
+                                <option value="all-games">رتبه‌بندی مشترک · همه بازی‌ها</option>
                                 <option value="dino-run">Dino Run</option>
                                 <option value="cafe-critters" disabled>Café Critters</option>
                                 <option value="coffee-crash" disabled>Coffee Crash</option>
@@ -651,19 +653,18 @@
                         <label>بازهٔ رکوردها
                             <select data-ranking-period><option value="weekly">این هفته</option><option value="daily">امروز</option><option value="all">همیشه</option><option value="device">این دستگاه</option></select>
                         </label>
+                        <label data-ranking-week-wrap hidden>آرشیو مسابقات تهران
+                            <select data-ranking-week aria-label="انتخاب شنبه شروع هفته">
+                                <option value="">هفته جاری</option>
+                            </select>
+                        </label>
                         <p data-ranking-status role="status" aria-live="polite"></p>
                         <p class="ranking-panel__countdown" data-ranking-countdown role="timer" aria-live="off" hidden></p>
                         <p data-ranking-personal-best aria-live="polite"></p>
-                        <p class="ranking-panel__refresh-info">رتبه‌ها هر ۶۰ ثانیه به‌روزرسانی می‌شوند؛ رکوردها پس از پایان هفته آرشیو می‌شوند.</p>
-                        <div class="ranking-panel__scroll"><table><thead><tr><th scope="col">رتبه</th><th scope="col">بازیکن</th><th scope="col">امتیاز</th></tr></thead><tbody data-ranking-rows></tbody></table></div>
+                        <p class="ranking-panel__refresh-info" data-ranking-info>جدول مشترک از بهترین رکورد تأییدشده هر بازیکن ساخته می‌شود. رتبه‌های هفته جاری موقت و غیرمالی‌اند؛ پس از تسویه آرشیو می‌شوند. تازه‌سازی هر ۶۰ ثانیه.</p>
+                        <div class="ranking-panel__scroll"><table><thead><tr><th scope="col">رتبه</th><th scope="col">بازیکن</th><th scope="col" data-ranking-score-heading>امتیاز استاندارد</th><th scope="col" data-ranking-game-heading>بازی / اعتبار</th></tr></thead><tbody data-ranking-rows></tbody></table></div>
                         <form data-ranking-name-form><label for="ranking-name">نام نمایشی</label><div><input id="ranking-name" name="display_name" minlength="2" maxlength="32" required autocomplete="nickname"><button type="submit" class="shell-button">ذخیره</button></div></form>
-                        <section data-ranking-rewards class="ranking-panel__rewards" aria-label="جوایز کافه">
-                            <h3>کدهای تخفیف من</h3>
-                            <p class="ranking-panel__refresh-info">کد و درصد تخفیف فقط برای صاحب حساب نمایش داده می‌شود. هنگام خرید حضوری آن را به صندوق‌دار کافه نشان دهید.</p>
-                            <p data-ranking-reward-status role="status" aria-live="polite">برای دیدن جوایز، حساب آنلاین خود را بازیابی کنید.</p>
-                            <ul data-ranking-reward-list></ul>
-                            <button type="button" data-ranking-reward-refresh class="shell-button shell-button--ghost">به‌روزرسانی جوایز</button>
-                        </section>
+                        <button type="button" data-shell-action="rewards" class="shell-button shell-button--ghost">مشاهده صفحه اختصاصی کدهای تخفیف من</button>
                         <div data-ranking-recovery>
                             <p>بازیابی حساب روی دستگاه دیگر (فقط با کد یک‌بارمصرف؛ بدون شمارهٔ تلفن)</p>
                             <button type="button" data-ranking-issue-recovery class="shell-button shell-button--ghost">ساخت لینک بازیابی یک‌بارمصرف</button>
@@ -688,6 +689,34 @@
                     </div>
                 </section>
 
+                <section data-screen="coupon-wallet" class="shell-screen shell-screen--modal"
+                    role="dialog" aria-modal="true" aria-labelledby="coupon-wallet-title"
+                    aria-hidden="true" hidden>
+                    <div class="shell-modal coupon-wallet-panel">
+                        <p class="shell-kicker">DEMIAN · MY REWARDS</p>
+                        <h2 id="coupon-wallet-title">کدهای تخفیف من</h2>
+                        <p class="ranking-panel__refresh-info">
+                            کد تخفیف و مقدار آن فقط برای صاحب حساب نمایش داده می‌شود.
+                            برای دریافت جوایز ایمیلی ارسال نمی‌شود. هنگام خرید حضوری،
+                            کد معتبر را به صندوق‌دار نشان دهید.
+                        </p>
+                        <p data-wallet-status role="status" aria-live="polite"></p>
+                        <div data-wallet-restore-hint hidden>
+                            <p>اگر حساب شما در این دستگاه باز نیست، از بخش لیدربورد
+                                با لینک یا کد پشتیبان، همان حساب را بازیابی کنید.</p>
+                            <button type="button" data-shell-action="wallet-to-leaderboard"
+                                class="shell-button shell-button--ghost">بازیابی حساب در لیدربورد</button>
+                        </div>
+                        <ul class="coupon-wallet-list" data-wallet-list aria-label="کدهای تخفیف حساب شما"></ul>
+                        <div class="shell-modal__actions shell-modal__actions--row">
+                            <button type="button" data-wallet-refresh
+                                class="shell-button shell-button--ghost">به‌روزرسانی کدها</button>
+                            <button type="button" data-shell-action="close-modal"
+                                class="shell-button shell-button--primary" data-screen-autofocus>بستن</button>
+                        </div>
+                    </div>
+                </section>
+
                 <section
                     data-screen="results"
                     class="shell-screen shell-screen--results"
@@ -708,6 +737,7 @@
                             <button type="button" data-shell-action="replay" data-results-replay class="shell-button" hidden>بازپخش</button>
                             <button type="button" data-shell-action="exit-game" class="shell-button">بازگشت به کافه</button>
                             <button type="button" data-shell-action="leaderboard" class="shell-button">لیدربورد</button>
+                            <button type="button" data-shell-action="rewards" class="shell-button">تخفیف‌های من</button>
                         </div>
                     </div>
                 </section>
