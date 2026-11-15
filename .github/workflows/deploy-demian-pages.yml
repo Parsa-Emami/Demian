@@ -54,6 +54,8 @@ jobs:
       - name: Project identity browser QA (bounded)
         run: timeout --signal=TERM --kill-after=10s 180s npm run test:identity:browser
       - run: npm run test:device-qa:browser
+      - name: Phase 4 Step 20 fast menu, all six games and delayed decorative assets
+        run: timeout --signal=TERM --kill-after=10s 240s npm run test:fast-loading:browser
       - name: Phase 4 Step 18 pixel-exact release, slow-network and fallback browser regression
         run: timeout --signal=TERM --kill-after=10s 180s npm run test:loading:browser
         env:
@@ -88,6 +90,7 @@ jobs:
             demian/docs/mobile-09/browser
             demian/docs/mobile-01/baseline
             demian/docs/mobile-02/release-asset-report.json
+            demian/docs/phase4-step20/startup-and-game-loading.json
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v4
         with:
