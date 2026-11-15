@@ -97,7 +97,7 @@ try {
                 }
             }
             if (mobile) {
-                await page.locator('.runner-ready [data-input-press="jump"]').click();
+                await page.locator('.runner-ready [data-input-press="jump"]').tap();
             } else {
                 await page.keyboard.press('Space');
             }
