@@ -120,8 +120,8 @@ try {
                 }, { x, z });
                 await page.screenshot({ path: resolve(screenshotDir, `cafe-simple-${area}-390.png`) });
             }
-            assert.equal(sheets.filter((url) => /negar-spritesheet-v14-runtime\.(?:png|webp)$/.test(url)).length, 1,
-                'one failed decode is remembered during selection and NPC hydration');
+            assert.equal(sheets.filter((url) => /negar-spritesheet-v14-runtime\.(?:png|webp)$/.test(url)).length, 2,
+                'HTTP 503 is retried exactly once, then suppressed across selection and NPC hydration');
             results.cases.push({ scenario, coldBootMs, sessionStartMs: elapsedMs, state, sheets, errors, overlappingSelection: selected, cache });
         } else results.cases.push({ scenario, coldBootMs, sessionStartMs: elapsedMs, state, sheets, errors,
             cpuThrottle: 4, network: '200 KiB/s, 120 ms latency, cold browser cache' });
