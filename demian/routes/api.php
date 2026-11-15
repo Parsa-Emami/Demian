@@ -16,6 +16,8 @@ Route::prefix('v1/arcade')->middleware([LimitArcadePayload::class, 'throttle:arc
     Route::get('/rules', [ArcadeController::class, 'rules']);
     Route::get('/games', [ArcadeController::class, 'games']);
     Route::get('/competition/weekly', [ArcadeController::class, 'weeklyCompetition']);
+    Route::get('/competition/fair/rules', [ArcadeController::class, 'fairRules']);
+    Route::get('/competition/fair', [ArcadeController::class, 'fairLeaderboard']);
     Route::get('/leaderboards/dino-run', [ArcadeController::class, 'leaderboard']);
     Route::get('/leaderboards/cafe-critters', [ArcadeTurnRunController::class, 'leaderboard']);
     Route::get('/leaderboards/coffee-crash', [ArcadeTurnRunController::class, 'coffeeLeaderboard']);

@@ -111,6 +111,9 @@ final class WeeklyCompetitionService
         $period = DB::table('arcade_weekly_periods')->where('period_key', $window['period_key'])
             ->lockForUpdate()->first();
         if (! $period) throw new \RuntimeException('Unable to prepare weekly competition.');
+        // Freeze the comparative ranking policy alongside the season. A
+        // deployment change cannot silently reweight an ongoing week.
+        app(WeeklyFairScoringService::class)->freezePolicy($window['period_key']);
         // Do not ever overwrite an already sealed historical period.
         $this->observeState($period, $now);
         return $window;
