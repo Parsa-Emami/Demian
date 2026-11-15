@@ -49,6 +49,8 @@ jobs:
       - run: npm run validate:build
       - run: npx playwright install chromium --only-shell
       - run: npm run test:coffee-crash:browser
+      - name: Phase 3 Step 13 dedicated wallet and weekly leaderboard Chromium acceptance
+        run: timeout --signal=TERM --kill-after=10s 180s npm run test:weekly13:browser
       - name: Project identity browser QA (bounded)
         run: timeout --signal=TERM --kill-after=10s 180s npm run test:identity:browser
       - run: npm run test:device-qa:browser

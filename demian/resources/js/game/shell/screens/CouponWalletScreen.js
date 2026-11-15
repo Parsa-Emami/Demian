@@ -69,6 +69,7 @@ export default class CouponWalletScreen extends BaseScreen {
     clear() {
         this.generation++;
         this.list?.replaceChildren();
+        if (this.refreshButton) this.refreshButton.disabled = false;
         if (this.status) this.status.textContent = '';
     }
 
