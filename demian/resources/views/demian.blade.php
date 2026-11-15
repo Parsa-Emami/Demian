@@ -352,8 +352,9 @@
             <div data-demian-scene data-ui-layer="canvas" class="demian-scene absolute inset-0"></div>
 
 
-            <div data-game-shell data-ui-layer="shell" class="game-shell absolute inset-0" dir="rtl" aria-live="polite">
+            <div data-game-shell data-ui-layer="shell" class="game-shell absolute inset-0" dir="rtl">
                 <div data-shell-toast-host data-ui-layer="shell-toast" class="shell-toast-host" aria-live="polite" aria-atomic="false"></div>
+                 <p data-shell-announcer class="sr-only" role="status" aria-live="polite" aria-atomic="true"></p>
 
                 <section
                     data-screen="boot"
@@ -412,7 +413,7 @@
                         <button type="button" data-shell-action="motion-comparison" class="shell-button shell-button--ghost">مقایسهٔ الگوی حرکت</button>
                         <button type="button" data-sidebar-toggle class="shell-button shell-button--ghost menu-character-button">انتخاب کاراکتر <span aria-hidden="true">◉</span></button>
                         <div data-menu-reveal class="cafe-menu__footer">
-                            <span>۲ بازی · ۱۲ کاراکتر</span>
+                            <span data-game-library-summary>۶ بازی · ۱۲ کاراکتر</span>
                             <span>بازی‌های کوچک، ماجراجویی‌های بزرگ</span>
                         </div>
                         <div class="demian-credit" data-project-credit>
@@ -423,7 +424,7 @@
                     <aside class="cafe-menu__cabinet" aria-hidden="true">
                         <div class="cafe-cabinet__sign">NOW PLAYING</div>
                         <div class="cafe-cabinet__screen">
-                            <span>OPEN</span><b>WORLD</b><small>LIVE BACKDROP</small>
+                            <span>GAME</span><b>LIBRARY</b><small>CHOOSE YOUR GAME</small>
                         </div>
                         <div class="cafe-cabinet__controls"><i></i><i></i><i></i></div>
                     </aside>
@@ -468,7 +469,7 @@
                             <button type="button" data-shell-action="back-cafe" class="shell-icon-button" aria-label="بازگشت به منوی کافه">×</button>
                         </header>
                         <div class="game-library-toolbar">
-                            <span class="game-library-toolbar__hint">دو تجربه برای شروع</span>
+                            <span class="game-library-toolbar__hint" data-game-library-count>۶ بازی برای انتخاب</span>
                             <div class="scroll-rail-controls" aria-label="پیمایش کتابخانه بازی">
                                 <button type="button" data-game-scroll-previous class="scroll-rail-button" aria-label="بازی قبلی">›</button>
                                 <output data-game-scroll-status class="scroll-rail-status" aria-live="polite">0 / 0</output>
@@ -495,7 +496,7 @@
                         <p class="shell-kicker">LOADING GAME MODULE</p>
                         <h2 data-loading-title>OPEN WORLD</h2>
                         <p data-loading-step>در حال آماده‌سازی بازی…</p>
-                        <div data-loading-progress-bar class="shell-progress shell-progress--loading"><span></span></div>
+                        <div data-loading-progress-bar class="shell-progress shell-progress--loading" role="progressbar" aria-label="پیشرفت آماده‌سازی بازی" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span></span></div>
                         <div class="loading-console__meta">
                             <span data-loading-progress-value>0%</span>
                             <span>LAZY IMPORT → PRELOAD → ENTER</span>
