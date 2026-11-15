@@ -137,6 +137,7 @@ export default class CafeCrittersGame extends BaseGame {
         if (!this.acceptingInput || !this.model.select(field, option)) return;
         this.recordRankedAction('select', { field, option });
         this.audio.play('arrange');
+        this.context.eventBus.emit('feedback:cue', { gameId: 'cafe-critters', kind: 'arrange' });
         this.ui.update(this.model);
     }
 
@@ -152,8 +153,10 @@ export default class CafeCrittersGame extends BaseGame {
             if (result.type === 'discovery') {
                 progress.record(result.guest.id);
                 this.audio.play('discovery');
+                this.context.eventBus.emit('feedback:cue', { gameId: 'cafe-critters', kind: 'discovery' });
             } else if (result.type === 'miss') {
                 this.audio.play('miss');
+                this.context.eventBus.emit('feedback:cue', { gameId: 'cafe-critters', kind: 'miss' });
             }
             this.ui.update(this.model);
             if (result.type === 'discovery') this.ui.buttons.next.focus({ preventScroll: true });
