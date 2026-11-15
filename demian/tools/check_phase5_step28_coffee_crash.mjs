@@ -184,13 +184,19 @@ try {
 
             await page.locator('[data-screen="results"] [data-shell-action="restart"]').click();
             await wait(page, () => window.demianGameApplication.activeGame.ui?.view === 'entry');
+            // Restart constructs a fresh game instance. In-memory test-only
+            // unlocks must not persist: level 12 stays locked until a real
+            // campaign win has been saved to the player's local profile.
             const reset = await page.evaluate(() => {
                 const g = window.demianGameApplication.activeGame;
                 return { level: g.model.level.id, moves: g.model.moves, score: g.model.score,
-                    actions: g.rankActions.length, busy: g.startingRanked, history: g.model.history };
+                    actions: g.rankActions.length, busy: g.startingRanked,
+                    history: g.model.history, unlocked: g.store.unlocked,
+                    level12Locked: g.ui.dialog.querySelector('[data-coffee-level-choice="12"]').disabled };
             });
             assert.deepEqual(reset, {
-                level: 12, moves: 28, score: 0, actions: 0, busy: false, history: null,
+                level: 1, moves: 24, score: 0, actions: 0, busy: false, history: null,
+                unlocked: 1, level12Locked: true,
             });
             await page.evaluate(() => window.demianGameApplication.showMenu());
             await wait(page, () => window.demianGameApplication.sessionState === 'menu', 15000);
