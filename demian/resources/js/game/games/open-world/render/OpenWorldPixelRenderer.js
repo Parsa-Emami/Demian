@@ -76,6 +76,34 @@ export default class OpenWorldPixelRenderer {
         }
     }
 
+    drawWorldFinds(ctx, loadedChunks, finds) {
+        if (!finds) return;
+        const logical = this.context.renderer.logicalDimensions();
+        for (const record of loadedChunks.values()) {
+            if (record.tier !== 'active') continue;
+            const item = record.handle?.find;
+            if (!item || finds.has(item.id)) continue;
+            const p = this.camera.worldToScreen(item.position);
+            if (p.x < -16 || p.x > logical.width + 16 || p.y < -16 || p.y > logical.height + 16) continue;
+            ctx.save();
+            ctx.translate(Math.round(p.x), Math.round(p.y));
+            ctx.fillStyle = item.kind === 'coffee-bean' ? '#8a5937' : '#f5c77e';
+            ctx.strokeStyle = '#f8eccc';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.ellipse(0, 0, 5, 8, .35, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+            ctx.strokeStyle = '#482b22';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(-2, -4);
+            ctx.quadraticCurveTo(3, 0, 1, 5);
+            ctx.stroke();
+            ctx.restore();
+        }
+    }
+
     drawSavePoints(ctx, discovery) {
         for (const point of this.manifest.savePoints) {
             const p = this.camera.worldToScreen(point.position);
@@ -90,7 +118,7 @@ export default class OpenWorldPixelRenderer {
         }
     }
 
-    render({ characterManager, loadedChunks, activeChunkIds, discovery, deltaTime = 0, alpha = 1 }) {
+    render({ characterManager, loadedChunks, activeChunkIds, discovery, finds, deltaTime = 0, alpha = 1 }) {
         const logical = this.context.renderer.logicalDimensions();
         const scale = this.camera.targetPixelsPerUnit;
         const padX = this.mode === 'FOLLOW' ? logical.width * .15 / scale : 0;
@@ -115,6 +143,7 @@ export default class OpenWorldPixelRenderer {
         this.cafe.prepare(this.camera, 96);
         this.sceneCache.draw(ctx, this.camera, `day:${this.cafe.revision}`);
         if (this.context.app?.options?.debug) this.drawChunks(ctx, loadedChunks, activeChunkIds);
+        this.drawWorldFinds(ctx, loadedChunks, finds);
         this.drawSavePoints(ctx, discovery);
         const feedback = characterManager?.activeEntity?.feedback;
         const reducedMotion = this.context.settings?.resolvedReducedMotion?.() ?? false;
