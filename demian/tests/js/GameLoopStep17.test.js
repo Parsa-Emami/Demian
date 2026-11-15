@@ -159,7 +159,7 @@ test('Phase 4 Step 17: a thrown simulation step fails closed and cannot silently
         h.runtime.resume();
         assert.equal(h.runtime.paused, true);
         assert.equal(h.raf.size, 0);
-        const replacement = { fixedUpdate() {}, update() {}, render() {} };
+        const replacement = { fixedUpdate() {}, update() {}, render() {}, pause() {}, resume() {} };
         h.runtime.setGame(replacement);
         h.runtime.resume();
         assert.equal(h.runtime.faulted, false);
