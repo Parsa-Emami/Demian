@@ -29,7 +29,7 @@ final class WeeklyLeaderboardStep13Test extends TestCase
         ])->assertCreated()->json();
     }
 
-    private function run(array $person, int $score,
+    private function seedVerifiedRun(array $person, int $score,
         string $start = '2026-11-17T10:00:00Z',
         string $game = 'dino-run'): string
     {
@@ -64,7 +64,7 @@ final class WeeklyLeaderboardStep13Test extends TestCase
     public function test_live_week_uses_only_verified_personal_best_and_discloses_no_private_rank(): void
     {
         $one = $this->player();
-        $this->run($one, 200);
+        $this->seedVerifiedRun($one, 200);
         $this->getJson('/api/v1/arcade/competition/leaderboard')
             ->assertOk()->assertJsonPath('status', 'live_preview')
             ->assertJsonPath('is_current', true)
@@ -88,7 +88,7 @@ final class WeeklyLeaderboardStep13Test extends TestCase
         for ($i = 0; $i < 25; $i++) {
             $person = $this->player();
             $persons[] = $person;
-            $this->run($person, 1000 - $i);
+            $this->seedVerifiedRun($person, 1000 - $i);
         }
         $public = $this->getJson('/api/v1/arcade/competition/leaderboard')
             ->assertOk()->assertJsonCount(20, 'data')
@@ -119,9 +119,9 @@ final class WeeklyLeaderboardStep13Test extends TestCase
         for ($i = 0; $i < 20; $i++) {
             $p = $this->player();
             $people[] = $p;
-            $this->run($p, $i < 2 ? 900 : 800 - $i);
+            $this->seedVerifiedRun($p, $i < 2 ? 900 : 800 - $i);
         }
-        $this->run($people[0], 999999, '2026-11-17T11:00:00Z', 'cafe-critters');
+        $this->seedVerifiedRun($people[0], 999999, '2026-11-17T11:00:00Z', 'cafe-critters');
         $data = $this->getJson('/api/v1/arcade/competition/leaderboard')
             ->assertOk()->assertJsonPath('data.0.rank', 1)
             ->assertJsonPath('data.1.rank', 1)
@@ -139,7 +139,7 @@ final class WeeklyLeaderboardStep13Test extends TestCase
         for ($i = 0; $i < 22; $i++) {
             $person = $this->player();
             $players[] = $person;
-            $this->run($person, 700 - $i);
+            $this->seedVerifiedRun($person, 700 - $i);
         }
         $this->travelTo(CarbonImmutable::parse('2026-11-21T01:00:00Z'));
         app(WeeklySettlementService::class)->seal('2026-11-14');
@@ -186,7 +186,7 @@ final class WeeklyLeaderboardStep13Test extends TestCase
     public function test_live_read_rejects_a_corrupt_score_and_ignores_non_verified_runs(): void
     {
         $person = $this->player();
-        $run = $this->run($person, 500);
+        $run = $this->seedVerifiedRun($person, 500);
         DB::table('arcade_leaderboard_entries')->where('run_id', $run)
             ->update(['score' => 9999]);
         try {
@@ -206,7 +206,7 @@ final class WeeklyLeaderboardStep13Test extends TestCase
     public function test_erased_account_never_surfaces_in_live_and_final_historical_result(): void
     {
         $person = $this->player();
-        $this->run($person, 500);
+        $this->seedVerifiedRun($person, 500);
         DB::table('arcade_players')->where('id', $person['player_id'])->delete();
         $this->getJson('/api/v1/arcade/competition/leaderboard')
             ->assertOk()->assertJsonPath('participants', 0)
