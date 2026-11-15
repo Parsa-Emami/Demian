@@ -8,6 +8,11 @@ export default class LeaderboardScreen extends BaseScreen {
         this.generation = 0;
         this.period = this.element.querySelector('[data-ranking-period]');
         this.game = this.element.querySelector('[data-ranking-game]');
+        this.week = this.element.querySelector('[data-ranking-week]');
+        this.weekWrap = this.element.querySelector('[data-ranking-week-wrap]');
+        this.scoreHeading = this.element.querySelector('[data-ranking-score-heading]');
+        this.gameHeading = this.element.querySelector('[data-ranking-game-heading]');
+        this.weeksLoaded = false;
         this.body = this.element.querySelector('[data-ranking-rows]');
         this.status = this.element.querySelector('[data-ranking-status]');
         this.countdown = this.element.querySelector('[data-ranking-countdown]');
@@ -21,11 +26,6 @@ export default class LeaderboardScreen extends BaseScreen {
         this.deleteAccount = this.element.querySelector('[data-ranking-delete-account]');
         this.issueBackup = this.element.querySelector('[data-ranking-issue-backup]');
         this.backupCode = this.element.querySelector('[data-ranking-backup-code]');
-        this.rewardList = this.element.querySelector('[data-ranking-reward-list]');
-        this.rewardStatus = this.element.querySelector('[data-ranking-reward-status]');
-        this.rewardRefresh = this.element.querySelector('[data-ranking-reward-refresh]');
-        this.onRewardRefresh = () => void this.loadCoupons();
-        this.rewardRefresh?.addEventListener('click', this.onRewardRefresh);
         this.timer = null;
         this.snapshot = null;
         this.receivedAtMs = 0;
@@ -33,7 +33,8 @@ export default class LeaderboardScreen extends BaseScreen {
         this.loading = false;
         this.lastForcedRolloverKey = null;
         this.onPeriod = () => this.load();
-        this.onGame = () => this.load();
+        this.onGame = () => void this.switchGame();
+        this.onWeek = () => this.load();
         this.onSubmit = async event => {
             event.preventDefault();
             const button = this.form.querySelector('button');
@@ -128,6 +129,7 @@ export default class LeaderboardScreen extends BaseScreen {
         this.recoveryForm.addEventListener('submit', this.onRecover);
         this.period.addEventListener('change', this.onPeriod);
         this.game?.addEventListener('change', this.onGame);
+        this.week?.addEventListener('change', this.onWeek);
         this.form.addEventListener('submit', this.onSubmit);
     }
 
@@ -152,13 +154,15 @@ export default class LeaderboardScreen extends BaseScreen {
         if (this.game) {
             const options = [...this.game.options];
             options.forEach(option => { option.disabled = option.value !== 'dino-run'; });
-            this.game.value = 'dino-run';
+            this.game.value = this.service.connected ? 'all-games' : 'dino-run';
+            if (this.service.connected) options.find(option => option.value === 'all-games').disabled = false;
             if (this.service.connected) {
                 try {
                     const catalog = await this.service.games();
                     for (const option of options) {
-                        option.disabled = !catalog.games?.some(game =>
-                            game.game_id === option.value && game.ranked === true);
+                        option.disabled = option.value !== 'all-games'
+                            && !catalog.games?.some(game =>
+                                game.game_id === option.value && game.ranked === true);
                     }
                 } catch { /* preserve safe default */ }
             }
@@ -166,66 +170,56 @@ export default class LeaderboardScreen extends BaseScreen {
         this.snapshot = null;
         this.lastForcedRolloverKey = null;
         this.nextRefreshAt = this.monotonicNow() + 60000;
+        this.weeksLoaded = false;
+        this.week.value = '';
+        this.configureMode();
         if (this.service.pending) await this.service.retry();
+        if (this.service.connected) await this.loadWeeks();
         await this.load();
-        await this.loadCoupons();
         if (this.timer == null) this.timer = setInterval(() => this.tick(), 1000);
     }
 
-    async loadCoupons() {
-        if (!this.rewardList || !this.rewardStatus) return;
-        const generation = this.generation;
-        this.rewardList.replaceChildren();
-        if (!this.service.connected || !this.service.identity?.token) {
-            this.rewardStatus.textContent = this.service.needsAccountRestore
-                ? 'برای نمایش جوایز، ابتدا حساب اصلی را بازیابی کنید.'
-                : 'برای نمایش جوایز، حساب آنلاین لازم است.';
-            return;
-        }
-        this.rewardStatus.textContent = 'در حال دریافت جوایز خصوصی از سرور…';
-        if (this.rewardRefresh) this.rewardRefresh.disabled = true;
+    configureMode() {
+        const shared = this.service.connected && this.game?.value === 'all-games';
+        this.weekWrap.hidden = !shared;
+        this.week.disabled = !shared;
+        this.period.disabled = shared;
+        if (shared) this.period.value = 'weekly';
+        this.gameHeading.hidden = !shared;
+        this.scoreHeading.textContent = shared ? 'امتیاز رقابتی' : 'امتیاز';
+        this.lastForcedRolloverKey = null;
+    }
+
+    async loadWeeks() {
+        if (this.weeksLoaded || !this.service.connected || !this.week) return;
+        // The archived week list comes from the server; no arbitrary client
+        // timestamps can select future periods or forge a game season.
+        const first = document.createElement('option');
+        first.value = '';
+        first.textContent = 'این هفته (زنده)';
+        this.week.replaceChildren(first);
         try {
-            const coupons = await this.service.myCoupons();
-            if (generation !== this.generation) return;
-            this.rewardStatus.textContent = coupons.length
-                ? 'کدهای اختصاصی شما؛ هنگام خرید حضوری به صندوق‌دار نشان دهید.'
-                : 'هنوز هیچ کد تخفیفی صادر نشده است.';
-            for (const coupon of coupons) {
-                const item = document.createElement('li');
-                const title = document.createElement('strong');
-                const isGift = coupon.source === 'gift';
-                title.textContent = 'تخفیف ' + String(coupon.discount_percent ?? '—')
-                    + '٪ · ' + (isGift ? 'هدیه اختصاصی کافه'
-                        : 'رتبه جایزه ' + String(coupon.prize_rank ?? '—'));
-                item.append(title);
-                const state = document.createElement('p');
-                const labels = { issued: 'معتبر', reserved: 'رزروشده',
-                    redeemed: 'مصرف‌شده', expired: 'منقضی‌شده', revoked: 'لغوشده' };
-                state.textContent = (labels[coupon.status] ?? 'غیرفعال') + ' · انقضا: '
-                    + String(coupon.expires_at ?? '—') + ' · سقف: '
-                    + String(coupon.max_discount_minor ?? '—') + ' '
-                    + String(coupon.currency ?? '');
-                item.append(state);
-                if (typeof coupon.code === 'string' && /^DMC-[A-F0-9]{32}$/.test(coupon.code)) {
-                    const field = document.createElement('input');
-                    field.type = 'text'; field.readOnly = true;
-                    field.autocomplete = 'off'; field.spellcheck = false;
-                    field.setAttribute('aria-label', 'کد تخفیف حضوری');
-                    field.value = coupon.code;
-                    field.addEventListener('focus', () => field.select());
-                    item.append(field);
-                }
-                this.rewardList.append(item);
+            const weeks = await this.service.weeklyWeeks();
+            for (const week of weeks) {
+                if (week.status === 'current' || !/^\d{4}-\d{2}-\d{2}$/.test(week.week)) continue;
+                const option = document.createElement('option');
+                option.value = week.week;
+                option.textContent = 'هفته ' + week.week
+                    + (week.status === 'finalized' ? ' · نهایی' : ' · در انتظار تسویه');
+                this.week.append(option);
             }
+            this.weeksLoaded = true;
         } catch {
-            if (generation === this.generation) {
-                this.rewardStatus.textContent = 'دریافت جوایز ممکن نشد؛ اتصال یا حساب را بررسی کنید.';
-            }
-        } finally {
-            if (generation === this.generation && this.rewardRefresh) {
-                this.rewardRefresh.disabled = false;
-            }
+            // Keep live leaderboard available when archive listing fails.
+            this.weeksLoaded = false;
         }
+    }
+
+    async switchGame() {
+        this.week.value = '';
+        this.configureMode();
+        if (this.game.value === 'all-games') await this.loadWeeks();
+        await this.load();
     }
 
     monotonicNow() { return globalThis.performance?.now?.() ?? Date.now(); }
@@ -237,7 +231,8 @@ export default class LeaderboardScreen extends BaseScreen {
         // Poll every minute; at the weekly rollover refresh as soon as the
         // clock reaches zero instead of displaying the expired week's ranks.
         const expiredKey = this.snapshot?.period_key;
-        if (remaining === 0 && this.period.value === 'weekly' && expiredKey
+        if (remaining === 0 && this.period.value === 'weekly'
+            && (this.game.value !== 'all-games' || this.week.value === '') && expiredKey
             && this.lastForcedRolloverKey !== expiredKey) {
             // At most one extra request per expired season, even if a stale API
             // response keeps reporting the previous boundary for a few seconds.
@@ -248,7 +243,8 @@ export default class LeaderboardScreen extends BaseScreen {
     }
 
     renderCountdown() {
-        const isWeekly = this.period.value === 'weekly' && this.service.connected;
+        const isWeekly = this.period.value === 'weekly' && this.service.connected
+            && (this.game.value !== 'all-games' || this.week.value === '');
         this.countdown.hidden = !isWeekly;
         if (!isWeekly) return null;
         const remaining = remainingWeeklySeconds(this.snapshot, this.receivedAtMs, this.monotonicNow());
@@ -262,28 +258,60 @@ export default class LeaderboardScreen extends BaseScreen {
         const generation = ++this.generation;
         this.loading = true;
         this.nextRefreshAt = this.monotonicNow() + 60000;
-        this.status.textContent = 'در حال خواندن رکوردها…';
+        this.status.textContent = 'در حال دریافت امتیازهای تأییدشده…';
         this.personalBest.textContent = '';
         this.body.replaceChildren();
         this.snapshot = null;
         this.renderCountdown();
         try {
             const activeGame = this.game?.value ?? 'dino-run';
-            const ownScore = this.period.value !== 'device' && activeGame === 'dino-run'
-                ? this.service.personalBest(this.period.value) : Promise.resolve(null);
-            const result = await this.service.list(this.period.value, activeGame);
+            const shared = activeGame === 'all-games' && this.service.connected;
+            const chosenWeek = shared ? this.week.value : '';
+            const ownScore = shared
+                ? this.service.myWeeklyRanking(chosenWeek)
+                : this.period.value !== 'device' && activeGame === 'dino-run'
+                    ? this.service.personalBest(this.period.value) : Promise.resolve(null);
+            const result = shared
+                ? await this.service.weeklyRanking(chosenWeek)
+                : await this.service.list(this.period.value, activeGame);
             if (generation !== this.generation) return;
-            this.snapshot = result.mode === 'online' ? result : null;
+            this.snapshot = result.mode === 'online' && (!shared || result.is_current) ? result : null;
             this.receivedAtMs = this.monotonicNow();
-            this.status.textContent = result.mode === 'device'
-                ? 'رکوردهای همین مرورگر؛ ثبت جهانی نشده‌اند.'
-                : 'امتیازهای تأییدشده توسط سرور · شروع هفته شنبه ساعت ۰۰:۰۰ به وقت تهران';
-            if (!result.data.length) this.status.textContent += ' هنوز رکوردی ثبت نشده است.';
-            for (const row of result.data) {
+            if (shared) {
+                this.status.textContent = result.status === 'finalized'
+                    ? 'جدول نهایی و آرشیوشده · امتیازهای تأییدشده و نسخه ثابت قوانین'
+                    : result.status === 'live_preview'
+                        ? 'رتبه‌بندی زنده بر پایه بازپخش تأییدشده · موقت؛ مبنای جایزه نیست'
+                        : 'نتایج این دوره هنوز تسویه یا نهایی نشده‌اند.';
+                if (result.status !== 'archive_pending' && !result.data?.length) {
+                    this.status.textContent += ' هنوز امتیازی ثبت نشده است.';
+                }
+            } else {
+                this.status.textContent = result.mode === 'device'
+                    ? 'رکوردهای همین مرورگر؛ ثبت جهانی نشده‌اند.'
+                    : 'رکوردهای تأییدشده سرور · شروع هفته شنبه ساعت ۰۰:۰۰ تهران';
+                if (!result.data?.length) this.status.textContent += ' هنوز رکوردی ثبت نشده است.';
+            }
+            for (const row of result.data ?? []) {
                 const tr = document.createElement('tr');
-                for (const value of [row.rank, row.display_name, row.score]) {
+                if (this.service.identity?.player_id === row.player_id) tr.dataset.myRow = 'true';
+                const cells = [row.rank, row.display_name,
+                    shared ? row.competition_points : row.score];
+                for (const value of cells) {
                     const td = document.createElement('td');
-                    td.textContent = String(value);
+                    td.textContent = String(value ?? '—');
+                    tr.append(td);
+                }
+                if (shared) {
+                    const td = document.createElement('td');
+                    td.textContent = String(row.source_game_id ?? '—');
+                    const note = document.createElement('small');
+                    note.className = 'ranking-panel__mode';
+                    note.dataset.qualified = String(row.qualified === true);
+                    note.textContent = row.qualified
+                        ? 'واجد حداقل مشارکت · تأییدشده'
+                        : 'موقت · شرکت‌کننده کمتر از ۲۰';
+                    td.append(note);
                     tr.append(td);
                 }
                 this.body.append(tr);
@@ -291,16 +319,34 @@ export default class LeaderboardScreen extends BaseScreen {
             this.renderCountdown();
             const own = await ownScore;
             if (generation !== this.generation) return;
-            this.personalBest.textContent = result.mode === 'online' && activeGame !== 'dino-run'
-                ? 'این جدول فقط نتایج بازپخش‌شده و تأییدشده توسط سرور را نمایش می‌دهد.'
-                : result.mode === 'online'
-                ? own?.best
-                    ? `رتبهٔ تأییدشده شما: ${own.my_rank == null ? '—' : new Intl.NumberFormat('fa-IR').format(own.my_rank)} از ${new Intl.NumberFormat('fa-IR').format(own.participants ?? 0)} · رکورد: ${new Intl.NumberFormat('fa-IR').format(own.best.score)}`
-                    : 'هنوز رکورد تأییدشده‌ای برای این دوره نداری.'
-                : '';
+            if (shared) {
+                if (!this.service.identity?.token) {
+                    this.personalBest.textContent = 'برای نمایش رتبه دقیق خود، حساب آنلاین را بازیابی کنید.';
+                } else if (own?.my_best) {
+                    const format = new Intl.NumberFormat('fa-IR');
+                    this.personalBest.textContent = 'رتبهٔ شما: ' + format.format(own.my_rank)
+                        + ' از ' + format.format(own.participants ?? 0)
+                        + ' · ' + format.format(own.my_best.competition_points) + ' از ۱۰۰۰'
+                        + ' · ' + own.my_best.source_game_id
+                        + (own.my_best.qualified ? ' · دارای حداقل مشارکت' : ' · موقت')
+                        + (result.status === 'live_preview' ? ' · هنوز نهایی نشده' : '');
+                } else {
+                    this.personalBest.textContent = 'هنوز رکورد رقابتی ثبت نکرده‌ای؛ رتبه شخصی پس از تأیید سرور نمایش داده می‌شود.';
+                }
+            } else {
+                this.personalBest.textContent = result.mode === 'online' && activeGame !== 'dino-run'
+                    ? 'این جدول فقط نتایج بازپخش‌شده و تأییدشده توسط سرور را نمایش می‌دهد.'
+                    : result.mode === 'online'
+                        ? own?.best
+                            ? 'رتبهٔ شما: ' + new Intl.NumberFormat('fa-IR').format(own.my_rank)
+                                + ' از ' + new Intl.NumberFormat('fa-IR').format(own.participants ?? 0)
+                                + ' · رکورد: ' + new Intl.NumberFormat('fa-IR').format(own.best.score)
+                            : 'هنوز رکورد تأییدشده‌ای برای این دوره نداری.'
+                        : '';
+            }
         } catch {
             if (generation === this.generation) {
-                this.status.textContent = 'سرور در دسترس نیست. «این دستگاه» را انتخاب کن یا دوباره تلاش کن.';
+                this.status.textContent = 'سرور در دسترس نیست. اتصال را بررسی کنید یا برای رکورد دستگاه، Dino Run را انتخاب کنید.';
                 this.renderCountdown();
             }
         } finally {
@@ -314,8 +360,6 @@ export default class LeaderboardScreen extends BaseScreen {
         this.snapshot = null;
         this.recoveryLink.value = '';
         this.backupCode.value = '';
-        this.rewardList?.replaceChildren();
-        if (this.rewardStatus) this.rewardStatus.textContent = '';
         if (this.timer != null) clearInterval(this.timer);
         this.timer = null;
     }
@@ -331,7 +375,7 @@ export default class LeaderboardScreen extends BaseScreen {
         this.period.removeEventListener('change', this.onPeriod);
         this.game?.removeEventListener('change', this.onGame);
         this.form.removeEventListener('submit', this.onSubmit);
-        this.rewardRefresh?.removeEventListener('click', this.onRewardRefresh);
+        this.week?.removeEventListener('change', this.onWeek);
         super.dispose();
     }
 }
