@@ -10,7 +10,6 @@ function fakeElement() {
         inert: false,
         hidden: true,
         dataset: {},
-        style: {},
         setAttribute(key, value) { attrs.set(key, String(value)); },
         getAttribute(key) { return attrs.get(key) ?? null; },
         addEventListener() {},
@@ -48,14 +47,14 @@ test('Step 20 UX: only the current modal is exposed to keyboard and assistive te
     await manager.show('settings');
     assert.equal(pause.element.inert, true);
     assert.equal(settings.element.inert, false);
-    assert.equal(pause.element.style.zIndex, 'var(--z-shell-screen)');
-    assert.equal(settings.element.style.zIndex, 'var(--z-shell-modal)');
+    assert.equal(pause.element.dataset.uiLayer, 'shell-screen');
+    assert.equal(settings.element.dataset.uiLayer, 'shell-modal');
     await manager.closeTopModal();
 
     assert.equal(settings.active, false);
     assert.equal(pause.element.inert, false);
     assert.equal(pause.element.getAttribute('aria-hidden'), 'false');
-    assert.equal(pause.element.style.zIndex, 'var(--z-shell-modal)');
+    assert.equal(pause.element.dataset.uiLayer, 'shell-modal');
     assert.deepEqual(manager.modalStack, ['pause']);
 
     await manager.closeTopModal();
