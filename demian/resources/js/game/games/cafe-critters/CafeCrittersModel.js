@@ -69,7 +69,9 @@ export default class CafeCrittersModel {
         }
         this.attempts.add(attempt);
         this.misses += 1;
-        if (this.attempts.size >= HINT_AFTER) {
+        // A page grants at most one exact hint. Guess-spamming must not
+        // reveal the remaining answers or change the already earned hint.
+        if (!this.hint && this.attempts.size >= HINT_AFTER) {
             const field = wrong.at(-1).id;
             this.hint = { field, value: guest.setting[field] };
         }

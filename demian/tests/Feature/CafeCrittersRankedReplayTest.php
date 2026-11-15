@@ -316,4 +316,42 @@ final class CafeCrittersRankedReplayTest extends TestCase
         ]);
     }
 
+
+    public function test_valid_syntax_but_wrong_guest_solution_cannot_earn_ranked_score(): void
+    {
+        $verifier = app(CafeCrittersReplayVerifier::class);
+        foreach ([1, 2, 7, 8, 113, 2147483647] as $seed) {
+            $payload = $this->replay($seed);
+            $original = $payload['actions'][0]['option'];
+            $payload['actions'][0]['option'] = $original === 'sun' ? 'moon' : 'sun';
+            try {
+                $verifier->verify($seed, $payload['ticks'], $payload['actions']);
+                $this->fail('A different guest light value unexpectedly passed seed '.$seed);
+            } catch (\Illuminate\Validation\ValidationException $expected) {
+                $this->assertArrayHasKey('replay', $expected->errors());
+            }
+        }
+    }
+
+    public function test_instant_guessing_and_fabricated_hint_events_are_not_authoritative(): void
+    {
+        $verifier = app(CafeCrittersReplayVerifier::class);
+        $payload = $this->replay(7);
+        $fast = $payload;
+        foreach ([1, 2, 3, 4, 5] as $index => $tick) {
+            $fast['actions'][$index]['tick'] = $tick;
+        }
+        try {
+            $verifier->verify(7, $fast['ticks'], $fast['actions']);
+            $this->fail('A completed page with four frames must never certify a score.');
+        } catch (\Illuminate\Validation\ValidationException $expected) {
+            $this->assertArrayHasKey('replay', $expected->errors());
+        }
+
+        $spoof = $payload;
+        $spoof['actions'][0]['kind'] = 'hint';
+        $this->expectException(\Illuminate\Validation\ValidationException::class);
+        $verifier->verify(7, $spoof['ticks'], $spoof['actions']);
+    }
+
 }
