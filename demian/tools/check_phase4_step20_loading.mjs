@@ -137,10 +137,18 @@ try {
     }
     await page.keyboard.press('Escape');
     await page.locator('[data-screen="settings"]').waitFor({ state: 'hidden' });
-    await wait(page, () => document.activeElement?.getAttribute('data-shell-action') === 'settings', 10000);
-    assert.equal(await page.evaluate(() =>
-        document.activeElement?.getAttribute('data-shell-action')), 'settings',
-    'Closing settings should return focus to the invoking menu button.');
+    const restoredFocus = await page.evaluate(() => ({
+        activeAction: document.activeElement?.getAttribute('data-shell-action') ?? null,
+        activeTag: document.activeElement?.tagName ?? null,
+        menuInert: document.querySelector('[data-screen="cafe-menu"]')?.inert ?? null,
+        menuHidden: document.querySelector('[data-screen="cafe-menu"]')?.hidden ?? null,
+        primaryId: window.demianGameApplication?.shell?.manager?.primaryId ?? null,
+        modalStack: window.demianGameApplication?.shell?.manager?.modalStack ?? null,
+        openerAction: window.demianGameApplication?.shell?.settingsScreen?.returnFocusTarget
+            ?.getAttribute('data-shell-action') ?? null,
+    }));
+    assert.equal(restoredFocus.activeAction, 'settings',
+        'Closing keyboard-invoked settings must restore its opener: ' + JSON.stringify(restoredFocus));
 
     await page.evaluate(() => window.demianGameApplication.launchGame('dino-run'));
     await wait(page, () => window.demianGameApplication?.sessionState === 'playing');
