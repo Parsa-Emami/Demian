@@ -122,3 +122,5 @@ jobs:
             < demian/ops/cpanel/deploy.sh
       - name: Public read-only API smoke (bounded)
         run: node demian/tools/smoke_arcade_api.mjs --base-url="$CPANEL_API_ORIGIN/api/v1/arcade" --users=20 --p95-ms=1500
+      - name: Step 29 TLS, release identity and private-path acceptance (read-only)
+        run: node demian/tools/verify_cpanel_host.mjs --origin="$CPANEL_API_ORIGIN" --release="$GITHUB_SHA"
