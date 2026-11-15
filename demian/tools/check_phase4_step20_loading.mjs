@@ -108,7 +108,9 @@ try {
         'The visible game count must reflect the catalog, not stale placeholder copy.');
     await page.locator('[data-screen="game-selection"] [data-shell-action="back-cafe"]').click();
     await page.locator('[data-screen="cafe-menu"]').waitFor({ state: 'visible' });
-    await page.locator('[data-screen="cafe-menu"] [data-shell-action="settings"]').click();
+    const settingsTrigger = page.locator('[data-screen="cafe-menu"] [data-shell-action="settings"]');
+    await settingsTrigger.focus();
+    await page.keyboard.press('Enter');
     await page.locator('[data-screen="settings"]').waitFor({ state: 'visible' });
     await wait(page, () => {
         const settings = document.querySelector('[data-screen="settings"]');
