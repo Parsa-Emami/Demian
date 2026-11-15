@@ -110,6 +110,12 @@ try {
     await page.locator('[data-screen="cafe-menu"]').waitFor({ state: 'visible' });
     await page.locator('[data-screen="cafe-menu"] [data-shell-action="settings"]').click();
     await page.locator('[data-screen="settings"]').waitFor({ state: 'visible' });
+    await wait(page, () => {
+        const settings = document.querySelector('[data-screen="settings"]');
+        const menu = document.querySelector('[data-screen="cafe-menu"]');
+        return settings?.dataset.screenState === 'active'
+            && menu?.inert && settings.contains(document.activeElement);
+    }, 10000);
 
     const settingsState = await page.evaluate(() => {
         const settings = document.querySelector('[data-screen="settings"]');
@@ -129,6 +135,7 @@ try {
     }
     await page.keyboard.press('Escape');
     await page.locator('[data-screen="settings"]').waitFor({ state: 'hidden' });
+    await wait(page, () => document.activeElement?.getAttribute('data-shell-action') === 'settings', 10000);
     assert.equal(await page.evaluate(() =>
         document.activeElement?.getAttribute('data-shell-action')), 'settings',
     'Closing settings should return focus to the invoking menu button.');
@@ -143,6 +150,7 @@ try {
         'Covered pause dialog must not be interactable while settings is on top.');
     await page.locator('[data-screen="settings"] [data-shell-action="close-modal"]').click();
     await page.locator('[data-screen="settings"]').waitFor({ state: 'hidden' });
+    await wait(page, () => document.querySelector('[data-screen="pause"]')?.inert === false, 10000);
     assert.equal(await page.locator('[data-screen="pause"]').evaluate(el => el.inert), false,
         'Pause dialog must become operable again after closing settings.');
     await page.locator('[data-screen="pause"] [data-shell-action="resume"]').click();
