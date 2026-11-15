@@ -2,6 +2,8 @@
 
 **Status:** cPanel deployment source and automated tests exist in GitHub. **No paid host, DNS, PHP account, MySQL production database, SSH secret or genuine 50-user load result has been verified**. The production leaderboard is off by default.
 
+**Phase 6 / Step 29 update:** See [Production Hosting Readiness](../PHASE-6-STEP-29-PRODUCTION-HOSTING.md). The release now gates cPanel deploys with a PHP 8.4 host contract, private environment/file permissions, immutable artifact symlink rejection, environment-specific Cron checks and post-deploy read-only HTTPS/private-path smoke. All remain unverified on a real host until provisioning and staging deployment.
+
 ## Decision
 
 **50 active players are not the same as 50 simultaneous requests.** All six minigames run locally on the browser; the host receives leaderboard polling, identity requests and verified Dino Run replay submissions. If 50 players poll one endpoint every 60 seconds, that averages 0.83 requests/sec. A synchronized page load can create 150 requests across rules/games/leaderboard; 50 **simultaneous CPU-heavy replay completions** is an entirely different and more demanding workload.
