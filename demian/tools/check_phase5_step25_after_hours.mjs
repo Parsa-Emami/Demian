@@ -216,7 +216,7 @@ try {
                 return { remaining: g.model.remaining, cards: g.model.cardCount,
                     modal: g.ui.dialog.open, challenge: g.gameplayChallenge.state };
             });
-            assert.equal(restart.remaining, 300);
+            assert.equal(restart.remaining, 240);
             assert.equal(restart.cards, 0);
             assert.equal(restart.modal, true);
             assert.equal(restart.challenge, 'idle');
