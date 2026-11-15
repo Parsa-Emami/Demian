@@ -131,7 +131,10 @@ export default class CoffeeCrashGame extends BaseGame {
         this.wait = 0;
         this.ui.block(true);
         this.ui.say(result.accepted ? 'سفارش در حال آماده شدن…' : 'این جابه‌جایی ترکیبی نمی‌سازد؛ حرکتی کم نشد.');
-        if (!result.accepted) this.audio.play('miss');
+        if (!result.accepted) {
+            this.audio.play('miss');
+            this.context.eventBus.emit('feedback:cue', { gameId: 'coffee-crash', kind: 'miss' });
+        }
     }
     action(action) {
         if (!this.acceptingInput) return;
@@ -154,7 +157,10 @@ export default class CoffeeCrashGame extends BaseGame {
         if (frame) {
             this.ui.draw(frame, this.model, this.store);
             this.wait = this.ui.motionReduced ? .015 : frame.kind === 'clear' ? .2 : frame.kind === 'swap' ? .18 : .22;
-            if (frame.kind === 'clear') this.audio.play(frame.chain > 1 ? 'cascade' : 'match');
+            if (frame.kind === 'clear') {
+                this.audio.play(frame.chain > 1 ? 'cascade' : 'match');
+                this.context.eventBus.emit('feedback:cue', { gameId: 'coffee-crash', kind: frame.chain > 1 ? 'cascade' : 'match' });
+            }
             if (frame.kind === 'shuffle') this.ui.say('صفحه برای ادامهٔ سفارش بازچینی شد؛ حرکتی کم نشد.');
             if (frame.kind === 'settled') this.wait = 0;
             return;
