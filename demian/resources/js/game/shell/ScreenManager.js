@@ -1,3 +1,4 @@
+import { UI_LAYER, assignUiLayer } from '../ui/UiLayer.js';
 /**
  * Serialized screen state machine with one primary screen and a modal stack.
  * Screen transitions cannot overlap, preventing focus and visibility races.
@@ -97,12 +98,12 @@ export default class ScreenManager {
                 : screen.id === this.primaryId && !topId;
             screen.element.inert = !operable;
             screen.element.setAttribute('aria-hidden', String(!operable));
-            if (screen.layer === 'modal' && screen.element.style) {
-                // A top dialog may appear earlier in the DOM than a covered
-                // dialog (e.g. motion comparison vs pause); tokenized visual
-                // stacking must follow the accessibility stack, not DOM order.
-                screen.element.style.zIndex = operable
-                    ? 'var(--z-shell-modal)' : 'var(--z-shell-screen)';
+            if (screen.layer === 'modal') {
+                // Modal stacking follows the central UI layer contract:
+                // only the top dialog gets SHELL_MODAL; covered dialogs are
+                // safely demoted to SHELL_SCREEN irrespective of DOM order.
+                assignUiLayer(screen.element, operable
+                    ? UI_LAYER.SHELL_MODAL : UI_LAYER.SHELL_SCREEN);
             }
         }
     }
