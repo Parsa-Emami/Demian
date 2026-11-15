@@ -261,7 +261,7 @@ export default class GameShell {
     }
 
     onKeyDown(event) {
-        if (event.repeat || isTypingTarget(event.target) || event.key !== 'Escape') return;
+        if (event.repeat || event.key !== 'Escape') return;
 
         const topModal = this.manager.modalStack.at(-1);
         if (topModal === SCREEN_IDS.LEADERBOARD || topModal === SCREEN_IDS.COUPONS
@@ -269,11 +269,16 @@ export default class GameShell {
             event.preventDefault(); this.manager.closeTopModal('escape'); return;
         }
         if (topModal === SCREEN_IDS.SETTINGS) {
+            // An in-progress key remap must consume Escape itself; otherwise
+            // Escape closes settings even when the focused control is a select.
+            if (this.settingsScreen?.controls?.pending) return;
             event.preventDefault();
             this.manager.closeTopModal('escape');
             return;
         }
 
+        // Outside dialogs, Escape while typing must not alter gameplay state.
+        if (isTypingTarget(event.target)) return;
         if (this.app.sessionState === 'playing') {
             event.preventDefault();
             this.app.pauseGame();
