@@ -128,7 +128,7 @@ try {
     // Step 19: an optional action tray must never disappear while the player
     // is still pressing an action. 140ms timer auto-collapse previously
     // destroyed captured gestures. Test actual compiled UI and input router.
-    await page.locator('[data-mobile-actions-toggle]').click();
+    await page.locator('[data-mobile-actions-toggle]').tap();
     await page.waitForFunction(() =>
         document.querySelector('[data-character-manager]')?.dataset.mobileActions === 'expanded');
     await page.evaluate(() => {
