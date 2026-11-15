@@ -65,7 +65,13 @@ export default class CoffeeCrashGame extends BaseGame {
         this.context.input.setContext(this.context.app.sessionState === 'playing' ? 'COFFEE_CRASH' : 'PAUSE');
     }
     dialogAction(action) {
-        const entry = this.ui.view === 'entry';
+        const view = this.ui.view;
+        if (!view) return;
+        const entry = view === 'entry';
+        // Ignore fabricated/stale UI actions. A dialog may only begin a
+        // round through an explicit visible start or skip-guide control.
+        if (entry && !['start', 'skip', 'close'].includes(action)) return;
+        if (!entry && action !== 'start') return;
         const level = this.ui.level;
         this.closeDialog();
         if (entry && action === 'close') { void this.context.app.exitGame().catch(() => undefined); return; }
@@ -79,9 +85,25 @@ export default class CoffeeCrashGame extends BaseGame {
         this.startingRanked = true;
         this.ui.block(true);
         const leaderboard = this.context?.services?.leaderboards;
-        const run = level === 1 && leaderboard
-            ? await leaderboard.startTurnRun('coffee-crash')
-            : { mode: 'practice' };
+        // Even if the API adapter throws rather than returning a practice
+        // response, the puzzle must unblock. Never accept a malformed run
+        // or an untrusted seed as an authoritative ranked attempt.
+        let run = { mode: 'practice' };
+        try {
+            if (level === 1 && leaderboard) {
+                const offered = await leaderboard.startTurnRun('coffee-crash');
+                if (offered?.mode === 'ranked'
+                    && offered.game_id === 'coffee-crash'
+                    && offered.rules_version === 'coffee-crash-replay-v1'
+                    && Number.isSafeInteger(offered.seed)
+                    && offered.seed >= 1 && offered.seed <= 0xffffffff
+                    && /^[0-9a-f-]{36}$/i.test(String(offered.run_id ?? ''))) {
+                    run = offered;
+                }
+            }
+        } catch {
+            // Gameplay falls back to practice. No client score is sent.
+        }
         if (!this.context || nonce !== this.startNonce) return;
         this.rankRun = run;
         this.rankActions = [];
