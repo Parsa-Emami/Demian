@@ -108,7 +108,13 @@ export default class CharacterVisualService {
         // A downloaded offline pack deliberately contains the small lite art.
         // Prefer it immediately when disconnected instead of retrying uncached
         // high-resolution PNGs and delaying an offline gameplay launch.
-        const variants = orderedSpriteVariants(globalThis.navigator?.onLine === false
+        const connection = globalThis.navigator?.connection;
+        const economicalNetwork = globalThis.navigator?.onLine === false
+            || connection?.saveData === true
+            || ['2g', 'slow-2g'].includes(connection?.effectiveType);
+        // An explicit Save-Data / 2G preference should never fetch the large
+        // player detail atlas before the lightweight fully playable variant.
+        const variants = orderedSpriteVariants(economicalNetwork
             ? 'lite' : normalizeSpriteVariant(preferredVariant));
         let lastError = null;
 
@@ -240,8 +246,8 @@ export default class CharacterVisualService {
         }, LOAD_TIMEOUT_MS);
         try {
             const response = await fetch(pair.atlasUrl, {
-                // Revalidate atlas JSON so its sprite_rev always matches the
-                // matching PNG across atomic deployments; 304 remains cacheable.
+                // Revalidate JSON before selecting its exact pixel-identical
+                // PNG or WebP sibling. Do not mix revisions on atomic deploys.
                 cache: 'no-cache',
                 credentials: 'same-origin',
                 headers: { Accept: 'application/json' },
@@ -257,7 +263,21 @@ export default class CharacterVisualService {
             if (atlas?.meta?.artIntegrity === 'invalid') {
                 throw new Error(`Character art integrity rejected for ${slug}/${variant}.`);
             }
-            const spriteUrl = characterSpriteRevisionUrl(pair.spriteUrl, atlas);
+            // Atomic static releases may replace a PNG with verified
+            // pixel-exact WebP. Accept ONLY the same expected basename and
+            // this one format change; never trust arbitrary atlas URL paths.
+            const expected = pair.spriteUrl.split(/[?#]/, 1)[0].split('/').pop();
+            const declared = atlas?.meta?.image;
+            const format = declared === expected ? 'png'
+                : declared === expected?.replace(/\.png$/, '.webp') ? 'webp' : null;
+            if (!format) {
+                const error = new Error('Atlas sprite path mismatch for ' + slug + '/' + variant);
+                error.code = 'ASSET_INTEGRITY';
+                throw error;
+            }
+            const spriteSource = format === 'webp'
+                ? pair.spriteUrl.replace(/\.png(?=[?#]|$)/, '.webp') : pair.spriteUrl;
+            const spriteUrl = characterSpriteRevisionUrl(spriteSource, atlas);
             const image = await this.loadImage(spriteUrl, controller.signal, { background });
             if (controller.signal.aborted || this.disposed) throw abortedError();
             return Object.freeze({ slug, variant, atlas, image, ...pair, spriteUrl });
