@@ -97,6 +97,13 @@ export default class ScreenManager {
                 : screen.id === this.primaryId && !topId;
             screen.element.inert = !operable;
             screen.element.setAttribute('aria-hidden', String(!operable));
+            if (screen.layer === 'modal' && screen.element.style) {
+                // A top dialog may appear earlier in the DOM than a covered
+                // dialog (e.g. motion comparison vs pause); tokenized visual
+                // stacking must follow the accessibility stack, not DOM order.
+                screen.element.style.zIndex = operable
+                    ? 'var(--z-shell-modal)' : 'var(--z-shell-screen)';
+            }
         }
     }
 
