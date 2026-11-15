@@ -17,6 +17,7 @@ import '../css/mobile-08-leaderboard.css';
 import '../css/mobile-09-offline.css';
 import '../css/weekly-13-ui.css';
 import '../css/mobile-19-controls.css';
+import '../css/phase4-step20-ux.css';
 import GameApplication from './game/application/GameApplication';
 import CharacterManagerUI from './ui/CharacterManagerUI';
 import SidebarController from './ui/SidebarController';
