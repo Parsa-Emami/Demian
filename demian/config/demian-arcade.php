@@ -52,6 +52,11 @@ return [
     'weekly_settlement_enabled' => (bool) env('DEMIAN_ARCADE_WEEKLY_SETTLEMENT_ENABLED', false),
     'replay_retention_days' => 30,
     'completion_grace_seconds' => 300,
+    // Phase 3 Step 11: stored per-period upon creation; changing env affects
+    // only FUTURE weeks, never an already prepared/in-progress season.
+    'weekly_start_cutoff_seconds' => (int) env('DEMIAN_WEEKLY_START_CUTOFF_SECONDS', 30),
+    'weekly_completion_deadline_seconds' => (int) env('DEMIAN_WEEKLY_COMPLETION_DEADLINE_SECONDS', 900),
+    'weekly_management_enabled' => (bool) env('DEMIAN_WEEKLY_MANAGEMENT_ENABLED', false),
     // An absolute limit on bearer capabilities, not a refresh-token grant.
     'player_session_days' => 30,
     'recovery_link_minutes' => 20,

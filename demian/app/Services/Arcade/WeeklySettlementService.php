@@ -17,46 +17,22 @@ use RuntimeException;
  */
 final class WeeklySettlementService
 {
-    public function __construct(private readonly WeeklyPrizeSelector $selector) {}
+    public function __construct(private readonly WeeklyPrizeSelector $selector,
+        private readonly WeeklyCompetitionService $competition) {}
 
     public function week(CarbonInterface $when): array
     {
-        $start = CarbonImmutable::instance($when)->setTimezone('Asia/Tehran')
-            ->startOfWeek(CarbonImmutable::SATURDAY);
-        $end = $start->addWeek();
-
-        return [
-            'period_key' => CompetitionClock::periodKeys($start)[2],
-            'starts_at' => $start->utc(),
-            'ends_at' => $end->utc(),
-        ];
+        return $this->competition->window($when);
     }
 
-    /**
-     * Make the period row available to completion/settlement as a shared lock.
-     * The insert is atomic, even for historic runs made before this migration.
-     */
     public function ensurePeriod(CarbonInterface $started): string
     {
-        $window = $this->week($started);
-        DB::table('arcade_weekly_periods')->insertOrIgnore([
-            'period_key' => $window['period_key'],
-            'starts_at' => $window['starts_at']->toDateTimeString(),
-            'ends_at' => $window['ends_at']->toDateTimeString(),
-            'status' => 'open',
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
-
-        return $window['period_key'];
+        return $this->competition->ensure($started)['period_key'];
     }
 
-    /** Must be called in the same transaction as publishing a verified score. */
     public function assertOpenForCompletion(CarbonInterface $started): void
     {
-        $key = $this->ensurePeriod($started);
-        $period = DB::table('arcade_weekly_periods')->where('period_key', $key)->lockForUpdate()->first();
-        abort_unless($period && $period->status === 'open', 409, 'Weekly results are sealed.');
+        $this->competition->authorizeCompletion($started);
     }
 
     /** Settle a specified Saturday in Asia/Tehran; idempotent after sealing. */
@@ -136,8 +112,18 @@ final class WeeklySettlementService
             $byPlayer = [];
             $versions = [];
             $rankable = new RankedGameCatalog();
+            $seasonRules = DB::table('arcade_weekly_rule_locks')
+                ->where('period_key', $key)->get()->keyBy('game_id');
             foreach ($rows as $row) {
-                if (! $rankable->supportsRanked($row->game_id)
+                // A game ranked when its season started retains its immutable
+                // technical snapshot if rollout flags change later. Financial
+                // eligibility still requires the currently approved prize gate.
+                $ruleLock = $seasonRules->get($row->game_id);
+                $wasRanked = $ruleLock
+                    ? ($ruleLock->rules_version === $row->rules_version
+                        && (bool) $ruleLock->ranked_enabled)
+                    : $rankable->supportsRanked($row->game_id);
+                if (! $wasRanked
                     || ! $row->live_player_id || ! $row->verified_run_id
                     || $row->run_status !== 'verified' || ! $row->replay_hash
                     || ! $row->completed_at || $row->player_id !== $row->run_player_id
@@ -161,9 +147,16 @@ final class WeeklySettlementService
                 ];
                 $byPlayer[$row->game_id][$row->player_id] = $row;
             }
-            foreach ($versions as $gameVersions) {
+            foreach ($versions as $gameId => $gameVersions) {
                 if (count($gameVersions) !== 1) {
                     throw new RuntimeException('Multiple scoring rules versions in one game/week.');
+                }
+            }
+            $lockedRules = DB::table('arcade_weekly_rule_locks')
+                ->where('period_key', $key)->pluck('rules_version', 'game_id')->all();
+            foreach ($versions as $gameId => $gameVersions) {
+                if (isset($lockedRules[$gameId]) && ! isset($gameVersions[$lockedRules[$gameId]])) {
+                    throw new RuntimeException('Weekly snapshot disagrees with frozen game rules.');
                 }
             }
 
@@ -174,7 +167,10 @@ final class WeeklySettlementService
                         // coupons. Preserve its read-only ranking snapshot regardless,
                         // but prevent provisional game modes from receiving awards.
                         $prizeRankings = array_filter($rankings,
-                            fn (array $entries, string $gameId): bool => $rankable->supportsPrizes($gameId),
+                            fn (array $entries, string $gameId): bool =>
+                                (! $seasonRules->has($gameId)
+                                    || (bool) $seasonRules->get($gameId)->prize_eligible)
+                                && $rankable->supportsPrizes($gameId),
                             ARRAY_FILTER_USE_BOTH);
                         $winners = $this->selector->select($prizeRankings, $historical);
 
@@ -221,6 +217,7 @@ final class WeeklySettlementService
                 'participants' => count($snapshot), 'winner_count' => count($awards),
                 'snapshot_hash' => $digest, 'updated_at' => $utcNow->toDateTimeString(),
             ]);
+            $this->competition->recordFinalized($key, $utcNow);
             DB::table('arcade_weekly_settlement_events')->insert([
                 'period_key' => $key, 'event_type' => 'sealed',
                 'details' => json_encode([
