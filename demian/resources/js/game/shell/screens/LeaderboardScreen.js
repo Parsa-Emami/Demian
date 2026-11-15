@@ -299,7 +299,9 @@ export default class LeaderboardScreen extends BaseScreen {
                     shared ? row.competition_points : row.score];
                 for (const value of cells) {
                     const td = document.createElement('td');
-                    td.textContent = String(value ?? '—');
+                    td.textContent = typeof value === 'number' && Number.isFinite(value)
+                        ? new Intl.NumberFormat('fa-IR').format(value)
+                        : String(value ?? '—');
                     tr.append(td);
                 }
                 if (shared) {
