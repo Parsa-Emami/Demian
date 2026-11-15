@@ -118,7 +118,7 @@ export default class CharacterManager {
         // every time Open World is entered on a cold/unstable connection.
         const staticBuiltinsOnly = globalThis.document?.querySelector?.(
             'meta[name="demian-static-release"][content="true"]'
-        ) && /(?:^|\\/)characters\\.json(?:[?#].*)?$/.test(this.repository?.baseUrl ?? '');
+        ) && /(?:^|\/)characters\.json(?:[?#].*)?$/.test(this.repository?.baseUrl ?? '');
         try {
             this.characters = staticBuiltinsOnly ? [] : await this.repository.list();
         } catch (error) {
