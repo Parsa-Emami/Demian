@@ -335,9 +335,9 @@ export default class CharacterVisualService {
         });
     }
 
-    async createCanvasAvatar(actorId, { player = false, index = 0, variant = null } = {}) {
+    async createCanvasAvatar(actorId, { player = false, index = 0, variant = null, background = false } = {}) {
         const slug = this.resolveSlug(actorId, { player, index });
-        const pack = await this.loadPack(slug, variant ?? this.runtimeVariant({ player }));
+        const pack = await this.loadPack(slug, variant ?? this.runtimeVariant({ player }), { background });
         return new CanvasCharacterAvatar({
             slug,
             image: pack.image,
