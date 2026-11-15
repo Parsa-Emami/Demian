@@ -368,6 +368,11 @@ final class CoffeeCrashReplayVerifier
 
     public function verify(int $seed, int $ticks, array $actions): array
     {
+        // The replay algorithm uses unsigned xorshift32; zero or out-of-range
+        // seeds would not represent a legitimate authoritative game.
+        if ($seed < 1 || $seed > 0xffffffff) {
+            $this->invalid('Invalid server-issued Coffee Crash seed.');
+        }
         if ($ticks < 1 || $ticks > self::MAX_TICKS || count($actions) < 1
             || count($actions) > self::MAX_ACTIONS) {
             $this->invalid('Replay length exceeds game limits.');
@@ -381,6 +386,13 @@ final class CoffeeCrashReplayVerifier
                 $this->invalid('Invalid Coffee Crash event order.');
             }
             $lastTick = $entry['tick'];
+            // Ignore no unknown metadata in competitive proof. Even when a
+            // future UI adds new actions, they need a versioned verifier.
+            $allowed = $entry['kind'] === 'swap'
+                ? ['tick', 'kind', 'a', 'b'] : ['tick', 'kind'];
+            if (array_diff(array_keys($entry), $allowed)) {
+                $this->invalid('Unrecognized fields in Coffee Crash evidence.');
+            }
             if ($entry['kind'] === 'swap') {
                 if (! is_int($entry['a'] ?? null) || ! is_int($entry['b'] ?? null)
                     || ! $this->adjacent($entry['a'], $entry['b'])
