@@ -89,8 +89,9 @@ final class WeeklyFairScoringConcurrentSealTest extends TestCase
                 $results[] = json_decode(file_get_contents($path),
                     true, flags: JSON_THROW_ON_ERROR);
             }
-            $this->assertSame(['already_sealed', 'sealed'],
-                array_values(array_sort(array_column($results, 'status'))));
+            $states = array_column($results, 'status');
+            sort($states, SORT_STRING);
+            $this->assertSame(['already_sealed', 'sealed'], $states);
             DB::reconnect();
             $this->assertDatabaseCount('arcade_weekly_periods', 1);
             $this->assertDatabaseCount('arcade_weekly_results', 3);
