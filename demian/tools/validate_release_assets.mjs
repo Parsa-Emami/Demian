@@ -25,6 +25,7 @@ export function validateReleaseAssets({ root, sourceAssets = null, reportPath = 
     const assetsRoot = join(release, 'assets');
     const errors = [];
     const required = new Set();
+    const transformedPngs = new Set();
     function check(path) {
         const normalized = String(path).replaceAll('\\', '/');
         if (normalized.startsWith('/') || normalized.split('/').includes('..')) {
@@ -61,13 +62,41 @@ export function validateReleaseAssets({ root, sourceAssets = null, reportPath = 
             const prefix = rootPath + slug + '-';
             const atlas = prefix + 'atlas-v' + version + '-' + variant + '.json';
             const sprite = prefix + 'spritesheet-v' + version + '-' + variant + '.png';
-            check(atlas); check(sprite);
+            check(atlas);
             if (existsSync(join(release, atlas))) {
                 const data = readJson(join(release, atlas));
-                if (data.meta?.image !== slug + '-spritesheet-v' + version + '-' + variant + '.png') {
-                    errors.push('Atlas/PNG mismatch: ' + atlas);
+                const expectedPng = slug + '-spritesheet-v' + version + '-' + variant + '.png';
+                const expectedWebp = expectedPng.replace(/\.png$/, '.webp');
+                const declared = data.meta?.image;
+                const webp = ['runtime', 'detail'].includes(variant) && declared === expectedWebp;
+                if (declared !== expectedPng && !webp) {
+                    errors.push('Invalid atlas image reference: ' + atlas);
+                } else {
+                    check(rootPath + declared);
+                    const unused = rootPath + (webp ? expectedPng : expectedWebp);
+                    if (existsSync(join(release, unused))) {
+                        errors.push('Duplicate PNG/WebP atlas variant in release: ' + unused);
+                    }
+                    if (webp) {
+                        transformedPngs.add('characters/' + slug + '/' + expectedPng);
+                    }
+                    // The character manifest has an independent image URL for
+                    // variant loaders. Both references must remain identical.
+                    const publicManifest = join(assetsRoot, 'characters', row.manifest);
+                    if (existsSync(publicManifest)) {
+                        const declaredTarget = readJson(publicManifest)
+                            .runtime?.atlas_targets?.[variant];
+                        if (declaredTarget && declaredTarget.image !== '../' + declared) {
+                            errors.push('Character manifest/atlas image mismatch: ' + atlas);
+                        }
+                    }
                 }
-            }
+                // The atlas geometry, decoded dimensions and animation metadata
+                // are unmodified; conversion verifies exact RGBA pixels in Python.
+                if (data.meta?.size?.w <= 0 || data.meta?.size?.h <= 0) {
+                    errors.push('Invalid atlas dimensions: ' + atlas);
+                }
+            } else check(sprite);
         }
     }
     for (const row of rows) {
@@ -107,7 +136,8 @@ export function validateReleaseAssets({ root, sourceAssets = null, reportPath = 
         for (const filename of walkFiles(src)) {
             const name = relative(src, filename).split(sep).join('/');
             const decision = assetDecision(name);
-            if (decision.keep && !existsSync(join(assetsRoot, name))) {
+            if (decision.keep && !existsSync(join(assetsRoot, name))
+                && !transformedPngs.has(name)) {
                 errors.push('Unexpected missing source asset: ' + name);
             }
             if (!decision.keep) {
@@ -118,8 +148,26 @@ export function validateReleaseAssets({ root, sourceAssets = null, reportPath = 
             }
         }
     }
+    const spriteReportPath = join(release, 'sprite-optimization-report.json');
+    const spriteOptimization = existsSync(spriteReportPath)
+        ? readJson(spriteReportPath) : null;
+    if (spriteOptimization) {
+        if (spriteOptimization.strategy !== 'lossless-webp-pixel-exact'
+            || spriteOptimization.converted !== transformedPngs.size
+            || spriteOptimization.savedBytes < 0
+            || spriteOptimization.outputBytes + spriteOptimization.savedBytes !== spriteOptimization.inputBytes) {
+            errors.push('Sprite release optimization report is inconsistent.');
+        }
+    }
     const report = {
         schemaVersion: 1, status: errors.length ? 'failed' : 'passed',
+        spriteOptimization: spriteOptimization
+            ? { candidates: spriteOptimization.candidates,
+                converted: spriteOptimization.converted,
+                inputBytes: spriteOptimization.inputBytes,
+                outputBytes: spriteOptimization.outputBytes,
+                savedBytes: spriteOptimization.savedBytes }
+            : null,
         policy: { variants: RELEASE_SPRITE_VARIANTS, runtimeCharacters: BUILTIN_CHARACTER_SLUGS },
         requiredRuntimeFiles: required.size, sourceAssetBytes: source?.totalBytes ?? null,
         exportedAssetBytes: inventoryRelease(assetsRoot).totalBytes,

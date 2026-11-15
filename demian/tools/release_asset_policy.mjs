@@ -22,7 +22,7 @@ export const RELEASE_SPRITE_VARIANTS = Object.freeze(
 );
 
 const variantSet = new Set(RELEASE_SPRITE_VARIANTS);
-const packPattern = /^([a-z][a-z0-9-]*)-(spritesheet|atlas)-v(\d+)-([a-z]+)\.(png|json)$/;
+const packPattern = /^([a-z][a-z0-9-]*)-(spritesheet|atlas)-v(\d+)-([a-z]+)\.(png|webp|json)$/;
 const previewPattern = /^([a-z][a-z0-9-]*)-preview-v(\d+)\.png$/;
 
 export function assetDecision(relativeAssetPath, { directory = false } = {}) {
@@ -47,8 +47,11 @@ export function assetDecision(relativeAssetPath, { directory = false } = {}) {
     const filename = basename(path);
     const pack = packPattern.exec(filename);
     if (pack && pack[1] === segments[1]) {
-        if ((pack[2] === 'spritesheet' && pack[5] !== 'png') ||
+        if ((pack[2] === 'spritesheet' && !['png', 'webp'].includes(pack[5])) ||
             (pack[2] === 'atlas' && pack[5] !== 'json')) return { keep: false, reason: 'invalid-pack-extension' };
+        if (pack[5] === 'webp' && !['runtime', 'detail'].includes(pack[4])) {
+            return { keep: false, reason: 'unsupported-webp-variant' };
+        }
         if (Number(pack[3]) !== characterPackVersion(segments[1])) {
             return { keep: false, reason: 'historical-pack' };
         }

@@ -2,6 +2,7 @@
 import { mkdirSync, readFileSync, writeFileSync, cpSync, rmSync, existsSync } from 'node:fs';
 import { resolve, join, basename } from 'node:path';
 import { createHash } from 'node:crypto';
+import { execFileSync } from 'node:child_process';
 import { BUILTIN_CHARACTER_SLUGS, RETIRED_CHARACTER_SLUGS, characterPackVersion } from '../resources/js/game/characters/CharacterVisualContract.js';
 import { BUILTIN_CHARACTER_LABELS as labels } from '../resources/js/game/characters/manifests/CharacterManifestRegistry.js';
 import { renderStaticTemplate } from './static_template.mjs';
@@ -46,6 +47,14 @@ writeFileSync(join(out, 'characters.json'), JSON.stringify({ data: BUILTIN_CHARA
     atlas_url: `assets/characters/${slug}/${slug}-atlas-v${characterPackVersion(slug)}-mobile.json`,
     settings: { scale: 1, walk_speed: 3.55, run_speed: 6.9, jump_force: 6.8 },
 })) }, null, 2));
+// Transform ONLY release copies of active runtime/detail PNGs. The Python
+// gate verifies exact decoded pixels and discards every non-saving WebP.
+// Missing Pillow, conversion errors and malformed atlases fail the build.
+const optimized = JSON.parse(execFileSync(process.env.DEMIAN_PYTHON_BIN || 'python3', [
+    'tools/optimize_sprite_release.py', '--release', out,
+], { cwd: root, encoding: 'utf8', timeout: 240000, maxBuffer: 1024 * 1024 }));
+console.log('Phase 4 Step 18 pixel-exact sprites: ' + optimized.converted +
+    '/' + optimized.candidates + ' WebP, ' + optimized.savedBytes + ' bytes saved.');
 const provisional = buildOfflinePackManifest({ release: out, entry,
     releaseId: '0000000000000000' });
 // Hash the actual offline-critical assets as well as the atomic app bundle.
