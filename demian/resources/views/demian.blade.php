@@ -962,5 +962,54 @@
             </div>
         </section>
     </main>
+
+    <!-- Instant static-menu preview: runs during HTML parsing, before the
+         deferred module bundle downloads/compiles. No network/API/art assets
+         are fetched by this script and no game is simulated before hydration.
+         Laravel dynamic pages continue to use the original boot screen. -->
+    <script>
+        (() => {
+            if (document.querySelector('meta[name="demian-static-release"]')
+                ?.getAttribute('content') !== 'true') return;
+            const root = document.querySelector('[data-character-manager]');
+            const menu = root?.querySelector('[data-screen="cafe-menu"]');
+            const boot = root?.querySelector('[data-screen="boot"]');
+            if (!root || !menu || !boot) return;
+
+            // The real GameShell adopts this screen after its module is ready.
+            // Visible navigation is not coupled to downloading the entire
+            // game engine (or to any optional character image request).
+            boot.hidden = true;
+            boot.setAttribute('aria-hidden', 'true');
+            menu.hidden = false;
+            menu.setAttribute('aria-hidden', 'false');
+            menu.inert = false;
+            root.dataset.shellScreen = 'cafe-menu';
+            root.dataset.instantMenu = 'true';
+            const allowed = new Set(['play', 'continue', 'settings', 'leaderboard', 'rewards']);
+            const capture = (event) => {
+                if (root.dataset.instantMenu !== 'true') return;
+                const button = event.target.closest?.('[data-shell-action]');
+                const action = button?.dataset.shellAction;
+                if (!menu.contains(button) || !allowed.has(action)) return;
+                // The full event router is not yet installed. Preserve the
+                // *first* action and give immediate loading feedback. Do not
+                // fake that a game is loaded or replay extra clicks.
+                event.preventDefault();
+                event.stopImmediatePropagation();
+                if (root.dataset.pendingMenuAction) return;
+                root.dataset.pendingMenuAction = action;
+                const status = document.createElement('p');
+                status.setAttribute('role', 'status');
+                status.dataset.instantMenuStatus = '';
+                status.textContent = 'در حال آماده‌سازی بازی…';
+                menu.querySelector('.cafe-menu__actions')?.append(status);
+            };
+            document.addEventListener('click', capture, true);
+            document.addEventListener('demian:menu-hydrated', () => {
+                document.removeEventListener('click', capture, true);
+            }, { once: true });
+        })();
+    </script>
 </body>
 </html>

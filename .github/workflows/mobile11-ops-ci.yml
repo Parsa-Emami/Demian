@@ -14,6 +14,8 @@ on:
       - 'demian/tools/verify_cpanel_host.mjs'
       - 'demian/tools/smoke_arcade_api.mjs'
       - 'demian/tools/load/**'
+      - 'demian/tools/check_phase6_step30_startup.mjs'
+      - 'demian/tests/js/mobile/Step30Load.test.js'
   push:
     branches-ignore: [main]
     paths:
@@ -46,6 +48,8 @@ jobs:
         run: |
           node --check demian/tools/load/cpanel_50_active.js
           node --check demian/tools/load/cpanel_50_writes_staging.js
+          node --check demian/tools/load/cpanel_50_verified_replays_staging.js
+          node --check demian/tools/load/runner_first_collision.js
       - name: Run release and integrity guard tests
         working-directory: demian
         run: node --test tests/js/mobile/Mobile11Ops.test.js tests/js/mobile/CpanelHostSmoke.test.js

@@ -67,10 +67,33 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // Exposed for diagnostics and later shell integration, not game logic.
         window.demianGameApplication = application;
+        const pending = managerRoot.dataset.pendingMenuAction;
+        delete managerRoot.dataset.pendingMenuAction;
+        delete managerRoot.dataset.instantMenu;
+        document.dispatchEvent(new Event('demian:menu-hydrated'));
+        managerRoot.querySelector('[data-instant-menu-status]')?.remove();
+        // A click during slow JS download is replayed through the normal
+        // hydrated shell router only once; no separate game-start path.
+        if (['play', 'continue', 'settings', 'leaderboard', 'rewards'].includes(pending)) {
+            managerRoot.querySelector('[data-screen="cafe-menu"] [data-shell-action="' + pending + '"]')?.click();
+        }
         // Static hosting/PWA is optional. Never block gameplay startup.
         void registerDemianPwa({ app: application });
     } catch (error) {
         console.error('Demian Game Platform could not start:', error);
+        document.dispatchEvent(new Event('demian:menu-hydrated'));
+        if (managerRoot?.dataset.instantMenu === 'true') {
+            delete managerRoot.dataset.instantMenu;
+            delete managerRoot.dataset.pendingMenuAction;
+            managerRoot.querySelectorAll('[data-screen="cafe-menu"] [data-shell-action]')
+                .forEach(button => { button.disabled = true; });
+            const status = managerRoot.querySelector('[data-instant-menu-status]')
+                ?? document.createElement('p');
+            status.setAttribute('role', 'alert');
+            status.textContent = 'اجرای دمیان ناموفق بود؛ صفحه را به‌روزرسانی کنید.';
+            managerRoot.querySelector('[data-screen="cafe-menu"] .cafe-menu__actions')
+                ?.append(status);
+        }
         // Do not put error.message into innerHTML: errors may include a URL
         // or other untrusted network payload. Keep all visible text inert.
         sceneContainer.replaceChildren();
