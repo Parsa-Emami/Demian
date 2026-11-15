@@ -38,6 +38,7 @@
         "test:feedback:browser": "node tools/check_phase4_step21_feedback.mjs",
         "test:dino-step23:browser": "node tools/check_phase5_step23_dino_run.mjs",
         "test:open-world-step24:browser": "node tools/check_phase5_step24_open_world.mjs",
+        "test:after-hours-step25:browser": "node tools/check_phase5_step25_after_hours.mjs",
         "import:cafe:fbx": "python3 tools/import_fbx_cafe.py sources/demian-cafe.fbx.gz.001 && python3 tools/build_fbx_cafe_layout.py && node tools/bake_fbx_cafe.mjs && python3 tools/fbx/finish_bake.py",
         "test:cafe:browser": "node tools/check_fbx_cafe.mjs",
         "validate:cafe:fbx": "node --test tests/js/fbx/FbxCafe.test.js",
