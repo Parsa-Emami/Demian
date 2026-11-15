@@ -1,4 +1,5 @@
 import rules from '../../../game/runner-rules.json' with { type: 'json' };
+import { validRunnerSession } from './RunnerSessionContract.js';
 
 const PROFILE_KEY = 'demian.arcade.profile.v1';
 const LOCAL_KEY = `demian.arcade.scores.${rules.version}`;
@@ -219,7 +220,7 @@ export default class ArcadeLeaderboardService {
             await this.ensureIdentity();
             const result = await this.request('/runs', { method: 'POST', authenticated: true,
                 body: { request_id: crypto.randomUUID(), game_id: 'dino-run', character_slug: character, track_width: width, rules_version: rules.version } });
-            if (result.rules_version !== rules.version) throw new Error('نسخهٔ قوانین تغییر کرده است.');
+            if (!validRunnerSession(result, width)) throw new Error('پاسخ شروع دور معتبر نیست.');
             return { ...result, mode: 'ranked' };
         } catch (error) {
             if (error.status === 401) { this.identity = null; safeWrite(this.identityStorage, this.identityKey, null); }

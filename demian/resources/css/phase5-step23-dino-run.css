@@ -1,0 +1,82 @@
+.manager-shell[data-active-game="dino-run"] .runner-hud__score {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+    column-gap: 10px;
+    row-gap: 5px;
+    max-width: min(230px, calc(var(--demian-logical-width, 100vw) - 36px));
+}
+
+.manager-shell[data-active-game="dino-run"] .runner-hud__session {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
+    padding-block: 4px;
+    padding-inline: 7px;
+    border-radius: 8px;
+    border: 1px solid rgba(78, 92, 74, .28);
+    font-variant-numeric: tabular-nums;
+    line-height: 1.4;
+}
+
+.manager-shell[data-active-game="dino-run"] .runner-hud__session span {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 4px;
+    white-space: nowrap;
+    font-size: clamp(10px, 2.5vw, 12px);
+}
+
+.manager-shell[data-active-game="dino-run"] .runner-hud__session b {
+    font-size: inherit;
+    letter-spacing: normal;
+    font-variant-numeric: tabular-nums;
+}
+
+.manager-shell[data-active-game="dino-run"] .runner-threat {
+    top: calc(100% + 6px);
+    max-width: min(230px, 80vw);
+    overflow-wrap: anywhere;
+    white-space: normal;
+    line-height: 1.5;
+    border-radius: 8px;
+    background: rgba(39, 54, 44, .96);
+    color: #fff7dd;
+}
+
+.manager-shell[data-active-game="dino-run"] .runner-ready:focus-within {
+    scroll-padding-block: 12px;
+}
+
+@media (max-width: 640px) and (orientation: portrait) {
+    .manager-shell[data-active-game="dino-run"] .runner-hud {
+        top: max(64px, calc(env(safe-area-inset-top, 0px) + 54px));
+        right: max(10px, env(safe-area-inset-right, 0px));
+        gap: 8px;
+    }
+
+    .manager-shell[data-active-game="dino-run"] .runner-hud__score {
+        column-gap: 8px;
+        row-gap: 3px;
+    }
+}
+
+@media (max-width: 360px) {
+    .manager-shell[data-active-game="dino-run"] .runner-hud__score b {
+        font-size: clamp(13px, 4vw, 16px);
+        letter-spacing: 0;
+    }
+
+    .manager-shell[data-active-game="dino-run"] .runner-hud__session {
+        padding-inline: 4px;
+    }
+}
+
+@media (prefers-contrast: more) {
+    .manager-shell[data-active-game="dino-run"] .runner-hud__session,
+    .manager-shell[data-active-game="dino-run"] .runner-threat {
+        border: 2px solid currentColor;
+    }
+}
