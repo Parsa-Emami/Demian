@@ -43,6 +43,16 @@ final class ArcadeController extends Controller
             'weekly' => $clock->snapshot('weekly'), 'refresh_seconds' => 60]);
     }
 
+    /**
+     * Public, read-only weekly schedule. No account details, private risk
+     * signals, prizes or mutable ledger state are returned.
+     */
+    public function weeklyCompetition(\App\Services\Arcade\WeeklyCompetitionService $service): JsonResponse
+    {
+        return response()->json($service->publicSchedule())
+            ->header('Cache-Control', 'public, max-age=15');
+    }
+
     public function register(Request $request): JsonResponse
     {
         $name = $this->name($request); $token = Str::random(64);
