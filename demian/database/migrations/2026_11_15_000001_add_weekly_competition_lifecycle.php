@@ -19,6 +19,7 @@ return new class extends Migration
     {
         Schema::table('arcade_weekly_periods', function (Blueprint $table): void {
             $table->string('lifecycle_status', 16)->default('active');
+            $table->unsignedSmallInteger('start_cutoff_seconds')->default(30);
             $table->timestamp('completion_deadline_at')->nullable();
         });
         Schema::create('arcade_weekly_rule_locks', function (Blueprint $table): void {
@@ -55,6 +56,8 @@ return new class extends Migration
                     DB::table('arcade_weekly_periods')
                         ->where('period_key', $period->period_key)->update([
                             'lifecycle_status' => $state,
+                            'start_cutoff_seconds' => max(0, min(3600,
+                                (int) config('demian-arcade.weekly_start_cutoff_seconds', 30))),
                             'completion_deadline_at' => $end->addSeconds(
                                 max(60, (int) config('demian-arcade.weekly_completion_deadline_seconds', 900))
                             )->toDateTimeString(),
@@ -77,7 +80,8 @@ return new class extends Migration
         Schema::dropIfExists('arcade_weekly_lifecycle_events');
         Schema::dropIfExists('arcade_weekly_rule_locks');
         Schema::table('arcade_weekly_periods', function (Blueprint $table): void {
-            $table->dropColumn(['lifecycle_status', 'completion_deadline_at']);
+            $table->dropColumn(['lifecycle_status', 'completion_deadline_at',
+                'start_cutoff_seconds']);
         });
     }
 };
