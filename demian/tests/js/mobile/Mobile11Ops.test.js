@@ -11,6 +11,8 @@ const load = read('../../../tools/load/mobile11_read_only.js');
 const pages = read('../../../../.github/workflows/deploy-demian-pages.yml');
 const nginx = read('../../../ops/mobile-11/nginx.conf.example');
 const cpanelRelease = read('../../../ops/cpanel/deploy.sh');
+const cpanelPreflight = read('../../../ops/cpanel/host_preflight.php');
+const cpanelOps = read('../../../../.github/workflows/mobile11-ops-ci.yml');
 const cpanelWorkflow = read('../../../../.github/workflows/cpanel-api-deploy.yml');
 const cpanelLoad = read('../../../tools/load/cpanel_50_active.js');
 const cpanelWrites = read('../../../tools/load/cpanel_50_writes_staging.js');
@@ -150,4 +152,31 @@ test('50 parallel write requests require staging-only approval and erase test ac
     assert.match(cpanelWrites, /per-vu-iterations/);
     assert.match(cpanelWrites, /http\.del\(/);
     assert.match(cpanelWrites, /start idempotency failed/);
+});
+
+
+test('Step 29 rejects untrusted cPanel release archives before extraction', () => {
+    assert.match(cpanelRelease, /tar -tvzf "\$archive"/);
+    assert.match(cpanelRelease, /Symbolic links are forbidden/);
+    assert.match(cpanelRelease, /Unsafe or private paths in artifact/);
+    assert.match(cpanelRelease, /host_preflight\.php/);
+    assert.ok(cpanelRelease.indexOf('host_preflight.php" "$env_file"')
+        < cpanelRelease.indexOf('artisan migrate --force'));
+    assert.match(cpanelRelease, /crontab -l/);
+    assert.match(cpanelWorkflow, /ops\/cpanel\/host_preflight\.php/);
+    assert.match(cpanelOps, /CpanelHostPreflightTest\.php/);
+});
+
+test('Step 29 checks nontrivial secrets, persistent shared session locks and secure host runtime', () => {
+    for (const flag of [
+        'PHP_VERSION_ID < 80400', 'PHP_INT_SIZE !== 8',
+        'fileperms($path)', 'is_link($path)', 'pdo_mysql',
+        "'APP_KEY'", "'DB_CONNECTION'", "'CACHE_STORE'",
+        "'SESSION_DRIVER'", "'SESSION_SECURE_COOKIE'",
+        "'DEMIAN_ARCADE_ALLOWED_ORIGINS'", "'APP_DEBUG'",
+        'base64_decode', 'Duplicate environment key',
+    ]) {
+        assert.ok(cpanelPreflight.includes(flag), 'Missing cPanel preflight clause: ' + flag);
+    }
+    assert.doesNotMatch(cpanelPreflight, /var_dump|print_r|echo\s+\$values/);
 });

@@ -55,10 +55,19 @@ archive="$root/incoming/$sha.tar.gz"
 entries="$root/incoming/$sha.entries"
 trap 'rm -f -- "$entries"' EXIT
 tar -tzf "$archive" > "$entries"
-if grep -Eq '(^/|(^|/)[.][.](/|$))' "$entries"; then
-    echo "Unsafe artifact paths" >&2; exit 1
+if grep -Eq '(^/|(^|/)[.][.](/|$)|(^|/)([.]env|[.]git|[.]ssh)(/|$))' "$entries"; then
+    echo "Unsafe or private paths in artifact" >&2; exit 1
 fi
-rm -f "$entries"
+# The release format must contain only ordinary files and directories.
+# The trusted storage/.env symlinks are created by this script later, not
+# extracted from the artifact where a malicious link could escape the root.
+types="$root/incoming/$sha.types"
+trap 'rm -f -- "$entries" "$types"' EXIT
+tar -tvzf "$archive" > "$types"
+if grep -Eq '^l' "$types"; then
+    echo "Symbolic links are forbidden inside cPanel release artifacts" >&2; exit 1
+fi
+rm -f "$entries" "$types"
 
 release="$root/releases/$sha"
 tmp="$root/releases/.$sha.tmp.$$"
@@ -69,6 +78,9 @@ if [[ ! -d "$release" ]]; then
     [[ -f "$tmp/artisan" && -f "$tmp/vendor/autoload.php" &&
        -f "$tmp/public/index.php" && -f "$tmp/public/.htaccess" ]] ||
         { echo "Artifact missing Laravel public entrypoint or Composer dependencies" >&2; exit 1; }
+    [[ -f "$tmp/ops/cpanel/host_preflight.php" && ! -L "$tmp/ops/cpanel/host_preflight.php" ]] || {
+        echo "cPanel production preflight contract is missing" >&2; exit 1;
+    }
     rm -rf "$tmp/storage"
     ln -s "$root/shared/storage" "$tmp/storage"
     ln -s "$env_file" "$tmp/.env"
@@ -93,6 +105,17 @@ fi
 
 [[ -f "$release/.mobile11-release" &&
    "$(cat "$release/.mobile11-release")" == "$sha" ]] || exit 1
+# Check every deploy, including redeploys of an existing immutable SHA.
+# The contract prints no .env values and does not touch production data.
+"$php_bin" "$release/ops/cpanel/host_preflight.php" "$env_file" "$target" "$origin"
+if [[ "$target" == production ]]; then
+    # A hosted cron schedule is a hard production gate. Scheduling itself
+    # remains an owner-controlled cPanel operation, never installed by CI.
+    command -v crontab >/dev/null || { echo "cPanel Cron Jobs unavailable" >&2; exit 1; }
+    if ! crontab -l 2>/dev/null | grep -F "$root/current" | grep -F 'artisan schedule:run' >/dev/null; then
+        echo "Production Laravel scheduler cron for this release root is missing" >&2; exit 1
+    fi
+fi
 (
     cd "$release"
     "$php_bin" artisan migrate --force --no-interaction
