@@ -53,8 +53,8 @@ test('Step 30 real replay load is staging only, explicitly approved and credenti
 
 test('Static early menu is visible before the engine and early click stays single-use', () => {
     assert.match(view, /root\.dataset\.shellScreen = 'cafe-menu'/);
-    assert.match(view, /data\.instantMenu = 'true'/);
-    assert.match(view, /data\.pendingMenuAction = action/);
+    assert.match(view, /root\.dataset\.instantMenu = 'true'/);
+    assert.match(view, /root\.dataset\.pendingMenuAction = action/);
     assert.match(view, /demian:menu-hydrated/);
     assert.match(game, /const instantMenu = this\.root\.dataset\.instantMenu === 'true'/);
     assert.match(entry, /const pending = managerRoot\.dataset\.pendingMenuAction/);
