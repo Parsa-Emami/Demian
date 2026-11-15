@@ -20,7 +20,7 @@ export default class OpenWorldHud {
         this.root = document.createElement('aside');
         this.root.className = 'open-world-streaming-hud';
         assignUiLayer(this.root, UI_LAYER.LOCAL_BASE);
-        this.root.innerHTML = '<span><small>CHUNKS</small><b data-world-chunks>0</b></span><span><small>AI</small><b data-world-ai>0</b></span><span><small>DISTRICT</small><b data-world-district>—</b></span>';
+        this.root.innerHTML = '<span><small>CHUNKS</small><b data-world-chunks>0</b></span><span><small>AI</small><b data-world-ai>0</b></span><span><small>DISTRICT</small><b data-world-district>—</b></span><span><small>یافته‌ها</small><b data-world-finds>۰</b></span>';
         this.objective = assignUiLayer(document.createElement('aside'), UI_LAYER.LOCAL_BASE);
         this.objective.className = 'world-objective';
         this.objective.innerHTML = '<span aria-hidden="true">◆</span><strong></strong>';
@@ -30,7 +30,7 @@ export default class OpenWorldHud {
         this.worldMap.mount();
     }
 
-    update({ position, forward, chunkStats, aiStats, district, target, activeChunkIds = [] } = {}) {
+    update({ position, forward, chunkStats, aiStats, district, target, activeChunkIds = [], findsCount = 0 } = {}) {
         if (position) this.lastPosition = { x: position.x, z: position.z };
         const chunks = this.root?.querySelector('[data-world-chunks]');
         const ai = this.root?.querySelector('[data-world-ai]');
@@ -38,6 +38,8 @@ export default class OpenWorldHud {
         if (chunks) chunks.textContent = `${chunkStats?.active ?? 0}/${chunkStats?.loaded ?? 0}`;
         if (ai) ai.textContent = String(aiStats?.frameUpdates ?? 0);
         if (districtLabel) districtLabel.textContent = district?.label ?? 'حاشیه کافه';
+        const found = this.root?.querySelector('[data-world-finds]');
+        if (found) found.textContent = new Intl.NumberFormat('fa-IR').format(findsCount);
         const objective = target ? `تعامل · ${target.label}`
             : district?.label ? `اکنون در ${district.label}` : 'کافه را بگرد و بازی‌ها را پیدا کن';
         if (this.objectiveText && this.objectiveText.textContent !== objective) this.objectiveText.textContent = objective;
