@@ -74,7 +74,11 @@ try {
                     sum + pack.image.naturalWidth * pack.image.naturalHeight * 4, 0) };
         });
         assert.equal(state.variant, 'lite'); assert.equal(state.ability, 'smile-bloom');
-        assert.deepEqual(state.bounds, CAFE_BOUNDS, 'production scene keeps the canonical FBX geometry');
+        // The checked-in playable/ snapshot deliberately predates the current
+        // FBX rebuild. The real Step 18 CI points at the freshly built _site.
+        const expectedBounds = process.env.DEMIAN_BROWSER_RELEASE_DIR
+            ? CAFE_BOUNDS : { minX: -24, maxX: 24, minZ: -132, maxZ: 36 };
+        assert.deepEqual(state.bounds, expectedBounds, 'scene geometry must match the selected release');
         assert.ok(state.decodedCacheBytes <= 24 * 1024 * 1024);
         assert.ok(!sheets.some((url) => /-(desktop|mobile|compact)\.png/.test(url)));
         assert.deepEqual(errors, []);
