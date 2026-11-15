@@ -57,8 +57,41 @@ export default class CouponWalletScreen extends BaseScreen {
                 }
             }
         };
+        this.onSupport = async event => {
+            const button = event.target.closest('[data-wallet-ack], [data-wallet-dispute]');
+            if (!button || button.disabled) return;
+            const card = button.closest('[data-wallet-coupon-id]');
+            const couponId = Number(card?.dataset.walletCouponId);
+            if (!Number.isSafeInteger(couponId) || couponId < 1) return;
+            const generation = this.generation;
+            const token = this.service.identity?.token;
+            const owner = this.service.identity?.player_id;
+            if (!token || !owner) return;
+            button.disabled = true;
+            try {
+                if (button.hasAttribute('data-wallet-ack')) {
+                    await this.service.acknowledgeCoupon(couponId);
+                } else {
+                    const category = card.querySelector('[data-wallet-case-category]')?.value;
+                    const description = card.querySelector('[data-wallet-case-description]')?.value ?? '';
+                    await this.service.reportCoupon(couponId, category, description);
+                }
+                if (generation !== this.generation
+                    || this.service.identity?.token !== token
+                    || this.service.identity?.player_id !== owner) return;
+                await this.load();
+            } catch {
+                if (generation === this.generation
+                    && this.service.identity?.token === token
+                    && this.service.identity?.player_id === owner) {
+                    this.status.textContent = 'ثبت درخواست ناموفق بود؛ وضعیت حساب، اتصال یا پرونده باز را بررسی کنید.';
+                    button.disabled = false;
+                }
+            }
+        };
         this.refreshButton?.addEventListener('click', this.onRefresh);
         this.list?.addEventListener('click', this.onCopy);
+        this.list?.addEventListener('click', this.onSupport);
     }
 
     async beforeOpen() {
@@ -119,6 +152,10 @@ export default class CouponWalletScreen extends BaseScreen {
         card.className = 'wallet-card';
         const status = Object.hasOwn(statuses, coupon.status) ? coupon.status : 'revoked';
         card.dataset.walletState = status;
+        const couponId = Number(coupon.coupon_id);
+        if (Number.isSafeInteger(couponId) && couponId > 0) {
+            card.dataset.walletCouponId = String(couponId);
+        }
 
         const header = document.createElement('div');
         header.className = 'wallet-card__header';
@@ -172,6 +209,66 @@ export default class CouponWalletScreen extends BaseScreen {
             codeRow.append(field, copy);
             card.append(codeRow);
         }
+        if (coupon.support_enabled === true && Number.isSafeInteger(couponId)
+            && couponId > 0) {
+            const received = document.createElement('p');
+            received.className = 'wallet-card__meta';
+            if (coupon.acknowledged_at) {
+                received.textContent = 'دریافت و مشاهده جایزه ثبت شده است.';
+            } else {
+                const ack = document.createElement('button');
+                ack.type = 'button';
+                ack.className = 'shell-button shell-button--ghost';
+                ack.dataset.walletAck = '';
+                ack.textContent = 'تأیید دریافت جایزه';
+                received.append(ack);
+            }
+            card.append(received);
+
+            const caseState = coupon.case_status;
+            if (caseState === 'open') {
+                const notice = document.createElement('p');
+                notice.className = 'wallet-card__meta';
+                notice.textContent = 'درخواست رسیدگی #' + formatNumber(coupon.case_id)
+                    + ' ثبت شده و در انتظار بررسی است.';
+                card.append(notice);
+            } else {
+                if (caseState === 'resolved' || caseState === 'rejected') {
+                    const result = document.createElement('p');
+                    result.className = 'wallet-card__meta';
+                    result.textContent = 'وضعیت آخرین درخواست: '
+                        + (caseState === 'resolved' ? 'رسیدگی شده' : 'رد شده');
+                    card.append(result);
+                }
+                const category = document.createElement('select');
+                category.dataset.walletCaseCategory = '';
+                category.setAttribute('aria-label', 'موضوع درخواست رسیدگی');
+                for (const [value, label] of [
+                    ['not_received', 'جایزه دریافت نشده'],
+                    ['invalid_code', 'کد نامعتبر'],
+                    ['redemption', 'مشکل هنگام مصرف در کافه'],
+                    ['terms', 'ابهام در شرایط تخفیف'],
+                    ['other', 'سایر موارد'],
+                ]) {
+                    const option = document.createElement('option');
+                    option.value = value;
+                    option.textContent = label;
+                    category.append(option);
+                }
+                const description = document.createElement('textarea');
+                description.dataset.walletCaseDescription = '';
+                description.maxLength = 300;
+                description.rows = 2;
+                description.placeholder = 'توضیح کوتاه؛ کد تخفیف یا اطلاعات شخصی را وارد نکنید';
+                description.setAttribute('aria-label', 'توضیح اختیاری درخواست رسیدگی');
+                const button = document.createElement('button');
+                button.type = 'button';
+                button.className = 'shell-button shell-button--ghost';
+                button.dataset.walletDispute = '';
+                button.textContent = 'ارسال درخواست رسیدگی';
+                card.append(category, description, button);
+            }
+        }
         return card;
     }
 
@@ -183,6 +280,7 @@ export default class CouponWalletScreen extends BaseScreen {
         this.clear();
         this.refreshButton?.removeEventListener('click', this.onRefresh);
         this.list?.removeEventListener('click', this.onCopy);
+        this.list?.removeEventListener('click', this.onSupport);
         super.dispose();
     }
 }

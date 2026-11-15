@@ -16,6 +16,9 @@
 @endif
 @if ($staff->role === 'super_admin')
   <a class="button secondary" href="{{ route('cashier.gifts') }}">اهدای کد تخفیف به بازیکن</a>
+  @if(config('demian-coupons.delivery_support_enabled'))
+  <a class="button secondary" href="{{ route('cashier.coupon-support') }}">درخواست‌های رسیدگی به جوایز</a>
+  @endif
   @if(config('demian-coupons.campaigns_enabled'))
   <a class="button secondary" href="{{ route('cashier.campaigns') }}">کمپین‌ها و موجودی کدها</a>
   @endif

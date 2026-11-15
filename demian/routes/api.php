@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\V1\ArcadeController;
 use App\Http\Controllers\Api\V1\ArcadeHealthController;
 use App\Http\Controllers\Api\V1\ArcadeTurnRunController;
 use App\Http\Controllers\Api\V1\CouponController;
+use App\Http\Controllers\Api\V1\CouponDeliveryController;
 use App\Http\Middleware\AuthenticateArcadePlayer;
 use App\Http\Middleware\LimitArcadePayload;
 use App\Http\Middleware\ObserveArcadeReplayFailures;
@@ -32,6 +33,12 @@ Route::prefix('v1/arcade')->middleware([LimitArcadePayload::class, 'throttle:arc
     Route::middleware(AuthenticateArcadePlayer::class)->group(function (): void {
         Route::get('/player/coupons', [CouponController::class, 'wallet'])
             ->middleware('throttle:arcade-coupon-wallet');
+        Route::post('/player/coupons/{couponId}/acknowledge',
+            [CouponDeliveryController::class, 'acknowledge'])
+            ->whereNumber('couponId')->middleware('throttle:arcade-coupon-support');
+        Route::post('/player/coupons/{couponId}/disputes',
+            [CouponDeliveryController::class, 'openCase'])
+            ->whereNumber('couponId')->middleware('throttle:arcade-coupon-support');
         Route::get('/player', [ArcadeController::class, 'me']);
         Route::post('/player/recovery-link', [ArcadeController::class, 'issueRecoveryLink'])
             ->middleware('throttle:arcade-recovery-issue');

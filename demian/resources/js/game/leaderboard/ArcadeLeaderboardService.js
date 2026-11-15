@@ -394,6 +394,29 @@ export default class ArcadeLeaderboardService {
         }
     }
 
+    async acknowledgeCoupon(couponId) {
+        if (!this.connected || !this.identity?.token || !Number.isSafeInteger(couponId)
+            || couponId < 1) throw new Error('حساب یا شناسه کد معتبر نیست.');
+        const response = await this.request('/player/coupons/' + couponId + '/acknowledge', {
+            method: 'POST', authenticated: true,
+        });
+        return response.data;
+    }
+    async reportCoupon(couponId, category, description = '') {
+        if (!this.connected || !this.identity?.token || !Number.isSafeInteger(couponId)
+            || couponId < 1 || !['not_received', 'invalid_code', 'redemption',
+                'terms', 'other'].includes(category)
+            || description.length > 300 || !globalThis.crypto?.randomUUID) {
+            throw new Error('مشخصات درخواست رسیدگی معتبر نیست.');
+        }
+        const response = await this.request('/player/coupons/' + couponId + '/disputes', {
+            method: 'POST', authenticated: true,
+            body: { request_key: globalThis.crypto.randomUUID(),
+                category, description },
+        });
+        return response.data;
+    }
+
     async myCoupons() {
         if (!this.connected || !this.identity?.token) return [];
         try {
