@@ -161,8 +161,27 @@ try {
     // 320 CSS px viewport is a real production constraint on compact phones.
     // HUD, pause toolbar and critical actions must stay inside physical bounds.
     await page.setViewportSize({ width: 320, height: 568 });
-    await page.waitForFunction(() =>
-        document.querySelector('[data-character-manager]')?.dataset.physicalOrientation === 'portrait');
+    // "portrait" was already true at 390x844. Wait for the actual
+    // VisualViewport/CSS logical dimensions and gameplay-control reflow,
+    // not the unchanged orientation flag. This still fails for a genuine
+    // permanent overflow instead of asserting stale pre-resize rectangles.
+    await page.waitForFunction(() => {
+        const root = document.querySelector('[data-character-manager]');
+        const stick = document.querySelector('[data-virtual-stick]');
+        const jump = document.querySelector('[data-control-surface="world"] [data-input-press="jump"]');
+        const pause = document.querySelector('.play-toolbar [data-shell-action="pause"]');
+        if (!root || !stick || !jump || !pause) return false;
+        const logicalHeight = Number.parseFloat(document.documentElement.style
+            .getPropertyValue('--demian-logical-height'));
+        const height = window.visualViewport?.height ?? window.innerHeight;
+        if (window.innerWidth > 320 || Math.abs(logicalHeight - height) > 2) return false;
+        return [stick, jump, pause].every(node => {
+            const rect = node.getBoundingClientRect();
+            return rect.width >= 44 && rect.height >= 44 &&
+                rect.x >= -1 && rect.y >= -1 &&
+                rect.right <= 321 && rect.bottom <= 569;
+        });
+    }, null, { timeout: 10000 });
     const compactStick = await getRect(stick), compactJump = await getRect(jump);
     const pause = await getRect(page.locator('.play-toolbar [data-shell-action="pause"]'));
     for (const target of [compactStick.bounds, compactJump.bounds, pause.bounds]) {

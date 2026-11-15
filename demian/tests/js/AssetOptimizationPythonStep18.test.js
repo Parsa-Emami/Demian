@@ -28,10 +28,11 @@ test('Step 18: production WebP transcode is lossless, atomic for a release and a
         mkdirSync(join(dir, 'manifests'), { recursive: true });
         writeFileSync(join(dir, 'manifests', 'character_manifest_v4.json'),
             JSON.stringify({ character_key: slug, runtime: { atlas_targets: {
+                lite: { image: '../darya-spritesheet-v14-lite.png' },
                 runtime: { image: '../darya-spritesheet-v14-runtime.png' },
                 detail: { image: '../darya-spritesheet-v14-detail.png' },
             } } }));
-        for (const variant of ['runtime', 'detail']) {
+        for (const variant of ['lite', 'runtime', 'detail']) {
             const prefix = slug + '-spritesheet-v14-' + variant;
             const png = join(dir, prefix + '.png');
             // An RGBA image with complex transparency and stable visible RGB
@@ -51,11 +52,11 @@ test('Step 18: production WebP transcode is lossless, atomic for a release and a
         assert.equal(run.status, 0, run.stderr);
         const report = JSON.parse(readFileSync(join(root,
             'sprite-optimization-report.json'), 'utf8'));
-        assert.equal(report.candidates, 2);
-        assert.equal(report.converted, 2, JSON.stringify(report));
+        assert.equal(report.candidates, 3);
+        assert.equal(report.converted, 3, JSON.stringify(report));
         assert.ok(report.savedBytes > 0);
         assert.equal(report.inputBytes - report.outputBytes, report.savedBytes);
-        for (const variant of ['runtime', 'detail']) {
+        for (const variant of ['lite', 'runtime', 'detail']) {
             const base = slug + '-spritesheet-v14-' + variant;
             assert.equal(existsSync(join(dir, base + '.png')), false);
             const webp = readFileSync(join(dir, base + '.webp'));

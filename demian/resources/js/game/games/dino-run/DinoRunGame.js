@@ -30,13 +30,32 @@ function collisionGuide(model) {
 export default class DinoRunGame extends BaseGame {
     constructor() { super(); this.model = new DinoRunModel(); this.best = readBest(); this.finished = false; this.uiTime = 0; }
     async preload(context) {
+        // Only the player is on the first-playable-frame path. Two additional
+        // attacker atlases previously blocked the entire runner launch.
         this.avatar = await context.services.characterVisuals.createCanvasAvatar('player', { player: true });
         this.attackAvatars = new Map();
-        await Promise.all(RUNNER_CONFIG.attackers.map(async (slug) => {
-            const base = await context.services.characterVisuals.createCanvasAvatar(slug, { player: true });
-            for (const response of ['jump', 'duck']) this.attackAvatars.set(`${slug}:${response}`,
-                new CanvasCharacterAvatar({ slug, image: base.texture.image, atlas: base.atlas }));
-        }));
+    }
+    hydrateAttackers(context) {
+        const schedule = globalThis.requestIdleCallback
+            ? callback => globalThis.requestIdleCallback(callback, { timeout: 1200 })
+            : callback => globalThis.setTimeout(callback, 0);
+        schedule(() => {
+            if (this.context !== context || this.disposed) return;
+            for (const slug of RUNNER_CONFIG.attackers) {
+                void context.services.characterVisuals.createCanvasAvatar(slug,
+                    { variant: 'lite', background: true }).then(base => {
+                    if (this.context !== context || this.disposed) return;
+                    for (const response of ['jump', 'duck']) {
+                        this.attackAvatars.set(`${slug}:${response}`, new CanvasCharacterAvatar({
+                            slug, image: base.texture.image, atlas: base.atlas,
+                        }));
+                    }
+                }).catch(() => {
+                    // Gameplay and the server-validated collision model stay
+                    // usable if optional attacker art fails to download.
+                });
+            }
+        });
     }
     async enter(context) {
         this.context = context;
@@ -82,6 +101,7 @@ export default class DinoRunGame extends BaseGame {
         wordmark.src = new URL('assets/environments/cafe-runner-v1/wordmark.png', document.baseURI).href;
         this.ready.prepend(wordmark);
         context.root.querySelector('[data-game-hud-host]')?.append(this.ready, this.lessonPanel);
+        this.hydrateAttackers(context);
         this.scoreNode = this.hud.querySelector('[data-run-score]'); this.bestNode = this.hud.querySelector('[data-run-best]');
         this.resize();
     }
@@ -256,7 +276,24 @@ export default class DinoRunGame extends BaseGame {
             if (!obstacle.attacker || obstacle.x > this.width / s + 80 || obstacle.x + obstacle.w < 0) continue;
             const avatar = this.attackAvatars?.get(`${obstacle.attacker}:${obstacle.response}`);
             const sprite = avatar?.atlas.frames[avatar.animator.sample(alpha).frameName];
-            if (!sprite) continue;
+            if (!sprite) {
+                // Preserve a visible hazard before its optional atlas loads:
+                // scoring, collision geometry and response cues are unchanged.
+                const x = (obstacle.x + obstacle.w / 2) * s, y = this.ground - obstacle.y * s;
+                ctx.save();
+                ctx.fillStyle = '#a84c37';
+                ctx.strokeStyle = '#ffe0ad';
+                ctx.lineWidth = 2 * s;
+                ctx.beginPath();
+                ctx.arc(x, y - 34 * s, 20 * s, 0, Math.PI * 2);
+                ctx.fill(); ctx.stroke();
+                ctx.fillStyle = '#fff5d8';
+                ctx.font = `700 ${12 * s}px Vazirmatn, sans-serif`;
+                ctx.textAlign = 'center';
+                ctx.fillText(ATTACKER_LABELS[obstacle.attacker] ?? '!', x, y - 61 * s);
+                ctx.restore();
+                continue;
+            }
             const size = RUNNER_CONFIG.bodyHeight / (avatar.atlas.render?.referenceBodyHeightRatio ?? .9) * s;
             const x = (obstacle.x + obstacle.w / 2) * s, y = this.ground - obstacle.y * s;
             ctx.save();
@@ -286,5 +323,5 @@ export default class DinoRunGame extends BaseGame {
         if (this.environment && this.context) this.environment.reducedMotion = this.context.settings.resolvedReducedMotion();
     }
     async exit() {}
-    dispose() { this.hud?.remove(); this.ready?.remove(); this.lessonPanel?.remove(); this.environment?.dispose(); this.attackAvatars?.clear(); this.environment = null; this.hud = null; this.context = null; this.avatar = null; }
+    dispose() { this.disposed = true; this.hud?.remove(); this.ready?.remove(); this.lessonPanel?.remove(); this.environment?.dispose(); this.attackAvatars?.clear(); this.environment = null; this.hud = null; this.context = null; this.avatar = null; }
 }

@@ -12,6 +12,8 @@ export default class CharacterManagerUI {
         this.managerProvider = managerProvider;
         this.eventBus = eventBus;
         this.previewRenderer = new CharacterPreviewRenderer();
+        this.previewObserver = null;
+        this.previewRows = new WeakMap();
 
         this.listElement = root.querySelector('[data-character-list]');
         this.characterRail = null;
@@ -112,9 +114,23 @@ export default class CharacterManagerUI {
     }
 
     renderList(characters) {
-        if (!this.listElement) {
-            return;
-        }
+        if (!this.listElement) return;
+
+        // A ranked game launch must never trigger 12 unnecessary preview
+        // downloads in parallel. Only observed cards enter the image queue.
+        this.previewObserver?.disconnect();
+        this.previewRows = new WeakMap();
+        this.previewObserver = typeof IntersectionObserver === 'function'
+            ? new IntersectionObserver((entries, observer) => {
+                for (const entry of entries) {
+                    if (!entry.isIntersecting || !entry.target.isConnected) continue;
+                    observer.unobserve(entry.target);
+                    const record = this.previewRows.get(entry.target);
+                    this.previewRows.delete(entry.target);
+                    if (record) void this.previewRenderer.render(entry.target, record);
+                }
+            }, { root: this.listElement, rootMargin: '0px 120px', threshold: 0 })
+            : null;
 
         this.listElement.innerHTML = '';
 
@@ -207,9 +223,17 @@ export default class CharacterManagerUI {
             this.listElement.appendChild(card);
             const previewCanvas = card.querySelector('[data-character-preview]');
             if (previewCanvas) {
-                void this.previewRenderer.render(previewCanvas, BUILTIN_CHARACTER_SLUGS.includes(character.slug)
+                const record = BUILTIN_CHARACTER_SLUGS.includes(character.slug)
                     ? { ...character, preview_url: builtinCharacterPreviewUrl(character.slug) }
-                    : character);
+                    : character;
+                if (this.previewObserver) {
+                    this.previewRows.set(previewCanvas, record);
+                    this.previewObserver.observe(previewCanvas);
+                } else {
+                    // IntersectionObserver is optional. The UI remains usable
+                    // on older Safari versions with an eager compatibility path.
+                    void this.previewRenderer.render(previewCanvas, record);
+                }
             }
         });
 
@@ -505,6 +529,9 @@ export default class CharacterManagerUI {
     }
 
     dispose() {
+        this.previewObserver?.disconnect();
+        this.previewObserver = null;
+        this.previewRows = new WeakMap();
         this.characterRail?.dispose();
         this.characterRail = null;
     }

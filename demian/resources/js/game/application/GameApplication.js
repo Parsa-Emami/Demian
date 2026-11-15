@@ -197,6 +197,9 @@ export default class GameApplication {
         // leaving other mini-games.
         const previousGame = this.activeGame;
         const previousGameId = this.activeGameId;
+        // Leaving a game invalidates all optional NPC/attacker artwork. Do not
+        // let late decodes compete with the next foreground game launch.
+        this.characterVisuals.cancelBackgroundLoads();
         this.runtime.setGame(null);
         this.activeGame = null;
         this.activeGameId = null;

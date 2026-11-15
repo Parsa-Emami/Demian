@@ -263,8 +263,8 @@ export default class CharacterVisualService {
             if (atlas?.meta?.artIntegrity === 'invalid') {
                 throw new Error(`Character art integrity rejected for ${slug}/${variant}.`);
             }
-            // Atomic static releases may replace a PNG with verified
-            // pixel-exact WebP. Accept ONLY the same expected basename and
+            // Atomic static releases may replace lite/runtime/detail PNG with
+            // verified pixel-exact WebP. Accept ONLY the same expected basename and
             // this one format change; never trust arbitrary atlas URL paths.
             const expected = pair.spriteUrl.split(/[?#]/, 1)[0].split('/').pop();
             const declared = atlas?.meta?.image;
@@ -335,9 +335,9 @@ export default class CharacterVisualService {
         });
     }
 
-    async createCanvasAvatar(actorId, { player = false, index = 0, variant = null } = {}) {
+    async createCanvasAvatar(actorId, { player = false, index = 0, variant = null, background = false } = {}) {
         const slug = this.resolveSlug(actorId, { player, index });
-        const pack = await this.loadPack(slug, variant ?? this.runtimeVariant({ player }));
+        const pack = await this.loadPack(slug, variant ?? this.runtimeVariant({ player }), { background });
         return new CanvasCharacterAvatar({
             slug,
             image: pack.image,
