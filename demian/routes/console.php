@@ -26,14 +26,26 @@ Artisan::command('inspire', function () {
 // verifying a persistent shared lock cache and completing production migration.
 \Illuminate\Support\Facades\Schedule::command('arcade:seal-weeks --apply')
     ->hourlyAt(10)->withoutOverlapping(30)->onOneServer()
-    ->when(fn (): bool => (bool) config('demian-arcade.weekly_settlement_enabled', false));
+    ->when(fn (): bool => (bool) config('demian-arcade.weekly_settlement_enabled', false)
+        && ! (bool) config('demian-arcade.weekly_auto_awards_enabled', false));
 
 \Illuminate\Support\Facades\Schedule::command('arcade:issue-pending-coupons --apply')
     ->hourlyAt(25)->withoutOverlapping(30)->onOneServer()
     ->when(fn (): bool => (bool) config('demian-coupons.auto_issue_enabled', false)
         && (bool) config('demian-coupons.issue_enabled', false)
-        && (bool) config('demian-coupons.policy_approved', false));
+        && (bool) config('demian-coupons.policy_approved', false)
+        && ! (bool) config('demian-arcade.weekly_auto_awards_enabled', false));
 
+
+\Illuminate\Support\Facades\Schedule::command('arcade:finalize-weekly-awards --apply --json')
+    ->everyFiveMinutes()->withoutOverlapping(30)->onOneServer()
+    ->when(fn (): bool => (bool) config('demian-arcade.weekly_auto_awards_enabled', false)
+        && (bool) config('demian-arcade.weekly_management_enabled', false)
+        && (bool) config('demian-arcade.weekly_settlement_enabled', false)
+        && (bool) config('demian-coupons.auto_issue_enabled', false)
+        && (bool) config('demian-coupons.issue_enabled', false)
+        && (bool) config('demian-coupons.campaigns_enabled', false)
+        && (bool) config('demian-coupons.policy_approved', false));
 
 // General anti-cheat is opt-in; production must provide a real persistent
 // cache/cron runner and review staff. No prize/score mutation is scheduled.
