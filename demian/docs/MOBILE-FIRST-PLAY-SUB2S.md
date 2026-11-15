@@ -14,6 +14,7 @@ The Vite bundle is roughly 1.33MB original and 350KB gzip in the earlier CI; one
 - **Dino Run:** startup awaits the player only. Two attacker assets hydrate with background priority after enter; a labeled visible hazard placeholder maintains collision and cue clarity while waiting.
 - **Café Rush:** startup awaits the lead actor only. Staff hydrate after enter and draw bounded in-world placeholders until ready, without altering orders, collision, simulation or ranking.
 - **Lifecycle:** background work checks scene ownership/disposed before applying any late result. Returning to menu aborts optional loads. Existing tier-decoded-cache budgets continue to apply.
+- **Preview rail:** 12 off-screen character cards no longer all fetch their poster PNGs when a game starts. IntersectionObserver progressively loads near-visible cards, with a compatibility fallback on older browsers, and is disconnected on rerender/dispose.
 - **QA:** Node regression tests for variant selection, true asynchronous artwork, fallback, PWA manifest and sprite integrity. Production static-build browser acceptance adds a cold 390×844 Chromium 4G simulation (8 Mbps, 80ms) and a 2-second tap-to-first-playable gate on Dino Run, Café Rush and Open World, while keeping existing offline, browser, mobile and backend CI.
 
 ## What the target means

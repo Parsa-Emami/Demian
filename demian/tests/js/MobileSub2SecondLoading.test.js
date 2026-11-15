@@ -75,3 +75,14 @@ test('Mobile speed: returning to menu cancels optional downloads without resetti
     assert.match(menu, /await this\.shell\.showCafeMenu\(\)/);
     assert.doesNotMatch(menu, /leaderboards\.start|leaderboards\.finish|replay/);
 });
+
+test('Mobile speed: non-visible character rail cards do not preload 12 preview PNGs', () => {
+    const source = readFileSync(new URL('../../resources/js/ui/CharacterManagerUI.js', import.meta.url), 'utf8');
+    assert.match(source, /new IntersectionObserver/);
+    assert.match(source, /root: this.listElement/);
+    assert.match(source, /entry\.isIntersecting/);
+    assert.match(source, /this\.previewObserver\.observe\(previewCanvas\)/);
+    assert.match(source, /this\.previewObserver\?\.disconnect\(\)/);
+    assert.match(source, /this\.previewRows = new WeakMap\(\)/);
+    assert.match(source, /if \(this\.previewObserver\)/);
+});

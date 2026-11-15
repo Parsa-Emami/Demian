@@ -136,6 +136,8 @@ try {
             const elapsedMs = Date.now() - started;
             const firstRequests = requested.slice(index).map(value => new URL(value).pathname);
             report.mobile4g.launches.push({ game, elapsedMs, firstRequests });
+            assert.ok(firstRequests.filter(url => /-preview-v\d+\.png$/.test(url)).length <= 5,
+                'Off-screen character rail must not download every poster on first launch.');
             assert.ok(firstRequests.every(url => !/-spritesheet-v\d+-(detail|runtime)\.(png|webp)$/.test(url)),
                 '4G phone first paint fetched an unnecessary multi-MB atlas: ' + JSON.stringify(firstRequests));
             assert.ok(elapsedMs < 2000, '4G simulated first game launch exceeded 2s: ' + game +
