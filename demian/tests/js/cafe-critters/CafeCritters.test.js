@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { CRITTERS, CRITTER_RULES, TABLE_FIELDS, cluesFor } from '../../../resources/js/game/games/cafe-critters/CafeCrittersData.js';
 import CafeCrittersModel from '../../../resources/js/game/games/cafe-critters/CafeCrittersModel.js';
+import CafeCrittersGame from '../../../resources/js/game/games/cafe-critters/CafeCrittersGame.js';
 import CafeCrittersStore from '../../../resources/js/game/games/cafe-critters/CafeCrittersStore.js';
 import { guestIcon, tableIcon } from '../../../resources/js/game/games/cafe-critters/CafeCrittersArt.js';
 import ArcadeWorld from '../../../resources/js/game/world/ArcadeWorld.js';
@@ -200,4 +201,134 @@ test('calm mode preserves discovery and never times out', () => {
     }
     assert.equal(model.result().won, true);
     assert.equal(model.album.size, model.targets.length);
+});
+
+test('all eight guests have readable unambiguous clues in each difficulty', () => {
+    const signatures = new Set();
+    for (const guest of CRITTERS) {
+        const easy = cluesFor(guest, 'easy');
+        const standard = cluesFor(guest, 'standard');
+        const hard = cluesFor(guest, 'hard');
+        const signature = TABLE_FIELDS.map(field => guest.setting[field.id]).join('/');
+        assert.equal(signatures.has(signature), false, guest.id);
+        signatures.add(signature);
+        assert.ok(guest.behavior.length >= 10);
+        assert.ok(guest.lightClue.length >= 10);
+        assert.ok(guest.decorClue.length >= 10);
+        assert.ok(guest.souvenir.length >= 3);
+        for (const field of TABLE_FIELDS) {
+            assert.ok(Object.hasOwn(field.options, guest.setting[field.id]), guest.id);
+            assert.match(easy.journal, new RegExp(field.options[guest.setting[field.id]]));
+        }
+        assert.match(standard.journal, /نور/);
+        assert.equal(standard.pishi, guest.decorClue);
+        assert.equal(hard.journal, guest.lightClue);
+        assert.deepEqual(hard.art, [guest.setting.food, guest.setting.decor]);
+    }
+    assert.equal(signatures.size, 8);
+});
+
+test('exact hint is a single stable reward; repeated misses cannot reveal the whole answer', () => {
+    const model = new CafeCrittersModel('hard');
+    model.start();
+    arrange(model, { light: 'sun', food: 'berries', decor: 'book' });
+    assert.equal(model.invite().type, 'miss');
+    model.select('light', 'moon');
+    assert.equal(model.invite().type, 'miss');
+    const hint = { ...model.hint };
+    assert.ok(hint.field && hint.value);
+    const tried = new Set();
+    for (const light of ['sun', 'moon']) {
+        for (const food of ['cardamom', 'berries', 'seeds']) {
+            for (const decor of ['vase', 'book', 'ribbon']) {
+                const setting = { light, food, decor };
+                if (TABLE_FIELDS.every(field => setting[field.id] === model.guest.setting[field.id])) continue;
+                for (const field of TABLE_FIELDS) {
+                    if (model.selection[field.id] !== setting[field.id]) {
+                        model.select(field.id, setting[field.id]);
+                    }
+                }
+                const result = model.invite();
+                assert.ok(['miss', 'repeat'].includes(result.type));
+                assert.deepEqual(model.hint, hint);
+                tried.add(TABLE_FIELDS.map(field => setting[field.id]).join('/'));
+            }
+        }
+    }
+    assert.ok(tried.size >= 15);
+    assert.deepEqual(model.hint, hint);
+    assert.equal(model.status, 'playing');
+    arrange(model, model.guest.setting);
+    assert.equal(model.invite().type, 'discovery');
+    assert.equal(model.next(), true);
+    assert.equal(model.hint, null);
+});
+
+test('malformed or failed ranked startup falls back to unranked practice without losing puzzle', async () => {
+    for (const backend of [
+        { startTurnRun: async () => { throw new Error('network unavailable'); } },
+        { startTurnRun: async () => ({
+            mode: 'ranked', game_id: 'cafe-critters', rules_version: 'old-version',
+            seed: 7, run_id: '11111111-1111-1111-1111-111111111111',
+        }) },
+        { startTurnRun: async () => ({
+            mode: 'ranked', game_id: 'cafe-critters', rules_version: 'cafe-critters-replay-v1',
+            seed: -2, run_id: '11111111-1111-1111-1111-111111111111',
+        }) },
+    ]) {
+        const game = new CafeCrittersGame();
+        let updates = 0;
+        game.context = { services: { leaderboards: backend },
+            app: { shell: { toast: () => { throw Error('ranked toast must not run'); } } } };
+        game.ui = { update: () => { updates++; },
+            focusChoice: () => {}, dialog: { open: false } };
+        await game.beginRound('standard', []);
+        assert.equal(game.rankRun.mode, 'practice');
+        assert.equal(game.model.status, 'playing');
+        assert.equal(game.model.targets.length, 3);
+        assert.equal(game.rankActions.length, 0);
+        assert.equal(updates, 1);
+        game.audio.dispose();
+    }
+});
+
+test('a stale asynchronous ranked session cannot replace a new local play', async () => {
+    let resolveResponse;
+    const pending = new Promise(resolve => { resolveResponse = resolve; });
+    const game = new CafeCrittersGame();
+    game.context = {
+        services: { leaderboards: { startTurnRun: () => pending } },
+        app: { shell: { toast: () => {} } },
+    };
+    game.ui = { update: () => {}, focusChoice: () => {}, dialog: { open: false } };
+    const oldStart = game.beginRound('standard', []);
+    // A new session or exit invalidates the asynchronous server response.
+    game.sessionNonce++;
+    await game.beginRound('hard', []);
+    resolveResponse({
+        mode: 'ranked', game_id: 'cafe-critters', rules_version: 'cafe-critters-replay-v1',
+        seed: 7, run_id: '11111111-1111-1111-1111-111111111111',
+    });
+    await oldStart;
+    assert.equal(game.model.status, 'playing');
+    assert.equal(game.model.difficulty, 'hard');
+    assert.equal(game.rankRun.mode, 'practice');
+    game.audio.dispose();
+});
+
+test('timeout and completed pages are terminal; no late action can add discoveries', () => {
+    const model = new CafeCrittersModel('hard');
+    model.start();
+    inviteGuest(model);
+    model.next();
+    model.advance(180);
+    const result = model.result();
+    assert.equal(model.status, 'finished');
+    assert.equal(result.found, 1);
+    assert.equal(model.canInvite, false);
+    assert.equal(model.invite(), null);
+    assert.equal(model.select('light', 'moon'), false);
+    assert.equal(model.next(), false);
+    model.advance(90);
+    assert.deepEqual(model.result(), result);
 });
