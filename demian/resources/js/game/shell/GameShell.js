@@ -44,6 +44,7 @@ export default class GameShell {
         this.settings = settings;
         this.catalog = catalog;
         this.shellRoot = root.querySelector('[data-game-shell]');
+        this.announcer = this.shellRoot?.querySelector('[data-shell-announcer]') ?? null;
         this.manager = new ScreenManager({ eventBus });
         this.unsubscribers = [];
         this.booted = false;
@@ -90,6 +91,12 @@ export default class GameShell {
         document.addEventListener('input:gamepad-ui', this.onGamepadUi);
 
         this.unsubscribers.push(
+            this.eventBus.on('screen:changed', ({ id }) => {
+                const screen = this.manager.screens.get(id);
+                if (this.announcer && screen?.element) {
+                    this.announcer.textContent = screen.element.getAttribute('aria-label') ?? '';
+                }
+            }),
             this.eventBus.on('game:loading-step', ({ progress, step }) => {
                 this.loadingScreen?.setProgress(progress, step);
             }),
