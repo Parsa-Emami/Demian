@@ -71,6 +71,10 @@ export default class CafeCrittersGame extends BaseGame {
     handleDialog(action) {
         const view = this.ui.view;
         if (!view) return;
+        // Only explicit controls may start a turn. A stale/unknown dialog
+        // action must never dismiss the entry gate or trigger a ranked run.
+        if (view === 'entry' && !['confirm', 'skip-guide', 'cancel'].includes(action)) return;
+        if (view !== 'entry' && !['confirm', 'cancel'].includes(action)) return;
         this.closeDialog();
         if (view === 'help') {
             this.context.root.querySelector('[data-screen="pause"] [data-shell-action="game-guide"]')?.focus({ preventScroll: true });
@@ -92,9 +96,25 @@ export default class CafeCrittersGame extends BaseGame {
         const leaderboard = this.context?.services?.leaderboards;
         // Server replay v1 uses standard difficulty and server-chosen rotation;
         // other difficulties remain untouched practice modes.
-        const run = difficulty === 'standard' && leaderboard
-            ? await leaderboard.startTurnRun('cafe-critters')
-            : { mode: 'practice' };
+        // Treat online unavailability or a malformed session as practice,
+        // never as an authoritative ranked attempt. Do not strand the game
+        // behind a closed entry dialog when the API rejects or times out.
+        let run = { mode: 'practice' };
+        try {
+            if (difficulty === 'standard' && leaderboard) {
+                const proposed = await leaderboard.startTurnRun('cafe-critters');
+                if (proposed?.mode === 'ranked'
+                    && proposed.game_id === 'cafe-critters'
+                    && proposed.rules_version === 'cafe-critters-replay-v1'
+                    && Number.isSafeInteger(proposed.seed) && proposed.seed > 0
+                    && /^[0-9a-f-]{36}$/i.test(String(proposed.run_id ?? ''))) {
+                    run = proposed;
+                }
+            }
+        } catch {
+            // Offline play keeps its own local progress, never submits a
+            // client-owned score, and never fabricates a server seed.
+        }
         if (!this.context || nonce !== this.sessionNonce) return;
         this.rankRun = run;
         this.rankActions = [];
