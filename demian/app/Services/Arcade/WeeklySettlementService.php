@@ -212,6 +212,11 @@ final class WeeklySettlementService
             $digest = hash('sha256', json_encode($snapshot, JSON_THROW_ON_ERROR));
             if ($snapshot) DB::table('arcade_weekly_results')->insert($snapshot);
             if ($awards) DB::table('arcade_weekly_winners')->insert($awards);
+            // Separate from prize selection: an auditable 0–1000 comparative
+            // score and one cross-game personal best, persisted atomically.
+            // NO new coupon recipients, ranks or source digest are changed.
+            app(WeeklyFairScoringService::class)
+                ->sealFromTrustedSnapshot($key, $snapshot, $digest, $utcNow);
             DB::table('arcade_weekly_periods')->where('period_key', $key)->update([
                 'status' => 'sealed', 'sealed_at' => $utcNow->toDateTimeString(),
                 'participants' => count($snapshot), 'winner_count' => count($awards),

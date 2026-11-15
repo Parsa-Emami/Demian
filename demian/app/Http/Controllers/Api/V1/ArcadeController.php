@@ -47,10 +47,42 @@ final class ArcadeController extends Controller
      * Public, read-only weekly schedule. No account details, private risk
      * signals, prizes or mutable ledger state are returned.
      */
-    public function weeklyCompetition(\App\Services\Arcade\WeeklyCompetitionService $service): JsonResponse
+    public function weeklyCompetition(\App\Services\Arcade\WeeklyCompetitionService $service,
+        \App\Services\Arcade\WeeklyFairScoringService $fair): JsonResponse
     {
-        return response()->json($service->publicSchedule())
-            ->header('Cache-Control', 'public, max-age=15');
+        return response()->json([
+            ...$service->publicSchedule(),
+            'fair_scoring' => $fair->rules(),
+        ])->header('Cache-Control', 'public, max-age=15');
+    }
+
+    public function fairRules(\App\Services\Arcade\WeeklyFairScoringService $fair): JsonResponse
+    {
+        return response()->json($fair->rules())
+            ->header('Cache-Control', 'public, max-age=300');
+    }
+
+    /**
+     * Public sealed-season comparative scores; no request-supplied scores,
+     * financial eligibility decisions, replay proofs or moderation signals.
+     */
+    public function fairLeaderboard(Request $request,
+        \App\Services\Arcade\WeeklyFairScoringService $fair): JsonResponse
+    {
+        $data = $request->validate([
+            'week' => ['sometimes', 'date_format:Y-m-d'],
+            'limit' => ['sometimes', 'integer', 'min:1', 'max:50'],
+        ]);
+        $key = isset($data['week']) ? 'weekly:tehran:'.$data['week']
+            : CompetitionClock::periodKeys(now())[2];
+        try {
+            return response()->json($fair->publicRead($key, (int) ($data['limit'] ?? 20)))
+                ->header('Cache-Control', 'public, max-age=15');
+        } catch (\InvalidArgumentException $e) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'week' => 'Week must be a valid Saturday in Asia/Tehran.',
+            ]);
+        }
     }
 
     public function register(Request $request): JsonResponse
