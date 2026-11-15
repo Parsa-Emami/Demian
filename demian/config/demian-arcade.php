@@ -57,6 +57,8 @@ return [
     'weekly_start_cutoff_seconds' => (int) env('DEMIAN_WEEKLY_START_CUTOFF_SECONDS', 30),
     'weekly_completion_deadline_seconds' => (int) env('DEMIAN_WEEKLY_COMPLETION_DEADLINE_SECONDS', 900),
     'weekly_management_enabled' => (bool) env('DEMIAN_WEEKLY_MANAGEMENT_ENABLED', false),
+    'weekly_auto_awards_enabled' => (bool) env('DEMIAN_WEEKLY_AUTO_AWARDS_ENABLED', false),
+    'weekly_auto_award_from' => env('DEMIAN_WEEKLY_AUTO_AWARD_FROM', ''),
     // An absolute limit on bearer capabilities, not a refresh-token grant.
     'player_session_days' => 30,
     'recovery_link_minutes' => 20,
