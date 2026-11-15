@@ -124,6 +124,57 @@ try {
     report.scenarios.push({ name: 'portrait-two-finger-cancel',
         status: 'passed', concurrent, stick: joystick.bounds, jump: action.bounds });
     await page.screenshot({ path: resolve(output, 'portrait.png') });
+
+    // Step 19: an optional action tray must never disappear while the player
+    // is still pressing an action. 140ms timer auto-collapse previously
+    // destroyed captured gestures. Test actual compiled UI and input router.
+    await page.locator('[data-mobile-actions-toggle]').click();
+    await page.waitForFunction(() =>
+        document.querySelector('[data-character-manager]')?.dataset.mobileActions === 'expanded');
+    await page.evaluate(() => {
+        const button = document.querySelector('[data-mobile-actions-tray] [data-input-press="dash"]');
+        for (const pointerId of [191, 192]) button.dispatchEvent(new PointerEvent('pointerdown', {
+            bubbles: true, pointerType: 'touch', pointerId, button: 0, isPrimary: pointerId === 191,
+        }));
+    });
+    await page.waitForTimeout(180);
+    assert.equal(await root.getAttribute('data-mobile-actions'), 'expanded',
+        'tray must not close during an action hold');
+    await page.evaluate(() => {
+        const button = document.querySelector('[data-mobile-actions-tray] [data-input-press="dash"]');
+        button.dispatchEvent(new PointerEvent('pointerup',
+            { bubbles: true, pointerType: 'touch', pointerId: 191, button: 0 }));
+    });
+    await page.waitForTimeout(12);
+    assert.equal(await root.getAttribute('data-mobile-actions'), 'expanded',
+        'first of two released fingers must not hide the second action');
+    await page.evaluate(() => {
+        const button = document.querySelector('[data-mobile-actions-tray] [data-input-press="dash"]');
+        button.dispatchEvent(new PointerEvent('pointerup',
+            { bubbles: true, pointerType: 'touch', pointerId: 192, button: 0 }));
+    });
+    await page.waitForFunction(() =>
+        document.querySelector('[data-character-manager]')?.dataset.mobileActions === 'collapsed');
+    assert.equal(await root.locator('[data-mobile-actions-tray]').getAttribute('aria-hidden'), 'true');
+    report.scenarios.push({ name: 'actions-tray-hold-and-concurrent-release', status: 'passed' });
+
+    // 320 CSS px viewport is a real production constraint on compact phones.
+    // HUD, pause toolbar and critical actions must stay inside physical bounds.
+    await page.setViewportSize({ width: 320, height: 568 });
+    await page.waitForFunction(() =>
+        document.querySelector('[data-character-manager]')?.dataset.physicalOrientation === 'portrait');
+    const compactStick = await getRect(stick), compactJump = await getRect(jump);
+    const pause = await getRect(page.locator('.play-toolbar [data-shell-action="pause"]'));
+    for (const target of [compactStick.bounds, compactJump.bounds, pause.bounds]) {
+        assert.ok(within(target, 320, 568), '320px viewport target overflow: ' + JSON.stringify(target));
+    }
+    const statusBar = await page.locator('.mobile-status-bar').boundingBox();
+    if (statusBar) assert.ok(within(statusBar, 320, 568), 'HUD overflows 320px screen');
+    report.scenarios.push({ name: 'compact-320px-hud-safe-area-and-hitboxes',
+        status: 'passed', statusBar, stick: compactStick.bounds, jump: compactJump.bounds, pause: pause.bounds });
+    await page.screenshot({ path: resolve(output, 'compact-320.png') });
+    await page.setViewportSize({ width: 390, height: 844 });
+
     // The gesture system must also reset when the operating system backgrounds
     // the page or orientation changes without delivering pointerup.
     await page.evaluate(() => {

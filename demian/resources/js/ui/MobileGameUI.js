@@ -38,9 +38,14 @@ export default class MobileGameUI {
         this.isMobileDevice = isLikelyMobileDevice();
         this.lastLayoutSignature = null;
         this.attributeObserver = null;
+        this.actionPointers = new Set();
+        this.actionCloseTimer = null;
+        this.disposed = false;
 
         this.onActionsToggle = this.onActionsToggle.bind(this);
         this.onActionPress = this.onActionPress.bind(this);
+        this.onWindowActionEnd = this.onWindowActionEnd.bind(this);
+        this.onStageContextMenu = this.onStageContextMenu.bind(this);
         this.onFullscreen = this.onFullscreen.bind(this);
         this.onViewportChange = this.onViewportChange.bind(this);
         this.onFullscreenChange = this.onFullscreenChange.bind(this);
@@ -61,6 +66,11 @@ export default class MobileGameUI {
 
         this.actionsToggle?.addEventListener('click', this.onActionsToggle);
         this.actionsTray?.addEventListener('pointerdown', this.onActionPress);
+        this.actionsTray?.addEventListener('pointerup', this.onActionPress);
+        this.actionsTray?.addEventListener('pointercancel', this.onActionPress);
+        this.actionsTray?.addEventListener('click', this.onActionPress);
+        window.addEventListener('pointerup', this.onWindowActionEnd, true);
+        window.addEventListener('pointercancel', this.onWindowActionEnd, true);
         this.fullscreenButton?.addEventListener('click', this.onFullscreen);
         this.stage?.addEventListener('pointerdown', this.onFirstInteraction, {
             passive: true,
@@ -71,6 +81,7 @@ export default class MobileGameUI {
         window.addEventListener('resize', this.onViewportChange, { passive: true });
         window.addEventListener('orientationchange', this.onViewportChange, { passive: true });
         window.visualViewport?.addEventListener('resize', this.onViewportChange, { passive: true });
+        window.visualViewport?.addEventListener('scroll', this.onViewportChange, { passive: true });
         screen.orientation?.addEventListener?.('change', this.onViewportChange);
         this.root.addEventListener('game:orientation-changed', this.onOrientationPreferenceChanged);
         this.root.addEventListener('sidebar:changed', this.onSidebarChanged);
@@ -83,7 +94,9 @@ export default class MobileGameUI {
             });
         }
 
-        this.stage?.addEventListener('contextmenu', (event) => event.preventDefault());
+        // Do not suppress long-press copy/selection on modal text or menus.
+        // Context-menu suppression belongs only to the active game surface.
+        this.stage?.addEventListener('contextmenu', this.onStageContextMenu);
         this.onViewportChange();
         this.applyExpandedState();
     }
@@ -105,6 +118,12 @@ export default class MobileGameUI {
     }
 
     onRootAttributesChanged() {
+        if (!this.gameplayActive()) {
+            this.cancelActionClose();
+            this.actionPointers.clear();
+            this.isExpanded = false;
+            this.applyExpandedState();
+        }
         this.onViewportChange();
     }
 
@@ -126,15 +145,58 @@ export default class MobileGameUI {
     }
 
     onActionPress(event) {
-        const button = event.target.closest('[data-input-press]');
-        if (!button) {
+        const button = event.target?.closest?.('[data-input-press]');
+        if (!button || this.disposed) return;
+
+        if (event.type === 'pointerdown') {
+            this.actionPointers.add(event.pointerId);
+            this.cancelActionClose();
             return;
         }
+        if (event.type === 'pointercancel') {
+            this.actionPointers.delete(event.pointerId);
+            return;
+        }
+        if (event.type === 'pointerup') {
+            this.actionPointers.delete(event.pointerId);
+            if (!this.actionPointers.size) this.scheduleActionClose();
+            return;
+        }
+        // Keyboard / assistive activation has no pointerdown or pointerup.
+        if (event.type === 'click' && event.detail === 0) this.scheduleActionClose();
+    }
 
-        window.setTimeout(() => {
+    onWindowActionEnd(event) {
+        if (!this.actionPointers?.delete(event.pointerId)) return;
+        // Capture on window runs before the input router and tray bubble
+        // handlers; defer the close until all touch release work is complete.
+        if (event.type === 'pointerup' && !this.actionPointers.size) {
+            this.scheduleActionClose();
+        }
+    }
+
+    scheduleActionClose() {
+        if (this.disposed || !this.isExpanded || this.actionPointers.size) return;
+        this.cancelActionClose();
+        this.actionCloseTimer = globalThis.setTimeout(() => {
+            this.actionCloseTimer = null;
+            if (this.disposed || this.actionPointers.size) return;
             this.isExpanded = false;
             this.applyExpandedState();
-        }, 140);
+        }, 0);
+    }
+
+    cancelActionClose() {
+        if (this.actionCloseTimer !== null) {
+            globalThis.clearTimeout(this.actionCloseTimer);
+            this.actionCloseTimer = null;
+        }
+    }
+
+    onStageContextMenu(event) {
+        if (this.gameplayActive() && event.target?.closest?.(
+            '[data-control-surface], .demian-scene'
+        )) event.preventDefault();
     }
 
     applyExpandedState() {
@@ -297,8 +359,17 @@ export default class MobileGameUI {
     }
 
     dispose() {
+        if (this.disposed) return;
+        this.disposed = true;
+        this.cancelActionClose();
+        this.actionPointers.clear();
         this.actionsToggle?.removeEventListener('click', this.onActionsToggle);
         this.actionsTray?.removeEventListener('pointerdown', this.onActionPress);
+        this.actionsTray?.removeEventListener('pointerup', this.onActionPress);
+        this.actionsTray?.removeEventListener('pointercancel', this.onActionPress);
+        this.actionsTray?.removeEventListener('click', this.onActionPress);
+        window.removeEventListener('pointerup', this.onWindowActionEnd, true);
+        window.removeEventListener('pointercancel', this.onWindowActionEnd, true);
         this.fullscreenButton?.removeEventListener('click', this.onFullscreen);
         this.stage?.removeEventListener('pointerdown', this.onFirstInteraction);
         document.removeEventListener('fullscreenchange', this.onFullscreenChange);
@@ -306,11 +377,13 @@ export default class MobileGameUI {
         window.removeEventListener('resize', this.onViewportChange);
         window.removeEventListener('orientationchange', this.onViewportChange);
         window.visualViewport?.removeEventListener('resize', this.onViewportChange);
+        window.visualViewport?.removeEventListener('scroll', this.onViewportChange);
         screen.orientation?.removeEventListener?.('change', this.onViewportChange);
         this.root.removeEventListener('game:orientation-changed', this.onOrientationPreferenceChanged);
         this.root.removeEventListener('sidebar:changed', this.onSidebarChanged);
         this.attributeObserver?.disconnect();
         this.attributeObserver = null;
+        this.stage?.removeEventListener('contextmenu', this.onStageContextMenu);
         document.documentElement.classList.remove('demian-forced-landscape');
         document.body.classList.remove('is-gameplay-active');
     }
