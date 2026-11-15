@@ -48,6 +48,14 @@
 <p class="muted">موجود: {{ $campaign['available'] }} · تخصیص‌یافته: {{ $campaign['assigned'] }} · باطل‌شده: {{ $campaign['void'] }}</p>
 <p class="muted">درصد رتبه‌ها: {{ $campaign['terms']['ranks'][1] }} / {{ $campaign['terms']['ranks'][2] }} / {{ $campaign['terms']['ranks'][3] }} / {{ $campaign['terms']['ranks'][4] }}</p>
 <p class="muted">شناسه‌های موجودی آزاد برای ابطال: {{ implode('، ', $campaign['available_ids']) ?: '—' }} (حداکثر ۱۵ شناسه)</p>
+<h4>برندگان تأییدشده و وضعیت تحویل</h4>
+<table><thead><tr><th>بازی</th><th>رتبه</th><th>شناسه کوتاه بازیکن</th><th>وضعیت کد</th></tr></thead><tbody>
+@forelse($campaign['winners'] as $winner)
+<tr><td>{{ $winner['game'] }}</td><td>{{ $winner['rank'] }}</td><td>{{ $winner['player'] }}</td><td>{{ $winner['coupon_status'] }}</td></tr>
+@empty
+<tr><td colspan="4">هنوز برندگان این هفته نهایی نشده‌اند.</td></tr>
+@endforelse
+</tbody></table>
 @if(in_array($campaign['status'], ['draft','active','paused'], true))
 <form method="post" action="{{ route('cashier.campaigns.import', ['campaignId' => $campaign['id']]) }}" autocomplete="off">
 @csrf

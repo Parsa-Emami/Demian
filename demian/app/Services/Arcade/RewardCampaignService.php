@@ -60,6 +60,34 @@ final class RewardCampaignService
         ];
     }
 
+    public static function termsDigest(array|string $value): string
+    {
+        $terms = is_string($value)
+            ? json_decode($value, true, 512, JSON_THROW_ON_ERROR) : $value;
+        if (! is_array($terms) || ! isset($terms['ranks'])
+            || ! is_array($terms['ranks']) || count($terms['ranks']) !== 10) {
+            throw new RuntimeException('Invalid frozen campaign terms.');
+        }
+        $rates = [];
+        foreach (range(1, 10) as $rank) {
+            if (! isset($terms['ranks'][$rank])
+                || ! is_int($terms['ranks'][$rank])) {
+                throw new RuntimeException('Invalid frozen campaign discount tiers.');
+            }
+            $rates[$rank] = $terms['ranks'][$rank];
+        }
+        $canonical = [
+            'version' => $terms['version'] ?? null,
+            'currency' => $terms['currency'] ?? null,
+            'ranks' => $rates,
+            'min_order_minor' => $terms['min_order_minor'] ?? null,
+            'max_discount_minor' => $terms['max_discount_minor'] ?? null,
+            'valid_days' => $terms['valid_days'] ?? null,
+        ];
+
+        return hash('sha256', json_encode($canonical, JSON_THROW_ON_ERROR));
+    }
+
     private function log(int $campaignId, ?int $actorId, string $event, array $details): void
     {
         DB::table('arcade_reward_campaign_events')->insert([
@@ -106,12 +134,12 @@ final class RewardCampaignService
             $id = DB::table('arcade_reward_campaigns')->insertGetId([
                 'period_key' => $key, 'title' => $title, 'status' => 'draft',
                 'max_awards' => $capacity, 'terms' => $payload,
-                'terms_hash' => hash('sha256', $payload), 'created_by' => $actorId,
+                'terms_hash' => self::termsDigest($terms), 'created_by' => $actorId,
                 'created_at' => now(), 'updated_at' => now(),
             ]);
             $this->log($id, $actorId, 'created', [
                 'period_key' => $key, 'max_awards' => $capacity,
-                'terms_hash' => hash('sha256', $payload),
+                'terms_hash' => self::termsDigest($terms),
             ]);
 
             return $id;
@@ -138,11 +166,11 @@ final class RewardCampaignService
             $payload = json_encode($terms, JSON_THROW_ON_ERROR);
             DB::table('arcade_reward_campaigns')->where('id', $campaignId)->update([
                 'title' => $title, 'max_awards' => $capacity,
-                'terms' => $payload, 'terms_hash' => hash('sha256', $payload),
+                'terms' => $payload, 'terms_hash' => self::termsDigest($terms),
                 'updated_at' => now(),
             ]);
             $this->log($campaignId, $actorId, 'revised', [
-                'max_awards' => $capacity, 'terms_hash' => hash('sha256', $payload),
+                'max_awards' => $capacity, 'terms_hash' => self::termsDigest($terms),
             ]);
         }, 3);
     }
@@ -303,7 +331,7 @@ final class RewardCampaignService
         $campaign = DB::table('arcade_reward_campaigns')
             ->where('period_key', $periodKey)->lockForUpdate()->first();
         if (! $campaign) throw new RuntimeException('Approved inventory campaign is required.');
-        if (! hash_equals($campaign->terms_hash, hash('sha256', $campaign->terms))) {
+        if (! hash_equals($campaign->terms_hash, self::termsDigest($campaign->terms))) {
             throw new RuntimeException('Frozen campaign terms checksum mismatch.');
         }
         if ($winnerCount > (int) $campaign->max_awards) {
@@ -373,6 +401,16 @@ final class RewardCampaignService
                     'available_ids' => DB::table('arcade_reward_inventory')
                         ->where('campaign_id', $campaign->id)->where('status', 'available')
                         ->orderBy('id')->limit(15)->pluck('id')->all(),
+                    'winners' => DB::table('arcade_weekly_winners as w')
+                        ->leftJoin('arcade_coupons as c', 'c.winner_id', '=', 'w.id')
+                        ->where('w.period_key', $campaign->period_key)
+                        ->orderBy('w.game_id')->orderBy('w.prize_rank')->limit(100)
+                        ->get(['w.game_id', 'w.prize_rank', 'w.player_id',
+                            'c.status as coupon_status'])->map(fn (object $w): array => [
+                            'game' => $w->game_id, 'rank' => (int) $w->prize_rank,
+                            'player' => $w->player_id ? substr($w->player_id, 0, 8).'…' : 'erased',
+                            'coupon_status' => $w->coupon_status ?? 'pending',
+                        ])->all(),
                     'terms' => json_decode($campaign->terms, true, 512, JSON_THROW_ON_ERROR),
                 ];
             })->all();

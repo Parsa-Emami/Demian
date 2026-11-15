@@ -59,7 +59,7 @@ final class CouponLedgerAudit
                     : ($ranks[(int) ($winner->prize_rank ?? 0)] ?? null);
                 if ($coupon->campaign_id !== null
                     && (! $campaign || ! $terms
-                        || ! hash_equals($campaign->terms_hash, hash('sha256', $campaign->terms))
+                        || ! hash_equals($campaign->terms_hash, RewardCampaignService::termsDigest($campaign->terms))
                         || $campaign->period_key !== ($winner->period_key ?? null)
                         || ! $inventory || $inventory->status !== 'assigned'
                         || $inventory->code_ciphertext !== null
