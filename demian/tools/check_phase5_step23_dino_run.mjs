@@ -124,7 +124,26 @@ try {
             if (mobile) {
                 const duck = page.locator('.runner-controls__duck');
                 const rect = await duck.boundingBox();
-                assert.ok(rect, 'Visible duck touch button must have a layout box');
+                if (!rect) {
+                    const debug = await page.evaluate(() => {
+                        const app = window.demianGameApplication;
+                        const button = document.querySelector('.runner-controls__duck');
+                        const surface = button?.closest('[data-control-surface]');
+                        return {
+                            sessionState: app.sessionState, modelStatus: app.activeGame?.model?.status,
+                            activeGameId: app.activeGameId,
+                            controlLayout: app.root.dataset.controlLayout,
+                            inputContext: app.root.dataset.inputContext,
+                            surfaceDisplay: surface ? getComputedStyle(surface).display : null,
+                            surfaceVisibility: surface ? getComputedStyle(surface).visibility : null,
+                            buttonDisplay: button ? getComputedStyle(button).display : null,
+                            buttonVisibility: button ? getComputedStyle(button).visibility : null,
+                            sidebarState: app.root.dataset.sidebarState,
+                            buttonCount: document.querySelectorAll('.runner-controls__duck').length,
+                        };
+                    });
+                    throw new Error('Runner duck button has no layout box: ' + JSON.stringify(debug));
+                }
                 const touch = await context.newCDPSession(page);
                 const x = rect.x + rect.width / 2, y = rect.y + rect.height / 2;
                 await touch.send('Input.dispatchTouchEvent', {
