@@ -55,7 +55,7 @@ test('Step 20: first menu is reachable without any Open World, sprite or remote-
     assert.equal(app.bootPromise instanceof Promise, true);
 });
 
-test('Step 20: menu appears before disposing a live game's potentially slow resources', async () => {
+test('Step 20: menu appears before disposing slow resources belonging to a live game', async () => {
     const order = [];
     const previous = {
         exit: async () => { order.push('game:exit'); },
