@@ -143,8 +143,9 @@ export default class GameShell {
         });
     }
 
-    showSettings() {
-        return this.manager.show(SCREEN_IDS.SETTINGS);
+    showSettings(opener = null) {
+        return this.manager.show(SCREEN_IDS.SETTINGS,
+            opener?.isConnected ? { focusReturnTarget: opener } : {});
     }
 
     showResults(result = {}) {
@@ -214,7 +215,7 @@ export default class GameShell {
                 await this.showCafeMenu();
                 break;
             case 'settings':
-                await this.showSettings();
+                await this.showSettings(button);
                 break;
             case 'close-modal':
                 await this.manager.closeTopModal();
