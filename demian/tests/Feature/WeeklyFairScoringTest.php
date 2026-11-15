@@ -263,9 +263,13 @@ final class WeeklyFairScoringTest extends TestCase
             DB::table('arcade_weekly_fair_standings')
                 ->where('position', 1)->value('source_game_id'));
         $this->assertSame(0, DB::table('arcade_coupons')->count());
-        // Legacy prize policy is unchanged: ten independent award slots per
-        // game are still possible, never an automatic cross-game bonus.
-        $this->assertSame(20, DB::table('arcade_weekly_winners')->count());
+        // Critters ranked scoring is intentionally separate from its
+        // financial prize gate (OFF by default). The comparative table may
+        // include both games, but only Dino Run's ten legacy winners remain.
+        $this->assertFalse((bool) config('demian-arcade.critters_prizes_enabled'));
+        $this->assertSame(10, DB::table('arcade_weekly_winners')->count());
+        $this->assertSame(0, DB::table('arcade_weekly_winners')
+            ->where('game_id', 'cafe-critters')->count());
     }
 
     public function test_public_api_is_read_only_and_discloses_only_finalized_verified_points(): void
