@@ -184,6 +184,11 @@ export default class AfterHoursGame extends BaseGame {
     consumeEvents() {
         for (const event of this.model.drainEvents()) {
             this.audio.play(event.type, event.point, this.model.player.position);
+            if (['card', 'power', 'exit-locked'].includes(event.type)) {
+                this.context.eventBus.emit('feedback:cue', {
+                    gameId: 'after-hours', kind: event.type === 'exit-locked' ? 'miss' : event.type,
+                });
+            }
             if (event.type === 'power') {
                 const dark = CIRCUITS.find((circuit) => circuit.id === this.model.darkCircuit);
                 this.radio = `مدار «${dark.label}» خاموش شد. دو مدار دیگر برق دارند.`;

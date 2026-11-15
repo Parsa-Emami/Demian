@@ -744,6 +744,7 @@
                 </section>
             </div>
 
+            <div data-game-feedback-host data-ui-layer="game-overlay" class="game-feedback-host" aria-hidden="true" inert></div>
             <div data-game-hud-host data-ui-layer="hud" class="game-hud-host"></div>
             <div data-game-prompt-host data-ui-layer="prompt" class="game-prompt-host"></div>
             <div data-game-overlay-host data-ui-layer="game-overlay" class="game-overlay-host"></div>

@@ -8,6 +8,7 @@ import { GAME_DEFINITIONS } from '../registry/GameDefinitions';
 import GameRuntime from '../runtime/GameRuntime';
 import CharacterVisualService from '../characters/runtime/CharacterVisualService.js';
 import AnimationService from '../services/AnimationService';
+import GameFeedbackDirector from '../services/GameFeedbackDirector.js';
 import RendererService from '../services/RendererService';
 import CollisionWorld from '../shared/collision/CollisionWorld';
 import InteractionService from '../shared/interaction/InteractionService';
@@ -87,6 +88,9 @@ export default class GameApplication {
             settings: this.settings,
         });
 
+        this.feedback = new GameFeedbackDirector({
+            root: this.root, eventBus: this.eventBus, settings: this.settings,
+        });
         this.activeGame = null;
         this.activeGameId = null;
         this.activeDefinition = null;
@@ -151,6 +155,11 @@ export default class GameApplication {
             this.bootPromise = (async () => {
                 const bootStartedAt = globalThis.performance?.now?.() ?? Date.now();
                 this.shell.boot();
+                this.feedback.boot();
+                this.feedback.configure(this.settings.snapshot(), {
+                    reducedMotion: this.settings.resolvedReducedMotion(),
+                    economy: this.renderQuality.economical || this.performanceProfile.tier === 'low',
+                });
                 this.controlLayouts.boot();
                 await this.shell.showBoot({
                     progress: 4,
@@ -483,6 +492,10 @@ export default class GameApplication {
         this.root.dataset.soundEnabled = String(settings.soundEnabled);
         this.root.dataset.musicEnabled = String(settings.musicEnabled);
         this.activeGame?.applySettings?.(settings);
+        this.feedback.configure(settings, {
+            reducedMotion: this.settings.resolvedReducedMotion(),
+            economy: this.renderQuality.economical || this.performanceProfile.tier === 'low',
+        });
         this.eventBus.emit('settings:applied', settings);
     }
 
@@ -498,6 +511,10 @@ export default class GameApplication {
         });
         this.root.dataset.renderFps = String(target);
         this.runtime.setRenderRate(target);
+        this.feedback?.visual?.configure({
+            reducedMotion: this.settings.resolvedReducedMotion(),
+            economy: this.renderQuality.economical || this.performanceProfile.tier === 'low',
+        });
         if (changed && this.activeGame) this.activeGame.resize?.({ reframe: false });
     }
 
@@ -541,6 +558,7 @@ export default class GameApplication {
         }
 
         await this.shell.dispose();
+        this.feedback.dispose();
         this.controlLayouts.dispose();
         this.input.dispose();
         this.animation.dispose();

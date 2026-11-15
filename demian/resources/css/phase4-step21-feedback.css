@@ -1,0 +1,101 @@
+.manager-stage .game-feedback-host {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+    contain: layout paint;
+    isolation: isolate;
+}
+
+.manager-stage .game-feedback-host .feedback-particle {
+    position: absolute;
+    top: 52%;
+    left: 50%;
+    width: 9px;
+    height: 9px;
+    margin: -4px;
+    border: 1px solid rgba(255, 255, 255, .8);
+    border-radius: 50%;
+    background: #e6ffc5;
+    opacity: 0;
+    transform: translate3d(0, 0, 0) scale(.15);
+    will-change: transform, opacity;
+}
+
+.manager-stage .game-feedback-host .feedback-particle[hidden] {
+    display: none !important;
+}
+
+.manager-stage .game-feedback-host .feedback-particle[data-feedback-kind="score"] {
+    background: #f9d77c;
+}
+
+.manager-stage .game-feedback-host .feedback-particle[data-feedback-kind="win"] {
+    background: #b9ffa6;
+}
+
+.manager-stage .game-feedback-host .feedback-particle[data-feedback-kind="lose"],
+.manager-stage .game-feedback-host .feedback-particle[data-feedback-kind="error"] {
+    background: #f3a18e;
+}
+
+.manager-stage .game-feedback-host .feedback-particle[data-feedback-kind="discover"] {
+    background: #8eeae6;
+}
+
+.manager-stage .game-feedback-host .feedback-particle.is-active {
+    animation: demian-feedback-pop 390ms cubic-bezier(.2, .7, .25, 1) both;
+}
+
+@keyframes demian-feedback-pop {
+    0% { opacity: 0; transform: translate3d(0, 0, 0) scale(.1); }
+    18% { opacity: .94; transform: translate3d(0, 0, 0) scale(1.2); }
+    100% {
+        opacity: 0;
+        transform: translate3d(var(--feedback-dx), var(--feedback-dy), 0) scale(.25);
+    }
+}
+
+.manager-shell [data-screen="loading"]:not([hidden]) .shell-progress--loading {
+    position: relative;
+    overflow: hidden;
+}
+
+.manager-shell [data-screen="loading"]:not([hidden]) .shell-progress--loading::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(100deg, transparent 20%, rgba(255,255,255,.16) 48%, transparent 74%);
+    animation: demian-loading-sheen 1.5s ease-in-out infinite;
+}
+
+@keyframes demian-loading-sheen {
+    from { transform: translate3d(-110%, 0, 0); }
+    to { transform: translate3d(110%, 0, 0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .manager-stage .game-feedback-host .feedback-particle,
+    .manager-shell [data-screen="loading"] .shell-progress--loading::after {
+        animation: none !important;
+    }
+}
+
+.manager-shell[data-motion="reduced"] [data-screen="loading"] .shell-progress--loading::after {
+    animation: none !important;
+}
+
+@media (prefers-contrast: more) {
+    .manager-stage .game-feedback-host .feedback-particle {
+        border-width: 2px;
+    }
+}
+
+@media (forced-colors: active) {
+    .manager-stage .game-feedback-host .feedback-particle {
+        forced-color-adjust: auto;
+        background: Highlight;
+        border-color: CanvasText;
+    }
+}

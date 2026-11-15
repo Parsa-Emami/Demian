@@ -180,8 +180,12 @@ export default class DinoRunGame extends BaseGame {
         if (!this.context || this.context.app.sessionState !== 'playing' || this.context.root.dataset.sidebarState === 'expanded' || this.finished || this.starting) return;
         if (this.lessonStep && !this.lessonActive) return;
         if (!this.lessonStep && this.replay && (this.model.status !== 'ready' || input.jump)) this.replay.record(input);
+        const passedBefore = this.model.passed;
         this.model.step(dt, input);
         const model = this.model;
+        if (!this.lessonStep && model.passed > passedBefore) {
+            this.context.eventBus.emit('feedback:cue', { gameId: 'dino-run', kind: 'passed' });
+        }
         this.actor.speed = model.status === 'ready' ? 0 : Math.min(8.4, 6 * model.speed / RUNNER_CONFIG.startSpeed);
         this.actor.travelledDistance = this.actor.speed * dt;
         this.actor.airborne = model.y > 0 || model.vy > 0; this.actor.grounded = !this.actor.airborne;
