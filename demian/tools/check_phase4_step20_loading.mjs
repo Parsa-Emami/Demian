@@ -156,6 +156,7 @@ try {
     assert.equal(await page.locator('[data-screen="pause"]').evaluate(el => el.inert), false,
         'Pause dialog must become operable again after closing settings.');
     await page.locator('[data-screen="pause"] [data-shell-action="resume"]').click();
+    await wait(page, () => window.demianGameApplication?.sessionState === 'playing', 10000);
     await page.evaluate(() => window.demianGameApplication.showMenu());
     await wait(page, () => window.demianGameApplication?.sessionState === 'menu');
     report.ux = { gameCards: 6, keyboardTrap: true, focusReturn: true, nestedPauseSettings: true };
