@@ -74,12 +74,18 @@ export default class ScreenManager {
             return next.refresh(payload);
         }
 
+        // Preserve the opener *before* making the background inert. A browser
+        // may move focus to <body> as soon as the old primary/dialog is inert.
+        const opener = typeof document === 'undefined' ? null : document.activeElement;
         this.modalStack.push(next.id);
+        this.syncAccessibility();
         try {
             await next.open(payload);
+            if (opener?.isConnected) next.returnFocusTarget = opener;
         } catch (error) {
             this.modalStack.pop();
             this.syncAccessibility();
+            opener?.focus?.({ preventScroll: true });
             throw error;
         }
         this.syncAccessibility();
