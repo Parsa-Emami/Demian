@@ -194,6 +194,11 @@ export default class CafeRushGame extends BaseGame {
     consumeEvents() {
         for (const event of this.model.drainEvents()) {
             this.audio.play(event.type, event.point, this.model.player.position);
+            if (['served', 'spill', 'wrong-table'].includes(event.type)) {
+                this.context.eventBus.emit('feedback:cue', {
+                    gameId: 'cafe-rush', kind: event.type,
+                });
+            }
             const label = noticeFor(event);
             if (label && (event.type !== 'arrival' || this.model.elapsed >= this.noticeUntil)) {
                 this.notice = label;
