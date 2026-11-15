@@ -1,0 +1,137 @@
+/*
+ * Phase 4 / Step 20 — shared game shell UX hardening.
+ * Presentation only: no gameplay state, replay, scoring or reward changes.
+ * Loaded last so all six games share accessible shell actions across devices.
+ */
+.manager-shell [data-game-shell] .shell-screen[hidden] {
+    display: none !important;
+}
+
+.manager-shell [data-game-shell] .shell-screen[inert] {
+    pointer-events: none;
+}
+
+/* Content must scroll inside the game viewport, rather than growing outside
+ * a notched mobile screen or blocking the gameplay toolbar underneath. */
+.manager-shell [data-game-shell] :is(.shell-page, .shell-modal, .results-panel) {
+    box-sizing: border-box;
+    max-inline-size: min(100%, calc(var(--demian-logical-width, 100vw) - 24px));
+    max-block-size: calc(var(--demian-logical-height, 100dvh) - 24px);
+    overflow-y: auto;
+    overflow-x: hidden;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+}
+
+.manager-shell [data-game-shell] :is(.shell-page__header, .shell-modal__header, .shell-modal__actions) {
+    min-inline-size: 0;
+}
+
+.manager-shell [data-game-shell] :is(
+    .cafe-menu__content, .shell-page, .shell-modal, .results-panel,
+    .game-card, .game-card__description, .game-card__subtitle,
+    .results-panel__stats, .settings-field
+) {
+    overflow-wrap: anywhere;
+}
+
+/* A consistent minimum touch target for every shell action, including
+ * icon buttons and carousel navigation at 320 CSS px. */
+.manager-shell [data-game-shell] :is(
+    .shell-button, .shell-icon-button, .game-card__action,
+    .scroll-rail-button, [data-shell-action], [data-game-launch]
+) {
+    min-height: 44px;
+    min-width: 44px;
+    touch-action: manipulation;
+}
+
+.manager-shell [data-game-shell] :is(
+    button, a[href], select, input, textarea, [tabindex]
+):focus-visible {
+    outline: 3px solid #ffe097;
+    outline-offset: 3px;
+}
+
+.manager-shell [data-game-shell] :is(.shell-button, .game-card__action):disabled,
+.manager-shell [data-game-shell] :is(.shell-button, .game-card__action)[aria-disabled="true"] {
+    cursor: not-allowed;
+    opacity: .66;
+}
+
+.manager-shell [data-game-shell] :is(.shell-screen, .shell-page, .results-panel) {
+    scrollbar-width: thin;
+}
+
+/* Explicit safe-area room is required even if the host uses CSS rotation
+ * for orientation fallback on older iOS browsers. */
+@media (max-width: 640px) {
+    .manager-shell [data-game-shell] :is(.shell-page, .shell-modal, .results-panel) {
+        max-block-size: calc(var(--demian-logical-height, 100dvh) - 16px);
+        max-inline-size: calc(var(--demian-logical-width, 100vw) - 16px);
+    }
+
+    .manager-shell [data-game-shell] .shell-page {
+        padding-block-end: max(16px, env(safe-area-inset-bottom, 0px));
+    }
+
+    .manager-shell [data-game-shell] .shell-modal__actions--row {
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .manager-shell [data-game-shell] .shell-modal__actions--row > button {
+        flex: 1 1 132px;
+    }
+}
+
+@media (max-width: 360px) {
+    .manager-shell [data-game-shell] :is(.cafe-menu__content, .shell-page) {
+        padding-inline: 14px;
+    }
+
+    .manager-shell [data-game-shell] .cafe-menu__title {
+        font-size: clamp(40px, 15vw, 58px);
+    }
+
+    .manager-shell [data-game-shell] .shell-page__header {
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+}
+
+@media (max-height: 480px) and (orientation: landscape) {
+    .manager-shell [data-game-shell] :is(.shell-page, .shell-modal, .results-panel) {
+        max-block-size: calc(var(--demian-logical-height, 100dvh) - 12px);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .manager-shell [data-game-shell] :is(
+        .shell-screen, .shell-button, .game-card, .game-card__glow,
+        .cafe-menu__ambient *, .loading-console__orbit *, .arcade-live-dot
+    ) {
+        scroll-behavior: auto !important;
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+@media (prefers-contrast: more) {
+    .manager-shell [data-game-shell] :is(.shell-button, .game-card__action, .shell-icon-button) {
+        border-width: 2px;
+        border-color: currentColor;
+    }
+
+    .manager-shell [data-game-shell] :is(.game-card__description, .cafe-menu__lead) {
+        color: #fff;
+    }
+}
+
+@media (forced-colors: active) {
+    .manager-shell [data-game-shell] :is(.shell-button, .game-card__action, .shell-icon-button) {
+        forced-color-adjust: auto;
+        border: 1px solid ButtonText;
+    }
+}

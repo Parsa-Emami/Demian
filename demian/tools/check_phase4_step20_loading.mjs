@@ -98,6 +98,77 @@ try {
         assert.equal(await page.evaluate(() => window.demianGameApplication?.activeGameId), null,
             'Game assets must be released before returning to the menu.');
     }
+    // Step 20 UX acceptance on the actual optimized browser release:
+    // navigation, six-game catalog, focus trapping and nested pause/settings.
+    await page.locator('[data-screen="cafe-menu"] [data-shell-action="play"]').click();
+    await page.locator('[data-screen="game-selection"]').waitFor({ state: 'visible' });
+    assert.equal(await page.locator('[data-game-card]').count(), 6,
+        'The shared game selection must present all six current games.');
+    assert.match(await page.locator('[data-game-library-count]').innerText(), /۶/,
+        'The visible game count must reflect the catalog, not stale placeholder copy.');
+    await page.locator('[data-screen="game-selection"] [data-shell-action="back-cafe"]').click();
+    await page.locator('[data-screen="cafe-menu"]').waitFor({ state: 'visible' });
+    const settingsTrigger = page.locator('[data-screen="cafe-menu"] [data-shell-action="settings"]');
+    await settingsTrigger.focus();
+    await page.keyboard.press('Enter');
+    await page.locator('[data-screen="settings"]').waitFor({ state: 'visible' });
+    await wait(page, () => {
+        const settings = document.querySelector('[data-screen="settings"]');
+        const menu = document.querySelector('[data-screen="cafe-menu"]');
+        return settings?.dataset.screenState === 'active'
+            && menu?.inert && settings.contains(document.activeElement);
+    }, 10000);
+
+    const settingsState = await page.evaluate(() => {
+        const settings = document.querySelector('[data-screen="settings"]');
+        const menu = document.querySelector('[data-screen="cafe-menu"]');
+        return { dialogOperable: !settings?.inert,
+            backgroundInert: Boolean(menu?.inert),
+            initialFocusInside: Boolean(settings?.contains(document.activeElement)) };
+    });
+    assert.deepEqual(settingsState, {
+        dialogOperable: true, backgroundInert: true, initialFocusInside: true,
+    }, 'Only the active settings dialog may receive focus.');
+    for (let index = 0; index < 12; index++) {
+        await page.keyboard.press('Tab');
+        assert.equal(await page.evaluate(() =>
+            document.querySelector('[data-screen="settings"]')?.contains(document.activeElement)), true,
+            'Keyboard Tab must remain inside settings.');
+    }
+    await page.keyboard.press('Escape');
+    await page.locator('[data-screen="settings"]').waitFor({ state: 'hidden' });
+    const restoredFocus = await page.evaluate(() => ({
+        activeAction: document.activeElement?.getAttribute('data-shell-action') ?? null,
+        activeTag: document.activeElement?.tagName ?? null,
+        menuInert: document.querySelector('[data-screen="cafe-menu"]')?.inert ?? null,
+        menuHidden: document.querySelector('[data-screen="cafe-menu"]')?.hidden ?? null,
+        primaryId: window.demianGameApplication?.shell?.manager?.primaryId ?? null,
+        modalStack: window.demianGameApplication?.shell?.manager?.modalStack ?? null,
+        openerAction: window.demianGameApplication?.shell?.settingsScreen?.returnFocusTarget
+            ?.getAttribute('data-shell-action') ?? null,
+    }));
+    assert.equal(restoredFocus.activeAction, 'settings',
+        'Closing keyboard-invoked settings must restore its opener: ' + JSON.stringify(restoredFocus));
+
+    await page.evaluate(() => window.demianGameApplication.launchGame('dino-run'));
+    await wait(page, () => window.demianGameApplication?.sessionState === 'playing');
+    await page.evaluate(() => window.demianGameApplication.pauseGame());
+    await page.locator('[data-screen="pause"]').waitFor({ state: 'visible' });
+    await page.locator('[data-screen="pause"] [data-shell-action="settings"]').click();
+    await page.locator('[data-screen="settings"]').waitFor({ state: 'visible' });
+    assert.equal(await page.locator('[data-screen="pause"]').evaluate(el => el.inert), true,
+        'Covered pause dialog must not be interactable while settings is on top.');
+    await page.locator('[data-screen="settings"] [data-shell-action="close-modal"]').click();
+    await page.locator('[data-screen="settings"]').waitFor({ state: 'hidden' });
+    await wait(page, () => document.querySelector('[data-screen="pause"]')?.inert === false, 10000);
+    assert.equal(await page.locator('[data-screen="pause"]').evaluate(el => el.inert), false,
+        'Pause dialog must become operable again after closing settings.');
+    await page.locator('[data-screen="pause"] [data-shell-action="resume"]').click();
+    await wait(page, () => window.demianGameApplication?.sessionState === 'playing', 10000);
+    await page.evaluate(() => window.demianGameApplication.showMenu());
+    await wait(page, () => window.demianGameApplication?.sessionState === 'menu');
+    report.ux = { gameCards: 6, keyboardTrap: true, focusReturn: true, nestedPauseSettings: true };
+
     assert.deepEqual(report.errors, [], 'No uncaught errors in full boot/game/menu cycle.');
 
     // A second, genuinely cold browser has no prior sprite or JS cache.

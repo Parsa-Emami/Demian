@@ -44,6 +44,7 @@ export default class GameShell {
         this.settings = settings;
         this.catalog = catalog;
         this.shellRoot = root.querySelector('[data-game-shell]');
+        this.announcer = this.shellRoot?.querySelector('[data-shell-announcer]') ?? null;
         this.manager = new ScreenManager({ eventBus });
         this.unsubscribers = [];
         this.booted = false;
@@ -90,6 +91,12 @@ export default class GameShell {
         document.addEventListener('input:gamepad-ui', this.onGamepadUi);
 
         this.unsubscribers.push(
+            this.eventBus.on('screen:changed', ({ id }) => {
+                const screen = this.manager.screens.get(id);
+                if (this.announcer && screen?.element) {
+                    this.announcer.textContent = screen.element.getAttribute('aria-label') ?? '';
+                }
+            }),
             this.eventBus.on('game:loading-step', ({ progress, step }) => {
                 this.loadingScreen?.setProgress(progress, step);
             }),
@@ -136,8 +143,9 @@ export default class GameShell {
         });
     }
 
-    showSettings() {
-        return this.manager.show(SCREEN_IDS.SETTINGS);
+    showSettings(opener = null) {
+        return this.manager.show(SCREEN_IDS.SETTINGS,
+            opener?.isConnected ? { focusReturnTarget: opener } : {});
     }
 
     showResults(result = {}) {
@@ -207,7 +215,7 @@ export default class GameShell {
                 await this.showCafeMenu();
                 break;
             case 'settings':
-                await this.showSettings();
+                await this.showSettings(button);
                 break;
             case 'close-modal':
                 await this.manager.closeTopModal();
@@ -254,7 +262,7 @@ export default class GameShell {
     }
 
     onKeyDown(event) {
-        if (event.repeat || isTypingTarget(event.target) || event.key !== 'Escape') return;
+        if (event.repeat || event.key !== 'Escape') return;
 
         const topModal = this.manager.modalStack.at(-1);
         if (topModal === SCREEN_IDS.LEADERBOARD || topModal === SCREEN_IDS.COUPONS
@@ -262,11 +270,16 @@ export default class GameShell {
             event.preventDefault(); this.manager.closeTopModal('escape'); return;
         }
         if (topModal === SCREEN_IDS.SETTINGS) {
+            // An in-progress key remap must consume Escape itself; otherwise
+            // Escape closes settings even when the focused control is a select.
+            if (this.settingsScreen?.controls?.pending) return;
             event.preventDefault();
             this.manager.closeTopModal('escape');
             return;
         }
 
+        // Outside dialogs, Escape while typing must not alter gameplay state.
+        if (isTypingTarget(event.target)) return;
         if (this.app.sessionState === 'playing') {
             event.preventDefault();
             this.app.pauseGame();

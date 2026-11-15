@@ -17,6 +17,8 @@ export default class LoadingScreen extends BaseScreen {
     setProgress(progress, step) {
         const safe = Math.min(100, Math.max(0, Number(progress) || 0));
         this.bar?.style.setProperty('--loading-progress', `${safe}%`);
+        this.bar?.setAttribute('aria-valuenow', String(Math.round(safe)));
+        this.bar?.setAttribute('aria-valuetext', step ? `${Math.round(safe)} درصد؛ ${step}` : `${Math.round(safe)} درصد`);
         if (this.value) this.value.textContent = `${Math.round(safe)}%`;
         if (step && this.step) this.step.textContent = step;
     }

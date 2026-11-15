@@ -24,12 +24,18 @@ export default class GameSelectionScreen extends BaseScreen {
 
     render() {
         if (this.rendered || !this.grid) return;
+        const playableCount = this.catalog.filter(game => game.available).length;
+        const count = this.element.querySelector('[data-game-library-count]');
+        if (count) count.textContent = `${playableCount.toLocaleString('fa-IR')} بازی آمادهٔ اجرا`;
+        const summary = this.element.closest('[data-character-manager]')
+            ?.querySelector('[data-game-library-summary]');
+        if (summary) summary.textContent = `${playableCount.toLocaleString('fa-IR')} بازی · ۱۲ کاراکتر`;
         this.grid.innerHTML = this.catalog.map((game) => `
             <article class="game-card game-card--${escape(game.accent)} ${game.available ? 'is-available' : 'is-locked'}" data-game-card="${escape(game.id)}" data-scroll-rail-item="${escape(game.id)}" role="listitem" dir="rtl">
                 <div class="game-card__glow" aria-hidden="true"></div>
                 <div class="game-card__topline">
                     <span class="game-card__icon" aria-hidden="true">${escape(game.icon)}</span>
-                    <span class="game-card__status">${game.available ? 'PLAYABLE' : `PHASE ${game.phase}`}</span>
+                    <span class="game-card__status">${game.available ? 'آمادهٔ بازی' : `فاز ${game.phase}`}</span>
                 </div>
                 <div>
                     <h3>${escape(game.title)}</h3>
@@ -40,6 +46,7 @@ export default class GameSelectionScreen extends BaseScreen {
                     type="button"
                     class="game-card__action"
                     data-game-launch="${escape(game.id)}"
+                    aria-label="${game.available ? `اجرای ${escape(game.title)}، ${escape(game.subtitle)}` : `${escape(game.title)} هنوز فعال نیست`}"
                     ${game.available ? '' : 'aria-disabled="true"'}
                 >
                     ${game.available ? 'ورود به بازی' : 'به‌زودی'}
