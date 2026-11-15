@@ -262,3 +262,98 @@ test('the order readout and destination follow the ticket from priority pickup t
     assert.equal(rushObjective(model).id, 'table-2');
     assert.match(rushObjective(model).marker, /۱۲.*میز ۲/);
 });
+
+test('concurrent bar orders collect the oldest READY tray before another PREPARING order', (t) => {
+    const model = setup(t, 'hard');
+    model.start();
+    const first = model.orders[0];
+    first.state = 'preparing';
+    first.readyAt = 11;
+    first.due = 80;
+    const ready = {
+        ...first, id: 2, recipe: 'espresso', table: 2,
+        state: 'ready', readyAt: 2, due: 80,
+    };
+    model.orders.push(ready);
+    assert.equal(model.stationOrder('bar'), ready,
+        'Ready espresso must not be blocked behind earlier tea that is still preparing');
+    assert.equal(rushObjective(model).id, 'bar');
+    place(model, 'bar');
+    model.interact();
+    assert.equal(model.carriedOrder, ready);
+    assert.equal(model.stationOrder('bar'), first);
+    assert.equal(rushObjective(model).id, 'table-2');
+    place(model, 'table-1');
+    model.interact();
+    assert.equal(model.score, 0);
+    assert.equal(model.mistakes, 1);
+    assert.equal(model.carriedOrder, ready);
+    place(model, 'table-2');
+    model.interact();
+    assert.equal(model.score, 100);
+    assert.equal(model.delivered, 1);
+    assert.equal(model.carriedOrder, null);
+    assert.equal(model.orders.length, 1);
+    assert.equal(model.orders[0], first);
+    model.interact();
+    assert.equal(model.score, 100, 'Repeated interaction cannot replay a served order');
+});
+
+test('objective prioritizes a finished drink over a later accepted ticket', (t) => {
+    const model = setup(t, 'hard');
+    model.start();
+    const first = model.orders[0];
+    first.state = 'ready';
+    first.due = 80;
+    model.orders.push({
+        ...first, id: 2, recipe: 'cake', state: 'accepted', table: 2,
+    });
+    assert.equal(model.acceptedOrder.id, 2);
+    assert.equal(rushObjective(model).id, 'bar',
+        'Guide must direct player to collect finished tea before making more food');
+});
+
+test('VIP ticket waits for capacity then enters once without overwriting active customers', (t) => {
+    const model = setup(t, 'hard');
+    model.start();
+    while (model.orders.length < model.rules.capacity) model.addTicket(false);
+    const original = [...model.orders];
+    model.orders.forEach(order => { order.due = 100; });
+    model.elapsed = VIP_AT - 0.005;
+    model.advance(TICK);
+    assert.equal(model.vipIssued, false);
+    assert.equal(model.orders.length, model.rules.capacity);
+    assert.ok(original.every(order => model.orders.includes(order)));
+
+    // A single customer frees a slot. VIP must appear on the next fixed tick
+    // and must not evict, clone or corrupt other active tickets.
+    original[0].due = model.elapsed + 0.005;
+    model.advance(TICK);
+    assert.equal(model.vipIssued, true);
+    assert.equal(model.orders.length, model.rules.capacity);
+    assert.equal(model.orders.filter(order => order.vip).length, 1);
+    assert.ok(original.slice(1).every(order => model.orders.includes(order)));
+    model.advance(TICK);
+    assert.equal(model.orders.filter(order => order.vip).length, 1);
+    assert.equal(model.waitingOrder.vip, true);
+});
+
+test('a finished shift cannot accept late deliveries, repeat a score or reopen tickets', (t) => {
+    const model = setup(t);
+    model.start();
+    const ticket = prepare(model);
+    place(model, `table-${ticket.table}`);
+    model.interact();
+    assert.equal(model.score, 100);
+    model.elapsed = RUSH_DURATION - 0.005;
+    model.advance(TICK, { interact: true, run: true });
+    assert.equal(model.status, 'finished');
+    const result = model.result();
+    const orders = model.orders.length;
+    assert.equal(result.score, 100);
+    model.interact();
+    model.advance(3, { x: 1, interact: true });
+    assert.deepEqual(model.result(), result);
+    assert.equal(model.orders.length, orders);
+    assert.equal(model.tray, null);
+});

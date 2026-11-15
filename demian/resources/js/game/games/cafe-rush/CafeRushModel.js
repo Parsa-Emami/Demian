@@ -62,8 +62,14 @@ export default class CafeRushModel {
     get acceptedOrder() { return this.orders.find((order) => order.state === 'accepted') ?? null; }
 
     stationOrder(id) {
+        // In a busy shift, collect a completed order before reporting another
+        // order at the same station as "still preparing". Keep the oldest
+        // ready ticket first; this ordering is mirrored by the PHP replay.
         return this.orders.find((order) => RECIPES[order.recipe].station === id
-            && (order.state === 'preparing' || order.state === 'ready')) ?? null;
+            && order.state === 'ready')
+            ?? this.orders.find((order) => RECIPES[order.recipe].station === id
+                && order.state === 'preparing')
+            ?? null;
     }
 
     nearby() {

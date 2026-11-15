@@ -44,7 +44,9 @@ export function rushObjective(model) {
     const ready = model.orders.find((order) => order.state === 'ready');
     const preparing = model.orders.find((order) => order.state === 'preparing');
     const waiting = model.waitingOrder;
-    const order = carried ?? accepted ?? ready ?? waiting ?? preparing;
+    // Ready food is actionable now: do not hide it behind a second
+    // ticket that has merely been accepted while the first was cooking.
+    const order = carried ?? ready ?? accepted ?? preparing ?? waiting;
     const id = carried ? `table-${carried.table}`
         : order && order !== waiting ? RECIPES[order.recipe].station : 'tickets';
     const destination = RUSH_SPOTS.find((spot) => spot.id === id).label;

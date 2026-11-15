@@ -240,11 +240,16 @@ final class CafeRushFrameReplayVerifier
                         if(!$accepted&&$choice!==null)
                             $orders[$choice]['state']='accepted';
                     }elseif($tray===null&&$near['kind']==='station'){
+                        // Match source CafeRushModel.stationOrder: a ready
+                        // order takes precedence over an earlier in-flight
+                        // preparation at the same physical station.
                         $work=null;
-                        foreach($orders as $i=>$o){
-                            if(self::RECIPES[$o['recipe']]['station']===$near['id']
-                                &&in_array($o['state'],['preparing','ready'],true)){
-                                $work=$i;break;
+                        foreach(['ready','preparing'] as $wanted){
+                            foreach($orders as $i=>$o){
+                                if(self::RECIPES[$o['recipe']]['station']===$near['id']
+                                    &&$o['state']===$wanted){
+                                    $work=$i;break 2;
+                                }
                             }
                         }
                         if($work!==null&&$orders[$work]['state']==='ready'){
