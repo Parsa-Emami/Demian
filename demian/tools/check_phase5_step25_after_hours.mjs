@@ -107,7 +107,8 @@ try {
             assert.equal(started.dialog, false);
             assert.equal(started.challenge, 'idle');
             assert.equal(started.context, 'AFTER_HOURS');
-            assert.equal(started.time, 240);
+            assert.ok(started.time <= 240 && started.time > 239,
+                'The first 60Hz frame may already have elapsed after closing the entry dialog');
 
             await page.keyboard.down('ArrowLeft');
             await page.waitForTimeout(320);
