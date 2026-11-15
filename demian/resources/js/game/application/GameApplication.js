@@ -161,16 +161,23 @@ export default class GameApplication {
                     economy: this.renderQuality.economical || this.performanceProfile.tier === 'low',
                 });
                 this.controlLayouts.boot();
-                await this.shell.showBoot({
-                    progress: 4,
-                    message: 'در حال آماده‌سازی دمیان…',
-                });
+                // In the static release the small parser-time menu has
+                // already become visible while the atomic engine downloaded.
+                // Adopt it without flashing a second boot screen. Laravel's
+                // non-static pages retain the original boot sequence.
+                const instantMenu = this.root.dataset.instantMenu === 'true';
+                if (!instantMenu) {
+                    await this.shell.showBoot({
+                        progress: 4,
+                        message: 'در حال آماده‌سازی دمیان…',
+                    });
+                }
 
                 // Boot the menu before the expensive optional Open World
                 // chunks, player sprites and remote character API. Each game
                 // is loaded only when selected, not just to draw a backdrop.
                 this.animation.boot();
-                this.shell.setBootProgress(88, 'منو آماده است…');
+                if (!instantMenu) this.shell.setBootProgress(88, 'منو آماده است…');
                 this.runtime.start();
                 await this.enterMenuState({ initial: true });
                 const bootReadyMs = Math.max(0, (globalThis.performance?.now?.() ?? Date.now()) - bootStartedAt);
