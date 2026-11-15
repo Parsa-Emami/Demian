@@ -9,6 +9,9 @@ on:
       - '.github/workflows/cpanel-api-deploy.yml'
       - 'demian/tools/load/cpanel_50_active.js'
       - 'demian/tests/js/mobile/Mobile11Ops.test.js'
+      - 'demian/tests/js/mobile/CpanelHostSmoke.test.js'
+      - 'demian/tests/ops/CpanelHostPreflightTest.php'
+      - 'demian/tools/verify_cpanel_host.mjs'
       - 'demian/tools/smoke_arcade_api.mjs'
       - 'demian/tools/load/**'
   push:
@@ -45,7 +48,7 @@ jobs:
           node --check demian/tools/load/cpanel_50_writes_staging.js
       - name: Run release and integrity guard tests
         working-directory: demian
-        run: node --test tests/js/mobile/Mobile11Ops.test.js
+        run: node --test tests/js/mobile/Mobile11Ops.test.js tests/js/mobile/CpanelHostSmoke.test.js
 
   cpanel-runtime:
     runs-on: ubuntu-24.04
