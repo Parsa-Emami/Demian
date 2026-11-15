@@ -18,6 +18,8 @@ Route::prefix('v1/arcade')->middleware([LimitArcadePayload::class, 'throttle:arc
     Route::get('/competition/weekly', [ArcadeController::class, 'weeklyCompetition']);
     Route::get('/competition/fair/rules', [ArcadeController::class, 'fairRules']);
     Route::get('/competition/fair', [ArcadeController::class, 'fairLeaderboard']);
+    Route::get('/competition/leaderboard', [ArcadeController::class, 'weeklyRankings']);
+    Route::get('/competition/leaderboard/weeks', [ArcadeController::class, 'weeklyRankingWeeks']);
     Route::get('/leaderboards/dino-run', [ArcadeController::class, 'leaderboard']);
     Route::get('/leaderboards/cafe-critters', [ArcadeTurnRunController::class, 'leaderboard']);
     Route::get('/leaderboards/coffee-crash', [ArcadeTurnRunController::class, 'coffeeLeaderboard']);
@@ -36,6 +38,8 @@ Route::prefix('v1/arcade')->middleware([LimitArcadePayload::class, 'throttle:arc
         Route::post('/player/backup-code', [ArcadeController::class, 'issueBackupCode'])
             ->middleware('throttle:arcade-backup-issue');
         Route::get('/player/best', [ArcadeController::class, 'personalBest']);
+        Route::get('/player/competition/leaderboard', [ArcadeController::class, 'myWeeklyRanking'])
+            ->middleware('throttle:arcade-coupon-wallet');
         Route::patch('/player', [ArcadeController::class, 'rename'])->middleware('throttle:arcade-player-rename');
         Route::delete('/player', [ArcadeController::class, 'erase'])->middleware('throttle:arcade-profile-delete');
         // Independent server-replay endpoint for games whose action verifier

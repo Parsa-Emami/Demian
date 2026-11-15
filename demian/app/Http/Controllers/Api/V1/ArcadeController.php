@@ -85,6 +85,57 @@ final class ArcadeController extends Controller
         }
     }
 
+    /**
+     * Server-sourced weekly comparison. Current week is explicitly a live,
+     * non-financial preview; archived weeks are immutable sealed snapshots.
+     */
+    public function weeklyRankings(Request $request,
+        \App\Services\Arcade\WeeklyLeaderboardReadService $service): JsonResponse
+    {
+        $args = $request->validate([
+            'week' => ['sometimes', 'date_format:Y-m-d'],
+            'limit' => ['sometimes', 'integer', 'between:1,50'],
+        ]);
+        try {
+            return response()->json($service->read($args['week'] ?? null,
+                (int) ($args['limit'] ?? 20)))
+                ->header('Cache-Control', 'public, max-age=15');
+        } catch (\InvalidArgumentException $e) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'week' => 'Week must be a recent Saturday in Asia/Tehran.',
+            ]);
+        }
+    }
+
+    public function weeklyRankingWeeks(
+        \App\Services\Arcade\WeeklyLeaderboardReadService $service): JsonResponse
+    {
+        return response()->json(['weeks' => $service->weeks()])
+            ->header('Cache-Control', 'public, max-age=60');
+    }
+
+    /**
+     * No client-supplied player ID. Always take identity from verified bearer
+     * middleware; this exposes an exact rank even outside the public top 20.
+     */
+    public function myWeeklyRanking(Request $request,
+        \App\Services\Arcade\WeeklyLeaderboardReadService $service): JsonResponse
+    {
+        $args = $request->validate([
+            'week' => ['sometimes', 'date_format:Y-m-d'],
+        ]);
+        try {
+            return response()->json($service->read($args['week'] ?? null, 20,
+                $request->attributes->get('arcade_player')->id))
+                ->header('Cache-Control', 'private, no-store')
+                ->header('Pragma', 'no-cache');
+        } catch (\InvalidArgumentException $e) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'week' => 'Week must be a recent Saturday in Asia/Tehran.',
+            ]);
+        }
+    }
+
     public function register(Request $request): JsonResponse
     {
         $name = $this->name($request); $token = Str::random(64);
