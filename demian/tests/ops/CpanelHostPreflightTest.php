@@ -63,7 +63,8 @@ $invoke = static function (array $data, bool $shouldPass, string $name, string $
         throw new RuntimeException($name.' returned '.$result.
             ' (expected '.($shouldPass ? 'success' : 'failure').'): '.$stdout.$stderr);
     }
-    if (str_contains($stdout.$stderr, $data['DB_PASSWORD'] ?? 'impossible')
+    if (($data['DB_PASSWORD'] ?? '') !== ''
+        && str_contains($stdout.$stderr, $data['DB_PASSWORD'])
         || str_contains($stdout.$stderr, $data['APP_KEY'] ?? 'impossible')) {
         throw new RuntimeException('Preflight leaked a protected credential: '.$name);
     }
