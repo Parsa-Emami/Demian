@@ -5,6 +5,7 @@ import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { resolve, extname } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { tmpdir } from 'node:os';
+import { CAFE_BOUNDS } from '../resources/js/game/shared/cafe/CafeWalkthroughScene.js';
 const root = resolve(import.meta.dirname, '../..');
 const out = resolve(root, 'demian/docs/release-v14-negar');
 const screenshotDir = resolve(process.env.DEMIAN_QA_SCREENSHOT_DIR ?? resolve(tmpdir(), 'demian-negar-v14-loading'));
@@ -73,7 +74,7 @@ try {
                     sum + pack.image.naturalWidth * pack.image.naturalHeight * 4, 0) };
         });
         assert.equal(state.variant, 'lite'); assert.equal(state.ability, 'smile-bloom');
-        assert.deepEqual(state.bounds, { minX: -24, maxX: 24, minZ: -132, maxZ: 36 });
+        assert.deepEqual(state.bounds, CAFE_BOUNDS, 'production scene keeps the canonical FBX geometry');
         assert.ok(state.decodedCacheBytes <= 24 * 1024 * 1024);
         assert.ok(!sheets.some((url) => /-(desktop|mobile|compact)\.png/.test(url)));
         assert.deepEqual(errors, []);
