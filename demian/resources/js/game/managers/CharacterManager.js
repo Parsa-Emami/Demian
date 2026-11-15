@@ -112,8 +112,15 @@ export default class CharacterManager {
     }
 
     async boot({ preferredSlug = null } = {}) {
+        // Static Pages exports characters.json with ONLY the same bundled
+        // characters constructed by ensureBuiltinCharacters(). Waiting for
+        // a redundant fetch here adds a network RTT (or a 4.5s timeout)
+        // every time Open World is entered on a cold/unstable connection.
+        const staticBuiltinsOnly = globalThis.document?.querySelector?.(
+            'meta[name="demian-static-release"][content="true"]'
+        ) && /(?:^|\\/)characters\\.json(?:[?#].*)?$/.test(this.repository?.baseUrl ?? '');
         try {
-            this.characters = await this.repository.list();
+            this.characters = staticBuiltinsOnly ? [] : await this.repository.list();
         } catch (error) {
             console.warn(
                 'Character API was unavailable; built-in characters were loaded.',
