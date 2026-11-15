@@ -82,6 +82,21 @@ def optimize_release(release: Path) -> dict:
             # No geometry/UVs, frame list, timing, palette, or animation metadata changes.
             atlas_path.write_text(json.dumps(atlas, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
             png_path.unlink()
+            # Keep every public manifest URL in sync with the transformed
+            # atlas: TextureAtlasLoader reads the manifest's atlas_targets.
+            manifest_path = base / "manifests" / "character_manifest_v4.json"
+            if manifest_path.exists():
+                manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+                target = manifest.get("runtime", {}).get("atlas_targets", {}).get(variant)
+                if target is not None:
+                    expected_target = "../" + image_name
+                    if target.get("image") != expected_target:
+                        raise ValueError(f"Manifest/atlas mismatch for {slug}/{variant}")
+                    target["image"] = "../" + webp_path.name
+                    manifest_path.write_text(
+                        json.dumps(manifest, ensure_ascii=False, separators=(",", ":")),
+                        encoding="utf-8"
+                    )
             report["converted"] += 1
             report["outputBytes"] += candidate_bytes
             report["savedBytes"] += original_bytes - candidate_bytes

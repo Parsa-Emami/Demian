@@ -25,6 +25,12 @@ test('Step 18: production WebP transcode is lossless, atomic for a release and a
         mkdirSync(dir, { recursive: true });
         writeFileSync(join(root, 'characters.json'),
             JSON.stringify({ data: [{ slug }] }));
+        mkdirSync(join(dir, 'manifests'), { recursive: true });
+        writeFileSync(join(dir, 'manifests', 'character_manifest_v4.json'),
+            JSON.stringify({ character_key: slug, runtime: { atlas_targets: {
+                runtime: { image: '../darya-spritesheet-v14-runtime.png' },
+                detail: { image: '../darya-spritesheet-v14-detail.png' },
+            } } }));
         for (const variant of ['runtime', 'detail']) {
             const prefix = slug + '-spritesheet-v14-' + variant;
             const png = join(dir, prefix + '.png');
@@ -60,6 +66,10 @@ test('Step 18: production WebP transcode is lossless, atomic for a release and a
                 createHash('sha256').update(webp).digest('hex'));
             assert.ok(atlas.frames.idle);
             assert.deepEqual(atlas.meta.size, { w: 256, h: 256 });
+            const manifest = JSON.parse(readFileSync(join(dir, 'manifests',
+                'character_manifest_v4.json'), 'utf8'));
+            assert.equal(manifest.runtime.atlas_targets[variant].image,
+                '../' + base + '.webp');
         }
     } finally { rmSync(root, { recursive: true, force: true }); }
 });

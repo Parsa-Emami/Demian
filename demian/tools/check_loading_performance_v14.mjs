@@ -8,10 +8,10 @@ import { tmpdir } from 'node:os';
 const root = resolve(import.meta.dirname, '../..');
 const out = resolve(root, 'demian/docs/release-v14-negar');
 const screenshotDir = resolve(process.env.DEMIAN_QA_SCREENSHOT_DIR ?? resolve(tmpdir(), 'demian-negar-v14-loading'));
-const playable = resolve(root, 'playable');
+const playable = resolve(process.env.DEMIAN_BROWSER_RELEASE_DIR ?? resolve(root, 'playable'));
 const modulePath = process.env.DEMIAN_PLAYWRIGHT_MODULE;
 const { chromium } = await import(modulePath ? pathToFileURL(modulePath).href : 'playwright');
-const mime = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png', '.jpg': 'image/jpeg', '.woff2': 'font/woff2' };
+const mime = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png', '.webp': 'image/webp', '.jpg': 'image/jpeg', '.woff2': 'font/woff2' };
 await mkdir(out, { recursive: true });
 await mkdir(screenshotDir, { recursive: true });
 const server = createServer(async (request, response) => {
@@ -37,12 +37,12 @@ try {
             Object.defineProperty(navigator, 'hardwareConcurrency', { get: () => constrained ? 4 : 8 });
             localStorage.setItem('demian.character.slug.v1', 'negar');
         }, { constrained: scenario === 'slow-phone' });
-        if (scenario === 'failed-runtime-image') await context.route('**/negar-spritesheet-v14-runtime.png',
+        if (scenario === 'failed-runtime-image') await context.route(/negar-spritesheet-v14-runtime\.(?:png|webp)(?:\?.*)?$/,
             (route) => route.fulfill({ status: 503, body: 'deliberately unavailable' }));
         const page = await context.newPage(); const errors = [], sheets = [];
         page.on('pageerror', (e) => errors.push(e.message));
         page.on('request', (request) => {
-            if (/spritesheet-v14-.*\.png/.test(request.url())) sheets.push(new URL(request.url()).pathname);
+            if (/spritesheet-v14-.*\.(?:png|webp)(?:\?|$)/.test(request.url())) sheets.push(new URL(request.url()).pathname);
         });
         const cdp = await context.newCDPSession(page);
         if (scenario === 'slow-phone') {
@@ -119,7 +119,7 @@ try {
                 }, { x, z });
                 await page.screenshot({ path: resolve(screenshotDir, `cafe-simple-${area}-390.png`) });
             }
-            assert.equal(sheets.filter((url) => url.endsWith('negar-spritesheet-v14-runtime.png')).length, 1,
+            assert.equal(sheets.filter((url) => /negar-spritesheet-v14-runtime\.(?:png|webp)$/.test(url)).length, 1,
                 'one failed decode is remembered during selection and NPC hydration');
             results.cases.push({ scenario, coldBootMs, sessionStartMs: elapsedMs, state, sheets, errors, overlappingSelection: selected, cache });
         } else results.cases.push({ scenario, coldBootMs, sessionStartMs: elapsedMs, state, sheets, errors,

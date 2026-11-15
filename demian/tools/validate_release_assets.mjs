@@ -80,6 +80,16 @@ export function validateReleaseAssets({ root, sourceAssets = null, reportPath = 
                     if (webp) {
                         transformedPngs.add('characters/' + slug + '/' + expectedPng);
                     }
+                    // The character manifest has an independent image URL for
+                    // variant loaders. Both references must remain identical.
+                    const publicManifest = join(assetsRoot, 'characters', row.manifest);
+                    if (existsSync(publicManifest)) {
+                        const declaredTarget = readJson(publicManifest)
+                            .runtime?.atlas_targets?.[variant];
+                        if (declaredTarget && declaredTarget.image !== '../' + declared) {
+                            errors.push('Character manifest/atlas image mismatch: ' + atlas);
+                        }
+                    }
                 }
                 // The atlas geometry, decoded dimensions and animation metadata
                 // are unmodified; conversion verifies exact RGBA pixels in Python.
