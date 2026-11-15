@@ -50,6 +50,10 @@ export default class InputRouter {
         this.virtualHeld = new Set();
         this.virtualPressed = new Set();
         this.pointerHolds = new Map();
+        // A one-shot press belongs to its initiating finger until consumed.
+        // Keep completed taps when a different finger cancels the same action.
+        this.pendingPointerPresses = new Map();
+        this.accessibilityPressed = new Set();
         this.latchedHolds = new Map();
         const stickZone = touchRoot?.querySelector('[data-touch-stick-zone]');
         this.touchStick = stickZone ? new TouchStick(stickZone, this) : null;
@@ -216,14 +220,29 @@ export default class InputRouter {
         const toggle = (holdAction === 'run' && this.touchControls.touchRunMode === 'toggle') ||
             (holdAction === 'duck' && this.touchControls.touchSlideMode === 'toggle');
         const action = toggle ? undefined : holdAction;
-        this.pointerHolds.set(event.pointerId, { action, button, pressAction });
-        if (toggle) this.toggleHold(holdAction, button);
+        // A second finger on a toggle button is not a second user command.
+        // Record that contact, but don't toggle again until a fresh gesture.
+        const overlappingToggle = toggle && [...this.pointerHolds.values()]
+            .some(entry => entry.toggleAction === holdAction);
+        const previousToggle = toggle ? this.latchedHolds.get(holdAction) ?? null : null;
+        const toggleAction = toggle ? holdAction : null;
+        this.pointerHolds.set(event.pointerId, { action, button, pressAction,
+            toggleAction, toggleChanged: Boolean(toggle && !overlappingToggle),
+            previousToggle });
+        if (toggle && !overlappingToggle) this.toggleHold(holdAction, button);
         else {
             if (action) this.virtualHeld.add(action);
             button.classList.add('is-pressed');
         }
 
-        if (pressAction) this.virtualPressed.add(pressAction);
+        if (pressAction) {
+            this.virtualPressed.add(pressAction);
+            if (!this.pendingPointerPresses) this.pendingPointerPresses = new Map();
+            if (!this.pendingPointerPresses.has(pressAction)) {
+                this.pendingPointerPresses.set(pressAction, new Set());
+            }
+            this.pendingPointerPresses.get(pressAction).add(event.pointerId);
+        }
         if (event.pointerType === 'touch' && this.touchControls.touchHaptics &&
             (ACTION_HAPTICS.has(pressAction) || holdAction === 'duck')) {
             navigator.vibrate?.(pressAction === 'dash' ? 18 : 10);
@@ -234,12 +253,24 @@ export default class InputRouter {
         const binding = this.pointerHolds.get(event.pointerId);
         if (!binding) return;
         this.pointerHolds.delete(event.pointerId);
-        const { action, button, pressAction } = binding;
-        // A canceled gesture must not queue a jump or interaction that fires
-        // after the user has already left the control.
-        if (['pointercancel', 'lostpointercapture'].includes(event.type) && pressAction &&
-            ![...this.pointerHolds.values()].some(entry => entry.pressAction === pressAction)) {
-            this.virtualPressed.delete(pressAction);
+        const { action, button, pressAction, toggleAction, toggleChanged, previousToggle } = binding;
+        const cancelled = ['pointercancel', 'lostpointercapture'].includes(event.type);
+        // One cancelled contact must not erase an earlier, completed tap by a
+        // different finger. Once a press is consumed, late cancellation is inert.
+        if (cancelled && pressAction) {
+            const owners = this.pendingPointerPresses?.get(pressAction);
+            if (owners?.delete(event.pointerId) && owners.size === 0) {
+                this.pendingPointerPresses.delete(pressAction);
+                if (!this.accessibilityPressed?.has(pressAction)) this.virtualPressed.delete(pressAction);
+            }
+        }
+        // A rejected OS gesture cannot leave a toggle latched indefinitely.
+        // Restore only when this contact performed the most recent transition.
+        if (cancelled && toggleChanged && toggleAction
+            && ![...this.pointerHolds.values()].some(entry => entry.toggleChanged && entry.toggleAction === toggleAction)) {
+            const current = this.latchedHolds.get(toggleAction) ?? null;
+            const expected = previousToggle ? null : button;
+            if (current === expected) this.toggleHold(toggleAction, previousToggle ?? button);
         }
         if (action && !this.latchedHolds.has(action) &&
             ![...this.pointerHolds.values()].some(entry => entry.action === action)) {
@@ -284,6 +315,8 @@ export default class InputRouter {
             if (button.hasAttribute('aria-pressed')) button.setAttribute('aria-pressed', 'false');
         }
         this.latchedHolds.clear();
+        this.pendingPointerPresses?.clear();
+        this.accessibilityPressed?.clear();
         this.virtualHeld.clear();
         this.virtualPressed.clear();
         this.touchStick?.reset();
@@ -304,6 +337,8 @@ export default class InputRouter {
             keys.forEach((key) => {
                 this.pressed.delete(key);
                 this.virtualPressed.delete(key);
+                this.pendingPointerPresses?.delete(key);
+                this.accessibilityPressed?.delete(key);
             });
         }
 
@@ -380,7 +415,11 @@ export default class InputRouter {
         const button = event.target.closest?.('[data-input-press], [data-input-hold]');
         if (!button || button.disabled || button.hidden || button.getAttribute('aria-disabled') === 'true') return;
         if (button.closest('[data-control-surface]') && this.touchBlocked()) return;
-        if (button.dataset.inputPress) this.virtualPressed.add(button.dataset.inputPress);
+        if (button.dataset.inputPress) {
+            this.virtualPressed.add(button.dataset.inputPress);
+            this.accessibilityPressed ??= new Set();
+            this.accessibilityPressed.add(button.dataset.inputPress);
+        }
         if (button.dataset.inputHold && !button.dataset.inputPress) this.toggleHold(button.dataset.inputHold, button);
     }
 

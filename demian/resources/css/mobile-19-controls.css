@@ -1,0 +1,94 @@
+/*
+ * Phase 4 / Step 19. Gameplay controls remain independent of the scrollable
+ * modal/sheet stack. These rules refine *hit targets* and *safe-area layout*;
+ * they do not change world coordinates or collision / score semantics.
+ */
+.manager-shell[data-session-state="playing"] .play-toolbar {
+    max-width: calc(100% - var(--mobile05-safe-left) - var(--mobile05-safe-right));
+    flex-wrap: wrap;
+    row-gap: 4px;
+}
+
+.manager-shell[data-session-state="playing"] .play-toolbar button,
+.manager-shell [data-mobile-actions-toggle],
+.manager-shell [data-mobile-fullscreen] {
+    min-width: 44px;
+    min-height: 44px;
+    flex-shrink: 0;
+    touch-action: manipulation;
+}
+
+.manager-shell [data-control-surface="world"] .mobile-action-tray {
+    /* Logical width remains correct inside the CSS-rotated iOS viewport. */
+    box-sizing: border-box;
+    width: min(280px,
+        calc(var(--demian-logical-width, 100vw) - var(--mobile05-safe-left) - var(--mobile05-safe-right) - 12px));
+    max-height: min(40dvh,
+        calc(var(--demian-logical-height, 100dvh) - var(--touch-button-block) - 72px));
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* When HUD text is enlarged, never let the stage measurements bleed into
+ * the safe-area edge or create horizontal layout overflow. */
+.manager-shell .game-readout__rail,
+.manager-shell .mobile-status-bar,
+.manager-shell .runner-hud {
+    box-sizing: border-box;
+    min-width: 0;
+    max-width: calc(100% - var(--mobile05-safe-left) - var(--mobile05-safe-right));
+}
+.manager-shell .runner-hud__score {
+    min-width: 0;
+    flex-wrap: wrap;
+}
+.manager-shell .runner-hud__score span {
+    min-width: 0;
+}
+.manager-shell .runner-hud__score b,
+.manager-shell .game-readout__stats :is(b, time) {
+    font-variant-numeric: tabular-nums;
+}
+
+/* Mini actions must be at least 44 CSS px even in a compact landscape
+ * where legacy .touch-action--mini used 42px. */
+.manager-shell [data-control-surface="world"] .mobile-action-tray [data-input-press] {
+    min-width: 44px;
+    min-height: 44px;
+}
+.manager-shell :is(
+    .play-toolbar button,
+    [data-mobile-actions-toggle],
+    [data-control-surface] [data-input-hold],
+    [data-control-surface] [data-input-press]
+):focus-visible {
+    outline: 3px solid #ffe097;
+    outline-offset: 2px;
+}
+
+@media (max-width: 360px) {
+    .manager-shell[data-hud-scale="extra"] .game-readout__stats .shift-hud__meter {
+        padding-inline: 4px;
+    }
+    .manager-shell .mobile-status-bar {
+        max-width: calc(100% - var(--mobile05-safe-left) - var(--mobile05-safe-right));
+    }
+    .manager-shell .runner-hud__score {
+        gap: 7px;
+        padding-inline: 7px;
+    }
+}
+
+/* Physical landscape with short height still needs a scrollable actions
+ * tray; never grow it over the toolbar or HUD. */
+@media (max-height: 480px) and (orientation: landscape) {
+    .manager-shell [data-control-surface="world"] .mobile-action-tray {
+        max-height: min(40dvh, 150px);
+    }
+}
+@media (prefers-reduced-motion: reduce) {
+    .manager-shell .mobile-action-tray,
+    .manager-shell .touch-action {
+        transition: none;
+    }
+}
