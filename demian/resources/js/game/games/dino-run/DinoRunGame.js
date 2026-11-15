@@ -70,9 +70,11 @@ export default class DinoRunGame extends BaseGame {
         this.refreshRoster();
         this.hud = assignUiLayer(document.createElement('section'), UI_LAYER.LOCAL_BASE);
         this.hud.className = 'runner-hud'; this.hud.dir = 'rtl';
-        this.hud.innerHTML = '<div class="runner-hud__title"><small>DEMIAN / CAFÉ RUN</small><strong>DINO RUN</strong></div><div class="runner-hud__score"><span><small>امتیاز</small><b data-run-score>۰۰۰۰۰</b></span><span><small>رکورد دستگاه</small><b data-run-best>۰۰۰۰۰</b></span></div><button type="button" data-shell-action="leaderboard" aria-label="نمایش لیدربورد">♛</button>';
+        this.hud.innerHTML = '<div class="runner-hud__title"><small>DEMIAN / CAFÉ RUN</small><strong>DINO RUN</strong></div><div class="runner-hud__score"><span><small>امتیاز</small><b data-run-score>۰۰۰۰۰</b></span><span><small>رکورد دستگاه</small><b data-run-best>۰۰۰۰۰</b></span><div class="runner-hud__session" aria-label="آمار جاری"><span>زمان: <b data-run-time>۰</b> ثانیه</span><span>موانع: <b data-run-passed>۰</b></span></div></div><button type="button" data-shell-action="leaderboard" aria-label="نمایش لیدربورد">♛</button>';
         this.threat = document.createElement('div');
         this.threat.className = 'runner-threat';
+        this.threat.setAttribute('role', 'status');
+        this.threat.setAttribute('aria-live', 'polite');
         this.threat.hidden = true;
         this.hud.append(this.threat);
         context.root.querySelector('[data-game-hud-host]')?.append(this.hud);
@@ -103,6 +105,8 @@ export default class DinoRunGame extends BaseGame {
         context.root.querySelector('[data-game-hud-host]')?.append(this.ready, this.lessonPanel);
         this.hydrateAttackers(context);
         this.scoreNode = this.hud.querySelector('[data-run-score]'); this.bestNode = this.hud.querySelector('[data-run-best]');
+        this.timeNode = this.hud.querySelector('[data-run-time]');
+        this.passedNode = this.hud.querySelector('[data-run-passed]');
         this.resize();
     }
     showLesson(step, missed = false) {
@@ -212,6 +216,8 @@ export default class DinoRunGame extends BaseGame {
         const score = this.lessonStep ? 0 : this.model.score;
         this.scoreNode.textContent = scoreDigits.format(score);
         this.bestNode.textContent = scoreDigits.format(Math.max(this.best, score));
+        if (this.timeNode) this.timeNode.textContent = statDigits.format(Math.floor(this.model.time));
+        if (this.passedNode) this.passedNode.textContent = statDigits.format(this.lessonStep ? 0 : this.model.passed);
         this.ready.hidden = this.starting || Boolean(this.lessonStep) || this.model.status !== 'ready';
         const model = this.model;
         const obstacle = model.status === 'running' && (!this.lessonStep || this.lessonActive)
@@ -229,6 +235,7 @@ export default class DinoRunGame extends BaseGame {
         if (this.finished) return;
         this.finished = true;
         const previousBest = this.best; this.best = Math.max(this.best, this.model.score); saveBest(this.best);
+        this.updateHud();
         this.context.app.completeGame({ title: this.model.score > previousBest ? 'رکورد تازه!' : 'یک بار دیگر؟',
             subtitle: collisionGuide(this.model), score: this.model.score, won: false,
             ranking: this.context.services?.leaderboards?.finish(this.run, this.model, this.replay, this.avatar.slug),
