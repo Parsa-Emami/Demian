@@ -142,3 +142,45 @@ for (const difficulty of Object.keys(SHIFT_RULES)) {
         });
     }
 }
+
+test('ending After Hours is terminal: late input, panel changes and repeated interactions do not rewrite rewards', (t) => {
+    const model = setup(t, 'hard', 1);
+    model.start();
+    place(model, SHIFT_PANELS[0]);
+    assert.equal(model.switchPower('counter'), true);
+    for (const card of model.cards) {
+        place(model, card);
+        model.interact();
+    }
+    place(model, SHIFT_EXIT);
+    model.interact();
+    assert.equal(model.status, 'escaped');
+    const result = model.result();
+    assert.equal(result.won, true);
+    assert.equal(result.cards, 2);
+    assert.equal(result.securedRelic, false);
+    assert.ok(result.score >= 1000);
+    assert.equal(model.switchPower('exit'), false);
+    assert.equal(model.interact(), null);
+    model.advance(30, { x: 1, z: 1, run: true, interact: true });
+    assert.deepEqual(model.result(), result);
+});
+
+test('loss is terminal: expiry cannot be turned into a winning escape or positive prize', (t) => {
+    const model = setup(t, 'standard', 2);
+    model.start();
+    place(model, model.cards[0]);
+    model.interact();
+    model.elapsed = model.rules.duration - 0.005;
+    model.advance(TICK, { x: 1, run: true });
+    const result = model.result();
+    assert.equal(result.reason, 'timeout');
+    assert.equal(result.won, false);
+    assert.equal(result.cards, 1);
+    assert.equal(result.securedRelic, false);
+    assert.equal(result.score, 100);
+    place(model, model.cards[1]);
+    assert.equal(model.interact(), null);
+    model.advance(TICK);
+    assert.deepEqual(model.result(), result);
+});
