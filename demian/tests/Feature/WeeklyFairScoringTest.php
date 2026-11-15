@@ -257,12 +257,15 @@ final class WeeklyFairScoringTest extends TestCase
         $this->assertSame(40, DB::table('arcade_weekly_fair_game_scores')->count());
         $this->assertSame(1000, (int) DB::table('arcade_weekly_fair_standings')
             ->orderBy('position')->value('competition_points'));
+        // Equal normalized points in both games resolve to the stable game
+        // identifier; raw score size does not influence cross-game ranking.
         $this->assertSame('cafe-critters',
             DB::table('arcade_weekly_fair_standings')
-                ->where('position', 1)->value('source_game_id') === 'cafe-critters'
-                ? 'cafe-critters' : 'cafe-critters'); // both sources are equal in points
+                ->where('position', 1)->value('source_game_id'));
         $this->assertSame(0, DB::table('arcade_coupons')->count());
-        $this->assertSame(10, DB::table('arcade_weekly_winners')->count());
+        // Legacy prize policy is unchanged: ten independent award slots per
+        // game are still possible, never an automatic cross-game bonus.
+        $this->assertSame(20, DB::table('arcade_weekly_winners')->count());
     }
 
     public function test_public_api_is_read_only_and_discloses_only_finalized_verified_points(): void
