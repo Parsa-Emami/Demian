@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import CoffeeCrashModel, { adjacent, findRuns } from '../../../resources/js/game/games/coffee-crash/CoffeeCrashModel.js';
+import CoffeeCrashGame from '../../../resources/js/game/games/coffee-crash/CoffeeCrashGame.js';
 import CoffeeCrashStore from '../../../resources/js/game/games/coffee-crash/CoffeeCrashStore.js';
 import { COLS, ROWS, LEVELS } from '../../../resources/js/game/games/coffee-crash/CoffeeCrashData.js';
 import { GAME_DEFINITIONS } from '../../../resources/js/game/registry/GameDefinitions.js';
@@ -190,4 +191,131 @@ test('every authored campaign level has a verified winning move sequence', async
         for (const pair of solution.moves) assert.equal(model.swap(...pair).accepted, true);
         assert.equal(model.status, 'won', `Level ${solution.level}`);
     }
+});
+
+test('all 12 levels generate non-matching solvable boards for a deterministic seed matrix', () => {
+    const seeds = [1, 2, 7, 15, 113, 65537, 83071, 2147483647, 4294967295];
+    for (const level of LEVELS) {
+        for (const seed of seeds) {
+            const model = new CoffeeCrashModel(level.id);
+            model.rng = seed;
+            model.generate();
+            assert.equal(model.board.length, COLS * ROWS);
+            assert.equal(findRuns(model.board).length, 0, 'Initial match on ' + level.id + '/' + seed);
+            const opening = model.findMove();
+            assert.ok(opening && adjacent(...opening), 'No first move on ' + level.id + '/' + seed);
+            assert.ok(model.board.every(tile => tile && tile.special === null
+                && Number.isInteger(tile.type) && tile.type >= 0 && tile.type < 5));
+            const duplicate = new CoffeeCrashModel(level.id);
+            duplicate.rng = seed;
+            duplicate.generate();
+            assert.deepEqual(model.snapshot(), duplicate.snapshot());
+        }
+    }
+});
+
+test('seeded campaigns cannot soft-lock, lose moves illegally or exceed bounded cascade frames', () => {
+    const seeds = [1, 2, 7, 113, 65537, 2147483647, 4294967295, 83071];
+    for (const level of LEVELS.slice(0, 4)) {
+        for (const seed of seeds) {
+            const model = new CoffeeCrashModel(level.id);
+            model.rng = seed;
+            model.generate();
+            let turns = 0;
+            while (model.status === 'playing') {
+                const start = model.snapshot();
+                const move = model.findMove();
+                assert.ok(move, 'Dead board at level ' + level.id);
+                const outcome = model.swap(...move);
+                assert.equal(outcome.accepted, true);
+                assert.equal(model.moves, start.moves - 1);
+                assert.ok(model.score >= start.score);
+                assert.ok(model.board.every(tile => tile && tile.type >= 0 && tile.type < 5));
+                assert.equal(findRuns(model.board).length, 0);
+                assert.ok(outcome.frames.length <= 132);
+                if (model.status === 'playing') assert.ok(model.findMove());
+                assert.ok(++turns <= level.moves);
+            }
+            const ended = model.snapshot();
+            assert.equal(model.swap(0, 1).accepted, false);
+            assert.equal(model.undo(), false);
+            assert.deepEqual(model.snapshot(), ended);
+        }
+    }
+});
+
+test('failed or malformed ranked startup unlocks the puzzle in safe practice mode', async () => {
+    for (const adapter of [
+        { startTurnRun: async () => { throw Error('connection reset'); } },
+        { startTurnRun: async () => ({
+            mode: 'ranked', game_id: 'coffee-crash',
+            rules_version: 'bad', seed: 7,
+            run_id: '11111111-1111-1111-1111-111111111111',
+        }) },
+        { startTurnRun: async () => ({
+            mode: 'ranked', game_id: 'coffee-crash',
+            rules_version: 'coffee-crash-replay-v1', seed: 0,
+            run_id: '11111111-1111-1111-1111-111111111111',
+        }) },
+    ]) {
+        const game = new CoffeeCrashGame();
+        let blocked = null, focused = null, redrawn = 0;
+        game.context = { services: { leaderboards: adapter },
+            app: { shell: { toast: () => { throw Error('Unverified ranked toast'); } } } };
+        game.ui = {
+            block: value => { blocked = value; },
+            focus: value => { focused = value; },
+            dialog: { open: false },
+        };
+        game.redraw = () => { redrawn++; };
+        await game.beginRound(1);
+        assert.equal(game.startingRanked, false);
+        assert.equal(blocked, false);
+        assert.equal(focused, 0);
+        assert.equal(redrawn, 1);
+        assert.equal(game.rankRun.mode, 'practice');
+        assert.equal(game.rankActions.length, 0);
+        assert.equal(game.model.level.id, 1);
+        assert.equal(findRuns(game.model.board).length, 0);
+        game.audio.dispose();
+    }
+});
+
+test('delayed old ranked reply never overrides the latest practice session', async () => {
+    let resolveOld;
+    const pending = new Promise(resolve => { resolveOld = resolve; });
+    const game = new CoffeeCrashGame();
+    game.context = { services: { leaderboards: { startTurnRun: () => pending } },
+        app: { shell: { toast: () => {} } } };
+    game.ui = { block: () => {}, focus: () => {}, dialog: { open: false } };
+    game.redraw = () => {};
+    const old = game.beginRound(1);
+    await game.beginRound(2);
+    resolveOld({
+        mode: 'ranked', game_id: 'coffee-crash',
+        rules_version: 'coffee-crash-replay-v1',
+        run_id: '11111111-1111-1111-1111-111111111111', seed: 12345,
+    });
+    await old;
+    assert.equal(game.rankRun.mode, 'practice');
+    assert.equal(game.model.level.id, 2);
+    assert.equal(game.startingRanked, false);
+    game.audio.dispose();
+});
+
+test('unknown entry/help dialog actions cannot start, close or mutate puzzle state', () => {
+    const game = new CoffeeCrashGame();
+    const calls = [];
+    game.context = { app: { exitGame: async () => { calls.push('exit'); } } };
+    game.ui = { view: 'entry', level: 1 };
+    game.closeDialog = () => { calls.push('close'); };
+    game.beginRound = async () => { calls.push('begin'); };
+    game.dialogAction('unexpected');
+    assert.deepEqual(calls, []);
+    game.ui.view = 'help';
+    game.dialogAction('skip');
+    assert.deepEqual(calls, []);
+    game.dialogAction('start');
+    assert.deepEqual(calls, ['close']);
+    game.audio.dispose();
 });

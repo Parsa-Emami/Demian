@@ -41,6 +41,7 @@
         "test:after-hours-step25:browser": "node tools/check_phase5_step25_after_hours.mjs",
         "test:cafe-rush-step26:browser": "node tools/check_phase5_step26_cafe_rush.mjs",
         "test:cafe-critters-step27:browser": "node tools/check_phase5_step27_cafe_critters.mjs",
+        "test:coffee-crash-step28:browser": "node tools/check_phase5_step28_coffee_crash.mjs",
         "import:cafe:fbx": "python3 tools/import_fbx_cafe.py sources/demian-cafe.fbx.gz.001 && python3 tools/build_fbx_cafe_layout.py && node tools/bake_fbx_cafe.mjs && python3 tools/fbx/finish_bake.py",
         "test:cafe:browser": "node tools/check_fbx_cafe.mjs",
         "validate:cafe:fbx": "node --test tests/js/fbx/FbxCafe.test.js",
