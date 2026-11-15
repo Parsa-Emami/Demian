@@ -82,9 +82,15 @@ export default class CafeRushGame extends BaseGame {
             context, gameId: 'cafe-rush',
             onStart: async run => {
                 this.model.reset('standard', run.seed % 3);
+                // Ranked attempts must start without stale practice-mode
+                // toast timing, trays effects, HUD cadence or audio cues.
+                this.notice = INTRO;
+                this.noticeUntil = 0;
+                this.uiElapsed = 0;
+                this.cue = null;
+                this.audio.stop();
                 this.model.start();
                 if (this.ui.dialog.open) this.closeDialog();
-                this.notice = INTRO;
                 this.syncAvatars(0);
                 this.ui.update(this.model, this.notice);
             },
@@ -161,9 +167,9 @@ export default class CafeRushGame extends BaseGame {
         if (action === 'cancel') {
             this.closeDialog();
             if (view === 'entry') void this.context.app.exitGame().catch(() => undefined);
-        } else if (view === 'help') {
+        } else if (view === 'help' && action === 'confirm') {
             this.closeDialog();
-        } else {
+        } else if (view === 'entry' && (action === 'confirm' || action === 'skip-guide')) {
             const difficulty = this.ui.difficulty;
             if (action === 'skip-guide') write('guide', 'hidden');
             write('difficulty', difficulty);
