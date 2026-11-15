@@ -143,7 +143,7 @@ final class CouponDeliveryStep16Test extends TestCase
         $this->postJson($path)->assertUnauthorized();
         $this->withToken($other['token'])->postJson($path)->assertNotFound();
         $this->withToken($owner['token'])->getJson('/api/v1/arcade/player/coupons')
-            ->assertOk()->assertHeader('Cache-Control', 'private, no-store')
+            ->assertOk()->assertHeader('Cache-Control', 'no-store, private')
             ->assertJsonPath('data.0.acknowledged_at', null);
         $this->assertDatabaseCount('arcade_coupon_delivery_receipts', 0);
         $this->withToken($owner['token'])->postJson($path)->assertOk()
@@ -232,6 +232,9 @@ final class CouponDeliveryStep16Test extends TestCase
         ]);
         $this->asStaff($super)->post($path, $this->review($id, 'explained'))
             ->assertRedirect(route('cashier.coupon-support'));
+        // The fourth admin mutation belongs to a new minute so the intended
+        // 409 immutable-case conflict is tested beyond the 3/min security limit.
+        $this->travel(61)->seconds();
         $this->asStaff($super)->post($path, $this->review($id, 'rejected'))
             ->assertStatus(409);
         $this->assertSame(1, DB::table('arcade_coupon_dispute_events')
