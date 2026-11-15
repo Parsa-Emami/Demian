@@ -95,6 +95,16 @@ export default class GameApplication {
         this.disposed = false;
         this.paused = false;
         this.session = new SessionStateMachine({ eventBus: this.eventBus });
+        // A thrown simulation/update step is not a recoverable rendering
+        // error: the current ranked run must never resume with partial state.
+        this.unsubscribeRuntimeFatal = this.eventBus.on('runtime:fatal', () => {
+            if (this.disposed || this.sessionState !== SESSION_STATES.PLAYING) return;
+            this.paused = true;
+            this.transitionSession(SESSION_STATES.PAUSED, { gameId: this.activeGameId });
+            this.input.setContext('PAUSE');
+            this.shell.showPause(this.activeDefinition);
+            this.shell.toast('خطای موتور بازی؛ برای جلوگیری از ثبت امتیاز نادرست، بازی متوقف شد. دور را دوباره شروع کنید.', 'error');
+        });
         this.menuBackdropGameId = MENU_BACKDROP_GAME_ID;
 
         this.onResize = this.handleLayoutChange.bind(this);
@@ -409,6 +419,10 @@ export default class GameApplication {
 
     resumeGame() {
         if (!this.paused || this.sessionState !== 'paused') return;
+        if (this.runtime.faulted) {
+            this.shell.toast('این دور قابل ادامه نیست. بازی را دوباره شروع کنید.', 'error');
+            return;
+        }
         this.paused = false;
         this.transitionSession(SESSION_STATES.PLAYING, { gameId: this.activeGameId });
         this.input.setContext(this.activeDefinition?.inputContext ?? 'MENU');
@@ -505,6 +519,7 @@ export default class GameApplication {
         this.resizeObserver?.disconnect();
         if (this.layoutFrame !== null) window.cancelAnimationFrame(this.layoutFrame);
         this.unsubscribeSettings?.();
+        this.unsubscribeRuntimeFatal?.();
         this.deviceQa?.dispose();
         this.runtime.dispose();
 
