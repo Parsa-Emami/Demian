@@ -168,7 +168,10 @@ try {
                 'Game time must freeze during pause');
             await page.evaluate(() => window.demianGameApplication.resumeGame());
             await wait(page, () => window.demianGameApplication.sessionState === 'playing', 10000);
-            await wait(page, () => window.demianGameApplication.activeGame.model.time > frozen, 10000);
+            await page.waitForFunction(
+                elapsed => window.demianGameApplication.activeGame.model.time > elapsed,
+                frozen, { timeout: 10000 },
+            );
             await wait(page, () => window.demianGameApplication.activeGame.model.y === 0, 10000);
             await page.evaluate((playerX) => {
                 const g = window.demianGameApplication.activeGame;
