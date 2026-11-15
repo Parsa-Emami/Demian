@@ -112,8 +112,8 @@ if [[ "$target" == production ]]; then
     # A hosted cron schedule is a hard production gate. Scheduling itself
     # remains an owner-controlled cPanel operation, never installed by CI.
     command -v crontab >/dev/null || { echo "cPanel Cron Jobs unavailable" >&2; exit 1; }
-    if ! crontab -l 2>/dev/null | grep -F 'artisan schedule:run' >/dev/null; then
-        echo "Production Laravel scheduler cron is missing" >&2; exit 1
+    if ! crontab -l 2>/dev/null | grep -F "$root/current" | grep -F 'artisan schedule:run' >/dev/null; then
+        echo "Production Laravel scheduler cron for this release root is missing" >&2; exit 1
     fi
 fi
 (
