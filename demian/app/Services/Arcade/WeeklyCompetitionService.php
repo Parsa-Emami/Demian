@@ -121,6 +121,13 @@ final class WeeklyCompetitionService
     {
         $now = $this->utc($at);
         return DB::transaction(function () use ($now): array {
+            // Close the previous period when it exists, even if settlement is
+            // disabled. Never create a phantom empty historic week.
+            $previous = $this->window($now->subWeek());
+            if (DB::table('arcade_weekly_periods')
+                ->where('period_key', $previous['period_key'])->exists()) {
+                $this->ensure($now->subWeek(), $now);
+            }
             $this->ensure($now, $now);
             $this->ensure($now->addWeek(), $now);
             return [$this->describe($now), $this->describe($now->addWeek(), $now)];
@@ -172,6 +179,8 @@ final class WeeklyCompetitionService
             DB::table('arcade_weekly_rule_locks')->insert([
                 'period_key' => $window['period_key'], 'game_id' => $gameId,
                 'rules_version' => $rulesVersion,
+                'ranked_enabled' => app(RankedGameCatalog::class)->supportsRanked($gameId),
+                'prize_eligible' => app(RankedGameCatalog::class)->supportsPrizes($gameId),
                 'locked_at' => $now->toDateTimeString(),
             ]);
         }

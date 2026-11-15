@@ -112,8 +112,18 @@ final class WeeklySettlementService
             $byPlayer = [];
             $versions = [];
             $rankable = new RankedGameCatalog();
+            $seasonRules = DB::table('arcade_weekly_rule_locks')
+                ->where('period_key', $key)->get()->keyBy('game_id');
             foreach ($rows as $row) {
-                if (! $rankable->supportsRanked($row->game_id)
+                // A game ranked when its season started retains its immutable
+                // technical snapshot if rollout flags change later. Financial
+                // eligibility still requires the currently approved prize gate.
+                $ruleLock = $seasonRules->get($row->game_id);
+                $wasRanked = $ruleLock
+                    ? ($ruleLock->rules_version === $row->rules_version
+                        && (bool) $ruleLock->ranked_enabled)
+                    : $rankable->supportsRanked($row->game_id);
+                if (! $wasRanked
                     || ! $row->live_player_id || ! $row->verified_run_id
                     || $row->run_status !== 'verified' || ! $row->replay_hash
                     || ! $row->completed_at || $row->player_id !== $row->run_player_id
@@ -157,7 +167,10 @@ final class WeeklySettlementService
                         // coupons. Preserve its read-only ranking snapshot regardless,
                         // but prevent provisional game modes from receiving awards.
                         $prizeRankings = array_filter($rankings,
-                            fn (array $entries, string $gameId): bool => $rankable->supportsPrizes($gameId),
+                            fn (array $entries, string $gameId): bool =>
+                                (! $seasonRules->has($gameId)
+                                    || (bool) $seasonRules->get($gameId)->prize_eligible)
+                                && $rankable->supportsPrizes($gameId),
                             ARRAY_FILTER_USE_BOTH);
                         $winners = $this->selector->select($prizeRankings, $historical);
 

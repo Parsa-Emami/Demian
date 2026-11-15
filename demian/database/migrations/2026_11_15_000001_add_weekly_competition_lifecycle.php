@@ -26,6 +26,8 @@ return new class extends Migration
             $table->string('period_key', 24);
             $table->string('game_id', 40);
             $table->string('rules_version', 40);
+            $table->boolean('ranked_enabled')->default(true);
+            $table->boolean('prize_eligible')->default(false);
             $table->timestamp('locked_at');
             $table->primary(['period_key', 'game_id'], 'weekly_game_rule_lock');
             $table->foreign('period_key')->references('period_key')
