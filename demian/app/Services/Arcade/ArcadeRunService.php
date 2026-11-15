@@ -27,13 +27,19 @@ final class ArcadeRunService
             }
 
             app(ArcadeAntiCheat::class)->assertStartAllowed($player->id);
-            app(WeeklySettlementService::class)->assertOpenForCompletion(now());
+            $started = now();
+            $seasonDeadline = app(WeeklyCompetitionService::class)
+                ->authorizeNewRun($started, $data['game_id'], $rules['version']);
+            $requestedExpiry = $started->copy()->addSeconds(
+                $rules['maxTicks'] / $rules['tickRate']
+                + (int) config('demian-arcade.completion_grace_seconds'));
+            $expiry = $requestedExpiry->lte($seasonDeadline)
+                ? $requestedExpiry : $seasonDeadline;
 
             $run = ArcadeRun::query()->create(['player_id' => $player->id, 'request_id' => $data['request_id'],
                 'game_id' => $data['game_id'], 'rules_version' => $rules['version'], 'character_slug' => $data['character_slug'],
                 'seed' => random_int(1, 4294967295), 'track_width' => $data['track_width'], 'status' => 'started',
-                'started_at' => now(), 'expires_at' => now()->addSeconds($rules['maxTicks'] / $rules['tickRate']
-                    + config('demian-arcade.completion_grace_seconds'))]);
+                'started_at' => $started, 'expires_at' => $expiry]);
             app(ArcadeAntiCheat::class)->started($run, request()->ip());
             return $run;
         }, 3);

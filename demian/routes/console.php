@@ -16,6 +16,12 @@ Artisan::command('inspire', function () {
 \Illuminate\Support\Facades\Schedule::command('arcade:prune')->daily()->withoutOverlapping();
 
 
+// Preparing upcoming periods does not seal results or issue vouchers.
+\Illuminate\Support\Facades\Schedule::command('arcade:prepare-weeks --apply')
+    ->dailyAt('02:00')->timezone('Asia/Tehran')
+    ->withoutOverlapping(30)->onOneServer()
+    ->when(fn (): bool => (bool) config('demian-arcade.weekly_management_enabled', false));
+
 // Snapshot-only: no vouchers are issued. Enable only after reviewing policy,
 // verifying a persistent shared lock cache and completing production migration.
 \Illuminate\Support\Facades\Schedule::command('arcade:seal-weeks --apply')
