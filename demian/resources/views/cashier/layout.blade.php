@@ -15,7 +15,8 @@
     .muted{color:#bfc8c7;font-size:.94rem}.panel{background:#1b2729;border:1px solid #374345;border-radius:18px;padding:26px;margin:16px 0;box-shadow:0 16px 40px #080f1040}
     h1{font-size:1.7rem;margin:0 0 14px}h2{font-size:1.2rem;margin:0 0 14px}
     label{display:block;font-weight:700;margin:16px 0 6px}input{display:block;width:100%;border:1px solid #5b686a;border-radius:11px;background:#0e191b;color:#fff;padding:15px;font:inherit;direction:ltr;text-align:left}
-    input:focus-visible,button:focus-visible,a:focus-visible{outline:3px solid #e9ba72;outline-offset:3px}
+    textarea,select{display:block;width:100%;border:1px solid #5b686a;border-radius:11px;background:#0e191b;color:#fff;padding:15px;font:inherit}textarea{direction:ltr;text-align:left;resize:vertical}
+    input:focus-visible,textarea:focus-visible,select:focus-visible,button:focus-visible,a:focus-visible{outline:3px solid #e9ba72;outline-offset:3px}
     button,.button{display:inline-flex;align-items:center;justify-content:center;min-height:46px;border:0;border-radius:10px;padding:12px 20px;background:#e7bb7a;color:#19201e;font-weight:800;font-size:1rem;cursor:pointer;text-decoration:none}
     button.secondary,.button.secondary{background:#304347;color:#f5f4ed}.row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
     .alert{background:#442424;border:1px solid #9e5e5e;border-radius:10px;padding:12px;margin:12px 0}

@@ -46,12 +46,37 @@ final class CouponLedgerAudit
                     ->where('id', $coupon->winner_id)->first();
                 $period = $winner ? DB::table('arcade_weekly_periods')
                     ->where('period_key', $winner->period_key)->first() : null;
+                $campaign = $coupon->campaign_id
+                    ? DB::table('arcade_reward_campaigns')->where('id', $coupon->campaign_id)->first()
+                    : null;
+                $terms = $campaign
+                    ? json_decode($campaign->terms, true) : null;
+                $inventory = $campaign
+                    ? DB::table('arcade_reward_inventory')
+                        ->where('coupon_id', $id)->first() : null;
+                $expectedRate = $terms
+                    ? ($terms['ranks'][(int) ($winner->prize_rank ?? 0)] ?? null)
+                    : ($ranks[(int) ($winner->prize_rank ?? 0)] ?? null);
+                if ($coupon->campaign_id !== null
+                    && (! $campaign || ! $terms
+                        || ! hash_equals($campaign->terms_hash, hash('sha256', $campaign->terms))
+                        || $campaign->period_key !== ($winner->period_key ?? null)
+                        || ! $inventory || $inventory->status !== 'assigned'
+                        || $inventory->code_ciphertext !== null
+                        || $inventory->code_hash !== $coupon->code_hash
+                        || $inventory->campaign_id !== $coupon->campaign_id
+                        || $coupon->policy_version !== ($terms['version'] ?? null)
+                        || $coupon->currency !== ($terms['currency'] ?? null)
+                        || (int) $coupon->min_order_minor !== (int) ($terms['min_order_minor'] ?? 0)
+                        || (int) $coupon->max_discount_minor !== (int) ($terms['max_discount_minor'] ?? 0))) {
+                    $issues[] = "Coupon #{$id} has invalid campaign inventory provenance.";
+                }
                 if ($coupon->gift_id !== null || ! $winner || ! $period
                     || $period->status !== 'sealed'
                     || $period->snapshot_hash === null
                     || ($coupon->player_id !== null && $coupon->player_id !== $winner->player_id)
-                    || ! isset($ranks[(int) ($winner->prize_rank ?? 0)])
-                    || (int) $coupon->discount_percent !== $ranks[(int) ($winner->prize_rank ?? 0)]) {
+                    || $expectedRate === null
+                    || (int) $coupon->discount_percent !== (int) $expectedRate) {
                     $issues[] = "Coupon #{$id} has an invalid archived winner or policy.";
                 }
             } else {
@@ -118,6 +143,34 @@ final class CouponLedgerAudit
             if (! DB::table('arcade_coupon_events')->where('coupon_id', $id)
                 ->where('event_type', 'issued')->exists()) {
                 $issues[] = "Coupon #{$id} has no issuance audit event.";
+            }
+        }
+
+        foreach (DB::table('arcade_reward_inventory')->get() as $item) {
+            if ($item->status === 'available'
+                && ($item->coupon_id !== null || $item->code_ciphertext === null)) {
+                $issues[] = "Inventory #{$item->id} is not safely available.";
+            } elseif ($item->status === 'available') {
+                try {
+                    $plaintext = Crypt::decryptString($item->code_ciphertext);
+                    if (! preg_match('/^DMC-[A-F0-9]{32}$/D', $plaintext)
+                        || ! hash_equals($item->code_hash, hash('sha256', $plaintext))) {
+                        $issues[] = "Inventory #{$item->id} checksum mismatch.";
+                    }
+                } catch (\Throwable) {
+                    $issues[] = "Inventory #{$item->id} cannot be decrypted.";
+                }
+            } elseif ($item->status === 'assigned'
+                && ($item->coupon_id === null || $item->code_ciphertext !== null
+                    || ! DB::table('arcade_coupons')->where('id', $item->coupon_id)
+                        ->where('campaign_id', $item->campaign_id)
+                        ->where('code_hash', $item->code_hash)->exists())) {
+                $issues[] = "Inventory #{$item->id} has an invalid assignment.";
+            } elseif ($item->status === 'void'
+                && ($item->coupon_id !== null || $item->code_ciphertext !== null)) {
+                $issues[] = "Inventory #{$item->id} retains voided code material.";
+            } elseif (! in_array($item->status, ['available', 'assigned', 'void'], true)) {
+                $issues[] = "Inventory #{$item->id} has unknown state.";
             }
         }
 

@@ -58,12 +58,22 @@ final class CouponIssuanceService
             if ($winners->count() !== (int) $period->winner_count) {
                 throw new RuntimeException('Seal winner count mismatch; issuance aborted.');
             }
+            $campaignService = app(RewardCampaignService::class);
+            $campaign = null;
+            if (config('demian-coupons.campaigns_enabled') === true) {
+                $issued = DB::table('arcade_coupons')
+                    ->whereIn('winner_id', $winners->pluck('id')->all())->count();
+                $campaign = $campaignService->lockedForIssuance(
+                    $periodKey, $winners->count(), $winners->count() - $issued);
+            }
+            $effectiveTerms = $campaign
+                ? json_decode($campaign->terms, true, 512, JSON_THROW_ON_ERROR) : $terms;
             $created = 0;
             $existing = 0;
             foreach ($winners as $winner) {
                 if (! $winner->player_id || ! $winner->run_id
                     || ! is_int((int) $winner->prize_rank)
-                    || ! isset($terms['ranks'][(int) $winner->prize_rank])
+                    || ! isset($effectiveTerms['ranks'][(int) $winner->prize_rank])
                     || ! DB::table('arcade_players')->where('id', $winner->player_id)->exists()) {
                     throw new RuntimeException('Award is incomplete or its player was erased.');
                 }
@@ -82,22 +92,32 @@ final class CouponIssuanceService
                     $existing++;
                     continue;
                 }
-                $code = 'DMC-'.strtoupper(bin2hex(random_bytes(16))); // 128-bit CSPRNG.
+                $item = $campaign ? $campaignService->claim($campaign) : null;
+                $code = $item ? Crypt::decryptString($item->code_ciphertext)
+                    : 'DMC-'.strtoupper(bin2hex(random_bytes(16)));
                 $now = CarbonImmutable::now('UTC');
                 $couponId = DB::table('arcade_coupons')->insertGetId([
                     'winner_id' => $winner->id, 'player_id' => $winner->player_id,
-                    'code_hash' => hash('sha256', $code),
-                    'code_ciphertext' => Crypt::encryptString($code),
-                    'policy_version' => $terms['version'],
-                    'discount_percent' => $terms['ranks'][(int) $winner->prize_rank],
-                    'currency' => $terms['currency'], 'min_order_minor' => $terms['min_order_minor'],
-                    'max_discount_minor' => $terms['max_discount_minor'], 'status' => 'issued',
-                    'issued_at' => $now->toDateTimeString(),
-                    'expires_at' => $now->addDays($terms['valid_days'])->toDateTimeString(),
+                    'code_hash' => $item ? $item->code_hash : hash('sha256', $code),
+                    'code_ciphertext' => $item ? $item->code_ciphertext
+                        : Crypt::encryptString($code),
+                    'campaign_id' => $campaign?->id,
+                    'policy_version' => $effectiveTerms['version'],
+                    'discount_percent' => $effectiveTerms['ranks'][(int) $winner->prize_rank],
+                    'currency' => $effectiveTerms['currency'],
+                    'min_order_minor' => $effectiveTerms['min_order_minor'],
+                    'max_discount_minor' => $effectiveTerms['max_discount_minor'],
+                    'status' => 'issued', 'issued_at' => $now->toDateTimeString(),
+                    'expires_at' => $now->addDays($effectiveTerms['valid_days'])->toDateTimeString(),
                     'created_at' => $now->toDateTimeString(), 'updated_at' => $now->toDateTimeString(),
                 ]);
+                if ($item) {
+                    $campaignService->assign((int) $item->id, $couponId, (int) $campaign->id);
+                }
                 $this->audit($couponId, 'issued', ['winner_id' => $winner->id,
-                    'period_key' => $periodKey, 'policy_version' => $terms['version']]);
+                    'period_key' => $periodKey,
+                    'policy_version' => $effectiveTerms['version'],
+                    'campaign_id' => $campaign?->id]);
                 $created++;
             }
 

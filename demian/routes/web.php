@@ -9,6 +9,7 @@ use App\Http\Middleware\RequireCafePermission;
 use App\Http\Controllers\Cafe\CafeAdminController;
 use App\Http\Controllers\Cafe\CafeGiftController;
 use App\Http\Controllers\Cafe\CafeAntiCheatController;
+use App\Http\Controllers\Cafe\CafeRewardCampaignController;
 
 // Authorized cafe staff use Laravel's CSRF-protected web session middleware,
 // including when the API host is in API-only mode. Never open character studio.
@@ -44,6 +45,30 @@ Route::prefix('cashier')->name('cashier.')->group(function (): void {
         Route::post('/admin/gifts/issue', [CafeGiftController::class, 'issue'])
             ->middleware([RequireCafePermission::class.':coupon.revoke',
                 'throttle:arcade-cashier-admin'])->name('gifts.issue');
+        Route::get('/admin/campaigns', [CafeRewardCampaignController::class, 'index'])
+            ->middleware(RequireCafePermission::class.':coupon.revoke')->name('campaigns');
+        Route::post('/admin/campaigns', [CafeRewardCampaignController::class, 'create'])
+            ->middleware(['throttle:arcade-cashier-admin',
+                RequireCafePermission::class.':coupon.revoke'])->name('campaigns.create');
+        Route::post('/admin/campaigns/{campaignId}/revise',
+            [CafeRewardCampaignController::class, 'revise'])
+            ->whereNumber('campaignId')
+            ->middleware(['throttle:arcade-cashier-admin',
+                RequireCafePermission::class.':coupon.revoke'])->name('campaigns.revise');
+        Route::post('/admin/campaigns/{campaignId}/import',
+            [CafeRewardCampaignController::class, 'import'])
+            ->whereNumber('campaignId')
+            ->middleware(['throttle:arcade-cashier-admin',
+                RequireCafePermission::class.':coupon.revoke'])->name('campaigns.import');
+        Route::post('/admin/campaigns/{campaignId}/{action}',
+            [CafeRewardCampaignController::class, 'transition'])
+            ->whereNumber('campaignId')->whereIn('action', ['activate', 'pause', 'close'])
+            ->middleware(['throttle:arcade-cashier-admin',
+                RequireCafePermission::class.':coupon.revoke'])->name('campaigns.transition');
+        Route::post('/admin/campaigns/inventory/void',
+            [CafeRewardCampaignController::class, 'voidCode'])
+            ->middleware(['throttle:arcade-cashier-admin',
+                RequireCafePermission::class.':coupon.revoke'])->name('campaigns.void');
         // Anti-cheat reads reuse existing ledger-audit capability; privileged
         // decisions require super-admin fresh password and CSRF.
         Route::get('/admin/anti-cheat', [CafeAntiCheatController::class, 'index'])
