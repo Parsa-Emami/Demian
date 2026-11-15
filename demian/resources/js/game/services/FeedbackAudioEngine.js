@@ -61,8 +61,10 @@ export default class FeedbackAudioEngine {
                 this.musicBus.connect(this.master);
                 this.master.connect(this.context.destination);
             }
-            const result = this.context.resume?.();
-            Promise.resolve(result).then(() => this.syncMusic()).catch(() => undefined);
+            if (this.context.state !== 'running') {
+                const result = this.context.resume?.();
+                Promise.resolve(result).then(() => this.syncMusic()).catch(() => undefined);
+            }
             this.syncMusic();
             return true;
         } catch {
