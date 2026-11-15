@@ -22,6 +22,13 @@ export default class GameRuntime {
         observeRender = null,
         observeWork = null,
     }) {
+
+        if (!Number.isFinite(fixedStep) || fixedStep <= 0
+            || !Number.isFinite(maxFrameDelta) || maxFrameDelta <= 0
+            || !Number.isSafeInteger(maxSubSteps) || maxSubSteps < 1
+            || !Number.isFinite(idlePollIntervalMs) || idlePollIntervalMs <= 0) {
+            throw new RangeError('Invalid fixed-step runtime timing policy.');
+        }
         this.inputRouter = inputRouter;
         this.eventBus = eventBus;
         this.fixedStep = fixedStep;
@@ -39,6 +46,13 @@ export default class GameRuntime {
         this.accumulator = 0;
         this.lastTimestamp = null;
         this.frameRequest = null;
+        // Generation protects against canceled RAF callbacks, re-entrant
+        // transitions and old-game work arriving after asynchronous switches.
+        this.frameToken = 0;
+        this.lifecycleVersion = 0;
+        this.inTick = false;
+        this.disposed = false;
+        this.faulted = false;
         this.visibilityTarget = visibilityTarget;
         this.canRender = canRender;
         this.observeFrame = observeFrame;
@@ -57,12 +71,17 @@ export default class GameRuntime {
     }
 
     setGame(game) {
+        if (this.disposed) return;
+        this.lifecycleVersion++;
+        this.cancelScheduledFrame();
+        this.faulted = false;
         this.currentGame = game;
         this.accumulator = 0;
         this.lastTimestamp = null;
         this.errorCounts.clear();
         this.lastErrorReport.clear();
         this.resetRenderTiming();
+        this.scheduleFrame();
     }
 
     setRenderRate(rate) {
@@ -78,9 +97,24 @@ export default class GameRuntime {
         this.firstRender = true;
     }
 
+    cancelScheduledFrame() {
+        // Invalidate the closure even if a browser invokes it after cancel.
+        this.frameToken++;
+        if (this.frameRequest !== null) {
+            const id = this.frameRequest;
+            this.frameRequest = null;
+            this.cancelFrame(id);
+        }
+    }
+
     scheduleFrame() {
-        if (this.running && !this.paused && !this.visibilityTarget?.hidden && this.frameRequest === null) {
-            this.frameRequest = this.requestFrame(this.tick);
+        if (!this.disposed && !this.faulted && this.running && !this.paused
+            && !this.visibilityTarget?.hidden && this.frameRequest === null) {
+            const token = ++this.frameToken;
+            this.frameRequest = this.requestFrame((timestamp) => {
+                if (token !== this.frameToken || this.frameRequest === null) return;
+                this.tick(timestamp);
+            });
         }
     }
 
@@ -107,7 +141,7 @@ export default class GameRuntime {
     }
 
     start() {
-        if (this.running) {
+        if (this.disposed || this.faulted || this.running) {
             return;
         }
 
@@ -117,71 +151,118 @@ export default class GameRuntime {
     }
 
     tick(timestamp) {
+        // A nested RAF or canceled callback cannot run two updates at once.
+        if (this.inTick) return;
+        this.inTick = true;
         this.frameRequest = null;
-        if (!this.running || this.visibilityTarget?.hidden) return;
-        if (this.paused) {
-            // A direct tick (legacy integrations/tests) may still poll gamepad
-            // navigation. Normal paused scheduling uses the slower idle timer.
-            this.inputRouter.poll?.();
-            return;
-        }
 
-        const workStartedAt = this.observeWork ? (globalThis.performance?.now?.() ?? Date.now()) : null;
         try {
-            const elapsed = this.lastTimestamp === null ? 0 : Math.max(0, (timestamp - this.lastTimestamp) / 1000);
-            this.lastTimestamp = timestamp;
-            this.inputRouter.poll?.();
-            if (!this.canRender()) {
-                this.lastTimestamp = null;
-                this.resetRenderTiming();
+            if (!this.running || this.visibilityTarget?.hidden || this.disposed
+                || this.faulted) return;
+            if (this.paused) {
+                // Legacy direct tick calls still allow pause-menu navigation.
+                try { this.inputRouter.poll?.(); }
+                catch (error) { this.reportError('input', error, timestamp); }
                 return;
             }
-            if (!this.paused) {
-                this.observeFrame?.(elapsed);
-                this.step(Math.min(elapsed, this.maxFrameDelta), timestamp);
-            }
-        } catch (error) {
-            this.reportError('frame', error, timestamp);
-        } finally {
-            if (workStartedAt !== null && !this.paused && !this.visibilityTarget?.hidden) {
-                const spentMs = Math.max(0, (globalThis.performance?.now?.() ?? Date.now()) - workStartedAt);
-                try { this.observeWork?.(spentMs); } catch {
-                    // Diagnostic collection must never interrupt gameplay.
+
+            const workStartedAt = this.observeWork
+                ? (globalThis.performance?.now?.() ?? Date.now()) : null;
+            try {
+                // A broken or regressing browser timestamp must not poison the
+                // simulation accumulator with NaN or a negative clock step.
+                const valid = Number.isFinite(timestamp);
+                const elapsed = valid && this.lastTimestamp !== null
+                    ? Math.max(0, (timestamp - this.lastTimestamp) / 1000) : 0;
+                this.lastTimestamp = valid ? timestamp : null;
+                try { this.inputRouter.poll?.(); }
+                catch (error) { this.reportError('input', error, timestamp); }
+
+                if (!this.canRender()) {
+                    this.lastTimestamp = null;
+                    this.accumulator = 0;
+                    this.resetRenderTiming();
+                    return;
+                }
+
+                try { this.observeFrame?.(elapsed); }
+                catch (error) { this.reportError('observer', error, timestamp); }
+                if (!this.paused && !this.faulted) {
+                    this.step(Math.min(elapsed, this.maxFrameDelta), timestamp);
+                }
+            } catch (error) {
+                this.reportError('frame', error, timestamp);
+            } finally {
+                if (workStartedAt !== null && !this.paused && !this.visibilityTarget?.hidden) {
+                    const spentMs = Math.max(0,
+                        (globalThis.performance?.now?.() ?? Date.now()) - workStartedAt);
+                    try { this.observeWork?.(spentMs); } catch {
+                        // Optional QA observers cannot interrupt gameplay.
+                    }
                 }
             }
-            // A single render error must never permanently kill the arcade loop.
+        } finally {
+            this.inTick = false;
             this.scheduleFrame();
         }
     }
 
     step(frameDelta, timestamp = globalThis.performance?.now?.() ?? Date.now()) {
         const game = this.currentGame;
+        if (!game || this.paused || this.faulted || this.disposed) return;
 
-        if (!game) {
-            return;
-        }
-
-        this.accumulator += Math.min(Math.max(frameDelta, 0), this.maxFrameDelta);
+        const version = this.lifecycleVersion;
+        const delta = Number.isFinite(frameDelta)
+            ? Math.min(Math.max(frameDelta, 0), this.maxFrameDelta) : 0;
+        const epsilon = this.fixedStep * 1e-7;
+        this.accumulator += delta;
         let steps = 0;
 
-        while (this.accumulator >= this.fixedStep && steps < this.maxSubSteps) {
-            const input = this.inputRouter.snapshot({ consumePresses: steps === 0 });
-            game.fixedUpdate(this.fixedStep, input);
-            this.accumulator -= this.fixedStep;
-            steps += 1;
+        while (this.accumulator + epsilon >= this.fixedStep && steps < this.maxSubSteps) {
+            // Debit before game callbacks: a completed round may pause/reset
+            // the accumulator from inside fixedUpdate().
+            this.accumulator = Math.max(0, this.accumulator - this.fixedStep);
+            let input;
+            try {
+                input = this.inputRouter.snapshot({ consumePresses: steps === 0 });
+                game.fixedUpdate(this.fixedStep, input);
+            } catch (error) {
+                this.failSimulation('simulation', error, timestamp);
+                return;
+            }
+            steps++;
+            // Finishing a run, switching games, pausing, or stopping during
+            // fixedUpdate must not execute another tick or render stale state.
+            if (version !== this.lifecycleVersion || this.currentGame !== game
+                || this.paused || this.faulted) return;
         }
 
-        if (steps === this.maxSubSteps && this.accumulator >= this.fixedStep) {
-            this.accumulator %= this.fixedStep;
-            this.eventBus?.emit('runtime:frame-drop', { frameDelta, steps });
+        if (steps === this.maxSubSteps
+            && this.accumulator + epsilon >= this.fixedStep) {
+            const skipped = Math.floor((this.accumulator + epsilon) / this.fixedStep);
+            const droppedSeconds = skipped * this.fixedStep;
+            this.accumulator = Math.max(0, this.accumulator - droppedSeconds);
+            this.eventBus?.emit('runtime:frame-drop', {
+                frameDelta: delta, steps, droppedSeconds,
+            });
         }
 
-        const alpha = this.accumulator / this.fixedStep;
-        game.update(frameDelta);
-        this.renderDelta += frameDelta;
-        this.renderElapsed += frameDelta;
-        if (!this.firstRender && this.renderElapsed + .0005 < this.renderInterval) return;
-        this.renderElapsed = this.renderInterval ? Math.max(0, this.renderElapsed - this.renderInterval) % this.renderInterval : 0;
+        const alpha = Math.min(1, Math.max(0, this.accumulator / this.fixedStep));
+        try { game.update(delta); }
+        catch (error) {
+            this.failSimulation('update', error, timestamp);
+            return;
+        }
+        if (version !== this.lifecycleVersion || this.currentGame !== game
+            || this.paused || this.faulted) return;
+
+        this.renderDelta += delta;
+        this.renderElapsed += delta;
+        if (!this.firstRender
+            && this.renderElapsed + .0005 < this.renderInterval) return;
+        this.renderElapsed = this.renderInterval
+            ? Math.max(0, this.renderElapsed - this.renderInterval) % this.renderInterval
+            : 0;
         const renderDelta = this.renderDelta;
         this.renderDelta = 0;
         this.firstRender = false;
@@ -190,10 +271,23 @@ export default class GameRuntime {
             game.render(alpha, renderDelta);
             this.errorCounts.delete('render');
             this.lastErrorReport.delete('render');
-            this.observeRender?.(globalThis.performance?.now?.() ?? timestamp);
         } catch (error) {
             this.reportError('render', error, timestamp);
+            return;
         }
+        try { this.observeRender?.(globalThis.performance?.now?.() ?? timestamp); }
+        catch (error) { this.reportError('observer', error, timestamp); }
+    }
+
+    failSimulation(phase, error, timestamp) {
+        // A partially applied ranked tick cannot be safely retried. Freeze
+        // the active game rather than silently submitting an inconsistent run.
+        this.faulted = true;
+        this.reportError(phase, error, timestamp);
+        try { this.pause(); }
+        catch (pauseError) { this.reportError('pause', pauseError, timestamp); }
+        try { this.eventBus?.emit('runtime:fatal', { phase }); }
+        catch (notifyError) { this.reportError('observer', notifyError, timestamp); }
     }
 
     reportError(phase, error, timestamp = Date.now()) {
@@ -219,12 +313,10 @@ export default class GameRuntime {
         }
 
         this.paused = true;
+        this.lifecycleVersion++;
         // A paused page must not submit empty RAF callbacks at the display
         // refresh rate. This also applies to loading transitions and results.
-        if (this.frameRequest !== null) {
-            this.cancelFrame(this.frameRequest);
-            this.frameRequest = null;
-        }
+        this.cancelScheduledFrame();
         this.lastTimestamp = null;
         this.accumulator = 0;
         this.resetRenderTiming();
@@ -236,11 +328,12 @@ export default class GameRuntime {
     }
 
     resume({ notifyGame = true } = {}) {
-        if (!this.paused) {
+        if (!this.paused || this.faulted || this.disposed) {
             return;
         }
 
         this.paused = false;
+        this.lifecycleVersion++;
         this.cancelPausedInput();
         this.lastTimestamp = null;
         this.accumulator = 0;
@@ -253,15 +346,14 @@ export default class GameRuntime {
     }
 
     onVisibilityChange() {
+        if (this.disposed) return;
+        this.lifecycleVersion++;
         this.lastTimestamp = null;
         this.accumulator = 0;
         this.resetRenderTiming();
         if (this.visibilityTarget?.hidden) {
             this.cancelPausedInput();
-            if (this.frameRequest !== null) {
-                this.cancelFrame(this.frameRequest);
-                this.frameRequest = null;
-            }
+            this.cancelScheduledFrame();
         } else {
             this.scheduleFrame();
             this.schedulePausedInput();
@@ -269,19 +361,19 @@ export default class GameRuntime {
     }
 
     stop() {
+        this.lifecycleVersion++;
         this.running = false;
         this.cancelPausedInput();
         this.lastTimestamp = null;
         this.accumulator = 0;
         this.resetRenderTiming();
 
-        if (this.frameRequest !== null) {
-            this.cancelFrame(this.frameRequest);
-            this.frameRequest = null;
-        }
+        this.cancelScheduledFrame();
     }
 
     dispose() {
+        if (this.disposed) return;
+        this.disposed = true;
         this.stop();
         this.visibilityTarget?.removeEventListener('visibilitychange', this.onVisibilityChange);
         this.currentGame = null;
