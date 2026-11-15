@@ -21,6 +21,7 @@ import OpenWorldChunkRenderer from './render/OpenWorldChunkRenderer.js';
 import OpenWorldPixelRenderer from './render/OpenWorldPixelRenderer.js';
 import AiBudgetScheduler from './entities/AiBudgetScheduler.js';
 import WorldDiscovery from './world/WorldDiscovery.js';
+import WorldFindCollection from './world/WorldFindCollection.js';
 import { worldChallengeLocked, applySavePoint } from './world/RankedWorldPolicy.js';
 import RankedRouteChallenge from '../../leaderboard/RankedRouteChallenge.js';
 import OpenWorldSaveStore from './persistence/OpenWorldSaveStore.js';
@@ -58,6 +59,7 @@ export default class OpenWorldGame extends BaseGame {
         this.pixelRenderer = null;
         this.aiBudget = new AiBudgetScheduler({ maxUpdatesPerFrame: 6 });
         this.discovery = new WorldDiscovery();
+        this.finds = new WorldFindCollection(this.manifest);
         this.saveStore = new OpenWorldSaveStore();
         this.savePoints = null;
         this.hud = null;
@@ -359,6 +361,7 @@ export default class OpenWorldGame extends BaseGame {
             currentChunkId: this.currentChunk?.id ?? null,
             currentDistrictId: this.currentDistrict?.id ?? null,
             discovery: this.discovery.export(),
+            finds: this.finds.snapshot(),
         };
     }
 
@@ -366,6 +369,7 @@ export default class OpenWorldGame extends BaseGame {
         if (this.sessionRestored) return;
         this.sessionRestored = true;
         const state = this.savePoints.restore();
+        if (state) this.finds.restore(state.finds);
         if (!state) {
             this.characterManager.setPosition(this.manifest.spawn);
             return;
@@ -504,6 +508,16 @@ export default class OpenWorldGame extends BaseGame {
         this.actionHud?.update(this.characterManager.activeEntity);
         this.updateInteraction(gameplayInput);
         this.updateStreaming();
+        if (this.context.app.sessionState === 'playing' && !this.worldChallengeLocked()) {
+            const collected = this.finds.collect(this.characterManager.position(), this.chunkManager.loaded);
+            if (collected.length) {
+                this.savePoints.save({ reason: 'exploration-find' });
+                for (const find of collected) this.context.eventBus.emit('world:find-collected', {
+                    find, total: this.finds.count(), localOnly: true,
+                });
+                this.context.app.shell.toast('یافتهٔ اکتشافی ثبت شد؛ فقط در همین دستگاه.', 'success');
+            }
+        }
         this.world.update(deltaTime);
         this.environment.update(deltaTime, this.characterManager.position());
         this.chunkManager.loaded.forEach((record) => record.handle?.update?.(deltaTime));
@@ -525,6 +539,7 @@ export default class OpenWorldGame extends BaseGame {
             district: this.currentDistrict,
             target: this.context.services.interaction.active(this.interactionActorId),
             activeChunkIds,
+            findsCount: this.finds.count(),
         });
         this.context.eventBus.emit('studio:frame', {
             state: this.characterManager.state(),
@@ -552,6 +567,7 @@ export default class OpenWorldGame extends BaseGame {
                 loadedChunks: this.chunkManager?.loaded ?? new Map(),
                 activeChunkIds,
                 discovery: this.discovery,
+                finds: this.finds,
                 deltaTime,
                 alpha,
             });
@@ -615,7 +631,9 @@ export default class OpenWorldGame extends BaseGame {
         globalThis.removeEventListener('keydown', this.onKeyboardShortcut);
         this.interactionPrompt?.dispose();
         this.hud?.dispose();
-        this.chunkManager?.dispose();
+        await this.chunkManager?.dispose();
+        this.chunkRenderer?.dispose();
+        this.aiBudget.clear();
         this.cameraController?.dispose();
         this.pixelRenderer?.dispose();
         this.characterManager?.dispose();

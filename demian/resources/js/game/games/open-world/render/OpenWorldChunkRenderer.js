@@ -1,8 +1,11 @@
 /** Data-only chunk factory. Canvas rendering reads loaded chunk records. */
+import { generateWorldFind } from '../world/WorldFindCollection.js';
+
 export default class OpenWorldChunkRenderer {
-    constructor({ manifest, environment } = {}) {
+    constructor({ manifest, environment, navigationGrid } = {}) {
         this.manifest = manifest;
         this.environment = environment;
+        this.navigationGrid = navigationGrid;
         this.handles = new Map();
     }
 
@@ -14,6 +17,7 @@ export default class OpenWorldChunkRenderer {
             id: definition.id,
             definition,
             tier,
+            find: generateWorldFind(definition, this.manifest, this.navigationGrid),
             setTier(value) { this.tier = value; },
             dispose: () => this.handles.delete(definition.id),
         };

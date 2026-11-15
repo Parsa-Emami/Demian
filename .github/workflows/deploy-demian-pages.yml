@@ -60,6 +60,8 @@ jobs:
         run: timeout --signal=TERM --kill-after=10s 120s npm run test:feedback:browser
       - name: Phase 5 Step 23 Dino Run desktop and mobile gameplay acceptance
         run: timeout --signal=TERM --kill-after=10s 240s npm run test:dino-step23:browser
+      - name: Phase 5 Step 24 Open World exploration, streaming and lifecycle acceptance
+        run: timeout --signal=TERM --kill-after=10s 240s npm run test:open-world-step24:browser
       - name: Phase 4 Step 18 pixel-exact release, slow-network and fallback browser regression
         run: timeout --signal=TERM --kill-after=10s 180s npm run test:loading:browser
         env:
@@ -98,6 +100,8 @@ jobs:
             demian/docs/phase4-step21/audiovisual-browser.json
             demian/docs/phase5-step23/dino-run-browser.json
             demian/docs/phase5-step23/dino-run-390-results.png
+            demian/docs/phase5-step24/open-world-browser.json
+            demian/docs/phase5-step24/open-world-390.png
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v4
         with:
