@@ -78,6 +78,12 @@ export default class AfterHoursGame extends BaseGame {
             context, gameId: 'after-hours',
             onStart: async run => {
                 this.model.reset('standard', run.seed % SHIFT_LAYOUTS.length);
+                // A new ranked attempt must not inherit transient practice audio,
+                // HUD refresh timing or radio instructions from the previous run.
+                this.shadowSteps = 0;
+                this.uiElapsed = 0;
+                this.radio = INTRO;
+                this.audio.stop();
                 this.model.start();
                 if (this.ui.dialog.open) this.closeDialog();
                 this.avatar.sync(this.model.player, 0);
@@ -96,6 +102,7 @@ export default class AfterHoursGame extends BaseGame {
         this.model.reset(difficulty, nextLayout);
         nextLayout = (nextLayout + 1) % SHIFT_LAYOUTS.length;
         this.shadowSteps = 0;
+        this.uiElapsed = 0;
         this.radio = INTRO;
         this.avatar.sync(this.model.player);
         this.renderer.scene.camera.jumpTo(this.model.player.position);
@@ -133,7 +140,8 @@ export default class AfterHoursGame extends BaseGame {
             return;
         }
         if (view === 'power' && action === 'power') {
-            if (this.model.switchPower(value)) this.gameplayChallenge?.queuePower(value);
+            if (!this.model.switchPower(value)) return;
+            this.gameplayChallenge?.queuePower(value);
             this.closeDialog();
             this.audio.unlock();
             this.consumeEvents();
