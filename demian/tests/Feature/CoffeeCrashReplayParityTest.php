@@ -136,4 +136,56 @@ final class CoffeeCrashReplayParityTest extends TestCase
             ->assertGone();
         $this->assertDatabaseCount('arcade_replays', 0);
     }
+
+    public function test_replay_rejects_fabricated_score_fields_unknown_actions_and_illegal_undo(): void
+    {
+        $fixture = $this->fixture(7)[0];
+        $verifier = app(CoffeeCrashReplayVerifier::class);
+        $original = $fixture['actions'];
+        $badCases = [];
+
+        $withScore = $original;
+        $withScore[0]['score'] = 999999;
+        $badCases['forged client points'] = $withScore;
+
+        $withHint = $original;
+        $withHint[0]['kind'] = 'hint';
+        $badCases['fabricated hint'] = $withHint;
+
+        $illegalUndo = $original;
+        $illegalUndo[0] = ['tick' => 60, 'kind' => 'undo'];
+        $badCases['undo without preceding swap'] = $illegalUndo;
+
+        $repeatedTick = $original;
+        $repeatedTick[1]['tick'] = $repeatedTick[0]['tick'];
+        $badCases['repeated input frame'] = $repeatedTick;
+
+        $badIndex = $original;
+        $badIndex[0]['a'] = 56;
+        $badCases['out of bounds swap'] = $badIndex;
+
+        foreach ($badCases as $name => $actions) {
+            try {
+                $verifier->verify(7, $fixture['ticks'], $actions);
+                $this->fail('Invalid Coffee Crash proof accepted: '.$name);
+            } catch (\Illuminate\Validation\ValidationException $expected) {
+                $this->assertArrayHasKey('replay', $expected->errors());
+            }
+        }
+    }
+
+    public function test_server_seed_must_be_a_positive_unsigned_32_bit_integer(): void
+    {
+        $fixture = $this->fixture(7)[0];
+        foreach ([0, -1, 4294967296] as $invalidSeed) {
+            try {
+                app(CoffeeCrashReplayVerifier::class)->verify(
+                    $invalidSeed, $fixture['ticks'], $fixture['actions']);
+                $this->fail('An invalid Coffee Crash seed was accepted: '.$invalidSeed);
+            } catch (\Illuminate\Validation\ValidationException $expected) {
+                $this->assertArrayHasKey('replay', $expected->errors());
+            }
+        }
+    }
+
 }
