@@ -125,6 +125,36 @@ final class WeeklyCompetitionManagementTest extends TestCase
         $this->assertDatabaseCount('arcade_weekly_rule_locks',2);
     }
 
+    public function test_all_other_ranked_games_use_the_same_season_cutoff_and_original_run_idempotency(): void
+    {
+        $this->travelTo(CarbonImmutable::parse('2026-11-13T20:29:28Z'));
+        config()->set('demian-arcade.critters_ranked_enabled',true);
+        $owner=$this->account();
+        $version=\App\Services\Arcade\CafeCrittersReplayVerifier::VERSION;
+        $request=(string) Str::uuid();
+        $payload=['request_id'=>$request,'game_id'=>'cafe-critters',
+            'rules_version'=>$version];
+        $first=$this->withToken($owner['token'])
+            ->postJson('/api/v1/arcade/turn-runs',$payload)
+            ->assertCreated()->json();
+        $this->assertDatabaseHas('arcade_weekly_rule_locks',[
+            'period_key'=>'weekly:tehran:2026-11-07',
+            'game_id'=>'cafe-critters','rules_version'=>$version,
+        ]);
+        $this->travelTo(CarbonImmutable::parse('2026-11-13T20:29:30Z'));
+        $second=$this->withToken($owner['token'])
+            ->postJson('/api/v1/arcade/turn-runs',$payload)
+            ->assertCreated()->json();
+        $this->assertSame($first['run_id'],$second['run_id']);
+        $this->assertSame($first['seed'],$second['seed']);
+        $this->withToken($owner['token'])
+            ->postJson('/api/v1/arcade/turn-runs',[
+                ...$payload,'request_id'=>(string)Str::uuid(),
+            ])->assertConflict();
+        $this->assertDatabaseCount('arcade_runs',1);
+        $this->assertDatabaseCount('arcade_weekly_rule_locks',1);
+    }
+
     public function test_scoring_rules_are_frozen_for_a_game_but_not_other_games_or_next_week(): void
     {
         $this->travelTo(CarbonImmutable::parse('2026-11-10T10:00:00Z'));
