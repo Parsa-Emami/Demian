@@ -270,4 +270,69 @@ final class WeeklyCompetitionManagementTest extends TestCase
         $this->assertDatabaseCount('arcade_weekly_winners',0);
         $this->assertDatabaseCount('arcade_coupons',0);
     }
+    private function seededVerifiedCritters(string $seasonDate): void
+    {
+        $account = $this->account();
+        $id=(string) Str::uuid();
+        $started=CarbonImmutable::parse($seasonDate,'UTC')->utc()->toDateTimeString();
+        DB::table('arcade_runs')->insert([
+            'id'=>$id,'player_id'=>$account['player_id'],
+            'request_id'=>(string)Str::uuid(),
+            'game_id'=>'cafe-critters','rules_version'=>'critters-test-frozen-v1',
+            'character_slug'=>'darya','seed'=>9,'track_width'=>420,
+            'status'=>'verified','score'=>150,'ticks'=>600,'passed'=>1,
+            'replay_hash'=>hash('sha256',$id),
+            'started_at'=>$started,
+            'expires_at'=>CarbonImmutable::parse($seasonDate,'UTC')
+                ->addMinutes(20)->toDateTimeString(),
+            'completed_at'=>CarbonImmutable::parse($seasonDate,'UTC')
+                ->addMinutes(5)->toDateTimeString(),
+            'created_at'=>now(),'updated_at'=>now(),
+        ]);
+        DB::table('arcade_leaderboard_entries')->insert([
+            'game_id'=>'cafe-critters','rules_version'=>'critters-test-frozen-v1',
+            'period_key'=>CompetitionClock::periodKeys(
+                CarbonImmutable::parse($seasonDate,'UTC'))[2],
+            'player_id'=>$account['player_id'],'run_id'=>$id,
+            'score'=>150,'achieved_at'=>$started,
+        ]);
+    }
+
+    public function test_prize_eligibility_cannot_be_retroactively_enabled_for_prior_season_scores(): void
+    {
+        $this->travelTo(CarbonImmutable::parse('2026-11-10T10:00:00Z'));
+        config()->set('demian-arcade.critters_ranked_enabled',true);
+        config()->set('demian-arcade.critters_prizes_enabled',false);
+        DB::transaction(fn()=>app(WeeklyCompetitionService::class)
+            ->authorizeNewRun(now(),'cafe-critters','critters-test-frozen-v1'));
+        $this->assertDatabaseHas('arcade_weekly_rule_locks',[
+            'period_key'=>'weekly:tehran:2026-11-07',
+            'game_id'=>'cafe-critters','prize_eligible'=>false,
+        ]);
+        $this->seededVerifiedCritters('2026-11-10T10:00:00Z');
+        $this->travelTo(CarbonImmutable::parse('2026-11-14T01:00:00Z'));
+        config()->set('demian-arcade.critters_prizes_enabled',true);
+        $result=app(WeeklySettlementService::class)->seal('2026-11-07');
+        $this->assertSame(1,$result['participants']);
+        $this->assertSame(0,$result['winners']);
+        $this->assertDatabaseCount('arcade_weekly_results',1);
+        $this->assertDatabaseCount('arcade_weekly_winners',0);
+    }
+
+    public function test_emergency_ranked_flag_off_does_not_delete_locked_historical_technical_results(): void
+    {
+        $this->travelTo(CarbonImmutable::parse('2026-11-10T10:00:00Z'));
+        config()->set('demian-arcade.critters_ranked_enabled',true);
+        DB::transaction(fn()=>app(WeeklyCompetitionService::class)
+            ->authorizeNewRun(now(),'cafe-critters','critters-test-frozen-v1'));
+        $this->seededVerifiedCritters('2026-11-10T10:00:00Z');
+        config()->set('demian-arcade.critters_ranked_enabled',false);
+        $this->travelTo(CarbonImmutable::parse('2026-11-14T01:00:00Z'));
+        $result=app(WeeklySettlementService::class)->seal('2026-11-07');
+        $this->assertSame(1,$result['participants']);
+        $this->assertSame(0,$result['winners']);
+        $this->assertDatabaseCount('arcade_weekly_results',1);
+        $this->assertDatabaseCount('arcade_weekly_winners',0);
+    }
+
 }
