@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\V1\EventSessionController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\V1\ArcadeController;
 use App\Http\Controllers\Api\V1\ArcadeHealthController;
+use App\Http\Controllers\Api\V1\ArcadeTelemetryController;
 use App\Http\Controllers\Api\V1\ArcadePrivacyController;
 use App\Http\Controllers\Api\V1\ArcadeTurnRunController;
 use App\Http\Controllers\Api\V1\CouponController;
@@ -12,10 +13,14 @@ use App\Http\Controllers\Api\V1\CouponDeliveryController;
 use App\Http\Middleware\AuthenticateArcadePlayer;
 use App\Http\Middleware\LimitArcadePayload;
 use App\Http\Middleware\ObserveArcadeReplayFailures;
+use App\Http\Middleware\ObserveArcadeRequest;
 use App\Http\Middleware\RequireArcadeLegalAcceptance;
 
-Route::prefix('v1/arcade')->middleware([LimitArcadePayload::class, 'throttle:arcade-public-ip'])->group(function (): void {
+Route::prefix('v1/arcade')->middleware([ObserveArcadeRequest::class,
+    LimitArcadePayload::class, 'throttle:arcade-public-ip'])->group(function (): void {
     Route::get('/health', ArcadeHealthController::class);
+    Route::post('/telemetry', ArcadeTelemetryController::class)
+        ->middleware('throttle:arcade-telemetry');
     Route::get('/legal', [ArcadePrivacyController::class, 'policy']);
     Route::get('/rules', [ArcadeController::class, 'rules']);
     Route::get('/games', [ArcadeController::class, 'games']);
