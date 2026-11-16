@@ -24,7 +24,7 @@ export function centeredRailScrollLeft(currentScrollLeft, viewportRect, itemRect
  * scroller owns horizontal scroll or that its scrollLeft is nonnegative.
  */
 export function railUsesHorizontalSnap({ snapType = 'none', scrollWidth = 0, clientWidth = 0 } = {}) {
-    return /^x(?:\\s|$)/.test(String(snapType)) && scrollWidth > clientWidth + 2;
+    return /^x(?:\s|$)/.test(String(snapType)) && scrollWidth > clientWidth + 2;
 }
 
 export function nearestRailIndex(itemCenters, viewportCenter) {
