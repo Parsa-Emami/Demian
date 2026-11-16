@@ -63,6 +63,8 @@ jobs:
       - run: npx playwright install chromium --only-shell
       - name: Install Firefox and WebKit for Phase 6 Step 31 engine compatibility
         run: npx playwright install --with-deps firefox webkit
+      - name: Phase 1 mobile startup diagnosis — cold/warm/PWA and per-game timings
+        run: timeout --signal=TERM --kill-after=10s 240s npm run test:startup:browser
       - run: npm run test:coffee-crash:browser
       - name: Phase 3 Step 13 dedicated wallet and weekly leaderboard Chromium acceptance
         run: timeout --signal=TERM --kill-after=10s 180s npm run test:weekly13:browser
@@ -117,6 +119,12 @@ jobs:
           DEMIAN_MOBILE_BENCH_PROFILE: low-mobile
       - name: Step 31 aggregate all QA evidence and enforce cold menu, six games and device caveats
         run: npm run test:step31:collect
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: startup-performance-diagnosis
+          path: demian/docs/performance-diagnosis/browser-diagnosis.json
+          if-no-files-found: warn
       - uses: actions/upload-artifact@v4
         if: always()
         with:
