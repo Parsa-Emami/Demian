@@ -152,7 +152,7 @@ export default class CharacterVisualService {
                         attempts: 2,
                         onRetry: () => { this.counters.transientRetries++; },
                     },
-                ));
+                ), { priority: () => meta.background ? 0 : 1 });
                 this.packPromises.set(key, pending);
                 this.pendingLoadMeta.set(key, meta);
             }
