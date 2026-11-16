@@ -82,7 +82,7 @@ console.log('Phase 4 Step 18 pixel-exact sprites: ' + optimized.converted +
     '/' + optimized.candidates + ' WebP, ' + optimized.savedBytes + ' bytes saved.');
 const provisional = buildOfflinePackManifest({ release: out, entry,
     releaseId: '0000000000000000' });
-// Hash the actual offline-critical assets as well as the atomic app bundle.
+// Hash all required JS chunks for the six offline games, plus their art and shell.
 // Art-only changes now force a new offline release instead of mixing packs.
 const resourcePaths = [...new Set([
     ...provisional.core.map(row => row.path),

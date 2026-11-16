@@ -1,94 +1,73 @@
+/** Assert independently deployed game chunks and all Vite dependency edges. */
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
-import { resolve, relative } from 'node:path';
+import { resolve, relative, join, sep } from 'node:path';
+import { gzipSync } from 'node:zlib';
 
 const projectRoot = resolve(import.meta.dirname, '..');
-const buildRootArgumentIndex = process.argv.indexOf('--build-root');
-const buildRoot = buildRootArgumentIndex >= 0
-    ? resolve(process.cwd(), process.argv[buildRootArgumentIndex + 1] ?? '')
-    : resolve(projectRoot, 'public/build');
-const manifestPath = resolve(buildRoot, 'manifest.json');
+const index = process.argv.indexOf('--build-root');
+const root = index >= 0 ? resolve(process.cwd(), process.argv[index + 1] ?? '') :
+    resolve(projectRoot, 'public/build');
 const failures = [];
-
-function fail(message) {
-    failures.push(message);
-}
-
-function walk(directory) {
-    if (!existsSync(directory)) return [];
-
-    return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
-        const target = resolve(directory, entry.name);
-        return entry.isDirectory() ? walk(target) : [target];
-    });
-}
-
-let manifest = null;
+const fail = message => failures.push(message);
+const gameSources = Object.freeze({
+    'open-world': 'resources/js/game/games/open-world/OpenWorldGame.js',
+    'dino-run': 'resources/js/game/games/dino-run/DinoRunGame.js',
+    'after-hours': 'resources/js/game/games/after-hours/AfterHoursGame.js',
+    'cafe-rush': 'resources/js/game/games/cafe-rush/CafeRushGame.js',
+    'cafe-critters': 'resources/js/game/games/cafe-critters/CafeCrittersGame.js',
+    'coffee-crash': 'resources/js/game/games/coffee-crash/CoffeeCrashGame.js',
+});
+let manifest = {};
 try {
-    manifest = JSON.parse(readFileSync(manifestPath, 'utf8'));
+    manifest = JSON.parse(readFileSync(join(root, 'manifest.json'), 'utf8'));
 } catch (error) {
-    fail(`Vite manifest is missing or invalid: ${manifestPath} (${error.message})`);
+    fail('Missing or invalid Vite manifest: ' + error.message);
 }
-
-const appEntry = manifest?.['resources/js/app.js'];
-if (!appEntry?.isEntry || typeof appEntry.file !== 'string') {
-    fail('resources/js/app.js is not a valid Vite entry.');
-}
-
-// With `rolldownOptions.output.codeSplitting: false` (see vite.config.js),
-// Vite/Rolldown inlines every dynamic import() into the single entry chunk,
-// but the manifest still records a `dynamicImports` metadata entry for the
-// entry itself (self-referencing "resources/js/app.js" -> ["resources/js/app.js"]).
-// That's just bookkeeping about what the source *syntactically* imports
-// dynamically - it does not mean a separate deployment chunk was emitted.
-//
-// The real signal for "did this dynamic import actually produce a separate
-// chunk file" is whether the imported module maps to a *different* physical
-// output file than the importer. So instead of failing on any non-empty
-// `dynamicImports` array, compare output files.
-const outputFileBySource = new Map(
-    Object.entries(manifest ?? {}).map(([source, entry]) => [source, entry?.file]),
-);
-
-for (const [source, entry] of Object.entries(manifest ?? {})) {
-    const dynamicImports = Array.isArray(entry?.dynamicImports) ? entry.dynamicImports : [];
-    const externalDynamicImports = dynamicImports.filter(
-        (imported) => outputFileBySource.get(imported) !== entry?.file,
-    );
-    if (externalDynamicImports.length > 0) {
-        fail(`${source} still emits dynamic deployment chunks: ${externalDynamicImports.join(', ')}`);
+const entry = manifest['resources/js/app.js'];
+if (!entry?.isEntry || !entry.file) fail('Application entry is missing.');
+const safe = file => typeof file === 'string' && /^[a-zA-Z0-9][a-zA-Z0-9_./-]*$/.test(file) &&
+    !file.includes('..') && !file.startsWith('/');
+const checkFile = (file, source) => {
+    if (!safe(file)) { fail('Unsafe output path from ' + source + ': ' + file); return; }
+    const target = resolve(root, file);
+    if (!target.startsWith(root + sep) || !existsSync(target) || !statSync(target).isFile()) {
+        fail('Missing output file from ' + source + ': ' + file);
+    }
+};
+for (const [source, asset] of Object.entries(manifest)) {
+    if (asset.file) checkFile(asset.file, source);
+    for (const file of [...(asset.css ?? []), ...(asset.assets ?? [])]) checkFile(file, source);
+    for (const dependency of [...(asset.imports ?? []), ...(asset.dynamicImports ?? [])]) {
+        if (!manifest[dependency]) fail('Unresolved manifest import: ' + source + ' -> ' + dependency);
     }
 }
-
-const files = walk(buildRoot);
-const javascriptFiles = files.filter((file) => file.endsWith('.js'));
-const forbiddenGameChunk = /(?:RolePlayGame|OpenWorldGame|EventGame|HideAndSeekGame|TetrisGame)-/i;
-const gameChunkFiles = javascriptFiles.filter((file) => forbiddenGameChunk.test(file));
-
-if (gameChunkFiles.length > 0) {
-    fail(`Standalone game chunks were generated: ${gameChunkFiles.map((file) => relative(buildRoot, file)).join(', ')}`);
+const gameFiles = [];
+for (const [game, source] of Object.entries(gameSources)) {
+    const row = manifest[source];
+    if (!row?.file || !row.isDynamicEntry || row.file === entry?.file) {
+        fail('Game did not emit a separate dynamic chunk: ' + game);
+        continue;
+    }
+    gameFiles.push(row.file);
+    if (!row.file.endsWith('.js')) fail('Invalid game JS chunk: ' + row.file);
 }
-
-if (javascriptFiles.length !== 1) {
-    fail(`Expected one atomic JavaScript bundle, found ${javascriptFiles.length}: ${javascriptFiles.map((file) => relative(buildRoot, file)).join(', ')}`);
+if (new Set(gameFiles).size !== 6) fail('Every game must have a distinct JS chunk.');
+if (!entry?.file?.endsWith('.js')) fail('Application entry must be JavaScript.');
+let gzipBytes = 0;
+if (entry?.file && safe(entry.file) && existsSync(join(root, entry.file))) {
+    gzipBytes = gzipSync(readFileSync(join(root, entry.file))).byteLength;
+    if (gzipBytes >= 400 * 1024) fail('Initial shell exceeds 400 KiB gzip: ' + gzipBytes);
 }
-
-if (appEntry?.file) {
-    const entryPath = resolve(buildRoot, appEntry.file);
-    if (!existsSync(entryPath) || !statSync(entryPath).isFile()) {
-        fail(`Manifest entry does not exist: ${appEntry.file}`);
-    } else {
-        const source = readFileSync(entryPath, 'utf8');
-        if (forbiddenGameChunk.test(source)) {
-            fail('The atomic application bundle still references a standalone hashed game chunk.');
-        }
+const javascriptFiles = existsSync(join(root, 'assets'))
+    ? readdirSync(join(root, 'assets')).filter(name => name.endsWith('.js')) : [];
+if (javascriptFiles.length < 7) fail('Expected shell and at least six lazy JS chunks.');
+if (failures.length) {
+    console.error('Lazy chunk validation failed:\n' + failures.map(row => '- ' + row).join('\n'));
+    process.exitCode = 1;
+} else {
+    console.log('Lazy Demian build: PASSED');
+    console.log('Initial JS: ' + relative(root, join(root, entry.file)) + ' (' + gzipBytes + ' gzip bytes)');
+    for (const [game, source] of Object.entries(gameSources)) {
+        console.log(game + ': ' + manifest[source].file);
     }
 }
-
-if (failures.length > 0) {
-    console.error(`Atomic bundle validation failed (${failures.length}):`);
-    failures.forEach((failure) => console.error(`- ${failure}`));
-    process.exit(1);
-}
-
-console.log('Atomic Demian production bundle validated successfully.');
-console.log(`JavaScript bundle: ${relative(buildRoot, javascriptFiles[0])}`);
