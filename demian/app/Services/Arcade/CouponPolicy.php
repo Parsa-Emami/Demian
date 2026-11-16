@@ -9,6 +9,13 @@ final class CouponPolicy
 {
     public function approved(): array
     {
+        // No prizes may be issued on the public host under unreviewed terms.
+        // Tests and staging keep their independent financial fixture gates.
+        if (config('app.env') === 'production'
+            && (config('demian-legal.publication_approved') !== true
+                || config('demian-legal.require_acceptance') !== true)) {
+            throw new RuntimeException('Reviewed privacy/competition rules and active account acceptance are required before issuing live coupons.');
+        }
         if (config('demian-coupons.policy_approved') !== true) {
             throw new RuntimeException('Coupon policy approval is required.');
         }
