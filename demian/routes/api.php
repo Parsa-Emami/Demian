@@ -44,7 +44,7 @@ Route::prefix('v1/arcade')->middleware([LimitArcadePayload::class, 'throttle:arc
             ->whereNumber('couponId')->middleware('throttle:arcade-coupon-support');
         Route::get('/player', [ArcadeController::class, 'me']);
         Route::post('/player/legal', [ArcadeController::class, 'acknowledgeLegal'])
-            ->middleware('throttle:arcade-profile-delete');
+            ->middleware('throttle:arcade-legal-ack');
         Route::get('/player/data', [ArcadePrivacyController::class, 'snapshot'])
             ->middleware('throttle:arcade-coupon-wallet');
         Route::get('/player/data/records', [ArcadePrivacyController::class, 'records'])
