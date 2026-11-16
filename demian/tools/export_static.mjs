@@ -6,6 +6,7 @@ import { execFileSync } from 'node:child_process';
 import { BUILTIN_CHARACTER_SLUGS, RETIRED_CHARACTER_SLUGS, characterPackVersion } from '../resources/js/game/characters/CharacterVisualContract.js';
 import { BUILTIN_CHARACTER_LABELS as labels } from '../resources/js/game/characters/manifests/CharacterManifestRegistry.js';
 import { renderStaticTemplate } from './static_template.mjs';
+import { buildLegalPages } from './build_legal_pages.mjs';
 import { shouldExportAsset } from './release_asset_policy.mjs';
 import { validateReleaseAssets } from './validate_release_assets.mjs';
 import { buildOfflinePackManifest } from './offline_pack_manifest.mjs';
@@ -44,6 +45,8 @@ for (const file of ['manifest.webmanifest', 'favicon.ico', 'robots.txt', 'game-i
 cpSync(join(root, 'public/icons'), join(out, 'icons'), { recursive: true });
 const html = renderStaticTemplate(readFileSync(join(root, 'resources/views/demian.blade.php'), 'utf8'), { entry, arcadeApi, publicOrigin });
 writeFileSync(join(out, 'index.html'), html);
+// Three self-contained Persian legal pages share the release fingerprint.
+buildLegalPages(out);
 // Do not claim the custom domain or change old Pages routing before DNS is verified.
 rmSync(join(out, 'CNAME'), { force: true });
 if (pagesCustomDomain) writeFileSync(join(out, 'CNAME'), pagesCustomDomain + '\n');
