@@ -168,7 +168,7 @@ final class Phase6Step33ObservabilityTest extends TestCase
             ]);
             if ($role === 'admin') $this->get('/cashier/admin/observability')->assertForbidden();
             else $this->get('/cashier/admin/observability')->assertOk()
-                ->assertHeader('Cache-Control', 'private, no-store, max-age=0')
+                ->assertHeader('Cache-Control', 'max-age=0, no-store, private')
                 ->assertSee('داشبورد مانیتورینگ دمیان');
         }
     }
