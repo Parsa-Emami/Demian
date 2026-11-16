@@ -37,16 +37,20 @@ export default class RankedGameplayChallenge {
     }
 
     mount() {
-        const root = this.context.root?.querySelector?.('[data-game-hud-host]');
+        // Reuse the existing collapsed gameplay details instead of covering the playfield.
+        // Both After Hours and Cafe Rush mount their readout before this challenge.
+        const root = this.context.root?.querySelector?.(
+            '[data-game-hud-host] .game-readout__details .game-readout__body'
+        );
         if (!root || this.panel) return;
         const panel = document.createElement('section');
-        panel.className = 'ranked-route-challenge ranked-gameplay-challenge';
+        panel.className = 'ranked-gameplay-challenge';
         panel.setAttribute('role', 'group');
         panel.setAttribute('aria-label', 'ثبت امتیاز تأییدشده بازی اصلی');
         const heading = document.createElement('h3');
-        heading.textContent = 'چالش امتیاز واقعی';
+        heading.textContent = 'امتیاز رقابتی (اختیاری)';
         const explanation = document.createElement('p');
-        explanation.textContent = 'امتیاز فقط از بازپخش مستقل ورودی‌های بازی در سرور محاسبه می‌شود.';
+        explanation.textContent = 'برای ثبت امتیاز تأییدشده در لیدربورد، حالت رقابتی را جداگانه شروع کن.';
         this.status = document.createElement('p');
         this.status.setAttribute('role', 'status');
         this.status.setAttribute('aria-live', 'polite');

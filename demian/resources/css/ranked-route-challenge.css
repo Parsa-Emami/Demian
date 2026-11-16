@@ -65,3 +65,50 @@
 @media (prefers-reduced-motion: reduce) {
     .ranked-route-challenge * { transition: none !important; animation: none !important; }
 }
+
+/* Optional ranked gameplay lives inside the existing collapsed HUD details.
+ * Never create an always-visible panel over the playable scene or touch controls. */
+.game-readout__body .ranked-gameplay-challenge {
+    position: static;
+    width: 100%;
+    max-height: none;
+    overflow: visible;
+    margin-block-start: 12px;
+    padding-block-start: 12px;
+    border-block-start: 1px solid rgba(103, 232, 249, .28);
+    color: #ecfeff;
+    direction: rtl;
+    font-size: .78rem;
+    pointer-events: auto;
+}
+.game-readout__body .ranked-gameplay-challenge h3 {
+    margin: 0 0 6px;
+    color: #a5f3fc;
+    font-size: .9rem;
+}
+.game-readout__body .ranked-gameplay-challenge p {
+    margin: 6px 0;
+    line-height: 1.55;
+}
+.game-readout__body .ranked-gameplay-challenge [role="status"] {
+    color: #fef3c7;
+}
+.game-readout__body .ranked-gameplay-challenge button {
+    min-height: 44px;
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #67e8f9;
+    border-radius: 8px;
+    background: rgba(8, 145, 178, .3);
+    color: #fff;
+    font-weight: 750;
+    cursor: pointer;
+}
+.game-readout__body .ranked-gameplay-challenge button:focus-visible {
+    outline: 3px solid #fef08a;
+    outline-offset: 2px;
+}
+.game-readout__body .ranked-gameplay-challenge button:disabled {
+    opacity: .55;
+    cursor: not-allowed;
+}
