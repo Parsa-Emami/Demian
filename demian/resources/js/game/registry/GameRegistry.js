@@ -20,9 +20,8 @@ function normalizeDefinition(id, definition) {
 }
 
 /**
- * Deferred game catalogue. Production modules live in one atomic bundle, but
- * module resolution stays asynchronous and cached while every launch receives
- * a fresh game instance.
+ * Deferred game catalogue: each game module loads on demand (or explicit
+ * user-intent warmup), with cached imports and fresh instances per launch.
  */
 export default class GameRegistry {
     constructor(definitions = {}) {
@@ -74,6 +73,15 @@ export default class GameRegistry {
             return await this.moduleCache.get(id);
         } catch (error) {
             this.moduleCache.delete(id);
+            // A missing chunk may be a stale open tab or transient network.
+            // Do not auto-reload a ranked session; offer manual recovery.
+            if (typeof window !== 'undefined' &&
+                /dynamically imported module|importing a module script|failed to fetch|loading chunk|load failed/i
+                    .test(String(error?.message ?? error))) {
+                window.dispatchEvent(new CustomEvent('demian:game-chunk-error', {
+                    detail: { gameId: id },
+                }));
+            }
             throw error;
         }
     }

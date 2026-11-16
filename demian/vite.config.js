@@ -3,13 +3,9 @@ import laravel from 'laravel-vite-plugin';
 import tailwindcss from '@tailwindcss/vite';
 
 /**
- * Demian is deployed as a static GitHub Pages application.
- *
- * The game registry intentionally remains asynchronous, but production uses
- * one atomic JavaScript bundle. A previous deployment removed content-hashed
- * game chunks while a cached shell still requested them, producing errors such
- * as `RolePlayGame-<hash>.js` and preventing the café world from starting.
- * Disabling Rolldown code splitting removes that failure class completely.
+ * Each game is a separately hashed on-demand module. The release workflow
+ * retains prior hashed chunks, protecting still-open browser tabs.
+ * Never deploy splitting without the release asset retention gate.
  */
 export default defineConfig({
     // Portable across root domains, GitHub project Pages and nested hosting.
@@ -29,7 +25,7 @@ export default defineConfig({
         },
         rolldownOptions: {
             output: {
-                codeSplitting: false,
+                codeSplitting: true,
                 strictExecutionOrder: true,
             },
         },
