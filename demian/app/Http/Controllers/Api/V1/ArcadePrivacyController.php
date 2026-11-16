@@ -50,7 +50,7 @@ final class ArcadePrivacyController extends Controller
             'record_types' => array_keys(self::RECORDS),
             'page_size_limit' => 50,
             'notice' => 'Personal data summary; secrets and restricted operational evidence are excluded.',
-        ])->header('Cache-Control', 'private, no-store')->header('Pragma', 'no-cache');
+        ])->header('Cache-Control', 'no-store, private')->header('Pragma', 'no-cache');
     }
 
     public function records(Request $request): JsonResponse
@@ -67,6 +67,6 @@ final class ArcadePrivacyController extends Controller
         return response()->json([
             'type' => $input['type'], 'data' => $records->items(),
             'next_cursor' => $records->nextCursor()?->encode(),
-        ])->header('Cache-Control', 'private, no-store')->header('Pragma', 'no-cache');
+        ])->header('Cache-Control', 'no-store, private')->header('Pragma', 'no-cache');
     }
 }
