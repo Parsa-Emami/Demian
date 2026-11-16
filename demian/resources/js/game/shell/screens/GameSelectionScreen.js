@@ -17,9 +17,14 @@ function escape(value) {
 }
 
 export default class GameSelectionScreen extends BaseScreen {
-    constructor({ catalog, ...options }) {
+    constructor({ catalog, registry = null, ...options }) {
         super(options);
         this.catalog = catalog;
+        this.registry = registry;
+        this.prefetched = new Set();
+        this.prefetchTimer = null;
+        this.onPrefetchIntent = event => this.prefetchIntent(event);
+        this.onPrefetchExit = () => this.clearPrefetchTimer();
         this.grid = this.element.querySelector('[data-game-grid]');
         this.rendered = false;
         this.warmupHandle = null;
@@ -63,6 +68,11 @@ export default class GameSelectionScreen extends BaseScreen {
             </article>
         `).join('');
         this.rendered = true;
+        // Fetch only an explicitly hovered or keyboard-focused module; do not
+        // fan out into all six downloads on mobile, Save-Data or 3G.
+        this.grid.addEventListener('pointerover', this.onPrefetchIntent);
+        this.grid.addEventListener('focusin', this.onPrefetchIntent);
+        this.grid.addEventListener('pointerout', this.onPrefetchExit);
         this.rail = new ScrollSnapRail({
             viewport: this.grid,
             itemSelector: '[data-game-card]',
@@ -71,6 +81,30 @@ export default class GameSelectionScreen extends BaseScreen {
             statusElement: this.statusElement,
             focusSelector: '[data-game-launch]',
         }).boot();
+    }
+
+    clearPrefetchTimer() {
+        if (this.prefetchTimer !== null) globalThis.clearTimeout(this.prefetchTimer);
+        this.prefetchTimer = null;
+    }
+
+    prefetchIntent(event) {
+        if (event.type === 'pointerover' && event.pointerType === 'touch') return;
+        if (!this.registry || optionalAssetPolicy().reason !== 'normal') return;
+        const card = event.target?.closest?.('[data-game-card]');
+        const gameId = card?.dataset.gameCard;
+        if (!gameId || !this.catalog.some(game => game.available && game.id === gameId)
+            || this.prefetched.has(gameId) || this.prefetched.size >= 2) return;
+        this.clearPrefetchTimer();
+        this.prefetchTimer = globalThis.setTimeout(() => {
+            this.prefetchTimer = null;
+            this.prefetched.add(gameId);
+            // A rejected hint must never prevent a later explicit launch;
+            // registry.load() evicts rejected promises automatically.
+            void this.registry.load(gameId).catch(() => {
+                this.prefetched.delete(gameId);
+            });
+        }, 160);
     }
 
     async beforeOpen() {
@@ -97,6 +131,10 @@ export default class GameSelectionScreen extends BaseScreen {
     }
 
     dispose() {
+        this.clearPrefetchTimer();
+        this.grid?.removeEventListener('pointerover', this.onPrefetchIntent);
+        this.grid?.removeEventListener('focusin', this.onPrefetchIntent);
+        this.grid?.removeEventListener('pointerout', this.onPrefetchExit);
         if (this.warmupHandle !== null) {
             if (this.warmupType === 'idle') globalThis.cancelIdleCallback?.(this.warmupHandle);
             else globalThis.clearTimeout(this.warmupHandle);
