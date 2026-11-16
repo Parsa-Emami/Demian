@@ -124,7 +124,7 @@
         data-sidebar-state="collapsed"
         data-mobile-actions="collapsed"
         data-runtime-version="14.0.0-mobile-runner"
-        data-deployment-mode="atomic-bundle"
+        data-deployment-mode="versioned-chunks"
         data-session-state="booting"
         data-game-orientation="auto"
         data-shell-screen="boot"
