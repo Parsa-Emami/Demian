@@ -35,6 +35,11 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('arcade-public-ip', static fn (Request $request): Limit =>
             Limit::perMinute(1200)->by('arcade:ip:'.$request->ip()));
 
+        // Anonymous game telemetry has a separate tighter IP-only bucket.
+        RateLimiter::for('arcade-telemetry', static fn (Request $request): array => [
+            Limit::perMinute(30)->by('arcade:telemetry:minute:'.$request->ip()),
+            Limit::perHour(600)->by('arcade:telemetry:hour:'.$request->ip()),
+        ]);
         RateLimiter::for('arcade-registration', static fn (Request $request): array => [
             Limit::perMinute(60)->by('arcade:registration:minute:'.$request->ip()),
             Limit::perHour(180)->by('arcade:registration:hour:'.$request->ip()),
