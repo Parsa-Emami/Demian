@@ -53,7 +53,7 @@ test('Open World renders the cafe before boot; streaming and visual upgrades fol
         import.meta.url), 'utf8');
     const app = readFileSync(new URL('../../../resources/js/game/application/GameApplication.js',
         import.meta.url), 'utf8');
-    const roster = world.indexOf('preloadCharacterRoster(this.repository)');
+    const roster = world.indexOf('CharacterManager.preloadRoster(this.repository)');
     const systems = world.indexOf('this.setupWorldServices()');
     const bootstrap = world.indexOf("renderScene({ phase: 'bootstrap'");
     const boot = world.indexOf('await this.characterManager.boot(');
