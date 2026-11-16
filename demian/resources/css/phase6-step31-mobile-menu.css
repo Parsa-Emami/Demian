@@ -1,6 +1,6 @@
 .manager-shell [data-game-shell] .cafe-menu__showcase { display: none; }
 
-@media (max-width: 760px) {
+@media (max-width: 760px), (max-height: 560px) and (orientation: landscape) {
     .manager-shell [data-game-shell] .shell-screen--cafe {
         display: block;
         overflow-y: auto;
