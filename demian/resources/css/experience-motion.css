@@ -377,3 +377,136 @@
         transition: none;
     }
 }
+
+
+/* The same type, color and affordance system extends to the roster, pause,
+   settings, leaderboards, wallet, results and in-game heads-up display. */
+.manager-shell .manager-sidebar {
+    border-color: rgba(222, 235, 198, .21);
+    background: linear-gradient(156deg, #223a2d, #111f19 68%, #0b1713);
+}
+.manager-shell .character-card {
+    border: 1px solid rgba(220, 232, 197, .23);
+    border-radius: 20px;
+    background:
+        radial-gradient(circle at 9% 7%, rgba(212, 233, 169, .1), transparent 50%),
+        #1a2c22;
+    box-shadow: inset 0 1px rgba(255, 255, 255, .05);
+    transition: border-color 200ms ease, transform 200ms var(--demian-ease);
+}
+.manager-shell .character-card.is-active {
+    border-color: #c8dcab;
+    background: linear-gradient(153deg, #2c4633, #1b3124);
+    box-shadow: inset 0 0 0 1px rgba(225, 241, 186, .16);
+}
+.manager-shell .character-card__preview {
+    background: linear-gradient(140deg, #344a39, #1a3227);
+    border: 1px solid rgba(232, 239, 211, .3);
+    border-radius: 18px;
+    box-shadow: inset 0 1px 8px rgba(0, 0, 0, .15);
+}
+.manager-shell .character-card h3 {
+    color: #f4f0dd;
+    font-size: clamp(.95rem, 2vw, 1.05rem);
+}
+.manager-shell .character-card .arcade-button--small,
+.manager-shell .character-card [data-select-character] {
+    border-radius: 12px;
+    min-height: 44px;
+    touch-action: manipulation;
+}
+@media (hover: hover) and (pointer: fine) {
+    .manager-shell .character-card:hover {
+        border-color: rgba(226, 235, 195, .57);
+        transform: translateY(-2px);
+        box-shadow: 0 12px 24px rgba(0, 7, 3, .2);
+    }
+}
+.manager-shell [data-game-shell] :is(.shell-modal, .results-panel) {
+    border: 1px solid rgba(229, 235, 201, .24);
+    border-radius: 25px;
+    background:
+        radial-gradient(circle at 90% 0%, rgba(180, 206, 145, .1), transparent 60%),
+        linear-gradient(158deg, #1f3428, #102119 85%);
+    box-shadow: 0 28px 65px rgba(0, 8, 4, .32), inset 0 1px rgba(255,255,255,.04);
+    color: #f5f0df;
+}
+.manager-shell [data-game-shell] :is(.shell-modal, .results-panel) h2 {
+    color: #f6f0df;
+    line-height: 1.3;
+}
+.manager-shell [data-game-shell] .shell-modal .shell-kicker,
+.manager-shell [data-game-shell] .results-panel .shell-kicker {
+    color: #dfc69b;
+    letter-spacing: .12em;
+}
+.manager-shell [data-game-shell] .shell-modal .shell-button,
+.manager-shell [data-game-shell] .results-panel .shell-button {
+    border-radius: 14px;
+    min-height: 48px;
+    border-color: rgba(223, 236, 194, .22);
+    transition: background 150ms ease, transform 150ms ease;
+}
+.manager-shell [data-game-shell] .shell-modal .shell-button:active,
+.manager-shell [data-game-shell] .results-panel .shell-button:active {
+    transform: scale(.98);
+}
+.manager-shell [data-game-shell] .shell-modal .shell-button--primary,
+.manager-shell [data-game-shell] .results-panel .shell-button--primary {
+    background: #e5eac4;
+    color: #1a3628;
+    border-color: #e7eccb;
+}
+.manager-shell [data-game-shell] .settings-field {
+    border-color: rgba(223, 231, 201, .17);
+    background: rgba(10, 28, 19, .3);
+    border-radius: 16px;
+}
+.manager-shell [data-game-shell] .settings-field :is(select, input),
+.manager-shell [data-game-shell] .settings-field button {
+    min-height: 44px;
+    border-color: rgba(220, 235, 193, .33);
+    border-radius: 12px;
+}
+.manager-shell [data-game-shell] :is(.game-readout__stats,
+    .game-readout__state, .game-readout__details > summary,
+    .game-readout__body, .world-objective) {
+    border-color: rgba(235, 230, 198, .43);
+    border-radius: 13px;
+    box-shadow: 0 8px 22px rgba(0, 8, 5, .2);
+}
+.manager-shell[data-hud-contrast="high"] [data-game-shell] :is(
+    .game-readout__stats, .game-readout__state,
+    .game-readout__details > summary, .game-readout__body, .world-objective) {
+    border-color: var(--readout-line);
+    box-shadow: none;
+}
+.manager-shell [data-game-shell] :is(
+    .scroll-rail-button, .shell-icon-button
+) {
+    border-radius: 13px;
+    background: rgba(228, 238, 205, .09);
+    border-color: rgba(230, 235, 204, .2);
+    color: #f5eedf;
+    transition: background 160ms ease, transform 160ms ease;
+}
+.manager-shell [data-game-shell] :is(
+    .scroll-rail-button, .shell-icon-button
+):active { transform: scale(.95); }
+.manager-shell [data-game-shell] :is(
+    .shell-button, .game-card__action, .shell-icon-button,
+    .scroll-rail-button, [data-game-launch]
+):focus-visible,
+.manager-shell :is(.character-card button, .character-sheet-close):focus-visible {
+    outline: 3px solid #f8e2a4;
+    outline-offset: 3px;
+}
+/* No expensive blur over the active canvas; animation should never impact
+   deterministic gameplay fixed ticks or accessibility contrast. */
+@media (prefers-reduced-motion: reduce) {
+    .manager-shell .character-card,
+    .manager-shell [data-game-shell] .shell-modal .shell-button,
+    .manager-shell [data-game-shell] .results-panel .shell-button {
+        transition: none;
+    }
+}
