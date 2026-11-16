@@ -22,6 +22,7 @@ import GameShell from '../shell/GameShell';
 import SessionStateMachine, { SESSION_STATES } from './SessionStateMachine';
 import ArcadeLeaderboardService from '../leaderboard/ArcadeLeaderboardService.js';
 import DeviceQaController from '../performance/DeviceQaController.js';
+import AnonymousGameTelemetry from '../performance/AnonymousGameTelemetry.js';
 
 const MENU_BACKDROP_GAME_ID = 'open-world';
 
@@ -70,6 +71,15 @@ export default class GameApplication {
         });
         this.settings = new SettingsStore();
         this.leaderboards = new ArcadeLeaderboardService();
+        this.opsTelemetry = new AnonymousGameTelemetry();
+        this.opsSubscriptions = [
+            this.eventBus.on('application:boot-timing', ({ durationMs }) =>
+                this.opsTelemetry.emit('menu_ready', { durationMs })),
+            this.eventBus.on('game:load-timing', ({ gameId, durationMs }) =>
+                this.opsTelemetry.emit('game_load', { game: gameId, durationMs })),
+            this.eventBus.on('game:load-failed', ({ gameId }) =>
+                this.opsTelemetry.emit('game_error', { game: gameId })),
+        ];
         this.animation = new AnimationService({
             reducedMotion: this.settings.resolvedReducedMotion(),
         });
@@ -83,7 +93,11 @@ export default class GameApplication {
             observeFrame: (seconds) => {
                 if (this.sessionState === SESSION_STATES.PLAYING && this.renderQuality.observe(seconds)) this.applyRenderQuality();
             },
-            observeRender: timestamp => this.deviceQa?.rendered(timestamp),
+            observeRender: timestamp => {
+                this.deviceQa?.rendered(timestamp);
+                this.opsTelemetry?.frame(timestamp, this.activeGameId,
+                    this.sessionState === SESSION_STATES.PLAYING);
+            },
         });
         this.shell = new GameShell({
             root: this.root,
@@ -576,6 +590,7 @@ export default class GameApplication {
         this.animation.dispose();
         this.settings.dispose();
         this.interaction.dispose();
+        this.opsSubscriptions?.forEach((unsubscribe) => unsubscribe());
         this.storyJournalSubscriptions?.forEach((unsubscribe) => unsubscribe());
         this.storyJournal.dispose();
         this.characterVisuals.dispose();
