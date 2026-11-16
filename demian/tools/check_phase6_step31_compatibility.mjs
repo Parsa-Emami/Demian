@@ -58,6 +58,12 @@ try {
             const started = Date.now();
             await page.goto(origin, { waitUntil: 'domcontentloaded', timeout: 60000 });
             await wait(page, () => window.demianGameApplication?.sessionState === 'menu');
+            await page.evaluate(() => {
+                window.__step31LaunchErrors = [];
+                window.demianGameApplication.eventBus.on('game:load-failed', ({gameId, error}) => {
+                    window.__step31LaunchErrors.push({ gameId, message: String(error?.stack ?? error) });
+                });
+            });
             browserReport.menuHydrationMs = Date.now() - started;
             assert.ok(browserReport.menuHydrationMs < 15000,
                 engine + ' cold menu hydration >15s emulated lab bound');
@@ -79,6 +85,7 @@ try {
                     const snap = await page.evaluate(() => ({
                         state: window.demianGameApplication?.sessionState,
                         game: window.demianGameApplication?.activeGameId,
+                        loadErrors: window.__step31LaunchErrors ?? [],
                     }));
                     throw Error('Never reached playing for ' + engine + '/' + game + ': ' + JSON.stringify(snap));
                 });
