@@ -131,6 +131,7 @@ export default class GameShell {
         this.root.dataset.shellScreen = SCREEN_IDS.LOADING;
         return this.manager.show(SCREEN_IDS.LOADING, {
             title: game?.title ?? gameId,
+            gameId,
             progress,
             step,
         });
