@@ -78,6 +78,18 @@ test('build verifier accepts six distinct game chunks and rejects broken or atom
         for(const dir of [valid,incomplete,atomic]) rmSync(dir,{recursive:true,force:true});
     }
 });
+test('shared shift-dialog CSS stays available for both Café Rush and Café Critters',()=>{
+    const definitions=src('resources/js/game/registry/GameDefinitions.js');
+    for (const [from,to] of [['cafe-rush','cafe-critters'],['cafe-critters','coffee-crash']]) {
+        const start=definitions.indexOf("'"+from+"':");
+        const end=definitions.indexOf("'"+to+"':", start+1);
+        assert.ok(start > 0 && end > start);
+        assert.match(definitions.slice(start,end),/css\/after-hours\.css/);
+    }
+    const packs=src('tools/offline_pack_manifest.mjs');
+    assert.match(packs,/['"]cafe-rush['"]:\s*\[['"]resources\/css\/after-hours\.css/);
+    assert.match(packs,/['"]cafe-critters['"]:\s*\[['"]resources\/css\/after-hours\.css/);
+});
 test('initial entry leaves five game styles to selected dynamic import',()=>{
     const app=src('resources/js/app.js');
     const defs=src('resources/js/game/registry/GameDefinitions.js');
