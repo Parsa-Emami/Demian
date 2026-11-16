@@ -26,7 +26,7 @@ const server = createServer((req, res) => {
         createReadStream(path).on('error', () => res.destroy()).pipe(res);
     } catch { res.writeHead(404); res.end('Not found'); }
 });
-const wait = (page, predicate, timeout = 35000) => page.waitForFunction(predicate, null, { timeout });
+const wait = (page, predicate, timeout = 35000, arg = null) => page.waitForFunction(predicate, arg, { timeout });
 const report = { schema: 1, step: 31, status: 'pending', emulatedDevices: true,
     physicalDeviceVerified: false, realApiVerified: false, browsers: [], errors: [],
     caveats: [
@@ -75,7 +75,7 @@ try {
                 await wait(page, id => {
                     const app = window.demianGameApplication;
                     return app?.activeGameId === id && app.sessionState === 'playing';
-                }, 40000).catch(async () => {
+                }, 40000, game).catch(async () => {
                     const snap = await page.evaluate(() => ({
                         state: window.demianGameApplication?.sessionState,
                         game: window.demianGameApplication?.activeGameId,
@@ -102,8 +102,8 @@ try {
             await page.locator('[data-screen="game-selection"] [data-game-launch="cafe-critters"]').click();
             await wait(page, () => window.demianGameApplication?.activeGameId === 'cafe-critters'
                 && window.demianGameApplication?.sessionState === 'playing');
-            assert.equal(await page.evaluate(() => window.demianGameApplication.leaderboards.connected),
-                false, 'Offline compatibility must not fake a ranked API');
+            assert.equal(await page.evaluate(() => window.demianGameApplication.activeGame?.rankRun ?? null),
+                null, 'Offline compatibility must not invent a verified ranked run');
             await context.setOffline(false);
             await page.evaluate(() => window.demianGameApplication.showMenu());
             await wait(page, () => window.demianGameApplication?.sessionState === 'menu');
