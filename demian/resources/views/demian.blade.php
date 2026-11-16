@@ -509,15 +509,30 @@
                     aria-hidden="true"
                     hidden
                 >
-                    <div class="loading-console">
-                        <div class="loading-console__orbit" aria-hidden="true"><i></i><i></i><i></i></div>
-                        <p class="shell-kicker">LOADING GAME MODULE</p>
+                    <div class="loading-console loading-experience" dir="rtl">
+                        <div class="loading-experience__ambient" aria-hidden="true"></div>
+                        <div class="loading-experience__orb" aria-hidden="true">
+                            <span class="loading-experience__orb-ring"></span>
+                            <span class="loading-experience__orb-core">D</span>
+                            <span class="loading-experience__orb-spark"></span>
+                        </div>
+                        <p class="shell-kicker loading-experience__eyebrow">DEMIAN · GAME LOADING</p>
                         <h2 data-loading-title>OPEN WORLD</h2>
-                        <p data-loading-step>در حال آماده‌سازی بازی…</p>
-                        <div data-loading-progress-bar class="shell-progress shell-progress--loading" role="progressbar" aria-label="پیشرفت آماده‌سازی بازی" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span></span></div>
-                        <div class="loading-console__meta">
-                            <span data-loading-progress-value>0%</span>
-                            <span>LAZY IMPORT → PRELOAD → ENTER</span>
+                        <p data-loading-step class="loading-experience__stage" role="status" aria-live="polite" aria-atomic="true">در حال آماده‌سازی بازی…</p>
+                        <div class="loading-experience__track-head">
+                            <span data-loading-phase>مرحلهٔ ۱ از ۴</span>
+                            <span data-loading-progress-value>۰ / ۴</span>
+                        </div>
+                        <div data-loading-progress-bar class="shell-progress shell-progress--loading" role="progressbar" aria-label="پیشرفت چهار مرحلهٔ بارگذاری بازی" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-valuetext="۰ از ۴ مرحله انجام شد"><span></span></div>
+                        <div class="loading-experience__heartbeat" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+                        <div class="loading-experience__statusline">
+                            <span data-loading-health>در حال بررسی منابع ضروری…</span>
+                            <span data-loading-elapsed>۰ ثانیه</span>
+                        </div>
+                        <div class="loading-experience__tip">
+                            <span class="loading-experience__tip-icon" aria-hidden="true">✦</span>
+                            <p data-loading-tip-text>در حال آماده‌سازی بازی…</p>
+                            <button type="button" data-loading-tip-next aria-label="نمایش نکتهٔ بعدی بارگذاری">نکتهٔ بعدی <span aria-hidden="true">↻</span></button>
                         </div>
                     </div>
                 </section>

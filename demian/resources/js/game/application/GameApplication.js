@@ -269,8 +269,8 @@ export default class GameApplication {
             const loadingStartedAt = globalThis.performance?.now?.() ?? Date.now();
             this.transitionSession(SESSION_STATES.LOADING, { gameId });
             await this.shell.showLoading(gameId, {
-                progress: 8,
-                step: 'در حال آماده‌سازی ماژول بازی…',
+                progress: 0,
+                step: 'شروع دریافت منابع ضروری…',
             });
 
             if (this.activeGameId !== gameId || !this.activeGame || params.forceReload) {
@@ -278,12 +278,17 @@ export default class GameApplication {
             } else {
                 this.eventBus.emit('game:loading-step', {
                     gameId,
-                    progress: 100,
-                    step: 'بازی از حافظه آماده است',
+                    progress: 75,
+                    step: 'بازی از حافظه آماده است؛ در حال شروع…',
                 });
             }
 
             await this.beginGameSession(params);
+            this.eventBus.emit('game:loading-step', {
+                gameId,
+                progress: 100,
+                step: 'بازی آماده است',
+            });
             const durationMs = Math.max(0, (globalThis.performance?.now?.() ?? Date.now()) - loadingStartedAt);
             this.loadingTimings.push({ type: 'game', gameId, durationMs });
             if (this.loadingTimings.length > 24) this.loadingTimings.shift();
@@ -336,7 +341,7 @@ export default class GameApplication {
         this.eventBus.emit('game:loading', { gameId, definition });
         this.eventBus.emit('game:loading-step', {
             gameId,
-            progress: 18,
+            progress: 0,
             step: 'در حال دریافت ماژول بازی…',
         });
 
@@ -348,21 +353,28 @@ export default class GameApplication {
         let nextGame = null;
         try {
             nextGame = await this.registry.create(gameId);
+            this.eventBus.emit('game:loading-step', {
+                gameId, progress: 25, step: 'ماژول بازی دریافت شد',
+            });
             const context = this.createGameContext(definition);
 
             this.eventBus.emit('game:loading-step', {
-                gameId,
-                progress: 42,
-                step: 'در حال پیش‌بارگذاری منابع…',
+                gameId, progress: 25, step: 'در حال آماده‌سازی تصاویر و منابع ضروری…',
             });
             await nextGame.preload(context);
+            this.eventBus.emit('game:loading-step', {
+                gameId, progress: 50, step: 'منابع ضروری آماده شدند',
+            });
 
             this.eventBus.emit('game:loading-step', {
                 gameId,
-                progress: 68,
+                progress: 50,
                 step: 'در حال ساخت صحنه و سیستم‌ها…',
             });
             await nextGame.enter(context, params);
+            this.eventBus.emit('game:loading-step', {
+                gameId, progress: 75, step: 'صحنه آماده است؛ در حال شروع بازی…',
+            });
 
             this.runtime.setGame(nextGame);
             this.renderQuality.resetMeasurements();
@@ -385,11 +397,6 @@ export default class GameApplication {
             this.root.dataset.activeGame = gameId;
             this.root.dataset.gameEnvironment = CAFE_ENVIRONMENT_ID;
             this.applyOrientationPreference(definition.orientation);
-            this.eventBus.emit('game:loading-step', {
-                gameId,
-                progress: 100,
-                step: 'آماده‌ی اجرا',
-            });
             this.eventBus.emit('game:launched', {
                 gameId,
                 previousGameId,
