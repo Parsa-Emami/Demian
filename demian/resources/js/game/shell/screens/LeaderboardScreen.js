@@ -24,6 +24,7 @@ export default class LeaderboardScreen extends BaseScreen {
         this.recoveryLink = this.element.querySelector('[data-ranking-recovery-link]');
         this.recoveryStatus = this.element.querySelector('[data-ranking-recovery-status]');
         this.deleteAccount = this.element.querySelector('[data-ranking-delete-account]');
+        this.exportAccount = this.element.querySelector('[data-ranking-export-account]');
         this.issueBackup = this.element.querySelector('[data-ranking-issue-backup]');
         this.backupCode = this.element.querySelector('[data-ranking-backup-code]');
         this.timer = null;
@@ -123,6 +124,33 @@ export default class LeaderboardScreen extends BaseScreen {
                 this.issueBackup.disabled = false;
             }
         };
+        this.onExportAccount = async () => {
+            if (!this.exportAccount) return;
+            this.exportAccount.disabled = true;
+            try {
+                // Only a private, explicit user gesture creates this local file.
+                // Never send account JSON to analytics or browser storage.
+                const snapshot = await this.service.accountData();
+                const blob = new Blob([JSON.stringify(snapshot, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                try {
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = 'demian-account-summary.json';
+                    document.body.append(link);
+                    link.click();
+                    link.remove();
+                    this.recoveryStatus.textContent = 'خلاصه اطلاعات حساب دانلود شد؛ فایل شامل کلید ورود یا کد تخفیف نیست.';
+                } finally {
+                    setTimeout(() => URL.revokeObjectURL(url), 2500);
+                }
+            } catch (error) {
+                this.recoveryStatus.textContent = error.message;
+            } finally {
+                this.exportAccount.disabled = false;
+            }
+        };
+        this.exportAccount?.addEventListener('click', this.onExportAccount);
         this.issueBackup?.addEventListener('click', this.onIssueBackup);
         this.deleteAccount?.addEventListener('click', this.onDeleteAccount);
         this.issueRecovery.addEventListener('click', this.onIssueRecovery);
@@ -139,6 +167,7 @@ export default class LeaderboardScreen extends BaseScreen {
         this.issueBackup.disabled = !this.service.connected;
         this.backupCode.value = '';
         this.deleteAccount.disabled = !this.service.connected;
+        if (this.exportAccount) this.exportAccount.disabled = !this.service.connected || !this.service.identity?.token;
         for (const control of this.recoveryForm.elements) control.disabled = !this.service.connected;
         this.recoveryForm.elements.recovery_code.value = this.service.recoveryOffer ?? '';
         this.recoveryLink.value = '';
