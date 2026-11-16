@@ -73,6 +73,7 @@ if (modern) {
             './build/assets', './offline-packs.json'], { timeout: 240000 });
         const releaseId = JSON.parse(readFileSync(join(extracted, 'offline-packs.json'), 'utf8')).release;
         mergeCompatibleAssets({ release: extracted, releaseId });
+        mkdirSync(archive, { recursive: true });
         cpSync(join(extracted, 'build/assets'), join(archive, 'assets'), { recursive: true });
         copyFileSync(join(extracted, 'build/compat.json'), join(archive, 'compat.json'));
         console.log('Migrated preceding atomic bundle and hashed assets from run ' + legacy.workflow_run.id);
