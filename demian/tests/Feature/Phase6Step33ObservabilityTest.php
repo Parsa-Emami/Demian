@@ -172,4 +172,39 @@ final class Phase6Step33ObservabilityTest extends TestCase
                 ->assertSee('داشبورد مانیتورینگ دمیان');
         }
     }
+
+    public function test_production_prize_readiness_requires_actual_ops_and_recent_cron(): void
+    {
+        config()->set('app.env', 'production');
+        config()->set('demian-ops.enabled', false);
+        $checks = collect(app(\App\Services\Arcade\CafeProductionReadiness::class)
+            ->inspect(true)['checks'])->keyBy('check');
+        $this->assertFalse($checks['step33_observability_enabled']['passed']);
+        $this->assertFalse($checks['step33_cron_heartbeat']['passed']);
+
+        config()->set('demian-ops.enabled', true);
+        Cache::put(OpsReport::HEARTBEAT, now()->timestamp, now()->addMinutes(20));
+        $checks = collect(app(\App\Services\Arcade\CafeProductionReadiness::class)
+            ->inspect(true)['checks'])->keyBy('check');
+        $this->assertTrue($checks['step33_observability_enabled']['passed']);
+        $this->assertTrue($checks['step33_cron_heartbeat']['passed']);
+    }
+
+    public function test_ops_heartbeat_and_check_cli_are_registered_and_return_sanitized_json(): void
+    {
+        config()->set('demian-ops.enabled', true);
+        config()->set('demian-ops.disk_min_free_bytes', 1);
+        $this->assertSame(0, \Illuminate\Support\Facades\Artisan::call(
+            'arcade:ops:heartbeat', ['--json' => true]));
+        $this->assertSame(0, \Illuminate\Support\Facades\Artisan::call(
+            'arcade:ops:check', ['--json' => true]));
+        $output = \Illuminate\Support\Facades\Artisan::output();
+        $decoded = json_decode(trim($output), true, 512, JSON_THROW_ON_ERROR);
+        $this->assertSame('ok', $decoded['status']);
+        $this->assertSame(true, $decoded['enabled']);
+        $this->assertArrayHasKey('metrics', $decoded);
+        $this->assertArrayNotHasKey('db_password', $decoded);
+        $this->assertArrayNotHasKey('token', $decoded);
+    }
+
 }
