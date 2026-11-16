@@ -103,7 +103,7 @@ export default class CharacterVisualService {
         return player ? variants.active : variants.npc;
     }
 
-    async loadPack(slug, preferredVariant = this.runtimeVariant({ player: true }), { background = false } = {}) {
+    async loadPack(slug, preferredVariant = this.runtimeVariant({ player: true }), { background = false, speculative = false } = {}) {
         if (this.disposed) throw new Error('Sprite service disposed');
         const normalizedSlug = BUILTIN_CHARACTER_SLUGS.includes(slug) ? slug : this.activeSlug;
         // A downloaded offline pack deliberately contains the small lite art.
@@ -115,8 +115,11 @@ export default class CharacterVisualService {
             || ['2g', 'slow-2g'].includes(connection?.effectiveType);
         // An explicit Save-Data / 2G preference should never fetch the large
         // player detail atlas before the lightweight fully playable variant.
-        const variants = orderedSpriteVariants(economicalNetwork
+        // Menu speculation must never cascade through multiple large artwork
+        // variants: the explicit game launch retains the normal fallback chain.
+        const candidates = orderedSpriteVariants(economicalNetwork
             ? 'lite' : normalizeSpriteVariant(preferredVariant));
+        const variants = speculative ? candidates.slice(0, 1) : candidates;
         let lastError = null;
 
         for (const variant of variants) {
@@ -136,23 +139,26 @@ export default class CharacterVisualService {
             let meta = this.pendingLoadMeta.get(key);
             // A foreground request joining an optional preload must make the
             // shared download critical, preventing a scene-change abort.
-            if (pending && !background && meta) meta.background = false;
+            if (pending && !background && meta) {
+                meta.background = false;
+                meta.speculative = false;
+            }
             // Never attach a new foreground request to an already cancelled task.
             if (pending && meta?.controller.signal.aborted) pending = null;
             if (!pending) {
                 this.counters.misses++;
                 const controller = new AbortController();
-                meta = { controller, background };
+                meta = { controller, background, speculative: background && speculative };
                 pending = this.loadGate.run(() => withTransientRetry(
                     () => this.loadPair(normalizedSlug, variant, {
                         signal: controller.signal, background: meta.background,
                     }),
                     {
                         signal: controller.signal,
-                        attempts: 2,
+                        attempts: meta.speculative ? 1 : 2,
                         onRetry: () => { this.counters.transientRetries++; },
                     },
-                ));
+                ), { priority: () => meta.background ? 0 : 1 });
                 this.packPromises.set(key, pending);
                 this.pendingLoadMeta.set(key, meta);
             }
@@ -173,7 +179,12 @@ export default class CharacterVisualService {
                 if (isAborted(error, meta?.controller.signal)) throw abortedError();
                 lastError = error;
                 this.counters.failedPairs++;
-                this.failedPairs.set(key, { error, retryAfter: Date.now() + 30000 });
+                // A failed hint must not suppress the real launch for 30s.
+                // A foreground request may promote the shared hint to critical,
+                // in which case normal failure accounting still applies.
+                if (!meta?.speculative) {
+                    this.failedPairs.set(key, { error, retryAfter: Date.now() + 30000 });
+                }
             } finally {
                 if (this.packPromises.get(key) === pending) {
                     this.packPromises.delete(key);

@@ -2,6 +2,7 @@ import BaseScreen from './BaseScreen';
 import ScrollSnapRail from '../../../ui/ScrollSnapRail.js';
 import { preloadFbxCafeArt } from '../../rendering2d/FbxCafeAssets.js';
 import { optionalAssetPolicy } from '../../characters/runtime/MobileNetworkPolicy.js';
+import { prewarmCriticalGameSprite } from '../../performance/GameAssetWarmup.js';
 
 // A small preview only. Never prefetch all map tiles or 12 character atlases.
 export const shouldWarmOpenWorldPreview = policy =>
@@ -17,13 +18,22 @@ function escape(value) {
 }
 
 export default class GameSelectionScreen extends BaseScreen {
-    constructor({ catalog, registry = null, ...options }) {
+    constructor({ catalog, registry = null, visuals = null, ...options }) {
         super(options);
         this.catalog = catalog;
         this.registry = registry;
+        this.visuals = visuals;
         this.prefetched = new Set();
         this.prefetchTimer = null;
         this.onPrefetchIntent = event => this.prefetchIntent(event);
+        this.onPressIntent = event => {
+            const card = event.target?.closest?.('[data-game-card]');
+            const gameId = card?.dataset.gameCard;
+            if (!gameId || !this.catalog.some(game => game.available && game.id === gameId)) return;
+            // Touch has no reliable hover: overlap the exact critical pack
+            // with the transition. Foreground launch promotes this promise.
+            void prewarmCriticalGameSprite(gameId, this.visuals);
+        };
         this.onPrefetchExit = () => this.clearPrefetchTimer();
         this.grid = this.element.querySelector('[data-game-grid]');
         this.rendered = false;
@@ -71,6 +81,7 @@ export default class GameSelectionScreen extends BaseScreen {
         // Fetch only an explicitly hovered or keyboard-focused module; do not
         // fan out into all six downloads on mobile, Save-Data or 3G.
         this.grid.addEventListener('pointerover', this.onPrefetchIntent);
+        this.grid.addEventListener('pointerdown', this.onPressIntent);
         this.grid.addEventListener('focusin', this.onPrefetchIntent);
         this.grid.addEventListener('pointerout', this.onPrefetchExit);
         this.rail = new ScrollSnapRail({
@@ -99,8 +110,10 @@ export default class GameSelectionScreen extends BaseScreen {
         this.prefetchTimer = globalThis.setTimeout(() => {
             this.prefetchTimer = null;
             this.prefetched.add(gameId);
-            // A rejected hint must never prevent a later explicit launch;
-            // registry.load() evicts rejected promises automatically.
+            // Module import remains atomic in production. Overlap the actual
+            // critical sprite atlas+decode with the user's decision time.
+            // Never await optional warmup or let a failed hint block launch.
+            void prewarmCriticalGameSprite(gameId, this.visuals);
             void this.registry.load(gameId).catch(() => {
                 this.prefetched.delete(gameId);
             });
@@ -112,7 +125,14 @@ export default class GameSelectionScreen extends BaseScreen {
         this.rail?.refresh({ preserveIndex: true });
         if (this.warmupHandle !== null || !shouldWarmOpenWorldPreview(optionalAssetPolicy())) return;
         // Begin idle warmup without blocking the visible game-selection menu.
-        const warm = () => { this.warmupHandle = null; void preloadFbxCafeArt(); };
+        const warm = () => {
+            this.warmupHandle = null;
+            if (this.element.hidden) return;
+            // Once selection is visible, prewarm only the active character used
+            // by Open World/Dino Run. No bulk atlas or NPC downloads.
+            void prewarmCriticalGameSprite('open-world', this.visuals);
+            void preloadFbxCafeArt();
+        };
         if (typeof globalThis.requestIdleCallback === 'function') {
             this.warmupType = 'idle';
             this.warmupHandle = globalThis.requestIdleCallback(warm, { timeout: 1000 });
@@ -130,16 +150,25 @@ export default class GameSelectionScreen extends BaseScreen {
         });
     }
 
+    cancelWarmup() {
+        if (this.warmupHandle === null) return;
+        if (this.warmupType === 'idle') globalThis.cancelIdleCallback?.(this.warmupHandle);
+        else globalThis.clearTimeout(this.warmupHandle);
+        this.warmupHandle = null;
+    }
+
+    async beforeClose() {
+        this.clearPrefetchTimer();
+        this.cancelWarmup();
+    }
+
     dispose() {
         this.clearPrefetchTimer();
         this.grid?.removeEventListener('pointerover', this.onPrefetchIntent);
+        this.grid?.removeEventListener('pointerdown', this.onPressIntent);
         this.grid?.removeEventListener('focusin', this.onPrefetchIntent);
         this.grid?.removeEventListener('pointerout', this.onPrefetchExit);
-        if (this.warmupHandle !== null) {
-            if (this.warmupType === 'idle') globalThis.cancelIdleCallback?.(this.warmupHandle);
-            else globalThis.clearTimeout(this.warmupHandle);
-            this.warmupHandle = null;
-        }
+        this.cancelWarmup();
         this.rail?.dispose();
         this.rail = null;
         super.dispose();

@@ -4,6 +4,7 @@ import ScreenManager from './ScreenManager';
 import BootScreen from './screens/BootScreen';
 import CafeMenuScreen from './screens/CafeMenuScreen';
 import GameSelectionScreen from './screens/GameSelectionScreen';
+import { prewarmCriticalGameSprite } from '../performance/GameAssetWarmup.js';
 import LoadingScreen from './screens/LoadingScreen';
 import PauseScreen from './screens/PauseScreen';
 import SettingsScreen from './screens/SettingsScreen';
@@ -50,6 +51,17 @@ export default class GameShell {
         this.booted = false;
 
         this.onClick = this.onClick.bind(this);
+        this.menuWarmupSlug = null;
+        this.onMenuWarmupIntent = event => {
+            if (event.type === 'pointerover' && event.pointerType === 'touch') return;
+            const button = event.target?.closest?.('[data-shell-action="continue"]');
+            if (!button || !this.cafeScreen?.element?.contains(button)) return;
+            const slug = this.app.characterVisuals?.activeSlug;
+            if (!slug || slug === this.menuWarmupSlug) return;
+            this.menuWarmupSlug = slug;
+            void prewarmCriticalGameSprite('open-world', this.app.characterVisuals)
+                .then(success => { if (!success && this.menuWarmupSlug === slug) this.menuWarmupSlug = null; });
+        };
         this.onKeyDown = this.onKeyDown.bind(this);
         this.onSettingsSubmit = this.onSettingsSubmit.bind(this);
         this.onGamepadUi = this.onGamepadUi.bind(this);
@@ -62,7 +74,7 @@ export default class GameShell {
         const screen = (id) => this.shellRoot.querySelector(`[data-screen="${id}"]`);
         this.bootScreen = new BootScreen({ id: SCREEN_IDS.BOOT, element: screen(SCREEN_IDS.BOOT), animation: this.animation });
         this.cafeScreen = new CafeMenuScreen({ id: SCREEN_IDS.CAFE, element: screen(SCREEN_IDS.CAFE), animation: this.animation });
-        this.selectionScreen = new GameSelectionScreen({ id: SCREEN_IDS.SELECTION, element: screen(SCREEN_IDS.SELECTION), animation: this.animation, catalog: this.catalog, registry: this.app.registry });
+        this.selectionScreen = new GameSelectionScreen({ id: SCREEN_IDS.SELECTION, element: screen(SCREEN_IDS.SELECTION), animation: this.animation, catalog: this.catalog, registry: this.app.registry, visuals: this.app.characterVisuals });
         this.loadingScreen = new LoadingScreen({ id: SCREEN_IDS.LOADING, element: screen(SCREEN_IDS.LOADING), animation: this.animation });
         this.pauseScreen = new PauseScreen({ id: SCREEN_IDS.PAUSE, element: screen(SCREEN_IDS.PAUSE), animation: this.animation });
         this.settingsScreen = new SettingsScreen({ id: SCREEN_IDS.SETTINGS, element: screen(SCREEN_IDS.SETTINGS), animation: this.animation, settings: this.settings, input: this.app.input });
@@ -86,6 +98,10 @@ export default class GameShell {
         ].forEach((entry) => this.manager.register(entry));
 
         this.root.addEventListener('click', this.onClick);
+        // User intent only: overlap active sprite fetch with entry to Open World.
+        for (const type of ['pointerover', 'pointerdown', 'focusin']) {
+            this.root.addEventListener(type, this.onMenuWarmupIntent);
+        }
         this.settingsScreen.form?.addEventListener('submit', this.onSettingsSubmit);
         window.addEventListener('keydown', this.onKeyDown);
         document.addEventListener('input:gamepad-ui', this.onGamepadUi);
@@ -369,6 +385,9 @@ export default class GameShell {
 
     async dispose() {
         this.root?.removeEventListener('click', this.onClick);
+        for (const type of ['pointerover', 'pointerdown', 'focusin']) {
+            this.root?.removeEventListener(type, this.onMenuWarmupIntent);
+        }
         this.settingsScreen?.form?.removeEventListener('submit', this.onSettingsSubmit);
         window.removeEventListener('keydown', this.onKeyDown);
         document.removeEventListener('input:gamepad-ui', this.onGamepadUi);

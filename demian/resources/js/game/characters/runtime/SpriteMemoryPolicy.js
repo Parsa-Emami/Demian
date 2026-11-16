@@ -59,18 +59,26 @@ export class SpriteLoadGate {
         this.highWatermark = 0;
     }
 
-    acquire() {
+    acquire({ priority = 0 } = {}) {
         if (this.closed) return Promise.reject(new Error('Sprite loader disposed'));
         if (this.active < this.limit) {
             this.active++;
             this.highWatermark = Math.max(this.highWatermark, this.active);
             return Promise.resolve();
         }
-        return new Promise((resolve, reject) => this.queue.push({ resolve, reject }));
+        return new Promise((resolve, reject) => this.queue.push({ resolve, reject, priority }));
     }
 
     release() {
-        const next = this.queue.shift();
+        // A player-requested sprite must not wait behind optional NPC or menu
+        // prefetch requests. Priority callbacks allow a queued background
+        // request to be promoted when the foreground joins its single flight.
+        const index = this.queue.findIndex(entry => {
+            try { return Number(typeof entry.priority === 'function'
+                ? entry.priority() : entry.priority) > 0; }
+            catch { return false; }
+        });
+        const next = index < 0 ? this.queue.shift() : this.queue.splice(index, 1)[0];
         if (next && !this.closed) {
             // The permit is transferred: active never briefly decreases.
             next.resolve();
@@ -79,8 +87,8 @@ export class SpriteLoadGate {
         }
     }
 
-    async run(task) {
-        await this.acquire();
+    async run(task, options = {}) {
+        await this.acquire(options);
         try {
             if (this.closed) throw new Error('Sprite loader disposed');
             return await task();
