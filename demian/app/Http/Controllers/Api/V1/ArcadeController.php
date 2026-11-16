@@ -138,10 +138,23 @@ final class ArcadeController extends Controller
 
     public function register(Request $request): JsonResponse
     {
-        $name = $this->name($request); $token = Str::random(64);
+        $name = $this->name($request);
+        // Require both explicit terms acceptance and a privacy acknowledgement
+        // in reviewed production. Legacy players do not receive fake consent.
+        $required = config('demian-legal.require_acceptance') ? 'required' : 'sometimes';
+        $legal = $request->validate([
+            'policy_version' => [$required, 'string', Rule::in([config('demian-legal.version')])],
+            'accept_terms' => [$required, 'accepted'],
+            'privacy_acknowledged' => [$required, 'accepted'],
+        ]);
+        $accepted = ($legal['policy_version'] ?? null) === config('demian-legal.version')
+            && $request->boolean('accept_terms') && $request->boolean('privacy_acknowledged');
+        $token = Str::random(64);
         $expires = now()->addDays((int) config('demian-arcade.player_session_days'));
         $player = ArcadePlayer::query()->create(['display_name' => $name,
-            'token_hash' => hash('sha256', $token), 'token_expires_at' => $expires]);
+            'token_hash' => hash('sha256', $token), 'token_expires_at' => $expires,
+            'legal_policy_version' => $accepted ? config('demian-legal.version') : null,
+            'legal_accepted_at' => $accepted ? now() : null]);
 
         return response()->json(['player_id' => $player->id, 'display_name' => $player->display_name,
             'token' => $token, 'token_expires_at' => $expires->toIso8601String()], 201);
