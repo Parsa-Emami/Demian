@@ -1,80 +1,35 @@
-# استقرار Atomic دمیان روی GitHub Pages
+# استقرار نسخه‌دار Code Splitting دمیان (Vite 8 / GitHub Pages)
 
-## خطای قبلی
+## علت مشکل قبلی
+Bundle قدیمی یکپارچه بود. استقرار GitHub Pages تمام فایل‌های قبلی را جایگزین می‌کند؛ بنابراین فعال‌کردن Code Splitting بدون حفظ Chunkهای قدیمی باعث خطای بارگذاری ماژول در تب‌های باز می‌شد.
 
-در Buildهای قبلی هر بازی با Dynamic Import به فایل مستقلی مانند این تبدیل می‌شد:
+## معماری کنونی
+- Vite از codeSplitting: true و strictExecutionOrder: true استفاده می‌کند.
+- هرکدام از شش بازی ماژول مستقل دارد؛ منو فقط وابستگی‌های Startup را دریافت می‌کند.
+- اعتبارسنجی Manifest وجود تمام Chunkهای لازم و صحت لینک‌های Import را بررسی می‌کند.
+- بسته‌های انتخابی PWA فایل‌های JavaScript ضروری همان بازی و وابستگی‌های مشترک آن را نیز دانلود می‌کنند.
+- فایل build/compat.json هش SHA-256 فایل‌های Build را نگه می‌دارد. در خروجی هر انتشار، فایل‌های تا شش نسل آخر حفظ می‌شوند.
+- GitHub Actions آرشیو آخرین اجرای موفق main را با نام demian-build-compat دریافت می‌کند. در مهاجرت اولیه از Bundle یکپارچه، نبود آرشیو مجاز است؛ بعد از آن نبود آرشیو موجب شکست انتشار می‌شود.
+- Artifact سازگاری با نگهداری ۹۰روزه ذخیره می‌شود. خروجی cPanel شامل فایل‌های حفظ‌شده است.
+- در خطای Chunk، مرورگر فقط یک بار با URL تازه تلاش مجدد می‌کند و از حلقهٔ بی‌پایان جلوگیری می‌شود.
 
-```text
-build/assets/RolePlayGame-<content-hash>.js
-build/assets/OpenWorldGame-<content-hash>.js
-```
+## محدودیت‌ها
+- سازگاری آنلاین تا شش نسل اخیر تضمین می‌شود، نه برای تاریخچهٔ نامحدود.
+- اگر Artifact قبلی از بین برود، انتشار جدیدِ چندChunkی عمداً متوقف می‌شود تا نسخهٔ ناسازگار روی سایت ننشیند.
+- هنگام انتشار دستی cPanel تمام فایل‌های build موجود در بسته را انتقال بده؛ فقط فایل HTML یا app جدید کافی نیست.
+- سطوح Collision، امتیازدهی و قوانین ضدتقلب تغییر نمی‌کنند.
+- برای ادعای افزایش سرعت، اندازه‌گیری Cold/Warm و دستگاه واقعی لازم است؛ سبز بودن CI به‌تنهایی کافی نیست.
 
-GitHub Pages در هر استقرار Artifact جدید را جایگزین می‌کند. اگر مرورگر HTML یا Bundle قبلی را نگه می‌داشت، Runtime قدیمی فایل Hashدار حذف‌شده را درخواست می‌کرد و بازی با خطای `error loading dynamically imported module` متوقف می‌شد.
+## اعتبارسنجی
+npm run test:ci
+npm run build:static
+npm run validate:build
+npm run validate:static-assets
+npm run test:versioned-rollover:browser
+npm run test:step30:startup
+npm run test:step31:compatibility
+npm run test:open-world-step24:browser
+npm run test:mobile-09:browser
+همهٔ آزمون‌ها و Release QA باید قبل از ادغام PR پاس شوند.
 
-## راه‌حل
-
-رجیستری بازی همچنان API غیرهمزمان دارد، اما Vite 8 با تنظیم زیر تمام Dynamic Importها را داخل یک Bundle قرار می‌دهد:
-
-```js
-build: {
-    emptyOutDir: true,
-    rolldownOptions: {
-        output: {
-            codeSplitting: false,
-            strictExecutionOrder: true,
-        },
-    },
-}
-```
-
-نتیجه:
-
-- فقط یک فایل JavaScript منتشر می‌شود.
-- Main Bundle هیچ وابستگی‌ای به Chunk مستقل بازی ندارد.
-- `RolePlayGame-*`، `OpenWorldGame-*` و فایل‌های مشابه تولید نمی‌شوند.
-- Build قبلی قبل از Build جدید از `public/build` حذف می‌شود.
-
-## Validator تولید
-
-`tools/validate_build_bundle.mjs` موارد زیر را بررسی می‌کند:
-
-- وجود `public/build/manifest.json`
-- Entry بودن `resources/js/app.js`
-- نداشتن `dynamicImports` در تمام Entryها
-- وجود فایل Entry روی دیسک
-- تولید دقیقاً یک فایل JavaScript
-- نبودن Chunk مستقل بازی‌ها
-
-Workflow فقط در صورت عبور از این Validator اجازه ساخت Artifact و Deploy دارد.
-
-## Recovery مرورگر
-
-یک Script کوچک قبل از `@vite` در Blade ثبت شده است. این Script رویداد رسمی `vite:preloadError` و خطاهای Import را می‌شنود و فقط یک بار صفحه را با Query جدید بارگذاری می‌کند. Timestamp در `sessionStorage` مانع Loop بی‌نهایت می‌شود.
-
-این Recovery برای انتقال بین نسخه‌هاست؛ راه‌حل اصلی همچنان Bundle Atomic است.
-
-## Character Asset Fallback
-
-Workflow فایل‌های سازگاری V4 را از V5 برای تیام، روناک، امیررضا و پارسا می‌سازد. در Runtime نیز اگر همه URLهای Atlas/Sprite شکست بخورند، یک Canvas Texture پیکسلی ساخته می‌شود. بنابراین خرابی Asset باعث توقف Map نمی‌شود.
-
-## روند CI
-
-1. نصب Composer با Dependencyهای تست
-2. Migration و Seed
-3. Laravel Test
-4. JavaScript Smoke Tests
-5. Validatorهای UI و فازهای ۳ تا ۸
-6. Build تمیز Vite
-7. Atomic Bundle Validation
-8. ساخت Static Export
-9. بررسی HTML، Character JSON، Assetها، Version Marker و تعداد Bundleها
-10. Upload و Deploy Artifact رسمی GitHub Pages
-
-## بررسی بعد از Deploy
-
-فایل `_site/version.json` شامل Runtime، Commit، Run ID و `bundle_mode: atomic` است. صفحه نیز این Markerها را دارد:
-
-```text
-data-runtime-version="9.1.0-atomic-pixel2d"
-data-deployment-mode="atomic-bundle"
-```
+در اولین مهاجرت، Workflow بستهٔ استاتیک آخرین انتشار موفق یکپارچه را نیز بازیابی می‌کند و JavaScript/CSS فونت‌های آن را به نسل اول سازگاری منتقل می‌کند؛ بنابراین HTML قبلی نیز به فایل Entry قدیمی دسترسی دارد.

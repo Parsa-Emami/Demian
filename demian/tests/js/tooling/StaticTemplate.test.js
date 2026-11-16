@@ -28,3 +28,17 @@ test('static export protects literal blocks and rejects unhandled Blade directiv
         assert.throws(() => renderStaticTemplate(source, { entry }), /Unsupported template directive/);
     }
 });
+
+test('only the startup dependency is module-preloaded, never a lazy game', () => {
+    const manifest = {
+        '_core': { file: 'assets/core.js', css: ['assets/core.css'] },
+        'resources/js/game/games/open-world/OpenWorldGame.js':
+            { file: 'assets/OpenWorldGame-lazy.js', isDynamicEntry: true },
+    };
+    const entry = { file: 'assets/app-main.js', imports: ['_core'],
+        dynamicImports: ['resources/js/game/games/open-world/OpenWorldGame.js'] };
+    const html = renderStaticTemplate('@vite(["resources/js/app.js"])', { entry, manifest });
+    assert.match(html, /modulepreload" href="build\/assets\/core\.js"/);
+    assert.match(html, /stylesheet" href="build\/assets\/core\.css"/);
+    assert.doesNotMatch(html, /OpenWorldGame-lazy/);
+});

@@ -1,4 +1,24 @@
-export function renderStaticTemplate(template, { entry, arcadeApi = '', publicOrigin = '' }) {
+export function renderStaticTemplate(template, { entry, manifest = {}, arcadeApi = '', publicOrigin = '' }) {
+    const css = new Set(entry.css ?? []);
+    const staticModules = new Set();
+    const seen = new Set();
+    const visit = keys => {
+        for (const key of keys ?? []) {
+            if (seen.has(key)) continue;
+            seen.add(key);
+            const item = manifest[key];
+            if (!item?.file) throw new Error('Missing static entry dependency: ' + key);
+            if (item.file !== entry.file && item.file.endsWith('.js')) staticModules.add(item.file);
+            for (const path of item.css ?? []) css.add(path);
+            visit(item.imports);
+        }
+    };
+    visit(entry.imports);
+    const tags = [
+        ...[...css].map(path => '<link rel="stylesheet" href="build/' + path + '">'),
+        ...[...staticModules].map(path => '<link rel="modulepreload" href="build/' + path + '">'),
+        '<script type="module" src="build/' + entry.file + '"></script>',
+    ].join('\n');
     if (publicOrigin && (!/^https:\/\/[a-z0-9][a-z0-9.-]*$/i.test(publicOrigin)
         || publicOrigin.includes('..'))) {
         throw new Error('DEMIAN_PUBLIC_ORIGIN must be a bare HTTPS hostname.');
@@ -9,7 +29,7 @@ export function renderStaticTemplate(template, { entry, arcadeApi = '', publicOr
             literals.push(literal);
             return `\u0000DEMIAN_LITERAL_${literals.length - 1}\u0000`;
         })
-        .replace(/@vite\([\s\S]*?\)/, `${(entry.css ?? []).map(c => `<link rel="stylesheet" href="build/${c}">`).join('\n')}\n<script type="module" src="build/${entry.file}"></script>`)
+        .replace(/@vite\([\s\S]*?\)/, tags)
         .replace('name="demian-static-release" content="false"',
             'name="demian-static-release" content="true"')
         .replace(/\{\{\s*csrf_token\(\)\s*\}\}/g, '')

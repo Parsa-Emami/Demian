@@ -7,6 +7,7 @@ on:
   workflow_dispatch:
 permissions:
   contents: read
+  actions: read
   pages: write
   id-token: write
 concurrency:
@@ -22,6 +23,8 @@ jobs:
         working-directory: demian
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
       - uses: actions/setup-node@v4
         with:
           node-version: 24
@@ -39,6 +42,11 @@ jobs:
       - run: npm run validate:final
       - run: npm run validate:ui-layers
       - run: npm run validate:characters:v14
+      - name: Restore previous hashed modules before a main release
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        run: node tools/restore_previous_build.mjs
+        env:
+          GH_TOKEN: ${{ github.token }}
       - name: Build static release (API opt-in only after provisioning)
         run: npm run build:static
         env:
@@ -48,6 +56,16 @@ jobs:
           DEMIAN_ARCADE_API_URL: ${{ github.ref == 'refs/heads/main' && vars.DEMIAN_ARCADE_ENABLE_RANKED == 'true' && vars.DEMIAN_ARCADE_API_URL || '' }}
       - name: Validate optimized production assets
         run: npm run validate:static-assets
+      - name: Archive compatible hashed chunks for next main deployment
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: demian-build-compat
+          path: |
+            demian/_site/build/assets/
+            demian/_site/build/compat.json
+          retention-days: 90
+          if-no-files-found: error
       - name: Package portable static PWA for cPanel public_html
         if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
         run: tar -czf "$RUNNER_TEMP/demiancafe-static.tar.gz" -C _site .
@@ -58,11 +76,13 @@ jobs:
           path: ${{ runner.temp }}/demiancafe-static.tar.gz
           retention-days: 7
           if-no-files-found: error
-      # Expected one atomic JavaScript bundle; bundle_mode: atomic
+      # Versioned chunks, bounded integrity-verified compatibility generations.
       - run: npm run validate:build
       - run: npx playwright install chromium --only-shell
       - name: Install Firefox and WebKit for Phase 6 Step 31 engine compatibility
         run: npx playwright install --with-deps firefox webkit
+      - name: Old open browser tab loads old dynamic game chunk after a new publish
+        run: npm run test:versioned-rollover:browser
       - name: Phase 1 mobile startup diagnosis — cold/warm/PWA and per-game timings
         run: timeout --signal=TERM --kill-after=10s 240s npm run test:startup:browser
       - run: npm run test:coffee-crash:browser

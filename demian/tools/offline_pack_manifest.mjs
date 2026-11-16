@@ -1,5 +1,5 @@
 /** Mobile-09: deterministic, bounded, portable optional offline game packages. */
-import { existsSync, readdirSync, statSync } from 'node:fs';
+import { existsSync, readdirSync, statSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { BUILTIN_CHARACTER_SLUGS, characterPackVersion } from '../resources/js/game/characters/CharacterVisualContract.js';
 
@@ -9,7 +9,56 @@ export const OFFLINE_GAME_IDS = Object.freeze([
 export const OFFLINE_MAX_PACK_BYTES = 96 * 1024 * 1024;
 const CLEAN = /^[a-zA-Z0-9][a-zA-Z0-9/_\-.]*$/;
 
-export function buildOfflinePackManifest({ release, entry, releaseId } = {}) {
+
+const GAME_MODULES = Object.freeze({
+    'open-world': 'open-world/OpenWorldGame.js',
+    'dino-run': 'dino-run/DinoRunGame.js',
+    'after-hours': 'after-hours/AfterHoursGame.js',
+    'cafe-rush': 'cafe-rush/CafeRushGame.js',
+    'cafe-critters': 'cafe-critters/CafeCrittersGame.js',
+    'coffee-crash': 'coffee-crash/CoffeeCrashGame.js',
+});
+
+export function splitOfflineModules(viteManifest = {}) {
+    const core = new Set();
+    const games = Object.fromEntries(OFFLINE_GAME_IDS.map(id => [id, new Set()]));
+    const entryKey = 'resources/js/app.js';
+    const entry = viteManifest[entryKey];
+    if (!entry) return { core: [], games: Object.fromEntries(
+        OFFLINE_GAME_IDS.map(id => [id, []])) };
+    const follow = (key, into, includeDynamic, seen = new Set()) => {
+        if (seen.has(key)) return;
+        seen.add(key);
+        const row = viteManifest[key];
+        if (!row?.file) throw new Error('Missing split offline dependency: ' + key);
+        into.add('build/' + row.file);
+        for (const path of [...(row.css ?? []), ...(row.assets ?? [])]) into.add('build/' + path);
+        for (const child of row.imports ?? []) follow(child, into, includeDynamic, seen);
+        if (includeDynamic) {
+            for (const child of row.dynamicImports ?? []) {
+                if (child !== key) follow(child, into, true, seen);
+            }
+        }
+    };
+    follow(entryKey, core, false);
+    const gameKeys = new Set(Object.values(GAME_MODULES).map(path =>
+        'resources/js/game/games/' + path));
+    for (const dynamic of entry.dynamicImports ?? []) {
+        if (dynamic !== entryKey && !gameKeys.has(dynamic)) {
+            follow(dynamic, core, true);
+        }
+    }
+    for (const [id, module] of Object.entries(GAME_MODULES)) {
+        const key = 'resources/js/game/games/' + module;
+        if (!viteManifest[key]) throw new Error('Missing offline game chunk: ' + key);
+        follow(key, games[id], true);
+        for (const path of core) games[id].delete(path);
+    }
+    return { core: [...core], games: Object.fromEntries(
+        OFFLINE_GAME_IDS.map(id => [id, [...games[id]]])) };
+}
+
+export function buildOfflinePackManifest({ release, entry, releaseId, viteManifest = null } = {}) {
     if (!release || !entry?.file || !/^[a-f0-9]{16}$/.test(releaseId ?? '')) {
         throw new Error('A built release and 16-character release hash are required.');
     }
@@ -23,7 +72,11 @@ export function buildOfflinePackManifest({ release, entry, releaseId } = {}) {
     const buildRoot = join(release, 'build/assets');
     const buildFonts = readdirSync(buildRoot).filter(name => name.endsWith('.woff2'))
         .map(name => 'build/assets/' + name);
+    const manifestFile = join(release, 'build/manifest.json');
+    const chunks = splitOfflineModules(viteManifest ?? (existsSync(manifestFile)
+        ? JSON.parse(readFileSync(manifestFile, 'utf8')) : {}));
     const corePaths = [
+        ...chunks.core,
         'index.html', 'characters.json', 'manifest.webmanifest',
         'privacy/index.html', 'terms/index.html', 'competition-rules/index.html',
         'build/' + entry.file,
@@ -73,7 +126,7 @@ export function buildOfflinePackManifest({ release, entry, releaseId } = {}) {
     };
     const coreBytes = core.reduce((sum, asset) => sum + asset.bytes, 0);
     const games = OFFLINE_GAME_IDS.map(id => {
-        const files = unique(extras[id]);
+        const files = unique([...extras[id], ...chunks.games[id]]);
         const bytes = files.reduce((sum, asset) => sum + asset.bytes, 0);
         if (coreBytes + bytes > OFFLINE_MAX_PACK_BYTES) {
             throw new Error('Offline pack exceeds 96 MiB budget: ' + id);

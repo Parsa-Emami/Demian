@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync, truncateSync, readFileSync, renameSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, dirname } from 'node:path';
-import { buildOfflinePackManifest, OFFLINE_GAME_IDS, OFFLINE_MAX_PACK_BYTES } from '../../../tools/offline_pack_manifest.mjs';
+import { buildOfflinePackManifest, splitOfflineModules, OFFLINE_GAME_IDS, OFFLINE_MAX_PACK_BYTES } from '../../../tools/offline_pack_manifest.mjs';
 import { BUILTIN_CHARACTER_SLUGS, characterPackVersion } from '../../../resources/js/game/characters/CharacterVisualContract.js';
 import { sendPwaMessage } from '../../../resources/js/game/performance/PwaOfflineManager.js';
 
@@ -115,4 +115,35 @@ test('worker only downloads on explicit message, refuses private API caching, an
     assert.match(sw, /await caches\.delete\(cacheName\)/);
     assert.match(sw, /event\.waitUntil\(self\.skipWaiting\(\)\)/);
     assert.doesNotMatch(sw, /fetch\([^)]*\/api\/v1\/arcade/);
+});
+
+test('offline game packs include versioned game chunks and their shared dependencies', () => {
+    const names = {
+        'open-world': 'open-world/OpenWorldGame.js',
+        'dino-run': 'dino-run/DinoRunGame.js',
+        'after-hours': 'after-hours/AfterHoursGame.js',
+        'cafe-rush': 'cafe-rush/CafeRushGame.js',
+        'cafe-critters': 'cafe-critters/CafeCrittersGame.js',
+        'coffee-crash': 'coffee-crash/CoffeeCrashGame.js',
+    };
+    const vite = {
+        'resources/js/app.js': { file: 'assets/app.js', imports: ['_base'],
+            dynamicImports: Object.values(names).map(n => 'resources/js/game/games/' + n) },
+        '_base': { file: 'assets/boot.js' },
+        '_game-shared': { file: 'assets/shared-game.js' },
+    };
+    for (const [id, name] of Object.entries(names)) {
+        vite['resources/js/game/games/' + name] = {
+            file: 'assets/' + id + '.js', isDynamicEntry: true, imports: ['_game-shared'],
+        };
+    }
+    const result = splitOfflineModules(vite);
+    assert.ok(result.core.includes('build/assets/boot.js'));
+    assert.ok(!result.core.includes('build/assets/open-world.js'));
+    for (const id of OFFLINE_GAME_IDS) {
+        assert.ok(result.games[id].includes('build/assets/' + id + '.js'));
+        assert.ok(result.games[id].includes('build/assets/shared-game.js'));
+    }
+    delete vite['resources/js/game/games/' + names['open-world']];
+    assert.throws(() => splitOfflineModules(vite), /Missing offline game chunk/);
 });
