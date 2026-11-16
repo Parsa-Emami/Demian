@@ -10,6 +10,7 @@ import { buildLegalPages } from './build_legal_pages.mjs';
 import { shouldExportAsset } from './release_asset_policy.mjs';
 import { validateReleaseAssets } from './validate_release_assets.mjs';
 import { buildOfflinePackManifest } from './offline_pack_manifest.mjs';
+import { mergeCompatibleAssets } from './compatible_build_assets.mjs';
 const root = resolve(import.meta.dirname, '..');
 const out = resolve(root, process.argv.find((a) => a.startsWith('--out='))?.slice(6) ?? '_site');
 const arcadeApi = process.env.DEMIAN_ARCADE_API_URL?.trim() ?? '';
@@ -20,7 +21,8 @@ if (pagesCustomDomain && (pagesCustomDomain !== 'demiancafe.ir' || publicOrigin 
 }
 if (arcadeApi && !/^https:\/\/[^\s<>"']+\/api\/v1\/arcade\/?$/.test(arcadeApi)) throw new Error('DEMIAN_ARCADE_API_URL must be an HTTPS arcade API URL.');
 if (out === root || out === join(root, 'public')) throw new Error('Output must be a separate release folder.');
-const entry = JSON.parse(readFileSync(join(root, 'public/build/manifest.json'), 'utf8'))['resources/js/app.js'];
+const viteManifest = JSON.parse(readFileSync(join(root, 'public/build/manifest.json'), 'utf8'));
+const entry = viteManifest['resources/js/app.js'];
 if (!entry?.file) throw new Error('Run npm run build first.');
 mkdirSync(out, { recursive: true });
 rmSync(join(out, 'assets'), { recursive: true, force: true });
@@ -43,7 +45,7 @@ for (const file of ['manifest.webmanifest', 'favicon.ico', 'robots.txt', 'game-i
     if (existsSync(join(root, 'public', file))) cpSync(join(root, 'public', file), join(out, file));
 }
 cpSync(join(root, 'public/icons'), join(out, 'icons'), { recursive: true });
-let html = renderStaticTemplate(readFileSync(join(root, 'resources/views/demian.blade.php'), 'utf8'), { entry, arcadeApi, publicOrigin });
+let html = renderStaticTemplate(readFileSync(join(root, 'resources/views/demian.blade.php'), 'utf8'), { entry, manifest: viteManifest, arcadeApi, publicOrigin });
 // Anonymous performance telemetry remains OFF unless explicitly opted in
 // on a provisioned API. No player identifiers are collected by this flag.
 if (process.env.DEMIAN_OPS_CLIENT_TELEMETRY === 'true' && arcadeApi) {
@@ -80,7 +82,7 @@ const optimized = JSON.parse(execFileSync(process.env.DEMIAN_PYTHON_BIN || 'pyth
 ], { cwd: root, encoding: 'utf8', timeout: 240000, maxBuffer: 1024 * 1024 }));
 console.log('Phase 4 Step 18 pixel-exact sprites: ' + optimized.converted +
     '/' + optimized.candidates + ' WebP, ' + optimized.savedBytes + ' bytes saved.');
-const provisional = buildOfflinePackManifest({ release: out, entry,
+const provisional = buildOfflinePackManifest({ release: out, entry, viteManifest,
     releaseId: '0000000000000000' });
 // Hash the actual offline-critical assets as well as the atomic app bundle.
 // Art-only changes now force a new offline release instead of mixing packs.
@@ -95,6 +97,13 @@ for (const path of resourcePaths) {
 }
 const releaseId = fingerprint.digest('hex').slice(0, 16);
 const offlinePacks = { ...provisional, release: releaseId };
+const compat = mergeCompatibleAssets({
+    release: out, releaseId,
+    archive: join(root, '.release-asset-archive'),
+    requireArchive: process.env.DEMIAN_REQUIRE_COMPAT_ARCHIVE === 'true',
+});
+console.log('Versioned build compatibility: ' + compat.generations + ' generations, ' +
+    compat.retainedAssets + ' retained assets.');
 writeFileSync(join(out, 'offline-packs.json'), JSON.stringify(offlinePacks, null, 2) + '\n');
 const workerTemplate = readFileSync(join(root, 'tools/templates/service-worker.js'), 'utf8');
 if (!workerTemplate.includes('__DEMIAN_RELEASE_ID__')) throw new Error('PWA worker version placeholder missing.');
