@@ -55,3 +55,49 @@ Artisan::command('inspire', function () {
 \Illuminate\Support\Facades\Schedule::command('arcade:anticheat:prune --json')
     ->dailyAt('03:40')->withoutOverlapping(30)->onOneServer()
     ->when(fn (): bool => (bool) config('demian-arcade.anticheat.enabled', false));
+
+
+// Step 33: opt-in and cheap. A database-backed cache works on cPanel;
+// there is no requirement for Redis, a daemon or external telemetry vendor.
+\Illuminate\Support\Facades\Artisan::command('arcade:ops:heartbeat {--json}', function (): int {
+    if (config('demian-ops.enabled') !== true) {
+        $this->line('Observability disabled.');
+        return 0;
+    }
+    try {
+        \Illuminate\Support\Facades\Cache::put(
+            \App\Services\Arcade\OpsReport::HEARTBEAT,
+            now()->timestamp,
+            now()->addMinutes(20)
+        );
+        if ($this->option('json')) $this->line('{"status":"ok","heartbeat":true}');
+        else $this->info('Observability heartbeat recorded.');
+        return 0;
+    } catch (\Throwable) {
+        $this->error('Heartbeat failed. Inspect private application logs.');
+        return 1;
+    }
+})->purpose('Record a private, expiring Cron heartbeat for operational alerts.');
+
+\Illuminate\Support\Facades\Artisan::command('arcade:ops:check {--json}',
+    function (\App\Services\Arcade\OpsReport $report,
+        \App\Services\Arcade\OpsAlertDispatcher $alerts): int {
+        $status = $report->snapshot();
+        $sent = $alerts->dispatch($status);
+        $status['alert_notifications_triggered'] = $sent;
+        if ($this->option('json')) {
+            $this->line(json_encode($status, JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES));
+        } else {
+            $this->info('Operations status: '.$status['status']);
+            foreach ($status['alerts'] as $alert) $this->warn($alert);
+        }
+        return $status['status'] === 'degraded' ? 1 : 0;
+    }
+)->purpose('Inspect sanitized API metrics, Cron, MySQL, cache and disk; deduplicate alerts.');
+
+\Illuminate\Support\Facades\Schedule::command('arcade:ops:heartbeat --json')
+    ->everyFiveMinutes()->withoutOverlapping(5)->onOneServer()
+    ->when(fn (): bool => config('demian-ops.enabled') === true);
+\Illuminate\Support\Facades\Schedule::command('arcade:ops:check --json')
+    ->everyFiveMinutes()->withoutOverlapping(5)->onOneServer()
+    ->when(fn (): bool => config('demian-ops.enabled') === true);

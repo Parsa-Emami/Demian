@@ -43,7 +43,13 @@ for (const file of ['manifest.webmanifest', 'favicon.ico', 'robots.txt', 'game-i
     if (existsSync(join(root, 'public', file))) cpSync(join(root, 'public', file), join(out, file));
 }
 cpSync(join(root, 'public/icons'), join(out, 'icons'), { recursive: true });
-const html = renderStaticTemplate(readFileSync(join(root, 'resources/views/demian.blade.php'), 'utf8'), { entry, arcadeApi, publicOrigin });
+let html = renderStaticTemplate(readFileSync(join(root, 'resources/views/demian.blade.php'), 'utf8'), { entry, arcadeApi, publicOrigin });
+// Anonymous performance telemetry remains OFF unless explicitly opted in
+// on a provisioned API. No player identifiers are collected by this flag.
+if (process.env.DEMIAN_OPS_CLIENT_TELEMETRY === 'true' && arcadeApi) {
+    html = html.replace('name="demian-ops-client" content="off"',
+        'name="demian-ops-client" content="on"');
+}
 writeFileSync(join(out, 'index.html'), html);
 // Three self-contained Persian legal pages share the release fingerprint.
 buildLegalPages(out);

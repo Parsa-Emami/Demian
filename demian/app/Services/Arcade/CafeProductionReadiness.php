@@ -67,6 +67,16 @@ final class CafeProductionReadiness
 
         if ($requireLive) {
             if (config('app.env') === 'production') {
+                $add('step33_observability_enabled', config('demian-ops.enabled') === true);
+                try {
+                    $heartbeat = \Illuminate\Support\Facades\Cache::get(OpsReport::HEARTBEAT);
+                    $healthyCron = is_numeric($heartbeat)
+                        && now()->timestamp - (int) $heartbeat >= 0
+                        && now()->timestamp - (int) $heartbeat <= (int) config('demian-ops.heartbeat_max_age_seconds', 600);
+                } catch (\Throwable) {
+                    $healthyCron = false;
+                }
+                $add('step33_cron_heartbeat', $healthyCron);
                 $add('legal_publication_approved', config('demian-legal.publication_approved') === true);
                 $add('legal_acceptance_enforced', config('demian-legal.require_acceptance') === true);
             }

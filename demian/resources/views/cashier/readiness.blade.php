@@ -4,6 +4,7 @@
 <div class="row"><a class="button secondary" href="{{ route('cashier.index') }}">بازگشت</a></div>
 <section class="panel">
 <h1>بررسی آمادگی بهره‌برداری کافه</h1>
+<p><a href="{{ route('cashier.observability') }}">داشبورد مانیتورینگ و هشدارها</a></p>
 <div class="{{ $result['status'] === 'passed' ? 'ok' : 'alert' }}" role="status">
 وضعیت: {{ $result['status'] === 'passed' ? 'کنترل‌های خودکار موفق' : 'آماده فعال‌سازی نیست' }}
 </div>

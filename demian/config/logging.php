@@ -58,6 +58,16 @@ return [
             'ignore_exceptions' => false,
         ],
 
+        // Step 33: append-only JSON lines, seven-day rotation in Laravel
+        // shared/private storage. Never place these logs under public_html.
+        'demian_ops' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/demian-ops.log'),
+            'level' => 'info',
+            'days' => 7,
+            'formatter' => \Monolog\Formatter\JsonFormatter::class,
+        ],
+
         'single' => [
             'driver' => 'single',
             'path' => storage_path('logs/laravel.log'),

@@ -1,0 +1,22 @@
+name: Step 33 independent Demian API health
+
+on:
+  schedule:
+    - cron: "17,47 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  health:
+    # Explicit opt-in; an unprovisioned domain must never be misreported as monitored.
+    if: vars.DEMIAN_MONITOR_API_ORIGIN == 'https://api.demiancafe.ir'
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify TLS and private-schema-free public API health
+        env:
+          DEMIAN_MONITOR_API_ORIGIN: ${{ vars.DEMIAN_MONITOR_API_ORIGIN }}
+        run: python3 demian/tools/check_step33_public_health.py

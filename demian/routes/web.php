@@ -11,6 +11,7 @@ use App\Http\Controllers\Cafe\CafeGiftController;
 use App\Http\Controllers\Cafe\CafeAntiCheatController;
 use App\Http\Controllers\Cafe\CafeRewardCampaignController;
 use App\Http\Controllers\Cafe\CafeCouponSupportController;
+use App\Http\Controllers\Cafe\CafeObservabilityController;
 
 // Authorized cafe staff use Laravel's CSRF-protected web session middleware,
 // including when the API host is in API-only mode. Never open character studio.
@@ -94,6 +95,9 @@ Route::prefix('cashier')->name('cashier.')->group(function (): void {
                 'throttle:arcade-cashier-admin'])->name('anticheat.hold');
         Route::get('/admin/audit', [CafeAdminController::class, 'audit'])
             ->middleware(RequireCafePermission::class.':audit.ledger')->name('audit');
+        Route::get('/admin/observability', CafeObservabilityController::class)
+            ->middleware(RequireCafePermission::class.':operations.readiness')
+            ->name('observability');
         Route::get('/admin/readiness', [CafeAdminController::class, 'readiness'])
             ->middleware(RequireCafePermission::class.':operations.readiness')->name('readiness');
         Route::post('/logout', [CashierController::class, 'logout'])->name('logout');
