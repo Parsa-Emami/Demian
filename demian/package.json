@@ -44,6 +44,7 @@
         "test:coffee-crash-step28:browser": "node tools/check_phase5_step28_coffee_crash.mjs",
         "test:step30:startup": "node tools/check_phase6_step30_startup.mjs",
         "test:step31:compatibility": "node tools/check_phase6_step31_compatibility.mjs",
+    "test:step32:legal": "node tools/check_phase6_step32_legal.mjs",
         "test:step31:collect": "node tools/qa/step31_collect.mjs",
         "import:cafe:fbx": "python3 tools/import_fbx_cafe.py sources/demian-cafe.fbx.gz.001 && python3 tools/build_fbx_cafe_layout.py && node tools/bake_fbx_cafe.mjs && python3 tools/fbx/finish_bake.py",
         "test:cafe:browser": "node tools/check_fbx_cafe.mjs",
