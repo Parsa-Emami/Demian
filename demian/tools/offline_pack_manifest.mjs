@@ -12,7 +12,7 @@ const CLEAN = /^[a-zA-Z0-9][a-zA-Z0-9/_\-.]*$/;
 const GAME_STYLES = Object.freeze({
     'dino-run': 'resources/css/phase5-step23-dino-run.css',
     'after-hours': 'resources/css/after-hours.css',
-    'cafe-rush': 'resources/css/cafe-rush.css',
+    'cafe-rush': ['resources/css/after-hours.css', 'resources/css/cafe-rush.css'],
     'cafe-critters': 'resources/css/cafe-critters.css',
     'coffee-crash': 'resources/css/coffee-crash.css',
 });
@@ -122,7 +122,11 @@ export function buildOfflinePackManifest({ release, entry, releaseId } = {}) {
         const files = unique([
             ...extras[id],
             ...buildDependencies(GAME_MODULES[id]).filter(path => !eagerBuildAssets.has(path)),
-            ...(GAME_STYLES[id] ? buildDependencies(GAME_STYLES[id]).filter(path => !eagerBuildAssets.has(path)) : []),
+            ...(GAME_STYLES[id]
+                ? (Array.isArray(GAME_STYLES[id]) ? GAME_STYLES[id] : [GAME_STYLES[id]])
+                    .flatMap(key => buildDependencies(key))
+                    .filter(path => !eagerBuildAssets.has(path))
+                : []),
         ]);
         const bytes = files.reduce((sum, asset) => sum + asset.bytes, 0);
         if (coreBytes + bytes > OFFLINE_MAX_PACK_BYTES) {
