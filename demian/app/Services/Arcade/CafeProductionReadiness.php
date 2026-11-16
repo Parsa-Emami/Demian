@@ -66,6 +66,10 @@ final class CafeProductionReadiness
         }
 
         if ($requireLive) {
+            if (config('app.env') === 'production') {
+                $add('legal_publication_approved', config('demian-legal.publication_approved') === true);
+                $add('legal_acceptance_enforced', config('demian-legal.require_acceptance') === true);
+            }
             $add('cafe_enabled', config('demian-coupons.cafe_enabled') === true);
             $add('discount_policy_approved',
                 config('demian-coupons.policy_approved') === true);

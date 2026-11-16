@@ -1,0 +1,15 @@
+{
+  "schema": 1,
+  "version": "2026-11-16-v1",
+  "status": "draft-pending-legal-review",
+  "public_origin": "https://demiancafe.ir",
+  "api_origin": "https://api.demiancafe.ir",
+  "pages": {
+    "privacy": "https://demiancafe.ir/privacy/",
+    "terms": "https://demiancafe.ir/terms/",
+    "competition": "https://demiancafe.ir/competition-rules/"
+  },
+  "retained_replay_days": 30,
+  "anticheat_observation_days": 30,
+  "closed_anticheat_report_days": 365
+}

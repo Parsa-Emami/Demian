@@ -428,6 +428,11 @@
                             <span data-game-library-summary>۶ بازی · ۱۲ کاراکتر</span>
                             <span>بازی‌های کوچک، ماجراجویی‌های بزرگ</span>
                         </div>
+                        <nav class="demian-legal-links" aria-label="قوانین و حریم خصوصی">
+                            <a href="privacy/" target="_self">حریم خصوصی</a>
+                            <a href="terms/" target="_self">شرایط استفاده</a>
+                            <a href="competition-rules/" target="_self">قوانین رقابت و جوایز</a>
+                        </nav>
                         <div class="demian-credit" data-project-credit>
                             <p>طراحی و توسعهٔ بازی</p>
                             <a href="https://parsaaemm.dev/" target="_blank" rel="noopener noreferrer" lang="en" dir="ltr" data-creator-link>parsaaemm</a>
@@ -696,6 +701,8 @@
                                 <button type="submit" class="shell-button">بازیابی حساب</button>
                             </form>
                             <p data-ranking-recovery-status role="status" aria-live="polite"></p>
+                            <button type="button" data-ranking-export-account class="shell-button shell-button--ghost">دریافت خلاصه داده‌های حساب (JSON)</button>
+                            <p class="ranking-panel__refresh-info">برای دریافت تمام سوابق، API خصوصی خروجی صفحه‌بندی‌شده دارد. داده‌های حساس و اسرار ورود در فایل قرار نمی‌گیرند.</p>
                             <button type="button" data-ranking-delete-account class="shell-button shell-button--ghost">حذف کامل حساب و رکوردهای سرور</button>
                         </div>
                         <button type="button" data-shell-action="close-modal" class="shell-button shell-button--primary" data-screen-autofocus>بستن</button>

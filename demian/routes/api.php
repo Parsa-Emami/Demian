@@ -5,15 +5,18 @@ use App\Http\Controllers\Api\V1\EventSessionController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\V1\ArcadeController;
 use App\Http\Controllers\Api\V1\ArcadeHealthController;
+use App\Http\Controllers\Api\V1\ArcadePrivacyController;
 use App\Http\Controllers\Api\V1\ArcadeTurnRunController;
 use App\Http\Controllers\Api\V1\CouponController;
 use App\Http\Controllers\Api\V1\CouponDeliveryController;
 use App\Http\Middleware\AuthenticateArcadePlayer;
 use App\Http\Middleware\LimitArcadePayload;
 use App\Http\Middleware\ObserveArcadeReplayFailures;
+use App\Http\Middleware\RequireArcadeLegalAcceptance;
 
 Route::prefix('v1/arcade')->middleware([LimitArcadePayload::class, 'throttle:arcade-public-ip'])->group(function (): void {
     Route::get('/health', ArcadeHealthController::class);
+    Route::get('/legal', [ArcadePrivacyController::class, 'policy']);
     Route::get('/rules', [ArcadeController::class, 'rules']);
     Route::get('/games', [ArcadeController::class, 'games']);
     Route::get('/competition/weekly', [ArcadeController::class, 'weeklyCompetition']);
@@ -40,6 +43,12 @@ Route::prefix('v1/arcade')->middleware([LimitArcadePayload::class, 'throttle:arc
             [CouponDeliveryController::class, 'openCase'])
             ->whereNumber('couponId')->middleware('throttle:arcade-coupon-support');
         Route::get('/player', [ArcadeController::class, 'me']);
+        Route::post('/player/legal', [ArcadeController::class, 'acknowledgeLegal'])
+            ->middleware('throttle:arcade-legal-ack');
+        Route::get('/player/data', [ArcadePrivacyController::class, 'snapshot'])
+            ->middleware('throttle:arcade-coupon-wallet');
+        Route::get('/player/data/records', [ArcadePrivacyController::class, 'records'])
+            ->middleware('throttle:arcade-coupon-wallet');
         Route::post('/player/recovery-link', [ArcadeController::class, 'issueRecoveryLink'])
             ->middleware('throttle:arcade-recovery-issue');
         Route::post('/player/backup-code', [ArcadeController::class, 'issueBackupCode'])
@@ -52,12 +61,14 @@ Route::prefix('v1/arcade')->middleware([LimitArcadePayload::class, 'throttle:arc
         // Independent server-replay endpoint for games whose action verifier
         // has passed differential tests. Unverified games are rejected (422).
         Route::post('/turn-runs', [ArcadeTurnRunController::class, 'start'])
-            ->middleware(['throttle:arcade-run-start', ObserveArcadeReplayFailures::class]);
+            ->middleware(['throttle:arcade-run-start', RequireArcadeLegalAcceptance::class,
+                ObserveArcadeReplayFailures::class]);
         Route::post('/turn-runs/{run}/complete',
             [ArcadeTurnRunController::class, 'complete'])
             ->middleware(['throttle:arcade-run-complete', ObserveArcadeReplayFailures::class]);
         Route::post('/runs', [ArcadeController::class, 'start'])
-            ->middleware(['throttle:arcade-run-start', ObserveArcadeReplayFailures::class]);
+            ->middleware(['throttle:arcade-run-start', RequireArcadeLegalAcceptance::class,
+                ObserveArcadeReplayFailures::class]);
         Route::post('/runs/{run}/complete', [ArcadeController::class, 'complete'])
             ->middleware(['throttle:arcade-run-complete', ObserveArcadeReplayFailures::class]);
     });

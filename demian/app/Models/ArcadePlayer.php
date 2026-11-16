@@ -9,10 +9,10 @@ final class ArcadePlayer extends Model
 {
     use HasUuids;
 
-    protected $fillable = ['display_name', 'token_hash', 'recovery_hash', 'token_expires_at', 'recovery_expires_at', 'backup_hash', 'backup_expires_at'];
+    protected $fillable = ['display_name', 'token_hash', 'recovery_hash', 'token_expires_at', 'recovery_expires_at', 'backup_hash', 'backup_expires_at', 'legal_policy_version', 'legal_accepted_at'];
     protected function casts(): array
     {
-        return ['token_expires_at' => 'datetime', 'recovery_expires_at' => 'datetime', 'backup_expires_at' => 'datetime'];
+        return ['token_expires_at' => 'datetime', 'recovery_expires_at' => 'datetime', 'backup_expires_at' => 'datetime', 'legal_accepted_at' => 'datetime'];
     }
 
     protected $hidden = ['token_hash', 'recovery_hash', 'backup_hash'];
