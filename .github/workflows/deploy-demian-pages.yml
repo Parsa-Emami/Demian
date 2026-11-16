@@ -81,6 +81,8 @@ jobs:
       - run: npx playwright install chromium --only-shell
       - name: Install Firefox and WebKit for Phase 6 Step 31 engine compatibility
         run: npx playwright install --with-deps firefox webkit
+      - name: Old open browser tab loads old dynamic game chunk after a new publish
+        run: npm run test:versioned-rollover:browser
       - name: Phase 1 mobile startup diagnosis — cold/warm/PWA and per-game timings
         run: timeout --signal=TERM --kill-after=10s 240s npm run test:startup:browser
       - run: npm run test:coffee-crash:browser
