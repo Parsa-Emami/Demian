@@ -130,3 +130,12 @@ test('only the six most recent code generations are carried to the next release'
     assert.equal(data.generations.length, MAX_COMPAT_GENERATIONS);
     assert.ok(!data.generations.some(g => g.id === '0000000000000000'));
 });
+
+test('first split migration copies the successful atomic release, not just new game chunks', () => {
+    const restore = source('tools/restore_previous_build.mjs');
+    assert.match(restore, /demiancafe-ir-static-site/);
+    assert.match(restore, /offline-packs\.json/);
+    assert.match(restore, /mergeCompatibleAssets/);
+    assert.match(restore, /last successful atomic release artifact/);
+    assert.match(restore, /previous release used dynamic chunks/i);
+});

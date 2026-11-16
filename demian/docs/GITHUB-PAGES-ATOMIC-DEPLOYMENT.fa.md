@@ -31,3 +31,5 @@ npm run test:step31:compatibility
 npm run test:open-world-step24:browser
 npm run test:mobile-09:browser
 همهٔ آزمون‌ها و Release QA باید قبل از ادغام PR پاس شوند.
+
+در اولین مهاجرت، Workflow بستهٔ استاتیک آخرین انتشار موفق یکپارچه را نیز بازیابی می‌کند و JavaScript/CSS فونت‌های آن را به نسل اول سازگاری منتقل می‌کند؛ بنابراین HTML قبلی نیز به فایل Entry قدیمی دسترسی دارد.
