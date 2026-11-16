@@ -25,6 +25,7 @@ export function buildOfflinePackManifest({ release, entry, releaseId } = {}) {
         .map(name => 'build/assets/' + name);
     const corePaths = [
         'index.html', 'characters.json', 'manifest.webmanifest',
+        'privacy/index.html', 'terms/index.html', 'competition-rules/index.html',
         'build/' + entry.file,
         ...(entry.css ?? []).map(name => 'build/' + name),
         ...buildFonts,
