@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { renderStaticTemplate } from '../../../tools/static_template.mjs';
-import { shouldWarmOpenWorldPreview } from '../../../resources/js/game/shell/screens/GameSelectionScreen.js';
+import { optionalAssetPolicy } from '../../../resources/js/game/characters/runtime/MobileNetworkPolicy.js';
 
 const read = path => readFileSync(new URL(path, import.meta.url), 'utf8');
 
@@ -46,12 +46,27 @@ test('cPanel production and staging examples are domain-isolated and prize-safe'
     }
 });
 
-test('Open World preview warmup only runs with unrestricted foreground connectivity', () => {
-    assert.equal(shouldWarmOpenWorldPreview({ deferBackground: false, reason: 'normal' }), true);
-    for (const reason of ['limited-3g', 'save-data', 'slow-network', 'offline', 'hidden']) {
-        assert.equal(shouldWarmOpenWorldPreview({ deferBackground: reason !== 'limited-3g', reason }), false);
+test('Open World idle preview warmup is guarded by network policy and never blocks the menu', () => {
+    const component = read('../../../resources/js/game/shell/screens/GameSelectionScreen.js');
+    assert.match(component, /shouldWarmOpenWorldPreview/);
+    assert.match(component, /policy\.reason === 'normal'/);
+    assert.match(component, /requestIdleCallback/);
+    assert.match(component, /preloadFbxCafeArt/);
+    assert.match(component, /this\.render\(\);/);
+    assert.match(component, /globalThis\.clearTimeout/);
+    const good = optionalAssetPolicy({ connection: { effectiveType: '4g', saveData: false },
+        online: true, hidden: false });
+    assert.equal(good.reason, 'normal');
+    for (const [connection, online, hidden] of [
+        [{ effectiveType: '3g' }, true, false],
+        [{ effectiveType: '4g', saveData: true }, true, false],
+        [{ effectiveType: '2g' }, true, false],
+        [{ effectiveType: '4g' }, false, false],
+        [{ effectiveType: '4g' }, true, true],
+    ]) {
+        const policy = optionalAssetPolicy({ connection, online, hidden });
+        assert.notEqual(policy.reason, 'normal');
     }
-    assert.equal(shouldWarmOpenWorldPreview(null), false);
 });
 
 test('domain CNAME is opt-in and static host supports compression and safe caching', () => {
