@@ -80,7 +80,8 @@ try {
                 await page.locator('[data-screen="game-selection"] [data-game-launch="' + game + '"]').click();
                 await wait(page, id => {
                     const app = window.demianGameApplication;
-                    return app?.activeGameId === id && app.sessionState === 'playing';
+                    return (app?.activeGameId === id && app.sessionState === 'playing')
+                        || (window.__step31LaunchErrors ?? []).some(row => row.gameId === id);
                 }, 40000, game).catch(async () => {
                     const snap = await page.evaluate(() => ({
                         state: window.demianGameApplication?.sessionState,
@@ -89,6 +90,14 @@ try {
                     }));
                     throw Error('Never reached playing for ' + engine + '/' + game + ': ' + JSON.stringify(snap));
                 });
+                const failedGame = await page.evaluate(id => {
+                    const app = window.demianGameApplication;
+                    return (window.__step31LaunchErrors ?? []).filter(row => row.gameId === id)
+                        .concat(app?.sessionState !== 'playing' ? [{
+                            gameId: id, message: 'Session state = ' + app?.sessionState,
+                        }] : []);
+                }, game);
+                assert.deepEqual(failedGame, [], engine + '/' + game + ' launch failed');
                 const elapsedMs = Date.now() - beginning;
                 const layout = await page.evaluate(() => ({
                     visible: !document.querySelector('[data-game-shell]')?.hidden,
