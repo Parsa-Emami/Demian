@@ -428,6 +428,11 @@
                             <span data-game-library-summary>۶ بازی · ۱۲ کاراکتر</span>
                             <span>بازی‌های کوچک، ماجراجویی‌های بزرگ</span>
                         </div>
+                        <nav class="demian-legal-links" aria-label="قوانین و حریم خصوصی">
+                            <a href="privacy/" target="_self">حریم خصوصی</a>
+                            <a href="terms/" target="_self">شرایط استفاده</a>
+                            <a href="competition-rules/" target="_self">قوانین رقابت و جوایز</a>
+                        </nav>
                         <div class="demian-credit" data-project-credit>
                             <p>طراحی و توسعهٔ بازی</p>
                             <a href="https://parsaaemm.dev/" target="_blank" rel="noopener noreferrer" lang="en" dir="ltr" data-creator-link>parsaaemm</a>
