@@ -1,5 +1,6 @@
 import rules from '../../../game/runner-rules.json' with { type: 'json' };
 import { validRunnerSession } from './RunnerSessionContract.js';
+import { requestLegalAcknowledgement } from './LegalConsent.js';
 
 const PROFILE_KEY = 'demian.arcade.profile.v1';
 const LOCAL_KEY = `demian.arcade.scores.${rules.version}`;
@@ -21,6 +22,7 @@ export default class ArcadeLeaderboardService {
         this.identityStorage = identityStorage;
         this.fetcher = fetcher; this.timeout = timeout;
         this.retryPromise = null;
+        this.identityCreationPromise = null;
         this.baseUrl = String(baseUrl).trim().replace(/\/$/, '');
         // Never transmit account bearer capabilities over cleartext network.
         // HTTP is permitted only for loopback development.
@@ -131,12 +133,43 @@ export default class ArcadeLeaderboardService {
     }
     async ensureIdentity() {
         if (this.identity?.token) return this.identity;
+        if (this.identityCreationPromise) return this.identityCreationPromise;
+        this.identityCreationPromise = this.registerNewIdentity();
+        try { return await this.identityCreationPromise; }
+        finally { this.identityCreationPromise = null; }
+    }
+    async registerNewIdentity() {
         if (this.pending || this.accountKnown) throw new Error('برای حفظ رکوردهای قبلی، حساب اصلی را بازیابی کن.');
-        this.identity = await this.request('/players', { method: 'POST', body: { display_name: this.displayName } });
+        // Nonbrowser test clients can supply their own acceptance explicitly.
+        // Real users must confirm; canceling keeps all games in practice mode.
+        let acceptance = null;
+        if (globalThis.document?.body) {
+            acceptance = await requestLegalAcknowledgement();
+            if (!acceptance) throw new Error('برای حساب آنلاین، مطالعه و پذیرش قوانین لازم است؛ حالت تمرینی همچنان فعال است.');
+        }
+        this.identity = await this.request('/players', {
+            method: 'POST', body: { display_name: this.displayName, ...(acceptance ?? {}) },
+        });
         safeWrite(this.identityStorage, this.identityKey, this.identity);
         this.accountKnown = true;
         safeWrite(this.storage, this.accountMarkerKey, true);
         return this.identity;
+    }
+    async accountData() {
+        if (!this.connected || !this.identity?.token) {
+            throw new Error('برای مشاهده داده‌های حساب، ابتدا حساب آنلاین را بازیابی کن.');
+        }
+        return this.request('/player/data', { authenticated: true });
+    }
+    async accountDataPage(type, cursor = '') {
+        if (!this.connected || !this.identity?.token) {
+            throw new Error('برای دریافت سوابق باید حساب آنلاین را بازیابی کنی.');
+        }
+        const allowed = ['runs', 'best_scores', 'weekly_results', 'weekly_wins',
+            'coupons', 'anticheat_observations'];
+        if (!allowed.includes(type)) throw new Error('نوع داده معتبر نیست.');
+        return this.request('/player/data/records?type=' + encodeURIComponent(type) +
+            (cursor ? '&cursor=' + encodeURIComponent(cursor) : ''), { authenticated: true });
     }
     async issueRecoveryLink(pageUrl = globalThis.location?.href) {
         if (!pageUrl) throw new Error('لینک صفحه در دسترس نیست.');
