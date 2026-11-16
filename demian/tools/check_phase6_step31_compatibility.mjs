@@ -60,6 +60,11 @@ try {
             await wait(page, () => window.demianGameApplication?.sessionState === 'menu');
             await page.evaluate(() => {
                 window.__step31LaunchErrors = [];
+                window.__step31Clicks = [];
+                document.addEventListener('click', event => {
+                    const button = event.target.closest?.('[data-game-launch]');
+                    if (button) window.__step31Clicks.push(button.dataset.gameLaunch);
+                }, true);
                 window.demianGameApplication.eventBus.on('game:load-failed', ({gameId, error}) => {
                     window.__step31LaunchErrors.push({ gameId, message: String(error?.stack ?? error) });
                 });
@@ -91,6 +96,18 @@ try {
                 const beginning = Date.now();
                 // Exercise the same shell public route, real loading screen,
                 // game-specific preload, session begin, and return path.
+                // Scroll via the same native RTL rail controller that the
+                // previous/next buttons use. Wait for scroll-snap to settle
+                // before sending a real pointer click: Playwright's implicit
+                // scrollIntoView is not equivalent in Firefox RTL layouts.
+                await page.evaluate(id => {
+                    const rail = window.demianGameApplication.shell.selectionScreen.rail;
+                    const index = rail.items.findIndex(card => card.dataset.gameCard === id);
+                    if (index < 0 || !rail.scrollTo(index, { behavior: 'auto' })) {
+                        throw Error('Cannot navigate RTL game library to ' + id);
+                    }
+                }, game);
+                await page.waitForTimeout(140);
                 await page.locator('[data-screen="game-selection"] [data-game-launch="' + game + '"]').click();
                 await wait(page, id => {
                     const app = window.demianGameApplication;
@@ -101,6 +118,8 @@ try {
                         state: window.demianGameApplication?.sessionState,
                         game: window.demianGameApplication?.activeGameId,
                         loadErrors: window.__step31LaunchErrors ?? [],
+                        clicked: window.__step31Clicks ?? [],
+                        shell: window.demianGameApplication?.shell?.manager?.primaryId ?? null,
                     }));
                     throw Error('Never reached playing for ' + engine + '/' + game + ': ' + JSON.stringify(snap));
                 });
