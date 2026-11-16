@@ -25,8 +25,11 @@ export default class OpenWorldPixelRenderer {
         });
         this.cafe = new CafePixelRenderer({ bounds: manifest.bounds, colliders: CAFE_STATIC_COLLIDERS,
             quality: context.settings?.snapshot?.().quality, detected: context.services?.performanceProfile?.tier });
+        // Cap optional overscan according to mobile tier. Static scenery is
+        // repainted on cache misses; actor animation is never baked into it.
+        const tier = context.services?.performanceProfile?.tier ?? 'balanced';
         this.sceneCache = new StaticSceneCache((ctx, camera) => this.cafe.draw(ctx, camera, { prepared: true }),
-            { maxPixels: context.services?.performanceProfile?.tier === 'high' ? 3200000 : 2200000 });
+            { maxPixels: tier === 'high' ? 2200000 : tier === 'performance' ? 950000 : 1600000 });
         this.queue = new PixelRenderQueue();
         this.followRig = new CharacterFollowRig();
         this.followEntity = null;

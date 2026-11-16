@@ -7,7 +7,10 @@ export default class StaticSceneCache {
     constructor(draw, { canvasFactory = () => globalThis.document?.createElement('canvas'), maxPixels = MAX_PIXELS } = {}) {
         this.drawScene = draw;
         this.canvasFactory = canvasFactory;
-        this.maxPixels = Math.min(3200000, Math.max(MAX_PIXELS, Number(maxPixels) || MAX_PIXELS));
+        // The caller may choose a smaller decoded Canvas cache on weak phones.
+        // Never shrink below the current viewport; maxPixels is the target
+        // for optional overscan, not a guarantee on native/GPU allocation.
+        this.maxPixels = Math.min(3200000, Math.max(480000, Number(maxPixels) || MAX_PIXELS));
         this.canvas = null;
         this.pose = null;
         this.key = null;

@@ -20,6 +20,7 @@ import ChunkManager from './streaming/ChunkManager.js';
 import OpenWorldChunkRenderer from './render/OpenWorldChunkRenderer.js';
 import OpenWorldPixelRenderer from './render/OpenWorldPixelRenderer.js';
 import AiBudgetScheduler from './entities/AiBudgetScheduler.js';
+import UiFrameBudget from '../../performance/UiFrameBudget.js';
 import WorldDiscovery from './world/WorldDiscovery.js';
 import WorldFindCollection from './world/WorldFindCollection.js';
 import { worldChallengeLocked, applySavePoint } from './world/RankedWorldPolicy.js';
@@ -58,6 +59,8 @@ export default class OpenWorldGame extends BaseGame {
         this.chunkRenderer = null;
         this.pixelRenderer = null;
         this.aiBudget = new AiBudgetScheduler({ maxUpdatesPerFrame: 6 });
+        // Presentation-only cadence; scored movement and fixed ticks stay 60 Hz.
+        this.uiFrameBudget = new UiFrameBudget({ refreshHz: globalThis.matchMedia?.('(pointer: coarse)')?.matches ? 10 : 15 });
         this.discovery = new WorldDiscovery();
         this.finds = new WorldFindCollection(this.manifest);
         this.saveStore = new OpenWorldSaveStore();
@@ -526,11 +529,12 @@ export default class OpenWorldGame extends BaseGame {
     update(deltaTime) {
         this.cameraController.update(this.characterManager.focusPoint(), deltaTime);
         this.world.updateCameraVisibility(this.camera);
+        // HUD DOM, minimap and studio summaries are presentation only.
+        // Do not throttle fixedUpdate(), collision, scoring or renderScene().
+        if (!this.uiFrameBudget.shouldRefresh(deltaTime)) return;
         const position = this.characterManager.position();
         const chunkStats = this.chunkManager.stats();
-        const activeChunkIds = [...this.chunkManager.loaded]
-            .filter(([, record]) => record.tier === 'active')
-            .map(([chunkId]) => chunkId);
+        const activeChunkIds = this.chunkManager.activeChunkIds();
         this.hud.update({
             position,
             forward: this.characterManager.forward(),
@@ -559,9 +563,7 @@ export default class OpenWorldGame extends BaseGame {
     renderScene({ phase = 'frame', strict = true, alpha = 1, deltaTime = 0 } = {}) {
         if (!this.context?.renderer || !this.pixelRenderer) return false;
         try {
-            const activeChunkIds = [...(this.chunkManager?.loaded ?? new Map())]
-                .filter(([, record]) => record.tier === 'active')
-                .map(([chunkId]) => chunkId);
+            const activeChunkIds = this.chunkManager?.activeChunkIds() ?? [];
             const rendered = this.pixelRenderer.render({
                 characterManager: this.characterManager,
                 loadedChunks: this.chunkManager?.loaded ?? new Map(),
@@ -620,6 +622,7 @@ export default class OpenWorldGame extends BaseGame {
     }
 
     async exit() {
+        this.uiFrameBudget.reset();
         this.routeChallenge?.stop();
         this.setMapOpen(false);
         this.abilityHud?.dispose();
