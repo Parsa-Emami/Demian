@@ -7,6 +7,17 @@ export function clampRailIndex(index, length) {
     return Math.min(safeLength - 1, Math.max(0, safeIndex));
 }
 
+/**
+ * Calculate a signed, viewport-relative scroll target, not offsetLeft.
+ * RTL containers use negative scrollLeft in modern engines; hardcoding a
+ * positive target silently clamps Firefox/WebKit rails to the first card.
+ */
+export function centeredRailScrollLeft(currentScrollLeft, viewportRect, itemRect) {
+    const viewportCenter = Number(viewportRect.left) + Number(viewportRect.width) / 2;
+    const itemCenter = Number(itemRect.left) + Number(itemRect.width) / 2;
+    return Number(currentScrollLeft) + (itemCenter - viewportCenter);
+}
+
 export function nearestRailIndex(itemCenters, viewportCenter) {
     if (!Array.isArray(itemCenters) || itemCenters.length === 0) return -1;
     let nearest = 0;
@@ -166,9 +177,13 @@ export default class ScrollSnapRail {
         if (!item) return false;
 
         this.setIndex(nextIndex);
-        const targetLeft = Math.max(
-            0,
-            item.offsetLeft - ((this.viewport.clientWidth - item.clientWidth) / 2)
+        // Browser-independent signed target: a negative scrollLeft in an RTL
+        // game rail is valid. Reading actual client geometry also avoids
+        // offset-parent discrepancies between Firefox, WebKit and Chromium.
+        const targetLeft = centeredRailScrollLeft(
+            this.viewport.scrollLeft,
+            this.viewport.getBoundingClientRect(),
+            item.getBoundingClientRect()
         );
         if (typeof this.viewport.scrollTo === 'function') {
             this.viewport.scrollTo({ left: targetLeft, top: this.viewport.scrollTop, behavior });
