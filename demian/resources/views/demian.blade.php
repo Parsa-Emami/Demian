@@ -8,6 +8,7 @@
     >
     <meta name="theme-color" content="#111b19">
     <meta name="demian-static-release" content="false">
+    <meta name="demian-ops-client" content="off">
     <!-- Server response headers, not HTML meta tags, control production caching. -->
     {{-- <meta name="screen-orientation" content="landscape">
     <meta name="x5-orientation" content="landscape">
