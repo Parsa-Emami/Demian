@@ -397,6 +397,18 @@
                                 کمی بگرد. کمی بدو. یک رکورد تازه بساز.
                             </p>
                         </div>
+                        <button type="button" data-sidebar-toggle class="cafe-menu__showcase" aria-label="نمایش مجموعهٔ ۱۲ کاراکتر و انتخاب کاراکتر">
+                            <span class="cafe-menu__showcase-copy">
+                                <span class="cafe-menu__showcase-kicker">YOUR CAST · 12 CHARACTERS</span>
+                                <strong>قهرمان این داستان تویی</strong>
+                                <small>شخصیتت را انتخاب کن و وارد کافه شو</small>
+                            </span>
+                            <span class="cafe-menu__portraits" aria-hidden="true">
+                                <span class="cafe-menu__portrait cafe-menu__portrait--darya"><img src="assets/characters/darya/darya-preview-v14.png" alt="" width="128" height="128" loading="lazy" decoding="async" fetchpriority="low"></span>
+                                <span class="cafe-menu__portrait cafe-menu__portrait--negar"><img src="assets/characters/negar/negar-preview-v14.png" alt="" width="128" height="128" loading="lazy" decoding="async" fetchpriority="low"></span>
+                                <span class="cafe-menu__portrait cafe-menu__portrait--tiam"><img src="assets/characters/tiam/tiam-preview-v14.png" alt="" width="128" height="128" loading="lazy" decoding="async" fetchpriority="low"></span>
+                            </span>
+                        </button>
                         <div data-menu-reveal class="cafe-menu__actions">
                             <button type="button" data-shell-action="play" data-screen-autofocus class="shell-button shell-button--primary">
                                 <span>انتخاب بازی</span><b aria-hidden="true">←</b>
