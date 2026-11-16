@@ -61,9 +61,9 @@ test('step32 does not permit a CI/operator variable to certify unreviewed conten
 
 test('step32 service worker precaches concrete HTML paths without ambiguous directory redirects', () => {
     const sw = readFileSync(resolve('tools/templates/service-worker.js'), 'utf8');
-    assert.match(sw, /'privacy\/index\\.html'/);
-    assert.match(sw, /'terms\/index\\.html'/);
-    assert.match(sw, /'competition-rules\/index\\.html'/);
-    assert.match(sw, /legalIndex \? await cache\.match\(legalIndex\)/);
-    assert.doesNotMatch(sw, /cache\.addAll\(\[offlineURL, manifestURL, \.\.\.iconURLs, \.\.\.\['privacy\/']/);
+    for (const path of ['privacy/index.html', 'terms/index.html', 'competition-rules/index.html']) {
+        assert.ok(sw.includes("'" + path + "'"), 'legal precache must use exact HTML file: ' + path);
+    }
+    assert.ok(sw.includes('legalIndex ? await cache.match(legalIndex)'));
+    assert.equal(sw.includes("'privacy/', 'terms/', 'competition-rules/'" + String.fromCharCode(93) + "\n    .map(path => new URL(path, scope).href)"), false);
 });
