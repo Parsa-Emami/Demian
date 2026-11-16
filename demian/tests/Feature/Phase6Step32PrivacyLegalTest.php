@@ -44,7 +44,7 @@ final class Phase6Step32PrivacyLegalTest extends TestCase
         $other = $this->postJson('/api/v1/arcade/players', ['display_name' => 'Other'])->assertCreated()->json();
         $this->getJson('/api/v1/arcade/player/data')->assertUnauthorized();
         $this->withToken($one['token'])->getJson('/api/v1/arcade/player/data')
-            ->assertOk()->assertHeader('Cache-Control', 'private, no-store')
+            ->assertOk()->assertHeader('Cache-Control', 'no-store, private')
             ->assertJsonPath('player.player_id', $one['player_id'])
             ->assertJsonPath('player.legal_policy_version', null)
             ->assertJsonMissingPath('player.token_hash');
