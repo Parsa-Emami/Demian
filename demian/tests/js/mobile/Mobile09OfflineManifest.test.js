@@ -31,6 +31,36 @@ function fixture() {
         'assets/environments/demian-fbx/floorplan-detail.webp',
         'assets/environments/demian-fbx/polished-v1/lod-1024/0-0.webp',
     ]) write(path);
+    const vite = {
+        'resources/js/app.js': { file: entry.file, isEntry: true, css: entry.css,
+            dynamicImports: ['resources/js/game/performance/PwaUpdateController.js'] },
+        'resources/js/game/performance/PwaUpdateController.js': {
+            file:'assets/PwaUpdateController-deadbeef.js', isDynamicEntry:true },
+    };
+    write('build/assets/PwaUpdateController-deadbeef.js');
+    const ids = {
+        'open-world': 'OpenWorldGame', 'dino-run': 'DinoRunGame',
+        'after-hours': 'AfterHoursGame', 'cafe-rush': 'CafeRushGame',
+        'cafe-critters': 'CafeCrittersGame', 'coffee-crash': 'CoffeeCrashGame',
+    };
+    const css = {
+        'dino-run': 'phase5-step23-dino-run', 'after-hours': 'after-hours',
+        'cafe-rush': 'cafe-rush', 'cafe-critters': 'cafe-critters',
+        'coffee-crash': 'coffee-crash',
+    };
+    for (const [id,name] of Object.entries(ids)) {
+        const src = 'resources/js/game/games/' + id + '/' + name + '.js';
+        const output = 'assets/' + name + '-deadbeef.js';
+        vite[src] = { file: output, isDynamicEntry: true };
+        write('build/' + output);
+        if (css[id]) {
+            const style = 'resources/css/' + css[id] + '.css';
+            const cssOut = 'assets/' + css[id] + '-deadbeef.css';
+            vite[style] = { file: cssOut, isDynamicEntry: true };
+            write('build/' + cssOut);
+        }
+    }
+    write('build/manifest.json', JSON.stringify(vite));
     for (const slug of BUILTIN_CHARACTER_SLUGS) {
         const v = characterPackVersion(slug), base = 'assets/characters/' + slug + '/' + slug;
         write(base + '-preview-v' + v + '.png');
@@ -48,6 +78,8 @@ test('six portable offline bundles share one complete core and contain no creden
     assert.ok(manifest.core.length > 35);
     assert.ok(manifest.core.some(f => f.path === 'index.html'));
     assert.ok(manifest.core.some(f => f.path.endsWith('.woff2')));
+    assert.ok(manifest.core.some(f => f.path.includes('PwaUpdateController-deadbeef.js')));
+    assert.ok(manifest.games.find(g => g.id === 'cafe-rush').files.some(f => f.path.includes('cafe-rush-deadbeef.css')));
     assert.ok(manifest.core.some(f => f.path.includes('-lite.png')));
     for (const pack of manifest.games) {
         assert.equal(pack.totalBytes, manifest.coreBytes + pack.bytes);

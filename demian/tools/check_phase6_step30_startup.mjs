@@ -17,7 +17,7 @@ const report = {
     emulatedNetwork: true, physicalPhoneVerified: false, liveHostPerformanceVerified: false,
     limitations: [
         'Chromium CPU and network emulation is lab evidence only, not device or global CDN SLO.',
-        'The first prepaint test deliberately delays the atomic JS bundle by 2.4 seconds.',
+        'The first prepaint test deliberately delays the initial shell JS by 2.4 seconds.',
         'No production API or 50-user hosted concurrency is exercised by this browser test.',
     ],
 };
@@ -41,7 +41,7 @@ const wait = (page, check, timeout = 15000) => page.waitForFunction(check, null,
 let browser;
 try {
     assert.ok(compressedJsBytes < 400 * 1024,
-        'Atomic entry exceeds hard 400 KiB compressed payload ceiling. Reduce unused code before merging.');
+        'Initial shell exceeds hard 400 KiB compressed payload ceiling. Reduce unused code before merging.');
     await new Promise(done => server.listen(0, '127.0.0.1', done));
     const { chromium } = await import('playwright');
     browser = await chromium.launch({ headless: true,

@@ -1,5 +1,5 @@
 /** Mobile-09: deterministic, bounded, portable optional offline game packages. */
-import { existsSync, readdirSync, statSync } from 'node:fs';
+import { existsSync, readdirSync, statSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { BUILTIN_CHARACTER_SLUGS, characterPackVersion } from '../resources/js/game/characters/CharacterVisualContract.js';
 
@@ -8,6 +8,23 @@ export const OFFLINE_GAME_IDS = Object.freeze([
 ]);
 export const OFFLINE_MAX_PACK_BYTES = 96 * 1024 * 1024;
 const CLEAN = /^[a-zA-Z0-9][a-zA-Z0-9/_\-.]*$/;
+
+const GAME_STYLES = Object.freeze({
+    'dino-run': 'resources/css/phase5-step23-dino-run.css',
+    'after-hours': 'resources/css/after-hours.css',
+    'cafe-rush': ['resources/css/after-hours.css', 'resources/css/cafe-rush.css'],
+    'cafe-critters': ['resources/css/after-hours.css', 'resources/css/cafe-critters.css'],
+    'coffee-crash': 'resources/css/coffee-crash.css',
+});
+
+const GAME_MODULES = Object.freeze({
+    'open-world': 'resources/js/game/games/open-world/OpenWorldGame.js',
+    'dino-run': 'resources/js/game/games/dino-run/DinoRunGame.js',
+    'after-hours': 'resources/js/game/games/after-hours/AfterHoursGame.js',
+    'cafe-rush': 'resources/js/game/games/cafe-rush/CafeRushGame.js',
+    'cafe-critters': 'resources/js/game/games/cafe-critters/CafeCrittersGame.js',
+    'coffee-crash': 'resources/js/game/games/coffee-crash/CoffeeCrashGame.js',
+});
 
 export function buildOfflinePackManifest({ release, entry, releaseId } = {}) {
     if (!release || !entry?.file || !/^[a-f0-9]{16}$/.test(releaseId ?? '')) {
@@ -20,14 +37,43 @@ export function buildOfflinePackManifest({ release, entry, releaseId } = {}) {
         return { path, bytes: statSync(absolute).size };
     };
     const unique = paths => [...new Set(paths)].sort().map(file);
+    // Each optional PWA game needs its own lazy module, transitively imported
+    // shared JS/CSS/assets, and scene artwork. Keep five unselected games out
+    // of the core offline package.
+    const vite = JSON.parse(readFileSync(join(release, 'build/manifest.json'), 'utf8'));
+    const buildDependencies = (key, visited = new Set()) => {
+        if (visited.has(key)) return [];
+        const record = vite[key];
+        if (!record?.file) throw new Error('Missing Vite module: ' + key);
+        visited.add(key);
+        return [
+            'build/' + record.file,
+            ...(record.css ?? []).map(path => 'build/' + path),
+            ...(record.assets ?? []).map(path => 'build/' + path),
+            ...(record.imports ?? []).flatMap(child => buildDependencies(child, visited)),
+        ];
+    };
+    const eagerBuildAssets = new Set(buildDependencies('resources/js/app.js'));
+    // The deferred PWA UI must be in the offline core, even when its module
+    // is no longer on the initial menu's critical network/parse path.
+    const controller = 'resources/js/game/performance/PwaUpdateController.js';
+    if (!vite[controller]?.isDynamicEntry) {
+        throw new Error('Deferred PWA controller was not emitted as a dynamic module.');
+    }
+    for (const path of buildDependencies(controller)) eagerBuildAssets.add(path);
+    for (const [id, source] of Object.entries(GAME_MODULES)) {
+        if (!vite[source]?.isDynamicEntry ||
+            eagerBuildAssets.has('build/' + vite[source].file)) {
+            throw new Error('Offline game missing independently deployable chunk: ' + id);
+        }
+    }
     const buildRoot = join(release, 'build/assets');
     const buildFonts = readdirSync(buildRoot).filter(name => name.endsWith('.woff2'))
         .map(name => 'build/assets/' + name);
     const corePaths = [
         'index.html', 'characters.json', 'manifest.webmanifest',
         'privacy/index.html', 'terms/index.html', 'competition-rules/index.html',
-        'build/' + entry.file,
-        ...(entry.css ?? []).map(name => 'build/' + name),
+        ...eagerBuildAssets,
         ...buildFonts,
         'assets/characters/character-manifest-v4.json',
         'assets/characters/master-motion-v1.json',
@@ -73,7 +119,15 @@ export function buildOfflinePackManifest({ release, entry, releaseId } = {}) {
     };
     const coreBytes = core.reduce((sum, asset) => sum + asset.bytes, 0);
     const games = OFFLINE_GAME_IDS.map(id => {
-        const files = unique(extras[id]);
+        const files = unique([
+            ...extras[id],
+            ...buildDependencies(GAME_MODULES[id]).filter(path => !eagerBuildAssets.has(path)),
+            ...(GAME_STYLES[id]
+                ? (Array.isArray(GAME_STYLES[id]) ? GAME_STYLES[id] : [GAME_STYLES[id]])
+                    .flatMap(key => buildDependencies(key))
+                    .filter(path => !eagerBuildAssets.has(path))
+                : []),
+        ]);
         const bytes = files.reduce((sum, asset) => sum + asset.bytes, 0);
         if (coreBytes + bytes > OFFLINE_MAX_PACK_BYTES) {
             throw new Error('Offline pack exceeds 96 MiB budget: ' + id);

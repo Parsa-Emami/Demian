@@ -7,6 +7,7 @@ on:
   workflow_dispatch:
 permissions:
   contents: read
+  actions: read
   pages: write
   id-token: write
 concurrency:
@@ -22,6 +23,8 @@ jobs:
         working-directory: demian
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
       - uses: actions/setup-node@v4
         with:
           node-version: 24
@@ -36,6 +39,8 @@ jobs:
       - run: npm run validate:motion
       - run: npm run validate:cafe-presentation
       - run: npm run test:ci
+      - name: Verify immutable Vite asset lineage and stale-tab compatibility
+        run: node --test tools/test_retain_build_assets.mjs
       - run: npm run validate:final
       - run: npm run validate:ui-layers
       - run: npm run validate:characters:v14
@@ -46,8 +51,45 @@ jobs:
           # Set only after domain DNS and GitHub Pages verification.
           DEMIAN_PAGES_CUSTOM_DOMAIN: ${{ vars.DEMIAN_PAGES_CUSTOM_DOMAIN || '' }}
           DEMIAN_ARCADE_API_URL: ${{ github.ref == 'refs/heads/main' && vars.DEMIAN_ARCADE_ENABLE_RANKED == 'true' && vars.DEMIAN_ARCADE_API_URL || '' }}
+      - name: Preserve two prior hashed releases for already-open browser tabs
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          old="$RUNNER_TEMP/demian-prior-build"
+          mkdir -p "$old"
+          restored=false
+          for run_id in $(gh run list -R "$GITHUB_REPOSITORY" --workflow deploy-demian-pages.yml --branch main --status success --limit 20 --json databaseId --jq '.[].databaseId'); do
+            if gh run download "$run_id" -R "$GITHUB_REPOSITORY" -n demian-vite-asset-history -D "$old"; then
+              tar -xzf "$old/demian-vite-assets.tar.gz" -C "$old"
+              restored=true
+              break
+            fi
+          done
+          if [ "$restored" != true ]; then
+            if git show HEAD^:demian/vite.config.js 2>/dev/null | grep -q 'codeSplitting: true'; then
+              echo "::error::Missing previous hashed chunk lineage; refusing to break old tabs."
+              exit 1
+            fi
+            echo "First split deploy: previous release was atomic, no dynamic chunks to retain."
+          fi
+          node tools/retain_build_assets.mjs --site=_site --previous="$old"
+      - name: Generate release lineage for PR-only validation
+        if: github.event_name == 'pull_request'
+        run: node tools/retain_build_assets.mjs --site=_site
       - name: Validate optimized production assets
         run: npm run validate:static-assets
+      - name: Archive hashed assets for future update-safe deployments
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        run: tar -czf "$RUNNER_TEMP/demian-vite-assets.tar.gz" -C _site/build assets asset-history.json
+      - uses: actions/upload-artifact@v4
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        with:
+          name: demian-vite-asset-history
+          path: ${{ runner.temp }}/demian-vite-assets.tar.gz
+          retention-days: 90
+          if-no-files-found: error
       - name: Package portable static PWA for cPanel public_html
         if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
         run: tar -czf "$RUNNER_TEMP/demiancafe-static.tar.gz" -C _site .
@@ -58,13 +100,17 @@ jobs:
           path: ${{ runner.temp }}/demiancafe-static.tar.gz
           retention-days: 7
           if-no-files-found: error
-      # Expected one atomic JavaScript bundle; bundle_mode: atomic
+      - name: Record actual gzip reductions versus atomic production baseline
+        run: node tools/check_startup_bundle_budget.mjs
+      # Verify six hashed, independently fetched game modules.
       - run: npm run validate:build
       - run: npx playwright install chromium --only-shell
       - name: Install Firefox and WebKit for Phase 6 Step 31 engine compatibility
         run: npx playwright install --with-deps firefox webkit
       - name: Phase 1 mobile startup diagnosis — cold/warm/PWA and per-game timings
         run: timeout --signal=TERM --kill-after=10s 240s npm run test:startup:browser
+      - name: Validate only selected games download their JavaScript and CSS
+        run: timeout --signal=TERM --kill-after=10s 180s node tools/check_lazy_game_chunks.mjs
       - run: npm run test:coffee-crash:browser
       - name: Phase 3 Step 13 dedicated wallet and weekly leaderboard Chromium acceptance
         run: timeout --signal=TERM --kill-after=10s 180s npm run test:weekly13:browser
@@ -119,6 +165,14 @@ jobs:
           DEMIAN_MOBILE_BENCH_PROFILE: low-mobile
       - name: Step 31 aggregate all QA evidence and enforce cold menu, six games and device caveats
         run: npm run test:step31:collect
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: startup-optimization-evidence
+          path: |
+            demian/docs/startup-optimization/bundle-comparison.json
+            demian/docs/startup-optimization/lazy-chunks-browser.json
+          if-no-files-found: warn
       - uses: actions/upload-artifact@v4
         if: always()
         with:
