@@ -12,6 +12,7 @@ use App\Http\Controllers\Api\V1\CouponDeliveryController;
 use App\Http\Middleware\AuthenticateArcadePlayer;
 use App\Http\Middleware\LimitArcadePayload;
 use App\Http\Middleware\ObserveArcadeReplayFailures;
+use App\Http\Middleware\RequireArcadeLegalAcceptance;
 
 Route::prefix('v1/arcade')->middleware([LimitArcadePayload::class, 'throttle:arcade-public-ip'])->group(function (): void {
     Route::get('/health', ArcadeHealthController::class);
@@ -42,6 +43,8 @@ Route::prefix('v1/arcade')->middleware([LimitArcadePayload::class, 'throttle:arc
             [CouponDeliveryController::class, 'openCase'])
             ->whereNumber('couponId')->middleware('throttle:arcade-coupon-support');
         Route::get('/player', [ArcadeController::class, 'me']);
+        Route::post('/player/legal', [ArcadeController::class, 'acknowledgeLegal'])
+            ->middleware('throttle:arcade-profile-delete');
         Route::get('/player/data', [ArcadePrivacyController::class, 'snapshot'])
             ->middleware('throttle:arcade-coupon-wallet');
         Route::get('/player/data/records', [ArcadePrivacyController::class, 'records'])
@@ -58,12 +61,14 @@ Route::prefix('v1/arcade')->middleware([LimitArcadePayload::class, 'throttle:arc
         // Independent server-replay endpoint for games whose action verifier
         // has passed differential tests. Unverified games are rejected (422).
         Route::post('/turn-runs', [ArcadeTurnRunController::class, 'start'])
-            ->middleware(['throttle:arcade-run-start', ObserveArcadeReplayFailures::class]);
+            ->middleware(['throttle:arcade-run-start', RequireArcadeLegalAcceptance::class,
+                ObserveArcadeReplayFailures::class]);
         Route::post('/turn-runs/{run}/complete',
             [ArcadeTurnRunController::class, 'complete'])
             ->middleware(['throttle:arcade-run-complete', ObserveArcadeReplayFailures::class]);
         Route::post('/runs', [ArcadeController::class, 'start'])
-            ->middleware(['throttle:arcade-run-start', ObserveArcadeReplayFailures::class]);
+            ->middleware(['throttle:arcade-run-start', RequireArcadeLegalAcceptance::class,
+                ObserveArcadeReplayFailures::class]);
         Route::post('/runs/{run}/complete', [ArcadeController::class, 'complete'])
             ->middleware(['throttle:arcade-run-complete', ObserveArcadeReplayFailures::class]);
     });
