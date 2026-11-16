@@ -25,11 +25,11 @@ const initial = [...files];
 const js = initial.filter(name => name.endsWith('.js'));
 const css = initial.filter(name => name.endsWith('.css'));
 const baseline = {
-    commit:'a4e1de798a5a8e0bc5736ffbc7cfdd032c95096a',
+    commit:'4eee9e11d91e2b163fd4b5f392eb299dcc78f09e',
     bundleMode:'atomic',
-    eagerJavaScriptGzipBytes:362160,
-    eagerCssGzipBytes:55440,
-    source:'successful pre-optimization Actions production build log; gzip outputs',
+    eagerJavaScriptGzipBytes:365790,
+    eagerCssGzipBytes:55450,
+    source:'Vite rounded gzip kB from immediately preceding successful main CI run 43862738736; approximate baseline, current sizes computed exactly',
 };
 const current = {
     eagerJavaScriptGzipBytes:js.reduce((sum,name)=>sum+gzip(name),0),
