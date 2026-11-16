@@ -13,6 +13,8 @@ const scope = new URL(self.registration.scope);
 const offlineURL = new URL('offline.html', scope).href;
 const manifestURL = new URL('offline-packs.json', scope).href;
 const indexURL = new URL('index.html', scope).href;
+const legalURLs = ['privacy/', 'terms/', 'competition-rules/']
+    .map(path => new URL(path, scope).href);
 const iconURLs = [
     new URL('icons/demian-192.png', scope).href,
     new URL('icons/demian-512.png', scope).href,
@@ -117,7 +119,7 @@ async function removeGame(id) {
 
 self.addEventListener('install', event => {
     event.waitUntil(caches.open(CACHE_NAME).then(cache =>
-        cache.addAll([offlineURL, manifestURL, ...iconURLs])));
+        cache.addAll([offlineURL, manifestURL, ...iconURLs, ...legalURLs])));
     // A waiting worker never activates in the middle of a game.
 });
 self.addEventListener('activate', event => {
@@ -192,7 +194,8 @@ self.addEventListener('fetch', event => {
                 const network = await fetch(new Request(request, { cache: 'no-store' }));
                 return network;
             } catch {
-                return await fromOfflineCaches(new URL(indexURL)) ||
+                return await (await caches.open(CACHE_NAME)).match(request, { ignoreSearch: true }) ||
+                    await fromOfflineCaches(new URL(indexURL)) ||
                     await (await caches.open(CACHE_NAME)).match(offlineURL) || Response.error();
             }
         })());
