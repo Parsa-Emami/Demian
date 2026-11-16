@@ -78,7 +78,12 @@ export const GAME_DEFINITIONS = Object.freeze({
         title: 'Café Critters', inputContext: 'CAFE_CRITTERS', orientation: 'any',
         loader: () => withGameStyle(
             () => import('../games/cafe-critters/CafeCrittersGame.js'),
-            () => import('../../../css/cafe-critters.css'),
+            async () => {
+                // Critters shares Shift Dialog interaction controls and
+                // 44 px accessible buttons with After Hours.
+                await import('../../../css/after-hours.css');
+                await import('../../../css/cafe-critters.css');
+            },
         ),
         metadata: Object.freeze({
             phase: 17, status: 'available', supportsResults: true,
