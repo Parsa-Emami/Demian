@@ -107,8 +107,36 @@ try {
                         throw Error('Cannot navigate RTL game library to ' + id);
                     }
                 }, game);
-                await page.waitForTimeout(140);
-                await page.locator('[data-screen="game-selection"] [data-game-launch="' + game + '"]').click();
+                const button = page.locator('[data-screen="game-selection"] [data-game-launch="' + game + '"]');
+                // On 390px layouts CSS switches the rail to a vertical grid;
+                // wait until the full button is on-screen and its center is
+                // hittable, avoiding mobile WebKit cancelling a tap mid-scroll.
+                await page.waitForFunction(id => {
+                    const node = document.querySelector('[data-screen="game-selection"] [data-game-launch="' + id + '"]');
+                    if (!node) return false;
+                    const bounds = node.getBoundingClientRect();
+                    const x = bounds.left + bounds.width / 2;
+                    const y = bounds.top + bounds.height / 2;
+                    const hit = document.elementFromPoint(x, y);
+                    return bounds.width > 25 && bounds.height > 25
+                        && y >= 2 && y < innerHeight - 2
+                        && x >= 2 && x < innerWidth - 2
+                        && Boolean(hit) && (node === hit || node.contains(hit));
+                }, game, { timeout: 8000 });
+                await page.waitForTimeout(280);
+                await button.click();
+                const clickEvidence = await page.evaluate(id => {
+                    const button = document.querySelector('[data-screen="game-selection"] [data-game-launch="' + id + '"]');
+                    const rect = button?.getBoundingClientRect();
+                    return {
+                        eventDelivered: window.__step31Clicks?.includes(id),
+                        pointer: rect ? {x: rect.x + rect.width / 2, y: rect.y + rect.height / 2} : null,
+                        allClicks: window.__step31Clicks,
+                        scrollTop: document.querySelector('[data-screen="game-selection"] .shell-page')?.scrollTop,
+                    };
+                }, game);
+                assert.equal(clickEvidence.eventDelivered, true,
+                    engine + '/' + game + ' pointer click was not dispatched: ' + JSON.stringify(clickEvidence));
                 await wait(page, id => {
                     const app = window.demianGameApplication;
                     return (app?.activeGameId === id && app.sessionState === 'playing')
