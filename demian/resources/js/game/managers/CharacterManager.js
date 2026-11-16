@@ -9,6 +9,7 @@ import {
     orderedSpriteVariants,
 } from '../characters/runtime/CharacterRuntimePolicy.js';
 import { optionalAssetPolicy } from '../characters/runtime/MobileNetworkPolicy.js';
+import { preloadCharacterRoster } from '../performance/CharacterRosterStartup.js';
 import {
     BUILTIN_CHARACTER_SLUGS,
     builtinCharacterAssetPair,
@@ -57,24 +58,8 @@ function cloneBuiltin(character, spriteVariant = 'mobile') {
 }
 
 export default class CharacterManager {
-    /**
-     * Start the optional roster request before constructing the world.
-     * Capture failure immediately so no unhandled rejection can occur while
-     * synchronous scene work proceeds. Bundled static rosters need no request.
-     */
-    static preloadRoster(repository, { documentRef = globalThis.document } = {}) {
-        const bundled = documentRef?.querySelector?.(
-            'meta[name="demian-static-release"][content="true"]'
-        ) && /(?:^|\/)characters\.json(?:[?#].*)?$/.test(repository?.baseUrl ?? '');
-        if (bundled) return Promise.resolve({ characters: [], error: null });
-        try {
-            return Promise.resolve(repository.list()).then(
-                characters => ({ characters, error: null }),
-                error => ({ characters: [], error }),
-            );
-        } catch (error) {
-            return Promise.resolve({ characters: [], error });
-        }
+    static preloadRoster(repository, options = {}) {
+        return preloadCharacterRoster(repository, options);
     }
 
     constructor({

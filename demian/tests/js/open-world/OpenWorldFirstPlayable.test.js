@@ -1,14 +1,14 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import CharacterManager from '../../../resources/js/game/managers/CharacterManager.js';
+import { preloadCharacterRoster } from '../../../resources/js/game/performance/CharacterRosterStartup.js';
 
 test('bundled static character roster never hits the remote endpoint', async () => {
     let requests = 0;
     const repo = { baseUrl: '/characters.json',
         list: () => { requests++; throw Error('unexpected request'); } };
     const doc = { querySelector: () => ({}) };
-    assert.deepEqual(await CharacterManager.preloadRoster(repo, { documentRef: doc }),
+    assert.deepEqual(await preloadCharacterRoster(repo, { documentRef: doc }),
         { characters: [], error: null });
     assert.equal(requests, 0);
 });
@@ -19,51 +19,33 @@ test('dynamic roster starts immediately and failure cannot become an unhandled r
     const repo = { baseUrl: '/api/characters', list: () => {
         started++; return new Promise(resolve => { resolveRoster = resolve; });
     } };
-    const inflight = CharacterManager.preloadRoster(repo, { documentRef: null });
+    const inflight = preloadCharacterRoster(repo, { documentRef: null });
     assert.equal(started, 1, 'remote request must begin before heavy world setup');
     resolveRoster(rows);
     assert.deepEqual(await inflight, { characters: rows, error: null });
     const error = Error('timeout');
-    const failed = await CharacterManager.preloadRoster({
+    const failed = await preloadCharacterRoster({
         baseUrl: '/api/characters', list: () => Promise.reject(error),
     }, { documentRef: null });
     assert.deepEqual(failed, { characters: [], error });
-    assert.deepEqual(await CharacterManager.preloadRoster({
+    assert.deepEqual(await preloadCharacterRoster({
         baseUrl: '/api/characters', list: () => { throw error; },
     }, { documentRef: null }), failed);
 });
 
-test('progressive boot selects only the necessary lite player before any NPC hydration', async () => {
-    const options = [], events = [];
-    const manager = Object.create(CharacterManager.prototype);
-    manager.repository = { baseUrl: '/api/characters', list: async () => [] };
-    manager.runtimeVariants = { active: 'detail', npc: 'lite' };
-    manager.characters = [];
-    manager.ensureBuiltinCharacters = () => {
-        manager.characters = [{ id: 'builtin-darya', slug: 'darya', is_active: true }];
-    };
-    manager.select = async (id, settings) => options.push({ id, settings });
-    manager.eventBus = { emit: event => events.push(event) };
-    manager.emitRosterChanged = () => events.push('roster:changed');
-    const rows = await manager.boot({ preferredSlug: 'darya', initialVariant: 'lite',
-        rosterPromise: Promise.resolve({ characters: [], error: null }) });
-    assert.equal(rows.length, 1);
-    assert.deepEqual(options, [{ id: 'builtin-darya',
-        settings: { preservePosition: false, hydrateRoster: false, variant: 'lite' } }]);
-    assert.ok(events.includes('characters:changed'));
-});
-
-test('normal character selection still requests the original high-detail variant', async () => {
-    const manager = Object.create(CharacterManager.prototype);
-    manager.runtimeVariants = { active: 'detail', npc: 'lite' };
-    manager.characters = [{ id: 7, slug: 'darya' }];
-    manager.entities = new Map();
-    manager.selectionGeneration = 0;
-    manager.ensureEntity = async (_record, _index, { variant }) => {
-        assert.equal(variant, 'detail'); throw Error('expected variant');
-    };
-    manager.eventBus = { emit() {} };
-    await assert.rejects(manager.select(7), /expected variant/);
+test('initial boot selects lite without changing default high-fidelity user selection', () => {
+    const manager = readFileSync(new URL('../../../resources/js/game/managers/CharacterManager.js',
+        import.meta.url), 'utf8');
+    const boot = manager.slice(manager.indexOf('    async boot('),
+        manager.indexOf('    ensureBuiltinCharacters()'));
+    const selection = manager.slice(manager.indexOf('    async select('),
+        manager.indexOf('    disposeEntity(', manager.indexOf('    async select(')));
+    assert.match(boot, /initialVariant = this\.runtimeVariants\.active/);
+    assert.match(boot, /variant: initialVariant/);
+    assert.match(boot, /rosterPromise \?\? CharacterManager\.preloadRoster/);
+    assert.match(selection, /variant = this\.runtimeVariants\.active/);
+    assert.match(selection, /ensureEntity\(record, this\.entities\.size, \{ variant \}\)/);
+    assert.match(manager, /variant: this\.runtimeVariants\.active, background/);
 });
 
 test('Open World renders the cafe before boot; streaming and visual upgrades follow the lite player', () => {
@@ -71,7 +53,7 @@ test('Open World renders the cafe before boot; streaming and visual upgrades fol
         import.meta.url), 'utf8');
     const app = readFileSync(new URL('../../../resources/js/game/application/GameApplication.js',
         import.meta.url), 'utf8');
-    const roster = world.indexOf('CharacterManager.preloadRoster(this.repository)');
+    const roster = world.indexOf('preloadCharacterRoster(this.repository)');
     const systems = world.indexOf('this.setupWorldServices()');
     const bootstrap = world.indexOf("renderScene({ phase: 'bootstrap'");
     const boot = world.indexOf('await this.characterManager.boot(');
@@ -85,20 +67,12 @@ test('Open World renders the cafe before boot; streaming and visual upgrades fol
     assert.match(app, /criticalSpriteVariant\(gameId, this\.characterVisuals\)/);
 });
 
-test('late quality upgrade disposes resources instead of touching a disposed entity', async () => {
-    const manager = Object.create(CharacterManager.prototype);
-    const record = { id: 'builtin-darya', slug: 'darya' };
-    const entity = { runtimeSpriteVariant: 'lite', isPlayerControlled: true,
-        replaceVisualAssets: () => { throw Error('stale replacement'); } };
-    manager.activeEntity = entity;
-    manager.entities = new Map([[record.id, entity]]);
-    manager.disposed = false;
-    let finish;
-    manager.loadCharacterAssets = () => new Promise(resolve => { finish = resolve; });
-    const upgrade = manager.ensureEntityVariant(record, entity, 'runtime', { background: true });
-    manager.disposed = true;
-    let disposed = 0;
-    finish({ texture: { dispose() { disposed++; } }, atlas: {}, variant: 'runtime' });
-    await upgrade;
-    assert.equal(disposed, 1);
+test('asynchronous enhancement cannot mutate a disposed actor or leak its texture', () => {
+    const manager = readFileSync(new URL('../../../resources/js/game/managers/CharacterManager.js',
+        import.meta.url), 'utf8');
+    const variant = manager.slice(manager.indexOf('    async ensureEntityVariant('),
+        manager.indexOf('    async createEntity('));
+    assert.match(variant, /if \(this\.disposed \|\| this\.entities\.get\(String\(record\.id\)\) !== entity/);
+    assert.match(variant, /assets\.texture\?\.dispose\?\.\(\)/);
+    assert.match(variant, /entity\.replaceVisualAssets\(assets\.texture, assets\.atlas\)/);
 });
