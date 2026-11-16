@@ -1,5 +1,11 @@
 import BaseScreen from './BaseScreen';
 import ScrollSnapRail from '../../../ui/ScrollSnapRail.js';
+import { preloadFbxCafeArt } from '../../rendering2d/FbxCafeAssets.js';
+import { optionalAssetPolicy } from '../../characters/runtime/MobileNetworkPolicy.js';
+
+// A small preview only. Never prefetch all map tiles or 12 character atlases.
+export const shouldWarmOpenWorldPreview = policy =>
+    policy?.deferBackground === false && policy.reason === 'normal';
 
 function escape(value) {
     return String(value)
@@ -16,6 +22,8 @@ export default class GameSelectionScreen extends BaseScreen {
         this.catalog = catalog;
         this.grid = this.element.querySelector('[data-game-grid]');
         this.rendered = false;
+        this.warmupHandle = null;
+        this.warmupType = null;
         this.rail = null;
         this.previousButton = this.element.querySelector('[data-game-scroll-previous]');
         this.nextButton = this.element.querySelector('[data-game-scroll-next]');
@@ -68,6 +76,16 @@ export default class GameSelectionScreen extends BaseScreen {
     async beforeOpen() {
         this.render();
         this.rail?.refresh({ preserveIndex: true });
+        if (this.warmupHandle !== null || !shouldWarmOpenWorldPreview(optionalAssetPolicy())) return;
+        // Begin idle warmup without blocking the visible game-selection menu.
+        const warm = () => { this.warmupHandle = null; void preloadFbxCafeArt(); };
+        if (typeof globalThis.requestIdleCallback === 'function') {
+            this.warmupType = 'idle';
+            this.warmupHandle = globalThis.requestIdleCallback(warm, { timeout: 1000 });
+        } else {
+            this.warmupType = 'timer';
+            this.warmupHandle = globalThis.setTimeout(warm, 250);
+        }
     }
 
     async afterOpen() {
@@ -79,6 +97,11 @@ export default class GameSelectionScreen extends BaseScreen {
     }
 
     dispose() {
+        if (this.warmupHandle !== null) {
+            if (this.warmupType === 'idle') globalThis.cancelIdleCallback?.(this.warmupHandle);
+            else globalThis.clearTimeout(this.warmupHandle);
+            this.warmupHandle = null;
+        }
         this.rail?.dispose();
         this.rail = null;
         super.dispose();
