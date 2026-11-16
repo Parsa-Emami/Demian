@@ -20,6 +20,7 @@ import '../css/mobile-19-controls.css';
 import '../css/phase4-step20-ux.css';
 import '../css/phase4-step21-feedback.css';
 import '../css/phase5-step23-dino-run.css';
+import '../css/phase6-step31-mobile-menu.css';
 import GameApplication from './game/application/GameApplication';
 import CharacterManagerUI from './ui/CharacterManagerUI';
 import SidebarController from './ui/SidebarController';
@@ -59,7 +60,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         await application.boot();
         const ui = new CharacterManagerUI({
             root: managerRoot,
-            managerProvider: () => application.characterManager,
+            managerProvider: () => application.characterManager ?? application.menuCharacterRoster,
             eventBus: application.eventBus,
         });
         ui.boot();

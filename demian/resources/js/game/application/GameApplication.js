@@ -7,6 +7,7 @@ import GameRegistry from '../registry/GameRegistry';
 import { GAME_DEFINITIONS } from '../registry/GameDefinitions';
 import GameRuntime from '../runtime/GameRuntime';
 import CharacterVisualService from '../characters/runtime/CharacterVisualService.js';
+import MenuCharacterRoster from '../characters/MenuCharacterRoster.js';
 import AnimationService from '../services/AnimationService';
 import GameFeedbackDirector from '../services/GameFeedbackDirector.js';
 import RendererService from '../services/RendererService';
@@ -62,6 +63,10 @@ export default class GameApplication {
         this.characterVisuals = new CharacterVisualService({
             eventBus: this.eventBus,
             performanceProfile: this.performanceProfile,
+        });
+        this.menuCharacterRoster = new MenuCharacterRoster({
+            eventBus: this.eventBus,
+            visualService: this.characterVisuals,
         });
         this.settings = new SettingsStore();
         this.leaderboards = new ArcadeLeaderboardService();

@@ -84,6 +84,14 @@ export default class CharacterManagerUI {
             this.renderActiveCharacter(record);
         });
 
+        this.eventBus.on('application:menu-shown', () => {
+            const manager = this.getManager();
+            if (manager) {
+                this.renderList(manager.characters);
+                this.renderActiveCharacter(manager.activeRecord);
+            }
+        });
+
         this.eventBus.on('game:launched', () => {
             const manager = this.getManager();
             if (manager) {

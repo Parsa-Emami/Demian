@@ -1,0 +1,260 @@
+.manager-shell [data-game-shell] .cafe-menu__showcase { display: none; }
+
+@media (max-width: 760px) {
+    .manager-shell [data-game-shell] .shell-screen--cafe {
+        display: block;
+        overflow-y: auto;
+        overflow-x: hidden;
+        overscroll-behavior: contain;
+        -webkit-overflow-scrolling: touch;
+        background:
+            radial-gradient(ellipse 82% 48% at 13% 8%, rgba(209, 220, 159, .15), transparent 74%),
+            radial-gradient(ellipse 72% 45% at 99% 57%, rgba(178, 123, 67, .13), transparent 74%),
+            linear-gradient(158deg, #182722 0%, #101c19 56%, #0a1311 100%);
+    }
+    .manager-shell [data-game-shell] .shell-screen--cafe::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        opacity: .33;
+        background: repeating-linear-gradient(135deg, transparent 0 30px, rgba(233, 232, 208, .019) 30px 31px);
+    }
+    .manager-shell [data-game-shell] .cafe-menu__content {
+        box-sizing: border-box;
+        position: relative;
+        width: min(100%, 520px);
+        max-width: 520px;
+        min-height: 100%;
+        margin: 0 auto;
+        padding: max(22px, env(safe-area-inset-top, 0px)) 22px max(30px, env(safe-area-inset-bottom, 0px));
+        justify-content: center;
+        gap: 0;
+        background: transparent;
+        text-align: right;
+    }
+    .manager-shell [data-game-shell] .cafe-menu__eyebrow {
+        width: fit-content;
+        margin: 0 0 20px;
+        border: 1px solid rgba(224, 237, 185, .22);
+        border-radius: 999px;
+        padding: 9px 14px;
+        color: #d9e3bf;
+        background: rgba(8, 20, 16, .64);
+        font: 700 10px/1.2 ui-monospace, monospace;
+        letter-spacing: .14em;
+        direction: ltr;
+        box-shadow: inset 0 1px rgba(255,255,255,.05);
+    }
+    .manager-shell [data-game-shell] .shell-kicker {
+        color: #e3cda1;
+        font-weight: 700;
+        font-size: 13px;
+        letter-spacing: .01em;
+    }
+    .manager-shell [data-game-shell] .cafe-menu__title {
+        width: auto;
+        margin: 5px 0 0;
+        background: none;
+        color: #f3efe0;
+        filter: none;
+        font: 900 clamp(57px, 16vw, 91px)/.99 Georgia, "Times New Roman", serif;
+        letter-spacing: -.07em;
+    }
+    .manager-shell [data-game-shell] .cafe-menu__title b {
+        background: linear-gradient(125deg, #f7f5e8 8%, #dde8b0 72%, #a8c58e 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        -webkit-text-stroke: 0;
+        text-shadow: none;
+    }
+    .manager-shell [data-game-shell] .cafe-menu__lead {
+        max-width: 30ch;
+        margin: 12px 0 0;
+        color: #c0c9b6;
+        font-size: 14px;
+        line-height: 1.9;
+    }
+    .manager-shell [data-game-shell] .cafe-menu__showcase {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        width: 100%;
+        min-width: 0;
+        min-height: 146px;
+        margin-top: 22px;
+        padding: 18px 12px 16px 17px;
+        border: 1px solid rgba(230, 233, 193, .24);
+        border-radius: 25px;
+        color: #f3f0dc;
+        text-align: right;
+        cursor: pointer;
+        background:
+            radial-gradient(ellipse at 87% 18%, rgba(222, 223, 154, .19), transparent 58%),
+            linear-gradient(142deg, rgba(57, 77, 56, .88), rgba(24, 43, 35, .91));
+        box-shadow: 0 22px 36px rgba(1, 9, 7, .28), inset 0 1px rgba(255,255,255,.09);
+        -webkit-tap-highlight-color: transparent;
+        touch-action: manipulation;
+    }
+    .manager-shell [data-game-shell] .cafe-menu__showcase-copy {
+        display: flex;
+        flex: 1 1 42%;
+        flex-direction: column;
+        min-width: 0;
+        gap: 7px;
+        align-self: stretch;
+        justify-content: center;
+        position: relative;
+        z-index: 1;
+    }
+    .manager-shell [data-game-shell] .cafe-menu__showcase-kicker {
+        color: #d9e7ad;
+        font: 700 8px/1.5 ui-monospace, monospace;
+        letter-spacing: .09em;
+        direction: ltr;
+        text-align: right;
+    }
+    .manager-shell [data-game-shell] .cafe-menu__showcase-copy strong {
+        font-size: clamp(13px, 3.9vw, 17px);
+        font-weight: 900;
+        line-height: 1.65;
+    }
+    .manager-shell [data-game-shell] .cafe-menu__showcase-copy small {
+        color: #c3d1b9;
+        font-size: 10px;
+        line-height: 1.7;
+    }
+    .manager-shell [data-game-shell] .cafe-menu__portraits {
+        display: flex;
+        flex: 0 0 53%;
+        justify-content: center;
+        align-items: end;
+        min-width: 0;
+        direction: ltr;
+        padding-top: 3px;
+    }
+    .manager-shell [data-game-shell] .cafe-menu__portrait {
+        display: block;
+        position: relative;
+        overflow: hidden;
+        width: 40%;
+        aspect-ratio: 4/5;
+        max-width: 78px;
+        border: 2px solid rgba(239, 246, 217, .45);
+        border-radius: 15px 15px 11px 11px;
+        background: linear-gradient(145deg, #bccb9b, #758e71);
+        box-shadow: 0 8px 14px rgba(0, 10, 8, .29);
+    }
+    .manager-shell [data-game-shell] .cafe-menu__portrait + .cafe-menu__portrait { margin-left: -14px; }
+    .manager-shell [data-game-shell] .cafe-menu__portrait--negar {
+        z-index: 2;
+        transform: translateY(-8px) rotate(-3deg);
+        background: linear-gradient(140deg, #ddc6a5, #af8c78);
+    }
+    .manager-shell [data-game-shell] .cafe-menu__portrait--tiam {
+        z-index: 3;
+        transform: rotate(5deg);
+        background: linear-gradient(150deg, #d3d7aa, #9fae8d);
+    }
+    .manager-shell [data-game-shell] .cafe-menu__portrait img {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        image-rendering: auto;
+    }
+    .manager-shell [data-game-shell] .cafe-menu__actions {
+        width: 100%;
+        margin-top: 22px;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+    }
+    .manager-shell [data-game-shell] .cafe-menu__actions .shell-button {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 8px;
+        min-width: 0;
+        min-height: 52px;
+        margin: 0;
+        padding: 12px 15px;
+        border: 1px solid rgba(213, 230, 185, .22);
+        border-radius: 16px;
+        background: rgba(40, 60, 47, .68);
+        color: #ecf2dc;
+        font-size: 12px;
+        font-weight: 800;
+        line-height: 1.6;
+        box-shadow: inset 0 1px rgba(255,255,255,.06);
+    }
+    .manager-shell [data-game-shell] .cafe-menu__actions .shell-button--primary {
+        grid-column: 1 / -1;
+        min-height: 61px;
+        background: linear-gradient(115deg, #f2efcf, #cde29e);
+        border: 1px solid #e2efba;
+        color: #23382d;
+        font-size: 16px;
+        box-shadow: 0 12px 30px rgba(17, 37, 17, .29);
+    }
+    .manager-shell [data-game-shell] .cafe-menu__actions .shell-button[data-shell-action="continue"] {
+        grid-column: 1 / -1;
+        background: rgba(36, 58, 43, .85);
+        border-color: rgba(195, 224, 164, .48);
+        font-size: 13px;
+    }
+    .manager-shell [data-game-shell] .cafe-menu__actions .shell-button[data-shell-action="rewards"] {
+        grid-column: 1 / -1;
+    }
+    .manager-shell [data-game-shell] .cafe-menu__content > .shell-button {
+        margin-top: 10px;
+        min-height: 45px;
+        width: 100%;
+        border-radius: 14px;
+        border: 1px solid rgba(224, 235, 193, .16);
+        background: rgba(22, 38, 31, .42);
+        color: #d6dfc5;
+        font-size: 12px;
+    }
+    .manager-shell [data-game-shell] .menu-character-button { margin-top: 8px; }
+    .manager-shell [data-game-shell] .cafe-menu__footer {
+        display: flex;
+        margin-top: 18px;
+        padding-top: 15px;
+        border-top: 1px solid rgba(223, 227, 192, .14);
+        color: #aab9a3;
+        font-size: 10px;
+        line-height: 1.8;
+        gap: 9px;
+    }
+    .manager-shell [data-game-shell] .demian-credit {
+        margin-top: 13px;
+        color: #9cab9c;
+        opacity: .85;
+    }
+    .manager-shell [data-game-shell] :is(.cafe-menu__showcase, .shell-button):focus-visible {
+        outline: 3px solid #f5e2ad;
+        outline-offset: 3px;
+    }
+}
+@media (max-width: 360px) {
+    .manager-shell [data-game-shell] .cafe-menu__content { padding-inline: 15px; }
+    .manager-shell [data-game-shell] .cafe-menu__showcase { padding-inline: 12px; min-height: 126px; }
+    .manager-shell [data-game-shell] .cafe-menu__actions { gap: 8px; }
+    .manager-shell [data-game-shell] .cafe-menu__actions .shell-button { padding-inline: 11px; font-size: 11px; }
+}
+@media (max-height: 560px) and (orientation: landscape) {
+    .manager-shell [data-game-shell] .cafe-menu__content { justify-content: flex-start; padding-block: 16px 22px; }
+    .manager-shell [data-game-shell] .cafe-menu__eyebrow { margin-bottom: 10px; }
+    .manager-shell [data-game-shell] .cafe-menu__title { font-size: 52px; }
+    .manager-shell [data-game-shell] .cafe-menu__showcase { min-height: 105px; margin-top: 12px; }
+    .manager-shell [data-game-shell] .cafe-menu__portrait { max-width: 59px; }
+    .manager-shell [data-game-shell] .cafe-menu__actions { margin-top: 12px; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .manager-shell [data-game-shell] .cafe-menu__showcase,
+    .manager-shell [data-game-shell] .cafe-menu__portrait { transition: none; animation: none; }
+}
