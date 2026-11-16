@@ -13,7 +13,7 @@ const GAME_STYLES = Object.freeze({
     'dino-run': 'resources/css/phase5-step23-dino-run.css',
     'after-hours': 'resources/css/after-hours.css',
     'cafe-rush': ['resources/css/after-hours.css', 'resources/css/cafe-rush.css'],
-    'cafe-critters': 'resources/css/cafe-critters.css',
+    'cafe-critters': ['resources/css/after-hours.css', 'resources/css/cafe-critters.css'],
     'coffee-crash': 'resources/css/coffee-crash.css',
 });
 
