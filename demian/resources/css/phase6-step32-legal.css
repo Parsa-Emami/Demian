@@ -1,0 +1,57 @@
+.demian-legal-links {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 8px 18px;
+    margin-block: 12px 4px;
+    padding: 10px;
+    font-size: 12px;
+    direction: rtl;
+}
+.demian-legal-links a {
+    color: #cce8d8;
+    text-decoration: underline;
+    text-decoration-color: rgba(204, 232, 216, .55);
+    text-underline-offset: 4px;
+}
+.demian-legal-links a:focus-visible { outline: 2px solid #fff1bd; outline-offset: 4px; }
+.demian-legal-dialog {
+    width: min(520px, calc(100% - 28px));
+    max-height: min(92dvh, 780px);
+    margin: auto;
+    padding: clamp(20px, 5vw, 30px);
+    border: 1px solid #668d77;
+    border-radius: 22px;
+    background: #14251e;
+    color: #f0f5ef;
+    box-shadow: 0 24px 70px rgba(0,0,0,.55);
+    direction: rtl;
+    font: 15px/1.9 system-ui, Tahoma, sans-serif;
+    overflow-y: auto;
+}
+.demian-legal-dialog::backdrop { background: rgba(0,0,0,.76); }
+.demian-legal-dialog h2 { font-size: 21px; margin: 0 0 8px; }
+.demian-legal-dialog p { margin: 7px 0 16px; }
+.demian-legal-dialog a { color: #baf2ce; text-decoration: underline; }
+.demian-legal-dialog label {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    padding: 9px 0;
+    cursor: pointer;
+}
+.demian-legal-dialog input[type=checkbox] {
+    width: 22px; height: 22px; flex: none; margin-top: 4px; accent-color: #68ba8a;
+}
+.demian-legal-dialog__actions { display: flex; gap: 12px; margin-top: 20px; }
+.demian-legal-dialog button {
+    min-height: 48px; flex: 1; border-radius: 14px; padding: 9px 14px;
+    font: inherit; border: 1px solid #8fbda0; color: #f0f5ef; background: #234132;
+}
+.demian-legal-dialog button[data-legal-confirm] { background: #326c50; font-weight: 700; }
+.demian-legal-dialog button:focus-visible { outline: 3px solid #f7df9d; outline-offset: 2px; }
+@media (max-width: 430px) {
+    .demian-legal-links { gap: 8px 14px; }
+    .demian-legal-dialog__actions { flex-direction: column; }
+}
