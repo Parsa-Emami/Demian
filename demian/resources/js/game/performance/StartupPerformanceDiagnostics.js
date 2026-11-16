@@ -221,7 +221,7 @@ export default class StartupPerformanceDiagnostics {
         let resources = [];
         try { resources = perf?.getEntriesByType?.('resource') ?? []; } catch {}
         let serviceWorkerControlled = null;
-        try { serviceWorkerControlled = Boolean(n?.serviceWorker?.controller); } catch {}
+        try { serviceWorkerControlled = n?.serviceWorker ? Boolean(n.serviceWorker.controller) : null; } catch {}
         let isStandalone = false;
         try { isStandalone = Boolean(w?.matchMedia?.('(display-mode: standalone)')?.matches || n?.standalone); } catch {}
         const connection = n?.connection ?? n?.mozConnection ?? n?.webkitConnection;
