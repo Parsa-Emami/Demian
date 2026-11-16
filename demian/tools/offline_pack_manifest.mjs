@@ -9,6 +9,14 @@ export const OFFLINE_GAME_IDS = Object.freeze([
 export const OFFLINE_MAX_PACK_BYTES = 96 * 1024 * 1024;
 const CLEAN = /^[a-zA-Z0-9][a-zA-Z0-9/_\-.]*$/;
 
+const GAME_STYLES = Object.freeze({
+    'dino-run': 'resources/css/phase5-step23-dino-run.css',
+    'after-hours': 'resources/css/after-hours.css',
+    'cafe-rush': 'resources/css/cafe-rush.css',
+    'cafe-critters': 'resources/css/cafe-critters.css',
+    'coffee-crash': 'resources/css/coffee-crash.css',
+});
+
 const GAME_MODULES = Object.freeze({
     'open-world': 'resources/js/game/games/open-world/OpenWorldGame.js',
     'dino-run': 'resources/js/game/games/dino-run/DinoRunGame.js',
@@ -46,6 +54,13 @@ export function buildOfflinePackManifest({ release, entry, releaseId } = {}) {
         ];
     };
     const eagerBuildAssets = new Set(buildDependencies('resources/js/app.js'));
+    // The deferred PWA UI must be in the offline core, even when its module
+    // is no longer on the initial menu's critical network/parse path.
+    const controller = 'resources/js/game/performance/PwaUpdateController.js';
+    if (!vite[controller]?.isDynamicEntry) {
+        throw new Error('Deferred PWA controller was not emitted as a dynamic module.');
+    }
+    for (const path of buildDependencies(controller)) eagerBuildAssets.add(path);
     for (const [id, source] of Object.entries(GAME_MODULES)) {
         if (!vite[source]?.isDynamicEntry ||
             eagerBuildAssets.has('build/' + vite[source].file)) {
@@ -107,6 +122,7 @@ export function buildOfflinePackManifest({ release, entry, releaseId } = {}) {
         const files = unique([
             ...extras[id],
             ...buildDependencies(GAME_MODULES[id]).filter(path => !eagerBuildAssets.has(path)),
+            ...(GAME_STYLES[id] ? buildDependencies(GAME_STYLES[id]).filter(path => !eagerBuildAssets.has(path)) : []),
         ]);
         const bytes = files.reduce((sum, asset) => sum + asset.bytes, 0);
         if (coreBytes + bytes > OFFLINE_MAX_PACK_BYTES) {
