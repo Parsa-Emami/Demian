@@ -66,6 +66,7 @@
         "test:coffee-crash:browser": "node tools/check_coffee_crash.mjs",
         "test:identity:browser": "node tools/check_project_identity.mjs",
         "test:device-qa:browser": "node tools/check_device_qa.mjs",
+        "test:startup:browser": "node tools/check_startup_diagnostics.mjs",
         "test:mobile-network:browser": "node tools/check_mobile_network_resilience.mjs",
         "test:mobile-touch:browser": "node tools/check_mobile_touch.mjs",
         "test:mobile-pwa:browser": "node tools/check_production_pwa.mjs",
