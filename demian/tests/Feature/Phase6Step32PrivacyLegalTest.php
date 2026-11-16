@@ -84,4 +84,43 @@ final class Phase6Step32PrivacyLegalTest extends TestCase
             $this->assertArrayNotHasKey('token_hash', $row);
         }
     }
+
+    public function test_legacy_player_must_acknowledge_current_policy_before_new_ranked_run(): void
+    {
+        config()->set('demian-legal.require_acceptance', false);
+        $player = $this->postJson('/api/v1/arcade/players',
+            ['display_name' => 'Legacy'])->assertCreated()->json();
+        config()->set('demian-legal.require_acceptance', true);
+        $this->withToken($player['token']);
+        $run = [
+            'request_id' => (string) \Illuminate\Support\Str::uuid(),
+            'game_id' => 'dino-run',
+            'rules_version' => app(\App\Services\Arcade\RunnerReplayVerifier::class)->rules()['version'],
+            'character_slug' => 'darya',
+            'track_width' => 420,
+        ];
+        $this->postJson('/api/v1/arcade/runs', $run)->assertStatus(428);
+        $this->assertDatabaseCount('arcade_runs', 0);
+        $this->postJson('/api/v1/arcade/player/legal', [
+            'policy_version' => 'wrong', 'accept_terms' => true,
+            'privacy_acknowledged' => true,
+        ])->assertUnprocessable();
+        $this->postJson('/api/v1/arcade/player/legal', [
+            'policy_version' => '2026-11-16-v1',
+            'accept_terms' => true, 'privacy_acknowledged' => false,
+        ])->assertUnprocessable();
+        $this->postJson('/api/v1/arcade/player/legal', [
+            'policy_version' => '2026-11-16-v1',
+            'accept_terms' => true, 'privacy_acknowledged' => true,
+        ])->assertOk()->assertJsonPath('legal_policy_version', '2026-11-16-v1');
+        $this->postJson('/api/v1/arcade/runs', $run)->assertCreated();
+        // A newer version needs new affirmative user action. Merely changing
+        // configuration does not create implied acceptance.
+        config()->set('demian-legal.version', '2026-11-16-v2');
+        $run['request_id'] = (string) \Illuminate\Support\Str::uuid();
+        $this->postJson('/api/v1/arcade/runs', $run)->assertStatus(428);
+        $this->withToken($player['token'])->deleteJson('/api/v1/arcade/player')
+            ->assertOk()->assertJsonPath('status', 'deleted');
+    }
+
 }
