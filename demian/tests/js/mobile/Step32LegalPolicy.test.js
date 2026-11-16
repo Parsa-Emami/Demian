@@ -58,3 +58,12 @@ test('step32 does not permit a CI/operator variable to certify unreviewed conten
         rmSync(dir, { recursive: true, force: true });
     }
 });
+
+test('step32 service worker precaches concrete HTML paths without ambiguous directory redirects', () => {
+    const sw = readFileSync(resolve('tools/templates/service-worker.js'), 'utf8');
+    assert.match(sw, /'privacy\/index\\.html'/);
+    assert.match(sw, /'terms\/index\\.html'/);
+    assert.match(sw, /'competition-rules\/index\\.html'/);
+    assert.match(sw, /legalIndex \? await cache\.match\(legalIndex\)/);
+    assert.doesNotMatch(sw, /cache\.addAll\(\[offlineURL, manifestURL, \.\.\.iconURLs, \.\.\.\['privacy\/']/);
+});
