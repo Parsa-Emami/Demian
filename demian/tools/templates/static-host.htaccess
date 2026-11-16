@@ -3,6 +3,11 @@
 # GitHub Pages ignores .htaccess and applies its own HTTP headers.
 DirectoryIndex index.html
 
+# Compression on Apache/LiteSpeed: images/WebP/WOFF2 stay uncompressed.
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/css text/plain text/javascript application/javascript application/json application/manifest+json image/svg+xml
+</IfModule>
+
 <IfModule mod_mime.c>
     AddType application/manifest+json .webmanifest
     AddType font/woff2 .woff2
@@ -29,7 +34,12 @@ DirectoryIndex index.html
 
     # Unhashed character sprites/atlases retain normal browser HTTP caching,
     # but must revalidate on every new release to avoid stale image manifests.
-    <FilesMatch "\.(json|png|webp)$">
+    <FilesMatch "\.json$">
         Header set Cache-Control "no-cache, max-age=0, must-revalidate"
+    </FilesMatch>
+    # Five-minute browser reuse reduces shared-host traffic for menu art and map tiles.
+    # Unhashed artwork can change between releases, so never mark it immutable.
+    <FilesMatch "\.(png|webp)$">
+        Header set Cache-Control "public, max-age=300, stale-while-revalidate=3600"
     </FilesMatch>
 </IfModule>
