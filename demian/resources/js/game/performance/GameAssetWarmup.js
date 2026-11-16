@@ -13,11 +13,18 @@ export function criticalSpriteSlug(gameId, visuals) {
     return null;
 }
 
+export function criticalSpriteVariant(gameId, visuals) {
+    // First playable Open World needs lite, not the optional runtime/detail
+    // enhancement. Other games retain their original selected quality.
+    return gameId === 'open-world'
+        ? 'lite' : visuals?.runtimeVariant?.({ player: true }) ?? 'lite';
+}
+
 export function prewarmCriticalGameSprite(gameId, visuals, { networkPolicy = optionalAssetPolicy } = {}) {
     if (!visuals?.loadPack || networkPolicy()?.reason !== 'normal') return Promise.resolve(false);
     const slug = criticalSpriteSlug(gameId, visuals);
     if (!slug) return Promise.resolve(false);
-    const variant = visuals.runtimeVariant?.({ player: true }) ?? 'lite';
+    const variant = criticalSpriteVariant(gameId, visuals);
     // A failed background warmup must never change normal game startup.
     return Promise.resolve()
         .then(() => visuals.loadPack(slug, variant, { background: true, speculative: true }))

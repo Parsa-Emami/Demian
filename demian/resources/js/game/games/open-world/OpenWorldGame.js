@@ -88,6 +88,13 @@ export default class OpenWorldGame extends BaseGame {
 
     async enter(context) {
         this.context = context;
+        // Begin remote roster discovery while creating collision, navigation
+        // and the initial render. On GitHub Pages this is resolved locally.
+        this.repository = new CharacterRepository({
+            baseUrl: context.options.apiBase,
+            csrfToken: context.options.csrfToken,
+        });
+        const rosterPromise = CharacterManager.preloadRoster(this.repository);
         this.abilityHud = new CharacterAbilityHud(context.root, context.input);
         this.actionHud = new CharacterActionHud(context.root, context.input);
         const { performanceProfile } = context.services;
@@ -114,15 +121,9 @@ export default class OpenWorldGame extends BaseGame {
 
         this.discovery.discoverChunk(this.partition.chunkAt(this.manifest.spawn)?.id);
         this.discovery.unlockSavePoint('save-entrance');
-        // The café is already visible. Stream nearby LOD chunks in the
-        // background rather than blocking the first playable frame on all
-        // surrounding tiles. Ranked routes still await required chunks.
-        this.chunkManager.update(this.manifest.spawn);
-
-        this.repository = new CharacterRepository({
-            baseUrl: context.options.apiBase,
-            csrfToken: context.options.csrfToken,
-        });
+        // Do not compete for network/CPU with the essential player sprite:
+        // updateStreaming(true) below still starts the exact same bounded LOD
+        // streaming after the player is playable.
         this.characterManager = new CharacterManager({
             scene: this.scene,
             repository: this.repository,
@@ -145,7 +146,9 @@ export default class OpenWorldGame extends BaseGame {
 
         this.bindCameraControls();
         const preferredSlug = context.services.characterVisuals.activeSlug;
-        await this.characterManager.boot({ preferredSlug });
+        await this.characterManager.boot({
+            preferredSlug, rosterPromise, initialVariant: 'lite',
+        });
         this.characterManager.setPosition(this.manifest.spawn);
         this.registerWorldInteractions();
         this.mountUi();
@@ -177,6 +180,8 @@ export default class OpenWorldGame extends BaseGame {
         // subsequent frames, but the scene is already visible before the loading
         // screen is removed.
         this.renderScene({ phase: 'ready', strict: false });
+        // Upgrade the active avatar and load NPC art only after the first
+        // renderable lite avatar, full collisions and input are ready.
         this.characterManager.startBackgroundHydration();
     }
 

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { criticalSpriteSlug, prewarmCriticalGameSprite }
+import { criticalSpriteSlug, criticalSpriteVariant, prewarmCriticalGameSprite }
     from '../../../resources/js/game/performance/GameAssetWarmup.js';
 import { SpriteLoadGate } from '../../../resources/js/game/characters/runtime/SpriteMemoryPolicy.js';
 import CharacterVisualService from '../../../resources/js/game/characters/runtime/CharacterVisualService.js';
@@ -133,4 +133,14 @@ test('foreground launch promotes in-flight speculative sprite before cancelling 
     assert.equal(count, 1, 'foreground must share the same atlas+decode');
     assert.equal(service.failedPairs.size, 0);
     service.dispose();
+});
+
+test('high-end Open World prewarms only lite while Dino Run preserves requested quality', async () => {
+    const calls = [];
+    const visuals = { activeSlug: 'negar', runtimeVariant: () => 'detail',
+        loadPack: async (...args) => { calls.push(args); return {}; } };
+    assert.equal(criticalSpriteVariant('open-world', visuals), 'lite');
+    assert.equal(criticalSpriteVariant('dino-run', visuals), 'detail');
+    assert.equal(await prewarmCriticalGameSprite('open-world', visuals, { networkPolicy: normal }), true);
+    assert.deepEqual(calls, [['negar', 'lite', { background: true, speculative: true }]]);
 });
