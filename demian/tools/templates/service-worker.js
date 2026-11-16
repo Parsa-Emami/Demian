@@ -13,7 +13,7 @@ const scope = new URL(self.registration.scope);
 const offlineURL = new URL('offline.html', scope).href;
 const manifestURL = new URL('offline-packs.json', scope).href;
 const indexURL = new URL('index.html', scope).href;
-const legalURLs = ['privacy/', 'terms/', 'competition-rules/']
+const legalURLs = ['privacy/index.html', 'terms/index.html', 'competition-rules/index.html']
     .map(path => new URL(path, scope).href);
 const iconURLs = [
     new URL('icons/demian-192.png', scope).href,
@@ -194,7 +194,12 @@ self.addEventListener('fetch', event => {
                 const network = await fetch(new Request(request, { cache: 'no-store' }));
                 return network;
             } catch {
-                return await (await caches.open(CACHE_NAME)).match(request, { ignoreSearch: true }) ||
+                const cache = await caches.open(CACHE_NAME);
+                const legalPath = url.pathname.slice(scope.pathname.length);
+                const legalIndex = ['privacy/', 'terms/', 'competition-rules/'].includes(legalPath)
+                    ? new URL(legalPath + 'index.html', scope).href : null;
+                return (legalIndex ? await cache.match(legalIndex) : null) ||
+                    await cache.match(request, { ignoreSearch: true }) ||
                     await fromOfflineCaches(new URL(indexURL)) ||
                     await (await caches.open(CACHE_NAME)).match(offlineURL) || Response.error();
             }
