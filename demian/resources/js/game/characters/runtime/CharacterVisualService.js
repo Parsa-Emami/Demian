@@ -32,9 +32,10 @@ function readStoredSlug(storage) {
 }
 
 export default class CharacterVisualService {
-    constructor({ eventBus, performanceProfile = null, storage = safeStorage() } = {}) {
+    constructor({ eventBus, performanceProfile = null, storage = safeStorage(), diagnosticsEnabled = false } = {}) {
         this.eventBus = eventBus;
         this.performanceProfile = performanceProfile;
+        this.diagnosticsEnabled = diagnosticsEnabled === true;
         this.storage = storage;
         this.activeSlug = readStoredSlug(storage) ?? DEFAULT_ACTIVE_SLUG;
         this.packPromises = new Map();
@@ -278,7 +279,7 @@ export default class CharacterVisualService {
             const spriteSource = format === 'webp'
                 ? pair.spriteUrl.replace(/\.png(?=[?#]|$)/, '.webp') : pair.spriteUrl;
             const spriteUrl = characterSpriteRevisionUrl(spriteSource, atlas);
-            const image = await this.loadImage(spriteUrl, controller.signal, { background });
+            const image = await this.loadImage(spriteUrl, controller.signal, { background, variant });
             if (controller.signal.aborted || this.disposed) throw abortedError();
             return Object.freeze({ slug, variant, atlas, image, ...pair, spriteUrl });
         } catch (error) {
@@ -296,7 +297,9 @@ export default class CharacterVisualService {
         }
     }
 
-    loadImage(url, signal, { background = false } = {}) {
+    loadImage(url, signal, { background = false, variant = null } = {}) {
+        // Only the explicit on-device diagnosis mode measures image decoding.
+        const loadingStarted = this.diagnosticsEnabled ? performance.now() : null;
         return new Promise((resolve, reject) => {
             if (typeof Image === 'undefined') {
                 reject(new Error('Image loading is unavailable in this runtime.'));
@@ -320,9 +323,24 @@ export default class CharacterVisualService {
             // Progressive enhancement; ignored on engines without fetchPriority.
             image.fetchPriority = background ? 'low' : 'high';
             image.onload = () => {
-                if (typeof image.decode !== 'function') { finish(resolve, image); return; }
-                image.decode().then(() => finish(resolve, image),
-                    () => finish(reject, new Error(`Sprite decode failed (${url})`)));
+                const loadFinished = loadingStarted === null ? null : performance.now();
+                const record = decodeMs => {
+                    if (loadingStarted === null || done) return;
+                    // No URL or character identity is included in the report.
+                    this.eventBus?.emit('character:image-timing', {
+                        variant, background, loadingMs: loadFinished - loadingStarted,
+                        decodeMs, width: image.naturalWidth, height: image.naturalHeight,
+                    });
+                };
+                if (typeof image.decode !== 'function') {
+                    record(null);
+                    finish(resolve, image);
+                    return;
+                }
+                image.decode().then(() => {
+                    record(loadingStarted === null ? null : performance.now() - loadFinished);
+                    finish(resolve, image);
+                }, () => finish(reject, new Error(`Sprite decode failed (${url})`)));
             };
             image.onerror = () => {
                 const error = new Error(`Sprite load failed (${url})`);

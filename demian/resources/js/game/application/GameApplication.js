@@ -23,6 +23,7 @@ import SessionStateMachine, { SESSION_STATES } from './SessionStateMachine';
 import ArcadeLeaderboardService from '../leaderboard/ArcadeLeaderboardService.js';
 import DeviceQaController from '../performance/DeviceQaController.js';
 import AnonymousGameTelemetry from '../performance/AnonymousGameTelemetry.js';
+import StartupPerformanceDiagnostics from '../performance/StartupPerformanceDiagnostics.js';
 
 const MENU_BACKDROP_GAME_ID = 'open-world';
 
@@ -42,6 +43,9 @@ export default class GameApplication {
         this.root = container.closest('[data-character-manager]') ?? document.body;
         this.options = options;
         this.eventBus = new EventBus();
+        // Opt-in only: real-device startup timing stays local, never sent to an API.
+        this.startupDiagnostics = new URLSearchParams(window.location.search).get('startupQa') === '1'
+            ? new StartupPerformanceDiagnostics({ eventBus: this.eventBus }) : null;
         this.collision = new CollisionWorld({ eventBus: this.eventBus, cellSize: 4 });
         this.interaction = new InteractionService({
             eventBus: this.eventBus,
@@ -64,6 +68,7 @@ export default class GameApplication {
         this.characterVisuals = new CharacterVisualService({
             eventBus: this.eventBus,
             performanceProfile: this.performanceProfile,
+            diagnosticsEnabled: Boolean(this.startupDiagnostics),
         });
         this.menuCharacterRoster = new MenuCharacterRoster({
             eventBus: this.eventBus,
@@ -95,6 +100,7 @@ export default class GameApplication {
             },
             observeRender: timestamp => {
                 this.deviceQa?.rendered(timestamp);
+                this.startupDiagnostics?.rendered(timestamp);
                 this.opsTelemetry?.frame(timestamp, this.activeGameId,
                     this.sessionState === SESSION_STATES.PLAYING);
             },
@@ -583,6 +589,7 @@ export default class GameApplication {
         this.unsubscribeSettings?.();
         this.unsubscribeRuntimeFatal?.();
         this.deviceQa?.dispose();
+        this.startupDiagnostics?.dispose();
         this.runtime.dispose();
 
         if (this.activeGame) {
