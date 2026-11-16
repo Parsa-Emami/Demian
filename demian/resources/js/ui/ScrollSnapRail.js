@@ -7,6 +7,26 @@ export function clampRailIndex(index, length) {
     return Math.min(safeLength - 1, Math.max(0, safeIndex));
 }
 
+/**
+ * Calculate a signed, viewport-relative scroll target, not offsetLeft.
+ * RTL containers use negative scrollLeft in modern engines; hardcoding a
+ * positive target silently clamps Firefox/WebKit rails to the first card.
+ */
+export function centeredRailScrollLeft(currentScrollLeft, viewportRect, itemRect) {
+    const viewportCenter = Number(viewportRect.left) + Number(viewportRect.width) / 2;
+    const itemCenter = Number(itemRect.left) + Number(itemRect.width) / 2;
+    return Number(currentScrollLeft) + (itemCenter - viewportCenter);
+}
+
+/**
+ * The same catalogue is a horizontal scroll-snap rail at some breakpoints
+ * and a vertically scrolling responsive grid at others. Never assume the
+ * scroller owns horizontal scroll or that its scrollLeft is nonnegative.
+ */
+export function railUsesHorizontalSnap({ snapType = 'none', scrollWidth = 0, clientWidth = 0 } = {}) {
+    return /^x(?:\s|$)/.test(String(snapType)) && scrollWidth > clientWidth + 2;
+}
+
 export function nearestRailIndex(itemCenters, viewportCenter) {
     if (!Array.isArray(itemCenters) || itemCenters.length === 0) return -1;
     let nearest = 0;
@@ -121,17 +141,35 @@ export default class ScrollSnapRail {
         this.updateFromGeometry({ emit: false });
     }
 
+    usesHorizontalSnap() {
+        return railUsesHorizontalSnap({
+            snapType: typeof getComputedStyle === 'function'
+                ? getComputedStyle(this.viewport).scrollSnapType : 'none',
+            scrollWidth: this.viewport?.scrollWidth,
+            clientWidth: this.viewport?.clientWidth,
+        });
+    }
+
     updateFromGeometry({ emit = true } = {}) {
         if (!this.viewport || this.items.length === 0) {
             this.setIndex(-1, { emit });
             return;
         }
 
-        const viewportRect = this.viewport.getBoundingClientRect();
-        const viewportCenter = viewportRect.left + (viewportRect.width / 2);
+        const horizontal = this.usesHorizontalSnap();
+        // The responsive game library is a vertical grid scrolled by its
+        // containing shell page, not by the game-grid itself.
+        const visible = horizontal ? this.viewport
+            : this.viewport.closest('.shell-page') ?? this.viewport;
+        const viewportRect = visible.getBoundingClientRect();
+        const viewportCenter = horizontal
+            ? viewportRect.left + (viewportRect.width / 2)
+            : viewportRect.top + (viewportRect.height / 2);
         const centers = this.items.map((item) => {
             const rect = item.getBoundingClientRect();
-            return rect.left + (rect.width / 2);
+            return horizontal
+                ? rect.left + (rect.width / 2)
+                : rect.top + (rect.height / 2);
         });
         this.setIndex(nearestRailIndex(centers, viewportCenter), { emit });
     }
@@ -166,9 +204,26 @@ export default class ScrollSnapRail {
         if (!item) return false;
 
         this.setIndex(nextIndex);
-        const targetLeft = Math.max(
-            0,
-            item.offsetLeft - ((this.viewport.clientWidth - item.clientWidth) / 2)
+        if (!this.usesHorizontalSnap()) {
+            // The phone catalogue is a vertically scrolling *page* containing
+            // a grid. Scrolling the non-overflowing grid's scrollLeft is a
+            // no-op. Ensure the requested button is actually inside the
+            // visible page, including WebKit's touch-scroll containers.
+            item.scrollIntoView?.({ behavior, block: 'center', inline: 'nearest' });
+            if (focus) {
+                const focusTarget = item.matches(this.focusSelector)
+                    ? item : item.querySelector(this.focusSelector);
+                focusTarget?.focus?.({ preventScroll: true });
+            }
+            return true;
+        }
+        // Browser-independent signed target: a negative scrollLeft in an RTL
+        // game rail is valid. Reading actual client geometry also avoids
+        // offset-parent discrepancies between Firefox, WebKit and Chromium.
+        const targetLeft = centeredRailScrollLeft(
+            this.viewport.scrollLeft,
+            this.viewport.getBoundingClientRect(),
+            item.getBoundingClientRect()
         );
         if (typeof this.viewport.scrollTo === 'function') {
             this.viewport.scrollTo({ left: targetLeft, top: this.viewport.scrollTop, behavior });
