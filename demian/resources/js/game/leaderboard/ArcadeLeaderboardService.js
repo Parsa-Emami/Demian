@@ -1,6 +1,6 @@
 import rules from '../../../game/runner-rules.json' with { type: 'json' };
 import { validRunnerSession } from './RunnerSessionContract.js';
-import { requestLegalAcknowledgement } from './LegalConsent.js';
+import { requestLegalAcknowledgement, LEGAL_VERSION } from './LegalConsent.js';
 
 const PROFILE_KEY = 'demian.arcade.profile.v1';
 const LOCAL_KEY = `demian.arcade.scores.${rules.version}`;
@@ -23,6 +23,8 @@ export default class ArcadeLeaderboardService {
         this.fetcher = fetcher; this.timeout = timeout;
         this.retryPromise = null;
         this.identityCreationPromise = null;
+        this.legalPolicyPromise = null;
+        this.acceptedLegalVersion = null;
         this.baseUrl = String(baseUrl).trim().replace(/\/$/, '');
         // Never transmit account bearer capabilities over cleartext network.
         // HTTP is permitted only for loopback development.
@@ -150,10 +152,44 @@ export default class ArcadeLeaderboardService {
         this.identity = await this.request('/players', {
             method: 'POST', body: { display_name: this.displayName, ...(acceptance ?? {}) },
         });
+        this.acceptedLegalVersion = acceptance?.policy_version ?? null;
         safeWrite(this.identityStorage, this.identityKey, this.identity);
         this.accountKnown = true;
         safeWrite(this.storage, this.accountMarkerKey, true);
         return this.identity;
+    }
+    async ensureRankedPolicy() {
+        // A server-side guard on every start remains authoritative. The UI
+        // helps existing accounts acknowledge revised terms in an explicit way.
+        if (!globalThis.document?.body || !this.connected) return;
+        if (this.legalPolicyPromise) return this.legalPolicyPromise;
+        this.legalPolicyPromise = this.refreshRankedPolicy();
+        try { await this.legalPolicyPromise; }
+        finally { this.legalPolicyPromise = null; }
+    }
+    async refreshRankedPolicy() {
+        const active = await this.request('/legal');
+        if (active?.version !== LEGAL_VERSION) {
+            throw new Error('نسخه قوانین بازی تغییر کرده است؛ صفحه را به‌روزرسانی کن.');
+        }
+        if (active.require_acceptance !== true) return;
+        if (this.acceptedLegalVersion === active.version) return;
+        const player = await this.request('/player', { authenticated: true });
+        if (player.legal_policy_version === active.version) {
+            this.acceptedLegalVersion = active.version;
+            return;
+        }
+        const decision = await requestLegalAcknowledgement();
+        if (!decision) {
+            throw new Error('برای شرکت در رقابت آنلاین ابتدا قوانین جاری را تأیید کن.');
+        }
+        const response = await this.request('/player/legal', {
+            method: 'POST', authenticated: true, body: decision,
+        });
+        if (response.legal_policy_version !== active.version) {
+            throw new Error('تأیید قوانین جاری در سرور ثبت نشد.');
+        }
+        this.acceptedLegalVersion = active.version;
     }
     async accountData() {
         if (!this.connected || !this.identity?.token) {
@@ -221,6 +257,7 @@ export default class ArcadeLeaderboardService {
             throw new Error('پاسخ بازیابی سرور نامعتبر بود.');
         }
         // Never put the recovery code or the complete raw response in storage.
+        this.acceptedLegalVersion = null;
         this.identity = { token: response.token, player_id: response.player_id,
             token_expires_at: response.token_expires_at };
         this.profile = { display_name: response.display_name };
@@ -251,6 +288,7 @@ export default class ArcadeLeaderboardService {
         }
         try {
             await this.ensureIdentity();
+            await this.ensureRankedPolicy();
             const result = await this.request('/runs', { method: 'POST', authenticated: true,
                 body: { request_id: crypto.randomUUID(), game_id: 'dino-run', character_slug: character, track_width: width, rules_version: rules.version } });
             if (!validRunnerSession(result, width)) throw new Error('پاسخ شروع دور معتبر نیست.');
@@ -274,6 +312,7 @@ export default class ArcadeLeaderboardService {
         }
         try {
             await this.ensureIdentity();
+            await this.ensureRankedPolicy();
             const expectedVersion = gameplay ? ({
                 'after-hours': 'after-hours-frames-v1',
                 'cafe-rush': 'cafe-rush-frames-v1',
