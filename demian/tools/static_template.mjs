@@ -1,4 +1,8 @@
-export function renderStaticTemplate(template, { entry, arcadeApi = '' }) {
+export function renderStaticTemplate(template, { entry, arcadeApi = '', publicOrigin = '' }) {
+    if (publicOrigin && (!/^https:\/\/[a-z0-9][a-z0-9.-]*$/i.test(publicOrigin)
+        || publicOrigin.includes('..'))) {
+        throw new Error('DEMIAN_PUBLIC_ORIGIN must be a bare HTTPS hostname.');
+    }
     const literals = [];
     const html = template.replace(/\{\{--[\s\S]*?--\}\}/g, '')
         .replace(/@verbatim([\s\S]*?)@endverbatim/g, (_, literal) => {
@@ -13,5 +17,14 @@ export function renderStaticTemplate(template, { entry, arcadeApi = '' }) {
         .replace(/\{\{\s*url\('\/api\/v1\/events'\)\s*\}\}/g, 'api/v1/events')
         .replace(/\{\{\s*url\('\/api\/v1\/arcade'\)\s*\}\}/g, arcadeApi);
     if (/@[a-zA-Z_]|\{\{/.test(html)) throw new Error('Unsupported template directive in static export.');
-    return html.replace(/\u0000DEMIAN_LITERAL_(\d+)\u0000/g, (_, index) => literals[Number(index)]);
+    let result = html.replace(/\u0000DEMIAN_LITERAL_(\d+)\u0000/g, (_, index) => literals[Number(index)]);
+    if (publicOrigin) {
+        const home = publicOrigin + '/';
+        result = result.replace('</head>',
+            '    <link rel="canonical" href="' + home + '">\n' +
+            '    <meta property="og:url" content="' + home + '">\n</head>')
+            .replace('"@id": "./#demian"', '"@id": "' + home + '#demian"')
+            .replace('"url": "./"', '"url": "' + home + '"');
+    }
+    return result;
 }
