@@ -75,6 +75,8 @@ jobs:
         run: timeout --signal=TERM --kill-after=10s 240s npm run test:step30:startup
       - name: Phase 6 Step 31 mobile home and twelve character artwork QA
         run: timeout --signal=TERM --kill-after=10s 240s node tools/check_phase6_step31_mobile_home.mjs
+      - name: Motion UI — authentic four-stage loader, interactive tips, mobile layouts and reduced motion
+        run: timeout --signal=TERM --kill-after=10s 180s npm run test:experience:browser
       - name: Phase 6 Step 32 privacy, terms, contest rules and mobile browser navigation
         run: timeout --signal=TERM --kill-after=10s 120s npm run test:step32:legal
       - name: Phase 6 Step 31 all six games on Chromium, Firefox and WebKit plus offline/keyboard
