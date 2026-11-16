@@ -60,6 +60,8 @@ jobs:
         run: timeout --signal=TERM --kill-after=10s 240s npm run test:fast-loading:browser
       - name: Phase 6 Step 30 fast cold startup, buffered menu click and all six games under 4G
         run: timeout --signal=TERM --kill-after=10s 240s npm run test:step30:startup
+      - name: Phase 6 Step 31 mobile home and twelve character artwork QA
+        run: timeout --signal=TERM --kill-after=10s 240s node tools/check_phase6_step31_mobile_home.mjs
       - name: Phase 6 Step 31 all six games on Chromium, Firefox and WebKit plus offline/keyboard
         run: timeout --signal=TERM --kill-after=10s 300s npm run test:step31:compatibility
       - name: Phase 4 Step 21 audiovisual browser and FPS regression
@@ -135,6 +137,8 @@ jobs:
             demian/docs/phase6-step30/startup.json
             demian/docs/phase6-step31/qa-evidence.json
             demian/docs/phase6-step31/browser-compatibility.json
+            demian/docs/phase6-step31/mobile-characters-browser.json
+            demian/docs/phase6-step31/mobile-home-*.png
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v4
         with:

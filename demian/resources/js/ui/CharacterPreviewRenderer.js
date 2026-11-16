@@ -7,7 +7,7 @@ const PREVIEW_ANIMATIONS = Object.freeze([
     'win',
 ]);
 
-const PREVIEW_DIRECTIONS = Object.freeze(['e', 'se', 's', 'ne', 'n', 'w', 'sw', 'nw']);
+const PREVIEW_DIRECTIONS = Object.freeze(['s', 'se', 'sw', 'e', 'w', 'ne', 'nw', 'n']);
 
 function firstString(values) {
     if (!Array.isArray(values)) return null;
@@ -83,14 +83,22 @@ export default class CharacterPreviewRenderer {
         this.clear(canvas);
 
         try {
-            // Cards use one tiny poster, not another decoded 672-frame sheet.
+            let posterFailure = null;
             if (character.preview_url) {
-                const image = await this.loadImage(resolveUrl(character.preview_url));
-                if (canvas.dataset.previewRenderId !== renderId) return;
-                this.prepareCanvas(canvas);
-                this.drawFrame(canvas, image, { x: 0, y: 0, w: image.naturalWidth || image.width, h: image.naturalHeight || image.height });
-                canvas.dataset.previewState = 'ready';
-                return;
+                try {
+                    const image = await this.loadImage(resolveUrl(character.preview_url));
+                    if (canvas.dataset.previewRenderId !== renderId) return;
+                    const width = Number(image.naturalWidth || image.width);
+                    const height = Number(image.naturalHeight || image.height);
+                    if (!(width > 0 && height > 0)) throw new Error('Character poster has no decoded dimensions.');
+                    this.prepareCanvas(canvas);
+                    this.drawFrame(canvas, image, { x: 0, y: 0, w: width, h: height });
+                    canvas.dataset.previewState = 'ready';
+                    return;
+                } catch (error) {
+                    posterFailure = error;
+                    if (canvas.dataset.previewRenderId !== renderId) return;
+                }
             }
             const atlasUrl = resolveUrl(character.atlas_url);
             if (!atlasUrl || !this.fetchImpl) {

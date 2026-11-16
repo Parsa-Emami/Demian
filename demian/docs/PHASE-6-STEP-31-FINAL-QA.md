@@ -41,6 +41,10 @@ An SLI is the measured indicator. An SLO is the allowed threshold **over a defin
 
 Percentiles use nearest-rank over successful *and* failed/timeout attempts as appropriate; always report sample size, client/platform, clock range, rate and error distribution. Never hide HTTP 429, simulated clients or samples with failures. CI Step 31 only enforces the two explicit cold-start hard budgets and report integrity; live SLOs are **not** measured or enforced by GitHub CI.
 
+## Mobile home and character-art integration
+
+The mobile-first start screen is a dedicated CI gate: `tools/check_phase6_step31_mobile_home.mjs` checks 320×568, 390×844 and 844×390 Chromium touch viewport layouts, the 12 character portraits, nonempty image pixels, selection persistence and lack of browser exceptions. The image system falls back from a failed character poster to matching atlas artwork; v14 pack integrity checks are retained. Final art-direction approval on real Android/iOS devices is separate.
+
 ## Manual / external P0 acceptance: must not be auto-checked
 
 1. **Physical device matrix** — Android Chrome (low/mid-range), iPhone Safari (supported recent iOS), desktop Chromium/Firefox/WebKit where available. Test 320×568, 390×844, 844×390, 1440×900 plus actual touch/safe-area/keyboard. Each device runs 15–30 min continuously, tracks visible FPS, memory, thermal state, input latency, audio, pause/resume, quick app background and rotation.
