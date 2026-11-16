@@ -701,6 +701,8 @@
                                 <button type="submit" class="shell-button">بازیابی حساب</button>
                             </form>
                             <p data-ranking-recovery-status role="status" aria-live="polite"></p>
+                            <button type="button" data-ranking-export-account class="shell-button shell-button--ghost">دریافت خلاصه داده‌های حساب (JSON)</button>
+                            <p class="ranking-panel__refresh-info">برای دریافت تمام سوابق، API خصوصی خروجی صفحه‌بندی‌شده دارد. داده‌های حساس و اسرار ورود در فایل قرار نمی‌گیرند.</p>
                             <button type="button" data-ranking-delete-account class="shell-button shell-button--ghost">حذف کامل حساب و رکوردهای سرور</button>
                         </div>
                         <button type="button" data-shell-action="close-modal" class="shell-button shell-button--primary" data-screen-autofocus>بستن</button>
