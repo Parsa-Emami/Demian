@@ -89,6 +89,8 @@ jobs:
         run: timeout --signal=TERM --kill-after=10s 240s npm run test:dino-step23:browser
       - name: Phase 5 Step 24 Open World exploration, streaming and lifecycle acceptance
         run: timeout --signal=TERM --kill-after=10s 240s npm run test:open-world-step24:browser
+      - name: Mobile Runtime sustained six-game FPS and memory soak
+        run: timeout --signal=TERM --kill-after=10s 240s node tools/check_mobile_runtime_soak.mjs
       - name: Phase 5 Step 25 After Hours night gameplay, power, score and lifecycle acceptance
         run: timeout --signal=TERM --kill-after=10s 300s npm run test:after-hours-step25:browser
       - name: Phase 5 Step 26 Café Rush multi-customer, tray, VIP and score browser acceptance
@@ -119,6 +121,12 @@ jobs:
           DEMIAN_MOBILE_BENCH_PROFILE: low-mobile
       - name: Step 31 aggregate all QA evidence and enforce cold menu, six games and device caveats
         run: npm run test:step31:collect
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: mobile-runtime-soak
+          path: demian/docs/mobile-runtime/runtime-soak-browser.json
+          if-no-files-found: warn
       - uses: actions/upload-artifact@v4
         if: always()
         with:
