@@ -1,0 +1,142 @@
+/**
+ * Phase 6 / Step 31 — actual built-release, cross-engine E2E acceptance.
+ * Desktop Firefox/WebKit engines running on Linux are NOT proof of real
+ * Android/iOS devices, thermal soak or production CDN latency.
+ */
+import assert from 'node:assert/strict';
+import { createReadStream, mkdirSync, statSync, writeFileSync } from 'node:fs';
+import { createServer } from 'node:http';
+import { extname, resolve, sep } from 'node:path';
+import { GAME_IDS } from './qa/step31_quality_policy.mjs';
+
+const root = resolve(import.meta.dirname, '../_site');
+const output = resolve(import.meta.dirname, '../docs/phase6-step31');
+mkdirSync(output, { recursive: true });
+const mime = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript',
+    '.css': 'text/css', '.json': 'application/json', '.webmanifest': 'application/manifest+json',
+    '.svg': 'image/svg+xml', '.png': 'image/png', '.webp': 'image/webp',
+    '.woff2': 'font/woff2' };
+const server = createServer((req, res) => {
+    try {
+        const p = decodeURIComponent(new URL(req.url, 'http://localhost').pathname);
+        if (p.includes('\\') || p.split('/').includes('..')) throw Error('Unsafe path');
+        const path = resolve(root, p.replace(/^\/+/, '') || 'index.html');
+        if (!path.startsWith(root + sep) || !statSync(path).isFile()) throw Error('Missing asset');
+        res.setHeader('Content-Type', mime[extname(path)] ?? 'application/octet-stream');
+        createReadStream(path).on('error', () => res.destroy()).pipe(res);
+    } catch { res.writeHead(404); res.end('Not found'); }
+});
+const wait = (page, predicate, timeout = 35000) => page.waitForFunction(predicate, null, { timeout });
+const report = { schema: 1, step: 31, status: 'pending', emulatedDevices: true,
+    physicalDeviceVerified: false, realApiVerified: false, browsers: [], errors: [],
+    caveats: [
+        'Linux Chromium/Firefox/WebKit is cross-engine smoke, not physical Android/iOS Safari.',
+        'Practice-only arcade mode: no real API, prize, voucher or ranked score transaction.',
+        'Real 15-30 min thermal soak and staging 50 concurrent users remain external release gates.',
+    ],
+};
+let runtime = null;
+try {
+    await new Promise(done => server.listen(0, '127.0.0.1', done));
+    const { chromium, firefox, webkit } = await import('playwright');
+    const origin = 'http://127.0.0.1:' + server.address().port + '/';
+    for (const [engine, browserType] of Object.entries({ chromium, firefox, webkit })) {
+        const browserReport = { engine, status: 'pending', games: [], errors: [],
+            viewport: '390x844 mobile-style', offlineRecovery: false, keyboardAccessible: false };
+        report.browsers.push(browserReport);
+        let context;
+        try {
+            runtime = await browserType.launch({ headless: true,
+                ...(engine === 'chromium' ? { args: ['--no-sandbox', '--disable-dev-shm-usage', '--disable-gpu'] } : {}) });
+            context = await runtime.newContext({
+                viewport: { width: 390, height: 844 }, deviceScaleFactor: 2,
+                hasTouch: true, serviceWorkers: 'block',
+                ...(engine === 'firefox' ? {} : { isMobile: true }),
+            });
+            const page = await context.newPage();
+            page.on('pageerror', error => browserReport.errors.push(error.message));
+            const started = Date.now();
+            await page.goto(origin, { waitUntil: 'domcontentloaded', timeout: 60000 });
+            await wait(page, () => window.demianGameApplication?.sessionState === 'menu');
+            browserReport.menuHydrationMs = Date.now() - started;
+            assert.ok(browserReport.menuHydrationMs < 15000,
+                engine + ' cold menu hydration >15s emulated lab bound');
+            const first = page.locator('[data-screen="cafe-menu"] [data-shell-action="play"]');
+            await first.focus();
+            await page.keyboard.press('Enter');
+            await page.locator('[data-screen="game-selection"]').waitFor({ state: 'visible' });
+            assert.equal(await page.locator('[data-game-card]').count(), GAME_IDS.length);
+            browserReport.keyboardAccessible = true;
+            for (const game of GAME_IDS) {
+                const beginning = Date.now();
+                // Exercise the same shell public route, real loading screen,
+                // game-specific preload, session begin, and return path.
+                await page.locator('[data-screen="game-selection"] [data-game-launch="' + game + '"]').click();
+                await wait(page, id => {
+                    const app = window.demianGameApplication;
+                    return app?.activeGameId === id && app.sessionState === 'playing';
+                }, 40000).catch(async () => {
+                    const snap = await page.evaluate(() => ({
+                        state: window.demianGameApplication?.sessionState,
+                        game: window.demianGameApplication?.activeGameId,
+                    }));
+                    throw Error('Never reached playing for ' + engine + '/' + game + ': ' + JSON.stringify(snap));
+                });
+                const elapsedMs = Date.now() - beginning;
+                const layout = await page.evaluate(() => ({
+                    visible: !document.querySelector('[data-game-shell]')?.hidden,
+                    overflow: document.documentElement.scrollWidth > window.innerWidth + 3,
+                }));
+                assert.equal(layout.overflow, false, engine + '/' + game + ' has horizontal overflow.');
+                assert.ok(elapsedMs < 15000, engine + '/' + game + ' exceeded 15s compatibility bound.');
+                browserReport.games.push({ game, elapsedMs, status: 'passed' });
+                await page.evaluate(() => window.demianGameApplication.showMenu());
+                await wait(page, () => window.demianGameApplication?.sessionState === 'menu');
+                await page.locator('[data-screen="cafe-menu"] [data-shell-action="play"]').click();
+                await page.locator('[data-screen="game-selection"]').waitFor({ state: 'visible' });
+            }
+            // Single session disconnected, then reconnected: a cached,
+            // self-contained minigame must remain playable without inventing
+            // a verified server score.
+            await context.setOffline(true);
+            await page.locator('[data-screen="game-selection"] [data-game-launch="cafe-critters"]').click();
+            await wait(page, () => window.demianGameApplication?.activeGameId === 'cafe-critters'
+                && window.demianGameApplication?.sessionState === 'playing');
+            assert.equal(await page.evaluate(() => window.demianGameApplication.leaderboards.connected),
+                false, 'Offline compatibility must not fake a ranked API');
+            await context.setOffline(false);
+            await page.evaluate(() => window.demianGameApplication.showMenu());
+            await wait(page, () => window.demianGameApplication?.sessionState === 'menu');
+            browserReport.offlineRecovery = true;
+            assert.deepEqual(browserReport.errors, [], 'Uncaught JavaScript errors in ' + engine);
+            browserReport.status = 'passed';
+        } catch (e) {
+            browserReport.status = 'failed';
+            browserReport.errors.push(e.stack ?? String(e));
+            report.errors.push(engine + ': ' + String(e.message ?? e));
+            break;
+        } finally {
+            await context?.close().catch(() => undefined);
+            await runtime?.close().catch(() => undefined);
+            runtime = null;
+        }
+    }
+    if (report.browsers.length === 3 && report.browsers.every(b => b.status === 'passed')) {
+        report.status = 'passed';
+    } else report.status = 'failed';
+} catch (error) {
+    report.status = 'failed';
+    report.errors.push(error.stack ?? String(error));
+} finally {
+    writeFileSync(resolve(output, 'browser-compatibility.json'), JSON.stringify(report, null, 2) + '\n');
+    await runtime?.close().catch(() => undefined);
+    if (server.listening) await new Promise(done => server.close(done));
+}
+if (report.status !== 'passed') {
+    console.error('[Step 31] Cross-engine QA failed:', report.errors);
+    process.exitCode = 1;
+} else {
+    console.log('[Step 31] Browser compatibility passed:',
+        report.browsers.map(b => ({ engine: b.engine, games: b.games.length,
+            menuMs: b.menuHydrationMs, offline: b.offlineRecovery })));
+}
