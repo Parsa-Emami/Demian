@@ -1,0 +1,379 @@
+/*
+ * Demian Motion Language — 60fps-inspired, original cafe-arcade direction.
+ * Pure compositing (transform + opacity), no animation library or new images.
+ * Preserve canvas/gameplay timing and all existing gameplay/UI contracts.
+ */
+.manager-shell [data-game-shell] {
+    --demian-surface: #101d19;
+    --demian-cream: #f2eee0;
+    --demian-mint: #c8e6c3;
+    --demian-amber: #e9be81;
+    --demian-line: rgba(225, 236, 206, .17);
+    --demian-ease: cubic-bezier(.22, 1, .36, 1);
+}
+.manager-shell [data-game-shell] .shell-screen--selection,
+.manager-shell [data-game-shell] .shell-screen--results {
+    background:
+        radial-gradient(ellipse 60% 68% at 93% 8%, rgba(137, 174, 128, .16), transparent 75%),
+        radial-gradient(ellipse 72% 50% at 0% 100%, rgba(173, 114, 67, .13), transparent 76%),
+        #0b1512;
+    backdrop-filter: none;
+}
+.manager-shell [data-game-shell] .shell-screen--selection .shell-page {
+    background: linear-gradient(165deg, rgba(24, 41, 32, .94), rgba(13, 28, 23, .97));
+    border: 1px solid var(--demian-line);
+    box-shadow: 0 26px 70px rgba(0, 7, 4, .37);
+}
+.manager-shell [data-game-shell] .shell-screen--selection .shell-page__header h2 {
+    color: var(--demian-cream);
+    font-size: clamp(1.85rem, 4.8vw, 3.3rem);
+    line-height: 1.24;
+}
+.manager-shell [data-game-shell] .shell-screen--selection .shell-page__header > div > p:last-child {
+    color: #b7c8b7;
+    font-size: clamp(.8rem, 2.6vw, .94rem);
+    line-height: 1.8;
+}
+.manager-shell [data-game-shell] .shell-screen--selection .shell-kicker {
+    color: var(--demian-amber);
+    letter-spacing: .12em;
+}
+.manager-shell [data-game-shell] .game-library-toolbar {
+    border-bottom: 1px solid var(--demian-line);
+    padding-bottom: 15px;
+}
+.manager-shell [data-game-shell] .game-library-toolbar__hint {
+    color: #dde7d3;
+    font-size: .79rem;
+}
+.manager-shell [data-game-shell] .game-card {
+    --game-accent: #c0daa7;
+    isolation: isolate;
+    border: 1px solid rgba(212, 231, 196, .2);
+    border-radius: 26px;
+    background:
+        radial-gradient(circle at 80% 15%, color-mix(in srgb, var(--game-accent) 17%, transparent), transparent 55%),
+        linear-gradient(155deg, #213a2e 0%, #15271f 59%, #0f1c18 100%);
+    box-shadow: 0 12px 34px rgba(0, 6, 4, .22), inset 0 1px rgba(255,255,255,.05);
+    will-change: auto;
+    transition: transform 240ms var(--demian-ease),
+        border-color 240ms ease, box-shadow 240ms ease;
+}
+.manager-shell [data-game-shell] .game-card--cyan { --game-accent: #a6d8c6; }
+.manager-shell [data-game-shell] .game-card--pink { --game-accent: #e8b8b3; }
+.manager-shell [data-game-shell] .game-card--amber { --game-accent: #e7c893; }
+.manager-shell [data-game-shell] .game-card--violet { --game-accent: #c5b3e0; }
+.manager-shell [data-game-shell] .game-card--emerald { --game-accent: #b8dcae; }
+.manager-shell [data-game-shell] .game-card__glow {
+    width: 180px; height: 180px;
+    opacity: .08;
+    filter: blur(35px);
+}
+.manager-shell [data-game-shell] .game-card__icon {
+    background: color-mix(in srgb, var(--game-accent) 11%, transparent);
+    border-color: color-mix(in srgb, var(--game-accent) 33%, transparent);
+    box-shadow: none;
+    width: 48px; height: 48px;
+    border-radius: 16px;
+}
+.manager-shell [data-game-shell] .game-card__status {
+    font-size: .67rem;
+    letter-spacing: 0;
+    font-weight: 700;
+}
+.manager-shell [data-game-shell] .game-card h3 {
+    color: var(--demian-cream);
+    font-size: clamp(1.24rem, 2vw, 1.65rem);
+    line-height: 1.45;
+}
+.manager-shell [data-game-shell] .game-card__subtitle {
+    font-size: .77rem;
+    line-height: 1.6;
+}
+.manager-shell [data-game-shell] .game-card__description {
+    color: #b6c8b9;
+    font-size: .77rem;
+    line-height: 1.75;
+}
+.manager-shell [data-game-shell] .game-card__action {
+    min-height: 50px;
+    padding: 11px 15px;
+    border-radius: 16px;
+    background: var(--demian-cream);
+    color: #1a3427;
+    border: 1px solid rgba(255,255,255,.2);
+    font-size: .84rem;
+    font-weight: 800;
+    transition: transform 160ms ease, background-color 160ms ease;
+}
+.manager-shell [data-game-shell] .game-card__action:active,
+.manager-shell [data-game-shell] .cafe-menu__actions .shell-button:active {
+    transform: scale(.975);
+}
+@media (hover: hover) and (pointer: fine) {
+    .manager-shell [data-game-shell] .game-card:is(:hover, :focus-within) {
+        transform: translateY(-5px);
+        border-color: rgba(236, 238, 205, .54);
+        box-shadow: 0 20px 42px rgba(0, 6, 4, .36);
+    }
+    .manager-shell [data-game-shell] .game-card__action:hover {
+        background: #d7ebc6;
+    }
+    .manager-shell [data-game-shell] .cafe-menu__showcase:hover {
+        border-color: rgba(245, 229, 185, .55);
+        box-shadow: 0 16px 42px rgba(0,0,0,.23);
+    }
+}
+.manager-shell [data-game-shell] .cafe-menu__showcase {
+    transition: border-color 220ms ease, box-shadow 220ms ease;
+}
+.manager-shell [data-game-shell] .cafe-menu__actions .shell-button {
+    transition: transform 160ms ease, box-shadow 210ms ease;
+}
+.manager-shell [data-game-shell] .cafe-menu__actions .shell-button--primary {
+    letter-spacing: -.01em;
+}
+/* Real centered preparation with a continuously moving, low-cost signal. */
+.manager-shell [data-game-shell] .shell-screen--loading {
+    display: grid;
+    place-items: center;
+    padding: max(16px, env(safe-area-inset-top, 0px))
+        max(16px, env(safe-area-inset-right, 0px))
+        max(16px, env(safe-area-inset-bottom, 0px))
+        max(16px, env(safe-area-inset-left, 0px));
+    background:
+        radial-gradient(circle at 50% 25%, rgba(116, 153, 117, .17), transparent 44%),
+        radial-gradient(circle at 15% 96%, rgba(197, 138, 79, .1), transparent 49%),
+        #0b1613;
+}
+.manager-shell [data-game-shell] .loading-experience {
+    position: relative;
+    isolation: isolate;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    width: min(510px, 100%);
+    max-height: min(94dvh, 720px);
+    overflow-y: auto;
+    padding: clamp(24px, 5vw, 46px) clamp(18px, 4vw, 37px);
+    background: linear-gradient(155deg, #1b3026, #0e1e17 92%);
+    border: 1px solid rgba(222, 237, 192, .24);
+    border-radius: 30px;
+    box-shadow: 0 25px 85px rgba(0, 7, 5, .36), inset 0 1px rgba(255,255,255,.05);
+    color: var(--demian-cream);
+}
+.manager-shell [data-game-shell] .loading-experience__ambient {
+    position: absolute;
+    z-index: -1;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    background: radial-gradient(circle at 50% 20%, rgba(215, 232, 166, .12), transparent 35%);
+}
+.manager-shell [data-game-shell] .loading-experience__orb {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 118px; height: 118px;
+    flex: 0 0 118px;
+    margin-bottom: 18px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 25%, #446c51, #203d31 48%, #132920 70%, #0c1b15);
+    border: 1px solid rgba(228,237,198,.28);
+    box-shadow: 0 14px 45px rgba(0, 7, 3, .35),
+        inset 0 2px 5px rgba(255,255,255,.08);
+}
+.manager-shell [data-game-shell] .loading-experience__orb-ring {
+    position: absolute;
+    inset: -8px;
+    border: 2px solid rgba(226, 238, 193, .16);
+    border-top-color: #ebd6a5;
+    border-left-color: #c0e1b1;
+    border-radius: 50%;
+    animation: demian-loader-orbit 2200ms linear infinite;
+}
+.manager-shell [data-game-shell] .loading-experience__orb-core {
+    color: #f8f3d8;
+    font: 900 57px/1 Georgia, serif;
+    text-shadow: 0 4px 20px rgba(241,231,183,.15);
+}
+.manager-shell [data-game-shell] .loading-experience__orb-spark {
+    position: absolute;
+    width: 8px; height: 8px;
+    top: -10px; left: 50%;
+    border-radius: 50%;
+    background: #f9e8b8;
+    box-shadow: 0 0 22px #e8d6a3;
+    animation: demian-loader-spark 2200ms linear infinite;
+}
+.manager-shell [data-game-shell] .loading-experience__eyebrow {
+    color: #c7dcaf;
+    font-size: .7rem;
+    letter-spacing: .13em;
+}
+.manager-shell [data-game-shell] .loading-experience h2 {
+    margin: 10px 0 2px;
+    color: var(--demian-cream);
+    font-size: clamp(1.75rem, 6vw, 2.7rem);
+    line-height: 1.25;
+    text-shadow: none;
+    letter-spacing: -.03em;
+}
+.manager-shell [data-game-shell] .loading-experience__stage {
+    margin: 8px 0 21px;
+    color: #d0dacb;
+    font-size: .92rem;
+    min-height: 2em;
+}
+.manager-shell [data-game-shell] .loading-experience__track-head,
+.manager-shell [data-game-shell] .loading-experience__statusline {
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+    font-size: .78rem;
+    line-height: 1.7;
+    color: #d3dec8;
+    text-align: right;
+}
+.manager-shell [data-game-shell] .loading-experience__track-head {
+    margin-bottom: 9px;
+    color: #f1eacb;
+    font-weight: 750;
+}
+.manager-shell [data-game-shell] .loading-experience__track-head [data-loading-progress-value] {
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    direction: ltr;
+}
+.manager-shell [data-game-shell] .loading-experience .shell-progress {
+    width: 100%;
+    height: 8px;
+    border-color: rgba(224,237,198,.25);
+    background: rgba(5, 15, 10, .67);
+    box-shadow: none;
+}
+.manager-shell [data-game-shell] .loading-experience .shell-progress span {
+    box-shadow: none;
+    background: linear-gradient(90deg, #abcba3, #efdda8);
+    transition: width 250ms var(--demian-ease);
+}
+.manager-shell [data-game-shell] .loading-experience__heartbeat {
+    width: 70px;
+    height: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    margin: 8px 0;
+}
+.manager-shell [data-game-shell] .loading-experience__heartbeat i {
+    width: 4px; height: 6px;
+    border-radius: 3px;
+    background: #a8d7ae;
+    animation: demian-loader-beat 1050ms ease-in-out infinite;
+}
+.manager-shell [data-game-shell] .loading-experience__heartbeat i:nth-child(2) { animation-delay: -780ms; }
+.manager-shell [data-game-shell] .loading-experience__heartbeat i:nth-child(3) { animation-delay: -520ms; }
+.manager-shell [data-game-shell] .loading-experience__heartbeat i:nth-child(4) { animation-delay: -260ms; }
+.manager-shell [data-game-shell] .loading-experience__statusline {
+    color: #afc0b2;
+    min-height: 38px;
+}
+.manager-shell [data-game-shell] .loading-experience__statusline [data-loading-elapsed] {
+    direction: rtl;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+    color: #f1dec0;
+}
+.manager-shell [data-game-shell] .loading-experience__tip {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 5px 10px;
+    align-items: start;
+    text-align: right;
+    width: 100%;
+    margin-top: 15px;
+    padding: 15px;
+    border-radius: 17px;
+    border: 1px solid rgba(228, 237, 197, .16);
+    background: rgba(8, 23, 17, .52);
+}
+.manager-shell [data-game-shell] .loading-experience__tip-icon {
+    color: var(--demian-amber);
+    padding-top: 3px;
+}
+.manager-shell [data-game-shell] .loading-experience__tip p {
+    margin: 0;
+    min-height: 3em;
+    color: #d7e2d5;
+    font-size: .8rem;
+    line-height: 1.85;
+}
+.manager-shell [data-game-shell] .loading-experience__tip button {
+    grid-column: 2;
+    justify-self: start;
+    margin-top: 7px;
+    min-height: 44px;
+    border: 1px solid rgba(227, 233, 199, .24);
+    border-radius: 12px;
+    padding: 6px 13px;
+    background: #2a4334;
+    color: #f5edcf;
+    font: 750 .76rem/1.5 inherit;
+    cursor: pointer;
+    touch-action: manipulation;
+    transition: background 180ms ease, transform 160ms ease;
+}
+.manager-shell [data-game-shell] .loading-experience__tip button:active {
+    transform: scale(.97);
+}
+.manager-shell [data-game-shell] .loading-experience__tip button:focus-visible {
+    outline: 3px solid #f8e4a1;
+    outline-offset: 3px;
+}
+@keyframes demian-loader-orbit { to { transform: rotate(360deg); } }
+@keyframes demian-loader-spark { to { transform: rotate(360deg); } }
+@keyframes demian-loader-beat {
+    0%, 100% { transform: scaleY(.75); opacity: .45; }
+    50% { transform: scaleY(2.5); opacity: 1; }
+}
+@media (max-width: 420px) {
+    .manager-shell [data-game-shell] .loading-experience {
+        border-radius: 25px;
+        padding: 25px 18px;
+    }
+    .manager-shell [data-game-shell] .loading-experience__orb {
+        width: 99px; height: 99px; flex-basis: 99px;
+    }
+    .manager-shell [data-game-shell] .loading-experience__orb-core { font-size: 46px; }
+    .manager-shell [data-game-shell] .loading-experience__statusline { font-size: .71rem; }
+    .manager-shell [data-game-shell] .game-card { border-radius: 23px; }
+}
+@media (max-height: 540px) and (orientation: landscape) {
+    .manager-shell [data-game-shell] .loading-experience {
+        padding: 12px 24px; max-height: 96dvh;
+    }
+    .manager-shell [data-game-shell] .loading-experience__orb {
+        width: 55px; height: 55px; flex-basis: 55px; margin-bottom: 2px;
+    }
+    .manager-shell [data-game-shell] .loading-experience__orb-core { font-size: 27px; }
+    .manager-shell [data-game-shell] .loading-experience__eyebrow { display: none; }
+    .manager-shell [data-game-shell] .loading-experience__tip { padding: 8px 12px; margin-top: 3px; }
+    .manager-shell [data-game-shell] .loading-experience__tip p { min-height: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .manager-shell [data-game-shell] .loading-experience__orb-ring,
+    .manager-shell [data-game-shell] .loading-experience__orb-spark,
+    .manager-shell [data-game-shell] .loading-experience__heartbeat i {
+        animation: none;
+    }
+    .manager-shell [data-game-shell] .game-card,
+    .manager-shell [data-game-shell] .game-card__action,
+    .manager-shell [data-game-shell] .loading-experience .shell-progress span {
+        transition: none;
+    }
+}
