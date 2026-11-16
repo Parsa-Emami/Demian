@@ -60,7 +60,13 @@ export const GAME_DEFINITIONS = Object.freeze({
         title: 'Café Rush', inputContext: 'CAFE_RUSH', orientation: 'any',
         loader: () => withGameStyle(
             () => import('../games/cafe-rush/CafeRushGame.js'),
-            () => import('../../../css/cafe-rush.css'),
+            async () => {
+                // Café Rush reuses the shift-dialog controls from After Hours.
+                // Keep their cascade order; otherwise mobile buttons fall
+                // below the 44 CSS px accessible hit-target requirement.
+                await import('../../../css/after-hours.css');
+                await import('../../../css/cafe-rush.css');
+            },
         ),
         metadata: Object.freeze({
             phase: 16, status: 'available', supportsResults: true,
