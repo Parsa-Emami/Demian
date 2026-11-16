@@ -63,6 +63,20 @@ try {
                 window.demianGameApplication.eventBus.on('game:load-failed', ({gameId, error}) => {
                     window.__step31LaunchErrors.push({ gameId, message: String(error?.stack ?? error) });
                 });
+                // GameShell deliberately catches launchGame rejections. Capture
+                // those at the public method boundary too: a startSession()
+                // exception can occur after performGameSwitch() succeeds and
+                // therefore never emit the narrower game:load-failed event.
+                const app = window.demianGameApplication;
+                const launch = app.launchGame;
+                app.launchGame = function (...args) {
+                    return launch.apply(this, args).catch(error => {
+                        window.__step31LaunchErrors.push({
+                            gameId: args[0], message: String(error?.stack ?? error),
+                        });
+                        throw error;
+                    });
+                };
             });
             browserReport.menuHydrationMs = Date.now() - started;
             assert.ok(browserReport.menuHydrationMs < 15000,
