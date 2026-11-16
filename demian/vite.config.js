@@ -11,7 +11,6 @@ export default defineConfig({
     build: {
         emptyOutDir: true,
         modulePreload: { polyfill: true },
-        manifest: true,
         rolldownOptions: {
             output: {
                 codeSplitting: true,
