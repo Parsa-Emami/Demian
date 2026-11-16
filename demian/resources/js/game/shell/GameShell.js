@@ -62,7 +62,7 @@ export default class GameShell {
         const screen = (id) => this.shellRoot.querySelector(`[data-screen="${id}"]`);
         this.bootScreen = new BootScreen({ id: SCREEN_IDS.BOOT, element: screen(SCREEN_IDS.BOOT), animation: this.animation });
         this.cafeScreen = new CafeMenuScreen({ id: SCREEN_IDS.CAFE, element: screen(SCREEN_IDS.CAFE), animation: this.animation });
-        this.selectionScreen = new GameSelectionScreen({ id: SCREEN_IDS.SELECTION, element: screen(SCREEN_IDS.SELECTION), animation: this.animation, catalog: this.catalog });
+        this.selectionScreen = new GameSelectionScreen({ id: SCREEN_IDS.SELECTION, element: screen(SCREEN_IDS.SELECTION), animation: this.animation, catalog: this.catalog, registry: this.app.registry });
         this.loadingScreen = new LoadingScreen({ id: SCREEN_IDS.LOADING, element: screen(SCREEN_IDS.LOADING), animation: this.animation });
         this.pauseScreen = new PauseScreen({ id: SCREEN_IDS.PAUSE, element: screen(SCREEN_IDS.PAUSE), animation: this.animation });
         this.settingsScreen = new SettingsScreen({ id: SCREEN_IDS.SETTINGS, element: screen(SCREEN_IDS.SETTINGS), animation: this.animation, settings: this.settings, input: this.app.input });
