@@ -1,5 +1,23 @@
 # Demian: cPanel production architecture and 50-concurrent-player gate
 
+## Canonical domain for live deployment
+
+**Game and PWA:** `https://demiancafe.ir/`. **Laravel API:** `https://api.demiancafe.ir/api/v1/arcade`. **Optional isolated staging:** `https://staging.demiancafe.ir/` with `https://api-staging.demiancafe.ir` and a separate database and APP_KEY.
+
+**Preferred topology:** static game on GitHub Pages/CDN, Laravel on the dedicated cPanel API subdomain. The player's phone runs the games; the 4-vCPU/4-GiB PHP host handles login, score verification, leaderboard and rewards. Never route large Open World assets through PHP. The alternative is a *static-only* cPanel webroot for the PWA, using the portable `demiancafe-ir-static-site` GitHub Actions artifact; that archive contains `_site` and `.htaccess` and must be extracted into the static document root, not the Laravel application directory.
+
+**DNS and certificate setup (requires owner access):** For GitHub Pages static delivery, configure apex domain records according to GitHub Pages' *current official custom-domain instructions*, then verify `demiancafe.ir` in repository Settings → Pages and enable HTTPS. After DNS and Pages verification, set the repository variable `DEMIAN_PAGES_CUSTOM_DOMAIN=demiancafe.ir` to emit `_site/CNAME`. Before verification, leave it unset: an unverified Pages custom domain may break the existing github.io address. For static cPanel delivery, point apex A/AAAA records to the actual hosting IP and use `public_html` or a domain-specific static root. Redirect `www.demiancafe.ir` permanently to `https://demiancafe.ir`. Never actively serve two different canonical PWAs.
+
+**API cPanel:** Point `api.demiancafe.ir` to the actual hosting address, issue TLS, create an isolated subdomain with root `/home/ACCOUNT/demian-api/current/public` (not the Laravel project root), configure production MySQL, PHP 8.4 CLI/web and Cron. From `ops/cpanel/.env.production.example`, set `APP_URL=https://api.demiancafe.ir`, `DEMIAN_ARCADE_ALLOWED_ORIGINS=https://demiancafe.ir` and protect `shared/.env`. Set GitHub Environment variable `CPANEL_API_ORIGIN=https://api.demiancafe.ir` plus the SSH variables/secrets documented below. Do not store credentials in Git.
+
+**Frontend API switch only after staging acceptance:** configure repository variables `DEMIAN_ARCADE_API_URL=https://api.demiancafe.ir/api/v1/arcade` and `DEMIAN_ARCADE_ENABLE_RANKED=true` only after backed-up production API, replay verification and load tests are approved. This does **not** authorize automatic coupon issuance or redemption. Coupon/reward feature flags remain disabled until independent café UAT and policy approval.
+
+**Open World optimization:** opening game selection schedules a single approximately 69-KiB cafe floorplan preview in idle time on a normal foreground network. Slow-2G/2G, 3G, offline, hidden and Save-Data sessions skip it. This improves first world paint without preloading every character, map tile, or game and does not block the game menu. The host's actual p75/p95 performance, TLS, CloudLinux Entry Process limits, MySQL locks and 50-player concurrency still require independent measurement. No live host has been configured by this GitHub change.
+
+---
+
+
+
 **Status:** cPanel deployment source and automated tests exist in GitHub. **No paid host, DNS, PHP account, MySQL production database, SSH secret or genuine 50-user load result has been verified**. The production leaderboard is off by default.
 
 **Phase 6 / Step 29 update:** See [Production Hosting Readiness](../PHASE-6-STEP-29-PRODUCTION-HOSTING.md). The release now gates cPanel deploys with a PHP 8.4 host contract, private environment/file permissions, immutable artifact symlink rejection, environment-specific Cron checks and post-deploy read-only HTTPS/private-path smoke. All remain unverified on a real host until provisioning and staging deployment.

@@ -42,9 +42,22 @@ jobs:
       - name: Build static release (API opt-in only after provisioning)
         run: npm run build:static
         env:
+          DEMIAN_PUBLIC_ORIGIN: https://demiancafe.ir
+          # Set only after domain DNS and GitHub Pages verification.
+          DEMIAN_PAGES_CUSTOM_DOMAIN: ${{ vars.DEMIAN_PAGES_CUSTOM_DOMAIN || '' }}
           DEMIAN_ARCADE_API_URL: ${{ github.ref == 'refs/heads/main' && vars.DEMIAN_ARCADE_ENABLE_RANKED == 'true' && vars.DEMIAN_ARCADE_API_URL || '' }}
       - name: Validate optimized production assets
         run: npm run validate:static-assets
+      - name: Package portable static PWA for cPanel public_html
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        run: tar -czf "$RUNNER_TEMP/demiancafe-static.tar.gz" -C _site .
+      - uses: actions/upload-artifact@v4
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        with:
+          name: demiancafe-ir-static-site
+          path: ${{ runner.temp }}/demiancafe-static.tar.gz
+          retention-days: 7
+          if-no-files-found: error
       # Expected one atomic JavaScript bundle; bundle_mode: atomic
       - run: npm run validate:build
       - run: npx playwright install chromium --only-shell

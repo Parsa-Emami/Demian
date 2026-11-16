@@ -12,6 +12,11 @@ import { buildOfflinePackManifest } from './offline_pack_manifest.mjs';
 const root = resolve(import.meta.dirname, '..');
 const out = resolve(root, process.argv.find((a) => a.startsWith('--out='))?.slice(6) ?? '_site');
 const arcadeApi = process.env.DEMIAN_ARCADE_API_URL?.trim() ?? '';
+const publicOrigin = process.env.DEMIAN_PUBLIC_ORIGIN?.trim() ?? '';
+const pagesCustomDomain = process.env.DEMIAN_PAGES_CUSTOM_DOMAIN?.trim() ?? '';
+if (pagesCustomDomain && (pagesCustomDomain !== 'demiancafe.ir' || publicOrigin !== 'https://demiancafe.ir')) {
+    throw new Error('Pages CNAME requires the exact verified demiancafe.ir public origin.');
+}
 if (arcadeApi && !/^https:\/\/[^\s<>"']+\/api\/v1\/arcade\/?$/.test(arcadeApi)) throw new Error('DEMIAN_ARCADE_API_URL must be an HTTPS arcade API URL.');
 if (out === root || out === join(root, 'public')) throw new Error('Output must be a separate release folder.');
 const entry = JSON.parse(readFileSync(join(root, 'public/build/manifest.json'), 'utf8'))['resources/js/app.js'];
@@ -37,8 +42,19 @@ for (const file of ['manifest.webmanifest', 'favicon.ico', 'robots.txt', 'game-i
     if (existsSync(join(root, 'public', file))) cpSync(join(root, 'public', file), join(out, file));
 }
 cpSync(join(root, 'public/icons'), join(out, 'icons'), { recursive: true });
-const html = renderStaticTemplate(readFileSync(join(root, 'resources/views/demian.blade.php'), 'utf8'), { entry, arcadeApi });
+const html = renderStaticTemplate(readFileSync(join(root, 'resources/views/demian.blade.php'), 'utf8'), { entry, arcadeApi, publicOrigin });
 writeFileSync(join(out, 'index.html'), html);
+// Do not claim the custom domain or change old Pages routing before DNS is verified.
+rmSync(join(out, 'CNAME'), { force: true });
+if (pagesCustomDomain) writeFileSync(join(out, 'CNAME'), pagesCustomDomain + '\n');
+if (publicOrigin) {
+    writeFileSync(join(out, 'sitemap.xml'),
+        '<?xml version="1.0" encoding="UTF-8"?>\n' +
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' +
+        '<url><loc>' + publicOrigin + '/</loc></url></urlset>\n');
+    writeFileSync(join(out, 'robots.txt'),
+        'User-agent: *\nAllow: /\nSitemap: ' + publicOrigin + '/sitemap.xml\n');
+} else rmSync(join(out, 'sitemap.xml'), { force: true });
 // A content-derived service-worker version makes installs deterministic and
 // avoids activating an incompatible cached shell during a live ranked run.
 writeFileSync(join(out, 'characters.json'), JSON.stringify({ data: BUILTIN_CHARACTER_SLUGS.map((slug) => ({
