@@ -57,6 +57,26 @@ function cloneBuiltin(character, spriteVariant = 'mobile') {
 }
 
 export default class CharacterManager {
+    /**
+     * Start the optional roster request before constructing the world.
+     * Capture failure immediately so no unhandled rejection can occur while
+     * synchronous scene work proceeds. Bundled static rosters need no request.
+     */
+    static preloadRoster(repository, { documentRef = globalThis.document } = {}) {
+        const bundled = documentRef?.querySelector?.(
+            'meta[name="demian-static-release"][content="true"]'
+        ) && /(?:^|\/)characters\.json(?:[?#].*)?$/.test(repository?.baseUrl ?? '');
+        if (bundled) return Promise.resolve({ characters: [], error: null });
+        try {
+            return Promise.resolve(repository.list()).then(
+                characters => ({ characters, error: null }),
+                error => ({ characters: [], error }),
+            );
+        } catch (error) {
+            return Promise.resolve({ characters: [], error });
+        }
+    }
+
     constructor({
         scene,
         repository,
@@ -111,23 +131,15 @@ export default class CharacterManager {
         globalThis.navigator?.connection?.addEventListener?.('change', this.onOptionalNetworkChange);
     }
 
-    async boot({ preferredSlug = null } = {}) {
-        // Static Pages exports characters.json with ONLY the same bundled
-        // characters constructed by ensureBuiltinCharacters(). Waiting for
-        // a redundant fetch here adds a network RTT (or a 4.5s timeout)
-        // every time Open World is entered on a cold/unstable connection.
-        const staticBuiltinsOnly = globalThis.document?.querySelector?.(
-            'meta[name="demian-static-release"][content="true"]'
-        ) && /(?:^|\/)characters\.json(?:[?#].*)?$/.test(this.repository?.baseUrl ?? '');
-        try {
-            this.characters = staticBuiltinsOnly ? [] : await this.repository.list();
-        } catch (error) {
-            console.warn(
-                'Character API was unavailable; built-in characters were loaded.',
-                error
-            );
-            this.lastBootWarning = error;
-            this.characters = [];
+    async boot({ preferredSlug = null, initialVariant = this.runtimeVariants.active,
+        rosterPromise = null } = {}) {
+        // Static and remote rosters share the same settled result contract.
+        // The request can already be running while collision/UI initialize.
+        const roster = await (rosterPromise ?? CharacterManager.preloadRoster(this.repository));
+        this.characters = roster.characters;
+        if (roster.error) {
+            console.warn('Character API was unavailable; built-in characters were loaded.', roster.error);
+            this.lastBootWarning = roster.error;
         }
 
         this.ensureBuiltinCharacters();
@@ -141,7 +153,8 @@ export default class CharacterManager {
             throw new Error('هیچ کاراکتری برای اجرا وجود ندارد.');
         }
 
-        await this.select(active.id, { preservePosition: false, hydrateRoster: false });
+        await this.select(active.id, { preservePosition: false, hydrateRoster: false,
+            variant: initialVariant });
         this.eventBus.emit('characters:changed', this.characters);
         this.emitRosterChanged();
 
@@ -222,7 +235,9 @@ export default class CharacterManager {
         const active = roster[0];
 
         if (active) {
-            await this.ensureEntity(active, 0, { variant: this.runtimeVariants.active });
+            await this.ensureEntity(active, 0, {
+                variant: this.runtimeVariants.active, background,
+            });
         }
 
         if (this.disposed || generation !== this.hydrationGeneration) return;
@@ -426,7 +441,8 @@ export default class CharacterManager {
         }
     }
 
-    async select(id, { preservePosition = true, hydrateRoster = true } = {}) {
+    async select(id, { preservePosition = true, hydrateRoster = true,
+        variant = this.runtimeVariants.active } = {}) {
         const generation = ++this.selectionGeneration;
         const record = this.characters.find(
             (character) => String(character.id) === String(id)
@@ -438,7 +454,7 @@ export default class CharacterManager {
 
         this.eventBus.emit('character:loading', record);
 
-        const nextEntity = await this.ensureEntity(record, this.entities.size, { variant: this.runtimeVariants.active });
+        const nextEntity = await this.ensureEntity(record, this.entities.size, { variant });
         if (this.disposed || generation !== this.selectionGeneration) return null;
         const previousEntity = this.activeEntity;
         const previousPosition = previousEntity?.group.position.clone();
