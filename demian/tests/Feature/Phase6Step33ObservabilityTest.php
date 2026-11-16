@@ -94,7 +94,7 @@ final class Phase6Step33ObservabilityTest extends TestCase
         $this->assertSame(0, $empty['http_samples']);
         $this->assertNull($empty['http_p95_ms']);
         $this->assertNull($empty['game_load_p95_ms']);
-        $this->assertSame(0, $empty['estimated_requests']);
+        $this->assertEquals(0, $empty['estimated_requests']);
 
         $input = [
             ['event' => 'http', 'status' => 200, 'duration_ms' => 20,
