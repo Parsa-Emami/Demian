@@ -4,6 +4,7 @@ import RenderQuality from '../performance/RenderQuality.js';
 import { resolveRenderFrameRate } from '../performance/FrameRatePolicy.js';
 import InputRouter from '../input/InputRouter';
 import GameRegistry from '../registry/GameRegistry';
+import { criticalSpriteSlug } from '../performance/GameAssetWarmup.js';
 import { GAME_DEFINITIONS } from '../registry/GameDefinitions';
 import GameRuntime from '../runtime/GameRuntime';
 import CharacterVisualService from '../characters/runtime/CharacterVisualService.js';
@@ -273,6 +274,19 @@ export default class GameApplication {
             }
 
             const loadingStartedAt = globalThis.performance?.now?.() ?? Date.now();
+            // Join/promote any speculative menu sprite before game:loading
+            // cancels unrelated optional work. Overlap the real critical
+            // image decode with the loading-screen/module transition.
+            const criticalSlug = criticalSpriteSlug(gameId, this.characterVisuals);
+            if (criticalSlug) {
+                void this.characterVisuals.loadPack(
+                    criticalSlug,
+                    this.characterVisuals.runtimeVariant({ player: true }),
+                    { background: false },
+                ).catch(() => {
+                    // Game.preload() still owns surfaced failures and fallbacks.
+                });
+            }
             this.transitionSession(SESSION_STATES.LOADING, { gameId });
             await this.shell.showLoading(gameId, {
                 progress: 0,

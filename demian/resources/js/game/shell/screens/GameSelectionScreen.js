@@ -26,6 +26,14 @@ export default class GameSelectionScreen extends BaseScreen {
         this.prefetched = new Set();
         this.prefetchTimer = null;
         this.onPrefetchIntent = event => this.prefetchIntent(event);
+        this.onPressIntent = event => {
+            const card = event.target?.closest?.('[data-game-card]');
+            const gameId = card?.dataset.gameCard;
+            if (!gameId || !this.catalog.some(game => game.available && game.id === gameId)) return;
+            // Touch has no reliable hover: overlap the exact critical pack
+            // with the transition. Foreground launch promotes this promise.
+            void prewarmCriticalGameSprite(gameId, this.visuals);
+        };
         this.onPrefetchExit = () => this.clearPrefetchTimer();
         this.grid = this.element.querySelector('[data-game-grid]');
         this.rendered = false;
@@ -73,6 +81,7 @@ export default class GameSelectionScreen extends BaseScreen {
         // Fetch only an explicitly hovered or keyboard-focused module; do not
         // fan out into all six downloads on mobile, Save-Data or 3G.
         this.grid.addEventListener('pointerover', this.onPrefetchIntent);
+        this.grid.addEventListener('pointerdown', this.onPressIntent);
         this.grid.addEventListener('focusin', this.onPrefetchIntent);
         this.grid.addEventListener('pointerout', this.onPrefetchExit);
         this.rail = new ScrollSnapRail({
@@ -156,6 +165,7 @@ export default class GameSelectionScreen extends BaseScreen {
     dispose() {
         this.clearPrefetchTimer();
         this.grid?.removeEventListener('pointerover', this.onPrefetchIntent);
+        this.grid?.removeEventListener('pointerdown', this.onPressIntent);
         this.grid?.removeEventListener('focusin', this.onPrefetchIntent);
         this.grid?.removeEventListener('pointerout', this.onPrefetchExit);
         this.cancelWarmup();
