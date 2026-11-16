@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { criticalSpriteSlug, prewarmCriticalGameSprite }
     from '../../../resources/js/game/performance/GameAssetWarmup.js';
 import { SpriteLoadGate } from '../../../resources/js/game/characters/runtime/SpriteMemoryPolicy.js';
+import CharacterVisualService from '../../../resources/js/game/characters/runtime/CharacterVisualService.js';
 
 const normal = () => ({ reason: 'normal' });
 
@@ -21,8 +22,8 @@ test('prewarm only the required player art, never staff, map tiles or score APIs
     assert.equal(await prewarmCriticalGameSprite('open-world', visuals, { networkPolicy: normal }), true);
     assert.equal(await prewarmCriticalGameSprite('cafe-rush', visuals, { networkPolicy: normal }), true);
     assert.deepEqual(calls, [
-        ['negar', 'lite', { background: true }],
-        ['amirreza', 'lite', { background: true }],
+        ['negar', 'lite', { background: true, speculative: true }],
+        ['amirreza', 'lite', { background: true, speculative: true }],
     ]);
 });
 
@@ -80,4 +81,56 @@ test('a queued speculative sprite is promoted when the same player requests it',
     await Promise.all([first, pendingPlayer, background]);
     assert.deepEqual(order, ['player', 'background']);
     gate.dispose();
+});
+
+test('failed speculative preload attempts one variant, does not poison real player launch', async () => {
+    const service = new CharacterVisualService({ storage: null });
+    const attempts = [];
+    service.loadPair = async (slug, variant) => {
+        attempts.push(variant);
+        throw new Error('missing sprite');
+    };
+    await assert.rejects(
+        service.loadPack('darya', 'runtime', { background: true, speculative: true }),
+        /missing sprite/
+    );
+    assert.deepEqual(attempts, ['runtime'], 'never cascade into fallback packs');
+    assert.equal(service.failedPairs.size, 0, 'failed menu hint must not install cooldown');
+
+    service.loadPair = async (slug, variant) => {
+        attempts.push(variant);
+        return { slug, variant, image: { naturalWidth: 64, naturalHeight: 64 },
+            atlas: { meta: { size: { w: 64, h: 64 } } } };
+    };
+    const pack = await service.loadPack('darya', 'runtime');
+    assert.equal(pack.variant, 'runtime');
+    assert.deepEqual(attempts, ['runtime', 'runtime'], 'explicit player retries same variant');
+    service.dispose();
+});
+
+test('foreground launch promotes in-flight speculative sprite before cancelling optional loads', async () => {
+    const service = new CharacterVisualService({ storage: null });
+    let started;
+    const hasStarted = new Promise(resolve => { started = resolve; });
+    let finish;
+    let count = 0;
+    service.loadPair = (_slug, _variant) => {
+        count++;
+        started();
+        return new Promise(resolve => { finish = resolve; });
+    };
+    const warmup = service.loadPack('darya', 'lite',
+        { background: true, speculative: true });
+    await hasStarted;
+    const foreground = service.loadPack('darya', 'lite', { background: false });
+    assert.equal(service.cancelBackgroundLoads(), 0,
+        'joined critical sprite must not be aborted by game:loading');
+    finish({ slug: 'darya', variant: 'lite',
+        image: { naturalWidth: 128, naturalHeight: 128 },
+        atlas: { meta: { size: { w: 128, h: 128 } } } });
+    const [speculativePack, activePack] = await Promise.all([warmup, foreground]);
+    assert.equal(speculativePack, activePack);
+    assert.equal(count, 1, 'foreground must share the same atlas+decode');
+    assert.equal(service.failedPairs.size, 0);
+    service.dispose();
 });

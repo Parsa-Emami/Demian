@@ -20,6 +20,6 @@ export function prewarmCriticalGameSprite(gameId, visuals, { networkPolicy = opt
     const variant = visuals.runtimeVariant?.({ player: true }) ?? 'lite';
     // A failed background warmup must never change normal game startup.
     return Promise.resolve()
-        .then(() => visuals.loadPack(slug, variant, { background: true }))
+        .then(() => visuals.loadPack(slug, variant, { background: true, speculative: true }))
         .then(() => true, () => false);
 }
