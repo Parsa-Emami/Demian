@@ -7,6 +7,7 @@ on:
   workflow_dispatch:
 permissions:
   contents: read
+  actions: read
   pages: write
   id-token: write
 concurrency:
@@ -22,6 +23,8 @@ jobs:
         working-directory: demian
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
       - uses: actions/setup-node@v4
         with:
           node-version: 24
@@ -36,6 +39,8 @@ jobs:
       - run: npm run validate:motion
       - run: npm run validate:cafe-presentation
       - run: npm run test:ci
+      - name: Verify immutable asset retention and tamper-safe lineage
+        run: node --test tools/test_retain_build_assets.mjs
       - run: npm run validate:final
       - run: npm run validate:ui-layers
       - run: npm run validate:characters:v14
@@ -46,11 +51,48 @@ jobs:
           # Set only after domain DNS and GitHub Pages verification.
           DEMIAN_PAGES_CUSTOM_DOMAIN: ${{ vars.DEMIAN_PAGES_CUSTOM_DOMAIN || '' }}
           DEMIAN_ARCADE_API_URL: ${{ github.ref == 'refs/heads/main' && vars.DEMIAN_ARCADE_ENABLE_RANKED == 'true' && vars.DEMIAN_ARCADE_API_URL || '' }}
+      - name: Restore immutable Vite assets from previous successful main releases
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          old="$RUNNER_TEMP/demian-vite-prior"
+          mkdir -p "$old"
+          restored=false
+          for run_id in $(gh run list -R "$GITHUB_REPOSITORY" --workflow deploy-demian-pages.yml --branch main --status success --limit 20 --json databaseId --jq '.[].databaseId'); do
+            if gh run download "$run_id" -R "$GITHUB_REPOSITORY" -n demian-vite-asset-history -D "$old"; then
+              tar -xzf "$old/demian-vite-assets.tar.gz" -C "$old"
+              restored=true
+              break
+            fi
+          done
+          if [ "$restored" != true ]; then
+            if git show HEAD^:demian/vite.config.js 2>/dev/null | grep -q 'codeSplitting: true'; then
+              echo "::error::Prior lazy chunk archive is unavailable; refusing a deployment that would break open tabs."
+              exit 1
+            fi
+            echo "First split release follows an atomic release; there are no prior dynamic chunks to preserve."
+          fi
+          node tools/retain_build_assets.mjs --site=_site --previous="$old"
+      - name: Establish hashed-asset lineage on pull requests
+        if: github.event_name == 'pull_request'
+        run: node tools/retain_build_assets.mjs --site=_site
       - name: Validate optimized production assets
         run: npm run validate:static-assets
       - name: Package portable static PWA for cPanel public_html
         if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
         run: tar -czf "$RUNNER_TEMP/demiancafe-static.tar.gz" -C _site .
+      - name: Archive immutable chunks for future Pages deployments
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        run: tar -czf "$RUNNER_TEMP/demian-vite-assets.tar.gz" -C _site/build assets asset-history.json
+      - uses: actions/upload-artifact@v4
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        with:
+          name: demian-vite-asset-history
+          path: ${{ runner.temp }}/demian-vite-assets.tar.gz
+          retention-days: 90
+          if-no-files-found: error
       - uses: actions/upload-artifact@v4
         if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
         with:
@@ -58,9 +100,11 @@ jobs:
           path: ${{ runner.temp }}/demiancafe-static.tar.gz
           retention-days: 7
           if-no-files-found: error
-      # Expected one atomic JavaScript bundle; bundle_mode: atomic
+      # A small eager menu shell and six independently hashed game chunks.
       - run: npm run validate:build
       - run: npx playwright install chromium --only-shell
+      - name: Verify menu never downloads six game chunks before selection
+        run: timeout --signal=TERM --kill-after=10s 180s node tools/check_lazy_game_chunks.mjs
       - name: Install Firefox and WebKit for Phase 6 Step 31 engine compatibility
         run: npx playwright install --with-deps firefox webkit
       - run: npm run test:coffee-crash:browser
