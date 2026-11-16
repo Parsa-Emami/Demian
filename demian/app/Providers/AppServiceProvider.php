@@ -64,6 +64,12 @@ class AppServiceProvider extends ServiceProvider
                 Limit::perHour(180)->by('arcade:recover:hour:'.$request->ip()),
             ];
         });
+        // Dedicated acceptance bucket: validation mistakes must never consume
+        // the destructive account-deletion allowance.
+        RateLimiter::for('arcade-legal-ack', static fn (Request $request): array => [
+            Limit::perMinute(10)->by('arcade:legal:player:'.self::arcadeTokenBucket($request)),
+            Limit::perMinute(120)->by('arcade:legal:ip:'.$request->ip()),
+        ]);
         RateLimiter::for('arcade-player-rename', static fn (Request $request): Limit =>
             Limit::perMinute(5)->by('arcade:rename:'.self::arcadeTokenBucket($request)));
 
