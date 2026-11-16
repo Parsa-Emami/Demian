@@ -18,7 +18,7 @@ export const GAME_DEFINITIONS = Object.freeze({
             aiBudgeting: true,
             persistentSavePoints: true,
             renderer: 'shared-canvas2d-pixel',
-            deployment: 'atomic-bundle',
+            deployment: 'lazy-chunk',
             environment: CAFE_ENVIRONMENT_ID,
             environmentLocked: true,
             referenceAssets: CAFE_REFERENCE_ASSET_ROOT,
@@ -28,7 +28,7 @@ export const GAME_DEFINITIONS = Object.freeze({
         title: 'Dino Run', inputContext: 'DINO_RUN', orientation: 'any',
         loader: () => import('../games/dino-run/DinoRunGame.js'),
         metadata: Object.freeze({ phase: 12, status: 'available', supportsResults: true, endless: true,
-            renderer: 'shared-canvas2d-pixel', deployment: 'atomic-bundle',
+            renderer: 'shared-canvas2d-pixel', deployment: 'lazy-chunk',
             environment: CAFE_ENVIRONMENT_ID, environmentLocked: true, referenceAssets: CAFE_REFERENCE_ASSET_ROOT }),
     }),
     'after-hours': Object.freeze({
@@ -36,7 +36,7 @@ export const GAME_DEFINITIONS = Object.freeze({
         loader: () => import('../games/after-hours/AfterHoursGame.js'),
         metadata: Object.freeze({
             phase: 15, status: 'available', supportsResults: true,
-            renderer: 'shared-canvas2d-pixel', deployment: 'atomic-bundle',
+            renderer: 'shared-canvas2d-pixel', deployment: 'lazy-chunk',
             environment: CAFE_ENVIRONMENT_ID, environmentLocked: true, referenceAssets: CAFE_REFERENCE_ASSET_ROOT,
         }),
     }),
@@ -45,7 +45,7 @@ export const GAME_DEFINITIONS = Object.freeze({
         loader: () => import('../games/cafe-rush/CafeRushGame.js'),
         metadata: Object.freeze({
             phase: 16, status: 'available', supportsResults: true,
-            renderer: 'shared-canvas2d-pixel', deployment: 'atomic-bundle',
+            renderer: 'shared-canvas2d-pixel', deployment: 'lazy-chunk',
             environment: CAFE_ENVIRONMENT_ID, environmentLocked: true, referenceAssets: CAFE_REFERENCE_ASSET_ROOT,
         }),
     }),
@@ -54,7 +54,7 @@ export const GAME_DEFINITIONS = Object.freeze({
         loader: () => import('../games/cafe-critters/CafeCrittersGame.js'),
         metadata: Object.freeze({
             phase: 17, status: 'available', supportsResults: true,
-            renderer: 'shared-canvas2d-pixel', deployment: 'atomic-bundle',
+            renderer: 'shared-canvas2d-pixel', deployment: 'lazy-chunk',
             environment: CAFE_ENVIRONMENT_ID, environmentLocked: true, referenceAssets: CAFE_REFERENCE_ASSET_ROOT,
         }),
     }),
@@ -63,7 +63,7 @@ export const GAME_DEFINITIONS = Object.freeze({
         loader: () => import('../games/coffee-crash/CoffeeCrashGame.js'),
         metadata: Object.freeze({
             phase: 18, status: 'available', supportsResults: true,
-            renderer: 'shared-canvas2d-pixel', deployment: 'atomic-bundle',
+            renderer: 'shared-canvas2d-pixel', deployment: 'lazy-chunk',
             environment: CAFE_ENVIRONMENT_ID, environmentLocked: true, referenceAssets: CAFE_REFERENCE_ASSET_ROOT,
         }),
     }),

@@ -29,6 +29,9 @@ import SidebarController from './ui/SidebarController';
 import MobileGameUI from './ui/MobileGameUI';
 import MobilePerformanceManager from './game/performance/MobilePerformanceManager.js';
 import registerDemianPwa from './game/performance/PwaUpdateController.js';
+import { installChunkRecoveryNotice } from './game/performance/ChunkRecoveryNotice.js';
+
+installChunkRecoveryNotice();
 
 document.addEventListener('DOMContentLoaded', async () => {
     new MobilePerformanceManager().mount();
