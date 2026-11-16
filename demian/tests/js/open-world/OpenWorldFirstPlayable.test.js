@@ -57,7 +57,7 @@ test('Open World renders the cafe before boot; streaming and visual upgrades fol
     const systems = world.indexOf('this.setupWorldServices()');
     const bootstrap = world.indexOf("renderScene({ phase: 'bootstrap'");
     const boot = world.indexOf('await this.characterManager.boot(');
-    const streaming = world.indexOf('this.updateStreaming(true)');
+    const streaming = world.indexOf('this.updateStreaming(true);', boot);
     const ready = world.indexOf("renderScene({ phase: 'ready'");
     const upgrade = world.indexOf('this.characterManager.startBackgroundHydration()');
     assert.ok(roster >= 0 && systems > roster && bootstrap > systems
