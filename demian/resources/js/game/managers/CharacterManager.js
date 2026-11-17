@@ -427,7 +427,7 @@ export default class CharacterManager {
     }
 
     async select(id, { preservePosition = true, hydrateRoster = true,
-        variant = this.runtimeVariants.active } = {}) {
+        variant = 'lite' } = {}) {
         const generation = ++this.selectionGeneration;
         const record = this.characters.find(
             (character) => String(character.id) === String(id)
@@ -438,6 +438,11 @@ export default class CharacterManager {
         }
 
         this.eventBus.emit('character:loading', record);
+        if (this.visualService && BUILTIN_SLUGS.has(record.slug)) {
+            void this.visualService.loadPack(record.slug, variant).catch(() => undefined);
+            this.hydrationGeneration++;
+            this.visualService.cancelBackgroundLoads();
+        }
 
         const nextEntity = await this.ensureEntity(record, this.entities.size, { variant });
         if (this.disposed || generation !== this.selectionGeneration) return null;

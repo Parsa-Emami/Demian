@@ -13,11 +13,8 @@ export function criticalSpriteSlug(gameId, visuals) {
     return null;
 }
 
-export function criticalSpriteVariant(gameId, visuals) {
-    // First playable Open World needs lite, not the optional runtime/detail
-    // enhancement. Other games retain their original selected quality.
-    return gameId === 'open-world'
-        ? 'lite' : visuals?.runtimeVariant?.({ player: true }) ?? 'lite';
+export function criticalSpriteVariant() {
+    return 'lite';
 }
 
 export function prewarmCriticalGameSprite(gameId, visuals, { networkPolicy = optionalAssetPolicy } = {}) {

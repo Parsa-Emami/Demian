@@ -79,10 +79,9 @@ test('Step33: FPS samples use a ten-second foreground window and reset when paus
 test('Step33: game lifecycle integration is registered without touching score or replay payload', () => {
     const application = readFileSync(new URL('../../../resources/js/game/application/GameApplication.js',
         import.meta.url), 'utf8');
-    assert.match(application, /eventBus\.on\('game:load-timing'/);
-    assert.match(application, /eventBus\.on\('game:load-failed'/);
+    assert.match(application, /new GameMetrics/);
     assert.match(application, /opsTelemetry\?\.frame/);
-    assert.match(application, /this\.opsSubscriptions\?\.forEach/);
+    assert.match(application, /this\.opsMetrics\?\.dispose/);
     const template = readFileSync(new URL('../../../resources/views/demian.blade.php',
         import.meta.url), 'utf8');
     assert.match(template, /name="demian-ops-client" content="off"/);

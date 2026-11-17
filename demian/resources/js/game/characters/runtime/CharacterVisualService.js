@@ -1,4 +1,5 @@
 import CanvasCharacterAvatar from '../CanvasCharacterAvatar.js';
+import CanvasAvatarHydrator from './CanvasAvatarHydrator.js';
 import {
     BUILTIN_CHARACTER_SLUGS,
     DEFAULT_ACTIVE_SLUG,
@@ -49,6 +50,7 @@ export default class CharacterVisualService {
         this.counters = { hits: 0, misses: 0, fallbacks: 0, evictions: 0,
             failedPairs: 0, transientRetries: 0, backgroundCancelled: 0 };
         this.unsubscribe = [];
+        this.canvasHydrator = new CanvasAvatarHydrator({ service: this, eventBus });
         this.onOnline = () => this.clearTransientFailures();
         globalThis.window?.addEventListener?.('online', this.onOnline);
 
@@ -68,7 +70,7 @@ export default class CharacterVisualService {
             // Stop optional network traffic as soon as navigation away begins,
             // rather than waiting until the next game's assets are ready.
             this.unsubscribe.push(eventBus.on('game:loading', ({ gameId } = {}) => {
-                if (gameId && gameId !== 'open-world') this.cancelBackgroundLoads();
+                if (gameId) this.cancelBackgroundLoads();
             }));
         }
     }
@@ -366,18 +368,22 @@ export default class CharacterVisualService {
 
     async createCanvasAvatar(actorId, { player = false, index = 0, variant = null, background = false } = {}) {
         const slug = this.resolveSlug(actorId, { player, index });
-        const pack = await this.loadPack(slug, variant ?? this.runtimeVariant({ player }), { background });
-        return new CanvasCharacterAvatar({
+        const target = variant ?? this.runtimeVariant({ player });
+        const pack = await this.loadPack(slug, variant ?? (player ? 'lite' : target), { background });
+        const avatar = new CanvasCharacterAvatar({
             slug,
             image: pack.image,
             atlas: pack.atlas,
             player,
         });
+        if (player && variant === null && target !== pack.variant) this.canvasHydrator.stage(avatar, target);
+        return avatar;
     }
 
     dispose() {
         if (this.disposed) return;
         this.disposed = true;
+        this.canvasHydrator.dispose();
         this.loadGate.dispose();
         for (const meta of this.pendingLoadMeta.values()) meta.controller.abort();
         this.pendingLoadMeta.clear();

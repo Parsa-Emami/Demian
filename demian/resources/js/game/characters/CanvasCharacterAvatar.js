@@ -139,6 +139,19 @@ export default class CanvasCharacterAvatar {
         return this;
     }
 
+    replaceVisualAssets(image, atlas) {
+        const previous = this.animator;
+        const next = new FrameAnimator(atlas);
+        next.setDirection(previous.direction);
+        next.setFacing(previous.facing);
+        next.setPlaybackRate(previous.playbackRate);
+        next.play(previous.requestedAnimationName ?? previous.animationName ?? 'idle');
+        next.seek(previous.progress());
+        this.texture = { image };
+        this.atlas = atlas;
+        this.animator = next;
+    }
+
     visualHeight() {
         return Number(this.atlas?.display?.worldHeight) || CHARACTER_CANONICAL_BODY.worldHeight;
     }

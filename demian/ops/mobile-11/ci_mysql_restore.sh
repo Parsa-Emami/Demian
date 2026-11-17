@@ -54,9 +54,20 @@ mysqldump -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USERNAME" \
     --single-transaction --quick --set-gtid-purged=OFF --no-tablespaces \
     "$DB_DATABASE" > "$tmp/snapshot.sql"
 test -s "$tmp/snapshot.sql"
+openssl rand -base64 32 > "$tmp/key"
+chmod 600 "$tmp/key"
+openssl enc -aes-256-cbc -salt -pbkdf2 -iter 200000 -pass "file:$tmp/key" \
+    -in "$tmp/snapshot.sql" -out "$tmp/snapshot.enc"
+digest="$(sha256sum "$tmp/snapshot.enc" | cut -d ' ' -f 1)"
+cp "$tmp/snapshot.enc" "$tmp/corrupt.enc"
+printf 'tamper' >> "$tmp/corrupt.enc"
+[[ "$(sha256sum "$tmp/corrupt.enc" | cut -d ' ' -f 1)" != "$digest" ]]
+[[ "$(sha256sum "$tmp/snapshot.enc" | cut -d ' ' -f 1)" == "$digest" ]]
+restore_started="$(date +%s%N)"
 mysql -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USERNAME" -e \
     'DROP DATABASE IF EXISTS demian_restore_test; CREATE DATABASE demian_restore_test CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;'
-mysql -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USERNAME" demian_restore_test < "$tmp/snapshot.sql"
+openssl enc -d -aes-256-cbc -pbkdf2 -iter 200000 -pass "file:$tmp/key" \
+    -in "$tmp/snapshot.enc" | mysql -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USERNAME" demian_restore_test
 DB_DATABASE=demian_restore_test php artisan arcade:integrity --json
 
 count="$(mysql -N -B -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USERNAME" \
@@ -64,7 +75,12 @@ count="$(mysql -N -B -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USERNAME" \
     'SELECT (SELECT COUNT(*) FROM arcade_players) + (SELECT COUNT(*) FROM arcade_runs) + (SELECT COUNT(*) FROM arcade_replays) + (SELECT COUNT(*) FROM arcade_leaderboard_entries)')"
 [[ "$count" == 4 ]] || { echo "Snapshot data missing after restore" >&2; exit 1; }
 
-# Verify FK cascade behavior in the restored disposable schema, never source.
+restore_ms="$(( ($(date +%s%N) - restore_started) / 1000000 ))"
+[[ "$restore_ms" -lt 60000 ]]
+mkdir -p docs/acceptance-lab
+printf '{"status":"passed","environment":"disposable CI MySQL","encrypted":true,"sha256":"%s","restoredLinkedRecords":4,"restoreAndIntegrityMs":%s,"tamperDetected":true,"offsiteRecoveryVerified":false,"productionRpoVerified":false}\n' \
+    "$digest" "$restore_ms" > docs/acceptance-lab/restore.json
+
 mysql -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USERNAME" demian_restore_test -e \
     "DELETE FROM arcade_players WHERE id='11111111-1111-4111-8111-111111111111'"
 remaining="$(mysql -N -B -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USERNAME" \

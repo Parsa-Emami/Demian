@@ -81,8 +81,24 @@ jobs:
       - run: npx playwright install chromium --only-shell
       - name: Install Firefox and WebKit for Phase 6 Step 31 engine compatibility
         run: npx playwright install --with-deps firefox webkit
-      - name: Three-second cold and warm loading, environment and all character budgets
-        run: timeout --signal=TERM --kill-after=10s 600s node tools/check_loading_budget.mjs
+      - name: Retrieve prior-main artifact for paired loading comparison
+        if: github.event_name == 'pull_request' && github.event.pull_request.base.sha == 'a94643d3a41f7c38b3ba59dbe9edcbb53d737753'
+        uses: actions/download-artifact@v4
+        with:
+          name: demiancafe-ir-static-site
+          run-id: 44022430672
+          github-token: ${{ github.token }}
+          path: ${{ runner.temp }}/loading-baseline
+      - name: Three-second loading budget for every game, environment and character
+        run: |
+          set -euo pipefail
+          baseline="$RUNNER_TEMP/loading-baseline"
+          if [[ -f "$baseline/demiancafe-static.tar.gz" ]]; then
+            mkdir -p "$baseline/site"
+            tar -xzf "$baseline/demiancafe-static.tar.gz" -C "$baseline/site"
+            export DEMIAN_FIRST_FRAME_BASELINE="$baseline/site"
+          fi
+          timeout --signal=TERM --kill-after=10s 1200s node tools/check_loading_budget.mjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:

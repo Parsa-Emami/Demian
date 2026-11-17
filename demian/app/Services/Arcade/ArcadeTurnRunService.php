@@ -4,6 +4,7 @@ namespace App\Services\Arcade;
 
 use App\Models\ArcadePlayer;
 use App\Models\ArcadeRun;
+use Domain\Arcade\VerifiedReplay;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -96,6 +97,7 @@ final class ArcadeTurnRunService
 
     public function complete(ArcadePlayer $player, ArcadeRun $run, array $data): array
     {
+        $run = ArcadeRun::query()->findOrFail($run->id);
         abort_unless($run->player_id === $player->id
             && in_array($run->game_id, [CafeCrittersReplayVerifier::GAME_ID,
                 CoffeeCrashReplayVerifier::GAME_ID, 'after-hours', 'cafe-rush', 'open-world'], true), 404);
@@ -112,66 +114,35 @@ final class ArcadeTurnRunService
                 ? $data['frames'] : $data['actions'],
         ], JSON_THROW_ON_ERROR));
 
-        return DB::transaction(function () use ($player, $run, $data, $hash, $frameProof): array {
-            ArcadePlayer::query()->lockForUpdate()->findOrFail($player->id);
-            $locked = ArcadeRun::query()->lockForUpdate()->findOrFail($run->id);
-            if ($locked->status === 'verified') {
-                abort_unless(hash_equals($locked->replay_hash, $hash), 409,
-                    'Run already completed with different evidence.');
-                return $this->result($locked);
-            }
-            abort_unless($locked->status === 'started' && $locked->expires_at->isFuture(),
-                410, 'Run expired.');
-            abort_unless($this->versionAllowed($locked->game_id,$locked->rules_version),
-                409, 'Rules version changed or rollout revoked.');
-            app(WeeklySettlementService::class)->assertOpenForCompletion($locked->started_at);
-            $elapsed = abs($locked->started_at->diffInMilliseconds(now()));
-            abort_if($data['ticks'] * 1000 / 60 > $elapsed + 2000, 422,
-                'Replay is ahead of server wall-clock time.');
-            $verified = match ($locked->rules_version) {
-                AfterHoursFrameReplayVerifier::VERSION =>
-                    $this->afterFrames->verify((int)$locked->seed,$data['ticks'],$data['frames']),
-                CafeRushFrameReplayVerifier::VERSION =>
-                    $this->rushFrames->verify((int)$locked->seed,$data['ticks'],$data['frames']),
-                default => isset(CafeRouteReplayVerifier::VERSIONS[$locked->game_id])
-                    ? $this->routes->verify($locked->game_id,
-                        (int) $locked->seed, $data['ticks'], $data['actions'])
-                    : ($locked->game_id === CoffeeCrashReplayVerifier::GAME_ID
-                        ? $this->coffee->verify((int) $locked->seed, $data['ticks'], $data['actions'])
-                        : $this->critters->verify((int) $locked->seed, $data['ticks'], $data['actions'])),
-            };
-            $locked->fill([...$verified, 'status' => 'verified',
-                'replay_hash' => $hash, 'completed_at' => now()])->save();
-            // Current arcade_replays.transitions is an event-evidence JSON column.
-            DB::table('arcade_replays')->insert([
-                'run_id' => $locked->id,
-                'transitions' => json_encode($frameProof
-                    ? $data['frames'] : $data['actions'],JSON_THROW_ON_ERROR),
-                'created_at' => now(),
-            ]);
-            foreach (LeaderboardService::periodKeys($locked->started_at) as $period) {
-                $key = [
-                    'game_id' => $locked->game_id,
-                    'rules_version' => $locked->rules_version,
-                    'period_key' => $period, 'player_id' => $player->id,
-                ];
-                $best = DB::table('arcade_leaderboard_entries')->where($key)->first();
-                $better = ! $best || $locked->score > $best->score
-                    || ($locked->score === (int) $best->score
-                        && $locked->started_at->lt(
-                            \Carbon\CarbonImmutable::parse($best->achieved_at, 'UTC')));
-                if ($better) {
-                    DB::table('arcade_leaderboard_entries')->updateOrInsert($key, [
-                        'run_id' => $locked->id, 'score' => $locked->score,
-                        'achieved_at' => $locked->started_at,
-                    ]);
-                }
-            }
-            app(ArcadeAntiCheat::class)->verified($locked,
-                count($frameProof ? $data['frames'] : $data['actions']),
-                request()->ip());
-            return $this->result($locked);
-        }, 3);
+        abort_unless($run->player_id === $player->id, 404);
+        if ($run->status === 'verified') {
+            abort_unless(hash_equals($run->replay_hash, $hash), 409, 'Run already completed with different evidence.');
+            return $this->result($run);
+        }
+        $authorize = function (ArcadeRun $current) use ($data): void {
+            abort_unless($current->status === 'started' && $current->expires_at->isFuture(), 410, 'Run expired.');
+            abort_unless(app(RankedGameCatalog::class)->supportsRanked($current->game_id), 503,
+                'This game has not passed ranked verification gates.');
+            abort_unless($this->versionAllowed($current->game_id, $current->rules_version), 409,
+                'Rules version changed or rollout revoked.');
+            $elapsed = max(0, $current->started_at->diffInMilliseconds(now()));
+            abort_if($data['ticks'] * 1000 / 60 > $elapsed + 2000, 422, 'Replay is ahead of server wall-clock time.');
+        };
+        $authorize($run);
+        $verified = match ($run->rules_version) {
+            AfterHoursFrameReplayVerifier::VERSION =>
+                $this->afterFrames->verify((int) $run->seed, $data['ticks'], $data['frames']),
+            CafeRushFrameReplayVerifier::VERSION =>
+                $this->rushFrames->verify((int) $run->seed, $data['ticks'], $data['frames']),
+            default => isset(CafeRouteReplayVerifier::VERSIONS[$run->game_id])
+                ? $this->routes->verify($run->game_id, (int) $run->seed, $data['ticks'], $data['actions'])
+                : ($run->game_id === CoffeeCrashReplayVerifier::GAME_ID
+                    ? $this->coffee->verify((int) $run->seed, $data['ticks'], $data['actions'])
+                    : $this->critters->verify((int) $run->seed, $data['ticks'], $data['actions'])),
+        };
+        $proof = new VerifiedReplay($run->getRawOriginal(), $hash, $verified,
+            $frameProof ? $data['frames'] : $data['actions']);
+        return $this->result(app(ReplayCompletionService::class)->commit($player, $proof, $authorize));
     }
 
     private function result(ArcadeRun $run): array

@@ -65,9 +65,10 @@ async function session(browser, origin, profile, initialSlug, operation) {
         await page.goto(origin + '/?startupQa=1', { waitUntil: 'domcontentloaded', timeout: 30000 });
         await page.waitForFunction(() => window.demianGameApplication?.sessionState === 'menu');
         const menuMs = await page.evaluate(() => window.demianGameApplication.startupDiagnostics.report().page.menuReadyAtMs);
-        await page.evaluate(() => {
+        await page.evaluate(mobile => {
             const app = window.demianGameApplication;
             if (app.leaderboards.connected) throw Error('Production API must be disabled');
+            if (!mobile) app.performanceProfile.tier = 'high';
             window.__budgetFrames = 0;
             const present = app.rendererService.present.bind(app.rendererService);
             app.rendererService.present = (...args) => {
@@ -75,7 +76,7 @@ async function session(browser, origin, profile, initialSlug, operation) {
                 if (result === true) window.__budgetFrames++;
                 return result;
             };
-        });
+        }, profile.mobile);
         const rows = await operation(page);
         assert.deepEqual(errors, [], 'Browser errors');
         return { menuMs, ...rows };
@@ -104,7 +105,7 @@ async function launch(page, game, profile, mode) {
         const imageAt = [...window.__budgetImages].find(([path]) => path.endsWith(environment))[1];
         const diagnostic = app.startupDiagnostics.report().gameStarts.at(-1);
         return { mode, firstMs, environmentMs: Math.max(firstMs, imageAt - window.__budgetStart),
-            stages: diagnostic, spriteSamples: app.startupDiagnostics.report().spriteImages,
+            stages: diagnostic, qualityTier: app.performanceProfile.tier,
             requests: performance.getEntriesByType('resource').filter(row => row.startTime >= window.__budgetStart)
                 .map(row => ({ path: new URL(row.name).pathname, bytes: row.encodedBodySize, ms: row.duration })) };
     }, { environment, firstMs, mode });
@@ -131,6 +132,7 @@ async function measure(browser, directory, label) {
                         row.warm.firstMs, row.warm.environmentMs].every(ms => Number.isFinite(ms) && ms < 3000);
                 } catch (error) { row.passed = false; row.error = String(error); }
                 target.push(row);
+                writeFileSync(resolve(output, 'results.json'), JSON.stringify(report, null, 2) + '\n');
                 console.log('[Loading budget]', label, JSON.stringify({ ...row, cold: row.cold && {
                     firstMs: row.cold.firstMs, environmentMs: row.cold.environmentMs }, warm: row.warm && {
                     firstMs: row.warm.firstMs, environmentMs: row.warm.environmentMs } }));
@@ -156,9 +158,11 @@ async function measure(browser, directory, label) {
                             await manager.select(record.id, { hydrateRoster: false });
                             const frame = window.__budgetFrames;
                             await new Promise(resolve => {
-                                const check = () => window.__budgetFrames > frame ? resolve() : requestAnimationFrame(check);
+                                const deadline = performance.now() + 10000;
+                                const check = () => window.__budgetFrames > frame || performance.now() > deadline ? resolve() : requestAnimationFrame(check);
                                 requestAnimationFrame(check);
                             });
+                            if (window.__budgetFrames <= frame) throw Error('Character presentation timed out');
                             const entity = manager.activeEntity;
                             if (entity.character.slug !== slug || !entity.texture?.image?.naturalWidth) throw Error('Character art missing');
                             return { durationMs: performance.now() - started, variant: entity.runtimeSpriteVariant,
@@ -169,6 +173,7 @@ async function measure(browser, directory, label) {
                     row.passed = Number.isFinite(row.durationMs) && row.durationMs < 3000;
                 } catch (error) { row.passed = false; row.error = String(error); }
                 target.push(row);
+                writeFileSync(resolve(output, 'results.json'), JSON.stringify(report, null, 2) + '\n');
                 console.log('[Loading budget]', label, JSON.stringify({ ...row, requests: undefined }));
             }
         }
