@@ -10,6 +10,7 @@ on:
       - 'demian/tools/load/cpanel_50_active.js'
       - 'demian/tests/js/mobile/Mobile11Ops.test.js'
       - 'demian/tests/js/mobile/ReleaseRollback.test.js'
+      - 'demian/tests/js/mobile/CpanelDeployment.test.js'
       - 'demian/tests/js/mobile/CpanelHostSmoke.test.js'
       - 'demian/tests/ops/CpanelHostPreflightTest.php'
       - 'demian/tools/verify_cpanel_host.mjs'
@@ -26,6 +27,7 @@ on:
       - '.github/workflows/cpanel-api-deploy.yml'
       - 'demian/tests/js/mobile/Mobile11Ops.test.js'
       - 'demian/tests/js/mobile/ReleaseRollback.test.js'
+      - 'demian/tests/js/mobile/CpanelDeployment.test.js'
       - 'demian/tools/load/**'
 permissions:
   contents: read
@@ -54,7 +56,7 @@ jobs:
           node --check demian/tools/load/runner_first_collision.js
       - name: Run release and integrity guard tests
         working-directory: demian
-        run: node --test tests/js/mobile/Mobile11Ops.test.js tests/js/mobile/CpanelHostSmoke.test.js tests/js/mobile/ReleaseRollback.test.js
+        run: node --test tests/js/mobile/Mobile11Ops.test.js tests/js/mobile/CpanelHostSmoke.test.js tests/js/mobile/ReleaseRollback.test.js tests/js/mobile/CpanelDeployment.test.js
 
   cpanel-runtime:
     runs-on: ubuntu-24.04
