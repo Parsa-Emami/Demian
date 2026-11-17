@@ -114,15 +114,15 @@ rollback() {
 activate "$release"
 if ! (
     set -Eeuo pipefail
-    response="$(curl -fsS --retry 3 --retry-delay 1 --max-time 15 "$url/api/v1/arcade/health")"
+    response="$(curl -fsS --retry 3 --retry-delay 1 --max-time 15 "$url/api/v1/arcade/health")" || exit 1
     printf '%s' "$response" | php -r '
         $data = json_decode(stream_get_contents(STDIN), true);
         exit(is_array($data) && ($data["status"] ?? "") === "ok" &&
             ($data["release"] ?? "") === $argv[1] ? 0 : 1);
-    ' "$sha"
+    ' "$sha" || exit 1
     for path in '/rules' '/games' '/leaderboards/dino-run?period=weekly'; do
         curl -fsS --retry 2 --max-time 15 -H 'Accept: application/json' \
-            "$url/api/v1/arcade$path" >/dev/null
+            "$url/api/v1/arcade$path" >/dev/null || exit 1
     done
 ); then
     echo "Readiness/smoke failed; restoring previous code symlink." >&2
