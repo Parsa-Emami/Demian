@@ -183,6 +183,13 @@ export default class StartupPerformanceDiagnostics {
             this.activeGame = null;
             this.updateStatus();
         }));
+        this.subscriptions.push(this.eventBus.on('game:first-playable-frame', ({ gameId, durationMs }) => {
+            const record = this.games.at(-1);
+            if (record?.game === gameId && record.status === 'playing') {
+                record.firstPlayableFrameMs = rounded(durationMs);
+                this.updateStatus();
+            }
+        }));
         this.subscriptions.push(this.eventBus.on('game:load-failed', ({ gameId }) => {
             const attempt = this.activeGame;
             if (attempt?.record.game === gameId) {

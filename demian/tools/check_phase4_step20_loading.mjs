@@ -203,8 +203,12 @@ try {
             const index = requested.length;
             const started = Date.now();
             await phone.evaluate(id => window.demianGameApplication.launchGame(id), game);
-            await wait(phone, () => window.demianGameApplication?.sessionState === 'playing', 30000);
-            const elapsedMs = Date.now() - started;
+            await phone.waitForFunction(id => {
+                const app = window.demianGameApplication;
+                return app.firstPlayableFrame.last?.gameId === id && app.sessionState === 'playing'
+                    && app.shell.loadingScreen.element.hidden;
+            }, game, {timeout: 30000});
+            const elapsedMs = await phone.evaluate(() => window.demianGameApplication.firstPlayableFrame.last.durationMs);
             const firstRequests = requested.slice(index).map(value => new URL(value).pathname);
             report.mobile4g.launches.push({ game, elapsedMs, firstRequests });
             assert.ok(firstRequests.filter(url => /-preview-v\d+\.png$/.test(url)).length <= 5,

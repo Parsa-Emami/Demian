@@ -27,12 +27,11 @@ export default class GameSelectionScreen extends BaseScreen {
         this.prefetchTimer = null;
         this.onPrefetchIntent = event => this.prefetchIntent(event);
         this.onPressIntent = event => {
-            const card = event.target?.closest?.('[data-game-card]');
-            const gameId = card?.dataset.gameCard;
+            if (event.isPrimary === false || event.button !== 0) return;
+            const button = event.target?.closest?.('[data-game-launch]');
+            const gameId = button?.dataset.gameLaunch;
             if (!gameId || !this.catalog.some(game => game.available && game.id === gameId)) return;
-            // Touch has no reliable hover: overlap the exact critical pack
-            // with the transition. Foreground launch promotes this promise.
-            void prewarmCriticalGameSprite(gameId, this.visuals);
+            this.prefetchGame(gameId);
         };
         this.onPrefetchExit = () => this.clearPrefetchTimer();
         this.grid = this.element.querySelector('[data-game-grid]');
@@ -109,15 +108,16 @@ export default class GameSelectionScreen extends BaseScreen {
         this.clearPrefetchTimer();
         this.prefetchTimer = globalThis.setTimeout(() => {
             this.prefetchTimer = null;
-            this.prefetched.add(gameId);
-            // Module import remains atomic in production. Overlap the actual
-            // critical sprite atlas+decode with the user's decision time.
-            // Never await optional warmup or let a failed hint block launch.
-            void prewarmCriticalGameSprite(gameId, this.visuals);
-            void this.registry.load(gameId).catch(() => {
-                this.prefetched.delete(gameId);
-            });
+            this.prefetchGame(gameId);
         }, 160);
+    }
+
+    prefetchGame(gameId) {
+        if (!this.registry || optionalAssetPolicy().reason !== 'normal'
+            || this.prefetched.has(gameId) || this.prefetched.size >= 2) return;
+        this.prefetched.add(gameId);
+        void prewarmCriticalGameSprite(gameId, this.visuals);
+        void this.registry.load(gameId).catch(() => this.prefetched.delete(gameId));
     }
 
     async beforeOpen() {

@@ -25,6 +25,7 @@ import ArcadeLeaderboardService from '../leaderboard/ArcadeLeaderboardService.js
 import DeviceQaController from '../performance/DeviceQaController.js';
 import AnonymousGameTelemetry from '../performance/AnonymousGameTelemetry.js';
 import StartupPerformanceDiagnostics from '../performance/StartupPerformanceDiagnostics.js';
+import FirstPlayableFrame from '../performance/FirstPlayableFrame.js';
 
 const MENU_BACKDROP_GAME_ID = 'open-world';
 
@@ -92,6 +93,7 @@ export default class GameApplication {
         this.input = new InputRouter({ root: document, touchRoot: this.root, initialContext: 'MENU' });
         this.controlLayouts = new ControlLayoutService({ root: this.root, eventTarget: document });
         this.registry = new GameRegistry(GAME_DEFINITIONS);
+        this.firstPlayableFrame = new FirstPlayableFrame();
         this.runtime = new GameRuntime({
             inputRouter: this.input,
             eventBus: this.eventBus,
@@ -102,6 +104,13 @@ export default class GameApplication {
             observeRender: timestamp => {
                 this.deviceQa?.rendered(timestamp);
                 this.startupDiagnostics?.rendered(timestamp);
+                if (this.firstPlayableFrame.pending) {
+                    const frame = this.firstPlayableFrame.observe({ game: this.runtime.currentGame, timestamp,
+                        playing: this.sessionState === SESSION_STATES.PLAYING,
+                        presentedFrames: this.rendererService.presentedFrames,
+                        loaderHidden: this.shell.loadingScreen?.element.hidden === true && this.shell.manager.primaryId === null });
+                    if (frame) this.eventBus.emit('game:first-playable-frame', frame);
+                }
                 this.opsTelemetry?.frame(timestamp, this.activeGameId,
                     this.sessionState === SESSION_STATES.PLAYING);
             },
@@ -232,6 +241,7 @@ export default class GameApplication {
 
     async enterMenuState({ initial = false } = {}) {
         if (this.disposed) return;
+        this.firstPlayableFrame.clear();
 
         // Menu has its own lightweight HTML/CSS screen. Keeping a full
         // Open World instance alive as a decorative backdrop costs network
@@ -265,6 +275,7 @@ export default class GameApplication {
     }
 
     launchGame(gameId, params = {}) {
+        const loadingStartedAt = globalThis.performance?.now?.() ?? Date.now();
         const operation = this.switchQueue.then(async () => {
             if (this.disposed) {
                 throw new Error('Disposed GameApplication cannot launch a game.');
@@ -273,7 +284,10 @@ export default class GameApplication {
                 throw new Error(`Game "${gameId}" is not available in this phase.`);
             }
 
-            const loadingStartedAt = globalThis.performance?.now?.() ?? Date.now();
+            this.firstPlayableFrame.start(gameId, loadingStartedAt);
+            const requiresSwitch = this.activeGameId !== gameId || !this.activeGame || params.forceReload;
+            const pendingModule = requiresSwitch ? this.registry.load(gameId) : null;
+            void pendingModule?.catch(() => undefined);
             // Join/promote any speculative menu sprite before game:loading
             // cancels unrelated optional work. Overlap the real critical
             // image decode with the loading-screen/module transition.
@@ -293,8 +307,8 @@ export default class GameApplication {
                 step: 'شروع دریافت منابع ضروری…',
             });
 
-            if (this.activeGameId !== gameId || !this.activeGame || params.forceReload) {
-                await this.performGameSwitch(gameId, params);
+            if (requiresSwitch) {
+                await this.performGameSwitch(gameId, params, pendingModule);
             } else {
                 this.eventBus.emit('game:loading-step', {
                     gameId,
@@ -309,6 +323,7 @@ export default class GameApplication {
                 progress: 100,
                 step: 'بازی آماده است',
             });
+            this.firstPlayableFrame.arm(this.activeGame, this.rendererService.presentedFrames);
             const durationMs = Math.max(0, (globalThis.performance?.now?.() ?? Date.now()) - loadingStartedAt);
             this.loadingTimings.push({ type: 'game', gameId, durationMs });
             if (this.loadingTimings.length > 24) this.loadingTimings.shift();
@@ -317,6 +332,8 @@ export default class GameApplication {
         });
 
         const guarded = operation.catch(async (error) => {
+            this.firstPlayableFrame.clear();
+            this.eventBus.emit('game:load-failed', { gameId, error });
             await this.enterMenuState().catch(() => undefined);
             throw error;
         });
@@ -330,27 +347,23 @@ export default class GameApplication {
         }
 
         this.paused = false;
-        this.transitionSession(SESSION_STATES.PLAYING, { gameId: this.activeGameId });
-        this.applyRenderQuality(); // Restore gameplay frame-rate preference.
+        this.runtime.pause({ notifyGame: false });
         this.root.dataset.activeGame = this.activeGameId;
         this.applyOrientationPreference(this.activeDefinition.orientation);
         this.input.setContext(this.activeDefinition.inputContext);
-
-        if (this.runtime.paused) {
-            // A freshly entered game must not receive resume() before its first session.
-            this.runtime.resume({ notifyGame: false });
-        }
-
         await this.activeGame.startSession?.(params);
+        this.transitionSession(SESSION_STATES.PLAYING, { gameId: this.activeGameId });
+        this.applyRenderQuality();
         this.activeGame.resize?.();
         await this.shell.hideAll('playing');
+        this.runtime.resume({ notifyGame: false });
         this.eventBus.emit('game:session-started', {
             gameId: this.activeGameId,
             definition: this.activeDefinition,
         });
     }
 
-    async performGameSwitch(gameId, params = {}) {
+    async performGameSwitch(gameId, params = {}, pendingModule = null) {
         const definition = this.registry.get(gameId);
         assertCafeGameDefinition(gameId, definition);
         const previousGame = this.activeGame;
@@ -372,7 +385,7 @@ export default class GameApplication {
 
         let nextGame = null;
         try {
-            nextGame = await this.registry.create(gameId);
+            nextGame = await this.registry.create(gameId, pendingModule);
             this.eventBus.emit('game:loading-step', {
                 gameId, progress: 25, step: 'ماژول بازی دریافت شد',
             });
@@ -423,9 +436,6 @@ export default class GameApplication {
                 definition,
             });
 
-            if (runtimeWasRunning && !runtimeWasPaused && !this.paused) {
-                this.runtime.resume({ notifyGame: false });
-            }
             return nextGame;
         } catch (error) {
             nextGame?.dispose?.();
@@ -441,7 +451,6 @@ export default class GameApplication {
                 previousGame?.resume?.();
                 this.runtime.resume({ notifyGame: false });
             }
-            this.eventBus.emit('game:load-failed', { gameId, error });
             throw error;
         }
     }
