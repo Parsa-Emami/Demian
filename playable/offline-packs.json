@@ -1,0 +1,720 @@
+{
+  "schema": 1,
+  "release": "0f6fb5a0ce783a69",
+  "maxPackBytes": 100663296,
+  "coreBytes": 11573621,
+  "core": [
+    {
+      "path": "assets/characters/ainaz/ainaz-atlas-v14-lite.json",
+      "bytes": 145935
+    },
+    {
+      "path": "assets/characters/ainaz/ainaz-preview-v14.png",
+      "bytes": 28018
+    },
+    {
+      "path": "assets/characters/ainaz/ainaz-spritesheet-v14-lite.webp",
+      "bytes": 751234
+    },
+    {
+      "path": "assets/characters/amin/amin-atlas-v14-lite.json",
+      "bytes": 145845
+    },
+    {
+      "path": "assets/characters/amin/amin-preview-v14.png",
+      "bytes": 26245
+    },
+    {
+      "path": "assets/characters/amin/amin-spritesheet-v14-lite.webp",
+      "bytes": 644556
+    },
+    {
+      "path": "assets/characters/amirreza/amirreza-atlas-v14-lite.json",
+      "bytes": 146072
+    },
+    {
+      "path": "assets/characters/amirreza/amirreza-preview-v14.png",
+      "bytes": 36883
+    },
+    {
+      "path": "assets/characters/amirreza/amirreza-spritesheet-v14-lite.webp",
+      "bytes": 752534
+    },
+    {
+      "path": "assets/characters/arsal/arsal-atlas-v14-lite.json",
+      "bytes": 146008
+    },
+    {
+      "path": "assets/characters/arsal/arsal-preview-v14.png",
+      "bytes": 22904
+    },
+    {
+      "path": "assets/characters/arsal/arsal-spritesheet-v14-lite.webp",
+      "bytes": 518024
+    },
+    {
+      "path": "assets/characters/character-manifest-v4.json",
+      "bytes": 5923
+    },
+    {
+      "path": "assets/characters/darya/darya-atlas-v14-lite.json",
+      "bytes": 101543
+    },
+    {
+      "path": "assets/characters/darya/darya-preview-v14.png",
+      "bytes": 39982
+    },
+    {
+      "path": "assets/characters/darya/darya-spritesheet-v14-lite.webp",
+      "bytes": 903412
+    },
+    {
+      "path": "assets/characters/hanna/hanna-atlas-v14-lite.json",
+      "bytes": 145888
+    },
+    {
+      "path": "assets/characters/hanna/hanna-preview-v14.png",
+      "bytes": 27144
+    },
+    {
+      "path": "assets/characters/hanna/hanna-spritesheet-v14-lite.webp",
+      "bytes": 581912
+    },
+    {
+      "path": "assets/characters/hossein/hossein-atlas-v14-lite.json",
+      "bytes": 145948
+    },
+    {
+      "path": "assets/characters/hossein/hossein-preview-v14.png",
+      "bytes": 23476
+    },
+    {
+      "path": "assets/characters/hossein/hossein-spritesheet-v14-lite.webp",
+      "bytes": 556658
+    },
+    {
+      "path": "assets/characters/iman/iman-atlas-v14-lite.json",
+      "bytes": 145980
+    },
+    {
+      "path": "assets/characters/iman/iman-preview-v14.png",
+      "bytes": 29606
+    },
+    {
+      "path": "assets/characters/iman/iman-spritesheet-v14-lite.webp",
+      "bytes": 587206
+    },
+    {
+      "path": "assets/characters/master-motion-v1.json",
+      "bytes": 6284
+    },
+    {
+      "path": "assets/characters/negar/negar-atlas-v14-lite.json",
+      "bytes": 102389
+    },
+    {
+      "path": "assets/characters/negar/negar-preview-v14.png",
+      "bytes": 31644
+    },
+    {
+      "path": "assets/characters/negar/negar-spritesheet-v14-lite.webp",
+      "bytes": 729890
+    },
+    {
+      "path": "assets/characters/setayesh/setayesh-atlas-v14-lite.json",
+      "bytes": 100965
+    },
+    {
+      "path": "assets/characters/setayesh/setayesh-preview-v14.png",
+      "bytes": 33685
+    },
+    {
+      "path": "assets/characters/setayesh/setayesh-spritesheet-v14-lite.webp",
+      "bytes": 715136
+    },
+    {
+      "path": "assets/characters/tiam/tiam-atlas-v14-lite.json",
+      "bytes": 145987
+    },
+    {
+      "path": "assets/characters/tiam/tiam-preview-v14.png",
+      "bytes": 31568
+    },
+    {
+      "path": "assets/characters/tiam/tiam-spritesheet-v14-lite.webp",
+      "bytes": 724968
+    },
+    {
+      "path": "assets/characters/uzudi/uzudi-atlas-v14-lite.json",
+      "bytes": 101013
+    },
+    {
+      "path": "assets/characters/uzudi/uzudi-preview-v14.png",
+      "bytes": 45239
+    },
+    {
+      "path": "assets/characters/uzudi/uzudi-spritesheet-v14-lite.webp",
+      "bytes": 763044
+    },
+    {
+      "path": "assets/environments/cafe-runner-v1/interior.webp",
+      "bytes": 359602
+    },
+    {
+      "path": "assets/environments/cafe-runner-v1/wordmark.png",
+      "bytes": 58284
+    },
+    {
+      "path": "assets/environments/demian-fbx/polished-v1/preview.webp",
+      "bytes": 69412
+    },
+    {
+      "path": "build/assets/CharacterVisualContract-DEuien9g.js",
+      "bytes": 11045
+    },
+    {
+      "path": "build/assets/app-CkZR4pnJ.css",
+      "bytes": 271346
+    },
+    {
+      "path": "build/assets/app-DyTLDzGy.js",
+      "bytes": 407111
+    },
+    {
+      "path": "build/assets/rolldown-runtime-B0lUwjiP.js",
+      "bytes": 103
+    },
+    {
+      "path": "build/assets/vazirmatn-arabic-400-normal-DMZFCm7K.woff2",
+      "bytes": 21088
+    },
+    {
+      "path": "build/assets/vazirmatn-arabic-700-normal-Dge_DOjm.woff2",
+      "bytes": 21728
+    },
+    {
+      "path": "build/assets/vazirmatn-arabic-900-normal-BVDx3pOU.woff2",
+      "bytes": 21256
+    },
+    {
+      "path": "build/assets/vazirmatn-latin-400-normal-BT_DHTc7.woff2",
+      "bytes": 16068
+    },
+    {
+      "path": "build/assets/vazirmatn-latin-700-normal-9BlbvDRV.woff2",
+      "bytes": 16420
+    },
+    {
+      "path": "build/assets/vazirmatn-latin-900-normal-DUUbkNfs.woff2",
+      "bytes": 16152
+    },
+    {
+      "path": "characters.json",
+      "bytes": 5262
+    },
+    {
+      "path": "competition-rules/index.html",
+      "bytes": 4570
+    },
+    {
+      "path": "index.html",
+      "bytes": 73039
+    },
+    {
+      "path": "manifest.webmanifest",
+      "bytes": 629
+    },
+    {
+      "path": "privacy/index.html",
+      "bytes": 5905
+    },
+    {
+      "path": "terms/index.html",
+      "bytes": 3853
+    }
+  ],
+  "games": [
+    {
+      "id": "open-world",
+      "bytes": 1176663,
+      "totalBytes": 12750284,
+      "files": [
+        {
+          "path": "assets/environments/demian-fbx/polished-v1/lod-1024/0-0.webp",
+          "bytes": 2908
+        },
+        {
+          "path": "assets/environments/demian-fbx/polished-v1/lod-1024/0-1.webp",
+          "bytes": 3108
+        },
+        {
+          "path": "assets/environments/demian-fbx/polished-v1/lod-1024/1-0.webp",
+          "bytes": 2908
+        },
+        {
+          "path": "assets/environments/demian-fbx/polished-v1/lod-1024/1-1.webp",
+          "bytes": 4910
+        },
+        {
+          "path": "assets/environments/demian-fbx/polished-v1/lod-1024/2-0.webp",
+          "bytes": 2858
+        },
+        {
+          "path": "assets/environments/demian-fbx/polished-v1/lod-1024/2-1.webp",
+          "bytes": 5318
+        },
+        {
+          "path": "assets/environments/demian-fbx/polished-v1/lod-1024/3-0.webp",
+          "bytes": 7924
+        },
+        {
+          "path": "assets/environments/demian-fbx/polished-v1/lod-1024/3-1.webp",
+          "bytes": 16634
+        },
+        {
+          "path": "assets/environments/demian-fbx/polished-v1/lod-1024/4-0.webp",
+          "bytes": 20992
+        },
+        {
+          "path": "assets/environments/demian-fbx/polished-v1/lod-1024/4-1.webp",
+          "bytes": 15720
+        },
+        {
+          "path": "assets/environments/demian-fbx/polished-v1/lod-1024/5-0.webp",
+          "bytes": 14522
+        },
+        {
+          "path": "assets/environments/demian-fbx/polished-v1/lod-1024/5-1.webp",
+          "bytes": 20978
+        },
+        {
+          "path": "assets/environments/demian-fbx/polished-v1/lod-1024/6-0.webp",
+          "bytes": 14426
+        },
+        {
+          "path": "assets/environments/demian-fbx/polished-v1/lod-1024/6-1.webp",
+          "bytes": 13254
+        },
+        {
+          "path": "assets/environments/demian-fbx/polished-v1/lod-1024/7-0.webp",
+          "bytes": 12906
+        },
+        {
+          "path": "assets/environments/demian-fbx/polished-v1/lod-1024/7-1.webp",
+          "bytes": 14918
+        },
+        {
+          "path": "assets/environments/demian-fbx/polished-v1/lod-1024/8-0.webp",
+          "bytes": 10932
+        },
+        {
+          "path": "assets/environments/demian-fbx/polished-v1/lod-1024/8-1.webp",
+          "bytes": 9434
+        },
+        {
+          "path": "assets/environments/demian-fbx/polished-v1/lod-1024/9-0.webp",
+          "bytes": 2250
+        },
+        {
+          "path": "assets/environments/demian-fbx/polished-v1/lod-1024/9-1.webp",
+          "bytes": 2074
+        },
+        {
+          "path": "build/assets/AfterHoursGame-Db5ndApu.js",
+          "bytes": 29312
+        },
+        {
+          "path": "build/assets/BaseGame-BoTgjigs.js",
+          "bytes": 268
+        },
+        {
+          "path": "build/assets/CafeCrittersGame-DcC47Z7z.js",
+          "bytes": 43848
+        },
+        {
+          "path": "build/assets/CafeGameRenderer2D-CfOaCZE9.js",
+          "bytes": 3030
+        },
+        {
+          "path": "build/assets/CafeRushGame-BBa-79FL.js",
+          "bytes": 30370
+        },
+        {
+          "path": "build/assets/CoffeeCrashGame-CYgnTrfF.js",
+          "bytes": 26915
+        },
+        {
+          "path": "build/assets/DinoRunGame-ZiVZ_s3f.js",
+          "bytes": 28419
+        },
+        {
+          "path": "build/assets/OpenWorldGame-CRxlNH-w.js",
+          "bytes": 788289
+        },
+        {
+          "path": "build/assets/PixelRenderQueue-somGE4tT.js",
+          "bytes": 12660
+        },
+        {
+          "path": "build/assets/RankedGameplayChallenge-t2s_JDkD.js",
+          "bytes": 7126
+        },
+        {
+          "path": "build/assets/TouchInteractionLabel-t9i1BTEN.js",
+          "bytes": 7452
+        }
+      ]
+    },
+    {
+      "id": "dino-run",
+      "bytes": 1089155,
+      "totalBytes": 12662776,
+      "files": [
+        {
+          "path": "assets/environments/demian-fbx/floorplan.webp",
+          "bytes": 111466
+        },
+        {
+          "path": "build/assets/AfterHoursGame-Db5ndApu.js",
+          "bytes": 29312
+        },
+        {
+          "path": "build/assets/BaseGame-BoTgjigs.js",
+          "bytes": 268
+        },
+        {
+          "path": "build/assets/CafeCrittersGame-DcC47Z7z.js",
+          "bytes": 43848
+        },
+        {
+          "path": "build/assets/CafeGameRenderer2D-CfOaCZE9.js",
+          "bytes": 3030
+        },
+        {
+          "path": "build/assets/CafeRushGame-BBa-79FL.js",
+          "bytes": 30370
+        },
+        {
+          "path": "build/assets/CoffeeCrashGame-CYgnTrfF.js",
+          "bytes": 26915
+        },
+        {
+          "path": "build/assets/DinoRunGame-ZiVZ_s3f.js",
+          "bytes": 28419
+        },
+        {
+          "path": "build/assets/OpenWorldGame-CRxlNH-w.js",
+          "bytes": 788289
+        },
+        {
+          "path": "build/assets/PixelRenderQueue-somGE4tT.js",
+          "bytes": 12660
+        },
+        {
+          "path": "build/assets/RankedGameplayChallenge-t2s_JDkD.js",
+          "bytes": 7126
+        },
+        {
+          "path": "build/assets/TouchInteractionLabel-t9i1BTEN.js",
+          "bytes": 7452
+        }
+      ]
+    },
+    {
+      "id": "after-hours",
+      "bytes": 1400757,
+      "totalBytes": 12974378,
+      "files": [
+        {
+          "path": "assets/environments/demian-fbx/floorplan-detail.webp",
+          "bytes": 423068
+        },
+        {
+          "path": "build/assets/AfterHoursGame-Db5ndApu.js",
+          "bytes": 29312
+        },
+        {
+          "path": "build/assets/BaseGame-BoTgjigs.js",
+          "bytes": 268
+        },
+        {
+          "path": "build/assets/CafeCrittersGame-DcC47Z7z.js",
+          "bytes": 43848
+        },
+        {
+          "path": "build/assets/CafeGameRenderer2D-CfOaCZE9.js",
+          "bytes": 3030
+        },
+        {
+          "path": "build/assets/CafeRushGame-BBa-79FL.js",
+          "bytes": 30370
+        },
+        {
+          "path": "build/assets/CoffeeCrashGame-CYgnTrfF.js",
+          "bytes": 26915
+        },
+        {
+          "path": "build/assets/DinoRunGame-ZiVZ_s3f.js",
+          "bytes": 28419
+        },
+        {
+          "path": "build/assets/OpenWorldGame-CRxlNH-w.js",
+          "bytes": 788289
+        },
+        {
+          "path": "build/assets/PixelRenderQueue-somGE4tT.js",
+          "bytes": 12660
+        },
+        {
+          "path": "build/assets/RankedGameplayChallenge-t2s_JDkD.js",
+          "bytes": 7126
+        },
+        {
+          "path": "build/assets/TouchInteractionLabel-t9i1BTEN.js",
+          "bytes": 7452
+        }
+      ]
+    },
+    {
+      "id": "cafe-rush",
+      "bytes": 1400757,
+      "totalBytes": 12974378,
+      "files": [
+        {
+          "path": "assets/environments/demian-fbx/floorplan-detail.webp",
+          "bytes": 423068
+        },
+        {
+          "path": "build/assets/AfterHoursGame-Db5ndApu.js",
+          "bytes": 29312
+        },
+        {
+          "path": "build/assets/BaseGame-BoTgjigs.js",
+          "bytes": 268
+        },
+        {
+          "path": "build/assets/CafeCrittersGame-DcC47Z7z.js",
+          "bytes": 43848
+        },
+        {
+          "path": "build/assets/CafeGameRenderer2D-CfOaCZE9.js",
+          "bytes": 3030
+        },
+        {
+          "path": "build/assets/CafeRushGame-BBa-79FL.js",
+          "bytes": 30370
+        },
+        {
+          "path": "build/assets/CoffeeCrashGame-CYgnTrfF.js",
+          "bytes": 26915
+        },
+        {
+          "path": "build/assets/DinoRunGame-ZiVZ_s3f.js",
+          "bytes": 28419
+        },
+        {
+          "path": "build/assets/OpenWorldGame-CRxlNH-w.js",
+          "bytes": 788289
+        },
+        {
+          "path": "build/assets/PixelRenderQueue-somGE4tT.js",
+          "bytes": 12660
+        },
+        {
+          "path": "build/assets/RankedGameplayChallenge-t2s_JDkD.js",
+          "bytes": 7126
+        },
+        {
+          "path": "build/assets/TouchInteractionLabel-t9i1BTEN.js",
+          "bytes": 7452
+        }
+      ]
+    },
+    {
+      "id": "cafe-critters",
+      "bytes": 1176663,
+      "totalBytes": 12750284,
+      "files": [
+        {
+          "path": "assets/environments/demian-fbx/polished-v1/lod-1024/0-0.webp",
+          "bytes": 2908
+        },
+        {
+          "path": "assets/environments/demian-fbx/polished-v1/lod-1024/0-1.webp",
+          "bytes": 3108
+        },
+        {
+          "path": "assets/environments/demian-fbx/polished-v1/lod-1024/1-0.webp",
+          "bytes": 2908
+        },
+        {
+          "path": "assets/environments/demian-fbx/polished-v1/lod-1024/1-1.webp",
+          "bytes": 4910
+        },
+        {
+          "path": "assets/environments/demian-fbx/polished-v1/lod-1024/2-0.webp",
+          "bytes": 2858
+        },
+        {
+          "path": "assets/environments/demian-fbx/polished-v1/lod-1024/2-1.webp",
+          "bytes": 5318
+        },
+        {
+          "path": "assets/environments/demian-fbx/polished-v1/lod-1024/3-0.webp",
+          "bytes": 7924
+        },
+        {
+          "path": "assets/environments/demian-fbx/polished-v1/lod-1024/3-1.webp",
+          "bytes": 16634
+        },
+        {
+          "path": "assets/environments/demian-fbx/polished-v1/lod-1024/4-0.webp",
+          "bytes": 20992
+        },
+        {
+          "path": "assets/environments/demian-fbx/polished-v1/lod-1024/4-1.webp",
+          "bytes": 15720
+        },
+        {
+          "path": "assets/environments/demian-fbx/polished-v1/lod-1024/5-0.webp",
+          "bytes": 14522
+        },
+        {
+          "path": "assets/environments/demian-fbx/polished-v1/lod-1024/5-1.webp",
+          "bytes": 20978
+        },
+        {
+          "path": "assets/environments/demian-fbx/polished-v1/lod-1024/6-0.webp",
+          "bytes": 14426
+        },
+        {
+          "path": "assets/environments/demian-fbx/polished-v1/lod-1024/6-1.webp",
+          "bytes": 13254
+        },
+        {
+          "path": "assets/environments/demian-fbx/polished-v1/lod-1024/7-0.webp",
+          "bytes": 12906
+        },
+        {
+          "path": "assets/environments/demian-fbx/polished-v1/lod-1024/7-1.webp",
+          "bytes": 14918
+        },
+        {
+          "path": "assets/environments/demian-fbx/polished-v1/lod-1024/8-0.webp",
+          "bytes": 10932
+        },
+        {
+          "path": "assets/environments/demian-fbx/polished-v1/lod-1024/8-1.webp",
+          "bytes": 9434
+        },
+        {
+          "path": "assets/environments/demian-fbx/polished-v1/lod-1024/9-0.webp",
+          "bytes": 2250
+        },
+        {
+          "path": "assets/environments/demian-fbx/polished-v1/lod-1024/9-1.webp",
+          "bytes": 2074
+        },
+        {
+          "path": "build/assets/AfterHoursGame-Db5ndApu.js",
+          "bytes": 29312
+        },
+        {
+          "path": "build/assets/BaseGame-BoTgjigs.js",
+          "bytes": 268
+        },
+        {
+          "path": "build/assets/CafeCrittersGame-DcC47Z7z.js",
+          "bytes": 43848
+        },
+        {
+          "path": "build/assets/CafeGameRenderer2D-CfOaCZE9.js",
+          "bytes": 3030
+        },
+        {
+          "path": "build/assets/CafeRushGame-BBa-79FL.js",
+          "bytes": 30370
+        },
+        {
+          "path": "build/assets/CoffeeCrashGame-CYgnTrfF.js",
+          "bytes": 26915
+        },
+        {
+          "path": "build/assets/DinoRunGame-ZiVZ_s3f.js",
+          "bytes": 28419
+        },
+        {
+          "path": "build/assets/OpenWorldGame-CRxlNH-w.js",
+          "bytes": 788289
+        },
+        {
+          "path": "build/assets/PixelRenderQueue-somGE4tT.js",
+          "bytes": 12660
+        },
+        {
+          "path": "build/assets/RankedGameplayChallenge-t2s_JDkD.js",
+          "bytes": 7126
+        },
+        {
+          "path": "build/assets/TouchInteractionLabel-t9i1BTEN.js",
+          "bytes": 7452
+        }
+      ]
+    },
+    {
+      "id": "coffee-crash",
+      "bytes": 1089155,
+      "totalBytes": 12662776,
+      "files": [
+        {
+          "path": "assets/environments/demian-fbx/floorplan.webp",
+          "bytes": 111466
+        },
+        {
+          "path": "build/assets/AfterHoursGame-Db5ndApu.js",
+          "bytes": 29312
+        },
+        {
+          "path": "build/assets/BaseGame-BoTgjigs.js",
+          "bytes": 268
+        },
+        {
+          "path": "build/assets/CafeCrittersGame-DcC47Z7z.js",
+          "bytes": 43848
+        },
+        {
+          "path": "build/assets/CafeGameRenderer2D-CfOaCZE9.js",
+          "bytes": 3030
+        },
+        {
+          "path": "build/assets/CafeRushGame-BBa-79FL.js",
+          "bytes": 30370
+        },
+        {
+          "path": "build/assets/CoffeeCrashGame-CYgnTrfF.js",
+          "bytes": 26915
+        },
+        {
+          "path": "build/assets/DinoRunGame-ZiVZ_s3f.js",
+          "bytes": 28419
+        },
+        {
+          "path": "build/assets/OpenWorldGame-CRxlNH-w.js",
+          "bytes": 788289
+        },
+        {
+          "path": "build/assets/PixelRenderQueue-somGE4tT.js",
+          "bytes": 12660
+        },
+        {
+          "path": "build/assets/RankedGameplayChallenge-t2s_JDkD.js",
+          "bytes": 7126
+        },
+        {
+          "path": "build/assets/TouchInteractionLabel-t9i1BTEN.js",
+          "bytes": 7452
+        }
+      ]
+    }
+  ]
+}

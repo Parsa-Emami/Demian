@@ -7,9 +7,9 @@
         content="width=device-width, initial-scale=1.0, viewport-fit=cover"
     >
     <meta name="theme-color" content="#111b19">
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
+    <meta name="demian-static-release" content="true">
+    <meta name="demian-ops-client" content="off">
+    <!-- Server response headers, not HTML meta tags, control production caching. -->
     
     <link rel="manifest" href="manifest.webmanifest">
     <link rel="apple-touch-icon" href="icons/demian-192.png">
@@ -106,8 +106,10 @@
         })();
     </script>
 
-    <link rel="stylesheet" href="build/assets/app--wZ-3yC1.css">
-<script type="module" src="build/assets/app-UC6q047G.js"></script>
+    <link rel="stylesheet" href="build/assets/app-CkZR4pnJ.css">
+<link rel="modulepreload" href="build/assets/rolldown-runtime-B0lUwjiP.js">
+<link rel="modulepreload" href="build/assets/CharacterVisualContract-DEuien9g.js">
+<script type="module" src="build/assets/app-DyTLDzGy.js"></script>
 </head>
 
 <body class="min-h-full bg-[#050610] text-white">
@@ -120,7 +122,7 @@
         data-sidebar-state="collapsed"
         data-mobile-actions="collapsed"
         data-runtime-version="14.0.0-mobile-runner"
-        data-deployment-mode="atomic-bundle"
+        data-deployment-mode="versioned-chunks"
         data-session-state="booting"
         data-game-orientation="auto"
         data-shell-screen="boot"
@@ -349,8 +351,9 @@
             <div data-demian-scene data-ui-layer="canvas" class="demian-scene absolute inset-0"></div>
 
 
-            <div data-game-shell data-ui-layer="shell" class="game-shell absolute inset-0" dir="rtl" aria-live="polite">
+            <div data-game-shell data-ui-layer="shell" class="game-shell absolute inset-0" dir="rtl">
                 <div data-shell-toast-host data-ui-layer="shell-toast" class="shell-toast-host" aria-live="polite" aria-atomic="false"></div>
+                 <p data-shell-announcer class="sr-only" role="status" aria-live="polite" aria-atomic="true"></p>
 
                 <section
                     data-screen="boot"
@@ -393,6 +396,18 @@
                                 کمی بگرد. کمی بدو. یک رکورد تازه بساز.
                             </p>
                         </div>
+                        <button type="button" data-sidebar-toggle class="cafe-menu__showcase" aria-label="نمایش مجموعهٔ ۱۲ کاراکتر و انتخاب کاراکتر">
+                            <span class="cafe-menu__showcase-copy">
+                                <span class="cafe-menu__showcase-kicker">YOUR CAST · 12 CHARACTERS</span>
+                                <strong>قهرمان این داستان تویی</strong>
+                                <small>شخصیتت را انتخاب کن و وارد کافه شو</small>
+                            </span>
+                            <span class="cafe-menu__portraits" aria-hidden="true">
+                                <span class="cafe-menu__portrait cafe-menu__portrait--darya"><img src="assets/characters/darya/darya-preview-v14.png" alt="" width="128" height="128" loading="lazy" decoding="async" fetchpriority="low"></span>
+                                <span class="cafe-menu__portrait cafe-menu__portrait--negar"><img src="assets/characters/negar/negar-preview-v14.png" alt="" width="128" height="128" loading="lazy" decoding="async" fetchpriority="low"></span>
+                                <span class="cafe-menu__portrait cafe-menu__portrait--tiam"><img src="assets/characters/tiam/tiam-preview-v14.png" alt="" width="128" height="128" loading="lazy" decoding="async" fetchpriority="low"></span>
+                            </span>
+                        </button>
                         <div data-menu-reveal class="cafe-menu__actions">
                             <button type="button" data-shell-action="play" data-screen-autofocus class="shell-button shell-button--primary">
                                 <span>انتخاب بازی</span><b aria-hidden="true">←</b>
@@ -403,14 +418,20 @@
                             <button type="button" data-shell-action="settings" class="shell-button shell-button--ghost">
                                 <span>تنظیمات</span><b aria-hidden="true">⚙</b>
                             </button>
-                            <button type="button" data-shell-action="leaderboard" class="shell-button shell-button--ghost">لیدربورد کافه <b aria-hidden="true">♛</b></button>
+                            <button type="button" data-shell-action="leaderboard" class="shell-button shell-button--ghost">لیدربورد هفتگی <b aria-hidden="true">♛</b></button>
+                            <button type="button" data-shell-action="rewards" class="shell-button shell-button--ghost">تخفیف‌های من <b aria-hidden="true">٪</b></button>
                         </div>
                         <button type="button" data-shell-action="motion-comparison" class="shell-button shell-button--ghost">مقایسهٔ الگوی حرکت</button>
                         <button type="button" data-sidebar-toggle class="shell-button shell-button--ghost menu-character-button">انتخاب کاراکتر <span aria-hidden="true">◉</span></button>
                         <div data-menu-reveal class="cafe-menu__footer">
-                            <span>۲ بازی · ۱۲ کاراکتر</span>
+                            <span data-game-library-summary>۶ بازی · ۱۲ کاراکتر</span>
                             <span>بازی‌های کوچک، ماجراجویی‌های بزرگ</span>
                         </div>
+                        <nav class="demian-legal-links" aria-label="قوانین و حریم خصوصی">
+                            <a href="privacy/" target="_self">حریم خصوصی</a>
+                            <a href="terms/" target="_self">شرایط استفاده</a>
+                            <a href="competition-rules/" target="_self">قوانین رقابت و جوایز</a>
+                        </nav>
                         <div class="demian-credit" data-project-credit>
                             <p>طراحی و توسعهٔ بازی</p>
                             <a href="https://parsaaemm.dev/" target="_blank" rel="noopener noreferrer" lang="en" dir="ltr" data-creator-link>parsaaemm</a>
@@ -419,7 +440,7 @@
                     <aside class="cafe-menu__cabinet" aria-hidden="true">
                         <div class="cafe-cabinet__sign">NOW PLAYING</div>
                         <div class="cafe-cabinet__screen">
-                            <span>OPEN</span><b>WORLD</b><small>LIVE BACKDROP</small>
+                            <span>GAME</span><b>LIBRARY</b><small>CHOOSE YOUR GAME</small>
                         </div>
                         <div class="cafe-cabinet__controls"><i></i><i></i><i></i></div>
                     </aside>
@@ -464,7 +485,7 @@
                             <button type="button" data-shell-action="back-cafe" class="shell-icon-button" aria-label="بازگشت به منوی کافه">×</button>
                         </header>
                         <div class="game-library-toolbar">
-                            <span class="game-library-toolbar__hint">دو تجربه برای شروع</span>
+                            <span class="game-library-toolbar__hint" data-game-library-count>۶ بازی برای انتخاب</span>
                             <div class="scroll-rail-controls" aria-label="پیمایش کتابخانه بازی">
                                 <button type="button" data-game-scroll-previous class="scroll-rail-button" aria-label="بازی قبلی">›</button>
                                 <output data-game-scroll-status class="scroll-rail-status" aria-live="polite">0 / 0</output>
@@ -486,15 +507,30 @@
                     aria-hidden="true"
                     hidden
                 >
-                    <div class="loading-console">
-                        <div class="loading-console__orbit" aria-hidden="true"><i></i><i></i><i></i></div>
-                        <p class="shell-kicker">LOADING GAME MODULE</p>
+                    <div class="loading-console loading-experience" dir="rtl">
+                        <div class="loading-experience__ambient" aria-hidden="true"></div>
+                        <div class="loading-experience__orb" aria-hidden="true">
+                            <span class="loading-experience__orb-ring"></span>
+                            <span class="loading-experience__orb-core">D</span>
+                            <span class="loading-experience__orb-spark"></span>
+                        </div>
+                        <p class="shell-kicker loading-experience__eyebrow">DEMIAN · GAME LOADING</p>
                         <h2 data-loading-title>OPEN WORLD</h2>
-                        <p data-loading-step>در حال آماده‌سازی بازی…</p>
-                        <div data-loading-progress-bar class="shell-progress shell-progress--loading"><span></span></div>
-                        <div class="loading-console__meta">
-                            <span data-loading-progress-value>0%</span>
-                            <span>LAZY IMPORT → PRELOAD → ENTER</span>
+                        <p data-loading-step class="loading-experience__stage" role="status" aria-live="polite" aria-atomic="true">در حال آماده‌سازی بازی…</p>
+                        <div class="loading-experience__track-head">
+                            <span data-loading-phase>مرحلهٔ ۱ از ۴</span>
+                            <span data-loading-progress-value>۰ / ۴</span>
+                        </div>
+                        <div data-loading-progress-bar class="shell-progress shell-progress--loading" role="progressbar" aria-label="پیشرفت چهار مرحلهٔ بارگذاری بازی" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-valuetext="۰ از ۴ مرحله انجام شد"><span></span></div>
+                        <div class="loading-experience__heartbeat" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+                        <div class="loading-experience__statusline">
+                            <span data-loading-health>در حال بررسی منابع ضروری…</span>
+                            <span data-loading-elapsed>۰ ثانیه</span>
+                        </div>
+                        <div class="loading-experience__tip">
+                            <span class="loading-experience__tip-icon" aria-hidden="true">✦</span>
+                            <p data-loading-tip-text>در حال آماده‌سازی بازی…</p>
+                            <button type="button" data-loading-tip-next aria-label="نمایش نکتهٔ بعدی بارگذاری">نکتهٔ بعدی <span aria-hidden="true">↻</span></button>
                         </div>
                     </div>
                 </section>
@@ -635,13 +671,83 @@
                     <div class="shell-modal ranking-panel">
                         <p class="shell-kicker">DEMIAN · CAFÉ RUN</p>
                         <h2 id="ranking-title">لیدربورد کافه</h2>
+                        <label>انتخاب بازی دارای بازپخش سروری
+                            <select data-ranking-game aria-label="بازی رقابتی">
+                                <option value="all-games">رتبه‌بندی مشترک · همه بازی‌ها</option>
+                                <option value="dino-run">Dino Run</option>
+                                <option value="cafe-critters" disabled>Café Critters</option>
+                                <option value="coffee-crash" disabled>Coffee Crash</option>
+                                <option value="after-hours" disabled>After Hours · Route Trial</option>
+                                <option value="cafe-rush" disabled>Café Rush · Route Trial</option>
+                                <option value="open-world" disabled>Open World · Route Trial</option>
+                            </select>
+                        </label>
                         <label>بازهٔ رکوردها
-                            <select data-ranking-period><option value="all">همیشه</option><option value="daily">امروز</option><option value="weekly">این هفته</option><option value="device">این دستگاه</option></select>
+                            <select data-ranking-period><option value="weekly">این هفته</option><option value="daily">امروز</option><option value="all">همیشه</option><option value="device">این دستگاه</option></select>
+                        </label>
+                        <label data-ranking-week-wrap hidden>آرشیو مسابقات تهران
+                            <select data-ranking-week aria-label="انتخاب شنبه شروع هفته">
+                                <option value="">هفته جاری</option>
+                            </select>
                         </label>
                         <p data-ranking-status role="status" aria-live="polite"></p>
-                        <div class="ranking-panel__scroll"><table><thead><tr><th scope="col">رتبه</th><th scope="col">بازیکن</th><th scope="col">امتیاز</th></tr></thead><tbody data-ranking-rows></tbody></table></div>
+                        <p class="ranking-panel__countdown" data-ranking-countdown role="timer" aria-live="off" hidden></p>
+                        <p data-ranking-personal-best aria-live="polite"></p>
+                        <p class="ranking-panel__refresh-info" data-ranking-info>جدول مشترک از بهترین رکورد تأییدشده هر بازیکن ساخته می‌شود. رتبه‌های هفته جاری موقت و غیرمالی‌اند؛ پس از تسویه آرشیو می‌شوند. تازه‌سازی هر ۶۰ ثانیه.</p>
+                        <div class="ranking-panel__scroll"><table><thead><tr><th scope="col">رتبه</th><th scope="col">بازیکن</th><th scope="col" data-ranking-score-heading>امتیاز استاندارد</th><th scope="col" data-ranking-game-heading>بازی / اعتبار</th></tr></thead><tbody data-ranking-rows></tbody></table></div>
                         <form data-ranking-name-form><label for="ranking-name">نام نمایشی</label><div><input id="ranking-name" name="display_name" minlength="2" maxlength="32" required autocomplete="nickname"><button type="submit" class="shell-button">ذخیره</button></div></form>
+                        <button type="button" data-shell-action="rewards" class="shell-button shell-button--ghost">مشاهده صفحه اختصاصی کدهای تخفیف من</button>
+                        <div data-ranking-recovery>
+                            <p>بازیابی حساب روی دستگاه دیگر (فقط با کد یک‌بارمصرف؛ بدون شمارهٔ تلفن)</p>
+                            <button type="button" data-ranking-issue-recovery class="shell-button shell-button--ghost">ساخت لینک بازیابی یک‌بارمصرف</button>
+                            <label for="ranking-recovery-link">این لینک به حساب شما دسترسی می‌دهد؛ فقط نزد خودتان نگه دارید.
+                                <input id="ranking-recovery-link" data-ranking-recovery-link type="text" readonly autocomplete="off" spellcheck="false">
+                            </label>
+                            <p>برای بازیابی پس از بستن مرورگر، یک کد پشتیبان بلندمدت بساز و در مدیر رمز عبور یا محل امن خارج از بازی نگهدار. کد فقط یک بار مصرف می‌شود.</p>
+                            <button type="button" data-ranking-issue-backup class="shell-button shell-button--ghost">ساخت کد پشتیبان حساب</button>
+                            <label for="ranking-backup-code">کد پشتیبان (فقط اکنون نمایش داده می‌شود)
+                                <input id="ranking-backup-code" data-ranking-backup-code type="text" readonly autocomplete="off" spellcheck="false">
+                            </label>
+                            <form data-ranking-recover-form>
+                                <label for="ranking-recovery-code">کد بازیابی ذخیره‌شده یا دریافت‌شده از لینک
+                                    <input id="ranking-recovery-code" name="recovery_code" type="password" minlength="64" maxlength="64" required autocomplete="off" spellcheck="false">
+                                </label>
+                                <button type="submit" class="shell-button">بازیابی حساب</button>
+                            </form>
+                            <p data-ranking-recovery-status role="status" aria-live="polite"></p>
+                            <button type="button" data-ranking-export-account class="shell-button shell-button--ghost">دریافت خلاصه داده‌های حساب (JSON)</button>
+                            <p class="ranking-panel__refresh-info">برای دریافت تمام سوابق، API خصوصی خروجی صفحه‌بندی‌شده دارد. داده‌های حساس و اسرار ورود در فایل قرار نمی‌گیرند.</p>
+                            <button type="button" data-ranking-delete-account class="shell-button shell-button--ghost">حذف کامل حساب و رکوردهای سرور</button>
+                        </div>
                         <button type="button" data-shell-action="close-modal" class="shell-button shell-button--primary" data-screen-autofocus>بستن</button>
+                    </div>
+                </section>
+
+                <section data-screen="coupon-wallet" class="shell-screen shell-screen--modal"
+                    role="dialog" aria-modal="true" aria-labelledby="coupon-wallet-title"
+                    aria-hidden="true" hidden>
+                    <div class="shell-modal coupon-wallet-panel">
+                        <p class="shell-kicker">DEMIAN · MY REWARDS</p>
+                        <h2 id="coupon-wallet-title">کدهای تخفیف من</h2>
+                        <p class="ranking-panel__refresh-info">
+                            کد تخفیف و مقدار آن فقط برای صاحب حساب نمایش داده می‌شود.
+                            برای دریافت جوایز ایمیلی ارسال نمی‌شود. هنگام خرید حضوری،
+                            کد معتبر را به صندوق‌دار نشان دهید.
+                        </p>
+                        <p data-wallet-status role="status" aria-live="polite"></p>
+                        <div data-wallet-restore-hint hidden>
+                            <p>اگر حساب شما در این دستگاه باز نیست، از بخش لیدربورد
+                                با لینک یا کد پشتیبان، همان حساب را بازیابی کنید.</p>
+                            <button type="button" data-shell-action="wallet-to-leaderboard"
+                                class="shell-button shell-button--ghost">بازیابی حساب در لیدربورد</button>
+                        </div>
+                        <ul class="coupon-wallet-list" data-wallet-list aria-label="کدهای تخفیف حساب شما"></ul>
+                        <div class="shell-modal__actions shell-modal__actions--row">
+                            <button type="button" data-wallet-refresh
+                                class="shell-button shell-button--ghost">به‌روزرسانی کدها</button>
+                            <button type="button" data-shell-action="close-modal"
+                                class="shell-button shell-button--primary" data-screen-autofocus>بستن</button>
+                        </div>
                     </div>
                 </section>
 
@@ -665,11 +771,13 @@
                             <button type="button" data-shell-action="replay" data-results-replay class="shell-button" hidden>بازپخش</button>
                             <button type="button" data-shell-action="exit-game" class="shell-button">بازگشت به کافه</button>
                             <button type="button" data-shell-action="leaderboard" class="shell-button">لیدربورد</button>
+                            <button type="button" data-shell-action="rewards" class="shell-button">تخفیف‌های من</button>
                         </div>
                     </div>
                 </section>
             </div>
 
+            <div data-game-feedback-host data-ui-layer="game-overlay" class="game-feedback-host" aria-hidden="true" inert></div>
             <div data-game-hud-host data-ui-layer="hud" class="game-hud-host"></div>
             <div data-game-prompt-host data-ui-layer="prompt" class="game-prompt-host"></div>
             <div data-game-overlay-host data-ui-layer="game-overlay" class="game-overlay-host"></div>
@@ -887,5 +995,54 @@
             </div>
         </section>
     </main>
+
+    <!-- Instant static-menu preview: runs during HTML parsing, before the
+         deferred module bundle downloads/compiles. No network/API/art assets
+         are fetched by this script and no game is simulated before hydration.
+         Laravel dynamic pages continue to use the original boot screen. -->
+    <script>
+        (() => {
+            if (document.querySelector('meta[name="demian-static-release"]')
+                ?.getAttribute('content') !== 'true') return;
+            const root = document.querySelector('[data-character-manager]');
+            const menu = root?.querySelector('[data-screen="cafe-menu"]');
+            const boot = root?.querySelector('[data-screen="boot"]');
+            if (!root || !menu || !boot) return;
+
+            // The real GameShell adopts this screen after its module is ready.
+            // Visible navigation is not coupled to downloading the entire
+            // game engine (or to any optional character image request).
+            boot.hidden = true;
+            boot.setAttribute('aria-hidden', 'true');
+            menu.hidden = false;
+            menu.setAttribute('aria-hidden', 'false');
+            menu.inert = false;
+            root.dataset.shellScreen = 'cafe-menu';
+            root.dataset.instantMenu = 'true';
+            const allowed = new Set(['play', 'continue', 'settings', 'leaderboard', 'rewards']);
+            const capture = (event) => {
+                if (root.dataset.instantMenu !== 'true') return;
+                const button = event.target.closest?.('[data-shell-action]');
+                const action = button?.dataset.shellAction;
+                if (!menu.contains(button) || !allowed.has(action)) return;
+                // The full event router is not yet installed. Preserve the
+                // *first* action and give immediate loading feedback. Do not
+                // fake that a game is loaded or replay extra clicks.
+                event.preventDefault();
+                event.stopImmediatePropagation();
+                if (root.dataset.pendingMenuAction) return;
+                root.dataset.pendingMenuAction = action;
+                const status = document.createElement('p');
+                status.setAttribute('role', 'status');
+                status.dataset.instantMenuStatus = '';
+                status.textContent = 'در حال آماده‌سازی بازی…';
+                menu.querySelector('.cafe-menu__actions')?.append(status);
+            };
+            document.addEventListener('click', capture, true);
+            document.addEventListener('demian:menu-hydrated', () => {
+                document.removeEventListener('click', capture, true);
+            }, { once: true });
+        })();
+    </script>
 </body>
 </html>
