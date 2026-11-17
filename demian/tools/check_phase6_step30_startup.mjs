@@ -113,13 +113,21 @@ try {
             await wait(page, () => !document.querySelector('[data-screen="game-selection"]')?.hidden);
             for (const game of ['coffee-crash', 'dino-run', 'after-hours', 'cafe-rush', 'cafe-critters', 'open-world']) {
                 const start = Date.now();
-                await page.evaluate(id => window.demianGameApplication.launchGame(id), game);
-                await wait(page, () => window.demianGameApplication.sessionState === 'playing', 15000);
-                const ms = Date.now() - start;
-                report.games.push({ game, firstPlayMs: ms, status: 'passed' });
+                const previousSequence = await page.evaluate(() => window.demianGameApplication.firstPlayableFrame.sequence);
+                await page.locator(`[data-game-card="${game}"] [data-game-launch]`).tap();
+                await page.waitForFunction(({game, previousSequence}) => {
+                    const app = window.demianGameApplication;
+                    const frame = app.firstPlayableFrame.last;
+                    return frame?.gameId === game && frame.sequence > previousSequence
+                        && app.sessionState === 'playing' && app.shell.loadingScreen.element.hidden;
+                }, {game, previousSequence}, {timeout: 15000});
+                const ms = await page.evaluate(() => window.demianGameApplication.firstPlayableFrame.last.durationMs);
+                report.games.push({ game, firstPlayMs: ms, tapToVerifiedFrameMs: Date.now() - start, status: 'passed' });
                 assert.ok(ms < 7000, 'Cold 4G first gameplay >7 seconds: ' + game + ' / ' + ms);
                 await page.evaluate(() => window.demianGameApplication.showMenu());
                 await wait(page, () => window.demianGameApplication.sessionState === 'menu');
+                await page.locator('[data-screen="cafe-menu"] [data-shell-action="play"]').tap();
+                await wait(page, () => !document.querySelector('[data-screen="game-selection"]')?.hidden);
             }
             report.cold4g = { latencyMs: 80, downMbps: 8, cpuSlowdown: 2, initialMenuMs: bootMs };
             assert.deepEqual(report.errors, [], 'No runtime exceptions in cold 4G test');

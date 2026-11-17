@@ -45,6 +45,7 @@ export default class OpenWorldGame extends BaseGame {
         this.repository = null;
         this.characterManager = null;
         this.firstFrameRendered = false;
+        this.backgroundHydrationPending = false;
         this.renderFailureCount = 0;
         this.manifest = DEMIAN_REFERENCE_CAFE_MANIFEST;
         this.partition = new WorldPartition(this.manifest);
@@ -182,7 +183,7 @@ export default class OpenWorldGame extends BaseGame {
         this.renderScene({ phase: 'ready', strict: false });
         // Upgrade the active avatar and load NPC art only after the first
         // renderable lite avatar, full collisions and input are ready.
-        this.characterManager.startBackgroundHydration();
+        this.backgroundHydrationPending = true;
     }
 
     setupWorldServices() {
@@ -562,7 +563,12 @@ export default class OpenWorldGame extends BaseGame {
     }
 
     render(alpha = 1, deltaTime = 0) {
-        this.renderScene({ phase: 'frame', strict: true, alpha, deltaTime });
+        const rendered = this.renderScene({ phase: 'frame', strict: true, alpha, deltaTime });
+        if (rendered && this.backgroundHydrationPending && this.context.app.sessionState === 'playing') {
+            this.backgroundHydrationPending = false;
+            this.characterManager.startBackgroundHydration();
+        }
+        return rendered;
     }
 
     renderScene({ phase = 'frame', strict = true, alpha = 1, deltaTime = 0 } = {}) {

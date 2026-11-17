@@ -70,16 +70,17 @@ export default class GameRegistry {
             this.moduleCache.set(id, Promise.resolve().then(() => definition.loader()));
         }
 
+        const pending = this.moduleCache.get(id);
         try {
-            return await this.moduleCache.get(id);
+            return await pending;
         } catch (error) {
-            this.moduleCache.delete(id);
+            if (this.moduleCache.get(id) === pending) this.moduleCache.delete(id);
             throw error;
         }
     }
 
-    async create(id) {
-        const module = await this.load(id);
+    async create(id, pendingModule = null) {
+        const module = await (pendingModule ?? this.load(id));
         const GameClass = module?.default ?? module?.Game;
 
         if (typeof GameClass !== 'function') {

@@ -95,6 +95,24 @@ jobs:
         run: timeout --signal=TERM --kill-after=10s 240s npm run test:fast-loading:browser
       - name: Phase 6 Step 30 fast cold startup, buffered menu click and all six games under 4G
         run: timeout --signal=TERM --kill-after=10s 240s npm run test:step30:startup
+      - name: Retrieve exact pre-change static artifact for paired startup comparison
+        if: github.event_name == 'pull_request' && github.event.pull_request.base.sha == '3df408f8d0621620b6a7cce44e8d2db7a89ccf4b'
+        uses: actions/download-artifact@v4
+        with:
+          name: demiancafe-ir-static-site
+          run-id: 44018513717
+          github-token: ${{ github.token }}
+          path: ${{ runner.temp }}/demian-first-frame-baseline
+      - name: Fresh-context cold and same-session warm first-frame matrix
+        run: |
+          set -euo pipefail
+          baseline="$RUNNER_TEMP/demian-first-frame-baseline"
+          if [[ -f "$baseline/demiancafe-static.tar.gz" ]]; then
+            mkdir -p "$baseline/site"
+            tar -xzf "$baseline/demiancafe-static.tar.gz" -C "$baseline/site"
+            export DEMIAN_FIRST_FRAME_BASELINE="$baseline/site"
+          fi
+          timeout --signal=TERM --kill-after=10s 300s node tools/check_first_playable_matrix.mjs
       - name: Phase 6 Step 31 mobile home and twelve character artwork QA
         run: timeout --signal=TERM --kill-after=10s 240s node tools/check_phase6_step31_mobile_home.mjs
       - name: Motion UI — authentic four-stage loader, interactive tips, mobile layouts and reduced motion
@@ -188,6 +206,7 @@ jobs:
             demian/docs/phase5-step28/coffee-crash-browser.json
             demian/docs/phase5-step28/coffee-crash-390-results.png
             demian/docs/phase6-step30/startup.json
+            demian/docs/phase6-step30/first-playable-matrix.json
             demian/docs/phase6-step31/qa-evidence.json
             demian/docs/phase6-step31/browser-compatibility.json
             demian/docs/phase6-step31/mobile-characters-browser.json

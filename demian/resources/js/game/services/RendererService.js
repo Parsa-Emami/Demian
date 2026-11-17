@@ -89,6 +89,7 @@ export default class RendererService {
         this.frameOpen = false;
         this.layoutDirty = true;
         this.surfaceRevision = 0;
+        this.presentedFrames = 0;
         this.lostContexts = new Set();
         this.recovery = assignUiLayer(document.createElement('p'), UI_LAYER.LOCAL_BASE);
         this.recovery.className = 'render-recovery';
@@ -315,6 +316,7 @@ export default class RendererService {
             drawHeight
         );
         this.frameOpen = false;
+        this.presentedFrames++;
         return true;
     }
 

@@ -5,6 +5,7 @@ import BootScreen from './screens/BootScreen';
 import CafeMenuScreen from './screens/CafeMenuScreen';
 import GameSelectionScreen from './screens/GameSelectionScreen';
 import { prewarmCriticalGameSprite } from '../performance/GameAssetWarmup.js';
+import { optionalAssetPolicy } from '../characters/runtime/MobileNetworkPolicy.js';
 import LoadingScreen from './screens/LoadingScreen';
 import PauseScreen from './screens/PauseScreen';
 import SettingsScreen from './screens/SettingsScreen';
@@ -57,7 +58,8 @@ export default class GameShell {
             const button = event.target?.closest?.('[data-shell-action="continue"]');
             if (!button || !this.cafeScreen?.element?.contains(button)) return;
             const slug = this.app.characterVisuals?.activeSlug;
-            if (!slug || slug === this.menuWarmupSlug) return;
+            if (!slug || slug === this.menuWarmupSlug || optionalAssetPolicy().reason !== 'normal') return;
+            void this.app.registry.load('open-world').catch(() => undefined);
             this.menuWarmupSlug = slug;
             void prewarmCriticalGameSprite('open-world', this.app.characterVisuals)
                 .then(success => { if (!success && this.menuWarmupSlug === slug) this.menuWarmupSlug = null; });
