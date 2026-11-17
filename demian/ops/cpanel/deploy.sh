@@ -50,6 +50,16 @@ grep -Eq '^APP_KEY=(base64:)?[A-Za-z0-9+/=]{32,}$' "$env_file" || exit 1
 grep -Fx 'DEMIAN_ARCADE_API_ONLY=true' "$env_file" >/dev/null || exit 1
 grep -Fx 'DB_CONNECTION=mysql' "$env_file" >/dev/null || exit 1
 
+previous=""
+if [[ -L "$root/current" ]]; then
+    previous="$(readlink -f "$root/current")"
+    [[ "$previous" == "$root/releases/"* && -d "$previous" ]] ||
+        { echo "Existing current symlink points outside release directory" >&2; exit 1; }
+elif [[ -e "$root/current" ]]; then
+    echo "current must be a symlink; configure the cPanel document root first" >&2
+    exit 1
+fi
+
 archive="$root/incoming/$sha.tar.gz"
 [[ -s "$archive" ]] || { echo "Release artifact missing" >&2; exit 1; }
 entries="$root/incoming/$sha.entries"
@@ -64,12 +74,13 @@ fi
 types="$root/incoming/$sha.types"
 trap 'rm -f -- "$entries" "$types"' EXIT
 tar -tvzf "$archive" > "$types"
-if grep -Eq '^l' "$types"; then
-    echo "Symbolic links are forbidden inside cPanel release artifacts" >&2; exit 1
+if grep -Eq '^[^d-]' "$types"; then
+    echo "Symbolic links are forbidden inside cPanel release artifacts, as are hard links and special files" >&2; exit 1
 fi
 rm -f "$entries" "$types"
 
 release="$root/releases/$sha"
+[[ ! -L "$release" ]] || { echo "Release directory must not be a symbolic link" >&2; exit 1; }
 tmp="$root/releases/.$sha.tmp.$$"
 trap 'rm -rf -- "$tmp"' EXIT
 if [[ ! -d "$release" ]]; then
@@ -81,6 +92,7 @@ if [[ ! -d "$release" ]]; then
     [[ -f "$tmp/ops/cpanel/host_preflight.php" && ! -L "$tmp/ops/cpanel/host_preflight.php" ]] || {
         echo "cPanel production preflight contract is missing" >&2; exit 1;
     }
+    "$php_bin" "$tmp/ops/cpanel/host_preflight.php" "$env_file" "$target" "$origin"
     rm -rf "$tmp/storage"
     ln -s "$root/shared/storage" "$tmp/storage"
     ln -s "$env_file" "$tmp/.env"
@@ -93,11 +105,14 @@ if [[ ! -d "$release" ]]; then
         "$php_bin" artisan route:list --json | "$php_bin" -r '
             $routes = json_decode(stream_get_contents(STDIN), true);
             if (!is_array($routes)) exit(1);
+            $hasApi = false;
             foreach ($routes as $route) {
                 $uri = $route["uri"] ?? "";
                 if ($uri === "/" || $uri === "characters" ||
                     str_starts_with($uri, "characters/")) exit(1);
+                if ($uri === "api/v1/arcade/health") $hasApi = true;
             }
+            exit($hasApi ? 0 : 1);
         '
     )
     mv -T "$tmp" "$release"
@@ -130,15 +145,6 @@ fi
     fi
 )
 
-previous=""
-if [[ -L "$root/current" ]]; then
-    previous="$(readlink -f "$root/current")"
-    [[ "$previous" == "$root/releases/"* && -d "$previous" ]] ||
-        { echo "Existing current symlink points outside release directory" >&2; exit 1; }
-elif [[ -e "$root/current" ]]; then
-    echo "current must be a symlink; configure the cPanel document root first" >&2
-    exit 1
-fi
 switch_to() {
     ln -s "$1" "$root/.next-$sha"
     mv -Tf "$root/.next-$sha" "$root/current"
