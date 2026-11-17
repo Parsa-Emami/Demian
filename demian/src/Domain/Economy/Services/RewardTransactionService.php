@@ -1,4 +1,15 @@
 <?php
+
 namespace Domain\Economy\Services;
-use Illuminate\Support\Facades\DB;
-class RewardTransactionService { public function execute(callable $callback){ return DB::transaction($callback); } }
+
+use Domain\Shared\TransactionRunner;
+
+class RewardTransactionService
+{
+    public function __construct(private readonly TransactionRunner $transactions) {}
+
+    public function execute(callable $callback): mixed
+    {
+        return $this->transactions->execute($callback);
+    }
+}

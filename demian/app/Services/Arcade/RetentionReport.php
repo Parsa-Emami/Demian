@@ -8,9 +8,11 @@ use Illuminate\Support\Facades\DB;
 
 final class RetentionReport
 {
+    public function __construct(private readonly \Domain\Shared\Clock $clock) {}
+
     public function snapshot(int $days = 90): array
     {
-        $today = CarbonImmutable::now('Asia/Tehran')->startOfDay();
+        $today = CarbonImmutable::instance($this->clock->now())->setTimezone('Asia/Tehran')->startOfDay();
         $days = max(1, min(90, $days));
         $rows = []; $truncated = false;
         $players = DB::table('arcade_players')->select(['id', 'created_at'])

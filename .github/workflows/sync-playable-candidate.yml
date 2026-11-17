@@ -1,0 +1,40 @@
+name: Refresh isolated playable candidate
+on:
+  push:
+    branches: [build/sync-playable]
+permissions:
+  contents: write
+concurrency:
+  group: playable-candidate
+  cancel-in-progress: false
+jobs:
+  export:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: demian/package-lock.json
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install Pillow
+      - run: npm ci
+        working-directory: demian
+      - run: npm run build:static && npm run validate:static-assets && npm run validate:build
+        working-directory: demian
+      - name: Commit generated output to isolated build branch
+        env:
+          EXPECTED_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF" = refs/heads/build/sync-playable
+          rsync -a --delete demian/_site/ playable/
+          git add -- playable/
+          git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' commit -m "build: refresh tested portable playable output" || test -z "$(git diff --cached --name-only)"
+          git push --force-with-lease="refs/heads/build/sync-playable:$EXPECTED_SHA" origin HEAD:refs/heads/build/sync-playable
+          git log -1 --format='%H %T %s'

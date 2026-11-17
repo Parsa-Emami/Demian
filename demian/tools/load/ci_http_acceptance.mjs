@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
 import { mkdirSync, writeFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { setTimeout as delay } from 'node:timers/promises';
 import { firstCollisionReplay } from './runner_first_collision.js';
 
@@ -17,9 +18,9 @@ mkdirSync(output, { recursive: true });
 const report = { status: 'pending', environment: 'isolated CI MySQL 8.4 with eight PHP HTTP workers',
     physicalDeviceVerified: false, productionCapacityCertified: false, independentSecurityAudit: false,
     users: 50, security: [], timings: {}, failures: [] };
-const server = spawn('php', ['-S', '127.0.0.1:8088', '-t', 'public',
-    'vendor/laravel/framework/src/Illuminate/Foundation/resources/server.php'], {
-    detached: true, stdio: 'ignore', env: { ...process.env, PHP_CLI_SERVER_WORKERS: '8' },
+const server = spawn('php', ['-S', '127.0.0.1:8088', '-t', resolve('public'),
+    resolve('vendor/laravel/framework/src/Illuminate/Foundation/resources/server.php')], {
+    cwd: resolve('public'), detached: true, stdio: 'ignore', env: { ...process.env, PHP_CLI_SERVER_WORKERS: '8' },
 });
 let spawnError;
 server.on('error', error => { spawnError = error; });
@@ -46,13 +47,14 @@ async function probe(name, expected, path, options) {
     return result;
 }
 try {
-    let ready = false;
+    let ready = false, readinessError = '';
+    server.on('exit', code => { if (!ready) readinessError = 'PHP HTTP server exited with code ' + code; });
     for (let attempt = 0; attempt < 80; attempt++) {
         if (spawnError) throw spawnError;
-        try { if ((await request('/rules')).status === 200) { ready = true; break; } } catch {}
+        try { if ((await request('/rules')).status === 200) { ready = true; break; } } catch (error) { readinessError = error.message; }
         await delay(250);
     }
-    assert.ok(ready, 'Disposable API failed to become ready');
+    assert.ok(ready, 'Disposable API failed to become ready: ' + readinessError);
     const rules = (await request('/rules')).data.rules;
     const policy = (await request('/legal')).data;
     const identities = await Promise.all(Array.from({ length: 50 }, async (_, index) => {

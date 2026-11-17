@@ -3,6 +3,7 @@ import { readFile } from 'node:fs/promises';
 import test from 'node:test';
 
 const sourceUrl = new URL('../../../resources/js/game/games/open-world/OpenWorldGame.js', import.meta.url);
+const loaderUrl = new URL('../../../resources/js/game/characters/runtime/CharacterAssetLoader.js', import.meta.url);
 const managerUrl = new URL('../../../resources/js/game/managers/CharacterManager.js', import.meta.url);
 
 test('Open World enters with only the selected character and hydrates NPCs after the ready frame', async () => {
@@ -18,10 +19,10 @@ test('Open World enters with only the selected character and hydrates NPCs after
 
 test('character startup has network timeouts and serial background hydration', async () => {
     const source = await readFile(managerUrl, 'utf8');
-    assert.match(source, /CHARACTER_ASSET_TIMEOUT_MS/);
+    assert.match(await readFile(loaderUrl, 'utf8'), /CHARACTER_ASSET_TIMEOUT_MS/);
     assert.match(source, /for \(let index = 1; index < roster\.length; index \+= 1\)/);
     assert.doesNotMatch(source, /Promise\.allSettled\(\s*roster\.slice\(1\)/);
-    assert.match(source, /artIntegrity === 'invalid'/);
+    assert.match(await readFile(loaderUrl, 'utf8'), /artIntegrity === 'invalid'/);
 });
 
 
@@ -31,5 +32,5 @@ test('selected compact NPCs are upgraded without leaking timed-out textures', as
     // shared entity upgrade path; foreground requests still upgrade safely.
     assert.match(source, /ensureEntityVariant\(record, existing, variant, \{ background \}\)/);
     assert.match(source, /entity\.replaceVisualAssets\(assets\.texture, assets\.atlas\)/);
-    assert.match(source, /if \(settled\) \{\s*texture\.dispose\(\)/);
+    assert.match(await readFile(loaderUrl, 'utf8'), /if \(settled\) \{\s*texture\.dispose\(\)/);
 });

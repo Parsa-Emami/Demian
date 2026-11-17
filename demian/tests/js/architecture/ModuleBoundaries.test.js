@@ -22,11 +22,11 @@ test('deterministic game models cannot depend on rendering, UI, transport or ano
     }
 });
 
-test('Arcade domain cannot import framework, infrastructure or browser concerns', () => {
-    for (const file of walk(resolve(root, 'src/Domain/Arcade'))) {
+test('Domain cannot import framework, infrastructure or browser concerns', () => {
+    for (const file of walk(resolve(root, 'src/Domain'))) {
         const source = readFileSync(file, 'utf8');
         assert.doesNotMatch(source, /\b(?:Illuminate|App|Symfony|Carbon)\\/, relative(root, file));
-        assert.doesNotMatch(source, /\b(?:app|config|request|response|now|env)\s*\(/, relative(root, file));
+        assert.doesNotMatch(source, /(?<![>:\w])(?:app|config|request|response|env)\s*\(/, relative(root, file));
     }
 });
 
