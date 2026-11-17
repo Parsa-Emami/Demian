@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import GameRegistry from '../../../resources/js/game/registry/GameRegistry.js';
+import LoadingScreen from '../../../resources/js/game/shell/screens/LoadingScreen.js';
 
 const source = relativePath => readFileSync(new URL(relativePath, import.meta.url), 'utf8');
 const app = source('../../../resources/js/game/application/GameApplication.js');
@@ -77,4 +78,65 @@ test('No extra external font, image package, telemetry or scores are needed for 
     assert.doesNotMatch(loader, /fetch\(|XMLHttpRequest|localStorage|sessionStorage/);
     assert.doesNotMatch(selection, /localStorage|sessionStorage/);
     assert.doesNotMatch(app.slice(app.indexOf('    launchGame(gameId'), app.indexOf('    async beginGameSession')), /sendBeacon|telemetry\.emit/);
+});
+
+test('Fast loader uses a fixed-size RTL transform fill, faster bounded motion and a static spark', () => {
+    assert.match(css, /--loading-orbit-duration: 1000ms/);
+    assert.match(css, /--loading-beat-duration: 720ms/);
+    assert.match(css, /--loading-fill-duration: 120ms/);
+    const fill = css.match(/\.loading-experience \.shell-progress span \{([^}]+)\}/)[1];
+    assert.match(fill, /width: 100%/);
+    assert.match(fill, /transform: scaleX\(var\(--loading-progress-scale, 0\)\)/);
+    assert.match(fill, /transform-origin: right center/);
+    assert.match(fill, /transition: transform /);
+    assert.doesNotMatch(fill, /transition: width/);
+    assert.doesNotMatch(css, /demian-loader-spark/);
+    assert.match(css, /data-motion="reduced"/);
+    assert.match(css, /data-render-quality="economy"/);
+    assert.match(css, /data-screen-state="leaving"/);
+});
+
+test('Real loader keeps progress, semantic stages, restart and timer cleanup synchronized', async () => {
+    const nodes = new Map();
+    const makeNode = () => ({
+        textContent: '', attributes: new Map(), properties: new Map(), dataset: {},
+        setAttribute(key, value) { this.attributes.set(key, value); },
+        addEventListener() {}, removeEventListener() {},
+    });
+    for (const selector of ['title', 'step', 'progress-bar', 'progress-value', 'phase',
+        'elapsed', 'health', 'tip-text', 'tip-next']) {
+        const node = makeNode();
+        node.style = { setProperty: (key, value) => node.properties.set(key, value) };
+        nodes.set('[data-loading-' + selector + ']', node);
+    }
+    const element = {dataset: {}, querySelector: selector => nodes.get(selector) ?? null};
+    const screen = new LoadingScreen({id:'loading', element});
+    const bar = nodes.get('[data-loading-progress-bar]');
+    try {
+        await screen.beforeOpen({gameId:'dino-run', progress:0});
+        for (const progress of [0, 25, 50, 75, 100]) {
+            screen.setProgress(progress, 'stage');
+            assert.equal(bar.properties.get('--loading-progress-scale'), String(progress / 100));
+            assert.equal(bar.properties.get('--loading-progress'), progress + '%');
+            assert.equal(bar.attributes.get('aria-valuenow'), String(progress));
+            assert.equal(screen.stage, progress / 25);
+        }
+        screen.setProgress(999);
+        assert.equal(bar.properties.get('--loading-progress-scale'), '1');
+        screen.setProgress(-30);
+        assert.equal(bar.properties.get('--loading-progress-scale'), '0');
+        await screen.afterOpen();
+        assert.notEqual(screen.timer, null);
+        await screen.beforeClose();
+        assert.equal(screen.timer, null);
+        screen.setProgress(100);
+        await screen.beforeOpen({gameId:'open-world', progress:0});
+        assert.equal(screen.stage, 0);
+        assert.equal(bar.properties.get('--loading-progress-scale'), '0');
+        assert.equal(bar.attributes.get('aria-valuenow'), '0');
+        const firstTip = screen.tipText.textContent;
+        screen.nextTip();
+        assert.notEqual(screen.tipText.textContent, firstTip);
+    } finally { screen.dispose(); }
+    assert.equal(screen.timer, null);
 });
