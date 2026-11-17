@@ -81,6 +81,14 @@ jobs:
       - run: npx playwright install chromium --only-shell
       - name: Install Firefox and WebKit for Phase 6 Step 31 engine compatibility
         run: npx playwright install --with-deps firefox webkit
+      - name: Three-second cold and warm loading, environment and all character budgets
+        run: timeout --signal=TERM --kill-after=10s 600s node tools/check_loading_budget.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: loading-budget-${{ github.sha }}
+          path: demian/docs/loading-budget/
+          if-no-files-found: warn
       - name: Old open browser tab loads old dynamic game chunk after a new publish
         run: npm run test:versioned-rollover:browser
       - name: Phase 1 mobile startup diagnosis — cold/warm/PWA and per-game timings
