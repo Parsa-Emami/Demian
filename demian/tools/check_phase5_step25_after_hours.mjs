@@ -213,7 +213,8 @@ try {
             assert.ok(win.score >= 1000 && win.score < 2000);
             assert.equal(win.best?.score, win.score);
             assert.equal(win.challenge, 'idle');
-            assert.equal(await page.locator('[data-results-score-label]').innerText(), 'زمان خروج');
+            await wait(page, () => document.querySelector('[data-results-score-label]').textContent === 'زمان خروج');
+            await page.locator('[data-screen="results"]').waitFor();
             assert.match(await page.locator('[data-results-score]').innerText(), /[۰-۹]{2}:[۰-۹]{2}/);
 
             if (label === 'mobile-390-portrait') {
