@@ -15,12 +15,9 @@ export function weeklyVersion(game, legacy, at = Date.now()) {
 }
 
 export function runnerWeek(rules, week, character) {
-    const cast = config.runnerCast;
+    const cast = config.runnerCast.filter(slug => slug !== character);
     const pairs = cast.flatMap((first, index) => cast.slice(index + 1).map(second => [first, second]));
-    const pair = pairs[(week % pairs.length * 25) % pairs.length];
-    const attackers = pair.map(slug => slug === character
-        ? cast.find((other, index) => index >= (week % 4) && other !== character && !pair.includes(other))
-        : slug);
+    const attackers = pairs[(week % pairs.length * 23) % pairs.length];
     const ground = rules.obstacleCatalog.filter(spot => spot.y === 0);
     const overhead = rules.obstacleCatalog.filter(spot => spot.y > 0);
     const groundStart = week % ground.length;

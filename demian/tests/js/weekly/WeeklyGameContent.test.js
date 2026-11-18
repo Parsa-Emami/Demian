@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { weeklyIndex, weeklyVersion, runnerWeek, weeklyShiftCards, weeklyRushOrder, weeklyWorldRoute } from '../../../resources/js/game/content/WeeklyContent.js';
+import { BUILTIN_CHARACTER_SLUGS } from '../../../resources/js/game/characters/CharacterVisualContract.js';
 import { RUNNER_CONFIG } from '../../../resources/js/game/games/dino-run/DinoRunModel.js';
 import { weeklyCritters, cluesFor, TABLE_FIELDS } from '../../../resources/js/game/games/cafe-critters/CafeCrittersData.js';
 import { weeklyCoffeeLevels } from '../../../resources/js/game/games/coffee-crash/CoffeeCrashData.js';
@@ -25,7 +26,11 @@ test('weekly content changes Saturday at midnight Tehran and uses distinct game 
     const runner = weeks.map(week => runnerWeek(RUNNER_CONFIG, week, 'darya'));
     assert.equal(new Set(runner.map(key)).size, weeks.length);
     assert.equal(new Set(runner.slice(0, 53).map(rules => key(rules.obstacleCatalog))).size, 53);
-    assert.ok(runner.every(rules => rules.attackers.length === 2 && !rules.attackers.includes('darya')));
+    for (const character of BUILTIN_CHARACTER_SLUGS) {
+        const casts = weeks.slice(0, 53).map(week => runnerWeek(RUNNER_CONFIG, week, character).attackers);
+        assert.equal(new Set(casts.map(key)).size, 53);
+        assert.ok(casts.every(pair => pair.length === 2 && !pair.includes(character)));
+    }
     assert.equal(new Set(weeks.map(week => key(weeklyShiftCards(week)))).size, weeks.length);
     assert.equal(new Set(weeks.map(week => key(Array.from({ length: 6 }, (_, i) => weeklyRushOrder(week, i))))).size, weeks.length);
     assert.equal(new Set(weeks.map(week => key(weeklyWorldRoute(week)))).size, weeks.length);
@@ -93,10 +98,25 @@ test('weekly puzzle progress is isolated and the leaderboard reads only the chos
     assert.deepEqual((await boards.list('device', 'cafe-critters')).data.map(row => row.ticks), [610, 725]);
     assert.deepEqual((await boards.list('device', 'cafe-rush')).data.map(row => row.passed), [3]);
     assert.deepEqual((await boards.list('device', 'coffee-crash')).data, []);
-    assert.equal(formatGameRecord('cafe-critters', { ticks: 610 }), '۰۰:۱۰٫۱');
-    assert.equal(formatGameRecord('cafe-rush', { passed: 3, score: 325 }), '۳ سفارش · ۳۲۵ امتیاز');
+    await boards.finish({ mode: 'practice' }, { score: 120 }, null, 'darya');
+    boards.recordDevice('coffee-crash', { score: 360, stage: 3 });
+    boards.recordDevice('after-hours', { ticks: 600, score: 1800 });
+    boards.recordDevice('open-world', { ticks: 1200, passed: 4 });
+    const headings = {
+        'dino-run': ['امتیاز', '۱۲۰'],
+        'cafe-critters': ['زمان حل سرنخ‌ها', '۰۰:۱۰٫۱'],
+        'cafe-rush': ['تحویل سفارش', '۳ سفارش · ۳۲۵ امتیاز'],
+        'coffee-crash': ['امتیاز', '۳۶۰ · مرحلهٔ ۳'],
+        'after-hours': ['زمان خروج', '۰۰:۱۰٫۰'],
+        'open-world': ['زمان مسیر', '۰۰:۲۰٫۰'],
+    };
+    for (const [game, [heading, value]] of Object.entries(headings)) {
+        const { data: [best] } = await boards.list('device', game);
+        assert.equal(recordHeading(game, 'device'), heading);
+        assert.equal(formatGameRecord(game, best), value);
+    }
     assert.equal(formatGameRecord('after-hours', { ticks: NaN }), '—');
-    assert.equal(recordHeading('open-world', 'weekly'), 'زمان مسیر');
+    assert.equal(formatGameRecord('after-hours', { ticks: 600, score: 1800 }, 'after-hours-frames-v2', 'online'), '۰۰:۱۰٫۰ · ۱٬۸۰۰ امتیاز');
 });
 
 test('Rush gives the ticket, drink and pastry stations more reach while walls and table range still apply', () => {

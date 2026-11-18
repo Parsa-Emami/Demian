@@ -34,19 +34,18 @@ final class WeeklyContent
 
     public static function runner(array $rules, int $week, string $character): array
     {
-        $cast = self::catalog()['runnerCast'];
+        $cast = array_values(array_diff(self::catalog()['runnerCast'], [$character]));
         $pairs = [];
         foreach ($cast as $index => $first) {
             foreach (array_slice($cast, $index + 1) as $second) $pairs[] = [$first, $second];
         }
-        $pair = $pairs[(($week % count($pairs)) * 25) % count($pairs)];
-        $reserve = array_values(array_diff(array_slice($cast, $week % 4), $pair, [$character]));
+        $pair = $pairs[(($week % count($pairs)) * 23) % count($pairs)];
         $ground = array_values(array_filter($rules['obstacleCatalog'], static fn (array $spot): bool => $spot['y'] === 0));
         $overhead = array_values(array_filter($rules['obstacleCatalog'], static fn (array $spot): bool => $spot['y'] > 0));
         $group = static fn (array $items, int $offset, int $count): array => array_map(
             static fn (int $i): array => $items[($offset + $i) % count($items)], range(0, $count - 1));
         return array_replace($rules, [
-            'attackers' => array_map(static fn (string $slug): string => $slug === $character ? $reserve[0] : $slug, $pair),
+            'attackers' => $pair,
             'obstacleCatalog' => array_merge($group($ground, $week % count($ground), 5 + intdiv($week, count($ground) * count($overhead)) % 3),
                 $group($overhead, intdiv($week, count($ground)) % count($overhead), 3)),
             'attackChance' => [.24, .29, .34][$week % 3],
