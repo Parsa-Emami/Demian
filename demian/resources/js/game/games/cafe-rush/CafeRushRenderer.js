@@ -71,7 +71,8 @@ export default class CafeRushRenderer {
         const carried = model.carriedOrder;
         if (carried) this.drawTray(ctx, camera, model, carried);
         const objective = rushObjective(model);
-        for (const spot of RUSH_SPOTS) this.drawSign(ctx, camera, spot, spot.id === objective.id ? objective.marker : '', model);
+        const nearby = model.nearby();
+        for (const spot of RUSH_SPOTS) this.drawSign(ctx, camera, spot, spot.id === objective.id ? objective.marker : '', model, spot === nearby);
         if (cue) this.drawCue(ctx, camera, model.elapsed, cue);
         this.scene.end(ctx);
     }
@@ -148,7 +149,7 @@ export default class CafeRushRenderer {
         ctx.restore();
     }
 
-    drawSign(ctx, camera, spot, active, model) {
+    drawSign(ctx, camera, spot, active, model, reachable) {
         const at = camera.worldToScreen(spot);
         const size = Math.max(10, Math.min(14, camera.pixelsPerUnit * .73));
         const pending = spot.kind === 'station' ? model.stationOrder(spot.id) : null;
@@ -160,8 +161,8 @@ export default class CafeRushRenderer {
         ctx.direction = 'rtl';
         const width = ctx.measureText(label).width + 19;
         const y = at.y + size * .97;
-        ctx.strokeStyle = active ? '#fbce82' : '#996c51';
-        ctx.fillStyle = active ? '#4b2821' : '#382823';
+        ctx.strokeStyle = reachable ? '#c8eab0' : active ? '#fbce82' : '#996c51';
+        ctx.fillStyle = reachable ? '#27432c' : active ? '#4b2821' : '#382823';
         ctx.lineWidth = active ? 2 : 1;
         ctx.beginPath();
         ctx.roundRect(at.x - width / 2, y - size * .75, width, size * 1.52, 6);

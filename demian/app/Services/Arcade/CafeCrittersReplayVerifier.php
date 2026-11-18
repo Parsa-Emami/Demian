@@ -41,7 +41,7 @@ final class CafeCrittersReplayVerifier
             ), 0, 3));
     }
 
-    public function verify(int $seed, int $ticks, array $actions): array
+    public function verify(int $seed, int $ticks, array $actions, ?int $week = null): array
     {
         $invalid = static fn (string $message): ValidationException =>
             ValidationException::withMessages(['replay' => $message]);
@@ -59,6 +59,14 @@ final class CafeCrittersReplayVerifier
             'food' => ['cardamom', 'berries', 'seeds'],
             'decor' => ['vase', 'book', 'ribbon'],
         ];
+
+        if ($week !== null) {
+            $guests = array_map(static function (array $page) use ($fields): array {
+                $guest = self::GUESTS[$page['guest']];
+                foreach ($fields as $field => $choices) $guest[$field] = $choices[$page[$field]];
+                return $guest;
+            }, \Domain\Arcade\WeeklyContent::critters($week, count(self::GUESTS)));
+        }
 
         $page = 0; $lastTick = -1; $misses = 0; $pageStart = 0;
         $selection = ['light' => null, 'food' => null, 'decor' => null];

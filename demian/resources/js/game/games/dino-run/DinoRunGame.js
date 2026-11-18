@@ -1,3 +1,4 @@
+import { runnerWeek, weeklyIndex, WEEKLY_VERSIONS } from '../../content/WeeklyContent.js';
 import BaseGame from '../../contracts/BaseGame.js';
 import DinoRunModel, { RUNNER_CONFIG } from './DinoRunModel.js';
 import DinoRunEnvironment from './DinoRunEnvironment.js';
@@ -16,7 +17,7 @@ const OBSTACLE_LABELS = Object.freeze({
     'plant-pot': 'گلدان', 'book-stack': 'دستهٔ کتاب', barrel: 'بشکه', 'floor-fan': 'پنکه',
     pendant: 'چراغ آویز', 'hanging-sign': 'تابلو آویز', 'serving-tray': 'سینی', pipe: 'لوله',
 });
-const ATTACKER_LABELS = Object.freeze({ uzudi: 'اوزودی', amirreza: 'امیررضا' });
+const ATTACKER_LABELS = Object.freeze(Object.fromEntries(BUILTIN_CHARACTER_SLUGS.map(slug => [slug, arcadeCharacterLabel(slug)])));
 function readBest() { try { return Math.max(0, Number(localStorage.getItem(BEST_KEY)) || 0); } catch { return 0; } }
 function saveBest(value) { try { localStorage.setItem(BEST_KEY, String(value)); } catch {} }
 
@@ -35,16 +36,18 @@ export default class DinoRunGame extends BaseGame {
         this.avatar = await context.services.characterVisuals.createCanvasAvatar('player', { player: true });
         this.attackAvatars = new Map();
     }
-    hydrateAttackers(context) {
+    hydrateAttackers(context, attackers) {
+        const generation = this.attackerGeneration = (this.attackerGeneration ?? 0) + 1;
+        this.attackAvatars.clear();
         const schedule = globalThis.requestIdleCallback
             ? callback => globalThis.requestIdleCallback(callback, { timeout: 1200 })
             : callback => globalThis.setTimeout(callback, 0);
         schedule(() => {
-            if (this.context !== context || this.disposed) return;
-            for (const slug of RUNNER_CONFIG.attackers) {
+            if (this.context !== context || this.disposed || generation !== this.attackerGeneration) return;
+            for (const slug of attackers) {
                 void context.services.characterVisuals.createCanvasAvatar(slug,
                     { variant: 'lite', background: true }).then(base => {
-                    if (this.context !== context || this.disposed) return;
+                    if (this.context !== context || this.disposed || generation !== this.attackerGeneration) return;
                     for (const response of ['jump', 'duck']) {
                         this.attackAvatars.set(`${slug}:${response}`, new CanvasCharacterAvatar({
                             slug, image: base.texture.image, atlas: base.atlas,
@@ -103,7 +106,6 @@ export default class DinoRunGame extends BaseGame {
         wordmark.src = new URL('assets/environments/cafe-runner-v1/wordmark.png', document.baseURI).href;
         this.ready.prepend(wordmark);
         context.root.querySelector('[data-game-hud-host]')?.append(this.ready, this.lessonPanel);
-        this.hydrateAttackers(context);
         this.scoreNode = this.hud.querySelector('[data-run-score]'); this.bestNode = this.hud.querySelector('[data-run-best]');
         this.timeNode = this.hud.querySelector('[data-run-time]');
         this.passedNode = this.hud.querySelector('[data-run-passed]');
@@ -172,7 +174,10 @@ export default class DinoRunGame extends BaseGame {
             ? await this.context.services.leaderboards.start({ width, character: this.avatar.slug, seed })
             : { mode: 'practice', seed: seed ?? Date.now(), track_width: width };
         if (!this.context) return;
-        this.model.reset({ seed: this.run.seed, width: this.run.track_width });
+        const profile = this.run.mode === 'ranked' && this.run.rules_version !== WEEKLY_VERSIONS['dino-run']
+            ? RUNNER_CONFIG : runnerWeek(RUNNER_CONFIG, this.run.content_week ?? weeklyIndex(), this.avatar.slug);
+        this.model.reset({ seed: this.run.seed, width: this.run.track_width, profile });
+        this.hydrateAttackers(this.context, profile.attackers);
         this.actor.speed = 0; this.actor.airborne = false; this.actor.grounded = true; this.actor.motionState = 'idle';
         this.avatar.sync(this.actor, 0);
         const status = this.ready.querySelector('[data-run-ranking-mode]');

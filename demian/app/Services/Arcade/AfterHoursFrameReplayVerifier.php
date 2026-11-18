@@ -100,12 +100,12 @@ final class AfterHoursFrameReplayVerifier
 
     /** Simulate even losses for differential QA; verify() accepts wins only. */
     public function simulate(
-        int $seed,int $ticks,array $transitions,string $difficulty='standard'
+        int $seed,int $ticks,array $transitions,string $difficulty='standard', ?int $week = null
     ): array {
         if($seed<1)$this->reject('Invalid challenge seed.');
         $this->validated($ticks,$transitions,$difficulty);
         $rules=self::RULES[$difficulty];
-        $layout=self::CARD_LAYOUTS[$seed%3];
+        $layout=$week === null ? self::CARD_LAYOUTS[$seed%3] : \Domain\Arcade\WeeklyContent::shiftCards($week);
         $cards=[
             ['id'=>'card-1','kind'=>'card',...$layout[0],'collected'=>false],
             ['id'=>'card-2','kind'=>'card',...$layout[1],'collected'=>false],
@@ -233,9 +233,9 @@ final class AfterHoursFrameReplayVerifier
     }
 
     public function verify(
-        int $seed,int $ticks,array $transitions,string $difficulty='standard'
+        int $seed,int $ticks,array $transitions,string $difficulty='standard', ?int $week = null
     ): array {
-        $result=$this->simulate($seed,$ticks,$transitions,$difficulty);
+        $result=$this->simulate($seed,$ticks,$transitions,$difficulty,$week);
         if($result['status']!=='escaped'||$result['passed']!==2)
             $this->reject('No independently verified original After Hours escape.');
         return ['score'=>$result['score'],'ticks'=>$ticks,'passed'=>2];

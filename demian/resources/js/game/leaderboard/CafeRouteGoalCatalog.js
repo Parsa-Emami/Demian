@@ -1,3 +1,4 @@
+import { weeklyWorldRoute } from '../content/WeeklyContent.js';
 export const CAFE_ROUTE_VERSIONS = Object.freeze({
     'after-hours': 'after-hours-route-v1',
     'cafe-rush': 'cafe-rush-route-v1',
@@ -8,6 +9,8 @@ const TITLES = Object.freeze({
     'card-1': 'کارت شیفت اول',
     'card-2': 'کارت شیفت دوم',
     exit: 'خروج از کافه',
+    'save-entrance': 'ورودی',
+    'save-restroom': 'راهروی پشتی',
     'save-counter': 'پیشخوان',
     'save-lounge': 'لانژ',
     'save-arcade': 'سالن بازی',
@@ -25,11 +28,12 @@ const AFTER_LAYOUTS = Object.freeze([
 const MENUS = ['tea', 'cake', 'espresso', 'tea', 'espresso', 'cake'];
 const TABLES = [1, 2, 1, 2, 1, 2, 2, 1];
 
-export function cafeRouteGoals(gameId, seed) {
+export function cafeRouteGoals(gameId, seed, week = null) {
     if (!Object.hasOwn(CAFE_ROUTE_VERSIONS, gameId)
         || !Number.isSafeInteger(seed) || seed < 0) {
         throw new TypeError('Unknown route challenge rules or invalid seed.');
     }
+    if (gameId === 'open-world' && week !== null) return weeklyWorldRoute(week).map(goal => ({ ...goal, title: TITLES[goal.id] }));
     if (gameId === 'open-world') return [
         { id: 'save-counter', x: 3.24, z: -30.6, title: TITLES['save-counter'] },
         { id: 'save-lounge', x: .36, z: -68.76, title: TITLES['save-lounge'] },

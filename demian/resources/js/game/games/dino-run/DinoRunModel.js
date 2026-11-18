@@ -11,7 +11,8 @@ export function overlaps(a, b) {
 }
 export default class DinoRunModel {
     constructor({ seed = Date.now(), width = 960 } = {}) { this.reset({ seed, width }); }
-    reset({ seed = this.seed, width = this.width, lesson = null } = {}) {
+    reset({ seed = this.seed, width = this.width, lesson = null, profile = rules } = {}) {
+        this.profile = profile;
         this.seed = seed; this.random = seededRandom(seed); this.width = Math.min(rules.maxWidth, Math.max(rules.minWidth, Math.round(width)));
         this.status = 'ready'; this.time = 0; this.distance = 0; this.score = 0;
         this.speed = RUNNER_CONFIG.startSpeed; this.y = 0; this.vy = 0; this.duck = false;
@@ -37,6 +38,7 @@ export default class DinoRunModel {
         return { x: RUNNER_CONFIG.playerX - 14, y: this.y + 3, w: RUNNER_CONFIG.bodyWidth, h: height - 4 };
     }
     spawn() {
+        const rules = this.profile;
         const edge = this.width + 65;
         let x = this.nextId === 0 ? Math.min(edge, rules.playerX + this.speed * rules.firstEncounterSeconds) : edge;
         for (;;) {

@@ -1,10 +1,11 @@
 import rules from '../../../game/runner-rules.json' with { type: 'json' };
 
-export function validRunnerSession(response, requestedWidth) {
+export function validRunnerSession(response, requestedWidth, expectedVersion = rules.version) {
     return Boolean(response && typeof response === 'object'
         && typeof response.run_id === 'string'
         && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(response.run_id)
-        && response.rules_version === rules.version
+        && response.rules_version === expectedVersion
+        && (expectedVersion === rules.version || (Number.isSafeInteger(response.content_week) && response.content_week >= 0))
         && Number.isSafeInteger(response.seed)
         && response.seed >= 1 && response.seed <= 4294967295
         && Number.isInteger(requestedWidth)

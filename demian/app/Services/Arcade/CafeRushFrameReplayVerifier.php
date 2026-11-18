@@ -87,7 +87,7 @@ final class CafeRushFrameReplayVerifier
     }
 
     public function simulate(
-        int $seed,int $ticks,array $transitions,string $difficulty='standard'
+        int $seed,int $ticks,array $transitions,string $difficulty='standard', bool $assisted = false, ?int $week = null
     ): array {
         if($seed<1)$this->reject('Invalid Cafe Rush server seed.');
         $this->validate($ticks,$transitions,$difficulty);
@@ -104,11 +104,12 @@ final class CafeRushFrameReplayVerifier
 
         $addTicket=static function(bool $vip,float $now)use(
             &$orders,&$ticketNumber,&$regularNumber,&$nextTicketAt,&$vipIssued,
-            $variation,$rules
+            $variation,$rules,$week
         ):void{
             $i=$regularNumber+$variation;
-            $recipe=$vip?'vip':self::MENU[$i%count(self::MENU)];
-            $table=$vip?2:self::TABLES[$i%count(self::TABLES)];
+            $weekly = $week === null ? null : \Domain\Arcade\WeeklyContent::rushOrder($week, $regularNumber);
+            $recipe=$vip?'vip':($weekly['recipe'] ?? self::MENU[$i%count(self::MENU)]);
+            $table=$vip?2:($weekly['table'] ?? self::TABLES[$i%count(self::TABLES)]);
             $orders[]=['id'=>++$ticketNumber,'recipe'=>$recipe,'table'=>$table,
                 'vip'=>$vip,'state'=>'waiting','readyAt'=>0.0,
                 'due'=>min(120.0,$now+($vip?30.0:$rules['patience']))];
@@ -203,10 +204,11 @@ final class CafeRushFrameReplayVerifier
             $forward=$direction;
             // The source model interacts AFTER the frame's physics.
             if($interact){
-                $near=null;$distance=2.2;
+                $near=null;$distance=INF;
                 foreach(self::SPOTS as $spot){
                     $gap=self::distance($player,$spot);
-                    if($gap<$distance&&$this->geometry->canSee($player,$spot)){
+                    $reach = $assisted && $spot['kind'] !== 'table' ? \Domain\Arcade\WeeklyContent::rushReach() : 2.2;
+                    if($gap<$reach && $gap<$distance && $this->geometry->canSee($player,$spot)){
                         $distance=$gap;$near=$spot;
                     }
                 }
@@ -283,9 +285,9 @@ final class CafeRushFrameReplayVerifier
     }
 
     public function verify(
-        int $seed,int $ticks,array $transitions,string $difficulty='standard'
+        int $seed,int $ticks,array $transitions,string $difficulty='standard', bool $assisted = false, ?int $week = null
     ): array {
-        $result=$this->simulate($seed,$ticks,$transitions,$difficulty);
+        $result=$this->simulate($seed,$ticks,$transitions,$difficulty,$assisted,$week);
         // The original game always produces a score when the 120s shift ends,
         // even when the difficulty quota is missed. Require real successful
         // service, but never turn a genuine partial score into a fake win.

@@ -1,8 +1,11 @@
+import { RECORD_GAMES, deviceMetric } from './GameRecord.js';
+import { weeklyVersion, WEEKLY_VERSIONS } from '../content/WeeklyContent.js';
 import rules from '../../../game/runner-rules.json' with { type: 'json' };
 import { validRunnerSession } from './RunnerSessionContract.js';
 import { requestLegalAcknowledgement, LEGAL_VERSION } from './LegalConsent.js';
 
 const PROFILE_KEY = 'demian.arcade.profile.v1';
+const DEVICE_PREFIX = 'demian.arcade.records.v1.';
 const LOCAL_KEY = `demian.arcade.scores.${rules.version}`;
 const safeRead = (storage, key, fallback) => { try { return JSON.parse(storage?.getItem(key)) ?? fallback; } catch { return fallback; } };
 const safeWrite = (storage, key, value) => { try { storage?.setItem(key, JSON.stringify(value)); } catch {} };
@@ -289,9 +292,10 @@ export default class ArcadeLeaderboardService {
         try {
             await this.ensureIdentity();
             await this.ensureRankedPolicy();
+            const version = weeklyVersion('dino-run', rules.version);
             const result = await this.request('/runs', { method: 'POST', authenticated: true,
-                body: { request_id: crypto.randomUUID(), game_id: 'dino-run', character_slug: character, track_width: width, rules_version: rules.version } });
-            if (!validRunnerSession(result, width)) throw new Error('پاسخ شروع دور معتبر نیست.');
+                body: { request_id: crypto.randomUUID(), game_id: 'dino-run', character_slug: character, track_width: width, rules_version: version } });
+            if (!validRunnerSession(result, width, version)) throw new Error('پاسخ شروع دور معتبر نیست.');
             return { ...result, mode: 'ranked' };
         } catch (error) {
             if (error.status === 401) { this.identity = null; safeWrite(this.identityStorage, this.identityKey, null); }
@@ -313,7 +317,7 @@ export default class ArcadeLeaderboardService {
         try {
             await this.ensureIdentity();
             await this.ensureRankedPolicy();
-            const expectedVersion = gameplay ? ({
+            const legacyVersion = gameplay ? ({
                 'after-hours': 'after-hours-frames-v1',
                 'cafe-rush': 'cafe-rush-frames-v1',
             })[gameId] : ({
@@ -323,6 +327,8 @@ export default class ArcadeLeaderboardService {
                 'cafe-rush': 'cafe-rush-route-v1',
                 'open-world': 'open-world-route-v2',
             })[gameId];
+            const expectedVersion = gameplay || ['coffee-crash', 'cafe-critters', 'open-world'].includes(gameId)
+                ? weeklyVersion(gameId, legacyVersion) : legacyVersion;
             const response = await this.request('/turn-runs', {
                 method: 'POST', authenticated: true,
                 body: { request_id: crypto.randomUUID(), game_id: gameId,
@@ -330,7 +336,8 @@ export default class ArcadeLeaderboardService {
             });
             if (response.game_id !== gameId
                 || response.rules_version !== expectedVersion
-                || !Number.isSafeInteger(response.seed)) throw new Error('نسخه یا بذر سرور نامعتبر است.');
+                || !Number.isSafeInteger(response.seed)
+                || (expectedVersion === WEEKLY_VERSIONS[gameId] && (!Number.isSafeInteger(response.content_week) || response.content_week < 0))) throw new Error('نسخه یا بذر سرور نامعتبر است.');
             return { ...response, mode: 'ranked' };
         } catch (error) {
             if (error.status === 401) {
@@ -350,7 +357,8 @@ export default class ArcadeLeaderboardService {
                 'after-hours', 'cafe-rush', 'open-world'].includes(run.game_id)
             || !Array.isArray(actions) || !Number.isInteger(ticks)
             || !['actions', 'frames'].includes(proofKind)
-            || (proofKind === 'frames' && run.rules_version !== gameplayVersion)) {
+            || (proofKind === 'frames' && run.rules_version !== gameplayVersion
+                && !(gameplayVersion && run.rules_version === WEEKLY_VERSIONS[run.game_id]))) {
             return { status: 'practice' };
         }
         const body = { ticks, [proofKind]: actions.map(action =>
@@ -537,19 +545,29 @@ export default class ArcadeLeaderboardService {
         try { this.storage?.removeItem?.(this.identityKey); } catch {}
         safeWrite(this.storage, PROFILE_KEY, this.profile);
         safeWrite(this.storage, LOCAL_KEY, []);
+        for (const game of RECORD_GAMES) safeWrite(this.storage, DEVICE_PREFIX + game, []);
         return { status: 'deleted' };
     }
+    deviceRecords(game) {
+        const rows = safeRead(this.storage, DEVICE_PREFIX + game, []);
+        return Array.isArray(rows) ? rows.filter(row => row && deviceMetric(game, row) !== null
+            && typeof row.display_name === 'string' && typeof row.achieved_at === 'string') : [];
+    }
+    recordDevice(game, record) {
+        if (!RECORD_GAMES.includes(game) || game === 'dino-run' || !record || deviceMetric(game, record) === null) return;
+        const fields = ['score', 'ticks', 'passed', 'stage'];
+        const row = { display_name: this.displayName, achieved_at: new Date().toISOString() };
+        for (const field of fields) if (Number.isSafeInteger(record[field]) && record[field] >= 0) row[field] = record[field];
+        const rows = [...this.deviceRecords(game), row].sort((a, b) => deviceMetric(game, b) - deviceMetric(game, a)
+            || (b.score ?? 0) - (a.score ?? 0) || a.achieved_at.localeCompare(b.achieved_at));
+        safeWrite(this.storage, DEVICE_PREFIX + game, rows.slice(0, 20));
+    }
     async list(period = 'weekly', gameId = 'dino-run') {
-        const games = ['dino-run', 'cafe-critters', 'coffee-crash',
-            'after-hours', 'cafe-rush', 'open-world'];
-        if (!games.includes(gameId)) throw new Error('Unknown ranked game.');
+        if (!RECORD_GAMES.includes(gameId)) throw new Error('Unknown ranked game.');
         if (this.connected && period !== 'device') {
-            return { ...await this.request(
-                `/leaderboards/${gameId}?period=${encodeURIComponent(period)}&limit=20`
-            ), mode: 'online' };
+            return { ...await this.request(`/leaderboards/${gameId}?period=${encodeURIComponent(period)}&limit=20`), mode: 'online' };
         }
-        // Dino is the only game with legacy device leaderboard storage.
-        return { mode: 'device', data: gameId === 'dino-run'
-            ? this.localScores().map((row, index) => ({ ...row, rank: index + 1 })) : [] };
+        const rows = gameId === 'dino-run' ? this.localScores() : this.deviceRecords(gameId);
+        return { mode: 'device', data: rows.map((row, index) => ({ ...row, rank: index + 1 })) };
     }
 }

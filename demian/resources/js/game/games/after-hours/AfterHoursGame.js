@@ -1,3 +1,4 @@
+import { weeklyIndex, WEEKLY_VERSIONS } from '../../content/WeeklyContent.js';
 import BaseGame from '../../contracts/BaseGame.js';
 import { preloadFbxCafeArt } from '../../rendering2d/FbxCafeAssets.js';
 import CafeCueAudio from '../../shared/cafe/CafeCueAudio.js';
@@ -37,7 +38,6 @@ const OUTCOMES = Object.freeze({
     timeout: ['وقت شیفت تمام شد', 'برای برگشت، یکی از تابلوهای مسیر را به خاطر بسپار.'],
 });
 
-let nextLayout = Math.floor(Math.random() * SHIFT_LAYOUTS.length);
 
 function read(key) {
     try { return localStorage.getItem(STORAGE + key); } catch { return null; }
@@ -74,10 +74,12 @@ export default class AfterHoursGame extends BaseGame {
         this.context = context;
         this.renderer = new AfterHoursRenderer(context);
         this.ui = new AfterHoursUi(context.root, (action, value) => this.handleDialog(action, value));
+        this.renderer.bindHud(this.ui.hud);
         this.gameplayChallenge = new RankedGameplayChallenge({
             context, gameId: 'after-hours',
             onStart: async run => {
-                this.model.reset('standard', run.seed % SHIFT_LAYOUTS.length);
+                this.model.reset('standard', run.seed % SHIFT_LAYOUTS.length,
+                    run.rules_version === WEEKLY_VERSIONS['after-hours'] ? run.content_week : null);
                 // A new ranked attempt must not inherit transient practice audio,
                 // HUD refresh timing or radio instructions from the previous run.
                 this.shadowSteps = 0;
@@ -99,8 +101,7 @@ export default class AfterHoursGame extends BaseGame {
     startSession() {
         const previous = read('difficulty');
         const difficulty = Object.hasOwn(SHIFT_RULES, previous) ? previous : 'standard';
-        this.model.reset(difficulty, nextLayout);
-        nextLayout = (nextLayout + 1) % SHIFT_LAYOUTS.length;
+        this.model.reset(difficulty, 0, weeklyIndex());
         this.shadowSteps = 0;
         this.uiElapsed = 0;
         this.radio = INTRO;
@@ -152,7 +153,7 @@ export default class AfterHoursGame extends BaseGame {
             const difficulty = this.ui.difficulty;
             if (action === 'skip-guide') write('guide', 'hidden');
             write('difficulty', difficulty);
-            this.model.reset(difficulty, this.model.layout);
+            this.model.reset(difficulty, this.model.layout, this.model.contentWeek);
             this.closeDialog();
             this.audio.unlock();
             this.model.start();
@@ -238,6 +239,9 @@ export default class AfterHoursGame extends BaseGame {
         this.ui.update(this.model, this.radio);
         this.context.app.completeGame({
             title, subtitle, score: result.score, won: result.won,
+            deviceRecord: result.won ? { ticks: Math.round(result.elapsed * 60), score: result.score } : null,
+            resultMetric: { ticks: Math.round(result.elapsed * 60) },
+            resultMetricLabel: result.won ? 'زمان خروج' : 'زمان سپری‌شده',
             stats: {
                 'درجهٔ سختی': this.model.rules.label,
                 'زمان سپری‌شده': shiftTime(result.elapsed),

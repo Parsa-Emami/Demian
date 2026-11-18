@@ -45,9 +45,9 @@ test('Mobile speed: Dino Run only awaits the player, then renders safe visual ha
         code.indexOf('    hydrateAttackers(context) {'));
     assert.match(preload, /await .*createCanvasAvatar\('player'/);
     assert.doesNotMatch(preload, /RUNNER_CONFIG\.attackers|Promise\.all/);
-    assert.match(code, /this\.hydrateAttackers\(context\)/);
+    assert.match(code, /this\.hydrateAttackers\(this\.context, profile\.attackers\)/);
     assert.match(code, /background: true/);
-    assert.match(code, /if \(this\.context !== context \|\| this\.disposed\) return/);
+    assert.match(code, /if \(this\.context !== context \|\| this\.disposed \|\| generation !== this\.attackerGeneration\) return/);
     assert.match(code, /if \(!sprite\) \{/);
     assert.match(code, /this\.disposed = true/);
 });

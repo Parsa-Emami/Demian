@@ -5,6 +5,7 @@ import { mkdirSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { setTimeout as delay } from 'node:timers/promises';
 import { firstCollisionReplay } from './runner_first_collision.js';
+import { runnerWeek, WEEKLY_VERSIONS } from '../../resources/js/game/content/WeeklyContent.js';
 
 assert.equal(process.env.CI, 'true');
 assert.equal(process.env.APP_ENV, 'testing');
@@ -77,7 +78,8 @@ try {
             track_width: 420, rules_version: rules.version };
         const result = await request('/runs', { token, body: payload, group: 'start' });
         assert.equal(result.status, 201, 'Run start failed: ' + (result.data?.message ?? 'unknown'));
-        const replay = firstCollisionReplay(rules, result.data.seed, 420);
+        const profile = rules.version === WEEKLY_VERSIONS['dino-run'] ? runnerWeek(rules, result.data.content_week, payload.character_slug) : rules;
+        const replay = firstCollisionReplay(profile, result.data.seed, 420);
         return { ...result.data, token, payload, replay, readyAt: Date.now() + replay.elapsedSeconds * 1000 + 300 };
     }));
     await probe('missing bearer', 401, '/player');

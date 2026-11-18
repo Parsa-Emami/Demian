@@ -45,8 +45,10 @@ test('route challenge refuses to start during pause/results and never invents an
     };
     await trial.start();
     assert.equal(called, 1);
-    assert.equal(trial.state, 'idle');
-    assert.equal(trial.run, null);
+    assert.equal(trial.state, 'running');
+    assert.equal(trial.run.mode, 'practice');
+    assert.equal(trial.run.run_id, undefined);
+    assert.equal(trial.goals.length, 4);
 });
 
 test('route challenge records engine coordinates and authentic checkpoints before submission', async () => {

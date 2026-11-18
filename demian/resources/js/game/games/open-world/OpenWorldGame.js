@@ -305,7 +305,7 @@ export default class OpenWorldGame extends BaseGame {
                     });
                     if (outcome.ranked) {
                         this.context.app.shell.toast(outcome.accepted
-                            ? `مقصد رقابتی «${point.label}» ثبت شد.`
+                            ? `مقصد «${point.label}» ثبت شد.`
                             : 'این نقطه مقصد فعلی چالش نیست.',
                         outcome.accepted ? 'success' : 'info');
                     } else {

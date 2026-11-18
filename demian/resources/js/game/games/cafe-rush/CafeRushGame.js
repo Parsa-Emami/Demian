@@ -1,3 +1,4 @@
+import { weeklyIndex, WEEKLY_VERSIONS } from '../../content/WeeklyContent.js';
 import BaseGame from '../../contracts/BaseGame.js';
 import { preloadFbxCafeArt } from '../../rendering2d/FbxCafeAssets.js';
 import CafeCueAudio from '../../shared/cafe/CafeCueAudio.js';
@@ -81,7 +82,8 @@ export default class CafeRushGame extends BaseGame {
         this.gameplayChallenge = new RankedGameplayChallenge({
             context, gameId: 'cafe-rush',
             onStart: async run => {
-                this.model.reset('standard', run.seed % 3);
+                const weekly = run.rules_version === WEEKLY_VERSIONS['cafe-rush'];
+                this.model.reset('standard', run.seed % 3, { assisted: weekly, week: weekly ? run.content_week : null });
                 // Ranked attempts must start without stale practice-mode
                 // toast timing, trays effects, HUD cadence or audio cues.
                 this.notice = INTRO;
@@ -130,7 +132,7 @@ export default class CafeRushGame extends BaseGame {
     startSession() {
         const saved = read('difficulty');
         const difficulty = Object.hasOwn(RUSH_RULES, saved) ? saved : 'standard';
-        this.model.reset(difficulty, variation);
+        this.model.reset(difficulty, variation, { assisted: true, week: weeklyIndex() });
         variation = (variation + 1) % 3;
         this.notice = INTRO;
         this.noticeUntil = 0;
@@ -173,7 +175,7 @@ export default class CafeRushGame extends BaseGame {
             const difficulty = this.ui.difficulty;
             if (action === 'skip-guide') write('guide', 'hidden');
             write('difficulty', difficulty);
-            this.model.reset(difficulty, this.model.variation);
+            this.model.reset(difficulty, this.model.variation, { assisted: true, week: this.model.contentWeek });
             this.closeDialog();
             this.audio.unlock();
             this.model.start();
@@ -241,6 +243,7 @@ export default class CafeRushGame extends BaseGame {
             title: result.won ? 'شیفت موفق بود!' : 'شیفت به پایان رسید',
             subtitle: result.won ? 'سهمیهٔ تحویل را پر کردی.' : 'برای رسیدن به سهمیه، مسیر سینی و زمان سفارش‌ها را دوباره تمرین کن.',
             score: rushDigits.format(result.score), won: result.won,
+            deviceRecord: { passed: result.delivered, score: result.score },
             stats: {
                 'درجهٔ سختی': this.model.rules.label,
                 'تحویل / هدف': `${rushDigits.format(result.delivered)} / ${rushDigits.format(result.quota)}`,

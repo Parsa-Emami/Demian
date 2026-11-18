@@ -54,8 +54,10 @@ try {
         });
         try {
             const page = await context.newPage();
+            await page.clock.setFixedTime(new Date('2026-11-21T08:00:00Z'));
             const errors = [];
             page.on('pageerror', error => errors.push(error.message));
+            await page.clock.setFixedTime(new Date('2026-11-21T08:00:00Z'));
             await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 60000 });
             await wait(page, () => window.demianGameApplication?.sessionState === 'menu', 30000);
             await page.evaluate(() => window.demianGameApplication.launchGame('coffee-crash'));
@@ -73,7 +75,7 @@ try {
                 };
             });
             assert.deepEqual(entry, {
-                level: 1, moves: 24, count: 56, choices: 12, locked: true, overflow: false,
+                level: 1, moves: 25, count: 56, choices: 3, locked: false, overflow: false,
             });
             const blockedEntry = await page.evaluate(() => {
                 const g = window.demianGameApplication.activeGame;
@@ -134,21 +136,14 @@ try {
             assert.equal(undo.used, true);
             assert.equal(undo.buttonDisabled, true);
 
-            // Unlock only in the local practice test harness. This does not
-            // alter the stored profile or report any completed game.
-            await page.evaluate(() => {
-                const g = window.demianGameApplication.activeGame;
-                g.store.records = Object.fromEntries(Array.from(
-                    { length: 11 }, (_, i) => [i + 1, { stars: 3, score: 999 }]));
-                g.startSession();
-            });
+            await page.evaluate(() => window.demianGameApplication.activeGame.startSession());
             await wait(page, () => window.demianGameApplication.activeGame.ui.dialog.open);
-            assert.equal(await page.locator('[data-coffee-level-choice="12"]').isEnabled(), true);
-            await page.locator('[data-coffee-level-choice="12"]').click();
+            assert.equal(await page.locator('[data-coffee-level-choice="3"]').isEnabled(), true);
+            await page.locator('[data-coffee-level-choice="3"]').click();
             await page.locator('[data-coffee-dialog-action="start"]').click();
             await wait(page, () => {
                 const g = window.demianGameApplication.activeGame;
-                return g.model.level.id === 12 && !g.startingRanked && !g.ui.dialog.open;
+                return g.model.level.id === 3 && !g.startingRanked && !g.ui.dialog.open;
             });
             const finale = await page.evaluate(() => {
                 const g = window.demianGameApplication.activeGame;
@@ -157,9 +152,9 @@ try {
                 return { level: m.level.id, moves: m.moves, goals: m.level.goals.length,
                     initialMove: m.findMove(), score: m.score };
             });
-            assert.equal(finale.level, 12);
-            assert.equal(finale.moves, 28);
-            assert.equal(finale.goals, 3);
+            assert.equal(finale.level, 3);
+            assert.equal(finale.moves, 29);
+            assert.equal(finale.goals, 2);
             assert.equal(finale.score, 0);
             // One move left, a legal swap, and a genuine terminal loss path.
             await page.evaluate(() => {
@@ -179,24 +174,32 @@ try {
             assert.equal(lost.moves, 0);
             assert.equal(lost.ranking, 'practice');
             assert.equal(lost.stars, 0);
+            const resultText = await page.locator('[data-results-score]').innerText();
+            assert.doesNotMatch(resultText, /NaN|ناعدد/i);
+            assert.match(resultText, /مرحلهٔ ۳/);
             if (label === 'phone-390-portrait') await page.screenshot({
                 path: resolve(output, 'coffee-crash-390-results.png'), animations: 'disabled' });
 
+            await page.locator('[data-screen="results"] [data-shell-action="leaderboard"]').click();
+            const ranking = page.locator('[data-screen="leaderboard"]');
+            await wait(page, () => document.querySelector('[data-ranking-game]').value === 'coffee-crash');
+            await wait(page, () => /مرحلهٔ ۳/.test(document.querySelector('[data-ranking-rows]').textContent));
+            assert.equal(await ranking.locator('[data-ranking-game] option:not(:disabled)').count(), 6);
+            assert.doesNotMatch(await ranking.locator('[data-ranking-rows]').innerText(), /NaN|ناعدد/i);
+            await ranking.locator('[data-shell-action="close-modal"]').click();
+
             await page.locator('[data-screen="results"] [data-shell-action="restart"]').click();
             await wait(page, () => window.demianGameApplication.activeGame.ui?.view === 'entry');
-            // Restart constructs a fresh game instance. In-memory test-only
-            // unlocks must not persist: level 12 stays locked until a real
-            // campaign win has been saved to the player's local profile.
             const reset = await page.evaluate(() => {
                 const g = window.demianGameApplication.activeGame;
                 return { level: g.model.level.id, moves: g.model.moves, score: g.model.score,
                     actions: g.rankActions.length, busy: g.startingRanked,
                     history: g.model.history, unlocked: g.store.unlocked,
-                    level12Locked: g.ui.dialog.querySelector('[data-coffee-level-choice="12"]').disabled };
+                    level3Locked: g.ui.dialog.querySelector('[data-coffee-level-choice="3"]').disabled };
             });
             assert.deepEqual(reset, {
-                level: 1, moves: 24, score: 0, actions: 0, busy: false, history: null,
-                unlocked: 1, level12Locked: true,
+                level: 1, moves: 25, score: 0, actions: 0, busy: false, history: null,
+                unlocked: 1, level3Locked: false,
             });
             await page.evaluate(() => window.demianGameApplication.showMenu());
             await wait(page, () => window.demianGameApplication.sessionState === 'menu', 15000);
@@ -204,7 +207,7 @@ try {
             assert.deepEqual(errors, [], 'Uncaught runtime errors');
             report.views.push({ label, viewport: [width, height], emulatedTouch: mobile,
                 status: 'passed', firstMoveScore: moved.score, undoRestored: true,
-                level12Loss: lost, restartClean: true, errors: errors.length });
+                level3Loss: lost, restartClean: true, errors: errors.length });
         } finally { await context.close(); }
     }
     report.status = 'passed';
