@@ -1,4 +1,4 @@
-name: Build weekly playable candidate
+name: Build Demian cast candidate
 on:
   push:
     branches: [build/sync-weekly-playable]
@@ -22,39 +22,41 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - run: pip install Pillow
+      - run: pip install -r tools/requirements-character-art.txt
+        working-directory: demian
       - run: npm ci
         working-directory: demian
-      - run: npm run build:static && npm run validate:static-assets && npm run validate:build
+      - name: Build the two character packs
         working-directory: demian
-      - name: Commit generated output to the build branch
+        run: |
+          python3 tools/prepare_cast_sheet_sources_v14.py
+          python3 tools/build_character_pack_v14.py --characters taher-db sorkhi
+          python3 tools/build_runtime_character_packs.py --characters taher-db sorkhi --report "$RUNNER_TEMP/cast-runtime-packs.json"
+          npm run build:static
+      - name: Verify the character assets and release
+        working-directory: demian
+        run: |
+          npm run validate:characters:v14
+          npm run validate:motion
+          npm run validate:ui-layers
+          npm run validate:static-assets
+          npm run validate:build
+      - run: npx playwright install chromium --only-shell
+        working-directory: demian
+      - name: Check both characters in four games
+        working-directory: demian
+        run: timeout 210s node tools/check_added_cast_v14.mjs
+      - name: Check the fourteen portraits on desktop and phone
+        working-directory: demian
+        run: timeout 120s node tools/check_phase6_step31_mobile_home.mjs
+      - name: Commit the tested assets and static site to the build branch
         env:
           EXPECTED_SHA: ${{ github.sha }}
         run: |
           set -euo pipefail
           test "$GITHUB_REF" = refs/heads/build/sync-weekly-playable
           rsync -a --delete demian/_site/ playable/
-          git add -- playable/
+          git add -- demian/public/assets/characters demian/docs/release-v14/asset-validation.json playable/
           if git diff --cached --quiet; then exit 0; fi
-          git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' commit -m "build: refresh the weekly playable release"
+          git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' commit -m "build: refresh Demian character packs and playable release"
           git push --force-with-lease="refs/heads/build/sync-weekly-playable:$EXPECTED_SHA" origin HEAD:refs/heads/build/sync-weekly-playable
-      - run: npx playwright install chromium --only-shell
-        working-directory: demian
-      - name: Check weekly Café Critters
-        run: timeout 180s npm run test:cafe-critters-step27:browser
-        working-directory: demian
-      - name: Check weekly Coffee Crash and its leaderboard
-        run: timeout 180s npm run test:coffee-crash-step28:browser
-        working-directory: demian
-      - name: Check After Hours visibility and finish
-        if: success() || failure()
-        run: timeout 180s npm run test:after-hours-step25:browser
-        working-directory: demian
-      - name: Check service station interactions
-        if: success() || failure()
-        run: timeout 180s npm run test:cafe-rush-step26:browser
-        working-directory: demian
-      - name: Check twelve character portraits
-        if: success() || failure()
-        run: timeout 180s node tools/check_phase6_step31_mobile_home.mjs
-        working-directory: demian

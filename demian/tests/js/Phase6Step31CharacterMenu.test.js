@@ -10,7 +10,6 @@ import { BUILTIN_CHARACTER_SLUGS } from '../../resources/js/game/characters/Char
 test('all shipped roster portraits and paired atlases are present for phone and desktop presentation', () => {
     const base = new URL('../../public/assets/characters/', import.meta.url);
     const manifest = JSON.parse(readFileSync(new URL('character-manifest-v4.json', base), 'utf8'));
-    assert.equal(manifest.characters.length, 12);
     assert.deepEqual(manifest.characters.map(item => item.slug), [...BUILTIN_CHARACTER_SLUGS]);
     for (const { slug, pack_version: version } of manifest.characters) {
         assert.equal(version, 14, slug);
@@ -24,7 +23,7 @@ test('all shipped roster portraits and paired atlases are present for phone and 
     }
 });
 
-test('menu roster shows all twelve characters and persists a valid selection without booting Open World', async () => {
+test('menu roster shows all characters and persists a valid selection without booting Open World', async () => {
     const events = [];
     const visuals = {
         activeSlug: 'darya',
@@ -34,7 +33,7 @@ test('menu roster shows all twelve characters and persists a valid selection wit
         eventBus: { emit: (event, data) => events.push([event, data]) },
         visualService: visuals,
     });
-    assert.equal(menu.characters.length, 12);
+    assert.equal(menu.characters.length, BUILTIN_CHARACTER_SLUGS.length);
     assert.equal(menu.activeRecord.slug, 'darya');
     const chosen = await menu.select('builtin-negar');
     assert.equal(chosen.slug, 'negar');
@@ -44,6 +43,11 @@ test('menu roster shows all twelve characters and persists a valid selection wit
     assert.equal(events[1][0], 'character:selected');
     await assert.rejects(menu.select('builtin-fake'), /وجود ندارد/);
     assert.equal(visuals.activeSlug, 'negar');
+    for (const slug of ['taher-db', 'sorkhi']) {
+        assert.equal((await menu.select(`builtin-${slug}`)).slug, slug);
+        assert.equal(menu.activeRecord.slug, slug);
+        assert.equal(visuals.activeSlug, slug);
+    }
     assert.throws(() => menu.create(), /Open World/);
 });
 

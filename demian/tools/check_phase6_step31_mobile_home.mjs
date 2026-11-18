@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { createReadStream, existsSync, mkdirSync, statSync, writeFileSync } from 'node:fs';
 import { createServer } from 'node:http';
 import { extname, resolve, sep } from 'node:path';
+import { BUILTIN_CHARACTER_SLUGS } from '../resources/js/game/characters/CharacterVisualContract.js';
 
 const root = resolve(import.meta.dirname, '../_site');
 const output = resolve(import.meta.dirname, '../docs/phase6-step31');
@@ -122,7 +123,7 @@ try {
                 await Promise.allSettled(transitions.map(transition => transition.finished));
             });
             const cards = page.locator('[data-character-card]');
-            assert.equal(await cards.count(), 12, 'The menu character roster must not be empty');
+            assert.equal(await cards.count(), BUILTIN_CHARACTER_SLUGS.length);
             const portraitGrid = await page.locator('[data-character-list]').evaluate(element => ({
                 columns: getComputedStyle(element).gridTemplateColumns.split(' ').length,
                 rows: new Set([...element.children].map(card => Math.round(card.offsetTop))).size,
@@ -137,12 +138,12 @@ try {
                         frame.top >= bounds.top - 1 && frame.bottom <= bounds.bottom + 1;
                 }),
             }));
-            assert.equal(portraitGrid.portraitCount, 12);
+            assert.equal(portraitGrid.portraitCount, BUILTIN_CHARACTER_SLUGS.length);
             assert.equal(portraitGrid.columns, view.width <= 365 ? 3 : 4);
-            assert.equal(portraitGrid.rows, 12 / portraitGrid.columns);
+            assert.equal(portraitGrid.rows, Math.ceil(BUILTIN_CHARACTER_SLUGS.length / portraitGrid.columns));
             assert.ok(portraitGrid.scrollWidth <= portraitGrid.width + 2, `${view.name}: ${JSON.stringify(portraitGrid)}`);
             assert.ok(portraitGrid.framesFit, `${view.name}: portrait frames must fit within their cards`);
-            const limit = view.width === 390 ? 12 : 3;
+            const limit = view.width === 390 ? BUILTIN_CHARACTER_SLUGS.length : 3;
             for (let i = 0; i < limit; i++) {
                 const canvas = cards.nth(i).locator('[data-character-preview]');
                 await canvas.scrollIntoViewIfNeeded();

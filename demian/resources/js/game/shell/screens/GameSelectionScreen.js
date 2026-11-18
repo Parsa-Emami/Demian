@@ -3,8 +3,8 @@ import ScrollSnapRail from '../../../ui/ScrollSnapRail.js';
 import { preloadFbxCafeArt } from '../../rendering2d/FbxCafeAssets.js';
 import { optionalAssetPolicy } from '../../characters/runtime/MobileNetworkPolicy.js';
 import { prewarmCriticalGameSprite } from '../../performance/GameAssetWarmup.js';
+import { BUILTIN_CHARACTER_SLUGS } from '../../characters/CharacterVisualContract.js';
 
-// A small preview only. Never prefetch all map tiles or 12 character atlases.
 export const shouldWarmOpenWorldPreview = policy =>
     policy?.deferBackground === false && policy.reason === 'normal';
 
@@ -51,7 +51,7 @@ export default class GameSelectionScreen extends BaseScreen {
         if (count) count.textContent = `${playableCount.toLocaleString('fa-IR')} بازی آمادهٔ اجرا`;
         const summary = this.element.closest('[data-character-manager]')
             ?.querySelector('[data-game-library-summary]');
-        if (summary) summary.textContent = `${playableCount.toLocaleString('fa-IR')} بازی · ۱۲ کاراکتر`;
+        if (summary) summary.textContent = `${playableCount.toLocaleString('fa-IR')} بازی · ${BUILTIN_CHARACTER_SLUGS.length.toLocaleString('fa-IR')} کاراکتر`;
         this.grid.innerHTML = this.catalog.map((game) => `
             <article class="game-card game-card--${escape(game.accent)} ${game.available ? 'is-available' : 'is-locked'}" data-game-card="${escape(game.id)}" data-scroll-rail-item="${escape(game.id)}" role="listitem" dir="rtl">
                 <div class="game-card__glow" aria-hidden="true"></div>

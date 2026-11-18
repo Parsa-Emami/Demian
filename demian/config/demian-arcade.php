@@ -65,5 +65,5 @@ return [
     'recovery_link_minutes' => 20,
     // Manually saved, single-use long-term backup capability for anonymous accounts.
     'backup_code_days' => 180,
-    'characters' => ['darya', 'setayesh', 'uzudi', 'negar', 'tiam', 'amirreza', 'hanna', 'ainaz', 'arsal', 'iman', 'amin', 'hossein'],
+    'characters' => ['darya', 'setayesh', 'uzudi', 'negar', 'tiam', 'amirreza', 'hanna', 'ainaz', 'arsal', 'iman', 'amin', 'hossein', 'taher-db', 'sorkhi'],
 ];

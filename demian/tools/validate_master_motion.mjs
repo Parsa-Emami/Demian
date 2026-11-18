@@ -30,4 +30,4 @@ assert(view.includes('href="assets/environments/cafe-runner-v1/wordmark.png" fet
 assert(!view.includes('class="boot-console__mark"'));
 assert(view.includes('data-screen="motion-comparison"'));
 assert(view.includes('data-shell-action="motion-comparison"'));
-console.log('Master motion validation passed: 12 characters, 2 families, shared rig, compiled profiles and branded boot.');
+console.log(`Master motion validation passed: ${MOTION_CHARACTERS.length} characters, 2 families, shared rig, compiled profiles and branded boot.`);

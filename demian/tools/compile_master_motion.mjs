@@ -6,13 +6,14 @@ import { MASTER_MOTION, MOTION_CHARACTERS, motionFamily } from '../resources/js/
 
 const root = resolve(import.meta.dirname, '..');
 const write = (path, value) => writeFileSync(resolve(root, path), JSON.stringify(value, null, 2) + '\n');
-assert.equal(new Set(MOTION_CHARACTERS.map(entry => entry.slug)).size, 12);
+assert.equal(new Set(MOTION_CHARACTERS.map(entry => entry.slug)).size, MOTION_CHARACTERS.length);
 assert(MOTION_CHARACTERS.every(entry => motionFamily(entry.family)));
 const source = readFileSync(resolve(root, 'resources/game/character-motion.json'));
 const hash = createHash('sha256').update(source).digest('hex');
 write('public/assets/characters/master-motion-v1.json', { ...MASTER_MOTION, sourceSha256: hash });
 const rosterPath = 'public/assets/characters/character-manifest-v4.json';
 const roster = JSON.parse(readFileSync(resolve(root, rosterPath), 'utf8'));
+assert.deepEqual(roster.characters.map(entry => entry.slug), MOTION_CHARACTERS.map(entry => entry.slug));
 roster.master_motion = { version: MASTER_MOTION.version, source_sha256: hash, url: 'assets/characters/master-motion-v1.json' };
 for (const definition of MOTION_CHARACTERS) {
     const entry = roster.characters.find(item => item.slug === definition.slug);
