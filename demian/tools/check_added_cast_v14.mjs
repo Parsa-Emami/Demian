@@ -61,10 +61,14 @@ try {
                     const app = window.demianGameApplication;
                     return app?.sessionState === 'menu' && app.characterVisuals.activeSlug === expected;
                 }, slug);
+                const manager = page.locator('[data-character-manager]');
+                if (await manager.getAttribute('data-sidebar-state') === 'expanded') await page.keyboard.press('Escape');
+                await page.locator('[data-character-manager][data-sidebar-state="collapsed"]').waitFor();
                 const checked = [];
                 for (const game of ['dino-run', 'after-hours', 'cafe-rush', 'open-world']) {
                     console.log(`[Cast check] ${width}px · ${slug} · ${game}`);
-                    await page.evaluate(id => window.demianGameApplication.launchGame(id, id === 'dino-run' ? { seed: 127 } : {}), game);
+                    await menu.getByRole('button', { name: 'انتخاب بازی', exact: true }).click();
+                    await page.locator(`[data-game-launch="${game}"]`).click();
                     await page.waitForFunction(expected => {
                         const app = window.demianGameApplication;
                         const player = expected === 'open-world' ? app.characterManager?.activeEntity
@@ -92,6 +96,10 @@ try {
                     if (game !== 'open-world') assert.ok(new URL(actual.art).pathname.includes(`/characters/${slug}/`), actual.art);
                     if (game === 'dino-run') {
                         const start = page.getByRole('button', { name: 'شروع و پرش', exact: true });
+                        await page.waitForFunction(() => {
+                            const app = window.demianGameApplication;
+                            return app.activeGame.model.status === 'ready' && !app.runtime.paused;
+                        });
                         if (mobile) await start.tap();
                         else await start.click();
                         await page.waitForFunction(() => {
@@ -99,7 +107,8 @@ try {
                             return model.status === 'running' && model.time > .2;
                         });
                         await page.evaluate(() => {
-                            const model = window.demianGameApplication.activeGame.model;
+                            const { model, run } = window.demianGameApplication.activeGame;
+                            if (run.mode !== 'practice') throw Error('This check requires a device-only practice run');
                             model.spawnIn = 999;
                             model.obstacles = [];
                         });
@@ -126,9 +135,9 @@ try {
                             }
                             await touch.detach();
                         } else {
-                            await page.keyboard.down('Space');
+                            await page.keyboard.down('ArrowUp');
                             await page.waitForFunction(() => window.demianGameApplication.activeGame.model.y > 6);
-                            await page.keyboard.up('Space');
+                            await page.keyboard.up('ArrowUp');
                             await page.waitForFunction(() => window.demianGameApplication.activeGame.model.y === 0);
                             await page.keyboard.down('ArrowDown');
                             await page.waitForFunction(() => window.demianGameApplication.activeGame.avatar.state === 'slide');
