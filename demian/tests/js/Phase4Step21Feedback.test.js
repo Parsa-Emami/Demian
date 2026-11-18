@@ -231,3 +231,17 @@ test('Step 21 visual effects remain noninteractive and respect motion settings',
     assert.match(style, /data-motion="reduced"/);
     assert.doesNotMatch(style, /z-index:\s*\d/);
 });
+
+
+test('feedback bursts restart all particles with one layout flush per cue', () => {
+    let layouts = 0;
+    const host = fakeHost();
+    Object.defineProperty(host, 'offsetWidth', { get() { layouts++; return 200; } });
+    const visual = new FeedbackBurstPool({ host, schedule: () => 1, cancel: () => {} });
+    assert.equal(visual.burst('win'), 7);
+    assert.equal(layouts, 1);
+    assert.equal(visual.active.size, 7);
+    assert.equal(visual.burst('win'), 0);
+    assert.equal(layouts, 1);
+    visual.dispose();
+});

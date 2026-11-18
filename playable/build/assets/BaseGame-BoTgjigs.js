@@ -1,0 +1,1 @@
+import{t as e}from"./rolldown-runtime-B0lUwjiP.js";var t,n=e((()=>{t=class{async preload(e){}async enter(e,t={}){}startSession(e={}){}applySettings(e){}fixedUpdate(e,t){}update(e){}render(e,t){}resize(e,t){}pause(){}resume(){}async exit(){}dispose(){}}}));export{n,t};

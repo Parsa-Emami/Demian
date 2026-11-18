@@ -33,7 +33,7 @@ test('dynamic roster starts immediately and failure cannot become an unhandled r
     }, { documentRef: null }), failed);
 });
 
-test('initial boot selects lite without changing default high-fidelity user selection', () => {
+test('initial boot and character switches select lite before optional quality upgrade', () => {
     const manager = readFileSync(new URL('../../../resources/js/game/managers/CharacterManager.js',
         import.meta.url), 'utf8');
     const boot = manager.slice(manager.indexOf('    async boot('),
@@ -43,7 +43,7 @@ test('initial boot selects lite without changing default high-fidelity user sele
     assert.match(boot, /initialVariant = this\.runtimeVariants\.active/);
     assert.match(boot, /variant: initialVariant/);
     assert.match(boot, /rosterPromise \?\? CharacterManager\.preloadRoster/);
-    assert.match(selection, /variant = this\.runtimeVariants\.active/);
+    assert.match(selection, /variant = 'lite'/);
     assert.match(selection, /ensureEntity\(record, this\.entities\.size, \{ variant \}\)/);
     assert.match(manager, /variant: this\.runtimeVariants\.active, background/);
 });

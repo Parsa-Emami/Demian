@@ -11,7 +11,8 @@ class AppServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        //
+        $this->app->singleton(\Domain\Shared\Clock::class, \App\Infrastructure\UtcClock::class);
+        $this->app->singleton(\Domain\Shared\TransactionRunner::class, \App\Infrastructure\DatabaseTransaction::class);
     }
 
     /**

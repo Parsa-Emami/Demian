@@ -1,0 +1,270 @@
+{
+  "schema": 1,
+  "strategy": "lossless-webp-pixel-exact",
+  "variants": [
+    "lite",
+    "runtime",
+    "detail"
+  ],
+  "candidates": 36,
+  "converted": 36,
+  "inputBytes": 111125685,
+  "outputBytes": 87832962,
+  "savedBytes": 23292723,
+  "skippedBytes": 0,
+  "entries": [
+    {
+      "slug": "darya",
+      "variant": "lite",
+      "format": "webp",
+      "inputBytes": 1089795,
+      "outputBytes": 903412
+    },
+    {
+      "slug": "darya",
+      "variant": "runtime",
+      "format": "webp",
+      "inputBytes": 2927628,
+      "outputBytes": 2437698
+    },
+    {
+      "slug": "darya",
+      "variant": "detail",
+      "format": "webp",
+      "inputBytes": 8047818,
+      "outputBytes": 6608940
+    },
+    {
+      "slug": "setayesh",
+      "variant": "lite",
+      "format": "webp",
+      "inputBytes": 849625,
+      "outputBytes": 715136
+    },
+    {
+      "slug": "setayesh",
+      "variant": "runtime",
+      "format": "webp",
+      "inputBytes": 2296551,
+      "outputBytes": 1946556
+    },
+    {
+      "slug": "setayesh",
+      "variant": "detail",
+      "format": "webp",
+      "inputBytes": 6310584,
+      "outputBytes": 5237002
+    },
+    {
+      "slug": "uzudi",
+      "variant": "lite",
+      "format": "webp",
+      "inputBytes": 942465,
+      "outputBytes": 763044
+    },
+    {
+      "slug": "uzudi",
+      "variant": "runtime",
+      "format": "webp",
+      "inputBytes": 2530383,
+      "outputBytes": 2047354
+    },
+    {
+      "slug": "uzudi",
+      "variant": "detail",
+      "format": "webp",
+      "inputBytes": 6958068,
+      "outputBytes": 5575466
+    },
+    {
+      "slug": "negar",
+      "variant": "lite",
+      "format": "webp",
+      "inputBytes": 859656,
+      "outputBytes": 729890
+    },
+    {
+      "slug": "negar",
+      "variant": "runtime",
+      "format": "webp",
+      "inputBytes": 2268439,
+      "outputBytes": 1906492
+    },
+    {
+      "slug": "negar",
+      "variant": "detail",
+      "format": "webp",
+      "inputBytes": 6101145,
+      "outputBytes": 5052012
+    },
+    {
+      "slug": "tiam",
+      "variant": "lite",
+      "format": "webp",
+      "inputBytes": 869575,
+      "outputBytes": 724968
+    },
+    {
+      "slug": "tiam",
+      "variant": "runtime",
+      "format": "webp",
+      "inputBytes": 2296339,
+      "outputBytes": 1885346
+    },
+    {
+      "slug": "tiam",
+      "variant": "detail",
+      "format": "webp",
+      "inputBytes": 6229442,
+      "outputBytes": 4324042
+    },
+    {
+      "slug": "amirreza",
+      "variant": "lite",
+      "format": "webp",
+      "inputBytes": 949812,
+      "outputBytes": 752534
+    },
+    {
+      "slug": "amirreza",
+      "variant": "runtime",
+      "format": "webp",
+      "inputBytes": 2536518,
+      "outputBytes": 1997998
+    },
+    {
+      "slug": "amirreza",
+      "variant": "detail",
+      "format": "webp",
+      "inputBytes": 6959790,
+      "outputBytes": 5395992
+    },
+    {
+      "slug": "hanna",
+      "variant": "lite",
+      "format": "webp",
+      "inputBytes": 753977,
+      "outputBytes": 581912
+    },
+    {
+      "slug": "hanna",
+      "variant": "runtime",
+      "format": "webp",
+      "inputBytes": 2017761,
+      "outputBytes": 1662564
+    },
+    {
+      "slug": "hanna",
+      "variant": "detail",
+      "format": "webp",
+      "inputBytes": 5537542,
+      "outputBytes": 4506290
+    },
+    {
+      "slug": "ainaz",
+      "variant": "lite",
+      "format": "webp",
+      "inputBytes": 927390,
+      "outputBytes": 751234
+    },
+    {
+      "slug": "ainaz",
+      "variant": "runtime",
+      "format": "webp",
+      "inputBytes": 2458284,
+      "outputBytes": 1994626
+    },
+    {
+      "slug": "ainaz",
+      "variant": "detail",
+      "format": "webp",
+      "inputBytes": 6592842,
+      "outputBytes": 5255218
+    },
+    {
+      "slug": "arsal",
+      "variant": "lite",
+      "format": "webp",
+      "inputBytes": 710335,
+      "outputBytes": 518024
+    },
+    {
+      "slug": "arsal",
+      "variant": "runtime",
+      "format": "webp",
+      "inputBytes": 1867155,
+      "outputBytes": 1407864
+    },
+    {
+      "slug": "arsal",
+      "variant": "detail",
+      "format": "webp",
+      "inputBytes": 5004462,
+      "outputBytes": 3290800
+    },
+    {
+      "slug": "iman",
+      "variant": "lite",
+      "format": "webp",
+      "inputBytes": 771895,
+      "outputBytes": 587206
+    },
+    {
+      "slug": "iman",
+      "variant": "runtime",
+      "format": "webp",
+      "inputBytes": 2034290,
+      "outputBytes": 1601550
+    },
+    {
+      "slug": "iman",
+      "variant": "detail",
+      "format": "webp",
+      "inputBytes": 5466876,
+      "outputBytes": 3728734
+    },
+    {
+      "slug": "amin",
+      "variant": "lite",
+      "format": "webp",
+      "inputBytes": 773731,
+      "outputBytes": 644556
+    },
+    {
+      "slug": "amin",
+      "variant": "runtime",
+      "format": "webp",
+      "inputBytes": 2020958,
+      "outputBytes": 1658702
+    },
+    {
+      "slug": "amin",
+      "variant": "detail",
+      "format": "webp",
+      "inputBytes": 5400717,
+      "outputBytes": 4384048
+    },
+    {
+      "slug": "hossein",
+      "variant": "lite",
+      "format": "webp",
+      "inputBytes": 741724,
+      "outputBytes": 556658
+    },
+    {
+      "slug": "hossein",
+      "variant": "runtime",
+      "format": "webp",
+      "inputBytes": 1921267,
+      "outputBytes": 1557786
+    },
+    {
+      "slug": "hossein",
+      "variant": "detail",
+      "format": "webp",
+      "inputBytes": 5100846,
+      "outputBytes": 4141308
+    }
+  ],
+  "savingsFraction": 0.20961
+}

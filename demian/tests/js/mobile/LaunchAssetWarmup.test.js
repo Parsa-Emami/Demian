@@ -135,12 +135,12 @@ test('foreground launch promotes in-flight speculative sprite before cancelling 
     service.dispose();
 });
 
-test('high-end Open World prewarms only lite while Dino Run preserves requested quality', async () => {
+test('high-end game launches prewarm the same lite pack as first play', async () => {
     const calls = [];
     const visuals = { activeSlug: 'negar', runtimeVariant: () => 'detail',
         loadPack: async (...args) => { calls.push(args); return {}; } };
     assert.equal(criticalSpriteVariant('open-world', visuals), 'lite');
-    assert.equal(criticalSpriteVariant('dino-run', visuals), 'detail');
+    assert.equal(criticalSpriteVariant('dino-run', visuals), 'lite');
     assert.equal(await prewarmCriticalGameSprite('open-world', visuals, { networkPolicy: normal }), true);
     assert.deepEqual(calls, [['negar', 'lite', { background: true, speculative: true }]]);
 });
