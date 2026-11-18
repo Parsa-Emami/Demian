@@ -7,17 +7,17 @@
   ],
   "mainRowBounds": [
     0,
-    288,
-    576,
-    864,
-    1152
+    240,
+    480,
+    720,
+    960
   ],
   "motionColumns": 8,
   "motionRowBounds": [
     0,
-    288,
-    576,
-    864
+    240,
+    480,
+    720
   ],
   "motionRowStates": [
     "walk",
@@ -62,11 +62,48 @@
     ],
     "jump": [
       7
+    ],
+    "land": [
+      0,
+      6,
+      7
+    ],
+    "celebrate": [
+      0,
+      7
     ]
   },
   "locomotionCycleCounts": {
     "walk": 1,
     "run": 1
   },
-  "faceSkinRedGreenRatio": 1.1
+  "locomotionReference": {
+    "character": "arsal",
+    "states": [
+      "walk",
+      "run",
+      "jump",
+      "land",
+      "slide"
+    ]
+  },
+  "idleLoopDirections": [
+    "e"
+  ],
+  "slideSharesIdleScale": true,
+  "poseSelections": {
+    "slide": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ]
+  },
+  "faceSampleHeightRatio": 0.5,
+  "faceSkinRedGreenRatio": 1.1,
+  "indexedPalette": true
 }

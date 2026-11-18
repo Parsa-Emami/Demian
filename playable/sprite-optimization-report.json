@@ -7,11 +7,11 @@
     "detail"
   ],
   "candidates": 42,
-  "converted": 40,
-  "inputBytes": 118280973,
-  "outputBytes": 93792583,
-  "savedBytes": 24488390,
-  "skippedBytes": 608867,
+  "converted": 38,
+  "inputBytes": 114548009,
+  "outputBytes": 91127265,
+  "savedBytes": 23420744,
+  "skippedBytes": 1160561,
   "entries": [
     {
       "slug": "darya",
@@ -289,24 +289,24 @@
     {
       "slug": "sorkhi",
       "variant": "lite",
-      "format": "webp",
-      "inputBytes": 510671,
-      "outputBytes": 411110
+      "format": "png",
+      "inputBytes": 148785,
+      "outputBytes": 148785
     },
     {
       "slug": "sorkhi",
       "variant": "runtime",
-      "format": "webp",
-      "inputBytes": 1330268,
-      "outputBytes": 1082942
+      "format": "png",
+      "inputBytes": 402909,
+      "outputBytes": 402909
     },
     {
       "slug": "sorkhi",
       "variant": "detail",
       "format": "webp",
-      "inputBytes": 3500521,
-      "outputBytes": 2715110
+      "inputBytes": 1056802,
+      "outputBytes": 992150
     }
   ],
-  "savingsFraction": 0.20704
+  "savingsFraction": 0.20446
 }

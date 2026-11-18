@@ -1493,12 +1493,12 @@
         4032
       ],
       "decodedMiB": 53.16,
-      "maxSlideHeight": 35.67,
+      "maxSlideHeight": 43.15,
       "visibleWorldHeights": {
-        "idle": 3.795,
-        "walk": 3.795,
-        "run": 3.795,
-        "sprint": 3.795
+        "idle": 3.72,
+        "walk": 3.72,
+        "run": 3.757,
+        "sprint": 3.757
       },
       "geometry": "passed"
     },
@@ -1512,10 +1512,10 @@
         3136
       ],
       "decodedMiB": 32.16,
-      "maxSlideHeight": 35.51,
+      "maxSlideHeight": 42.91,
       "visibleWorldHeights": {
-        "idle": 3.779,
-        "walk": 3.779,
+        "idle": 3.731,
+        "walk": 3.731,
         "run": 3.779,
         "sprint": 3.779
       },
@@ -1531,12 +1531,12 @@
         2240
       ],
       "decodedMiB": 16.41,
-      "maxSlideHeight": 36.25,
+      "maxSlideHeight": 43.5,
       "visibleWorldHeights": {
-        "idle": 3.817,
+        "idle": 3.75,
         "walk": 3.75,
-        "run": 3.817,
-        "sprint": 3.817
+        "run": 3.75,
+        "sprint": 3.75
       },
       "geometry": "passed"
     },
@@ -1550,10 +1550,10 @@
         1920
       ],
       "decodedMiB": 11.25,
-      "maxSlideHeight": 36.25,
+      "maxSlideHeight": 43.15,
       "visibleWorldHeights": {
-        "idle": 3.795,
-        "walk": 3.795,
+        "idle": 3.739,
+        "walk": 3.739,
         "run": 3.795,
         "sprint": 3.795
       },
@@ -1569,12 +1569,12 @@
         960
       ],
       "decodedMiB": 3.75,
-      "maxSlideHeight": 36.25,
+      "maxSlideHeight": 44.02,
       "visibleWorldHeights": {
-        "idle": 3.85,
+        "idle": 3.767,
         "walk": 3.767,
-        "run": 3.85,
-        "sprint": 3.85
+        "run": 3.767,
+        "sprint": 3.767
       },
       "geometry": "passed"
     },
@@ -1588,12 +1588,12 @@
         2816
       ],
       "decodedMiB": 33.0,
-      "maxSlideHeight": 35.6,
+      "maxSlideHeight": 43.37,
       "visibleWorldHeights": {
-        "idle": 3.767,
-        "walk": 3.809,
-        "run": 3.809,
-        "sprint": 3.809
+        "idle": 3.725,
+        "walk": 3.725,
+        "run": 3.767,
+        "sprint": 3.767
       },
       "geometry": "passed"
     }

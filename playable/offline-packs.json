@@ -1,8 +1,8 @@
 {
   "schema": 1,
-  "release": "1dd2e52bbd316f55",
+  "release": "b63b1ebf1b4f11a0",
   "maxPackBytes": 100663296,
-  "coreBytes": 12414287,
+  "coreBytes": 12157176,
   "core": [
     {
       "path": "assets/characters/ainaz/ainaz-atlas-v14-lite.json",
@@ -134,15 +134,15 @@
     },
     {
       "path": "assets/characters/sorkhi/sorkhi-atlas-v14-lite.json",
-      "bytes": 101351
+      "bytes": 101439
     },
     {
       "path": "assets/characters/sorkhi/sorkhi-preview-v14.png",
-      "bytes": 23387
+      "bytes": 28513
     },
     {
-      "path": "assets/characters/sorkhi/sorkhi-spritesheet-v14-lite.webp",
-      "bytes": 411110
+      "path": "assets/characters/sorkhi/sorkhi-spritesheet-v14-lite.png",
+      "bytes": 148785
     },
     {
       "path": "assets/characters/taher-db/taher-db-atlas-v14-lite.json",
@@ -261,7 +261,7 @@
     {
       "id": "open-world",
       "bytes": 1181976,
-      "totalBytes": 13596263,
+      "totalBytes": 13339152,
       "files": [
         {
           "path": "assets/environments/demian-fbx/polished-v1/lod-1024/0-0.webp",
@@ -392,7 +392,7 @@
     {
       "id": "dino-run",
       "bytes": 1094468,
-      "totalBytes": 13508755,
+      "totalBytes": 13251644,
       "files": [
         {
           "path": "assets/environments/demian-fbx/floorplan.webp",
@@ -447,7 +447,7 @@
     {
       "id": "after-hours",
       "bytes": 1406070,
-      "totalBytes": 13820357,
+      "totalBytes": 13563246,
       "files": [
         {
           "path": "assets/environments/demian-fbx/floorplan-detail.webp",
@@ -502,7 +502,7 @@
     {
       "id": "cafe-rush",
       "bytes": 1406070,
-      "totalBytes": 13820357,
+      "totalBytes": 13563246,
       "files": [
         {
           "path": "assets/environments/demian-fbx/floorplan-detail.webp",
@@ -557,7 +557,7 @@
     {
       "id": "cafe-critters",
       "bytes": 1181976,
-      "totalBytes": 13596263,
+      "totalBytes": 13339152,
       "files": [
         {
           "path": "assets/environments/demian-fbx/polished-v1/lod-1024/0-0.webp",
@@ -688,7 +688,7 @@
     {
       "id": "coffee-crash",
       "bytes": 1094468,
-      "totalBytes": 13508755,
+      "totalBytes": 13251644,
       "files": [
         {
           "path": "assets/environments/demian-fbx/floorplan.webp",
