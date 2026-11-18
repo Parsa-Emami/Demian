@@ -114,13 +114,21 @@ try {
                 null,
                 { timeout: 10000 }
             );
+            await page.locator('.manager-sidebar').evaluate(async sidebar => {
+                const elements = [sidebar, sidebar.querySelector('.manager-sidebar__scroll'),
+                    sidebar.querySelector('.sidebar-expanded-content')];
+                const transitions = elements.flatMap(element => element.getAnimations())
+                    .filter(animation => animation instanceof CSSTransition);
+                await Promise.allSettled(transitions.map(transition => transition.finished));
+            });
             const cards = page.locator('[data-character-card]');
             assert.equal(await cards.count(), 12, 'The menu character roster must not be empty');
             const portraitGrid = await page.locator('[data-character-list]').evaluate(element => ({
                 columns: getComputedStyle(element).gridTemplateColumns.split(' ').length,
                 rows: new Set([...element.children].map(card => Math.round(card.offsetTop))).size,
                 portraitCount: element.querySelectorAll('.character-card--portrait').length,
-                horizontalOverflow: element.scrollWidth > element.clientWidth + 2,
+                width: element.clientWidth,
+                scrollWidth: element.scrollWidth,
                 framesFit: [...element.children].every(card => {
                     const bounds = card.getBoundingClientRect();
                     const frame = card.querySelector('.character-card__preview').getBoundingClientRect();
@@ -132,7 +140,7 @@ try {
             assert.equal(portraitGrid.portraitCount, 12);
             assert.equal(portraitGrid.columns, view.width <= 365 ? 3 : 4);
             assert.equal(portraitGrid.rows, 12 / portraitGrid.columns);
-            assert.equal(portraitGrid.horizontalOverflow, false);
+            assert.ok(portraitGrid.scrollWidth <= portraitGrid.width + 2, `${view.name}: ${JSON.stringify(portraitGrid)}`);
             assert.ok(portraitGrid.framesFit, `${view.name}: portrait frames must fit within their cards`);
             const limit = view.width === 390 ? 12 : 3;
             for (let i = 0; i < limit; i++) {
