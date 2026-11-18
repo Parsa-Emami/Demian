@@ -35,6 +35,7 @@ try {
         });
         try {
             const page = await context.newPage();
+            await page.bringToFront();
             const errors = [];
             page.on('pageerror', error => errors.push(error.message));
             await page.goto(url, { waitUntil: 'domcontentloaded' });
@@ -92,7 +93,7 @@ try {
                     if (game === 'dino-run') {
                         const start = page.getByRole('button', { name: 'شروع و پرش', exact: true });
                         if (mobile) await start.tap();
-                        else await page.keyboard.press('Space');
+                        else await start.click();
                         await page.waitForFunction(() => {
                             const model = window.demianGameApplication.activeGame.model;
                             return model.status === 'running' && model.time > .2;
