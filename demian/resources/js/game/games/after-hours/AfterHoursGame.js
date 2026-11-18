@@ -240,6 +240,8 @@ export default class AfterHoursGame extends BaseGame {
         this.context.app.completeGame({
             title, subtitle, score: result.score, won: result.won,
             deviceRecord: result.won ? { ticks: Math.round(result.elapsed * 60), score: result.score } : null,
+            resultMetric: { ticks: Math.round(result.elapsed * 60) },
+            resultMetricLabel: result.won ? 'زمان خروج' : 'زمان سپری‌شده',
             stats: {
                 'درجهٔ سختی': this.model.rules.label,
                 'زمان سپری‌شده': shiftTime(result.elapsed),

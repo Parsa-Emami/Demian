@@ -173,8 +173,19 @@ try {
             assert.equal(lost.moves, 0);
             assert.equal(lost.ranking, 'practice');
             assert.equal(lost.stars, 0);
+            const resultText = await page.locator('[data-results-score]').innerText();
+            assert.doesNotMatch(resultText, /NaN|ناعدد/i);
+            assert.match(resultText, /مرحلهٔ ۳/);
             if (label === 'phone-390-portrait') await page.screenshot({
                 path: resolve(output, 'coffee-crash-390-results.png'), animations: 'disabled' });
+
+            await page.locator('[data-screen="results"] [data-shell-action="leaderboard"]').click();
+            const ranking = page.locator('[data-screen="leaderboard"]');
+            await wait(page, () => document.querySelector('[data-ranking-game]').value === 'coffee-crash');
+            await wait(page, () => /مرحلهٔ ۳/.test(document.querySelector('[data-ranking-rows]').textContent));
+            assert.equal(await ranking.locator('[data-ranking-game] option:not(:disabled)').count(), 6);
+            assert.doesNotMatch(await ranking.locator('[data-ranking-rows]').innerText(), /NaN|ناعدد/i);
+            await ranking.locator('[data-shell-action="close-modal"]').click();
 
             await page.locator('[data-screen="results"] [data-shell-action="restart"]').click();
             await wait(page, () => window.demianGameApplication.activeGame.ui?.view === 'entry');

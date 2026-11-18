@@ -216,6 +216,8 @@ export default class CafeCrittersGame extends BaseGame {
             score: `${num(result.found)} / ${num(result.goal)}`,
             won: result.won,
             deviceRecord: result.won ? { ticks: Math.max(1, Math.round(this.model.playedSeconds * 60)) } : null,
+            resultMetric: { ticks: Math.round(this.model.playedSeconds * 60) },
+            resultMetricLabel: result.won ? 'زمان حل سرنخ‌ها' : 'زمان سپری‌شده',
             ranking: result.won && this.rankRun?.mode === 'ranked'
                 ? this.context.services.leaderboards.finishTurnRun(this.rankRun,
                     this.rankActions, (this.rankActions.at(-1)?.tick ?? 0) + 1)

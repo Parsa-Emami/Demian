@@ -1,4 +1,9 @@
+import { formatGameRecord, recordHeading } from '../../leaderboard/GameRecord.js';
 import BaseScreen from './BaseScreen';
+
+const resultValue = (value, digits) => typeof value === 'number'
+    ? Number.isFinite(value) ? digits.format(value) : '—'
+    : typeof value === 'string' && value.trim() && !/^NaN$/i.test(value.trim()) ? value : '—';
 
 const resultDigits = new Intl.NumberFormat('fa-IR');
 
@@ -8,6 +13,7 @@ export default class ResultsScreen extends BaseScreen {
         this.title = this.element.querySelector('[data-results-title]');
         this.subtitle = this.element.querySelector('[data-results-subtitle]');
         this.score = this.element.querySelector('[data-results-score]');
+        this.scoreLabel = this.element.querySelector('[data-results-score-label]');
         this.stats = this.element.querySelector('[data-results-stats]');
         this.replayButton = this.element.querySelector('[data-results-replay]');
         this.payload = null;
@@ -17,6 +23,7 @@ export default class ResultsScreen extends BaseScreen {
 
     async beforeOpen(payload) {
         this.payload = payload ?? {};
+        payload = this.payload;
         const current = this.payload;
         if (this.ranking) this.ranking.textContent = payload.ranking ? 'در حال بررسی رکورد…' : '';
         if (this.retryRanking) this.retryRanking.hidden = true;
@@ -25,7 +32,11 @@ export default class ResultsScreen extends BaseScreen {
         }).catch(() => { if (this.payload === current) this.renderRanking({ status: 'pending', retryable: true }); });
         if (this.title) this.title.textContent = payload.title ?? 'نتیجه‌ی بازی';
         if (this.subtitle) this.subtitle.textContent = payload.subtitle ?? 'مرحله به پایان رسید.';
-        if (this.score) this.score.textContent = resultDigits.format(payload.score ?? 0);
+        const record = payload.resultMetric ?? payload.deviceRecord;
+        const heading = payload.resultMetricLabel ?? (record ? recordHeading(payload.gameId, 'device') : 'امتیاز');
+        if (this.scoreLabel) this.scoreLabel.textContent = heading;
+        if (this.score) this.score.textContent = record
+            ? formatGameRecord(payload.gameId, record) : resultValue(payload.score, resultDigits);
         this.renderStats(payload.stats ?? {});
         if (this.replayButton) {
             this.replayButton.hidden = !payload.replay;
@@ -41,7 +52,7 @@ export default class ResultsScreen extends BaseScreen {
             const labelElement = document.createElement('span');
             const valueElement = document.createElement('strong');
             labelElement.textContent = String(label);
-            valueElement.textContent = typeof value === 'number' ? resultDigits.format(value) : String(value);
+            valueElement.textContent = resultValue(value, resultDigits);
             row.append(labelElement, valueElement);
             this.stats.appendChild(row);
         });

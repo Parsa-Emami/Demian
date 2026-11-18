@@ -758,7 +758,7 @@
                         <p class="shell-kicker">پایان بازی</p>
                         <h2 data-results-title>نتیجه‌ی بازی</h2>
                         <p data-results-subtitle>مرحله به پایان رسید.</p>
-                        <div class="results-panel__score"><small>امتیاز</small><strong data-results-score>0</strong></div>
+                        <div class="results-panel__score"><small data-results-score-label>امتیاز</small><strong data-results-score>0</strong></div>
                         <div data-results-stats class="results-panel__stats"></div>
                         <p data-results-ranking role="status" aria-live="polite"></p>
                         <button type="button" data-shell-action="retry-ranking" data-results-ranking-retry class="shell-button" hidden>تلاش دوباره برای ثبت آنلاین</button>

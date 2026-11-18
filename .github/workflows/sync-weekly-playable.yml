@@ -37,3 +37,20 @@ jobs:
           git add -- playable/
           git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' commit -m "build: refresh the weekly playable release"
           git push --force-with-lease="refs/heads/build/sync-weekly-playable:$EXPECTED_SHA" origin HEAD:refs/heads/build/sync-weekly-playable
+      - run: npx playwright install chromium --only-shell
+        working-directory: demian
+      - name: Check weekly Coffee Crash and its leaderboard
+        run: timeout 180s npm run test:coffee-crash-step28:browser
+        working-directory: demian
+      - name: Check After Hours visibility and finish
+        if: success() || failure()
+        run: timeout 180s npm run test:after-hours-step25:browser
+        working-directory: demian
+      - name: Check service station interactions
+        if: success() || failure()
+        run: timeout 180s npm run test:cafe-rush-step26:browser
+        working-directory: demian
+      - name: Check twelve character portraits
+        if: success() || failure()
+        run: timeout 180s node tools/check_phase6_step31_mobile_home.mjs
+        working-directory: demian
