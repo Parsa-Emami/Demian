@@ -54,6 +54,7 @@ try {
         });
         try {
             const page = await context.newPage();
+            await page.clock.setFixedTime(new Date('2026-11-21T08:00:00Z'));
             const errors = [];
             page.on('pageerror', error => errors.push(error.message));
             await page.clock.setFixedTime(new Date('2026-11-21T08:00:00Z'));

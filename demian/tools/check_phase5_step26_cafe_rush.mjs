@@ -125,9 +125,9 @@ try {
                 const g = window.demianGameApplication.activeGame, m = g.model;
                 if (g.gameplayChallenge.state !== 'idle') throw Error('Browser QA may only modify practice mode');
                 const locations = new Map([
-                    ['tickets', { x: -.1, z: -26.35 }],
-                    ['bar', { x: 2.95, z: -31.15 }],
-                    ['pastry', { x: 2.6, z: -22.25 }],
+                    ['tickets', { x: -2.9, z: -26.35 }],
+                    ['bar', { x: .15, z: -31.15 }],
+                    ['pastry', { x: -.2, z: -22.25 }],
                     ['table-1', { x: -2.35, z: -16.9 }],
                     ['table-2', { x: -2.9, z: -43.4 }],
                 ]);

@@ -198,7 +198,7 @@ try {
             assert.equal(restarted.grade, 'hard');
             assert.equal(restarted.album, 3);
             assert.equal(restarted.found, 0);
-            assert.ok(!solved.includes(restarted.target));
+            assert.equal(restarted.target, solved[0], 'Restarting the same week keeps its puzzle pack');
             assert.equal(restarted.rankActions, 0);
             await page.locator('[data-critters-dialog-action="confirm"]').click();
             await wait(page, () => window.demianGameApplication.activeGame.model.status === 'playing');

@@ -35,9 +35,13 @@ jobs:
           test "$GITHUB_REF" = refs/heads/build/sync-weekly-playable
           rsync -a --delete demian/_site/ playable/
           git add -- playable/
+          if git diff --cached --quiet; then exit 0; fi
           git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' commit -m "build: refresh the weekly playable release"
           git push --force-with-lease="refs/heads/build/sync-weekly-playable:$EXPECTED_SHA" origin HEAD:refs/heads/build/sync-weekly-playable
       - run: npx playwright install chromium --only-shell
+        working-directory: demian
+      - name: Check weekly Café Critters
+        run: timeout 180s npm run test:cafe-critters-step27:browser
         working-directory: demian
       - name: Check weekly Coffee Crash and its leaderboard
         run: timeout 180s npm run test:coffee-crash-step28:browser

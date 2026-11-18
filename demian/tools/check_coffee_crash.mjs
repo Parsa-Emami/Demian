@@ -47,7 +47,8 @@ try {
         await page.waitForFunction(() => window.demianGameApplication?.sessionState === 'menu', null, { timeout: 45000 });
         await page.evaluate(() => window.demianGameApplication.launchGame('coffee-crash'));
         assert.equal(await page.locator('.coffee-dialog').isVisible(), true);
-        assert.equal(await page.locator('[data-coffee-level-choice="2"]').isEnabled(), false);
+        assert.equal(await page.locator('[data-coffee-level-choice]').count(), 3);
+        assert.equal(await page.locator('[data-coffee-level-choice="2"]').isEnabled(), true);
         await page.locator('[data-coffee-dialog-action="skip"]').click();
         assert.equal(await page.locator('[data-coffee-cell]').count(), 56);
         const geometry = await page.evaluate(() => ({
