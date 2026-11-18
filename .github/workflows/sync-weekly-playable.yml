@@ -41,15 +41,7 @@ jobs:
           npm run validate:ui-layers
           npm run validate:static-assets
           npm run validate:build
-      - run: npx playwright install chromium --only-shell
-        working-directory: demian
-      - name: Check both characters in four games
-        working-directory: demian
-        run: timeout 210s node tools/check_added_cast_v14.mjs
-      - name: Check the fourteen portraits on desktop and phone
-        working-directory: demian
-        run: timeout 120s node tools/check_phase6_step31_mobile_home.mjs
-      - name: Commit the tested assets and static site to the build branch
+      - name: Store the generated assets and static site on the build branch
         env:
           EXPECTED_SHA: ${{ github.sha }}
         run: |
@@ -60,3 +52,11 @@ jobs:
           if git diff --cached --quiet; then exit 0; fi
           git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' commit -m "build: refresh Demian character packs and playable release"
           git push --force-with-lease="refs/heads/build/sync-weekly-playable:$EXPECTED_SHA" origin HEAD:refs/heads/build/sync-weekly-playable
+      - run: npx playwright install chromium --only-shell
+        working-directory: demian
+      - name: Check both characters in four games
+        working-directory: demian
+        run: timeout 210s node tools/check_added_cast_v14.mjs
+      - name: Check the fourteen portraits on desktop and phone
+        working-directory: demian
+        run: timeout 120s node tools/check_phase6_step31_mobile_home.mjs

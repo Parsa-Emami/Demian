@@ -30,7 +30,8 @@ try {
         { width: 1440, height: 900, mobile: false },
     ]) {
         const context = await browser.newContext({
-            viewport: { width, height }, isMobile: mobile, hasTouch: mobile, serviceWorkers: 'block',
+            viewport: { width, height }, deviceScaleFactor: mobile ? 2 : 1,
+            isMobile: mobile, hasTouch: mobile, serviceWorkers: 'block',
         });
         try {
             const page = await context.newPage();
@@ -61,6 +62,7 @@ try {
                 }, slug);
                 const checked = [];
                 for (const game of ['dino-run', 'after-hours', 'cafe-rush', 'open-world']) {
+                    console.log(`[Cast check] ${width}px · ${slug} · ${game}`);
                     await page.evaluate(id => window.demianGameApplication.launchGame(id, id === 'dino-run' ? { seed: 127 } : {}), game);
                     await page.waitForFunction(expected => {
                         const app = window.demianGameApplication;
@@ -88,15 +90,21 @@ try {
                     assert.ok(['idle', 'walk', 'run', 'jump', 'slide', 'land', 'win'].every(clip => actual.clips.includes(clip)));
                     if (game !== 'open-world') assert.ok(new URL(actual.art).pathname.includes(`/characters/${slug}/`), actual.art);
                     if (game === 'dino-run') {
-                        await page.getByRole('button', { name: 'شروع و پرش', exact: true }).click();
+                        const start = page.getByRole('button', { name: 'شروع و پرش', exact: true });
+                        if (mobile) await start.tap();
+                        else await page.keyboard.press('Space');
                         await page.waitForFunction(() => {
                             const model = window.demianGameApplication.activeGame.model;
-                            return model.status === 'running' && model.y === 0;
+                            return model.status === 'running' && model.time > .2;
                         });
                         await page.evaluate(() => {
                             const model = window.demianGameApplication.activeGame.model;
                             model.spawnIn = 999;
                             model.obstacles = [];
+                        });
+                        await page.waitForFunction(() => {
+                            const model = window.demianGameApplication.activeGame.model;
+                            return model.y === 0 && model.vy === 0;
                         });
                         if (mobile) {
                             const touch = await context.newCDPSession(page);
@@ -104,7 +112,9 @@ try {
                                 ['.runner-controls__jump', () => window.demianGameApplication.activeGame.model.y > 6],
                                 ['.runner-controls__duck', () => window.demianGameApplication.activeGame.avatar.state === 'slide'],
                             ]) {
-                                const box = await page.locator(selector).boundingBox();
+                                const button = page.locator(selector);
+                                await button.waitFor({ state: 'visible', timeout: 8000 });
+                                const box = await button.boundingBox();
                                 assert.ok(box, selector);
                                 await touch.send('Input.dispatchTouchEvent', {
                                     type: 'touchStart', touchPoints: [{ x: box.x + box.width / 2, y: box.y + box.height / 2 }],
