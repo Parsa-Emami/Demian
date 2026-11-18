@@ -2,6 +2,8 @@
 
 namespace App\Services\Arcade;
 
+use DateTimeInterface;
+use Domain\Arcade\WeeklyContent;
 use Illuminate\Validation\ValidationException;
 
 final class RunnerReplayVerifier
@@ -11,9 +13,15 @@ final class RunnerReplayVerifier
         return json_decode(file_get_contents(config('demian-arcade.rules_path')), true, flags: JSON_THROW_ON_ERROR);
     }
 
-    public function verify(int $seed, int $width, int $ticks, array $transitions): array
+    public function versionAt(DateTimeInterface $at): string
     {
-        $r = $this->rules();
+        return WeeklyContent::effectiveVersion('dino-run', $this->rules()['version'], $at, config('demian-arcade.weekly_content_at'));
+    }
+
+    public function verify(int $seed, int $width, int $ticks, array $transitions, ?int $week = null, string $character = ''): array
+    {
+        $base = $this->rules();
+        $r = $week === null ? $base : WeeklyContent::runner($base, $week, $character);
         $invalid = fn (string $message) => ValidationException::withMessages(['replay' => $message]);
         if ($ticks < 1 || $ticks > $r['maxTicks'] || count($transitions) > $r['maxTransitions'] || ! $transitions) throw $invalid('Replay limits exceeded.');
         $previousTick = $previousMask = -1;

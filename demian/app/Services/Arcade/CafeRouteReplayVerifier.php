@@ -42,12 +42,12 @@ final class CafeRouteReplayVerifier
         };
     }
 
-    public function goals(string $game, int $seed): array
+    public function goals(string $game, int $seed, ?int $week = null): array
     {
         return match ($game) {
             'after-hours' => $this->afterHoursGoals($seed),
             'cafe-rush' => $this->cafeRushGoals($seed),
-            'open-world' => [
+            'open-world' => $week !== null ? \Domain\Arcade\WeeklyContent::worldRoute($week) : [
                 ['id' => 'save-counter', 'x' => 3.24, 'z' => -30.6],
                 ['id' => 'save-lounge', 'x' => 0.36, 'z' => -68.76],
                 ['id' => 'save-arcade', 'x' => 3.96, 'z' => -88.92],
@@ -101,14 +101,14 @@ final class CafeRouteReplayVerifier
         throw ValidationException::withMessages(['replay' => $text]);
     }
 
-    public function verify(string $game, int $seed, int $ticks, array $actions): array
+    public function verify(string $game, int $seed, int $ticks, array $actions, ?int $week = null): array
     {
         if (! isset(self::VERSIONS[$game])) $this->invalid('Unknown route rules.');
         if ($ticks < 60 || $ticks > $this->seconds($game)*60
             || count($actions) < 5 || count($actions) > self::MAX_ACTIONS) {
             $this->invalid('Route evidence length is invalid.');
         }
-        $goals = $this->goals($game, $seed);
+        $goals = $this->goals($game, $seed, $week);
         $goalIndex = 0;
         $origin = $this->origin($game);
         $position = $origin;

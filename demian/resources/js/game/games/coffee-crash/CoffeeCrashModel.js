@@ -28,10 +28,10 @@ export function findRuns(board) {
 }
 
 export default class CoffeeCrashModel {
-    constructor(level = 1) { this.reset(level); }
+    constructor(level = 1, levels = LEVELS) { this.levels = levels; this.reset(level); }
 
     reset(level = 1) {
-        this.level = LEVELS.find(item => item.id === level) ?? LEVELS[0];
+        this.level = this.levels.find(item => item.id === level) ?? this.levels[0];
         this.rng = this.level.seed;
         this.score = 0;
         this.moves = this.level.moves;

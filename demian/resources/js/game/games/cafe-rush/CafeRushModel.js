@@ -1,3 +1,4 @@
+import { RUSH_STATION_REACH, weeklyRushOrder } from '../../content/WeeklyContent.js';
 import { RECIPES, RUSH_DURATION, RUSH_RULES, RUSH_SPOTS, RUSH_START, VIP_AT, rushGround } from './CafeRushMap.js';
 
 const WALK = 6.4;
@@ -15,7 +16,9 @@ export default class CafeRushModel {
         this.reset();
     }
 
-    reset(difficulty = 'standard', variation = 0) {
+    reset(difficulty = 'standard', variation = 0, { assisted = false, week = null } = {}) {
+        this.assisted = assisted;
+        this.contentWeek = week;
         this.difficulty = Object.hasOwn(RUSH_RULES, difficulty) ? difficulty : 'standard';
         this.rules = RUSH_RULES[this.difficulty];
         this.variation = Number.isInteger(variation) ? ((variation % 3) + 3) % 3 : 0;
@@ -75,10 +78,11 @@ export default class CafeRushModel {
     nearby() {
         const position = this.player.position;
         let nearest = null;
-        let distance = REACH;
+        let distance = Infinity;
         for (const spot of RUSH_SPOTS) {
             const gap = rushDistance(position, spot);
-            if (gap < distance && this.ground.canSee(position, spot)) {
+            const reach = this.assisted && spot.kind !== 'table' ? RUSH_STATION_REACH : REACH;
+            if (gap < reach && gap < distance && this.ground.canSee(position, spot)) {
                 distance = gap;
                 nearest = spot;
             }
@@ -158,8 +162,9 @@ export default class CafeRushModel {
 
     addTicket(vip) {
         const index = this.regularNumber + this.variation;
-        const recipe = vip ? 'vip' : EARLY_MENU[index % EARLY_MENU.length];
-        const table = vip ? 2 : TABLES[index % TABLES.length];
+        const weekly = this.contentWeek === null ? null : weeklyRushOrder(this.contentWeek, this.regularNumber);
+        const recipe = vip ? 'vip' : weekly?.recipe ?? EARLY_MENU[index % EARLY_MENU.length];
+        const table = vip ? 2 : weekly?.table ?? TABLES[index % TABLES.length];
         const order = {
             id: ++this.ticketNumber, recipe, table, vip, state: 'waiting',
             due: Math.min(RUSH_DURATION, this.elapsed + (vip ? 30 : this.rules.patience)),

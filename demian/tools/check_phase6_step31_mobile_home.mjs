@@ -111,6 +111,16 @@ try {
             );
             const cards = page.locator('[data-character-card]');
             assert.equal(await cards.count(), 12, 'The menu character roster must not be empty');
+            const portraitGrid = await page.locator('[data-character-list]').evaluate(element => ({
+                columns: getComputedStyle(element).gridTemplateColumns.split(' ').length,
+                rows: new Set([...element.children].map(card => Math.round(card.offsetTop))).size,
+                portraitCount: element.querySelectorAll('.character-card--portrait').length,
+                horizontalOverflow: element.scrollWidth > element.clientWidth + 2,
+            }));
+            assert.equal(portraitGrid.portraitCount, 12);
+            assert.equal(portraitGrid.columns, view.width <= 365 ? 3 : 4);
+            assert.equal(portraitGrid.rows, 12 / portraitGrid.columns);
+            assert.equal(portraitGrid.horizontalOverflow, false);
             const limit = view.width === 390 ? 12 : 3;
             for (let i = 0; i < limit; i++) {
                 const canvas = cards.nth(i).locator('[data-character-preview]');

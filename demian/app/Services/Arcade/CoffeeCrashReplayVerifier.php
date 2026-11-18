@@ -23,6 +23,7 @@ final class CoffeeCrashReplayVerifier
     public const MAX_ACTIONS = 40;
 
     private int $rng;
+    private array $goals;
     private int $score = 0;
     private int $moves = 24;
     private int $bestChain = 0;
@@ -37,10 +38,11 @@ final class CoffeeCrashReplayVerifier
         throw ValidationException::withMessages(['replay' => $message]);
     }
 
-    private function reset(int $seed): void
+    private function reset(int $seed, ?array $stage): void
     {
         $this->rng = $seed & 0xffffffff;
-        $this->score = 0; $this->moves = 24; $this->bestChain = 0;
+        $this->goals = $stage['goals'] ?? [['type' => 0, 'count' => 12]];
+        $this->score = 0; $this->moves = $stage['moves'] ?? 24; $this->bestChain = 0;
         $this->status = 'playing'; $this->usedUndo = false;
         $this->collected = [0, 0, 0, 0, 0];
         $this->history = null;
@@ -344,7 +346,9 @@ final class CoffeeCrashReplayVerifier
         if ($runs) $this->generate();
         elseif ($this->findMove() === null) $this->shuffle();
 
-        $this->status = $this->collected[0] >= 12 ? 'won'
+        $complete = true;
+        foreach ($this->goals as $goal) $complete = $complete && $this->collected[$goal['type']] >= $goal['count'];
+        $this->status = $complete ? 'won'
             : ($this->moves <= 0 ? 'lost' : 'playing');
         return true;
     }
@@ -366,7 +370,7 @@ final class CoffeeCrashReplayVerifier
         return true;
     }
 
-    public function verify(int $seed, int $ticks, array $actions): array
+    public function verify(int $seed, int $ticks, array $actions, ?array $stage = null): array
     {
         // The replay algorithm uses unsigned xorshift32; zero or out-of-range
         // seeds would not represent a legitimate authoritative game.
@@ -377,7 +381,7 @@ final class CoffeeCrashReplayVerifier
             || count($actions) > self::MAX_ACTIONS) {
             $this->invalid('Replay length exceeds game limits.');
         }
-        $this->reset($seed);
+        $this->reset($seed, $stage);
         $lastTick = -1;
         foreach ($actions as $entry) {
             if (! is_array($entry) || ! is_int($entry['tick'] ?? null)

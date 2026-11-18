@@ -31,7 +31,7 @@ final class ArcadeController extends Controller
 
     public function rules(RunnerReplayVerifier $verifier, RankedGameCatalog $catalog, CompetitionClock $clock): JsonResponse
     {
-        return response()->json(['game_id' => 'dino-run', 'rules' => $verifier->rules(),
+        return response()->json(['game_id' => 'dino-run', 'rules' => [...$verifier->rules(), 'version' => $verifier->versionAt(now())],
             'characters' => config('demian-arcade.characters'),
             'games' => $catalog->publicList(),
             'weekly' => $clock->snapshot('weekly')]);
@@ -282,10 +282,10 @@ final class ArcadeController extends Controller
         $values = $request->validate(['period' => ['sometimes', Rule::in(['all', 'daily', 'weekly'])]]);
         $window = $clock->snapshot($values['period'] ?? 'weekly');
         $player = $request->attributes->get('arcade_player');
-        $rules = app(RunnerReplayVerifier::class)->rules();
+        $version = app(RunnerReplayVerifier::class)->versionAt(now());
         $scope = fn () => DB::table('arcade_leaderboard_entries')
             ->where('game_id', 'dino-run')
-            ->where('rules_version', $rules['version'])
+            ->where('rules_version', $version)
             ->where('period_key', $window['period_key']);
         $entry = $scope()->where('player_id', $player->id)->first(['id', 'score', 'achieved_at']);
         $participants = $scope()->count();
@@ -319,7 +319,7 @@ final class ArcadeController extends Controller
         $run = $service->start($request->attributes->get('arcade_player'), $request->validated());
 
         return response()->json(['run_id' => $run->id, 'seed' => $run->seed, 'track_width' => $run->track_width,
-            'rules_version' => $run->rules_version, 'expires_at' => $run->expires_at->toIso8601String()], 201);
+            'rules_version' => $run->rules_version, 'content_week' => \Domain\Arcade\WeeklyContent::index($run->started_at), 'expires_at' => $run->expires_at->toIso8601String()], 201);
     }
 
     public function complete(CompleteArcadeRunRequest $request, ArcadeRun $run, ArcadeRunService $service): JsonResponse

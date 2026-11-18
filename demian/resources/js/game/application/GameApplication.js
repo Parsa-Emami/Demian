@@ -525,6 +525,7 @@ export default class GameApplication {
         this.transitionSession(SESSION_STATES.RESULTS, { gameId: this.activeGameId });
         this.input.setContext('PAUSE');
         this.runtime.pause();
+        this.leaderboards.recordDevice(this.activeGameId, result.deviceRecord);
         this.eventBus.emit('game:completed', {
             gameId: this.activeGameId,
             title: result.title ?? this.activeDefinition?.title,

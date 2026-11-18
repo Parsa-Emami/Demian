@@ -199,6 +199,7 @@ export default class GameShell {
                 await this.manager.show(SCREEN_IDS.MOTION);
                 break;
             case 'leaderboard':
+                this.leaderboardScreen.preferredGame = this.app.activeGameId;
                 if (this.app.sessionState === 'playing') this.app.pauseGame();
                 await this.manager.show(SCREEN_IDS.LEADERBOARD);
                 break;

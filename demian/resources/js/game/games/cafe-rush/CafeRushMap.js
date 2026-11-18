@@ -50,8 +50,8 @@ export function rushObjective(model) {
     const id = carried ? `table-${carried.table}`
         : order && order !== waiting ? RECIPES[order.recipe].station : 'tickets';
     const destination = RUSH_SPOTS.find((spot) => spot.id === id).label;
-    const stage = carried ? 'تحویل' : accepted ? 'آماده کن' : ready ? 'سینی را بردار'
-        : waiting ? 'برگه را بردار' : preparing ? 'در حال آماده‌شدن' : 'منتظر سفارش';
+    const stage = carried ? 'تحویل' : ready ? 'سینی را بردار' : accepted ? 'آماده کن'
+        : preparing ? 'در حال آماده‌شدن' : waiting ? 'فیش را بردار' : 'منتظر سفارش';
     const marker = order ? `#${ticketNumber.format(order.id)} · ${destination}` : destination;
     return { id, marker, label: `${stage} · ${marker}` };
 }

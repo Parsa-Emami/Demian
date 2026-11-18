@@ -7,7 +7,7 @@ export default class CafeCrittersModel {
         this.reset(difficulty, discovered, rotation);
     }
 
-    reset(difficulty = 'standard', discovered = [], rotation = 0) {
+    reset(difficulty = 'standard', discovered = [], rotation = 0, weeklyTargets = null) {
         this.difficulty = Object.hasOwn(CRITTER_RULES, difficulty) ? difficulty : 'standard';
         this.rules = CRITTER_RULES[this.difficulty];
         const known = Array.isArray(discovered) ? discovered : [];
@@ -15,10 +15,11 @@ export default class CafeCrittersModel {
         const unseen = CRITTERS.filter((guest) => !this.album.has(guest.id));
         const start = Number.isSafeInteger(rotation) && rotation >= 0 ? rotation % CRITTERS.length : 0;
         const replay = [...CRITTERS.slice(start), ...CRITTERS.slice(0, start)];
-        this.targets = (unseen.length ? unseen : replay).slice(0, TURN_PAGES);
+        this.targets = weeklyTargets ?? (unseen.length ? unseen : replay).slice(0, TURN_PAGES);
         this.page = 0;
         this.status = 'ready';
         this.elapsed = 0;
+        this.playedSeconds = 0;
         this.found = 0;
         this.newPages = 0;
         this.misses = 0;
@@ -92,7 +93,9 @@ export default class CafeCrittersModel {
     }
 
     advance(dt) {
-        if (this.status !== 'playing' || this.rules.seconds === null || !Number.isFinite(dt) || dt <= 0) return;
+        if (this.status !== 'playing' || !Number.isFinite(dt) || dt <= 0) return;
+        this.playedSeconds += dt;
+        if (this.rules.seconds === null) return;
         this.elapsed = Math.min(this.rules.seconds, this.elapsed + dt);
         if (this.remaining <= 1e-6) {
             this.elapsed = this.rules.seconds;

@@ -92,7 +92,10 @@ export default class CharacterPreviewRenderer {
                     const height = Number(image.naturalHeight || image.height);
                     if (!(width > 0 && height > 0)) throw new Error('Character poster has no decoded dimensions.');
                     this.prepareCanvas(canvas);
-                    this.drawFrame(canvas, image, { x: 0, y: 0, w: width, h: height });
+                    const frame = character.portrait
+                        ? { x: width * .22, y: height * .15, w: width * .56, h: height * .56 }
+                        : { x: 0, y: 0, w: width, h: height };
+                    this.drawFrame(canvas, image, frame);
                     canvas.dataset.previewState = 'ready';
                     return;
                 } catch (error) {
