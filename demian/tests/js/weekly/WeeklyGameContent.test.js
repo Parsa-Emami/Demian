@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { weeklyIndex, weeklyVersion, runnerWeek, weeklyShiftCards, weeklyRushOrder, weeklyWorldRoute } from '../../../resources/js/game/content/WeeklyContent.js';
+import { BUILTIN_CHARACTER_SLUGS } from '../../../resources/js/game/characters/CharacterVisualContract.js';
 import { RUNNER_CONFIG } from '../../../resources/js/game/games/dino-run/DinoRunModel.js';
 import { weeklyCritters, cluesFor, TABLE_FIELDS } from '../../../resources/js/game/games/cafe-critters/CafeCrittersData.js';
 import { weeklyCoffeeLevels } from '../../../resources/js/game/games/coffee-crash/CoffeeCrashData.js';
@@ -25,7 +26,11 @@ test('weekly content changes Saturday at midnight Tehran and uses distinct game 
     const runner = weeks.map(week => runnerWeek(RUNNER_CONFIG, week, 'darya'));
     assert.equal(new Set(runner.map(key)).size, weeks.length);
     assert.equal(new Set(runner.slice(0, 53).map(rules => key(rules.obstacleCatalog))).size, 53);
-    assert.ok(runner.every(rules => rules.attackers.length === 2 && !rules.attackers.includes('darya')));
+    for (const character of BUILTIN_CHARACTER_SLUGS) {
+        const casts = weeks.slice(0, 53).map(week => runnerWeek(RUNNER_CONFIG, week, character).attackers);
+        assert.equal(new Set(casts.map(key)).size, 53);
+        assert.ok(casts.every(pair => pair.length === 2 && !pair.includes(character)));
+    }
     assert.equal(new Set(weeks.map(week => key(weeklyShiftCards(week)))).size, weeks.length);
     assert.equal(new Set(weeks.map(week => key(Array.from({ length: 6 }, (_, i) => weeklyRushOrder(week, i))))).size, weeks.length);
     assert.equal(new Set(weeks.map(week => key(weeklyWorldRoute(week)))).size, weeks.length);
