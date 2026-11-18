@@ -77,12 +77,15 @@ try {
             );
             const menu = page.locator('[data-screen="cafe-menu"]');
             assert.equal(await menu.isVisible(), true);
-            const showcase = menu.locator('.cafe-menu__showcase');
-            assert.equal(await showcase.isVisible(), true);
-            await showcase.scrollIntoViewIfNeeded();
-            await page.waitForFunction(() => [...document.querySelectorAll('.cafe-menu__portrait img')]
-                .every(image => image.complete && image.naturalWidth > 0), null, { timeout: 12000 });
-            assert.equal(await showcase.locator('img').count(), 3);
+            const openCharacters = mobile ? menu.locator('.cafe-menu__showcase')
+                : menu.getByRole('button', { name: 'بازکردن مدیریت کاراکترها', exact: true });
+            await openCharacters.waitFor({ state: 'visible' });
+            await openCharacters.scrollIntoViewIfNeeded();
+            if (mobile) {
+                await page.waitForFunction(() => [...document.querySelectorAll('.cafe-menu__portrait img')]
+                    .every(image => image.complete && image.naturalWidth > 0), null, { timeout: 12000 });
+                assert.equal(await openCharacters.locator('img').count(), 3);
+            }
             const geometry = await page.evaluate(() => {
                 const screen = document.querySelector('[data-screen="cafe-menu"]');
                 const content = screen.querySelector('.cafe-menu__content');
@@ -105,7 +108,7 @@ try {
                 path: resolve(output, `mobile-home-${view.name}.png`),
                 fullPage: false,
             });
-            await showcase.click();
+            await openCharacters.click();
             await page.waitForFunction(
                 () => document.querySelector('[data-manager-shell]')?.dataset.sidebarState === 'expanded',
                 null,
@@ -172,6 +175,7 @@ try {
                 status: 'passed',
                 rosterCards: await cards.count(),
                 checkedPortraits: limit,
+                portraitGrid,
                 geometry,
                 javascriptErrors: pageErrors,
             });
