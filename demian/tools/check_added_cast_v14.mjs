@@ -64,7 +64,9 @@ try {
                     await page.evaluate(id => window.demianGameApplication.launchGame(id, id === 'dino-run' ? { seed: 127 } : {}), game);
                     await page.waitForFunction(expected => {
                         const app = window.demianGameApplication;
-                        return app.activeGameId === expected && app.sessionState === 'playing';
+                        const player = expected === 'open-world' ? app.characterManager?.activeEntity
+                            : app.activeGame?.avatars?.player ?? app.activeGame?.avatar;
+                        return app.activeGameId === expected && app.sessionState === 'playing' && Boolean(player?.atlas);
                     }, game);
                     const actual = await page.evaluate(id => {
                         const app = window.demianGameApplication;
@@ -86,10 +88,15 @@ try {
                     assert.ok(['idle', 'walk', 'run', 'jump', 'slide', 'land', 'win'].every(clip => actual.clips.includes(clip)));
                     if (game !== 'open-world') assert.ok(new URL(actual.art).pathname.includes(`/characters/${slug}/`), actual.art);
                     if (game === 'dino-run') {
-                        await page.locator('.runner-ready button').click();
+                        await page.getByRole('button', { name: 'شروع و پرش', exact: true }).click();
                         await page.waitForFunction(() => {
                             const model = window.demianGameApplication.activeGame.model;
                             return model.status === 'running' && model.y === 0;
+                        });
+                        await page.evaluate(() => {
+                            const model = window.demianGameApplication.activeGame.model;
+                            model.spawnIn = 999;
+                            model.obstacles = [];
                         });
                         if (mobile) {
                             const touch = await context.newCDPSession(page);
