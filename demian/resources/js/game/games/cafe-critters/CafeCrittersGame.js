@@ -1,7 +1,8 @@
+import { weeklyIndex, WEEKLY_VERSIONS } from '../../content/WeeklyContent.js';
 import BaseGame from '../../contracts/BaseGame.js';
 import { preloadFbxCafeArt } from '../../rendering2d/FbxCafeAssets.js';
 import CafeCueAudio from '../../shared/cafe/CafeCueAudio.js';
-import { CRITTERS, TURN_PAGES } from './CafeCrittersData.js';
+import { CRITTERS, weeklyCritters } from './CafeCrittersData.js';
 import CafeCrittersModel from './CafeCrittersModel.js';
 import CafeCrittersRenderer from './CafeCrittersRenderer.js';
 import CafeCrittersStore from './CafeCrittersStore.js';
@@ -14,7 +15,7 @@ const CUES = Object.freeze({
     complete: [522, 783, .32, .08, 'triangle'],
 });
 const progress = new CafeCrittersStore();
-let rotation = 0;
+const rotation = 0;
 
 export default class CafeCrittersGame extends BaseGame {
     constructor() {
@@ -45,7 +46,7 @@ export default class CafeCrittersGame extends BaseGame {
         this.rankRun = null;
         this.rankActions = [];
         this.rankTicks = 0;
-        this.model.reset(progress.difficulty, progress.discoveries(), rotation);
+        this.model.reset(progress.difficulty, progress.discoveries(), rotation, weeklyCritters(weeklyIndex()));
         this.ui.update(this.model);
         this.openDialog('entry', { difficulty: progress.difficulty, guide: progress.showGuide });
     }
@@ -105,7 +106,9 @@ export default class CafeCrittersGame extends BaseGame {
                 const proposed = await leaderboard.startTurnRun('cafe-critters');
                 if (proposed?.mode === 'ranked'
                     && proposed.game_id === 'cafe-critters'
-                    && proposed.rules_version === 'cafe-critters-replay-v1'
+                    && (proposed.rules_version === 'cafe-critters-replay-v1'
+                        || (proposed.rules_version === WEEKLY_VERSIONS['cafe-critters']
+                            && Number.isSafeInteger(proposed.content_week) && proposed.content_week >= 0))
                     && Number.isSafeInteger(proposed.seed) && proposed.seed > 0
                     && /^[0-9a-f-]{36}$/i.test(String(proposed.run_id ?? ''))) {
                     run = proposed;
@@ -123,13 +126,10 @@ export default class CafeCrittersGame extends BaseGame {
             // In the original model, a fully discovered album uses the provided
             // deterministic rotation rather than the local unseen guest order.
             this.model.reset('standard', CRITTERS.map(guest => guest.id),
-                run.seed % CRITTERS.length);
+                run.seed % CRITTERS.length, run.rules_version === WEEKLY_VERSIONS['cafe-critters'] ? weeklyCritters(run.content_week) : null);
             this.context.app.shell.toast('این دور با بازپخش سروری امتیازدهی می‌شود.', 'info');
         } else {
-            this.model.reset(difficulty, known, rotation);
-            if (known.length === CRITTERS.length) {
-                rotation = (rotation + TURN_PAGES) % CRITTERS.length;
-            }
+            this.model.reset(difficulty, known, rotation, weeklyCritters(weeklyIndex()));
         }
         this.model.start();
         this.ui.update(this.model);
@@ -215,6 +215,7 @@ export default class CafeCrittersGame extends BaseGame {
                 : result.newPages ? 'صفحه‌ها و یادگاری‌های تازه در دفترچه ثبت شدند.' : 'دفترچه برای نوبت بعد آماده است.',
             score: `${num(result.found)} / ${num(result.goal)}`,
             won: result.won,
+            deviceRecord: result.won ? { ticks: Math.max(1, Math.round(this.model.playedSeconds * 60)) } : null,
             ranking: result.won && this.rankRun?.mode === 'ranked'
                 ? this.context.services.leaderboards.finishTurnRun(this.rankRun,
                     this.rankActions, (this.rankActions.at(-1)?.tick ?? 0) + 1)

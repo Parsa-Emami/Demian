@@ -1,3 +1,4 @@
+import { weeklyIndex, WEEKLY_VERSIONS } from '../../content/WeeklyContent.js';
 import BaseGame from '../../contracts/BaseGame.js';
 import { preloadFbxCafeArt } from '../../rendering2d/FbxCafeAssets.js';
 import CafeCueAudio from '../../shared/cafe/CafeCueAudio.js';
@@ -6,13 +7,15 @@ import CoffeeCrashModel from './CoffeeCrashModel.js';
 import CoffeeCrashStore from './CoffeeCrashStore.js';
 import CoffeeCrashUi from './CoffeeCrashUi.js';
 import { adjacent } from './CoffeeCrashModel.js';
-import { digits } from './CoffeeCrashData.js';
+import { digits, LEVELS, weeklyCoffeeLevels } from './CoffeeCrashData.js';
 
 export default class CoffeeCrashGame extends BaseGame {
     constructor() {
         super();
-        this.store = new CoffeeCrashStore();
-        this.model = new CoffeeCrashModel();
+        this.contentWeek = weeklyIndex();
+        this.levels = weeklyCoffeeLevels(this.contentWeek);
+        this.store = new CoffeeCrashStore(undefined, { week: this.contentWeek, levels: this.levels });
+        this.model = new CoffeeCrashModel(1, this.levels);
         this.audio = new CafeCueAudio({ match: [430, 650, .12, .06, 'sine'], cascade: [560, 920, .18, .065, 'triangle'],
             miss: [250, 190, .1, .035, 'sine'], win: [520, 1040, .32, .08, 'triangle'] });
         this.frames = [];
@@ -35,7 +38,7 @@ export default class CoffeeCrashGame extends BaseGame {
         this.ui = new CoffeeCrashUi(context.root, {
             select: index => this.select(index), swap: (a, b) => this.swap(a, b),
             action: action => this.action(action), dialog: action => this.dialogAction(action),
-        });
+        }, this.levels);
     }
     startSession() {
         this.startNonce++;
@@ -94,7 +97,9 @@ export default class CoffeeCrashGame extends BaseGame {
                 const offered = await leaderboard.startTurnRun('coffee-crash');
                 if (offered?.mode === 'ranked'
                     && offered.game_id === 'coffee-crash'
-                    && offered.rules_version === 'coffee-crash-replay-v1'
+                    && (offered.rules_version === 'coffee-crash-replay-v1'
+                        || (offered.rules_version === WEEKLY_VERSIONS['coffee-crash']
+                            && offered.content_week === this.contentWeek && offered.seed === this.levels[0].seed))
                     && Number.isSafeInteger(offered.seed)
                     && offered.seed >= 1 && offered.seed <= 0xffffffff
                     && /^[0-9a-f-]{36}$/i.test(String(offered.run_id ?? ''))) {
@@ -108,6 +113,7 @@ export default class CoffeeCrashGame extends BaseGame {
         this.rankRun = run;
         this.rankActions = [];
         this.rankSeconds = 0;
+        this.model.levels = run.rules_version === 'coffee-crash-replay-v1' ? LEVELS : this.levels;
         this.model.reset(level);
         if (run.mode === 'ranked') {
             // Use the server-issued seed with the SAME model generator; the
@@ -210,13 +216,14 @@ export default class CoffeeCrashGame extends BaseGame {
     finish() {
         if (this.finished) return;
         this.finished = true;
-        this.store.record(this.model);
+        if (this.rankRun?.rules_version !== 'coffee-crash-replay-v1') this.store.record(this.model);
         const won = this.model.status === 'won';
         if (won) this.audio.play('win');
         this.context.app.completeGame({
             title: won ? 'سفارش آماده است!' : 'این نوبت تمام شد',
             subtitle: won ? `${'★'.repeat(this.model.stars)} · مرحلهٔ ${digits.format(this.store.unlocked)} در انتخاب مرحله در دسترس است.` : 'دوباره امتحان کن؛ دنبال ترکیب‌های چهارتایی و پنج‌تایی بگرد.',
             won, score: digits.format(this.model.score),
+            deviceRecord: { score: this.model.score, stage: this.model.level.id },
             ranking: this.rankRun?.mode === 'ranked'
                 ? this.context.services.leaderboards.finishTurnRun(this.rankRun,
                     this.rankActions, (this.rankActions.at(-1)?.tick ?? 0) + 1)

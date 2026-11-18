@@ -1,3 +1,4 @@
+import { critterPack } from '../../content/WeeklyContent.js';
 import { freezeCafe } from '../../shared/cafe/CafeWalkthroughScene.js';
 
 export const CRITTER_RULES = freezeCafe({
@@ -119,4 +120,21 @@ export function cluesFor(guest, difficulty) {
         pishi: `پیشی ${foodSigns[food]} را کنار ${decorSigns[decor]} دیده است.`,
         art: [food, decor],
     };
+}
+
+const weeklyLights = ['sun', 'moon'];
+const weeklyFoods = ['cardamom', 'berries', 'seeds'];
+const weeklyDecor = ['vase', 'book', 'ribbon'];
+
+export function weeklyCritters(week) {
+    return critterPack(week, CRITTERS.length).map(page => {
+        const guest = CRITTERS[page.guest];
+        const light = weeklyLights[page.light];
+        const food = weeklyFoods[page.food];
+        const decor = weeklyDecor[page.decor];
+        const decorClue = `این بار جای نشستن ${guest.name} کنار ${decorSigns[decor]} است.`;
+        return { ...guest, setting: { light, food, decor }, decorClue, behavior: decorClue,
+            lightClue: light === 'sun' ? 'رد مهمان با اولین نور روز روی میز پیدا می‌شود.'
+                : 'رد مهمان وقتی پیدا می‌شود که نور شب از پنجره به میز برسد.' };
+    });
 }

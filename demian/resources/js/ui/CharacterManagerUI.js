@@ -1,4 +1,3 @@
-import ScrollSnapRail from './ScrollSnapRail.js';
 import CharacterPreviewRenderer from './CharacterPreviewRenderer.js';
 import release from '../../../package.json' with { type: 'json' };
 import { BUILTIN_CHARACTER_SLUGS, builtinCharacterPreviewUrl } from '../game/characters/CharacterVisualContract.js';
@@ -16,10 +15,6 @@ export default class CharacterManagerUI {
         this.previewRows = new WeakMap();
 
         this.listElement = root.querySelector('[data-character-list]');
-        this.characterRail = null;
-        this.characterRailPrevious = root.querySelector('[data-character-scroll-previous]');
-        this.characterRailNext = root.querySelector('[data-character-scroll-next]');
-        this.characterRailStatus = root.querySelector('[data-character-scroll-status]');
         this.form = root.querySelector('[data-character-form]');
         this.dropZone = root.querySelector('[data-drop-zone]');
         this.preview = root.querySelector('[data-sheet-preview]');
@@ -47,7 +42,6 @@ export default class CharacterManagerUI {
     boot() {
         document.title = DOCUMENT_TITLE;
         this.bindForm();
-        this.bindCharacterRail();
         this.bindDropZone();
 
         this.eventBus.on('characters:changed', (characters) => {
@@ -108,19 +102,6 @@ export default class CharacterManagerUI {
     }
 
 
-    bindCharacterRail() {
-        if (!this.listElement || this.characterRail) return;
-
-        this.characterRail = new ScrollSnapRail({
-            viewport: this.listElement,
-            itemSelector: '[data-character-card]',
-            previousButton: this.characterRailPrevious,
-            nextButton: this.characterRailNext,
-            statusElement: this.characterRailStatus,
-            focusSelector: '[data-select-character], [data-activate-character]',
-        }).boot();
-    }
-
     renderList(characters) {
         if (!this.listElement) return;
 
@@ -151,7 +132,6 @@ export default class CharacterManagerUI {
                 character.is_active ? 'is-active' : '',
             ].join(' ');
             card.dataset.characterCard = String(character.id);
-            card.dataset.scrollRailItem = String(character.id);
             card.setAttribute('role', 'group');
             card.setAttribute('aria-label', `${character.name}${character.is_active ? '، کاراکتر فعال' : ''}`);
             card.dir = 'rtl';
@@ -228,11 +208,22 @@ export default class CharacterManagerUI {
                 </div>
             `;
 
+            if (BUILTIN_CHARACTER_SLUGS.includes(character.slug)) {
+                const name = String(character.name).split('/').at(-1).trim();
+                card.classList.add('character-card--portrait');
+                card.innerHTML = `<button type="button" data-select-character="${this.escape(String(character.id))}"
+                    aria-label="انتخاب ${this.escape(name)}" aria-pressed="${Boolean(character.is_active)}">
+                    <span class="character-card__preview"><canvas class="character-card__preview-canvas"
+                        width="112" height="112" data-character-preview aria-hidden="true"></canvas></span>
+                    <span class="character-card__name">${this.escape(name)}</span>
+                </button>`;
+            }
+
             this.listElement.appendChild(card);
             const previewCanvas = card.querySelector('[data-character-preview]');
             if (previewCanvas) {
                 const record = BUILTIN_CHARACTER_SLUGS.includes(character.slug)
-                    ? { ...character, preview_url: builtinCharacterPreviewUrl(character.slug) }
+                    ? { ...character, preview_url: builtinCharacterPreviewUrl(character.slug), portrait: true }
                     : character;
                 if (this.previewObserver) {
                     this.previewRows.set(previewCanvas, record);
@@ -245,9 +236,6 @@ export default class CharacterManagerUI {
             }
         });
 
-        const activeCard = this.listElement.querySelector('.character-card.is-active');
-        this.characterRail?.refresh({ preserveIndex: true, preferredItem: activeCard });
-
         this.listElement
             .querySelectorAll('[data-select-character]')
             .forEach((button) => {
@@ -256,9 +244,7 @@ export default class CharacterManagerUI {
                         this.getManager()?.select(button.dataset.selectCharacter)
                     );
                     this.root.dispatchEvent(new CustomEvent('character-ui:activated', { bubbles: true }));
-                    const card = button.closest('[data-character-card]');
-                    const index = this.characterRail?.items.indexOf(card) ?? -1;
-                    if (index >= 0) this.characterRail?.scrollTo(index, { behavior: 'smooth' });
+
                 });
             });
 
@@ -454,6 +440,11 @@ export default class CharacterManagerUI {
             return;
         }
 
+        for (const card of this.listElement?.querySelectorAll('.character-card--portrait') ?? []) {
+            const selected = card.dataset.characterCard === String(record.id);
+            card.classList.toggle('is-active', selected);
+            card.querySelector('button').setAttribute('aria-pressed', String(selected));
+        }
         const fullName = String(record.name ?? record.slug ?? 'Character');
         const parts = fullName
             .split('/')
@@ -540,8 +531,6 @@ export default class CharacterManagerUI {
         this.previewObserver?.disconnect();
         this.previewObserver = null;
         this.previewRows = new WeakMap();
-        this.characterRail?.dispose();
-        this.characterRail = null;
     }
 
     escape(value) {

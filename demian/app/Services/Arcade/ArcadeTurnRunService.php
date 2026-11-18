@@ -4,7 +4,9 @@ namespace App\Services\Arcade;
 
 use App\Models\ArcadePlayer;
 use App\Models\ArcadeRun;
+use DateTimeInterface;
 use Domain\Arcade\VerifiedReplay;
+use Domain\Arcade\WeeklyContent;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -23,26 +25,26 @@ final class ArcadeTurnRunService
      * Explicitly gate newly versioned ORIGINAL-game replays. Old route trials
      * remain available only when gameplay mode is OFF.
      */
-    private function versionAllowed(string $game,string $version): bool
+    private function versionAllowed(string $game,string $version, DateTimeInterface $at): bool
     {
         if ($game===CafeCrittersReplayVerifier::GAME_ID) {
-            return $version===CafeCrittersReplayVerifier::VERSION;
+            return $version === WeeklyContent::effectiveVersion($game, CafeCrittersReplayVerifier::VERSION, $at, config('demian-arcade.weekly_content_at'));
         }
         if ($game===CoffeeCrashReplayVerifier::GAME_ID) {
-            return $version===CoffeeCrashReplayVerifier::VERSION;
+            return $version === WeeklyContent::effectiveVersion($game, CoffeeCrashReplayVerifier::VERSION, $at, config('demian-arcade.weekly_content_at'));
         }
         if (in_array($game,['after-hours','cafe-rush'],true)) {
             $full = $game==='after-hours'
                 ? AfterHoursFrameReplayVerifier::VERSION
                 : CafeRushFrameReplayVerifier::VERSION;
             $fullEnabled = config('demian-arcade.gameplay_ranked_enabled.'.$game)===true;
-            if ($fullEnabled) return $version===$full;
+            if ($fullEnabled) return $version === WeeklyContent::effectiveVersion($game, $full, $at, config('demian-arcade.weekly_content_at'));
             return config('demian-arcade.route_ranked_enabled.'.$game)===true
                 &&$version===CafeRouteReplayVerifier::VERSIONS[$game];
         }
         if ($game==='open-world') {
             return config('demian-arcade.route_ranked_enabled.open-world')===true
-                &&$version===CafeRouteReplayVerifier::VERSIONS[$game];
+                && $version === WeeklyContent::effectiveVersion($game, CafeRouteReplayVerifier::VERSIONS[$game], $at, config('demian-arcade.weekly_content_at'));
         }
         return false;
     }
@@ -59,8 +61,6 @@ final class ArcadeTurnRunService
     {
         abort_unless(app(RankedGameCatalog::class)->supportsRanked($data['game_id']),
             503, 'This game has not passed ranked verification gates.');
-        abort_unless($this->versionAllowed($data['game_id'], $data['rules_version']), 409,
-            'Refresh game rules before starting a ranked replay.');
 
         return DB::transaction(function () use ($player, $data): ArcadeRun {
             ArcadePlayer::query()->lockForUpdate()->findOrFail($player->id);
@@ -75,6 +75,13 @@ final class ArcadeTurnRunService
             }
             app(ArcadeAntiCheat::class)->assertStartAllowed($player->id);
             $started = now();
+            abort_unless($this->versionAllowed($data['game_id'], $data['rules_version'], $started), 409,
+                'Refresh game rules before starting a ranked replay.');
+            $seed = match ($data['rules_version']) {
+                WeeklyContent::version('coffee-crash') => WeeklyContent::coffee(WeeklyContent::index($started), 1)['seed'],
+                WeeklyContent::version('cafe-critters') => WeeklyContent::index($started) + 1,
+                default => random_int(1, 2147483647),
+            };
             $seasonDeadline = app(WeeklyCompetitionService::class)
                 ->authorizeNewRun($started, $data['game_id'], $data['rules_version']);
             $requestedExpiry = $started->copy()->addSeconds(
@@ -87,7 +94,7 @@ final class ArcadeTurnRunService
                 'game_id' => $data['game_id'],
                 'rules_version' => $data['rules_version'],
                 'character_slug' => 'darya', 'track_width' => 420,
-                'seed' => random_int(1, 2147483647), 'status' => 'started',
+                'seed' => $seed, 'status' => 'started',
                 'started_at' => $started, 'expires_at' => $expiry,
             ]);
             app(ArcadeAntiCheat::class)->started($run, request()->ip());
@@ -104,7 +111,8 @@ final class ArcadeTurnRunService
         abort_unless(app(RankedGameCatalog::class)->supportsRanked($run->game_id),
             503, 'This game has not passed ranked verification gates.');
         $frameProof = in_array($run->rules_version, [
-            AfterHoursFrameReplayVerifier::VERSION,CafeRushFrameReplayVerifier::VERSION
+            AfterHoursFrameReplayVerifier::VERSION, CafeRushFrameReplayVerifier::VERSION,
+            WeeklyContent::version('cafe-rush'), WeeklyContent::version('after-hours')
         ],true);
         abort_if($frameProof ? ! isset($data['frames']) : ! isset($data['actions']),
             422, 'Replay payload does not match the signed rules version.');
@@ -123,13 +131,24 @@ final class ArcadeTurnRunService
             abort_unless($current->status === 'started' && $current->expires_at->isFuture(), 410, 'Run expired.');
             abort_unless(app(RankedGameCatalog::class)->supportsRanked($current->game_id), 503,
                 'This game has not passed ranked verification gates.');
-            abort_unless($this->versionAllowed($current->game_id, $current->rules_version), 409,
+            abort_unless($this->versionAllowed($current->game_id, $current->rules_version, $current->started_at), 409,
                 'Rules version changed or rollout revoked.');
             $elapsed = max(0, $current->started_at->diffInMilliseconds(now()));
             abort_if($data['ticks'] * 1000 / 60 > $elapsed + 2000, 422, 'Replay is ahead of server wall-clock time.');
         };
         $authorize($run);
+        $week = WeeklyContent::index($run->started_at);
         $verified = match ($run->rules_version) {
+            WeeklyContent::version('coffee-crash') =>
+                $this->coffee->verify((int) $run->seed, $data['ticks'], $data['actions'], WeeklyContent::coffee($week, 1)),
+            WeeklyContent::version('cafe-critters') =>
+                $this->critters->verify((int) $run->seed, $data['ticks'], $data['actions'], $week),
+            WeeklyContent::version('cafe-rush') =>
+                $this->rushFrames->verify((int) $run->seed, $data['ticks'], $data['frames'], assisted: true, week: $week),
+            WeeklyContent::version('after-hours') =>
+                $this->afterFrames->verify((int) $run->seed, $data['ticks'], $data['frames'], week: $week),
+            WeeklyContent::version('open-world') =>
+                $this->routes->verify($run->game_id, (int) $run->seed, $data['ticks'], $data['actions'], $week),
             AfterHoursFrameReplayVerifier::VERSION =>
                 $this->afterFrames->verify((int) $run->seed, $data['ticks'], $data['frames']),
             CafeRushFrameReplayVerifier::VERSION =>

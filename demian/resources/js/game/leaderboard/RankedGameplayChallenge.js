@@ -1,3 +1,4 @@
+import { WEEKLY_VERSIONS } from '../content/WeeklyContent.js';
 /**
  * Original-game input recording. Only canonical controls are transmitted:
  * no client score, player position, shadow location, ticket or tray state.
@@ -87,7 +88,8 @@ export default class RankedGameplayChallenge {
                 'مسابقه اصلی غیرفعال است؛ بازی همچنان به‌صورت تمرینی اجرا می‌شود.'
             );
             if (run.game_id !== this.gameId
-                || run.rules_version !== RankedGameplayChallenge.VERSIONS[this.gameId]
+                || (run.rules_version !== RankedGameplayChallenge.VERSIONS[this.gameId]
+                    && run.rules_version !== WEEKLY_VERSIONS[this.gameId])
                 || !Number.isSafeInteger(run.seed) || run.seed < 1
                 || !/^[0-9a-f-]{36}$/i.test(String(run.run_id ?? ''))) {
                 throw new Error('پاسخ نسخه یا شناسه مسابقه نامعتبر است.');
