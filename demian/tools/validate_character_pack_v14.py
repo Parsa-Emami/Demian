@@ -44,10 +44,17 @@ def main():
     results = []
     for slug in SLUGS:
         directory = base / slug
+        source_layout = json.loads((directory / 'source-v14/layout.json').read_text())
+        authored_turns = 'idleLoopDirections' in source_layout
         animation_manifest = json.loads((directory / f'manifests/{slug}_animation_manifest.json').read_text())
         for variant, cell in VARIANTS.items():
             atlas = json.loads((directory / f'{slug}-atlas-v14-{variant}.json').read_text())
-            image = Image.open(directory / atlas['meta']['image'])
+            with Image.open(directory / atlas['meta']['image']) as packed:
+                if source_layout.get('indexedPalette'):
+                    assert packed.mode == 'P' and 'transparency' in packed.info
+                else:
+                    assert packed.mode == 'RGBA'
+                image = packed.convert('RGBA')
             assert atlas['meta']['imageRevision'] == hashlib.sha256((directory / atlas['meta']['image']).read_bytes()).hexdigest()
             grid = atlas['meta']['grid']
             assert image.mode == 'RGBA' and image.size == (grid['columns'] * cell, grid['rows'] * cell)
@@ -86,24 +93,31 @@ def main():
                 low, high = (.96, 1.05) if family in calibrated else (.84, 1.16)
                 assert low <= height_ratio <= high, f'{slug}/{variant}: {state} visible body scale {height_ratio:.3f} is outside {low}..{high}'
                 gait_heights[state] = round(height_ratio * 3.75, 3)
-            if slug in ('arsal', 'iman', 'amin', 'hossein'):
+            if authored_turns or slug in ('arsal', 'iman', 'amin', 'hossein'):
                 recovery_ratio = visible_heights['jump_e_047'] / canonical_ratio
                 airborne_ratio = median(visible_heights[name] for name in atlas['animations']['jump']['frames']) / canonical_ratio
                 assert .96 <= recovery_ratio <= 1.05, f'{slug}/{variant}: jump recovery changes the canonical body size'
-                source_layout = json.loads((directory / 'source-v14/layout.json').read_text())
-                if source_layout.get('locomotionSource'):
-                    widths = {}
-                    for state in ('walk', 'jump'):
-                        measurements = []
-                        for frame_name in atlas['animations'][state]['frames']:
-                            f = atlas['frames'][frame_name]
-                            measurements.append(face_width(image.crop((f['x'], f['y'], f['x']+cell, f['y']+cell))))
-                        widths[state] = median(measurements)
-                    assert .80 <= widths['jump'] / widths['walk'] <= 1.20, f'{slug}/{variant}: jump changes head volume'
+                if authored_turns or source_layout.get('locomotionSource'):
+                    if not authored_turns or variant == 'desktop':
+                        widths = {}
+                        for state in ('walk', 'jump'):
+                            measurements = []
+                            for frame_name in atlas['animations'][state]['frames']:
+                                f = atlas['frames'][frame_name]
+                                measurements.append(face_width(image.crop((f['x'], f['y'], f['x']+cell, f['y']+cell))))
+                            widths[state] = median(measurements)
+                        assert .80 <= widths['jump'] / widths['walk'] <= 1.20, f'{slug}/{variant}: jump changes head volume'
                     assert .65 <= airborne_ratio <= 1.05, f'{slug}/{variant}: jump tuck is outside the authored range'
                 else:
                     assert .85 <= airborne_ratio <= 1.05, f'{slug}/{variant}: airborne body shrinks below the shared size'
                 assert atlas['render']['bodyScaleCalibration']['referencePoseIndices']['jump'] == [7]
+            if authored_turns and variant == 'mobile':
+                views = set()
+                for direction in atlas['meta']['directions']:
+                    frame_id = atlas['animations']['idle']['framesByDirection'][direction][0]
+                    x, y, w, h = (atlas['frames'][frame_id][key] for key in ('x', 'y', 'w', 'h'))
+                    views.add(image.crop((x, y, x + w, y + h)).getchannel('A').tobytes())
+                assert len(views) == len(atlas['meta']['directions']), f'{slug}: direction art repeats'
             for name, animation in atlas['animations'].items():
                 assert name not in ('attack', 'guitar', 'dance', 'spin', 'taunt', 'sleep')
                 assert animation_manifest['states'][name]['frames'] == len(animation['frames'])

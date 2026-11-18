@@ -3,8 +3,12 @@ import { createReadStream, statSync } from 'node:fs';
 import { createServer } from 'node:http';
 import { extname, resolve, sep } from 'node:path';
 import { chromium } from 'playwright';
+import { BUILTIN_CHARACTER_SLUGS } from '../resources/js/game/characters/CharacterVisualContract.js';
 
 const root = resolve(import.meta.dirname, '../_site');
+const cast = process.argv.slice(2);
+assert.ok(cast.length > 0, 'Provide at least one character slug to check');
+for (const slug of cast) assert.ok(BUILTIN_CHARACTER_SLUGS.includes(slug), `Unknown character: ${slug}`);
 const contentTypes = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css',
     '.json': 'application/json', '.png': 'image/png', '.webp': 'image/webp', '.woff2': 'font/woff2',
     '.svg': 'image/svg+xml', '.webmanifest': 'application/manifest+json' };
@@ -24,7 +28,11 @@ const url = `http://127.0.0.1:${server.address().port}/`;
 let browser;
 const results = [];
 try {
-    browser = await chromium.launch({ headless: true, args: ['--no-sandbox', '--disable-dev-shm-usage', '--disable-gpu'] });
+    browser = await chromium.launch({
+        headless: true,
+        executablePath: process.env.DEMIAN_BROWSER_EXECUTABLE,
+        args: ['--no-sandbox', '--disable-dev-shm-usage', '--disable-gpu'],
+    });
     for (const { width, height, mobile } of [
         { width: 390, height: 844, mobile: true },
         { width: 1440, height: 900, mobile: false },
@@ -38,13 +46,30 @@ try {
             await page.bringToFront();
             const errors = [];
             page.on('pageerror', error => errors.push(error.message));
+            await page.addInitScript(() => {
+                const drawImage = CanvasRenderingContext2D.prototype.drawImage;
+                window.castFrames = new Map();
+                CanvasRenderingContext2D.prototype.drawImage = function (image, ...args) {
+                    const drawn = drawImage.call(this, image, ...args);
+                    const app = window.demianGameApplication;
+                    const avatar = app?.activeGame?.avatar;
+                    if (args.length === 8 && app?.activeGameId === 'dino-run' && avatar?.texture?.image === image) {
+                        const key = `${avatar.slug}:${avatar.state}`;
+                        const frames = window.castFrames.get(key) ?? new Set();
+                        frames.add(`${args[0]},${args[1]},${args[2]}`);
+                        window.castFrames.set(key, frames);
+                    }
+                    return drawn;
+                };
+            });
             await page.goto(url, { waitUntil: 'domcontentloaded' });
-            for (const slug of ['taher-db', 'sorkhi']) {
+            for (const slug of cast) {
                 await page.waitForFunction(() => window.demianGameApplication?.sessionState === 'menu');
                 const menu = page.locator('[data-screen="cafe-menu"]');
                 await menu.locator(mobile ? '.cafe-menu__showcase' : '.menu-character-button').click();
                 const card = page.locator(`[data-character-card="builtin-${slug}"]`);
                 await card.scrollIntoViewIfNeeded();
+                assert.match(await card.getAttribute('class'), /\bcharacter-card--portrait\b/);
                 const image = card.locator('[data-character-preview][data-preview-state="ready"]');
                 await image.waitFor();
                 const pixels = await image.evaluate(canvas => {
@@ -92,8 +117,28 @@ try {
                     }, game);
                     assert.equal(actual.slug, slug, game);
                     assert.equal(actual.atlasVersion, 14, game);
-                    assert.ok(['idle', 'walk', 'run', 'jump', 'slide', 'land', 'win'].every(clip => actual.clips.includes(clip)));
+                    const requiredClips = ['idle', 'walk', 'run', 'sprint', 'turn', 'takeoff', 'jump', 'fall', 'land', 'slide', 'win'];
+                    assert.ok(requiredClips.every(clip => actual.clips.includes(clip)), `${slug} in ${game}`);
                     if (game !== 'open-world') assert.ok(new URL(actual.art).pathname.includes(`/characters/${slug}/`), actual.art);
+                    if (game === 'open-world') {
+                        await page.waitForFunction(() => window.demianGameApplication.characterManager.activeEntity.grounded);
+                        const sample = (state, previous) => page.waitForFunction(({ state, previous }) => {
+                            const entity = window.demianGameApplication.characterManager.activeEntity;
+                            const frame = entity.animator.currentFrameName();
+                            return frame?.startsWith(state + '_') && frame !== previous && frame;
+                        }, { state, previous }, { timeout: 8000 }).then(handle => handle.jsonValue());
+                        await page.keyboard.down('d');
+                        try {
+                            const walk = await sample('walk', null);
+                            await sample('walk', walk);
+                            await page.keyboard.down('Shift');
+                            const run = await sample('run', null);
+                            await sample('run', run);
+                        } finally {
+                            await page.keyboard.up('Shift');
+                            await page.keyboard.up('d');
+                        }
+                    }
                     if (game === 'dino-run') {
                         const start = page.getByRole('button', { name: 'شروع و پرش', exact: true });
                         await page.waitForFunction(() => {
@@ -116,6 +161,9 @@ try {
                             const model = window.demianGameApplication.activeGame.model;
                             return model.y === 0 && model.vy === 0;
                         });
+                        const sawMotion = state => page.waitForFunction(({ slug, state }) =>
+                            (window.castFrames.get(`${slug}:${state}`)?.size ?? 0) >= 2, { slug, state }, { timeout: 8000 });
+                        await sawMotion('run');
                         if (mobile) {
                             const touch = await context.newCDPSession(page);
                             for (const [selector, verify] of [
@@ -130,6 +178,7 @@ try {
                                     type: 'touchStart', touchPoints: [{ x: box.x + box.width / 2, y: box.y + box.height / 2 }],
                                 });
                                 await page.waitForFunction(verify);
+                                await sawMotion(selector.endsWith('duck') ? 'slide' : 'jump');
                                 await touch.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
                                 await page.waitForFunction(() => window.demianGameApplication.activeGame.model.y === 0);
                             }
@@ -137,10 +186,12 @@ try {
                         } else {
                             await page.keyboard.down('ArrowUp');
                             await page.waitForFunction(() => window.demianGameApplication.activeGame.model.y > 6);
+                            await sawMotion('jump');
                             await page.keyboard.up('ArrowUp');
                             await page.waitForFunction(() => window.demianGameApplication.activeGame.model.y === 0);
                             await page.keyboard.down('ArrowDown');
                             await page.waitForFunction(() => window.demianGameApplication.activeGame.avatar.state === 'slide');
+                            await sawMotion('slide');
                             await page.keyboard.up('ArrowDown');
                         }
                     }

@@ -3,7 +3,7 @@
  * requests. Only same-release *complete* core + game packs serve offline.
  * Do not skipWaiting during gameplay; the menu explicitly accepts updates.
  */
-const RELEASE_ID = 'c7181ba54599f3be';
+const RELEASE_ID = '1dd2e52bbd316f55';
 const PREFIX = 'demian-offline-v1-';
 const CACHE_NAME = PREFIX + RELEASE_ID;
 const CORE_PREFIX = 'demian-core-v1-';

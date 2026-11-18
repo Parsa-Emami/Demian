@@ -11,6 +11,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 from typing import Iterable
+from PIL import Image
 
 ROOT = Path(__file__).resolve().parents[1]
 CHARACTER_ROOT = ROOT / "public" / "assets" / "characters"
@@ -25,6 +26,12 @@ ACTIVE_CHARACTER_DEFINITIONS = {
     for entry in MOTION_CONTRACT['characters']
 }
 ACTIVE_CHARACTER_ROSTER = tuple(ACTIVE_CHARACTER_DEFINITIONS)
+
+
+def encode_atlas_image(image, indexed):
+    if indexed:
+        return image.quantize(colors=256, method=Image.Quantize.FASTOCTREE)
+    return image
 
 LEGACY_SPEECH: dict[str, list[str]] = {
     "amirreza": ["بال بزن بریم", "از همه سریع‌ترم", "الان وقت های‌اسکوره", "پرواز کوتاه، برد بزرگ", "سرعت یعنی امیررضا", "بزن بریم یه دور سریع", "فول اسپید!", "با بال‌ها می‌بریم"],

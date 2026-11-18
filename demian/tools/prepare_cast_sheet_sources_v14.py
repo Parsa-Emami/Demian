@@ -111,6 +111,9 @@ def write_sheet(path, rows, columns=8):
 
 def prepare(slug):
     folder = CHARACTERS / slug / 'source-v14'
+    layout = folder / 'layout.json'
+    if layout.exists() and read_json(layout).get('locomotionReference'):
+        return
     reference = folder / 'reference.jpg'
     spec = read_json(folder / 'sheet-map.json')
     with Image.open(reference) as image:

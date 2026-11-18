@@ -7,11 +7,11 @@
     "detail"
   ],
   "candidates": 42,
-  "converted": 42,
-  "inputBytes": 122377129,
-  "outputBytes": 96601402,
-  "savedBytes": 25775727,
-  "skippedBytes": 0,
+  "converted": 40,
+  "inputBytes": 118280973,
+  "outputBytes": 93792583,
+  "savedBytes": 24488390,
+  "skippedBytes": 608867,
   "entries": [
     {
       "slug": "darya",
@@ -268,23 +268,23 @@
     {
       "slug": "taher-db",
       "variant": "lite",
-      "format": "webp",
-      "inputBytes": 563012,
-      "outputBytes": 393790
+      "format": "png",
+      "inputBytes": 163910,
+      "outputBytes": 163910
     },
     {
       "slug": "taher-db",
       "variant": "runtime",
-      "format": "webp",
-      "inputBytes": 1498323,
-      "outputBytes": 1192244
+      "format": "png",
+      "inputBytes": 444957,
+      "outputBytes": 444957
     },
     {
       "slug": "taher-db",
       "variant": "detail",
       "format": "webp",
-      "inputBytes": 3848649,
-      "outputBytes": 2973244
+      "inputBytes": 1204961,
+      "outputBytes": 1141592
     },
     {
       "slug": "sorkhi",
@@ -308,5 +308,5 @@
       "outputBytes": 2715110
     }
   ],
-  "savingsFraction": 0.21063
+  "savingsFraction": 0.20704
 }
