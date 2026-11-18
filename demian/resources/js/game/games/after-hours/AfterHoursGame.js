@@ -67,7 +67,7 @@ export default class AfterHoursGame extends BaseGame {
 
     async preload(context) {
         void preloadFbxCafeArt();
-        this.avatar = await context.services.characterVisuals.createCanvasAvatar('darya', { player: true });
+        this.avatar = await context.services.characterVisuals.createCanvasAvatar('player', { player: true });
     }
 
     async enter(context) {

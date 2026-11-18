@@ -22,17 +22,13 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - run: pip install -r tools/requirements-character-art.txt
+      - run: pip install Pillow
         working-directory: demian
       - run: npm ci
         working-directory: demian
-      - name: Build the two character packs
+      - name: Build the release with the checked character packs
         working-directory: demian
-        run: |
-          python3 tools/prepare_cast_sheet_sources_v14.py
-          python3 tools/build_character_pack_v14.py --characters taher-db sorkhi
-          python3 tools/build_runtime_character_packs.py --characters taher-db sorkhi --report "$RUNNER_TEMP/cast-runtime-packs.json"
-          npm run build:static
+        run: npm run build:static
       - name: Verify the character assets and release
         working-directory: demian
         run: |
