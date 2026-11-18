@@ -7,10 +7,8 @@ import { optionalAssetPolicy } from '../characters/runtime/MobileNetworkPolicy.j
  */
 export function criticalSpriteSlug(gameId, visuals) {
     if (!visuals) return null;
-    if (gameId === 'cafe-rush') return 'amirreza';
-    if (gameId === 'after-hours') return 'darya';
-    if (gameId === 'open-world' || gameId === 'dino-run') return visuals.activeSlug ?? null;
-    return null;
+    return ['open-world', 'dino-run', 'after-hours', 'cafe-rush'].includes(gameId)
+        ? visuals.activeSlug ?? null : null;
 }
 
 export function criticalSpriteVariant() {

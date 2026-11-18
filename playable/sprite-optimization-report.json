@@ -6,11 +6,11 @@
     "runtime",
     "detail"
   ],
-  "candidates": 36,
-  "converted": 36,
-  "inputBytes": 111125685,
-  "outputBytes": 87832962,
-  "savedBytes": 23292723,
+  "candidates": 42,
+  "converted": 42,
+  "inputBytes": 122377129,
+  "outputBytes": 96601402,
+  "savedBytes": 25775727,
   "skippedBytes": 0,
   "entries": [
     {
@@ -264,7 +264,49 @@
       "format": "webp",
       "inputBytes": 5100846,
       "outputBytes": 4141308
+    },
+    {
+      "slug": "taher-db",
+      "variant": "lite",
+      "format": "webp",
+      "inputBytes": 563012,
+      "outputBytes": 393790
+    },
+    {
+      "slug": "taher-db",
+      "variant": "runtime",
+      "format": "webp",
+      "inputBytes": 1498323,
+      "outputBytes": 1192244
+    },
+    {
+      "slug": "taher-db",
+      "variant": "detail",
+      "format": "webp",
+      "inputBytes": 3848649,
+      "outputBytes": 2973244
+    },
+    {
+      "slug": "sorkhi",
+      "variant": "lite",
+      "format": "webp",
+      "inputBytes": 510671,
+      "outputBytes": 411110
+    },
+    {
+      "slug": "sorkhi",
+      "variant": "runtime",
+      "format": "webp",
+      "inputBytes": 1330268,
+      "outputBytes": 1082942
+    },
+    {
+      "slug": "sorkhi",
+      "variant": "detail",
+      "format": "webp",
+      "inputBytes": 3500521,
+      "outputBytes": 2715110
     }
   ],
-  "savingsFraction": 0.20961
+  "savingsFraction": 0.21063
 }

@@ -113,6 +113,8 @@ async function launch(page, game, profile, mode) {
 
 async function measure(browser, directory, label) {
     const server = serve(directory);
+    const slugs = label === 'candidate' ? BUILTIN_CHARACTER_SLUGS
+        : JSON.parse(readFileSync(resolve(directory, 'characters.json'), 'utf8')).data.map(character => character.slug);
     await new Promise(done => server.listen(0, '127.0.0.1', done));
     const origin = 'http://127.0.0.1:' + server.address().port;
     const target = report[label];
@@ -137,7 +139,7 @@ async function measure(browser, directory, label) {
                     firstMs: row.cold.firstMs, environmentMs: row.cold.environmentMs }, warm: row.warm && {
                     firstMs: row.warm.firstMs, environmentMs: row.warm.environmentMs } }));
             }
-            for (const slug of BUILTIN_CHARACTER_SLUGS) {
+            for (const slug of slugs) {
                 const row = { type: 'character-switch', profile: profile.name, slug };
                 try {
                     Object.assign(row, await session(browser, origin, profile, slug === 'darya' ? 'amirreza' : 'darya', async page => {

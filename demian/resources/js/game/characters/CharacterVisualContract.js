@@ -45,8 +45,8 @@ export const CHARACTER_PACK_VERSION_OVERRIDES = Object.freeze({
     setayesh: 14,
     negar: 14,
     tiam: 14,
-    sorkhi: 9,
-    'taher-db': 9,
+    sorkhi: 14,
+    'taher-db': 14,
     uzudi: 14,
 });
 

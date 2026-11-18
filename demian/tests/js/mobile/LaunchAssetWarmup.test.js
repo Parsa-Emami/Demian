@@ -16,14 +16,15 @@ test('prewarm only the required player art, never staff, map tiles or score APIs
     };
     assert.equal(criticalSpriteSlug('open-world', visuals), 'negar');
     assert.equal(criticalSpriteSlug('dino-run', visuals), 'negar');
-    assert.equal(criticalSpriteSlug('after-hours', visuals), 'darya');
-    assert.equal(criticalSpriteSlug('cafe-rush', visuals), 'amirreza');
+    assert.equal(criticalSpriteSlug('after-hours', visuals), 'negar');
+    assert.equal(criticalSpriteSlug('cafe-rush', visuals), 'negar');
     assert.equal(criticalSpriteSlug('coffee-crash', visuals), null);
     assert.equal(await prewarmCriticalGameSprite('open-world', visuals, { networkPolicy: normal }), true);
+    visuals.activeSlug = 'taher-db';
     assert.equal(await prewarmCriticalGameSprite('cafe-rush', visuals, { networkPolicy: normal }), true);
     assert.deepEqual(calls, [
         ['negar', 'lite', { background: true, speculative: true }],
-        ['amirreza', 'lite', { background: true, speculative: true }],
+        ['taher-db', 'lite', { background: true, speculative: true }],
     ]);
 });
 

@@ -392,9 +392,9 @@
                                 کمی بگرد. کمی بدو. یک رکورد تازه بساز.
                             </p>
                         </div>
-                        <button type="button" data-sidebar-toggle class="cafe-menu__showcase" aria-label="نمایش مجموعهٔ ۱۲ کاراکتر و انتخاب کاراکتر">
+                        <button type="button" data-sidebar-toggle class="cafe-menu__showcase" aria-label="نمایش مجموعه و انتخاب کاراکتر">
                             <span class="cafe-menu__showcase-copy">
-                                <span class="cafe-menu__showcase-kicker">YOUR CAST · 12 CHARACTERS</span>
+                                <span class="cafe-menu__showcase-kicker">YOUR CAST</span>
                                 <strong>قهرمان این داستان تویی</strong>
                                 <small>شخصیتت را انتخاب کن و وارد کافه شو</small>
                             </span>
@@ -420,7 +420,7 @@
                         <button type="button" data-shell-action="motion-comparison" class="shell-button shell-button--ghost">مقایسهٔ الگوی حرکت</button>
                         <button type="button" data-sidebar-toggle class="shell-button shell-button--ghost menu-character-button">انتخاب کاراکتر <span aria-hidden="true">◉</span></button>
                         <div data-menu-reveal class="cafe-menu__footer">
-                            <span data-game-library-summary>۶ بازی · ۱۲ کاراکتر</span>
+                            <span data-game-library-summary>۶ بازی · ۱۴ کاراکتر</span>
                             <span>بازی‌های کوچک، ماجراجویی‌های بزرگ</span>
                         </div>
                         <nav class="demian-legal-links" aria-label="قوانین و حریم خصوصی">

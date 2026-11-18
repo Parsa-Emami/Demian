@@ -301,7 +301,7 @@ def build_character(slug):
                 sheet.paste(pose.resize((cell, cell), Image.Resampling.LANCZOS), (x, y))
                 frames[names[key][i]] = {'x': x, 'y': y, 'w': cell, 'h': cell}; index += 1
         image_name = f'{slug}-spritesheet-v14-{variant}.png'
-        atlas = {'meta': {'name': LABELS[slug], 'version': VERSION, 'variant': variant, 'image': image_name,
+        atlas = {'meta': {'name': LABELS[slug], 'slug': slug, 'version': VERSION, 'variant': variant, 'image': image_name,
             'size': {'w': sheet.width, 'h': sheet.height}, 'frameSize': {'w': cell, 'h': cell},
             'grid': {'columns': COLS, 'rows': ROWS}, 'generatedFrameCount': len(frames),
             'animationCount': len(animations), 'directions': list(DIRECTIONS), 'artIntegrity': 'valid',

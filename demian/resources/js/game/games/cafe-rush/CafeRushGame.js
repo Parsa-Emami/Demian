@@ -69,8 +69,7 @@ export default class CafeRushGame extends BaseGame {
 
     async preload(context) {
         void preloadFbxCafeArt();
-        const player = await context.services.characterVisuals.createCanvasAvatar(
-            'amirreza', { player: true });
+        const player = await context.services.characterVisuals.createCanvasAvatar('player', { player: true });
         // Optional staff art must never block entry into the round.
         this.avatars = { player, setayesh: null, uzudi: null };
     }

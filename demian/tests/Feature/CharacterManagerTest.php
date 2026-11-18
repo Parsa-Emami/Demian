@@ -53,6 +53,8 @@ class CharacterManagerTest extends TestCase
             ['iman', 'IMAN / ایمان'],
             ['amin', 'AMIN / امین'],
             ['hossein', 'HOSSEIN / حسین'],
+            ['taher-db', 'TAHER DB / طاهر DB'],
+            ['sorkhi', 'SORKHI / سرخی'],
         ] as [$slug, $name]) {
             $response->assertJsonFragment([
                 'slug' => $slug,
@@ -62,7 +64,8 @@ class CharacterManagerTest extends TestCase
         }
 
         // Updated asset pack versions
-        $packVersions = ['darya' => 14, 'setayesh' => 14, 'uzudi' => 14, 'negar' => 14, 'tiam' => 14, 'amirreza' => 14, 'hanna' => 14, 'ainaz' => 14, 'arsal' => 14, 'iman' => 14, 'amin' => 14, 'hossein' => 14];
+        $packVersions = ['darya' => 14, 'setayesh' => 14, 'uzudi' => 14, 'negar' => 14, 'tiam' => 14, 'amirreza' => 14, 'hanna' => 14, 'ainaz' => 14, 'arsal' => 14, 'iman' => 14, 'amin' => 14, 'hossein' => 14, 'taher-db' => 14, 'sorkhi' => 14];
+        $this->assertSame(array_keys($packVersions), config('demian-arcade.characters'));
 
         foreach ($packVersions as $slug => $version) {
             $response->assertJsonFragment([
