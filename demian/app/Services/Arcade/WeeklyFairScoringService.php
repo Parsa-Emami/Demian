@@ -61,7 +61,7 @@ final class WeeklyFairScoringService
             'created_at' => now(), 'updated_at' => now(),
         ]);
         $policy = DB::table('arcade_weekly_fair_policies')
-            ->where('period_key', $periodKey)->first();
+            ->where('period_key', $periodKey)->lockForUpdate()->first();
         if (! $policy || $policy->algorithm_version !== self::VERSION
             || (int) $policy->maximum_points !== self::MAX_POINTS
             || (int) $policy->minimum_cohort !== self::MIN_COHORT) {

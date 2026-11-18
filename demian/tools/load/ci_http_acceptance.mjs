@@ -24,7 +24,7 @@ const report = { status: 'pending', environment: 'isolated CI MySQL 8.4 with eig
     users: 50, security: [], timings: {}, failures: [] };
 const server = spawn('php', ['-S', '127.0.0.1:8088', '-t', resolve('public'),
     resolve('vendor/laravel/framework/src/Illuminate/Foundation/resources/server.php')], {
-    cwd: resolve('public'), detached: true, stdio: 'ignore', env: { ...process.env, PHP_CLI_SERVER_WORKERS: '8' },
+    cwd: resolve('public'), detached: true, stdio: 'ignore', env: { ...process.env, PHP_CLI_SERVER_WORKERS: '8', APP_DEBUG: 'true' },
 });
 let spawnError;
 server.on('error', error => { spawnError = error; });
@@ -41,7 +41,11 @@ async function request(path, { token, body, method = body === undefined ? 'GET' 
         const rows = samples.get(group) ?? [];
         rows.push(performance.now() - started); samples.set(group, rows);
     }
-    assert.ok(response.status < 500, `HTTP ${response.status} for ${path.replace(/[a-f0-9-]{36}/g, ':run')}`);
+    if (response.status >= 500) {
+        const exception = /^[A-Za-z\\\\]{1,120}$/.test(data?.exception ?? '') ? data.exception : 'unknown';
+        const sqlState = /SQLSTATE\[([0-9A-Z]{5})\]/.exec(data?.message ?? '')?.[1];
+        throw new Error(`HTTP ${response.status} for ${path.replace(/[a-f0-9-]{36}/g, ':run')} (${exception}${sqlState ? ', SQLSTATE ' + sqlState : ''})`);
+    }
     return { status: response.status, data, headers: response.headers };
 }
 async function probe(name, expected, path, options) {

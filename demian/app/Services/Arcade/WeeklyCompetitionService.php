@@ -97,7 +97,7 @@ final class WeeklyCompetitionService
     {
         $window = $this->window($when);
         $now = $this->utc($observedAt);
-        DB::table('arcade_weekly_periods')->insertOrIgnore([
+        DB::table('arcade_weekly_periods')->upsert([
             'period_key' => $window['period_key'],
             'starts_at' => $window['starts_at']->toDateTimeString(),
             'ends_at' => $window['ends_at']->toDateTimeString(),
@@ -107,7 +107,7 @@ final class WeeklyCompetitionService
             'completion_deadline_at' => $this->deadline($window)->toDateTimeString(),
             'created_at' => $now->toDateTimeString(),
             'updated_at' => $now->toDateTimeString(),
-        ]);
+        ], ['period_key'], ['period_key']);
         $period = DB::table('arcade_weekly_periods')->where('period_key', $window['period_key'])
             ->lockForUpdate()->first();
         if (! $period) throw new \RuntimeException('Unable to prepare weekly competition.');
@@ -165,7 +165,7 @@ final class WeeklyCompetitionService
 
         $lock = DB::table('arcade_weekly_rule_locks')
             ->where('period_key', $window['period_key'])
-            ->where('game_id', $gameId)->first();
+            ->where('game_id', $gameId)->lockForUpdate()->first();
         if ($lock) {
             abort_unless($lock->rules_version === $rulesVersion, 409,
                 'Scoring rules are frozen for this weekly competition.');
