@@ -182,11 +182,35 @@
       "has_shipped_assets": true,
       "motion_family": "male-base-v1",
       "motion_accessories": []
+    },
+    {
+      "slug": "taher-db",
+      "display_name": "TAHER DB / طاهر DB",
+      "production_status": "gold_standard_production",
+      "is_default_active": false,
+      "pack_version": 14,
+      "locomotion_style": "ground-runner",
+      "manifest": "taher-db/manifests/character_manifest_v4.json",
+      "has_shipped_assets": true,
+      "motion_family": "male-base-v1",
+      "motion_accessories": []
+    },
+    {
+      "slug": "sorkhi",
+      "display_name": "SORKHI / سرخی",
+      "production_status": "gold_standard_production",
+      "is_default_active": false,
+      "pack_version": 14,
+      "locomotion_style": "ground-runner",
+      "manifest": "sorkhi/manifests/character_manifest_v4.json",
+      "has_shipped_assets": true,
+      "motion_family": "male-base-v1",
+      "motion_accessories": []
     }
   ],
   "master_motion": {
     "version": "master-motion-v1",
-    "source_sha256": "ab27808dda81e4841571994a346522d5fdde544478dd01c6434201449da4aace",
+    "source_sha256": "34eee9e9874c4d60e10158707ec580861fa0f6aca7856a0787bcbea8a8bb9ae8",
     "url": "assets/characters/master-motion-v1.json"
   }
 }
