@@ -33,6 +33,7 @@
 
 .manager-shell .character-card--portrait [data-select-character] {
     display: grid;
+    grid-template-columns: minmax(0, 1fr);
     justify-items: center;
     gap: 3px;
     align-content: center;
@@ -47,6 +48,7 @@
 
 .manager-shell .character-portrait-grid .character-card--portrait .character-card__preview {
     width: min(100%, 66px);
+    min-width: 0;
     height: auto;
     aspect-ratio: 1;
     border-radius: 48% 48% 34% 34%;

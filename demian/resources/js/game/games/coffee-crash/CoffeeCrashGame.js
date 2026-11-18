@@ -221,7 +221,7 @@ export default class CoffeeCrashGame extends BaseGame {
         if (won) this.audio.play('win');
         this.context.app.completeGame({
             title: won ? 'سفارش آماده است!' : 'این نوبت تمام شد',
-            subtitle: won ? `${'★'.repeat(this.model.stars)} · مرحلهٔ ${digits.format(this.store.unlocked)} در انتخاب مرحله در دسترس است.` : 'دوباره امتحان کن؛ دنبال ترکیب‌های چهارتایی و پنج‌تایی بگرد.',
+            subtitle: won ? `${'★'.repeat(this.model.stars)} · مرحلهٔ ${digits.format(this.model.level.id)} کامل شد.` : 'دوباره امتحان کن؛ دنبال ترکیب‌های چهارتایی و پنج‌تایی بگرد.',
             won, score: digits.format(this.model.score),
             deviceRecord: { score: this.model.score, stage: this.model.level.id },
             ranking: this.rankRun?.mode === 'ranked'

@@ -60,7 +60,9 @@ try {
             await page.clock.setFixedTime(new Date('2026-11-21T08:00:00Z'));
             await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 60000 });
             await wait(page, () => window.demianGameApplication?.sessionState === 'menu', 30000);
-            await page.evaluate(() => window.demianGameApplication.launchGame('coffee-crash'));
+            await page.getByRole('button', { name: 'انتخاب بازی', exact: true }).click();
+            await page.getByText('خوراکی‌ها را جابه‌جا کن، ترکیب ویژه بساز و سفارش‌های سه مرحلهٔ هر هفته را آماده کن.', { exact: true }).waitFor();
+            await page.getByRole('button', { name: /اجرای COFFEE CRASH/ }).click();
             await wait(page, () => {
                 const g = window.demianGameApplication?.activeGame;
                 return g?.ui?.view === 'entry' && g.ui.dialog.open;

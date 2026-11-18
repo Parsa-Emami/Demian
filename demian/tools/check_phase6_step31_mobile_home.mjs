@@ -55,12 +55,14 @@ try {
         { name: 'phone-320-portrait', width: 320, height: 568 },
         { name: 'phone-390-portrait', width: 390, height: 844 },
         { name: 'phone-844-landscape', width: 844, height: 390 },
+        { name: 'desktop-1360', width: 1360, height: 900 },
     ]) {
+        const mobile = view.name.startsWith('phone-');
         const context = await browser.newContext({
             viewport: { width: view.width, height: view.height },
-            deviceScaleFactor: 2,
-            isMobile: true,
-            hasTouch: true,
+            deviceScaleFactor: mobile ? 2 : 1,
+            isMobile: mobile,
+            hasTouch: mobile,
             serviceWorkers: 'block',
         });
         try {
@@ -116,11 +118,19 @@ try {
                 rows: new Set([...element.children].map(card => Math.round(card.offsetTop))).size,
                 portraitCount: element.querySelectorAll('.character-card--portrait').length,
                 horizontalOverflow: element.scrollWidth > element.clientWidth + 2,
+                framesFit: [...element.children].every(card => {
+                    const bounds = card.getBoundingClientRect();
+                    const frame = card.querySelector('.character-card__preview').getBoundingClientRect();
+                    return frame.width > 0 && frame.height > 0 &&
+                        frame.left >= bounds.left - 1 && frame.right <= bounds.right + 1 &&
+                        frame.top >= bounds.top - 1 && frame.bottom <= bounds.bottom + 1;
+                }),
             }));
             assert.equal(portraitGrid.portraitCount, 12);
             assert.equal(portraitGrid.columns, view.width <= 365 ? 3 : 4);
             assert.equal(portraitGrid.rows, 12 / portraitGrid.columns);
             assert.equal(portraitGrid.horizontalOverflow, false);
+            assert.ok(portraitGrid.framesFit, `${view.name}: portrait frames must fit within their cards`);
             const limit = view.width === 390 ? 12 : 3;
             for (let i = 0; i < limit; i++) {
                 const canvas = cards.nth(i).locator('[data-character-preview]');

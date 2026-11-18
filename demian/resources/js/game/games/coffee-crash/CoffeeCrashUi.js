@@ -178,7 +178,7 @@ export default class CoffeeCrashUi {
         for (const button of this.dialog.querySelectorAll('[data-coffee-level-choice]')) {
             const id = Number(button.dataset.coffeeLevelChoice);
             button.disabled = !store.weekly && id > store.unlocked;
-            button.querySelector('small').textContent = store.records[id] ? '★'.repeat(store.records[id].stars) : button.disabled ? 'قفل' : id === 1 ? 'مرحلهٔ رقابتی' : 'آماده';
+            button.querySelector('small').textContent = store.records[id] ? '★'.repeat(store.records[id].stars) : button.disabled ? 'قفل' : 'آماده';
         }
         this.chooseLevel(level);
         if (!this.dialog.open) this.dialog.showModal();
