@@ -39,7 +39,7 @@ export const GAME_CATALOG = Object.freeze([
     }),
     Object.freeze({
         id: 'coffee-crash', title: 'COFFEE CRASH', subtitle: 'جورچین قهوه',
-        description: 'خوراکی‌ها را جابه‌جا کن، ترکیب ویژه بساز و سفارش‌های دوازده مرحله را آماده کن.',
+        description: 'خوراکی‌ها را جابه‌جا کن، ترکیب ویژه بساز و سفارش‌های سه مرحلهٔ هر هفته را آماده کن.',
         icon: '✧', phase: 18, status: 'available', available: true,
         orientation: 'any', accent: 'coffee',
         environment: CAFE_ENVIRONMENT_ID, environmentLocked: true, referenceAssets: CAFE_REFERENCE_ASSET_ROOT,
