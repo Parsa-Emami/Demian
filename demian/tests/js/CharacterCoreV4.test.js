@@ -27,7 +27,7 @@ function readJson(relativePath) {
 }
 
 test('all installed reference-driven characters are production-ready', () => {
-    assert.deepEqual(PRODUCTION_CHARACTER_SLUGS, ['darya', 'setayesh', 'uzudi', 'negar', 'tiam', 'amirreza', 'hanna', 'ainaz', 'arsal', 'iman', 'amin', 'hossein', 'taher-db', 'sorkhi', 'yalda']);
+    assert.deepEqual(PRODUCTION_CHARACTER_SLUGS, ['darya', 'setayesh', 'uzudi', 'negar', 'tiam', 'amirreza', 'hanna', 'ainaz', 'arsal', 'iman', 'amin', 'hossein', 'taher-db', 'sorkhi', 'yalda', 'mori']);
     assert.equal(DEFAULT_ACTIVE_SLUG, 'darya');
     assert.equal(isProductionReady('darya'), true);
     assert.equal(characterProductionStatus('darya'), PRODUCTION_STATUS.GOLD_STANDARD);

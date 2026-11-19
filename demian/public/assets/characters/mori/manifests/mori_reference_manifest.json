@@ -1,0 +1,21 @@
+{
+  "character_key": "mori",
+  "pack_version": 14,
+  "reference": "../source-v14/reference.jpg",
+  "master": "../source-v14/master.png",
+  "runner_motion": "../source-v14/runner-motion.png",
+  "slide_master": "../source-v14/slides.png",
+  "locomotion_reference": "arsal",
+  "inputs": [
+    {
+      "name": "03-image-20261118-111855-.png",
+      "role": "user-supplied-mori-identity-sheet",
+      "sha256": "fd089ef25f5b656b99b311ec444c255c7e17cb84d4e8dfb3e85f192e2a76803c"
+    },
+    {
+      "name": "../../arsal/source-v14/locomotion-v15.png",
+      "role": "pose-order-walk-run-and-jump",
+      "sha256": "04cbb37f965051b6b6146a09b8abf4a435da7ad67c9afde6ea1adcac2b446d9d"
+    }
+  ]
+}

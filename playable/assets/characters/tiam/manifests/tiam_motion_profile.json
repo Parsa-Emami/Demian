@@ -27,7 +27,7 @@
     "version": "master-motion-v1",
     "rig_version": 1,
     "family": "female-base-v1",
-    "source_sha256": "0f7995cb67f7159be087f506dd641f0438a2961cf7e1fcf4569b026adf87fbd8",
+    "source_sha256": "ec18cabfe02f3e47896618ae2b53ca6cacc446e0ffc8dd7f0b560b63cc605547",
     "art_status": "authored-atlas",
     "accessories": [
       {

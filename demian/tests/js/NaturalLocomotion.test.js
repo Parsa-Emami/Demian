@@ -31,6 +31,17 @@ test('every shipped character has the same bounded stride cadence at equal speed
     assert.ok(characterPlaybackRate('run', 1, run) < .55);
 });
 
+test('Mori uses Arsal’s walk, run and jump sampling with its own atlas artwork', () => {
+    const reference = atlas('arsal');
+    const mori = atlas('mori');
+    assert.deepEqual(mori.motion.locomotionProfile, reference.motion.locomotionProfile);
+    for (const state of ['walk', 'run', 'sprint', 'takeoff', 'jump', 'fall', 'land']) {
+        assert.deepEqual(mori.animations[state], reference.animations[state], state);
+    }
+    assert.match(mori.meta.image, /^mori-spritesheet-v14-runtime[.]png$/);
+    assert.notEqual(mori.meta.imageRevision, reference.meta.imageRevision);
+});
+
 test('authored arms and legs keep advancing during rise, apex and fall on every character and device', () => {
     for (const slug of BUILTIN_CHARACTER_SLUGS) for (const variant of ['runtime', 'lite', 'mobile']) {
         const data = atlas(slug, variant);

@@ -2,6 +2,116 @@
   "schema": 1,
   "generations": [
     {
+      "id": "4f162a3275429c4b",
+      "assets": [
+        {
+          "path": "assets/AfterHoursGame-Cl7sqVE7.js",
+          "bytes": 30685,
+          "sha256": "e956b71f793571d4017da24b73a709019f7cc8c9d56517df4bd07f489a7b317d"
+        },
+        {
+          "path": "assets/app-BaFJ5WyS.css",
+          "bytes": 273749,
+          "sha256": "dd0225a89b2d12d463f1fe5289ad1c9a5ceb0381e389173c34a967b701f29959"
+        },
+        {
+          "path": "assets/app-DIR2adRo.js",
+          "bytes": 413265,
+          "sha256": "e15ac2ccdf44ca1384d7bb7ffcd1a436c04d758467c0568825b51aa5016d4026"
+        },
+        {
+          "path": "assets/BaseGame-BoTgjigs.js",
+          "bytes": 268,
+          "sha256": "18a0dfd36fd6ffb199ff304b931a63486af945df043506b9bc8e770c81d332c2"
+        },
+        {
+          "path": "assets/CafeCrittersGame-B34J5aBZ.js",
+          "bytes": 44858,
+          "sha256": "dab3878d32bc458a4a3c822ec2f125d78a18133959f6a492a172373de5894799"
+        },
+        {
+          "path": "assets/CafeGameRenderer2D-APhEbqLp.js",
+          "bytes": 3030,
+          "sha256": "ca50665c61c1ba2621a9e1a6273811661b8252242896f157e44d54745ca58083"
+        },
+        {
+          "path": "assets/CafeRushGame-Cj_McYzN.js",
+          "bytes": 30856,
+          "sha256": "f80049946d00520095811ea6ba91f5ac4e35fcb85136ffe810041928b1180cf9"
+        },
+        {
+          "path": "assets/CharacterVisualContract-roYJdH2K.js",
+          "bytes": 11907,
+          "sha256": "0ca2b5e771818122f47a239c9efdef83364f5b12899cad7ac056ecb90df503e2"
+        },
+        {
+          "path": "assets/CoffeeCrashGame-DafbtITK.js",
+          "bytes": 27930,
+          "sha256": "9c1ecfa8769dc6f42d0c40072c8f463d0983f2f2ead777c6466a85d65871db64"
+        },
+        {
+          "path": "assets/DinoRunGame-jrb19T0l.js",
+          "bytes": 28779,
+          "sha256": "1cfd24ada6446daa3910876c4caaeed187f12e17cb55a0016083bfa17a81135b"
+        },
+        {
+          "path": "assets/OpenWorldGame-CcWDNzj2.js",
+          "bytes": 789008,
+          "sha256": "25013b461b95d03324f6b8861a6e3bcd9246df3176a89d6e9c111c0b945bfc6c"
+        },
+        {
+          "path": "assets/PixelRenderQueue-Dv34eiXI.js",
+          "bytes": 12958,
+          "sha256": "801d053d2ec34265687e14668d700cf4ddf02eb8e8b14c53da477ee234bc3b61"
+        },
+        {
+          "path": "assets/RankedGameplayChallenge-CPe8c0EJ.js",
+          "bytes": 7178,
+          "sha256": "8f38eac442bb32a4c8482b857129da58d57b6968abcb170805d7229c50fbd397"
+        },
+        {
+          "path": "assets/rolldown-runtime-B0lUwjiP.js",
+          "bytes": 103,
+          "sha256": "9071d97a0b25321a15b3d30a5559f27e6f93b5c0e146dc1fd5b0bc0c4cc2faf2"
+        },
+        {
+          "path": "assets/TouchInteractionLabel-Ct1aZ3xg.js",
+          "bytes": 7452,
+          "sha256": "f1c60497c678d6f7c99b5136386dd29592dfc854a0f4005fcfca55f2488bfd05"
+        },
+        {
+          "path": "assets/vazirmatn-arabic-400-normal-DMZFCm7K.woff2",
+          "bytes": 21088,
+          "sha256": "e31830d3a52e0259b176326385d82bc469581a9898046300de46e5c00f6b7064"
+        },
+        {
+          "path": "assets/vazirmatn-arabic-700-normal-Dge_DOjm.woff2",
+          "bytes": 21728,
+          "sha256": "aa79f9419fa0f5efcf301158b7405d188c4d434c86c32efad1e8669752feb344"
+        },
+        {
+          "path": "assets/vazirmatn-arabic-900-normal-BVDx3pOU.woff2",
+          "bytes": 21256,
+          "sha256": "d944ad60e47cf2aa8bec49ed7d8c1bcafc4ab30c887446c967f6baa58f1f7274"
+        },
+        {
+          "path": "assets/vazirmatn-latin-400-normal-BT_DHTc7.woff2",
+          "bytes": 16068,
+          "sha256": "a650d62e37f036d53367b383e7c723c2efd426baf74ee8ccb95b634974955f49"
+        },
+        {
+          "path": "assets/vazirmatn-latin-700-normal-9BlbvDRV.woff2",
+          "bytes": 16420,
+          "sha256": "a1d13d1cf4cd1ec6af4623ccdacff9cc7beedd6d9cbc4944b56faf59da95478b"
+        },
+        {
+          "path": "assets/vazirmatn-latin-900-normal-DUUbkNfs.woff2",
+          "bytes": 16152,
+          "sha256": "165780b47556f6cc30b7b94d51e8bf66d55b831128c5cc0584e717b9f23cc9d0"
+        }
+      ]
+    },
+    {
       "id": "d158d608b3af5a60",
       "assets": [
         {

@@ -218,11 +218,23 @@
       "has_shipped_assets": true,
       "motion_family": "female-base-v1",
       "motion_accessories": []
+    },
+    {
+      "slug": "mori",
+      "display_name": "MORI / موری",
+      "production_status": "gold_standard_production",
+      "is_default_active": false,
+      "pack_version": 14,
+      "locomotion_style": "ground-runner",
+      "manifest": "mori/manifests/character_manifest_v4.json",
+      "has_shipped_assets": true,
+      "motion_family": "male-base-v1",
+      "motion_accessories": []
     }
   ],
   "master_motion": {
     "version": "master-motion-v1",
-    "source_sha256": "0f7995cb67f7159be087f506dd641f0438a2961cf7e1fcf4569b026adf87fbd8",
+    "source_sha256": "ec18cabfe02f3e47896618ae2b53ca6cacc446e0ffc8dd7f0b560b63cc605547",
     "url": "assets/characters/master-motion-v1.json"
   }
 }

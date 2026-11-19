@@ -272,6 +272,16 @@
       "skin": "yalda",
       "accessories": [],
       "identityContract": "assets/characters/yalda/manifests/yalda_identity_contract.json"
+    },
+    {
+      "slug": "mori",
+      "displayName": "MORI / موری",
+      "family": "male-base-v1",
+      "packVersion": 14,
+      "defaultActive": false,
+      "skin": "mori",
+      "accessories": [],
+      "identityContract": "assets/characters/mori/manifests/mori_identity_contract.json"
     }
   ]
 }
