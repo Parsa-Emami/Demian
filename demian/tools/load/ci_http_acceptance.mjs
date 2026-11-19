@@ -20,15 +20,10 @@ execFileSync('php', ['artisan', 'cache:clear'], { stdio: 'ignore', timeout: 3000
 const base = 'http://127.0.0.1:8088/api/v1/arcade';
 const output = 'docs/acceptance-lab';
 mkdirSync(output, { recursive: true });
-const report = { status: 'pending', environment: 'isolated CI MySQL 8.4 with eight PHP HTTP workers',
+const report = { status: 'pending', environment: 'isolated CI MySQL 8.4 with eight PHP HTTP workers and OPcache',
     physicalDeviceVerified: false, productionCapacityCertified: false, independentSecurityAudit: false,
     users: 50, security: [], timings: {}, failures: [] };
-const server = spawn('php', ['-S', '127.0.0.1:8088', '-t', resolve('public'),
-    resolve('vendor/laravel/framework/src/Illuminate/Foundation/resources/server.php')], {
-    cwd: resolve('public'), detached: true, stdio: 'ignore', env: { ...process.env, PHP_CLI_SERVER_WORKERS: '8', APP_DEBUG: 'true' },
-});
-let spawnError;
-server.on('error', error => { spawnError = error; });
+let server, spawnError;
 const samples = new Map();
 async function request(path, { token, body, method = body === undefined ? 'GET' : 'POST', group } = {}) {
     const started = performance.now();
@@ -56,6 +51,15 @@ async function probe(name, expected, path, options) {
     return result;
 }
 try {
+    const phpOptions = ['-d', 'opcache.enable_cli=1'];
+    const opcacheCheck = 'echo function_exists("opcache_get_status") && opcache_get_status() ? "enabled" : "disabled";';
+    assert.equal(execFileSync('php', [...phpOptions, '-r', opcacheCheck], { encoding: 'utf8', timeout: 30000 }),
+        'enabled', 'Enable PHP OPcache for the HTTP acceptance test');
+    server = spawn('php', [...phpOptions, '-S', '127.0.0.1:8088', '-t', resolve('public'),
+        resolve('vendor/laravel/framework/src/Illuminate/Foundation/resources/server.php')], {
+        cwd: resolve('public'), detached: true, stdio: 'ignore', env: { ...process.env, PHP_CLI_SERVER_WORKERS: '8', APP_DEBUG: 'true' },
+    });
+    server.on('error', error => { spawnError = error; });
     let ready = false, readinessError = '';
     server.on('exit', code => { if (!ready) readinessError = 'PHP HTTP server exited with code ' + code; });
     for (let attempt = 0; attempt < 80; attempt++) {
@@ -66,10 +70,23 @@ try {
     assert.ok(ready, 'Disposable API failed to become ready: ' + readinessError);
     const rules = (await request('/rules')).data.rules;
     const policy = (await request('/legal')).data;
+    assert.equal(policy.require_contact, true, 'Required contacts must be enabled for the registration acceptance check');
     const identities = await Promise.all(Array.from({ length: 50 }, async (_, index) => {
-        const response = await request('/players', { body: { display_name: 'CI Player ' + index,
-            policy_version: policy.version ?? policy.policy_version, accept_terms: true, privacy_acknowledged: true }, group: 'register' });
-        assert.equal(response.status, 201, 'Registration failed');
+        const response = await request('/players', {
+            body: {
+                display_name: 'CI Player ' + index,
+                contact_type: 'email',
+                contact_value: `ci-player-${index}@example.test`,
+                registration_key: randomUUID(),
+                policy_version: policy.version ?? policy.policy_version,
+                accept_terms: true,
+                privacy_acknowledged: true,
+            },
+            group: 'register',
+        });
+        const fieldErrors = Object.keys(response.data?.errors ?? {}).join(', ');
+        assert.equal(response.status, 201, `Registration failed for fixture ${index}${fieldErrors ? ' · ' + fieldErrors : ''}`);
+        assert.equal(response.data.has_contact, true);
         assert.equal(typeof response.data.token, 'string');
         return response.data;
     }));
@@ -134,7 +151,7 @@ try {
 } catch (error) {
     report.status = 'failed'; report.failures.push(error.message); process.exitCode = 1;
 } finally {
-    if (server.pid) { try { process.kill(-server.pid, 'SIGTERM'); } catch {} }
+    if (server?.pid) { try { process.kill(-server.pid, 'SIGTERM'); } catch {} }
     writeFileSync(output + '/http.json', JSON.stringify(report, null, 2) + '\n');
     console.log(JSON.stringify(report, null, 2));
 }

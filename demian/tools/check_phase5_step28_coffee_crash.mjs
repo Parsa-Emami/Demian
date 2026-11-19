@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { createReadStream, existsSync, mkdirSync, statSync, writeFileSync } from 'node:fs';
 import { createServer } from 'node:http';
 import { extname, resolve, sep } from 'node:path';
+import { RECORD_GAMES } from '../resources/js/game/leaderboard/GameRecord.js';
 
 const root = resolve(import.meta.dirname, '../_site');
 const output = resolve(import.meta.dirname, '../docs/phase5-step28');
@@ -186,7 +187,9 @@ try {
             const ranking = page.locator('[data-screen="leaderboard"]');
             await wait(page, () => document.querySelector('[data-ranking-game]').value === 'coffee-crash');
             await wait(page, () => /مرحلهٔ ۳/.test(document.querySelector('[data-ranking-rows]').textContent));
-            assert.equal(await ranking.locator('[data-ranking-game] option:not(:disabled)').count(), 6);
+            const availableRankings = await ranking.locator('[data-ranking-game] option:not(:disabled)')
+                .evaluateAll(options => options.map(option => option.value));
+            assert.deepEqual(availableRankings.sort(), [...RECORD_GAMES].sort());
             assert.doesNotMatch(await ranking.locator('[data-ranking-rows]').innerText(), /NaN|ناعدد/i);
             await ranking.locator('[data-shell-action="close-modal"]').click();
 
