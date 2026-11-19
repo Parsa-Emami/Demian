@@ -4,7 +4,7 @@ import { GAME_DEFINITIONS } from '../../../resources/js/game/registry/GameDefini
 import { GAME_CATALOG } from '../../../resources/js/game/catalog/GameCatalog.js';
 import { ARCADE_CHARACTER_ROSTER } from '../../../resources/js/game/games/arcade/ArcadeCharacterRoster.js';
 test('archived arcade games cannot be selected or launched', () => {
-    for (const id of ['neon-run', 'star-catcher', 'cafe-drift', 'shadow-maze', 'sky-hop', 'rhythm-rush']) {
+    for (const id of ['neon-run', 'star-catcher', 'shadow-maze', 'sky-hop', 'rhythm-rush']) {
         assert.equal(GAME_DEFINITIONS[id], undefined);
         assert.equal(GAME_CATALOG.some((g) => g.id === id), false);
     }

@@ -20,7 +20,7 @@ final class ArcadeTelemetryController extends Controller
         $data = $request->validate([
             'kind' => ['required', Rule::in(['menu_ready', 'game_load', 'game_error', 'fps'])],
             'game' => ['nullable', Rule::in(['open-world', 'dino-run', 'after-hours',
-                'cafe-rush', 'cafe-critters', 'coffee-crash'])],
+                'cafe-rush', 'cafe-critters', 'coffee-crash', 'cafe-drift'])],
             'duration_ms' => ['nullable', 'integer', 'between:0,60000'],
             'fps' => ['nullable', 'integer', 'between:0,120'],
         ]);

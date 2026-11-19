@@ -58,6 +58,15 @@ export const GAME_DEFINITIONS = Object.freeze({
             environment: CAFE_ENVIRONMENT_ID, environmentLocked: true, referenceAssets: CAFE_REFERENCE_ASSET_ROOT,
         }),
     }),
+    'cafe-drift': Object.freeze({
+        title: 'Café Drift', inputContext: 'CAFE_DRIFT', orientation: 'any',
+        loader: () => import('../games/cafe-drift/CafeDriftGame.js'),
+        metadata: Object.freeze({
+            phase: 19, status: 'available', supportsResults: true,
+            renderer: 'shared-canvas2d-pixel', deployment: 'versioned-chunks',
+            environment: CAFE_ENVIRONMENT_ID, environmentLocked: true, referenceAssets: CAFE_REFERENCE_ASSET_ROOT,
+        }),
+    }),
     'coffee-crash': Object.freeze({
         title: 'Coffee Crash', inputContext: 'COFFEE_CRASH', orientation: 'any',
         loader: () => import('../games/coffee-crash/CoffeeCrashGame.js'),

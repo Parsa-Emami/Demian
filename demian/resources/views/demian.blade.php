@@ -481,7 +481,7 @@
                             <button type="button" data-shell-action="back-cafe" class="shell-icon-button" aria-label="بازگشت به منوی کافه">×</button>
                         </header>
                         <div class="game-library-toolbar">
-                            <span class="game-library-toolbar__hint" data-game-library-count>۶ بازی برای انتخاب</span>
+                            <span class="game-library-toolbar__hint" data-game-library-count>۷ بازی برای انتخاب</span>
                             <div class="scroll-rail-controls" aria-label="پیمایش کتابخانه بازی">
                                 <button type="button" data-game-scroll-previous class="scroll-rail-button" aria-label="بازی قبلی">›</button>
                                 <output data-game-scroll-status class="scroll-rail-status" aria-live="polite">0 / 0</output>
@@ -673,6 +673,7 @@
                                 <option value="dino-run">Dino Run</option>
                                 <option value="cafe-critters">Café Critters</option>
                                 <option value="coffee-crash">Coffee Crash</option>
+                                <option value="cafe-drift">Café Drift</option>
                                 <option value="after-hours">After Hours</option>
                                 <option value="cafe-rush">Café Rush</option>
                                 <option value="open-world">Open World</option>

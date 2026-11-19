@@ -22,6 +22,7 @@ final class LeaderboardService
     {
         abort_unless(app(RankedGameCatalog::class)->supportsRanked($gameId), 404);
         $rulesVersion = match ($gameId) {
+            'cafe-drift' => CafeDriftReplayVerifier::VERSION,
             'cafe-critters' => WeeklyContent::effectiveVersion($gameId, CafeCrittersReplayVerifier::VERSION, now(), config('demian-arcade.weekly_content_at')),
             'coffee-crash' => WeeklyContent::effectiveVersion($gameId, CoffeeCrashReplayVerifier::VERSION, now(), config('demian-arcade.weekly_content_at')),
             'after-hours' => config('demian-arcade.gameplay_ranked_enabled.after-hours')

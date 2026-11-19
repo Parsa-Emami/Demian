@@ -12,7 +12,7 @@ const source = path => readFileSync(resolve(root, path), 'utf8');
 const GAMES = [
     'open-world/OpenWorldGame.js', 'dino-run/DinoRunGame.js',
     'after-hours/AfterHoursGame.js', 'cafe-rush/CafeRushGame.js',
-    'cafe-critters/CafeCrittersGame.js', 'coffee-crash/CoffeeCrashGame.js',
+    'cafe-critters/CafeCrittersGame.js', 'coffee-crash/CoffeeCrashGame.js', 'cafe-drift/CafeDriftGame.js',
 ];
 function makeBuild() {
     const directory = mkdtempSync(join(tmpdir(), 'demian-split-build-'));

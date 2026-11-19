@@ -1,6 +1,7 @@
 /** Mobile-07: fail production builds with broken PWA or root-relative font URLs. */
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join, resolve } from 'node:path';
+import { OFFLINE_GAME_IDS } from './offline_pack_manifest.mjs';
 
 export function validatePwaRelease(release) {
     const root = resolve(release);
@@ -34,7 +35,9 @@ export function validatePwaRelease(release) {
         const version = /const RELEASE_ID = '([a-f0-9]{16})'/.exec(sw)?.[1];
         if (!version || packs.release !== version || packs.schema !== 1 ||
             !Array.isArray(packs.core) || !Array.isArray(packs.games) ||
-            packs.games.length !== 6 || packs.maxPackBytes > 96 * 1048576) {
+            packs.games.length !== OFFLINE_GAME_IDS.length ||
+            new Set(packs.games.map(game => game?.id)).size !== OFFLINE_GAME_IDS.length ||
+            packs.maxPackBytes > 96 * 1048576) {
             failures.push('Offline packs do not match the current bounded PWA release');
         } else {
             const all = [...packs.core, ...packs.games.flatMap(game => game.files ?? [])];
@@ -48,7 +51,7 @@ export function validatePwaRelease(release) {
                 }
             }
             for (const game of packs.games) {
-                if (!/^(open-world|dino-run|after-hours|cafe-rush|cafe-critters|coffee-crash)$/.test(game.id) ||
+                if (!OFFLINE_GAME_IDS.includes(game.id) ||
                     game.totalBytes !== packs.coreBytes + game.bytes ||
                     game.totalBytes > packs.maxPackBytes) {
                     failures.push('Invalid offline game budget: ' + game.id);

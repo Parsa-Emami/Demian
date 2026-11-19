@@ -1,4 +1,4 @@
-export const RECORD_GAMES = Object.freeze(['dino-run', 'cafe-critters', 'coffee-crash', 'after-hours', 'cafe-rush', 'open-world']);
+export const RECORD_GAMES = Object.freeze(['dino-run', 'cafe-critters', 'coffee-crash', 'after-hours', 'cafe-rush', 'open-world', 'cafe-drift']);
 const numbers = new Intl.NumberFormat('fa-IR');
 const timePart = new Intl.NumberFormat('fa-IR', { minimumIntegerDigits: 2, useGrouping: false });
 const valid = value => Number.isSafeInteger(value) && value >= 0;

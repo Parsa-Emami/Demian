@@ -40,7 +40,7 @@ for (const [key, row] of Object.entries(manifest)) {
 const games = [
     'open-world/OpenWorldGame.js', 'dino-run/DinoRunGame.js',
     'after-hours/AfterHoursGame.js', 'cafe-rush/CafeRushGame.js',
-    'cafe-critters/CafeCrittersGame.js', 'coffee-crash/CoffeeCrashGame.js',
+    'cafe-critters/CafeCrittersGame.js', 'coffee-crash/CoffeeCrashGame.js', 'cafe-drift/CafeDriftGame.js',
 ];
 const unique = new Set([entry?.file]);
 for (const game of games) {

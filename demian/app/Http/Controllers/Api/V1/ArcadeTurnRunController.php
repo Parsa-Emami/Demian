@@ -8,6 +8,7 @@ use App\Http\Requests\CompleteTurnRunRequest;
 use App\Models\ArcadeRun;
 use App\Services\Arcade\ArcadeTurnRunService;
 use App\Services\Arcade\CafeCrittersReplayVerifier;
+use App\Services\Arcade\CafeDriftReplayVerifier;
 use App\Services\Arcade\CoffeeCrashReplayVerifier;
 use App\Services\Arcade\LeaderboardService;
 use Illuminate\Validation\Rule;
@@ -41,11 +42,11 @@ final class ArcadeTurnRunController extends Controller
         ));
     }
 
-    /** Read-only verified route-trial ranking; hidden when rollout flag is OFF. */
-    public function routeLeaderboard(Request $request, string $gameId,
+    public function gameLeaderboard(Request $request, string $gameId,
         LeaderboardService $service): JsonResponse
     {
-        abort_unless(isset(\App\Services\Arcade\CafeRouteReplayVerifier::VERSIONS[$gameId]),
+        abort_unless($gameId === CafeDriftReplayVerifier::GAME_ID
+            || isset(\App\Services\Arcade\CafeRouteReplayVerifier::VERSIONS[$gameId]),
             404);
         $data = $request->validate([
             'period' => ['sometimes', Rule::in(['all', 'daily', 'weekly'])],

@@ -19,7 +19,8 @@ final class ArcadeTurnRunService
         private readonly CoffeeCrashReplayVerifier $coffee,
         private readonly CafeRouteReplayVerifier $routes,
         private readonly AfterHoursFrameReplayVerifier $afterFrames,
-        private readonly CafeRushFrameReplayVerifier $rushFrames) {}
+        private readonly CafeRushFrameReplayVerifier $rushFrames,
+        private readonly CafeDriftReplayVerifier $drift) {}
 
     /** Exactly one ruleset per game may be publicly ranked at a time.
      * Explicitly gate newly versioned ORIGINAL-game replays. Old route trials
@@ -27,6 +28,9 @@ final class ArcadeTurnRunService
      */
     private function versionAllowed(string $game,string $version, DateTimeInterface $at): bool
     {
+        if ($game === CafeDriftReplayVerifier::GAME_ID) {
+            return $version === CafeDriftReplayVerifier::VERSION;
+        }
         if ($game===CafeCrittersReplayVerifier::GAME_ID) {
             return $version === WeeklyContent::effectiveVersion($game, CafeCrittersReplayVerifier::VERSION, $at, config('demian-arcade.weekly_content_at'));
         }
@@ -51,6 +55,9 @@ final class ArcadeTurnRunService
 
     private function maximumTicks(string $game): int
     {
+        if ($game === CafeDriftReplayVerifier::GAME_ID) {
+            return CafeDriftReplayVerifier::MAX_TICKS;
+        }
         return isset(CafeRouteReplayVerifier::VERSIONS[$game])
             ? $this->routes->seconds($game)*60
             : ($game === CoffeeCrashReplayVerifier::GAME_ID
@@ -78,6 +85,7 @@ final class ArcadeTurnRunService
             abort_unless($this->versionAllowed($data['game_id'], $data['rules_version'], $started), 409,
                 'Refresh game rules before starting a ranked replay.');
             $seed = match ($data['rules_version']) {
+                CafeDriftReplayVerifier::VERSION => $this->drift->seedAt($started),
                 WeeklyContent::version('coffee-crash') => WeeklyContent::coffee(WeeklyContent::index($started), 1)['seed'],
                 WeeklyContent::version('cafe-critters') => WeeklyContent::index($started) + 1,
                 default => random_int(1, 2147483647),
@@ -107,11 +115,11 @@ final class ArcadeTurnRunService
         $run = ArcadeRun::query()->findOrFail($run->id);
         abort_unless($run->player_id === $player->id
             && in_array($run->game_id, [CafeCrittersReplayVerifier::GAME_ID,
-                CoffeeCrashReplayVerifier::GAME_ID, 'after-hours', 'cafe-rush', 'open-world'], true), 404);
+                CoffeeCrashReplayVerifier::GAME_ID, CafeDriftReplayVerifier::GAME_ID, 'after-hours', 'cafe-rush', 'open-world'], true), 404);
         abort_unless(app(RankedGameCatalog::class)->supportsRanked($run->game_id),
             503, 'This game has not passed ranked verification gates.');
         $frameProof = in_array($run->rules_version, [
-            AfterHoursFrameReplayVerifier::VERSION, CafeRushFrameReplayVerifier::VERSION,
+            AfterHoursFrameReplayVerifier::VERSION, CafeRushFrameReplayVerifier::VERSION, CafeDriftReplayVerifier::VERSION,
             WeeklyContent::version('cafe-rush'), WeeklyContent::version('after-hours')
         ],true);
         abort_if($frameProof ? ! isset($data['frames']) : ! isset($data['actions']),
@@ -139,6 +147,8 @@ final class ArcadeTurnRunService
         $authorize($run);
         $week = WeeklyContent::index($run->started_at);
         $verified = match ($run->rules_version) {
+            CafeDriftReplayVerifier::VERSION =>
+                $this->drift->verify((int) $run->seed, $data['ticks'], $data['frames']),
             WeeklyContent::version('coffee-crash') =>
                 $this->coffee->verify((int) $run->seed, $data['ticks'], $data['actions'], WeeklyContent::coffee($week, 1)),
             WeeklyContent::version('cafe-critters') =>

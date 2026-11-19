@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import { BUILTIN_CHARACTER_SLUGS, characterPackVersion } from '../resources/js/game/characters/CharacterVisualContract.js';
 
 export const OFFLINE_GAME_IDS = Object.freeze([
-    'open-world', 'dino-run', 'after-hours', 'cafe-rush', 'cafe-critters', 'coffee-crash',
+    'open-world', 'dino-run', 'after-hours', 'cafe-rush', 'cafe-critters', 'coffee-crash', 'cafe-drift',
 ]);
 export const OFFLINE_MAX_PACK_BYTES = 96 * 1024 * 1024;
 const CLEAN = /^[a-zA-Z0-9][a-zA-Z0-9/_\-.]*$/;
@@ -17,6 +17,7 @@ const GAME_MODULES = Object.freeze({
     'cafe-rush': 'cafe-rush/CafeRushGame.js',
     'cafe-critters': 'cafe-critters/CafeCrittersGame.js',
     'coffee-crash': 'coffee-crash/CoffeeCrashGame.js',
+    'cafe-drift': 'cafe-drift/CafeDriftGame.js',
 });
 
 export function splitOfflineModules(viteManifest = {}) {
@@ -123,6 +124,7 @@ export function buildOfflinePackManifest({ release, entry, releaseId, viteManife
         'cafe-rush': ['assets/environments/demian-fbx/floorplan-detail.webp'],
         'cafe-critters': smallTiles,
         'coffee-crash': ['assets/environments/demian-fbx/floorplan.webp'],
+        'cafe-drift': [],
     };
     const coreBytes = core.reduce((sum, asset) => sum + asset.bytes, 0);
     const games = OFFLINE_GAME_IDS.map(id => {

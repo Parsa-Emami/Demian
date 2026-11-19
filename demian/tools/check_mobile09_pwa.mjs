@@ -52,7 +52,7 @@ try {
     await page.waitForFunction(() => Boolean(navigator.serviceWorker?.controller),
         null, { timeout: 25000 });
     const manifest = await (await page.request.get(base + 'offline-packs.json')).json();
-    assert.equal(manifest.games.length, 6);
+    assert.equal(manifest.games.length, 7);
     assert.ok(manifest.coreBytes > 0 && manifest.maxPackBytes <= 96 * 1048576);
     assert.ok(manifest.games.every(game => game.totalBytes <= manifest.maxPackBytes));
     await page.locator('[data-screen="cafe-menu"] [data-shell-action="play"]').click();

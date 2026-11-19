@@ -1,3 +1,4 @@
+import driftRules from '../../../game/cafe-drift-rules.json' with { type: 'json' };
 import { RECORD_GAMES, deviceMetric } from './GameRecord.js';
 import { weeklyVersion, WEEKLY_VERSIONS } from '../content/WeeklyContent.js';
 import rules from '../../../game/runner-rules.json' with { type: 'json' };
@@ -305,7 +306,7 @@ export default class ArcadeLeaderboardService {
     async startTurnRun(gameId = 'cafe-critters', { gameplay = false } = {}) {
         const practice = { mode: 'practice', reason: 'این بازی در حالت تمرینی اجرا می‌شود.' };
         if (!['cafe-critters', 'coffee-crash',
-            'after-hours', 'cafe-rush', 'open-world'].includes(gameId) || !this.connected
+            'after-hours', 'cafe-rush', 'open-world', 'cafe-drift'].includes(gameId) || !this.connected
             || (gameplay && !['after-hours', 'cafe-rush'].includes(gameId))) return practice;
         if (this.needsAccountRestore) return { ...practice,
             reason: 'برای ارسال امتیاز آنلاین ابتدا حساب اصلی را بازیابی کن.' };
@@ -322,6 +323,7 @@ export default class ArcadeLeaderboardService {
                 'cafe-rush': 'cafe-rush-frames-v1',
             })[gameId] : ({
                 'coffee-crash': 'coffee-crash-replay-v1',
+                'cafe-drift': driftRules.version,
                 'cafe-critters': 'cafe-critters-replay-v1',
                 'after-hours': 'after-hours-route-v1',
                 'cafe-rush': 'cafe-rush-route-v1',
@@ -351,10 +353,11 @@ export default class ArcadeLeaderboardService {
         const gameplayVersion = ({
             'after-hours': 'after-hours-frames-v1',
             'cafe-rush': 'cafe-rush-frames-v1',
+            'cafe-drift': driftRules.version,
         })[run?.game_id];
         if (run?.mode !== 'ranked'
             || !['cafe-critters', 'coffee-crash',
-                'after-hours', 'cafe-rush', 'open-world'].includes(run.game_id)
+                'after-hours', 'cafe-rush', 'open-world', 'cafe-drift'].includes(run.game_id)
             || !Array.isArray(actions) || !Number.isInteger(ticks)
             || !['actions', 'frames'].includes(proofKind)
             || (proofKind === 'frames' && run.rules_version !== gameplayVersion

@@ -136,6 +136,11 @@ export const INPUT_CONTEXTS = Object.freeze({
 
     AFTER_HOURS: cafeShiftInput,
     CAFE_RUSH: cafeShiftInput,
+    CAFE_DRIFT: Object.freeze({
+        axes: Object.freeze({ x: axis(['a', 'arrowleft', 'left'], ['d', 'arrowright', 'right']) }),
+        analog: Object.freeze({ xAxis: 'x' }),
+        actions: Object.freeze({ interact: pressed('enter', 'space', 'interact'), pause: pressed('escape', 'pause') }),
+    }),
     COFFEE_CRASH: Object.freeze({ actions: Object.freeze({ pause: pressed('escape', 'pause') }) }),
     CAFE_CRITTERS: Object.freeze({ actions: Object.freeze({ pause: pressed('escape', 'pause') }) }),
 

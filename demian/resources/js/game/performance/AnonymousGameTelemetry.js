@@ -4,7 +4,7 @@
  * messages, stack traces or player input leave the browser.
  */
 const ALLOWED_GAMES = new Set([
-    'open-world', 'dino-run', 'after-hours', 'cafe-rush', 'cafe-critters', 'coffee-crash',
+    'open-world', 'dino-run', 'after-hours', 'cafe-rush', 'cafe-critters', 'coffee-crash', 'cafe-drift',
 ]);
 const KINDS = new Set(['menu_ready', 'game_load', 'game_error', 'fps']);
 

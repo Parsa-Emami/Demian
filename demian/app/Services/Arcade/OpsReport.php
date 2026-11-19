@@ -181,7 +181,7 @@ final class OpsReport
                 if ($kind === 'game_load' && is_int($value) && $value >= 0 && $value <= 60000) {
                     $load[] = $value;
                     $game = $entry['game'] ?? '';
-                    if (in_array($game, ['open-world', 'dino-run', 'after-hours', 'cafe-rush', 'cafe-critters', 'coffee-crash'], true)) $gameLoads[$game][] = $value;
+                    if (in_array($game, ['open-world', 'dino-run', 'after-hours', 'cafe-rush', 'cafe-critters', 'coffee-crash', 'cafe-drift'], true)) $gameLoads[$game][] = $value;
                 }
                 if ($kind === 'menu_ready' && is_int($value) && $value >= 0 && $value <= 60000) $menu[] = $value;
                 if ($kind === 'game_error') $clientErrors++;

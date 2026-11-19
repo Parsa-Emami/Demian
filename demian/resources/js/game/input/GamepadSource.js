@@ -29,7 +29,8 @@ export default class GamepadSource {
         const length = Math.hypot(this.stick.x, this.stick.z);
         if (length > 1) { this.stick.x /= length; this.stick.z /= length; }
         this.stick.magnitude = Math.min(1, length); this.held.clear();
-        const mapping = context === 'DINO_RUN' ? { 0: 'jump', 12: 'jump', 1: 'duck', 13: 'duck' } : WORLD_BUTTONS;
+        const mapping = context === 'DINO_RUN' ? { 0: 'jump', 12: 'jump', 1: 'duck', 13: 'duck' }
+            : context === 'CAFE_DRIFT' ? { 0: 'interact', 3: 'interact' } : WORLD_BUTTONS;
         for (const [index, action] of Object.entries(mapping)) {
             if (buttons.has(Number(index))) this.held.add(action === 'jump' ? 'jumpHeld' : action);
             if (rising.has(Number(index))) this.pressed.add(action);

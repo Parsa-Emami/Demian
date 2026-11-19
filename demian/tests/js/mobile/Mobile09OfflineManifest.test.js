@@ -125,6 +125,7 @@ test('offline game packs include versioned game chunks and their shared dependen
         'cafe-rush': 'cafe-rush/CafeRushGame.js',
         'cafe-critters': 'cafe-critters/CafeCrittersGame.js',
         'coffee-crash': 'coffee-crash/CoffeeCrashGame.js',
+        'cafe-drift': 'cafe-drift/CafeDriftGame.js',
     };
     const vite = {
         'resources/js/app.js': { file: 'assets/app.js', imports: ['_base'],
