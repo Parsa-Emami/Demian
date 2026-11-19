@@ -282,6 +282,16 @@
       "skin": "mori",
       "accessories": [],
       "identityContract": "assets/characters/mori/manifests/mori_identity_contract.json"
+    },
+    {
+      "slug": "mahyar",
+      "displayName": "MAHYAR / مهیار",
+      "family": "male-base-v1",
+      "packVersion": 14,
+      "defaultActive": false,
+      "skin": "mahyar",
+      "accessories": [],
+      "identityContract": "assets/characters/mahyar/manifests/mahyar_identity_contract.json"
     }
   ]
 }

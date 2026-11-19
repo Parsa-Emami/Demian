@@ -31,15 +31,17 @@ test('every shipped character has the same bounded stride cadence at equal speed
     assert.ok(characterPlaybackRate('run', 1, run) < .55);
 });
 
-test('Mori uses Arsal’s walk, run and jump sampling with its own atlas artwork', () => {
+test('Mori and Mahyar use Arsal’s movement sampling with their own atlas artwork', () => {
     const reference = atlas('arsal');
-    const mori = atlas('mori');
-    assert.deepEqual(mori.motion.locomotionProfile, reference.motion.locomotionProfile);
-    for (const state of ['walk', 'run', 'sprint', 'takeoff', 'jump', 'fall', 'land']) {
-        assert.deepEqual(mori.animations[state], reference.animations[state], state);
+    for (const slug of ['mori', 'mahyar']) {
+        const character = atlas(slug);
+        assert.deepEqual(character.motion.locomotionProfile, reference.motion.locomotionProfile);
+        for (const state of ['walk', 'run', 'sprint', 'takeoff', 'jump', 'fall', 'land']) {
+            assert.deepEqual(character.animations[state], reference.animations[state], `${slug}/${state}`);
+        }
+        assert.equal(character.meta.image, `${slug}-spritesheet-v14-runtime.png`);
+        assert.notEqual(character.meta.imageRevision, reference.meta.imageRevision);
     }
-    assert.match(mori.meta.image, /^mori-spritesheet-v14-runtime[.]png$/);
-    assert.notEqual(mori.meta.imageRevision, reference.meta.imageRevision);
 });
 
 test('authored arms and legs keep advancing during rise, apex and fall on every character and device', () => {

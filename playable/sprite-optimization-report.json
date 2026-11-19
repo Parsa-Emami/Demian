@@ -6,11 +6,11 @@
     "runtime",
     "detail"
   ],
-  "candidates": 48,
-  "converted": 44,
-  "inputBytes": 117932654,
-  "outputBytes": 94051097,
-  "savedBytes": 23881557,
+  "candidates": 51,
+  "converted": 47,
+  "inputBytes": 119305714,
+  "outputBytes": 95093261,
+  "savedBytes": 24212453,
   "skippedBytes": 1160561,
   "entries": [
     {
@@ -348,7 +348,28 @@
       "format": "webp",
       "inputBytes": 1003698,
       "outputBytes": 744146
+    },
+    {
+      "slug": "mahyar",
+      "variant": "lite",
+      "format": "webp",
+      "inputBytes": 123568,
+      "outputBytes": 112174
+    },
+    {
+      "slug": "mahyar",
+      "variant": "runtime",
+      "format": "webp",
+      "inputBytes": 337975,
+      "outputBytes": 261690
+    },
+    {
+      "slug": "mahyar",
+      "variant": "detail",
+      "format": "webp",
+      "inputBytes": 911517,
+      "outputBytes": 668300
     }
   ],
-  "savingsFraction": 0.2025
+  "savingsFraction": 0.20294
 }

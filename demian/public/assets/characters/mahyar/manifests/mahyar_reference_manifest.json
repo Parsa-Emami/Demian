@@ -1,0 +1,21 @@
+{
+  "character_key": "mahyar",
+  "pack_version": 14,
+  "reference": "../source-v14/reference.jpg",
+  "master": "../source-v14/master.png",
+  "runner_motion": "../source-v14/runner-motion.png",
+  "slide_master": "../source-v14/slides.png",
+  "locomotion_reference": "arsal",
+  "inputs": [
+    {
+      "name": "image(20261118-111649).png",
+      "role": "user-supplied-mahyar-identity-sheet",
+      "sha256": "80e1926804a03615ff19d978aec5794a0486c5743c0efd47251ab51bdfd776c2"
+    },
+    {
+      "name": "../../arsal/source-v14/locomotion-v15.png",
+      "role": "pose-order-walk-run-and-jump",
+      "sha256": "04cbb37f965051b6b6146a09b8abf4a435da7ad67c9afde6ea1adcac2b446d9d"
+    }
+  ]
+}
