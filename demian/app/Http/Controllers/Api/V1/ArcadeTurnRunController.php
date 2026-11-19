@@ -50,8 +50,13 @@ final class ArcadeTurnRunController extends Controller
             404);
         $data = $request->validate([
             'period' => ['sometimes', Rule::in(['all', 'daily', 'weekly'])],
+            'week' => ['sometimes', 'string', 'size:10', 'date_format:Y-m-d'],
             'limit' => ['sometimes', 'integer', 'min:1', 'max:50'],
         ]);
+        if (isset($data['week'])) {
+            abort_unless($gameId === CafeDriftReplayVerifier::GAME_ID && ($data['period'] ?? 'weekly') === 'weekly', 422);
+            return response()->json($service->driftArchive($data['week'], (int) ($data['limit'] ?? 20)));
+        }
         return response()->json($service->readForGame(
             $gameId, $data['period'] ?? 'weekly', (int) ($data['limit'] ?? 20)
         ));

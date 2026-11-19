@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { GAME_CATALOG } from '../resources/js/game/catalog/GameCatalog.js';
 import { createReadStream, mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { createServer } from 'node:http';
 import { extname, resolve, sep } from 'node:path';
@@ -7,7 +8,7 @@ import { BUILTIN_CHARACTER_SLUGS } from '../resources/js/game/characters/Charact
 
 const root = resolve(import.meta.dirname, '../_site');
 const output = resolve(import.meta.dirname, '../docs/loading-budget');
-const games = ['dino-run', 'after-hours', 'cafe-rush', 'cafe-critters', 'coffee-crash', 'open-world'];
+const games = GAME_CATALOG.map(game => game.id);
 const profiles = [{ name: 'phone', width: 390, height: 844, mobile: true },
     { name: 'desktop', width: 1366, height: 768, mobile: false }];
 const mime = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.css': 'text/css',

@@ -9,6 +9,7 @@
   <a class="button secondary" href="{{ route('cashier.report') }}">گزارش شعبه</a>
 @endif
 @if (in_array('staff.directory', $permissions, true))
+  <a class="button secondary" href="{{ route('cashier.players') }}">بازیکنان و کوپن‌ها</a>
   <a class="button secondary" href="{{ route('cashier.staff') }}">فهرست کارکنان</a>
 @endif
 @if (in_array('report.global', $permissions, true))

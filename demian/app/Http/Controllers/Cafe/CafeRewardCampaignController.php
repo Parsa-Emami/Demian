@@ -42,7 +42,7 @@ final class CafeRewardCampaignController extends Controller
             'max_awards' => ['required', 'integer', 'between:1,200'],
             'min_order_minor' => ['required', 'integer', 'between:1,1000000000000'],
             'max_discount_minor' => ['required', 'integer', 'between:1,1000000000000'],
-            'valid_days' => ['required', 'integer', 'between:1,365'],
+            'valid_days' => ['sometimes', 'integer', 'in:14'],
             'percent_first' => ['required', 'integer', 'between:1,30'],
             'percent_second' => ['required', 'integer', 'between:1,30'],
             'percent_third' => ['required', 'integer', 'between:1,30'],

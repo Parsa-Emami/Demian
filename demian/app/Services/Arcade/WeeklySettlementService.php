@@ -163,16 +163,19 @@ final class WeeklySettlementService
             $historical = DB::table('arcade_weekly_winners')
                 ->where('period_key', '<', $key)->whereNotNull('player_id')
                 ->pluck('player_id')->all();
-            // Not every verified ranked score is eligible for cash-equivalent cafe
-                        // coupons. Preserve its read-only ranking snapshot regardless,
-                        // but prevent provisional game modes from receiving awards.
-                        $prizeRankings = array_filter($rankings,
-                            fn (array $entries, string $gameId): bool =>
-                                (! $seasonRules->has($gameId)
-                                    || (bool) $seasonRules->get($gameId)->prize_eligible)
-                                && $rankable->supportsPrizes($gameId),
-                            ARRAY_FILTER_USE_BOTH);
-                        $winners = $this->selector->select($prizeRankings, $historical);
+            $prizeRankings = array_filter($rankings,
+                fn (array $entries, string $gameId): bool =>
+                    ($seasonRules->has($gameId)
+                        ? (bool) $seasonRules->get($gameId)->prize_eligible
+                        : $gameId !== CafeDriftReplayVerifier::GAME_ID)
+                    && $rankable->supportsPrizes($gameId),
+                ARRAY_FILTER_USE_BOTH);
+            $activeRecipients = DB::table('arcade_coupons')
+                ->where('source', 'weekly')->whereNotNull('player_id')
+                ->whereIn('status', ['issued', 'reserved'])
+                ->where('expires_at', '>', $utcNow->toDateTimeString())
+                ->distinct()->pluck('player_id')->all();
+            $winners = $this->selector->select($prizeRankings, $historical, $activeRecipients);
 
             $snapshot = [];
             ksort($rankings, SORT_STRING);

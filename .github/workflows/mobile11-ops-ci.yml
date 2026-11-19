@@ -95,7 +95,7 @@ jobs:
           '
           # Never ship precomputed configuration/routes from a CI environment.
           tar --exclude='bootstrap/cache/*.php' -czf "$RUNNER_TEMP/cpanel-api.tar.gz" \
-            artisan app bootstrap config database routes resources/game \
+            artisan app bootstrap config database routes resources/game resources/legal \
             resources/views src public/index.php public/.htaccess \
             ops/cpanel/host_preflight.php composer.json composer.lock vendor
           test -s "$RUNNER_TEMP/cpanel-api.tar.gz"

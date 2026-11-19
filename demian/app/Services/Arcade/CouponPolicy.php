@@ -7,6 +7,8 @@ use RuntimeException;
 /** Immutable, explicit financial policy loaded at issuance time. */
 final class CouponPolicy
 {
+    public const WEEKLY_VALID_DAYS = 14;
+
     public function approved(): array
     {
         // No prizes may be issued on the public host under unreviewed terms.

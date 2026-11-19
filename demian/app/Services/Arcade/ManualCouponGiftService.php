@@ -111,6 +111,11 @@ final class ManualCouponGiftService
             $recipient = DB::table('arcade_players')
                 ->where('id', $fields['player_id'])->lockForUpdate()->first();
             abort_unless($recipient, 422, 'Selected player account no longer exists.');
+            abort_if(DB::table('arcade_coupons')->where('player_id', $fields['player_id'])
+                ->where('source', 'gift')->whereIn('status', ['issued', 'reserved'])
+                ->where('expires_at', '>', now()->utc())->exists(), 409,
+                'This player already has an active gift.');
+
 
             $start = CarbonImmutable::now('Asia/Tehran')->startOfDay()
                 ->utc()->toDateTimeString();

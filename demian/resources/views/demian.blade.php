@@ -417,10 +417,9 @@
                             <button type="button" data-shell-action="leaderboard" class="shell-button shell-button--ghost">لیدربورد هفتگی <b aria-hidden="true">♛</b></button>
                             <button type="button" data-shell-action="rewards" class="shell-button shell-button--ghost">تخفیف‌های من <b aria-hidden="true">٪</b></button>
                         </div>
-                        <button type="button" data-shell-action="motion-comparison" class="shell-button shell-button--ghost">مقایسهٔ الگوی حرکت</button>
                         <button type="button" data-sidebar-toggle class="shell-button shell-button--ghost menu-character-button">انتخاب کاراکتر <span aria-hidden="true">◉</span></button>
                         <div data-menu-reveal class="cafe-menu__footer">
-                            <span data-game-library-summary>۶ بازی · ۱۴ کاراکتر</span>
+                            <span data-game-library-summary>۷ بازی · ۱۷ کاراکتر</span>
                             <span>بازی‌های کوچک، ماجراجویی‌های بزرگ</span>
                         </div>
                         <nav class="demian-legal-links" aria-label="قوانین و حریم خصوصی">
@@ -712,8 +711,7 @@
                                 <button type="submit" class="shell-button">بازیابی حساب</button>
                             </form>
                             <p data-ranking-recovery-status role="status" aria-live="polite"></p>
-                            <button type="button" data-ranking-export-account class="shell-button shell-button--ghost">دریافت خلاصه داده‌های حساب (JSON)</button>
-                            <p class="ranking-panel__refresh-info">برای دریافت تمام سوابق، API خصوصی خروجی صفحه‌بندی‌شده دارد. داده‌های حساس و اسرار ورود در فایل قرار نمی‌گیرند.</p>
+                            <button type="button" data-ranking-export-account class="shell-button shell-button--ghost">دریافت اطلاعات حساب</button>
                             <button type="button" data-ranking-delete-account class="shell-button shell-button--ghost">حذف کامل حساب و رکوردهای سرور</button>
                         </div>
                         <button type="button" data-shell-action="close-modal" class="shell-button shell-button--primary" data-screen-autofocus>بستن</button>
@@ -726,17 +724,9 @@
                     <div class="shell-modal coupon-wallet-panel">
                         <p class="shell-kicker">DEMIAN · MY REWARDS</p>
                         <h2 id="coupon-wallet-title">کدهای تخفیف من</h2>
-                        <p class="ranking-panel__refresh-info">
-                            کد تخفیف و مقدار آن فقط برای صاحب حساب نمایش داده می‌شود.
-                            برای دریافت جوایز ایمیلی ارسال نمی‌شود. هنگام خرید حضوری،
-                            کد معتبر را به صندوق‌دار نشان دهید.
-                        </p>
                         <p data-wallet-status role="status" aria-live="polite"></p>
                         <div data-wallet-restore-hint hidden>
-                            <p>اگر حساب شما در این دستگاه باز نیست، از بخش لیدربورد
-                                با لینک یا کد پشتیبان، همان حساب را بازیابی کنید.</p>
-                            <button type="button" data-shell-action="wallet-to-leaderboard"
-                                class="shell-button shell-button--ghost">بازیابی حساب در لیدربورد</button>
+                            <button type="button" data-shell-action="wallet-to-leaderboard" class="shell-button shell-button--ghost">بازیابی حساب</button>
                         </div>
                         <ul class="coupon-wallet-list" data-wallet-list aria-label="کدهای تخفیف حساب شما"></ul>
                         <div class="shell-modal__actions shell-modal__actions--row">

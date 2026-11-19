@@ -18,9 +18,10 @@ final class WeeklyPrizeSelector
      * @param list<string> $historicalWinnerIds Players awarded in earlier weeks.
      * @return array<string, list<array{game_id: string, player_id: string, score: int, achieved_at: string, technical_rank: int, prize_rank: int, previous_winner: bool}>>
      */
-    public function select(array $rankingsByGame, array $historicalWinnerIds = []): array
+    public function select(array $rankingsByGame, array $historicalWinnerIds = [], array $ineligiblePlayerIds = []): array
     {
         $historical = array_fill_keys($historicalWinnerIds, true);
+        $ineligible = array_fill_keys($ineligiblePlayerIds, true);
         $candidates = [];
         $winners = [];
 
@@ -50,42 +51,67 @@ final class WeeklyPrizeSelector
             usort($ranked, $this->compare(...));
             foreach ($ranked as $index => $candidate) {
                 $candidate['technical_rank'] = $index + 1;
-                $candidates[] = $candidate;
+                if (! isset($ineligible[$candidate['player_id']])) $candidates[] = $candidate;
             }
             $winners[$gameId] = [];
         }
 
-        // Compare relative rank, NOT scores across different games.
-        // A player qualifying in multiple games gets only one award per week;
-        // equal technical ranks resolve by stable game ID.
         usort($candidates, static fn (array $a, array $b): int =>
-            ($a['technical_rank'] <=> $b['technical_rank']) ?: strcmp($a['game_id'], $b['game_id']));
-
-        $awardedThisWeek = [];
-        foreach ([false, true] as $selectPreviousWinners) {
-            foreach ($candidates as $candidate) {
-                $playerId = $candidate['player_id'];
-                $gameId = $candidate['game_id'];
-                $previousWinner = isset($historical[$playerId]);
-                if ($previousWinner !== $selectPreviousWinners || isset($awardedThisWeek[$playerId])
-                    || count($winners[$gameId]) >= self::MAX_WINNERS_PER_GAME) {
-                    continue;
-                }
-                $winners[$gameId][] = [
-                    'game_id' => $gameId,
-                    'player_id' => $playerId,
-                    'score' => $candidate['score'],
-                    'achieved_at' => $candidate['achieved_at'],
-                    'technical_rank' => $candidate['technical_rank'],
-                    'prize_rank' => count($winners[$gameId]) + 1,
-                    'previous_winner' => $previousWinner,
+            ((int) isset($historical[$a['player_id']]) <=> (int) isset($historical[$b['player_id']]))
+            ?: ($a['technical_rank'] <=> $b['technical_rank'])
+            ?: strcmp($a['game_id'], $b['game_id']));
+        $choices = [];
+        foreach ($candidates as $candidate) {
+            $choices[$candidate['player_id']][] = $candidate;
+        }
+        $seats = $winners;
+        foreach (array_keys($choices) as $player) {
+            $visited = [];
+            $this->place($player, $choices, $seats, $visited);
+        }
+        foreach ($seats as $game => $entries) {
+            usort($entries, static fn (array $a, array $b): int =>
+                ((int) isset($historical[$a['player_id']]) <=> (int) isset($historical[$b['player_id']]))
+                ?: ($a['technical_rank'] <=> $b['technical_rank']));
+            foreach ($entries as $index => $entry) {
+                $winners[$game][] = [
+                    'game_id' => $game,
+                    'player_id' => $entry['player_id'],
+                    'score' => $entry['score'],
+                    'achieved_at' => $entry['achieved_at'],
+                    'technical_rank' => $entry['technical_rank'],
+                    'prize_rank' => $index + 1,
+                    'previous_winner' => isset($historical[$entry['player_id']]),
                 ];
-                $awardedThisWeek[$playerId] = true;
             }
         }
         ksort($winners, SORT_STRING);
 
         return $winners;
+    }
+
+    private function place(string $player, array &$choices, array &$seats, array &$visited): bool
+    {
+        foreach ($choices[$player] as $entry) {
+            $game = $entry['game_id'];
+            if (! isset($visited[$game]) && count($seats[$game]) < self::MAX_WINNERS_PER_GAME) {
+                $seats[$game][] = $entry;
+                return true;
+            }
+        }
+        foreach ($choices[$player] as $entry) {
+            $game = $entry['game_id'];
+            if (isset($visited[$game])) continue;
+            $visited[$game] = true;
+            foreach (array_reverse($seats[$game], true) as $index => $current) {
+                if ($this->place($current['player_id'], $choices, $seats, $visited)) {
+                    $seats[$game][$index] = $entry;
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     private function normalizedTimestamp(string $timestamp): string

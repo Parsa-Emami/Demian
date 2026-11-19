@@ -92,6 +92,13 @@ final class CouponIssuanceService
                     $existing++;
                     continue;
                 }
+                if ($winner->game_id === CafeDriftReplayVerifier::GAME_ID
+                    && (! $campaign || ! app(RankedGameCatalog::class)->supportsPrizes($winner->game_id)
+                        || ! DB::table('arcade_weekly_rule_locks')->where('period_key', $periodKey)
+                            ->where('game_id', $winner->game_id)->where('rules_version', $winner->rules_version)
+                            ->where('ranked_enabled', true)->where('prize_eligible', true)->exists())) {
+                    throw new RuntimeException('Café Drift prizes require an eligible season and an active sponsor campaign.');
+                }
                 $item = $campaign ? $campaignService->claim($campaign) : null;
                 $code = $item ? Crypt::decryptString($item->code_ciphertext)
                     : 'DMC-'.strtoupper(bin2hex(random_bytes(16)));
@@ -108,7 +115,7 @@ final class CouponIssuanceService
                     'min_order_minor' => $effectiveTerms['min_order_minor'],
                     'max_discount_minor' => $effectiveTerms['max_discount_minor'],
                     'status' => 'issued', 'issued_at' => $now->toDateTimeString(),
-                    'expires_at' => $now->addDays($effectiveTerms['valid_days'])->toDateTimeString(),
+                    'expires_at' => CarbonImmutable::parse($period->sealed_at, 'UTC')->addDays(CouponPolicy::WEEKLY_VALID_DAYS)->toDateTimeString(),
                     'created_at' => $now->toDateTimeString(), 'updated_at' => $now->toDateTimeString(),
                 ]);
                 if ($item) {

@@ -8,7 +8,7 @@
  * (see check_startup_diagnostics.mjs) measures JS compilation separately.
  */
 const GAME_IDS = new Set([
-    'open-world', 'dino-run', 'after-hours', 'cafe-rush', 'cafe-critters', 'coffee-crash',
+    'open-world', 'dino-run', 'after-hours', 'cafe-rush', 'cafe-critters', 'coffee-crash', 'cafe-drift',
 ]);
 const MAX_GAME_RUNS = 24;
 const MAX_SPRITE_SAMPLES = 96;

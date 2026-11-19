@@ -35,6 +35,14 @@ async function play({ width, height, touch = false, ranked = false }) {
         ).catch(error => error) : null;
         await start.click();
         if (ranked) {
+            await page.locator('[data-legal-terms]').waitFor({ state: 'visible' });
+            const profile = page.locator('[data-demian-legal-consent] input[name="display_name"]');
+            if (await profile.count()) {
+                await profile.fill('Drift QA Player');
+                await page.locator('[data-demian-legal-consent] select[name="contact_type"]').selectOption('email');
+                await page.locator('[data-demian-legal-consent] input[name="contact_value"]')
+                    .fill(`drift-qa-${Date.now()}@example.test`);
+            }
             await page.locator('[data-legal-terms]').check();
             await page.locator('[data-legal-privacy]').check();
             await page.locator('[data-legal-confirm]').click();
@@ -85,6 +93,11 @@ async function play({ width, height, touch = false, ranked = false }) {
             assert.ok((await weekly.json()).data.some(row => row.score === receipt.score));
             await page.waitForFunction(() => window.demianGameApplication.sessionState === 'results');
             await page.screenshot({ path: join(output, 'results.png') });
+            await page.locator('[data-screen="results"] [data-shell-action="leaderboard"]').click();
+            await page.waitForFunction(() => document.querySelector('[data-ranking-personal-best]').textContent.includes('رتبهٔ شما'));
+            assert.equal(await page.locator('[data-ranking-game]').inputValue(), 'cafe-drift');
+            assert.equal(await page.locator('[data-ranking-week]').isEnabled(), true);
+            await page.screenshot({ path: join(output, 'leaderboard.png') });
         } else {
             await page.locator('.play-toolbar [data-shell-action="pause"]').click();
             await page.waitForFunction(() => window.demianGameApplication.sessionState === 'paused');

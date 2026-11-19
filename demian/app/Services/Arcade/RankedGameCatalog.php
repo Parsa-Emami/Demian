@@ -53,6 +53,13 @@ final class RankedGameCatalog
         if (! $this->supportsRanked($id)) return false;
         return match ($id) {
             'dino-run' => true,
+            'cafe-drift' => config('demian-arcade.drift_prizes_enabled') === true
+                && config('demian-coupons.campaigns_enabled') === true
+                && config('demian-coupons.issue_enabled') === true
+                && config('demian-coupons.policy_approved') === true
+                && (config('app.env') !== 'production' || (
+                    config('demian-legal.publication_approved') === true
+                    && config('demian-legal.require_acceptance') === true)),
             'cafe-critters' => config('demian-arcade.critters_prizes_enabled') === true,
             'coffee-crash' => config('demian-arcade.coffee_prizes_enabled') === true,
             // A separate route challenge cannot authorize coupons for the original game.

@@ -15,6 +15,10 @@ use App\Http\Controllers\Cafe\CafeObservabilityController;
 
 // Authorized cafe staff use Laravel's CSRF-protected web session middleware,
 // including when the API host is in API-only mode. Never open character studio.
+Route::get('/admin', fn () => redirect()->route(
+    session()->has('cafe_staff_id') ? 'cashier.index' : 'cashier.login'
+))->name('cafe.admin');
+
 Route::prefix('cashier')->name('cashier.')->group(function (): void {
     Route::get('/login', [CashierController::class, 'loginForm'])->name('login');
     Route::post('/login', [CashierController::class, 'login'])
@@ -29,6 +33,10 @@ Route::prefix('cashier')->name('cashier.')->group(function (): void {
                 RequireCafePermission::class.':coupon.redeem'])->name('redeem');
         Route::get('/report', [CashierController::class, 'report'])
             ->middleware(RequireCafePermission::class.':report.branch')->name('report');
+        Route::get('/admin/players', [CafeAdminController::class, 'players'])
+            ->middleware(RequireCafePermission::class.':staff.directory')->name('players');
+        Route::get('/admin/players/{player}', [CafeAdminController::class, 'player'])
+            ->whereUuid('player')->middleware(RequireCafePermission::class.':staff.directory')->name('players.show');
         Route::get('/admin/staff', [CafeAdminController::class, 'directory'])
             ->middleware(RequireCafePermission::class.':staff.directory')->name('staff');
         Route::post('/admin/staff/{subjectId}/{operation}',

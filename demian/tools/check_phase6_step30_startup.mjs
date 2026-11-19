@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { GAME_CATALOG } from '../resources/js/game/catalog/GameCatalog.js';
 import { createReadStream, mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { createServer } from 'node:http';
 import { gzipSync } from 'node:zlib';
@@ -74,7 +75,7 @@ try {
             await wait(page, () => window.demianGameApplication?.sessionState === 'menu'
                 && document.querySelector('[data-screen="game-selection"]')?.hidden === false, 20000);
             const readyMs = Date.now() - started;
-            assert.equal(await page.locator('[data-game-card]').count(), 6);
+            assert.equal(await page.locator('[data-game-card]').count(), GAME_CATALOG.length);
             assert.equal(await page.evaluate(() =>
                 document.querySelector('[data-character-manager]').dataset.pendingMenuAction ?? null), null);
             assert.equal(await page.evaluate(() =>
@@ -87,7 +88,7 @@ try {
     }
 
     // TEST B: emulated cold 4G / CPU x2. Assert the user's requested latency
-    // ceilings for JS hydration and first-playable state of all six games.
+    // ceilings for JS hydration and first-playable state of all games.
     {
         const context = await browser.newContext({
             viewport: { width: 390, height: 844 }, deviceScaleFactor: 2,
@@ -111,7 +112,7 @@ try {
             report.firstReadyMs = bootMs;
             await page.locator('[data-screen="cafe-menu"] [data-shell-action="play"]').click();
             await wait(page, () => !document.querySelector('[data-screen="game-selection"]')?.hidden);
-            for (const game of ['coffee-crash', 'dino-run', 'after-hours', 'cafe-rush', 'cafe-critters', 'open-world']) {
+            for (const game of ['coffee-crash', ...GAME_CATALOG.map(game => game.id).filter(id => id !== 'coffee-crash')]) {
                 const start = Date.now();
                 const previousSequence = await page.evaluate(() => window.demianGameApplication.firstPlayableFrame.sequence);
                 await page.locator(`[data-game-card="${game}"] [data-game-launch]`).tap();
@@ -146,7 +147,7 @@ if (report.status !== 'passed') {
     console.error('[Step 30] Startup regression:', report.errors);
     process.exitCode = 1;
 } else {
-    console.log('[Step 30] Fast startup, cold 4G and six games passed:', {
+    console.log('[Step 30] Fast startup, cold 4G and all games passed:', {
         prepaint: report.prepaint, cold4g: report.cold4g,
         games: report.games, compressedJsBytes,
     });

@@ -46,10 +46,10 @@ final class RewardCampaignService
         }
         $minimum = (int) ($data['min_order_minor'] ?? $approved['min_order_minor']);
         $maximum = (int) ($data['max_discount_minor'] ?? $approved['max_discount_minor']);
-        $days = (int) ($data['valid_days'] ?? $approved['valid_days']);
+        $days = (int) ($data['valid_days'] ?? CouponPolicy::WEEKLY_VALID_DAYS);
         if ($minimum < $approved['min_order_minor'] || $minimum > 1000000000000
             || $maximum < 1 || $maximum > $approved['max_discount_minor']
-            || $days < 1 || $days > $approved['valid_days']) {
+            || $days !== CouponPolicy::WEEKLY_VALID_DAYS) {
             throw new RuntimeException('Campaign terms exceed approved business limits.');
         }
 

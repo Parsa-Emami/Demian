@@ -212,8 +212,9 @@ export default class LeaderboardScreen extends BaseScreen {
         if (deviceOnly) this.period.value = 'device';
         else if (this.deviceOnly) this.period.value = 'weekly';
         this.deviceOnly = deviceOnly;
-        this.weekWrap.hidden = !shared;
-        this.week.disabled = !shared;
+        const supportsHistory = shared || (!deviceOnly && game === 'cafe-drift' && this.period.value === 'weekly');
+        this.weekWrap.hidden = !supportsHistory;
+        this.week.disabled = !supportsHistory;
         this.period.disabled = shared;
         if (shared) this.period.value = 'weekly';
         this.gameHeading.hidden = !shared;
@@ -249,7 +250,7 @@ export default class LeaderboardScreen extends BaseScreen {
     async switchGame() {
         this.week.value = '';
         this.configureMode();
-        if (this.game.value === 'all-games') await this.loadWeeks();
+        if (!this.week.disabled) await this.loadWeeks();
         await this.load();
     }
 
@@ -275,7 +276,7 @@ export default class LeaderboardScreen extends BaseScreen {
 
     renderCountdown() {
         const isWeekly = this.period.value === 'weekly' && this.service.connected
-            && (this.game.value !== 'all-games' || this.week.value === '');
+            && (this.week.disabled || this.week.value === '');
         this.countdown.hidden = !isWeekly;
         if (!isWeekly) return null;
         const remaining = remainingWeeklySeconds(this.snapshot, this.receivedAtMs, this.monotonicNow());
@@ -292,22 +293,23 @@ export default class LeaderboardScreen extends BaseScreen {
         this.status.textContent = 'در حال دریافت امتیازهای تأییدشده…';
         this.personalBest.textContent = '';
         this.body.replaceChildren();
+        this.personalBest.textContent = '';
         this.snapshot = null;
         this.renderCountdown();
         try {
             const activeGame = this.game?.value ?? 'dino-run';
             const shared = activeGame === 'all-games' && this.service.connected;
-            const chosenWeek = shared ? this.week.value : '';
+            const chosenWeek = !this.week.disabled ? this.week.value : '';
             const ownScore = shared
                 ? this.service.myWeeklyRanking(chosenWeek)
-                : this.period.value !== 'device' && activeGame === 'dino-run'
-                    ? this.service.personalBest(this.period.value) : Promise.resolve(null);
+                : this.period.value !== 'device' && ['dino-run', 'cafe-drift'].includes(activeGame)
+                    ? this.service.personalBest(this.period.value, activeGame, chosenWeek) : Promise.resolve(null);
             const result = shared
                 ? await this.service.weeklyRanking(chosenWeek)
-                : await this.service.list(this.period.value, activeGame);
+                : await this.service.list(this.period.value, activeGame, chosenWeek);
             if (generation !== this.generation) return;
             this.scoreHeading.textContent = recordHeading(activeGame, this.period.value, result.rules_version);
-            this.snapshot = result.mode === 'online' && (!shared || result.is_current) ? result : null;
+            this.snapshot = result.mode === 'online' && (!chosenWeek || result.is_current) ? result : null;
             this.receivedAtMs = this.monotonicNow();
             if (shared) {
                 this.status.textContent = result.status === 'finalized'
@@ -321,7 +323,18 @@ export default class LeaderboardScreen extends BaseScreen {
             } else {
                 this.status.textContent = result.mode === 'device'
                     ? 'رکوردهای همین مرورگر؛ ثبت جهانی نشده‌اند.'
-                    : 'رکوردهای تأییدشده سرور · شروع هفته شنبه ساعت ۰۰:۰۰ تهران';
+                    : result.status === 'finalized'
+                        ? 'نتیجهٔ نهایی این هفته · ثبت‌شده در آرشیو دمیان'
+                        : result.status === 'archive_pending'
+                            ? 'نتیجهٔ این هفته هنوز نهایی نشده است.'
+                            : 'رکوردهای تأییدشده سرور · شروع هفته شنبه ساعت ۰۰:۰۰ تهران';
+                if (activeGame === 'cafe-drift' && result.competition) {
+                    const { accepting_starts, prizes } = result.competition;
+                    this.status.textContent += accepting_starts ? ' · رقابت باز است' : ' · ثبت دور جدید بسته است';
+                    if (prizes === 'campaign_active') this.status.textContent += ' · کمپین جایزه فعال است';
+                    if (prizes === 'campaign_pending') this.status.textContent += ' · کمپین جایزه منتظر فعال‌سازی است';
+                    if (prizes === 'unavailable') this.status.textContent += ' · این دوره بدون جایزه است';
+                }
                 if (!result.data?.length) this.status.textContent += ' هنوز رکوردی ثبت نشده است.';
             }
             for (const row of result.data ?? []) {
@@ -368,13 +381,16 @@ export default class LeaderboardScreen extends BaseScreen {
                     this.personalBest.textContent = 'هنوز رکورد رقابتی ثبت نکرده‌ای؛ رتبه شخصی پس از تأیید سرور نمایش داده می‌شود.';
                 }
             } else {
-                this.personalBest.textContent = result.mode === 'online' && activeGame !== 'dino-run'
+                this.personalBest.textContent = result.mode === 'online' && !['dino-run', 'cafe-drift'].includes(activeGame)
                     ? 'این جدول فقط نتایج بازپخش‌شده و تأییدشده توسط سرور را نمایش می‌دهد.'
                     : result.mode === 'online'
                         ? own?.best
                             ? 'رتبهٔ شما: ' + new Intl.NumberFormat('fa-IR').format(own.my_rank)
                                 + ' از ' + new Intl.NumberFormat('fa-IR').format(own.participants ?? 0)
                                 + ' · رکورد: ' + new Intl.NumberFormat('fa-IR').format(own.best.score)
+                                + (activeGame === 'cafe-drift' && Number.isSafeInteger(own.points_to_overtake)
+                                    ? ' · تا عبور از رتبهٔ بعدی: ' + new Intl.NumberFormat('fa-IR').format(own.points_to_overtake) + ' امتیاز'
+                                    : '')
                             : 'هنوز رکورد تأییدشده‌ای برای این دوره نداری.'
                         : '';
             }

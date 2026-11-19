@@ -1,9 +1,9 @@
 import { readdirSync, statSync } from 'node:fs';
 import { resolve, relative, extname, sep } from 'node:path';
 
-export const MOBILE_GAME_IDS = Object.freeze([
-    'open-world', 'dino-run', 'after-hours', 'cafe-rush', 'cafe-critters', 'coffee-crash',
-]);
+import { GAME_CATALOG } from '../resources/js/game/catalog/GameCatalog.js';
+
+export const MOBILE_GAME_IDS = Object.freeze(GAME_CATALOG.map(game => game.id));
 
 /** Nearest-rank percentile: deterministic and easy to compare between reports. */
 export function percentile(values, fraction) {

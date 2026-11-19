@@ -194,10 +194,6 @@ export default class GameShell {
         }
 
         switch (button.dataset.shellAction) {
-            case 'motion-comparison':
-                if (this.app.sessionState === 'playing') this.app.pauseGame();
-                await this.manager.show(SCREEN_IDS.MOTION);
-                break;
             case 'leaderboard':
                 this.leaderboardScreen.preferredGame = this.app.activeGameId;
                 if (this.app.sessionState === 'playing') this.app.pauseGame();

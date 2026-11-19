@@ -70,7 +70,7 @@ final class RewardCampaignStep14Test extends TestCase
         return array_replace([
             'period_key' => self::WEEK, 'title' => 'Weekly Cafe Discount',
             'max_awards' => 2, 'min_order_minor' => 1000,
-            'max_discount_minor' => 5000, 'valid_days' => 7,
+            'max_discount_minor' => 5000, 'valid_days' => 14,
             'percent_first' => 30, 'percent_second' => 20,
             'percent_third' => 20, 'percent_other' => 10,
         ], $overrides);

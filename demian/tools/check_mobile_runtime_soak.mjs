@@ -1,9 +1,10 @@
 /**
- * Runtime optimization browser QA. Exercises all six games, real Open World
+ * Runtime optimization browser QA. Exercises the full game catalog, real Open World
  * streaming churn, and local 30s-window diagnostics. CI is a LAB result,
  * not a physical-phone thermal or memory certification.
  */
 import assert from 'node:assert/strict';
+import { GAME_CATALOG } from '../resources/js/game/catalog/GameCatalog.js';
 import { createReadStream, mkdirSync, statSync, writeFileSync } from 'node:fs';
 import { createServer } from 'node:http';
 import { extname, resolve, sep } from 'node:path';
@@ -25,7 +26,7 @@ const server=createServer((req,res)=>{
         createReadStream(file).on('error',()=>res.destroy()).pipe(res);
     }catch{res.writeHead(404);res.end('Not found')}
 });
-const games=['open-world','dino-run','after-hours','cafe-rush','cafe-critters','coffee-crash'];
+const games=GAME_CATALOG.map(game => game.id);
 const report={status:'pending', evidenceType:'headless-chromium-mobile-emulation',
     physicalPhoneVerified:false,thermalState:null,nativeGpuMemoryBytes:null,
     gameRuns:[],chunkTeleports:[],runtime:null,errors:[],
@@ -106,7 +107,7 @@ try{
             report.gameRuns[0].chunkStats.maxLoadedChunks);
         assert.deepEqual(report.errors,[],'No uncaught browser exceptions');
         report.status='passed';
-        console.log('Mobile Runtime browser soak: PASSED',report.runtime.sampledFrames,'frames, six games, 18 teleport churn passes');
+        console.log('Mobile Runtime browser soak: PASSED',report.runtime.sampledFrames,'frames, all games, 18 teleport churn passes');
     }finally{await context.close()}
 }catch(error){
     report.status='failed';

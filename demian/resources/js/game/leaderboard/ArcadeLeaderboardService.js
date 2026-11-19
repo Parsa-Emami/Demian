@@ -150,13 +150,22 @@ export default class ArcadeLeaderboardService {
         // Real users must confirm; canceling keeps all games in practice mode.
         let acceptance = null;
         if (globalThis.document?.body) {
-            acceptance = await requestLegalAcknowledgement();
+            const policy = await this.request('/legal');
+            const requiresContact = policy.require_contact === true;
+            acceptance = await requestLegalAcknowledgement(document, { contact: requiresContact, newProfile: requiresContact });
+            if (acceptance && requiresContact) {
+                const key = `demian.arcade.registration:${this.baseUrl}`;
+                acceptance.registration_key = safeRead(this.storage, key, null) ?? crypto.randomUUID();
+                safeWrite(this.storage, key, acceptance.registration_key);
+            }
             if (!acceptance) throw new Error('برای حساب آنلاین، مطالعه و پذیرش قوانین لازم است؛ حالت تمرینی همچنان فعال است.');
         }
         this.identity = await this.request('/players', {
             method: 'POST', body: { display_name: this.displayName, ...(acceptance ?? {}) },
         });
         this.acceptedLegalVersion = acceptance?.policy_version ?? null;
+        this.profile = { display_name: this.identity.display_name ?? this.profile.display_name };
+        safeWrite(this.storage, PROFILE_KEY, this.profile);
         safeWrite(this.identityStorage, this.identityKey, this.identity);
         this.accountKnown = true;
         safeWrite(this.storage, this.accountMarkerKey, true);
@@ -175,6 +184,17 @@ export default class ArcadeLeaderboardService {
         const active = await this.request('/legal');
         if (active?.version !== LEGAL_VERSION) {
             throw new Error('نسخه قوانین بازی تغییر کرده است؛ صفحه را به‌روزرسانی کن.');
+        }
+        if (active.require_contact === true && this.identity?.has_contact !== true) {
+            const player = await this.request('/player', { authenticated: true });
+            if (player.has_contact !== true) {
+                const contact = await requestLegalAcknowledgement(document, { contact: true });
+                if (!contact) throw new Error('برای بازی رقابتی یک راه ارتباطی وارد کنید.');
+                await this.request('/player/contact', { method: 'PATCH', authenticated: true,
+                    body: { contact_type: contact.contact_type, contact_value: contact.contact_value } });
+            }
+            this.identity.has_contact = true;
+            safeWrite(this.identityStorage, this.identityKey, this.identity);
         }
         if (active.require_acceptance !== true) return;
         if (this.acceptedLegalVersion === active.version) return;
@@ -514,10 +534,13 @@ export default class ArcadeLeaderboardService {
             throw error;
         }
     }
-    async personalBest(period = 'weekly') {
+    async personalBest(period = 'weekly', gameId = 'dino-run', week = '') {
         if (!this.connected || !this.identity?.token) return null;
         try {
-            return await this.request(`/player/best?period=${encodeURIComponent(period)}`,
+            const query = new URLSearchParams({ period });
+            if (gameId !== 'dino-run') query.set('game_id', gameId);
+            if (week) query.set('week', week);
+            return await this.request(`/player/best?${query}`,
                 { authenticated: true });
         } catch (error) {
             if (error.status === 401) {
@@ -565,10 +588,12 @@ export default class ArcadeLeaderboardService {
             || (b.score ?? 0) - (a.score ?? 0) || a.achieved_at.localeCompare(b.achieved_at));
         safeWrite(this.storage, DEVICE_PREFIX + game, rows.slice(0, 20));
     }
-    async list(period = 'weekly', gameId = 'dino-run') {
+    async list(period = 'weekly', gameId = 'dino-run', week = '') {
         if (!RECORD_GAMES.includes(gameId)) throw new Error('Unknown ranked game.');
         if (this.connected && period !== 'device') {
-            return { ...await this.request(`/leaderboards/${gameId}?period=${encodeURIComponent(period)}&limit=20`), mode: 'online' };
+            const query = new URLSearchParams({ period, limit: '20' });
+            if (week) query.set('week', week);
+            return { ...await this.request(`/leaderboards/${gameId}?${query}`), mode: 'online' };
         }
         const rows = gameId === 'dino-run' ? this.localScores() : this.deviceRecords(gameId);
         return { mode: 'device', data: rows.map((row, index) => ({ ...row, rank: index + 1 })) };

@@ -48,6 +48,8 @@ Route::prefix('v1/arcade')->middleware([ObserveArcadeRequest::class,
             [CouponDeliveryController::class, 'openCase'])
             ->whereNumber('couponId')->middleware('throttle:arcade-coupon-support');
         Route::get('/player', [ArcadeController::class, 'me']);
+        Route::patch('/player/contact', [ArcadeController::class, 'updateContact'])
+            ->middleware('throttle:arcade-player-rename');
         Route::post('/player/legal', [ArcadeController::class, 'acknowledgeLegal'])
             ->middleware('throttle:arcade-legal-ack');
         Route::get('/player/data', [ArcadePrivacyController::class, 'snapshot'])

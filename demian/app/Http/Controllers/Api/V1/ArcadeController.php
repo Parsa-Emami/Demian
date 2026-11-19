@@ -10,6 +10,8 @@ use App\Models\ArcadeRun;
 use App\Services\Arcade\ArcadeRunService;
 use App\Services\Arcade\LeaderboardService;
 use App\Services\Arcade\CompetitionClock;
+use App\Services\Arcade\PlayerContact;
+use Illuminate\Database\UniqueConstraintViolationException;
 use App\Services\Arcade\RankedGameCatalog;
 use App\Services\Arcade\RunnerReplayVerifier;
 use Illuminate\Http\JsonResponse;
@@ -136,7 +138,7 @@ final class ArcadeController extends Controller
         }
     }
 
-    public function register(Request $request): JsonResponse
+    public function register(Request $request, PlayerContact $contacts): JsonResponse
     {
         $name = $this->name($request);
         // Require both explicit terms acceptance and a privacy acknowledgement
@@ -149,15 +151,21 @@ final class ArcadeController extends Controller
         ]);
         $accepted = ($legal['policy_version'] ?? null) === config('demian-legal.version')
             && $request->boolean('accept_terms') && $request->boolean('privacy_acknowledged');
+        $contact = $contacts->fields($request, config('demian-arcade.require_contact'), true);
         $token = Str::random(64);
         $expires = now()->addDays((int) config('demian-arcade.player_session_days'));
-        $player = ArcadePlayer::query()->create(['display_name' => $name,
-            'token_hash' => hash('sha256', $token), 'token_expires_at' => $expires,
-            'legal_policy_version' => $accepted ? config('demian-legal.version') : null,
-            'legal_accepted_at' => $accepted ? now() : null]);
+        try {
+            $player = ArcadePlayer::query()->create(['display_name' => $name,
+                'token_hash' => hash('sha256', $token), 'token_expires_at' => $expires,
+                'legal_policy_version' => $accepted ? config('demian-legal.version') : null,
+                'legal_accepted_at' => $accepted ? now() : null, ...$contact]);
+        } catch (UniqueConstraintViolationException) {
+            abort(409, 'برای این مشخصات حسابی وجود دارد. حساب قبلی را بازیابی کنید.');
+        }
 
         return response()->json(['player_id' => $player->id, 'display_name' => $player->display_name,
-            'token' => $token, 'token_expires_at' => $expires->toIso8601String()], 201);
+            'token' => $token, 'token_expires_at' => $expires->toIso8601String(),
+            'has_contact' => $player->contact_hash !== null], 201);
     }
 
     public function issueRecoveryLink(Request $request): JsonResponse
@@ -259,7 +267,24 @@ final class ArcadeController extends Controller
 
         return response()->json(['player_id' => $player->id, 'display_name' => $player->display_name,
             'token_expires_at' => $player->token_expires_at?->toIso8601String(),
-            'legal_policy_version' => $player->legal_policy_version]);
+            'legal_policy_version' => $player->legal_policy_version, 'has_contact' => $player->contact_hash !== null]);
+    }
+
+    public function updateContact(Request $request, PlayerContact $contacts): JsonResponse
+    {
+        $player = $request->attributes->get('arcade_player');
+        $fields = $contacts->fields($request, true);
+        try {
+            if (ArcadePlayer::query()->whereKey($player->id)->whereNull('contact_hash')->update([
+                ...$fields, 'contact_value' => \Illuminate\Support\Facades\Crypt::encryptString($fields['contact_value']),
+            ]) === 0) {
+                abort(409, 'راه ارتباطی قبلاً ثبت شده است.');
+            }
+        } catch (UniqueConstraintViolationException) {
+            abort(409, 'این راه ارتباطی به حساب دیگری تعلق دارد.');
+        }
+
+        return response()->json(['has_contact' => true]);
     }
 
     public function erase(Request $request): JsonResponse
@@ -277,41 +302,23 @@ final class ArcadeController extends Controller
         return response()->json(['status' => 'deleted']);
     }
 
-    public function personalBest(Request $request, CompetitionClock $clock): JsonResponse
+    public function personalBest(Request $request, LeaderboardService $leaderboards): JsonResponse
     {
-        $values = $request->validate(['period' => ['sometimes', Rule::in(['all', 'daily', 'weekly'])]]);
-        $window = $clock->snapshot($values['period'] ?? 'weekly');
+        $values = $request->validate([
+            'period' => ['sometimes', Rule::in(['all', 'daily', 'weekly'])],
+            'week' => ['sometimes', 'string', 'size:10', 'date_format:Y-m-d'],
+            'game_id' => ['sometimes', Rule::in(['dino-run', 'cafe-drift'])],
+        ]);
         $player = $request->attributes->get('arcade_player');
-        $version = app(RunnerReplayVerifier::class)->versionAt(now());
-        $scope = fn () => DB::table('arcade_leaderboard_entries')
-            ->where('game_id', 'dino-run')
-            ->where('rules_version', $version)
-            ->where('period_key', $window['period_key']);
-        $entry = $scope()->where('player_id', $player->id)->first(['id', 'score', 'achieved_at']);
-        $participants = $scope()->count();
-        $rank = null;
-        if ($entry) {
-            // Match public leaderboard ordering: score DESC, achieved_at ASC, id ASC.
-            // Count ahead on the server so players beyond the public top 20 have an exact rank.
-            $ahead = $scope()->where(function ($query) use ($entry): void {
-                $query->where('score', '>', $entry->score)
-                    ->orWhere(function ($tie) use ($entry): void {
-                        $tie->where('score', $entry->score)
-                            ->where(function ($earlier) use ($entry): void {
-                                $earlier->where('achieved_at', '<', $entry->achieved_at)
-                                    ->orWhere(function ($sameTime) use ($entry): void {
-                                        $sameTime->where('achieved_at', $entry->achieved_at)
-                                            ->where('id', '<', $entry->id);
-                                    });
-                            });
-                    });
-            })->count();
-            $rank = $ahead + 1;
-        }
 
-        return response()->json(['game_id' => 'dino-run', ...$window,
-            'my_rank' => $rank, 'participants' => $participants,
-            'best' => $entry ? ['score' => (int) $entry->score, 'achieved_at' => $entry->achieved_at] : null]);
+        if (isset($values['week'])) {
+            abort_unless(($values['game_id'] ?? null) === 'cafe-drift' && ($values['period'] ?? 'weekly') === 'weekly', 422);
+            return response()->json($leaderboards->driftArchive($values['week'], 0, $player->id))
+                ->header('Cache-Control', 'private, no-store');
+        }
+        return response()->json($leaderboards->personal(
+            $values['game_id'] ?? 'dino-run', $values['period'] ?? 'weekly', $player->id,
+        ))->header('Cache-Control', 'private, no-store');
     }
 
     public function start(StartArcadeRunRequest $request, ArcadeRunService $service): JsonResponse

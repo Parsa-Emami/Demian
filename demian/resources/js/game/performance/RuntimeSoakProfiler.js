@@ -5,7 +5,9 @@
  * memory trends without URLs, account identifiers or GPU-memory claims.
  * The sampling code is used ONLY by Device QA, never by regular gameplay.
  */
-const GAME_IDS = new Set(['open-world','dino-run','after-hours','cafe-rush','cafe-critters','coffee-crash']);
+import { GAME_CATALOG } from '../catalog/GameCatalog.js';
+
+const GAME_IDS = new Set(GAME_CATALOG.map(game => game.id));
 const WINDOW_MS = 30_000;
 const MAX_WINDOWS = 60; // 30 minutes of retention; no unbounded telemetry.
 const BUCKET_COUNT = 201;

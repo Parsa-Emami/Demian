@@ -5,10 +5,9 @@
  * never turns emulated Chrome/Firefox/WebKit, MySQL-in-CI or a local mock API
  * into proof of an actual production cPanel deployment.
  */
-export const GAME_IDS = Object.freeze([
-    'dino-run', 'open-world', 'after-hours', 'cafe-rush',
-    'cafe-critters', 'coffee-crash',
-]);
+import { GAME_CATALOG } from '../../resources/js/game/catalog/GameCatalog.js';
+
+export const GAME_IDS = Object.freeze(GAME_CATALOG.map(game => game.id));
 
 export const REQUIRED_ARTIFACTS = Object.freeze([
     { id: 'cold-start', file: 'phase6-step30/startup.json' },
@@ -69,7 +68,7 @@ export function evaluateStep31Evidence(records, { commitSha = null } = {}) {
         failures.push('Cold-start evidence must explicitly identify emulation and non-physical limits.');
     }
     if (!Number.isFinite(boot) || boot < 0 || boot >= 5000) failures.push('4G cold menu does not meet <5s lab budget.');
-    if (!exactGames(games)) failures.push('Six distinct playable game timings are required.');
+    if (!exactGames(games)) failures.push('Distinct playable timings for the full catalog are required.');
     else if (games.some(row => !Number.isFinite(row.firstPlayMs)
         || row.firstPlayMs < 0 || row.firstPlayMs >= 7000)) {
         failures.push('At least one first-play time violates <7s lab budget.');
@@ -83,13 +82,13 @@ export function evaluateStep31Evidence(records, { commitSha = null } = {}) {
         || !Array.isArray(compatibility?.browsers)
         || !['chromium', 'firefox', 'webkit'].every(engine => compatibility.browsers.some(row =>
             row.engine === engine && row.status === 'passed' && exactGames(row.games)))) {
-        failures.push('Three-engine six-game browser acceptance is missing or incomplete.');
+        failures.push('Three-engine full-catalog browser acceptance is missing or incomplete.');
     }
     const profiles = ['mid-tier-laboratory', 'low-tier-laboratory'];
     for (const id of profiles) {
         const report = records?.[id];
         if (report?.physicalPhoneMeasured !== false || !exactGames(report?.games)) {
-            failures.push(id + ' must cover all six emulated games without claiming physical phones.');
+            failures.push(id + ' must cover all emulated games without claiming physical phones.');
         }
     }
     const transferred = startup?.compressedJsBytes;

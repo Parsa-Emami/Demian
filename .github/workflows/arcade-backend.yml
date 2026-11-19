@@ -9,6 +9,7 @@ on:
       - 'demian/database/**'
       - 'demian/routes/**'
       - 'demian/resources/game/**'
+      - 'demian/resources/legal/**'
       - 'demian/resources/views/**'
       - 'demian/tests/**'
       - 'demian/composer.*'

@@ -7,6 +7,7 @@
  * blocking loading screen or make a sprite/texture mandatory for the menu.
  */
 import assert from 'node:assert/strict';
+import { GAME_CATALOG } from '../resources/js/game/catalog/GameCatalog.js';
 import { createReadStream, existsSync, mkdirSync, statSync, writeFileSync } from 'node:fs';
 import { createServer } from 'node:http';
 import { resolve, extname, sep } from 'node:path';
@@ -74,7 +75,7 @@ try {
     assert.equal(await page.evaluate(() => window.demianGameApplication?.activeGameId), null,
         'A full Open World instance must not be created as a menu backdrop.');
 
-    const games = ['coffee-crash', 'dino-run', 'after-hours', 'cafe-rush', 'cafe-critters', 'open-world'];
+    const games = ['coffee-crash', ...GAME_CATALOG.map(game => game.id).filter(id => id !== 'coffee-crash')];
     // The image loader's optional café preview takes up to 12s on failure.
     // Delay it in the first game to verify gameplay does not await that art.
     await page.route(/\/assets\/environments\/demian-fbx\/polished-v1\/preview\.webp/, async route => {
@@ -99,12 +100,13 @@ try {
             'Game assets must be released before returning to the menu.');
     }
     // Step 20 UX acceptance on the actual optimized browser release:
-    // navigation, six-game catalog, focus trapping and nested pause/settings.
+    // navigation, game catalog, focus trapping and nested pause/settings.
     await page.locator('[data-screen="cafe-menu"] [data-shell-action="play"]').click();
     await page.locator('[data-screen="game-selection"]').waitFor({ state: 'visible' });
-    assert.equal(await page.locator('[data-game-card]').count(), 6,
-        'The shared game selection must present all six current games.');
-    assert.match(await page.locator('[data-game-library-count]').innerText(), /۶/,
+    assert.equal(await page.locator('[data-game-card]').count(), GAME_CATALOG.length,
+        'The shared game selection must present the full current catalog.');
+    assert.match(await page.locator('[data-game-library-count]').innerText(),
+        new RegExp(new Intl.NumberFormat('fa-IR').format(GAME_CATALOG.length)),
         'The visible game count must reflect the catalog, not stale placeholder copy.');
     await page.locator('[data-screen="game-selection"] [data-shell-action="back-cafe"]').click();
     await page.locator('[data-screen="cafe-menu"]').waitFor({ state: 'visible' });

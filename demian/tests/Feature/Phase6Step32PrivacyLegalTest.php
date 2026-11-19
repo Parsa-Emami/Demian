@@ -14,7 +14,7 @@ final class Phase6Step32PrivacyLegalTest extends TestCase
     {
         config()->set('demian-legal.publication_approved', false);
         $this->getJson('/api/v1/arcade/legal')->assertOk()
-            ->assertJsonPath('version', '2026-11-16-v1')
+            ->assertJsonPath('version', '2026-11-19-v2')
             ->assertJsonPath('status', 'draft-pending-legal-review')
             ->assertJsonPath('pages.privacy', 'https://demiancafe.ir/privacy/');
     }
@@ -26,14 +26,14 @@ final class Phase6Step32PrivacyLegalTest extends TestCase
         $this->postJson($url, ['display_name' => 'No Consent'])->assertUnprocessable();
         $this->postJson($url, ['display_name' => 'Stale', 'policy_version' => 'old',
             'accept_terms' => true, 'privacy_acknowledged' => true])->assertUnprocessable();
-        $this->postJson($url, ['display_name' => 'Refused', 'policy_version' => '2026-11-16-v1',
+        $this->postJson($url, ['display_name' => 'Refused', 'policy_version' => '2026-11-19-v2',
             'accept_terms' => false, 'privacy_acknowledged' => true])->assertUnprocessable();
         $this->assertDatabaseCount('arcade_players', 0);
-        $player = $this->postJson($url, ['display_name' => 'Agreed', 'policy_version' => '2026-11-16-v1',
+        $player = $this->postJson($url, ['display_name' => 'Agreed', 'policy_version' => '2026-11-19-v2',
             'accept_terms' => true, 'privacy_acknowledged' => true])
             ->assertCreated()->assertHeader('Cache-Control', 'no-store, private')->json();
         $this->assertDatabaseHas('arcade_players', [
-            'id' => $player['player_id'], 'legal_policy_version' => '2026-11-16-v1']);
+            'id' => $player['player_id'], 'legal_policy_version' => '2026-11-19-v2']);
         $this->assertNotNull(DB::table('arcade_players')->where('id', $player['player_id'])
             ->value('legal_accepted_at'));
     }
@@ -106,13 +106,13 @@ final class Phase6Step32PrivacyLegalTest extends TestCase
             'privacy_acknowledged' => true,
         ])->assertUnprocessable();
         $this->postJson('/api/v1/arcade/player/legal', [
-            'policy_version' => '2026-11-16-v1',
+            'policy_version' => '2026-11-19-v2',
             'accept_terms' => true, 'privacy_acknowledged' => false,
         ])->assertUnprocessable();
         $this->postJson('/api/v1/arcade/player/legal', [
-            'policy_version' => '2026-11-16-v1',
+            'policy_version' => '2026-11-19-v2',
             'accept_terms' => true, 'privacy_acknowledged' => true,
-        ])->assertOk()->assertJsonPath('legal_policy_version', '2026-11-16-v1');
+        ])->assertOk()->assertJsonPath('legal_policy_version', '2026-11-19-v2');
         $this->postJson('/api/v1/arcade/runs', $run)->assertCreated();
         // A newer version needs new affirmative user action. Merely changing
         // configuration does not create implied acceptance.

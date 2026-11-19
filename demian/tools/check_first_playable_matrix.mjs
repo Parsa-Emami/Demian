@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { GAME_CATALOG } from '../resources/js/game/catalog/GameCatalog.js';
 import { createReadStream, mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { createServer } from 'node:http';
 import { extname, resolve, sep } from 'node:path';
@@ -7,7 +8,7 @@ import { chromium } from 'playwright';
 const candidate = resolve(import.meta.dirname, '../_site');
 const output = resolve(import.meta.dirname, '../docs/phase6-step30/first-playable-matrix.json');
 const baseline = process.env.DEMIAN_FIRST_FRAME_BASELINE;
-const games = ['dino-run', 'after-hours', 'cafe-rush', 'cafe-critters', 'coffee-crash', 'open-world'];
+const games = GAME_CATALOG.map(game => game.id);
 const mime = {'.html':'text/html; charset=utf-8','.js':'text/javascript','.css':'text/css',
     '.json':'application/json','.webp':'image/webp','.png':'image/png','.svg':'image/svg+xml',
     '.woff2':'font/woff2','.webmanifest':'application/manifest+json'};

@@ -1,6 +1,8 @@
 @extends('cashier.layout')
 @section('title', 'نتیجه بررسی تخفیف | دمیان')
 @section('content')
+@if($details['owner_name'] ?? null)<p>نام بازیکن: <strong>{{ $details['owner_name'] }}</strong></p>@endif
+
 <div class="row"><a class="button secondary" href="{{ route('cashier.index') }}">بازگشت</a><span class="pill">چهار رقم آخر: {{ $details['code_suffix'] }}</span></div>
 <section class="panel">
 <h1>وضعیت اعتبار کد</h1>

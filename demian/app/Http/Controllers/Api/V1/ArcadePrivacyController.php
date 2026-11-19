@@ -27,6 +27,7 @@ final class ArcadePrivacyController extends Controller
             'version' => config('demian-legal.version'),
             'status' => config('demian-legal.publication_approved') ? 'approved' : 'draft-pending-legal-review',
             'require_acceptance' => config('demian-legal.require_acceptance'),
+            'require_contact' => config('demian-arcade.require_contact'),
             'pages' => config('demian-legal.pages'),
         ])->header('Cache-Control', 'public, max-age=60');
     }
@@ -44,6 +45,7 @@ final class ArcadePrivacyController extends Controller
                 'player_id' => $player->id, 'display_name' => $player->display_name,
                 'registered_at' => $player->created_at?->toIso8601String(),
                 'legal_policy_version' => $player->legal_policy_version,
+                'contact_type' => $player->contact_type, 'contact_value' => $player->contact_value,
                 'legal_accepted_at' => $player->legal_accepted_at?->toIso8601String(),
             ],
             'record_counts' => $counts,

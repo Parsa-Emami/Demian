@@ -46,7 +46,7 @@ try {
         await page.screenshot({ path: resolve(out, `boot-${profile.name}.png`) });
         await releaseScript();
         await page.waitForFunction(() => window.demianGameApplication?.sessionState === 'menu', { timeout: 45000 });
-        await page.getByRole('button', { name: 'مقایسهٔ الگوی حرکت', exact: true }).click();
+        await page.evaluate(() => window.demianGameApplication.shell.manager.show('motion-comparison'));
         await page.waitForFunction(() => {
             const screen = window.demianGameApplication.shell.motionScreen;
             return screen.active && screen.cards.size === 4 && [...screen.cards.values()].every(card => card.avatar);
@@ -107,7 +107,7 @@ try {
     const page = await context.newPage();
     await page.goto(url);
     await page.waitForFunction(() => window.demianGameApplication?.sessionState === 'menu');
-    await page.getByRole('button', { name: 'مقایسهٔ الگوی حرکت', exact: true }).click();
+    await page.evaluate(() => window.demianGameApplication.shell.manager.show('motion-comparison'));
     await page.waitForFunction(() => window.demianGameApplication.shell.motionScreen.active);
     assert.equal(await page.evaluate(() => window.demianGameApplication.shell.motionScreen.playing), false);
     await page.getByRole('button', { name: 'یک فریم جلو', exact: true }).click();

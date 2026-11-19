@@ -1,7 +1,9 @@
 <?php
 
 return [
+    'require_contact' => (bool) env('DEMIAN_ARCADE_REQUIRE_CONTACT', true),
     'weekly_content_at' => env('DEMIAN_WEEKLY_CONTENT_AT'),
+    'drift_prizes_enabled' => (bool) env('DEMIAN_ARCADE_DRIFT_PRIZES_ENABLED', false),
     'drift_ranked_enabled' => (bool) env('DEMIAN_ARCADE_DRIFT_RANKED_ENABLED', true),
     'rules_path' => resource_path('game/runner-rules.json'),
     // Reward-bearing Critters trials are opt-in only after end-to-end UAT.

@@ -39,22 +39,28 @@ export default class CafeDriftGame extends BaseGame {
                 <span><small>کمبو</small><strong data-drift-combo>×۱</strong></span>
                 <span><small>فنجان</small><strong data-drift-cups>۳</strong></span>
                 <span><small>ثانیه</small><strong data-drift-time>۴۵</strong></span>
+                <progress class="drift-hud__clock" data-drift-clock aria-label="زمان باقی‌ماندهٔ شیفت" max="45" value="45"></progress>
             </div>
             <span class="drift-hud__mode" data-drift-mode></span>
             <p class="drift-hud__callout" data-drift-cue role="status" hidden></p>
             <div class="drift-entry" data-drift-entry>
-                <div class="drift-entry__mark" aria-hidden="true">☕</div>
+                <div class="drift-entry__mark" aria-hidden="true"><i></i><i></i><i></i></div>
                 <h2>دریفت سینی</h2>
-                <p>سینی را چپ و راست بکش یا با کلیدهای جهت حرکت بده. از کنار صندلی‌ها رد شو، دانه‌های طلایی را بگیر و تا پایان شیفت فنجان‌ها را سالم نگه دار.</p>
+                <p>در ۴۵ ثانیه سینی را از میان موانع رد کن. جاخالی میلی‌متری و دانهٔ طلایی را پشت‌سرهم بگیر تا امتیازت تا پنج برابر شود.</p>
+                <p class="drift-entry__guide">روی مسیر بکش یا از کلیدهای جهت استفاده کن.</p>
                 <div class="drift-entry__actions">
-                    <button type="button" class="shell-button shell-button--primary" data-drift-start>شروع دریفت</button>
+                    <button type="button" class="shell-button shell-button--primary" data-drift-start>شروع رقابت</button>
                     <button type="button" class="shell-button shell-button--ghost" data-drift-practice>تمرین</button>
+                </div>
+                <div class="drift-entry__links">
+                    <button type="button" data-shell-action="leaderboard">جدول هفتگی</button>
+                    <button type="button" data-shell-action="rewards">تخفیف‌های من</button>
                 </div>
                 <p class="drift-entry__status" data-drift-status role="status">توقف یا ترک صفحه، دور رقابتی را به تمرین تبدیل می‌کند.</p>
             </div>`;
         this.hud = section;
         const nodes = this.nodes = {};
-        for (const name of ['pointer', 'score', 'combo', 'cups', 'time', 'mode', 'cue', 'entry', 'start', 'practice', 'status']) {
+        for (const name of ['pointer', 'score', 'combo', 'cups', 'time', 'clock', 'mode', 'cue', 'entry', 'start', 'practice', 'status']) {
             nodes[name] = section.querySelector(`[data-drift-${name}]`);
         }
         context.root.querySelector('[data-game-hud-host]').append(section);
@@ -142,11 +148,13 @@ export default class CafeDriftGame extends BaseGame {
                 this.frames.push([this.model.tick, this.target]);
             }
         }
+        const scoreBefore = this.model.score;
         const event = this.model.step(this.target);
         if (event) {
             this.effect = { kind: event, tick: this.model.tick, x: this.model.x };
             this.audio.play(event);
-            this.nodes.cue.textContent = feedback[event];
+            const gained = this.model.score - scoreBefore;
+            this.nodes.cue.textContent = gained > 0 ? `${feedback[event]} · ${digits.format(gained)} امتیاز` : feedback[event];
             this.nodes.cue.dataset.kind = event;
             this.nodes.cue.hidden = false;
         } else if (this.effect && this.model.tick - this.effect.tick >= 52) {
@@ -164,7 +172,10 @@ export default class CafeDriftGame extends BaseGame {
         this.nodes.score.textContent = digits.format(m.score);
         this.nodes.combo.textContent = `×${digits.format(m.combo || 1)}`;
         this.nodes.cups.textContent = digits.format(m.cups);
-        this.nodes.time.textContent = digits.format(Math.ceil((DRIFT.ticks - m.tick) / 60));
+        const remaining = Math.ceil((DRIFT.ticks - m.tick) / 60);
+        this.nodes.time.textContent = digits.format(remaining);
+        this.nodes.clock.value = remaining;
+        this.nodes.clock.dataset.ending = String(remaining <= 8);
     }
 
     finish() {
