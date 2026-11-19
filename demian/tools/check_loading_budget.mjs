@@ -16,7 +16,7 @@ const mime = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.
     '.woff2': 'font/woff2', '.webmanifest': 'application/manifest+json' };
 const report = { schema: 1, status: 'pending', budgetMs: 3000, physicalDeviceVerified: false,
     liveHostVerified: false, ranked: false, network: { downMbps: 8, latencyMs: 80, cpuSlowdown: 2 },
-    evidence: 'Fresh Chromium contexts, uncompressed HTTP, actual Canvas image draws and presentation; no hardware scanout claim.',
+    evidence: 'Fresh Chromium contexts, uncompressed HTTP, Canvas environment draws and frame presentation; no hardware scanout claim.',
     baseline: [], candidate: [], failures: [] };
 mkdirSync(output, { recursive: true });
 
@@ -98,14 +98,20 @@ async function launch(page, game, profile, mode) {
             && app.shell.loadingScreen.element.hidden;
     }, game, { timeout: 25000 });
     const firstMs = await page.evaluate(() => window.demianGameApplication.firstPlayableFrame.last.durationMs);
-    const environment = game === 'dino-run' ? '/cafe-runner-v1/interior.webp' : '/polished-v1/preview.webp';
-    await page.waitForFunction(suffix => [...window.__budgetImages.keys()].some(path => path.endsWith(suffix)),
-        environment, { timeout: 25000 });
+    // Café Drift draws its entire course before presenting the first playable frame.
+    const environment = game === 'cafe-drift' ? null
+        : game === 'dino-run' ? '/cafe-runner-v1/interior.webp' : '/polished-v1/preview.webp';
+    if (environment) {
+        await page.waitForFunction(suffix => [...window.__budgetImages.keys()].some(path => path.endsWith(suffix)),
+            environment, { timeout: 25000 });
+    }
     return page.evaluate(({ environment, firstMs, mode }) => {
         const app = window.demianGameApplication;
-        const imageAt = [...window.__budgetImages].find(([path]) => path.endsWith(environment))[1];
+        const environmentMs = environment
+            ? [...window.__budgetImages].find(([path]) => path.endsWith(environment))[1] - window.__budgetStart
+            : firstMs;
         const diagnostic = app.startupDiagnostics.report().gameStarts.at(-1);
-        return { mode, firstMs, environmentMs: Math.max(firstMs, imageAt - window.__budgetStart),
+        return { mode, firstMs, environmentMs: Math.max(firstMs, environmentMs),
             stages: diagnostic, qualityTier: app.performanceProfile.tier,
             requests: performance.getEntriesByType('resource').filter(row => row.startTime >= window.__budgetStart)
                 .map(row => ({ path: new URL(row.name).pathname, bytes: row.encodedBodySize, ms: row.duration })) };
