@@ -2,12 +2,17 @@
   "schema": 1,
   "generations": [
     {
-      "id": "b63b1ebf1b4f11a0",
+      "id": "d158d608b3af5a60",
       "assets": [
         {
-          "path": "assets/AfterHoursGame-BThgJHT9.js",
+          "path": "assets/AfterHoursGame-B50e67F6.js",
           "bytes": 30685,
-          "sha256": "6b80f47a210b523d1f1d0a976d171b32c72fdd1c28799e1144a7eb149fb3d48c"
+          "sha256": "081855fe80646954d934cb7343cdc0a0f649b549d77e22070f5a10bd4ed156b4"
+        },
+        {
+          "path": "assets/app-C_OhakJl.js",
+          "bytes": 413265,
+          "sha256": "bdf32357e552f94a13ecb1dd9020f0a38b1f57e93198e187451e3133e0d19ad7"
         },
         {
           "path": "assets/app-CVnIo_No.css",
@@ -15,59 +20,54 @@
           "sha256": "9333ab7129e077831869f84868e72d89664b9e171f74b1d7d8d950a55bbdc979"
         },
         {
-          "path": "assets/app-M_JMCmdr.js",
-          "bytes": 413265,
-          "sha256": "312f67b3fa6e8487bbfe4130cbe19eaecb14e84d783788aa422fa67df3ad9d4d"
-        },
-        {
           "path": "assets/BaseGame-BoTgjigs.js",
           "bytes": 268,
           "sha256": "18a0dfd36fd6ffb199ff304b931a63486af945df043506b9bc8e770c81d332c2"
         },
         {
-          "path": "assets/CafeCrittersGame-C19A-RZJ.js",
+          "path": "assets/CafeCrittersGame-CrWn5Nok.js",
           "bytes": 44858,
-          "sha256": "dc467563ccec01e32de42e89790b240ad17d9af4d5d584c41152de749d01ebec"
+          "sha256": "c6827410fa8f25179ec41049571c3586e4406f7b7655dd9593b85a0e1ee90fe0"
         },
         {
-          "path": "assets/CafeGameRenderer2D-DXmWaFEn.js",
+          "path": "assets/CafeGameRenderer2D-DJJ6LXB0.js",
           "bytes": 3030,
-          "sha256": "ef3cbcf45d975cc9c10b793078285a337b0e1c6fb831580384b147d881cb4395"
+          "sha256": "60120966949667a4a07f42dfb2470176f1c5d5ace506eb40f5e9240f077cb64a"
         },
         {
-          "path": "assets/CafeRushGame-D_qJ5f71.js",
+          "path": "assets/CafeRushGame-rVkKh0kA.js",
           "bytes": 30856,
-          "sha256": "c9fbb5dadb3facabf37a1ffd2725c12a4f97b4a00583b27a1f1e6a81ff17fda4"
+          "sha256": "c121a80ebb2c5e4ef1ac5bff0a722d520e44468532956d7c3895b02a342b5ba5"
         },
         {
-          "path": "assets/CharacterVisualContract-SppU7rKj.js",
-          "bytes": 11490,
-          "sha256": "651ccec2deba37e893946b8e4f5b43d65ddab74651081f750a227027489bb795"
+          "path": "assets/CharacterVisualContract-_XJs7H6K.js",
+          "bytes": 11702,
+          "sha256": "6ce66535887fce545580e19a8fdb78a0dd5ed17d721c18bfa1aa1fe7682ee54a"
         },
         {
-          "path": "assets/CoffeeCrashGame-BJ3ej9ZZ.js",
+          "path": "assets/CoffeeCrashGame-ChImroMo.js",
           "bytes": 27930,
-          "sha256": "1e7930a11d6d85482bab99280c4ba71b231bc4734abc27bd7a27f3c4258cde41"
+          "sha256": "1b0ac561b0a275edc3d9bfe6329afe5c8c0650eb601332a507a11d831deef963"
         },
         {
-          "path": "assets/DinoRunGame-BaoL8XyO.js",
+          "path": "assets/DinoRunGame-433FQOkx.js",
           "bytes": 28779,
-          "sha256": "48f42f94fce4f47986f10468b3565b24e775743f088ad1512218662b76dd9496"
+          "sha256": "00fb91a4eda7c35cd2995e5a007e8b4bfe60f301e63aa2b2cbb15e4be9bd20b5"
         },
         {
-          "path": "assets/OpenWorldGame-D9q9Tbpz.js",
+          "path": "assets/OpenWorldGame-9yxPWi_t.js",
           "bytes": 789008,
-          "sha256": "035ed4825f738f83e836e250ba37a9e9d047209a36778f80651a78e1e31239e7"
+          "sha256": "91cf04bc98171e8ebf02c9bfc600017e80e16f043da0ccd01cb059d40f7394b8"
         },
         {
-          "path": "assets/PixelRenderQueue-Cw7vYldF.js",
+          "path": "assets/PixelRenderQueue-bAND0xQC.js",
           "bytes": 12958,
-          "sha256": "ce6a57fa192db362201c42394b85cba71e02d80f6c7ce6493422cb860a4c955d"
+          "sha256": "5048883a71a6b9fcd5a2b6d9cc2dd075c087b88c44d998ada3fe749cb9dbee05"
         },
         {
-          "path": "assets/RankedGameplayChallenge-d99X6QN-.js",
+          "path": "assets/RankedGameplayChallenge-BIJSBwzn.js",
           "bytes": 7178,
-          "sha256": "2ead74e42d58c9a10c8d4555ef4e02db06aa2681fa2061279f429183f7b55fd8"
+          "sha256": "87783dde4d68a785439df2f71da8084f70f62c020a0ff5487ee458b3e9d33135"
         },
         {
           "path": "assets/rolldown-runtime-B0lUwjiP.js",
@@ -75,9 +75,9 @@
           "sha256": "9071d97a0b25321a15b3d30a5559f27e6f93b5c0e146dc1fd5b0bc0c4cc2faf2"
         },
         {
-          "path": "assets/TouchInteractionLabel-BdmfIAw4.js",
+          "path": "assets/TouchInteractionLabel-1X3iF-nD.js",
           "bytes": 7452,
-          "sha256": "ef96030fa8767c2de58d7728254dc6840d2ffb80c201cd9c229a3b775592b8c6"
+          "sha256": "c6168b090bf01bde5ef1dff2e1adbca1e1016f0b27b3f3ac493b062da21bfc92"
         },
         {
           "path": "assets/vazirmatn-arabic-400-normal-DMZFCm7K.woff2",

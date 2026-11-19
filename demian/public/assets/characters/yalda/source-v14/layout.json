@@ -1,0 +1,110 @@
+{
+  "mainStates": [
+    "turn",
+    "idle",
+    "jump",
+    "celebrate"
+  ],
+  "mainRowBounds": [
+    0,
+    224,
+    448,
+    672,
+    896
+  ],
+  "motionColumns": 8,
+  "motionRowBounds": [
+    0,
+    224,
+    448,
+    672
+  ],
+  "motionRowStates": [
+    "walk",
+    "run",
+    "land"
+  ],
+  "referenceInputs": [
+    {
+      "name": "reference.jpg",
+      "role": "supplied-yalda-identity-reference",
+      "sha256": "45d6a6893adebddebd697bc21910e7c5d135c6bd2e040f148f930e6183ac61f1"
+    },
+    {
+      "name": "darya/source-v14/master.png",
+      "role": "body-proportions-and-pose-reference",
+      "sha256": "39d87e68eb8615f8d9e81fff5d736bb4b3a58faafdc7a9739ad97b93ab5fa85f"
+    },
+    {
+      "name": "darya/source-v14/runner-motion.png",
+      "role": "body-proportions-and-pose-reference",
+      "sha256": "99cc876b0226a3499bf679b99f7174273233f12e3133b45829c24793fed66cf0"
+    },
+    {
+      "name": "darya/source-v14/slides.png",
+      "role": "body-proportions-and-pose-reference",
+      "sha256": "eeefd8ebfb5869b167965fb124fc788f336e6aadaca00a76d08c14926de4a93f"
+    }
+  ],
+  "identity": [
+    "short side-parted chestnut bob, brown eyes and silver hoop earring",
+    "navy collared quarter-zip sweatshirt with ivory chest stitching",
+    "faded slate indigo jeans and navy sneakers with ivory toe caps and soles"
+  ],
+  "locomotionReference": {
+    "character": "darya",
+    "states": [
+      "idle",
+      "walk",
+      "run",
+      "jump",
+      "land",
+      "slide",
+      "celebrate"
+    ]
+  },
+  "bodyScaleReferencePoses": {
+    "walk": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "run": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "jump": [
+      7
+    ],
+    "land": [
+      6,
+      7
+    ],
+    "celebrate": [
+      0,
+      7
+    ]
+  },
+  "locomotionCycleCounts": {
+    "walk": 1,
+    "run": 1
+  },
+  "idleLoopDirections": [
+    "se"
+  ],
+  "slideSharesIdleScale": true,
+  "faceSampleHeightRatio": 0.48,
+  "faceSkinRedGreenRatio": 1.1,
+  "indexedPalette": true
+}

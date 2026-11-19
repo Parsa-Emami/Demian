@@ -43,7 +43,7 @@ test('menu roster shows all characters and persists a valid selection without bo
     assert.equal(events[1][0], 'character:selected');
     await assert.rejects(menu.select('builtin-fake'), /وجود ندارد/);
     assert.equal(visuals.activeSlug, 'negar');
-    for (const slug of ['taher-db', 'sorkhi']) {
+    for (const slug of ['taher-db', 'sorkhi', 'yalda']) {
         assert.equal((await menu.select(`builtin-${slug}`)).slug, slug);
         assert.equal(menu.activeRecord.slug, slug);
         assert.equal(visuals.activeSlug, slug);

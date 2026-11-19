@@ -9,12 +9,13 @@ import { BUILTIN_CHARACTER_SLUGS } from '../../resources/js/game/characters/Char
 
 test('runtime characters resolve explicit immutable families and cosmetics', () => {
     assert.deepEqual(MOTION_CHARACTERS.map(entry => entry.slug), BUILTIN_CHARACTER_SLUGS);
-    assert.equal(MOTION_CHARACTERS.filter(entry => entry.family === 'female-base-v1').length, 6);
+    assert.equal(MOTION_CHARACTERS.filter(entry => entry.family === 'female-base-v1').length, 7);
     assert.equal(MOTION_CHARACTERS.filter(entry => entry.family === 'male-base-v1').length, 8);
     assert(Object.isFrozen(MASTER_MOTION.families));
     assert.equal(motionCharacter('TIAM').family, 'female-base-v1');
     assert.equal(motionCharacter('taher-db').family, 'male-base-v1');
     assert.equal(motionCharacter('sorkhi').family, 'male-base-v1');
+    assert.equal(motionCharacter('yalda').family, motionCharacter('darya').family);
     assert.equal(motionCharacter('unregistered'), null);
     assert.throws(() => new MasterMotionController('unregistered'), RangeError);
 });

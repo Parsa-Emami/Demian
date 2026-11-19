@@ -262,7 +262,17 @@
       "skin": "sorkhi",
       "accessories": [],
       "identityContract": "assets/characters/sorkhi/manifests/sorkhi_identity_contract.json"
+    },
+    {
+      "slug": "yalda",
+      "displayName": "YALDA / یلدا",
+      "family": "female-base-v1",
+      "packVersion": 14,
+      "defaultActive": false,
+      "skin": "yalda",
+      "accessories": [],
+      "identityContract": "assets/characters/yalda/manifests/yalda_identity_contract.json"
     }
   ],
-  "sourceSha256": "34eee9e9874c4d60e10158707ec580861fa0f6aca7856a0787bcbea8a8bb9ae8"
+  "sourceSha256": "0f7995cb67f7159be087f506dd641f0438a2961cf7e1fcf4569b026adf87fbd8"
 }

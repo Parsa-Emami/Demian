@@ -206,11 +206,23 @@
       "has_shipped_assets": true,
       "motion_family": "male-base-v1",
       "motion_accessories": []
+    },
+    {
+      "slug": "yalda",
+      "display_name": "YALDA / یلدا",
+      "production_status": "gold_standard_production",
+      "is_default_active": false,
+      "pack_version": 14,
+      "locomotion_style": "ground-runner",
+      "manifest": "yalda/manifests/character_manifest_v4.json",
+      "has_shipped_assets": true,
+      "motion_family": "female-base-v1",
+      "motion_accessories": []
     }
   ],
   "master_motion": {
     "version": "master-motion-v1",
-    "source_sha256": "34eee9e9874c4d60e10158707ec580861fa0f6aca7856a0787bcbea8a8bb9ae8",
+    "source_sha256": "0f7995cb67f7159be087f506dd641f0438a2961cf7e1fcf4569b026adf87fbd8",
     "url": "assets/characters/master-motion-v1.json"
   }
 }

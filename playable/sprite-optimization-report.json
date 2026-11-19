@@ -6,11 +6,11 @@
     "runtime",
     "detail"
   ],
-  "candidates": 42,
-  "converted": 38,
-  "inputBytes": 114548009,
-  "outputBytes": 91127265,
-  "savedBytes": 23420744,
+  "candidates": 45,
+  "converted": 41,
+  "inputBytes": 116415176,
+  "outputBytes": 92885331,
+  "savedBytes": 23529845,
   "skippedBytes": 1160561,
   "entries": [
     {
@@ -306,7 +306,28 @@
       "format": "webp",
       "inputBytes": 1056802,
       "outputBytes": 992150
+    },
+    {
+      "slug": "yalda",
+      "variant": "lite",
+      "format": "webp",
+      "inputBytes": 183839,
+      "outputBytes": 174510
+    },
+    {
+      "slug": "yalda",
+      "variant": "runtime",
+      "format": "webp",
+      "inputBytes": 473950,
+      "outputBytes": 446204
+    },
+    {
+      "slug": "yalda",
+      "variant": "detail",
+      "format": "webp",
+      "inputBytes": 1209378,
+      "outputBytes": 1137352
     }
   ],
-  "savingsFraction": 0.20446
+  "savingsFraction": 0.20212
 }
