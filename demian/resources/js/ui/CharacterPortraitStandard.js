@@ -14,6 +14,7 @@ export const PORTRAIT_LANDMARKS = Object.freeze(Object.fromEntries(
         setayesh:   [112, 114, 134, 60, 56, 169],
         uzudi:      [109, 88, 112, 68, 43, 142],
         negar:      [115, 101, 122, 60, 52, 153],
+        elaheh:     [113,  99, 122, 62, 47, 158],
         tiam:       [109, 99, 119, 73, 54, 159],
         amirreza:   [111, 100, 123, 79, 59, 143],
         hanna:      [111, 92, 109, 73, 55, 149],

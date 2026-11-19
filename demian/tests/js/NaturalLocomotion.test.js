@@ -44,6 +44,20 @@ test('Mori and Mahyar use Arsal’s movement sampling with their own atlas artwo
     }
 });
 
+test('Elaheh uses Darya’s walk, run, jump and dodge sampling with her own artwork', () => {
+    for (const variant of ['detail', 'runtime', 'lite', 'desktop', 'mobile', 'compact']) {
+        const reference = atlas('darya', variant);
+        const character = atlas('elaheh', variant);
+        assert.deepEqual(character.motion.locomotionProfile, reference.motion.locomotionProfile);
+        for (const state of ['walk', 'run', 'sprint', 'takeoff', 'jump', 'fall', 'land', 'slide']) {
+            assert.deepEqual(character.animations[state], reference.animations[state], `${variant}/${state}`);
+        }
+        assert.equal(character.meta.image, `elaheh-spritesheet-v14-${variant}.png`);
+        assert.notEqual(character.meta.imageRevision, reference.meta.imageRevision);
+        assert.equal(character.companion, undefined);
+    }
+});
+
 test('authored arms and legs keep advancing during rise, apex and fall on every character and device', () => {
     for (const slug of BUILTIN_CHARACTER_SLUGS) for (const variant of ['runtime', 'lite', 'mobile']) {
         const data = atlas(slug, variant);

@@ -1,8 +1,8 @@
 {
   "schema": 1,
-  "release": "3b7f354bc83d3625",
+  "release": "3598ea93d6a9c690",
   "maxPackBytes": 100663296,
-  "coreBytes": 13038172,
+  "coreBytes": 13338185,
   "core": [
     {
       "path": "assets/characters/ainaz/ainaz-atlas-v14-lite.json",
@@ -54,7 +54,7 @@
     },
     {
       "path": "assets/characters/character-manifest-v4.json",
-      "bytes": 7962
+      "bytes": 8371
     },
     {
       "path": "assets/characters/darya/darya-atlas-v14-lite.json",
@@ -67,6 +67,18 @@
     {
       "path": "assets/characters/darya/darya-spritesheet-v14-lite.webp",
       "bytes": 903412
+    },
+    {
+      "path": "assets/characters/elaheh/elaheh-atlas-v14-lite.json",
+      "bytes": 101435
+    },
+    {
+      "path": "assets/characters/elaheh/elaheh-preview-v14.png",
+      "bytes": 30526
+    },
+    {
+      "path": "assets/characters/elaheh/elaheh-spritesheet-v14-lite.png",
+      "bytes": 169022
     },
     {
       "path": "assets/characters/hanna/hanna-atlas-v14-lite.json",
@@ -118,7 +130,7 @@
     },
     {
       "path": "assets/characters/master-motion-v1.json",
-      "bytes": 7826
+      "bytes": 8136
     },
     {
       "path": "assets/characters/mori/mori-atlas-v14-lite.json",
@@ -229,16 +241,16 @@
       "bytes": 69412
     },
     {
-      "path": "build/assets/CharacterVisualContract-B2dj6DCh.js",
-      "bytes": 12124
+      "path": "build/assets/CharacterVisualContract-CQuQj4kh.js",
+      "bytes": 12341
     },
     {
-      "path": "build/assets/app-8IS8IPA0.css",
-      "bytes": 276125
+      "path": "build/assets/app-BaFJ5WyS.css",
+      "bytes": 273749
     },
     {
-      "path": "build/assets/app-D5HPduzT.js",
-      "bytes": 413203
+      "path": "build/assets/app-C6JGr-zW.js",
+      "bytes": 413233
     },
     {
       "path": "build/assets/rolldown-runtime-B0lUwjiP.js",
@@ -270,7 +282,7 @@
     },
     {
       "path": "characters.json",
-      "bytes": 7460
+      "bytes": 7900
     },
     {
       "path": "competition-rules/index.html",
@@ -297,7 +309,7 @@
     {
       "id": "open-world",
       "bytes": 1200763,
-      "totalBytes": 14238935,
+      "totalBytes": 14538948,
       "files": [
         {
           "path": "assets/environments/demian-fbx/polished-v1/lod-1024/0-0.webp",
@@ -380,7 +392,7 @@
           "bytes": 2074
         },
         {
-          "path": "build/assets/AfterHoursGame-CodImi1c.js",
+          "path": "build/assets/AfterHoursGame-CiGyo9W6.js",
           "bytes": 30720
         },
         {
@@ -388,7 +400,7 @@
           "bytes": 268
         },
         {
-          "path": "build/assets/CafeCrittersGame-MlRiL7YB.js",
+          "path": "build/assets/CafeCrittersGame-CWcLKCnu.js",
           "bytes": 44893
         },
         {
@@ -396,43 +408,43 @@
           "bytes": 1587
         },
         {
-          "path": "build/assets/CafeDriftGame-6qL9z8Ly.js",
-          "bytes": 14592
-        },
-        {
           "path": "build/assets/CafeDriftGame-DLn2R-NB.css",
           "bytes": 4000
         },
         {
-          "path": "build/assets/CafeGameRenderer2D-BU87AtSj.js",
+          "path": "build/assets/CafeDriftGame-DjXmBRFl.js",
+          "bytes": 14592
+        },
+        {
+          "path": "build/assets/CafeGameRenderer2D-D0TNMKbF.js",
           "bytes": 1496
         },
         {
-          "path": "build/assets/CafeRushGame-ClOO6cqC.js",
+          "path": "build/assets/CafeRushGame-kxc_K1_u.js",
           "bytes": 30891
         },
         {
-          "path": "build/assets/CoffeeCrashGame-CR-FKxWD.js",
+          "path": "build/assets/CoffeeCrashGame-CfQKddPV.js",
           "bytes": 27965
         },
         {
-          "path": "build/assets/DinoRunGame-BSJmOc8m.js",
+          "path": "build/assets/DinoRunGame-CGc5wewP.js",
           "bytes": 28779
         },
         {
-          "path": "build/assets/OpenWorldGame-CMcNJNHS.js",
+          "path": "build/assets/OpenWorldGame-CvlL-BkE.js",
           "bytes": 789005
         },
         {
-          "path": "build/assets/PixelRenderQueue-CnAlkxxr.js",
+          "path": "build/assets/PixelRenderQueue-CiHYaiI_.js",
           "bytes": 12963
         },
         {
-          "path": "build/assets/RankedGameplayChallenge-B7kFgR9W.js",
+          "path": "build/assets/RankedGameplayChallenge-C-8RpmOc.js",
           "bytes": 7178
         },
         {
-          "path": "build/assets/TouchInteractionLabel-B2hg_4Zu.js",
+          "path": "build/assets/TouchInteractionLabel-Dido9JQC.js",
           "bytes": 7452
         }
       ]
@@ -440,14 +452,14 @@
     {
       "id": "dino-run",
       "bytes": 1113255,
-      "totalBytes": 14151427,
+      "totalBytes": 14451440,
       "files": [
         {
           "path": "assets/environments/demian-fbx/floorplan.webp",
           "bytes": 111466
         },
         {
-          "path": "build/assets/AfterHoursGame-CodImi1c.js",
+          "path": "build/assets/AfterHoursGame-CiGyo9W6.js",
           "bytes": 30720
         },
         {
@@ -455,7 +467,7 @@
           "bytes": 268
         },
         {
-          "path": "build/assets/CafeCrittersGame-MlRiL7YB.js",
+          "path": "build/assets/CafeCrittersGame-CWcLKCnu.js",
           "bytes": 44893
         },
         {
@@ -463,43 +475,43 @@
           "bytes": 1587
         },
         {
-          "path": "build/assets/CafeDriftGame-6qL9z8Ly.js",
-          "bytes": 14592
-        },
-        {
           "path": "build/assets/CafeDriftGame-DLn2R-NB.css",
           "bytes": 4000
         },
         {
-          "path": "build/assets/CafeGameRenderer2D-BU87AtSj.js",
+          "path": "build/assets/CafeDriftGame-DjXmBRFl.js",
+          "bytes": 14592
+        },
+        {
+          "path": "build/assets/CafeGameRenderer2D-D0TNMKbF.js",
           "bytes": 1496
         },
         {
-          "path": "build/assets/CafeRushGame-ClOO6cqC.js",
+          "path": "build/assets/CafeRushGame-kxc_K1_u.js",
           "bytes": 30891
         },
         {
-          "path": "build/assets/CoffeeCrashGame-CR-FKxWD.js",
+          "path": "build/assets/CoffeeCrashGame-CfQKddPV.js",
           "bytes": 27965
         },
         {
-          "path": "build/assets/DinoRunGame-BSJmOc8m.js",
+          "path": "build/assets/DinoRunGame-CGc5wewP.js",
           "bytes": 28779
         },
         {
-          "path": "build/assets/OpenWorldGame-CMcNJNHS.js",
+          "path": "build/assets/OpenWorldGame-CvlL-BkE.js",
           "bytes": 789005
         },
         {
-          "path": "build/assets/PixelRenderQueue-CnAlkxxr.js",
+          "path": "build/assets/PixelRenderQueue-CiHYaiI_.js",
           "bytes": 12963
         },
         {
-          "path": "build/assets/RankedGameplayChallenge-B7kFgR9W.js",
+          "path": "build/assets/RankedGameplayChallenge-C-8RpmOc.js",
           "bytes": 7178
         },
         {
-          "path": "build/assets/TouchInteractionLabel-B2hg_4Zu.js",
+          "path": "build/assets/TouchInteractionLabel-Dido9JQC.js",
           "bytes": 7452
         }
       ]
@@ -507,14 +519,14 @@
     {
       "id": "after-hours",
       "bytes": 1424857,
-      "totalBytes": 14463029,
+      "totalBytes": 14763042,
       "files": [
         {
           "path": "assets/environments/demian-fbx/floorplan-detail.webp",
           "bytes": 423068
         },
         {
-          "path": "build/assets/AfterHoursGame-CodImi1c.js",
+          "path": "build/assets/AfterHoursGame-CiGyo9W6.js",
           "bytes": 30720
         },
         {
@@ -522,7 +534,7 @@
           "bytes": 268
         },
         {
-          "path": "build/assets/CafeCrittersGame-MlRiL7YB.js",
+          "path": "build/assets/CafeCrittersGame-CWcLKCnu.js",
           "bytes": 44893
         },
         {
@@ -530,43 +542,43 @@
           "bytes": 1587
         },
         {
-          "path": "build/assets/CafeDriftGame-6qL9z8Ly.js",
-          "bytes": 14592
-        },
-        {
           "path": "build/assets/CafeDriftGame-DLn2R-NB.css",
           "bytes": 4000
         },
         {
-          "path": "build/assets/CafeGameRenderer2D-BU87AtSj.js",
+          "path": "build/assets/CafeDriftGame-DjXmBRFl.js",
+          "bytes": 14592
+        },
+        {
+          "path": "build/assets/CafeGameRenderer2D-D0TNMKbF.js",
           "bytes": 1496
         },
         {
-          "path": "build/assets/CafeRushGame-ClOO6cqC.js",
+          "path": "build/assets/CafeRushGame-kxc_K1_u.js",
           "bytes": 30891
         },
         {
-          "path": "build/assets/CoffeeCrashGame-CR-FKxWD.js",
+          "path": "build/assets/CoffeeCrashGame-CfQKddPV.js",
           "bytes": 27965
         },
         {
-          "path": "build/assets/DinoRunGame-BSJmOc8m.js",
+          "path": "build/assets/DinoRunGame-CGc5wewP.js",
           "bytes": 28779
         },
         {
-          "path": "build/assets/OpenWorldGame-CMcNJNHS.js",
+          "path": "build/assets/OpenWorldGame-CvlL-BkE.js",
           "bytes": 789005
         },
         {
-          "path": "build/assets/PixelRenderQueue-CnAlkxxr.js",
+          "path": "build/assets/PixelRenderQueue-CiHYaiI_.js",
           "bytes": 12963
         },
         {
-          "path": "build/assets/RankedGameplayChallenge-B7kFgR9W.js",
+          "path": "build/assets/RankedGameplayChallenge-C-8RpmOc.js",
           "bytes": 7178
         },
         {
-          "path": "build/assets/TouchInteractionLabel-B2hg_4Zu.js",
+          "path": "build/assets/TouchInteractionLabel-Dido9JQC.js",
           "bytes": 7452
         }
       ]
@@ -574,14 +586,14 @@
     {
       "id": "cafe-rush",
       "bytes": 1424857,
-      "totalBytes": 14463029,
+      "totalBytes": 14763042,
       "files": [
         {
           "path": "assets/environments/demian-fbx/floorplan-detail.webp",
           "bytes": 423068
         },
         {
-          "path": "build/assets/AfterHoursGame-CodImi1c.js",
+          "path": "build/assets/AfterHoursGame-CiGyo9W6.js",
           "bytes": 30720
         },
         {
@@ -589,7 +601,7 @@
           "bytes": 268
         },
         {
-          "path": "build/assets/CafeCrittersGame-MlRiL7YB.js",
+          "path": "build/assets/CafeCrittersGame-CWcLKCnu.js",
           "bytes": 44893
         },
         {
@@ -597,43 +609,43 @@
           "bytes": 1587
         },
         {
-          "path": "build/assets/CafeDriftGame-6qL9z8Ly.js",
-          "bytes": 14592
-        },
-        {
           "path": "build/assets/CafeDriftGame-DLn2R-NB.css",
           "bytes": 4000
         },
         {
-          "path": "build/assets/CafeGameRenderer2D-BU87AtSj.js",
+          "path": "build/assets/CafeDriftGame-DjXmBRFl.js",
+          "bytes": 14592
+        },
+        {
+          "path": "build/assets/CafeGameRenderer2D-D0TNMKbF.js",
           "bytes": 1496
         },
         {
-          "path": "build/assets/CafeRushGame-ClOO6cqC.js",
+          "path": "build/assets/CafeRushGame-kxc_K1_u.js",
           "bytes": 30891
         },
         {
-          "path": "build/assets/CoffeeCrashGame-CR-FKxWD.js",
+          "path": "build/assets/CoffeeCrashGame-CfQKddPV.js",
           "bytes": 27965
         },
         {
-          "path": "build/assets/DinoRunGame-BSJmOc8m.js",
+          "path": "build/assets/DinoRunGame-CGc5wewP.js",
           "bytes": 28779
         },
         {
-          "path": "build/assets/OpenWorldGame-CMcNJNHS.js",
+          "path": "build/assets/OpenWorldGame-CvlL-BkE.js",
           "bytes": 789005
         },
         {
-          "path": "build/assets/PixelRenderQueue-CnAlkxxr.js",
+          "path": "build/assets/PixelRenderQueue-CiHYaiI_.js",
           "bytes": 12963
         },
         {
-          "path": "build/assets/RankedGameplayChallenge-B7kFgR9W.js",
+          "path": "build/assets/RankedGameplayChallenge-C-8RpmOc.js",
           "bytes": 7178
         },
         {
-          "path": "build/assets/TouchInteractionLabel-B2hg_4Zu.js",
+          "path": "build/assets/TouchInteractionLabel-Dido9JQC.js",
           "bytes": 7452
         }
       ]
@@ -641,7 +653,7 @@
     {
       "id": "cafe-critters",
       "bytes": 1200763,
-      "totalBytes": 14238935,
+      "totalBytes": 14538948,
       "files": [
         {
           "path": "assets/environments/demian-fbx/polished-v1/lod-1024/0-0.webp",
@@ -724,7 +736,7 @@
           "bytes": 2074
         },
         {
-          "path": "build/assets/AfterHoursGame-CodImi1c.js",
+          "path": "build/assets/AfterHoursGame-CiGyo9W6.js",
           "bytes": 30720
         },
         {
@@ -732,7 +744,7 @@
           "bytes": 268
         },
         {
-          "path": "build/assets/CafeCrittersGame-MlRiL7YB.js",
+          "path": "build/assets/CafeCrittersGame-CWcLKCnu.js",
           "bytes": 44893
         },
         {
@@ -740,43 +752,43 @@
           "bytes": 1587
         },
         {
-          "path": "build/assets/CafeDriftGame-6qL9z8Ly.js",
-          "bytes": 14592
-        },
-        {
           "path": "build/assets/CafeDriftGame-DLn2R-NB.css",
           "bytes": 4000
         },
         {
-          "path": "build/assets/CafeGameRenderer2D-BU87AtSj.js",
+          "path": "build/assets/CafeDriftGame-DjXmBRFl.js",
+          "bytes": 14592
+        },
+        {
+          "path": "build/assets/CafeGameRenderer2D-D0TNMKbF.js",
           "bytes": 1496
         },
         {
-          "path": "build/assets/CafeRushGame-ClOO6cqC.js",
+          "path": "build/assets/CafeRushGame-kxc_K1_u.js",
           "bytes": 30891
         },
         {
-          "path": "build/assets/CoffeeCrashGame-CR-FKxWD.js",
+          "path": "build/assets/CoffeeCrashGame-CfQKddPV.js",
           "bytes": 27965
         },
         {
-          "path": "build/assets/DinoRunGame-BSJmOc8m.js",
+          "path": "build/assets/DinoRunGame-CGc5wewP.js",
           "bytes": 28779
         },
         {
-          "path": "build/assets/OpenWorldGame-CMcNJNHS.js",
+          "path": "build/assets/OpenWorldGame-CvlL-BkE.js",
           "bytes": 789005
         },
         {
-          "path": "build/assets/PixelRenderQueue-CnAlkxxr.js",
+          "path": "build/assets/PixelRenderQueue-CiHYaiI_.js",
           "bytes": 12963
         },
         {
-          "path": "build/assets/RankedGameplayChallenge-B7kFgR9W.js",
+          "path": "build/assets/RankedGameplayChallenge-C-8RpmOc.js",
           "bytes": 7178
         },
         {
-          "path": "build/assets/TouchInteractionLabel-B2hg_4Zu.js",
+          "path": "build/assets/TouchInteractionLabel-Dido9JQC.js",
           "bytes": 7452
         }
       ]
@@ -784,14 +796,14 @@
     {
       "id": "coffee-crash",
       "bytes": 1113255,
-      "totalBytes": 14151427,
+      "totalBytes": 14451440,
       "files": [
         {
           "path": "assets/environments/demian-fbx/floorplan.webp",
           "bytes": 111466
         },
         {
-          "path": "build/assets/AfterHoursGame-CodImi1c.js",
+          "path": "build/assets/AfterHoursGame-CiGyo9W6.js",
           "bytes": 30720
         },
         {
@@ -799,7 +811,7 @@
           "bytes": 268
         },
         {
-          "path": "build/assets/CafeCrittersGame-MlRiL7YB.js",
+          "path": "build/assets/CafeCrittersGame-CWcLKCnu.js",
           "bytes": 44893
         },
         {
@@ -807,43 +819,43 @@
           "bytes": 1587
         },
         {
-          "path": "build/assets/CafeDriftGame-6qL9z8Ly.js",
-          "bytes": 14592
-        },
-        {
           "path": "build/assets/CafeDriftGame-DLn2R-NB.css",
           "bytes": 4000
         },
         {
-          "path": "build/assets/CafeGameRenderer2D-BU87AtSj.js",
+          "path": "build/assets/CafeDriftGame-DjXmBRFl.js",
+          "bytes": 14592
+        },
+        {
+          "path": "build/assets/CafeGameRenderer2D-D0TNMKbF.js",
           "bytes": 1496
         },
         {
-          "path": "build/assets/CafeRushGame-ClOO6cqC.js",
+          "path": "build/assets/CafeRushGame-kxc_K1_u.js",
           "bytes": 30891
         },
         {
-          "path": "build/assets/CoffeeCrashGame-CR-FKxWD.js",
+          "path": "build/assets/CoffeeCrashGame-CfQKddPV.js",
           "bytes": 27965
         },
         {
-          "path": "build/assets/DinoRunGame-BSJmOc8m.js",
+          "path": "build/assets/DinoRunGame-CGc5wewP.js",
           "bytes": 28779
         },
         {
-          "path": "build/assets/OpenWorldGame-CMcNJNHS.js",
+          "path": "build/assets/OpenWorldGame-CvlL-BkE.js",
           "bytes": 789005
         },
         {
-          "path": "build/assets/PixelRenderQueue-CnAlkxxr.js",
+          "path": "build/assets/PixelRenderQueue-CiHYaiI_.js",
           "bytes": 12963
         },
         {
-          "path": "build/assets/RankedGameplayChallenge-B7kFgR9W.js",
+          "path": "build/assets/RankedGameplayChallenge-C-8RpmOc.js",
           "bytes": 7178
         },
         {
-          "path": "build/assets/TouchInteractionLabel-B2hg_4Zu.js",
+          "path": "build/assets/TouchInteractionLabel-Dido9JQC.js",
           "bytes": 7452
         }
       ]
@@ -851,10 +863,10 @@
     {
       "id": "cafe-drift",
       "bytes": 1001789,
-      "totalBytes": 14039961,
+      "totalBytes": 14339974,
       "files": [
         {
-          "path": "build/assets/AfterHoursGame-CodImi1c.js",
+          "path": "build/assets/AfterHoursGame-CiGyo9W6.js",
           "bytes": 30720
         },
         {
@@ -862,7 +874,7 @@
           "bytes": 268
         },
         {
-          "path": "build/assets/CafeCrittersGame-MlRiL7YB.js",
+          "path": "build/assets/CafeCrittersGame-CWcLKCnu.js",
           "bytes": 44893
         },
         {
@@ -870,43 +882,43 @@
           "bytes": 1587
         },
         {
-          "path": "build/assets/CafeDriftGame-6qL9z8Ly.js",
-          "bytes": 14592
-        },
-        {
           "path": "build/assets/CafeDriftGame-DLn2R-NB.css",
           "bytes": 4000
         },
         {
-          "path": "build/assets/CafeGameRenderer2D-BU87AtSj.js",
+          "path": "build/assets/CafeDriftGame-DjXmBRFl.js",
+          "bytes": 14592
+        },
+        {
+          "path": "build/assets/CafeGameRenderer2D-D0TNMKbF.js",
           "bytes": 1496
         },
         {
-          "path": "build/assets/CafeRushGame-ClOO6cqC.js",
+          "path": "build/assets/CafeRushGame-kxc_K1_u.js",
           "bytes": 30891
         },
         {
-          "path": "build/assets/CoffeeCrashGame-CR-FKxWD.js",
+          "path": "build/assets/CoffeeCrashGame-CfQKddPV.js",
           "bytes": 27965
         },
         {
-          "path": "build/assets/DinoRunGame-BSJmOc8m.js",
+          "path": "build/assets/DinoRunGame-CGc5wewP.js",
           "bytes": 28779
         },
         {
-          "path": "build/assets/OpenWorldGame-CMcNJNHS.js",
+          "path": "build/assets/OpenWorldGame-CvlL-BkE.js",
           "bytes": 789005
         },
         {
-          "path": "build/assets/PixelRenderQueue-CnAlkxxr.js",
+          "path": "build/assets/PixelRenderQueue-CiHYaiI_.js",
           "bytes": 12963
         },
         {
-          "path": "build/assets/RankedGameplayChallenge-B7kFgR9W.js",
+          "path": "build/assets/RankedGameplayChallenge-C-8RpmOc.js",
           "bytes": 7178
         },
         {
-          "path": "build/assets/TouchInteractionLabel-B2hg_4Zu.js",
+          "path": "build/assets/TouchInteractionLabel-Dido9JQC.js",
           "bytes": 7452
         }
       ]

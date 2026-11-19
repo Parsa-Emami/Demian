@@ -70,6 +70,18 @@
       "motion_accessories": []
     },
     {
+      "slug": "elaheh",
+      "display_name": "ELAHEH / الهه",
+      "production_status": "gold_standard_production",
+      "is_default_active": false,
+      "pack_version": 14,
+      "locomotion_style": "ground-runner",
+      "manifest": "elaheh/manifests/character_manifest_v4.json",
+      "has_shipped_assets": true,
+      "motion_family": "female-base-v1",
+      "motion_accessories": []
+    },
+    {
       "slug": "tiam",
       "display_name": "TIAM / تیام",
       "production_status": "gold_standard_production",
@@ -246,7 +258,7 @@
   ],
   "master_motion": {
     "version": "master-motion-v1",
-    "source_sha256": "c6e6b2607d6413833aef11cc7db9f3cf37d0d969829399b209d174b931c3062c",
+    "source_sha256": "b474476f01edd8ff5db1596473c71e10d43ad0cd74e90b70704e547cdd3adc1d",
     "url": "assets/characters/master-motion-v1.json"
   }
 }

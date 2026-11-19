@@ -6,12 +6,12 @@
     "runtime",
     "detail"
   ],
-  "candidates": 51,
-  "converted": 47,
-  "inputBytes": 119305714,
-  "outputBytes": 95093261,
-  "savedBytes": 24212453,
-  "skippedBytes": 1160561,
+  "candidates": 54,
+  "converted": 48,
+  "inputBytes": 121066839,
+  "outputBytes": 96781629,
+  "savedBytes": 24285210,
+  "skippedBytes": 1772987,
   "entries": [
     {
       "slug": "darya",
@@ -96,6 +96,27 @@
       "format": "webp",
       "inputBytes": 6101145,
       "outputBytes": 5052012
+    },
+    {
+      "slug": "elaheh",
+      "variant": "lite",
+      "format": "png",
+      "inputBytes": 169022,
+      "outputBytes": 169022
+    },
+    {
+      "slug": "elaheh",
+      "variant": "runtime",
+      "format": "png",
+      "inputBytes": 443404,
+      "outputBytes": 443404
+    },
+    {
+      "slug": "elaheh",
+      "variant": "detail",
+      "format": "webp",
+      "inputBytes": 1148699,
+      "outputBytes": 1075942
     },
     {
       "slug": "tiam",
@@ -371,5 +392,5 @@
       "outputBytes": 668300
     }
   ],
-  "savingsFraction": 0.20294
+  "savingsFraction": 0.20059
 }

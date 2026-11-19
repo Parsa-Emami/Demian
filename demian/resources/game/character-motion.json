@@ -146,6 +146,16 @@
       "identityContract": "assets/characters/negar/manifests/negar_identity_contract.json"
     },
     {
+      "slug": "elaheh",
+      "displayName": "ELAHEH / الهه",
+      "family": "female-base-v1",
+      "packVersion": 14,
+      "defaultActive": false,
+      "skin": "elaheh",
+      "accessories": [],
+      "identityContract": "assets/characters/elaheh/manifests/elaheh_identity_contract.json"
+    },
+    {
       "slug": "tiam",
       "displayName": "TIAM / تیام",
       "family": "female-base-v1",
