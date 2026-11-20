@@ -146,6 +146,19 @@ final class CouponLedgerAudit
             }
         }
 
+        foreach (DB::table('arcade_reward_campaigns')->orderBy('id')->get() as $campaign) {
+            try {
+                app(CampaignEconomics::class)->assertIssuance($campaign, 0);
+                $report = app(CampaignEconomics::class)->report($campaign);
+                if ($report['economics'] && ($report['discount_minor'] > $report['committed_minor']
+                    || $report['discount_minor'] + $report['outstanding_minor'] > $report['economics']['budget_minor'])) {
+                    $issues[] = "Campaign #{$campaign->id} exceeds its frozen financial liability.";
+                }
+            } catch (\Throwable) {
+                $issues[] = "Campaign #{$campaign->id} financial plan integrity failure.";
+            }
+        }
+
         foreach (DB::table('arcade_reward_inventory')->get() as $item) {
             if ($item->status === 'available'
                 && ($item->coupon_id !== null || $item->code_ciphertext === null)) {

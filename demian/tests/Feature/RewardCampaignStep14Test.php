@@ -3,6 +3,8 @@
 namespace Tests\Feature;
 
 use App\Services\Arcade\CompetitionClock;
+use App\Services\Arcade\CampaignEconomics;
+use App\Services\Arcade\InCafeCouponService;
 use App\Services\Arcade\CouponIssuanceService;
 use App\Services\Arcade\CouponLedgerAudit;
 use App\Services\Arcade\RewardCampaignService;
@@ -136,6 +138,111 @@ final class RewardCampaignStep14Test extends TestCase
         app(WeeklySettlementService::class)->seal('2026-11-07');
 
         return $players;
+    }
+
+    private function economicData(array $overrides = []): array
+    {
+        config()->set('demian-coupons.economics_required', true);
+        config()->set('demian-coupons.weekly_budget_minor', '12000');
+        return array_replace([
+            'max_awards' => 2, 'min_order_minor' => 10000, 'max_discount_minor' => 5000,
+            'percent_first' => 20, 'percent_second' => 15, 'percent_third' => 12, 'percent_other' => 8,
+            'budget_minor' => 10000, 'cost_ceiling_bps' => 5000, 'margin_floor_bps' => 2000,
+            'incremental_share_bps' => 7000, 'planned_operating_minor' => 1000,
+        ], $overrides);
+    }
+
+    public function test_economics_blocks_underfunding_unsafe_margin_and_negative_scenario(): void
+    {
+        $root = $this->staff();
+        foreach ([
+            ['budget_minor' => 9999], ['budget_minor' => 12001],
+            ['cost_ceiling_bps' => 9000], ['incremental_share_bps' => 0],
+            ['planned_operating_minor' => 5000], ['margin_floor_bps' => 9000],
+        ] as $bad) {
+            try {
+                $this->campaign($root, $this->economicData($bad));
+                $this->fail('Unsafe economics accepted.');
+            } catch (RuntimeException $expected) {
+                $this->assertNotEmpty($expected->getMessage());
+            }
+        }
+        $this->assertDatabaseCount('arcade_reward_campaigns', 0);
+    }
+
+    public function test_economics_freezes_capacity_and_prevents_unbudgeted_issuance(): void
+    {
+        $root = $this->staff();
+        $id = $this->campaign($root, $this->economicData());
+        $this->import($root, $id, [$this->code(1), $this->code(2)]);
+        app(RewardCampaignService::class)->transition($root, 1, $id, 'activate');
+        $this->seal(2);
+        $campaign = DB::table('arcade_reward_campaigns')->where('id', $id)->first();
+        $this->assertSame(10000, app(CampaignEconomics::class)->frozen($campaign)['budget_minor']);
+        DB::table('arcade_reward_campaigns')->where('id', $id)->update(['max_awards' => 3]);
+        try {
+            app(CouponIssuanceService::class)->issueWeek(self::WEEK);
+            $this->fail('Tampered capacity accepted.');
+        } catch (RuntimeException $expected) {
+            $this->assertDatabaseCount('arcade_coupons', 0);
+        }
+        DB::table('arcade_reward_campaigns')->where('id', $id)->update(['max_awards' => 2]);
+        config()->set('demian-coupons.weekly_budget_minor', 9999);
+        try {
+            app(CouponIssuanceService::class)->issueWeek(self::WEEK);
+            $this->fail('Reduced owner budget ignored.');
+        } catch (RuntimeException $expected) {
+            $this->assertDatabaseCount('arcade_coupons', 0);
+        }
+        config()->set('demian-coupons.weekly_budget_minor', 12000);
+        $this->assertSame(2, app(CouponIssuanceService::class)->issueWeek(self::WEEK)['created']);
+        $this->assertSame(0, app(CouponIssuanceService::class)->issueWeek(self::WEEK)['created']);
+        $campaign = DB::table('arcade_reward_campaigns')->where('id', $id)->first();
+        $report = app(CampaignEconomics::class)->report($campaign);
+        $this->assertSame(10000, $report['committed_minor']);
+        $this->assertSame(10000, $report['outstanding_minor']);
+        $this->assertSame(0, $report['budget_remaining_minor']);
+        $this->assertNull($report['measurement']);
+        $this->assertSame('passed', app(CouponLedgerAudit::class)->inspect()['status']);
+    }
+
+    public function test_financial_report_uses_pos_ledger_and_measured_roi_is_not_invented(): void
+    {
+        $root = $this->staff();
+        $id = $this->campaign($root, $this->economicData());
+        $this->import($root, $id, [$this->code(1), $this->code(2)]);
+        app(RewardCampaignService::class)->transition($root, 1, $id, 'activate');
+        $players = $this->seal(2);
+        app(CouponIssuanceService::class)->issueWeek(self::WEEK);
+        config()->set('demian-coupons.cafe_receipt_hash_key', str_repeat('k', 64));
+        $cashier = $this->staff('cashier');
+        $code = app(CouponIssuanceService::class)->listForPlayer($players[0]['player_id'])[0]['code'];
+        $key = (string) Str::uuid();
+        $service = app(InCafeCouponService::class);
+        $receipt = $service->redeem($cashier, $code, 'POS-0011', 10000, $key);
+        $this->assertSame(2000, $receipt['discount_minor']);
+        $this->assertTrue($service->redeem($cashier, $code, 'POS-0011', 10000, $key)['idempotent_replay']);
+        $read = fn () => app(CampaignEconomics::class)->report(DB::table('arcade_reward_campaigns')->where('id', $id)->first());
+        $report = $read();
+        $this->assertSame(10000, $report['gross_minor']);
+        $this->assertSame(8000, $report['net_sales_minor']);
+        $this->assertSame(2000, $report['discount_minor']);
+        $this->assertSame(5000, $report['outstanding_minor']);
+        $this->assertSame(500, $report['scenario']['net_incremental_minor']);
+        $this->assertNull($report['measurement']);
+        app(RewardCampaignService::class)->transition($root, 1, $id, 'close');
+        $data = ['evidence_ref' => 'AUDIT-2026-01', 'incremental_contribution_minor' => 4000, 'operating_minor' => 1000];
+        try {
+            app(RewardCampaignService::class)->measure($root, 1, $id, $data);
+            $this->fail('ROI closed while a live coupon remained.');
+        } catch (RuntimeException $expected) {
+            $this->assertNull($read()['measurement']);
+        }
+        $this->travel(15)->days();
+        app(RewardCampaignService::class)->measure($root, 1, $id, $data);
+        $this->assertSame(1000, $read()['measurement']['net_incremental_minor']);
+        $this->assertEqualsWithDelta(33.33, $read()['measurement']['roi_percent'], .01);
+        $this->loginAs($root)->get('/cashier/admin/campaigns')->assertOk()->assertSee('AUDIT-2026-01')->assertDontSee($code);
     }
 
     public function test_default_off_and_all_non_superadmin_roles_are_rejected(): void
