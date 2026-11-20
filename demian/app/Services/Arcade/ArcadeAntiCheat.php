@@ -379,7 +379,7 @@ final class ArcadeAntiCheat
         $window = now()->subDays(7);
         $rows = DB::table('arcade_cheat_reports')->whereNotNull('player_id')
             ->whereIn('status', ['open','investigating'])->where('last_seen', '>=', $window)
-            ->selectRaw('player_id, signal, MAX(risk_score) AS risk_score')
+            ->select('player_id', 'signal')->selectRaw('MAX(risk_score) AS risk_score')
             ->groupBy('player_id','signal')->orderBy('player_id')->orderBy('signal')->get();
         $queue = [];
         foreach ($rows->groupBy('player_id') as $player => $reports) {
