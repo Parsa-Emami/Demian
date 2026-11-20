@@ -42,6 +42,8 @@ Route::prefix('v1/arcade')->middleware([ObserveArcadeRequest::class,
     // Online checkout routes intentionally retired. Only authenticated
     // in-cafe staff may redeem coupons through CSRF-protected web routes.
     Route::middleware(AuthenticateArcadePlayer::class)->group(function (): void {
+        Route::get('/player/referrals', [\App\Http\Controllers\Api\V1\ReferralController::class, 'show'])->middleware('throttle:arcade-coupon-wallet');
+        Route::post('/player/referrals/code', [\App\Http\Controllers\Api\V1\ReferralController::class, 'code'])->middleware('throttle:arcade-coupon-wallet');
         Route::get('/player/missions', [\App\Http\Controllers\Api\V1\MissionController::class, 'show'])->middleware('throttle:arcade-coupon-wallet');
         Route::get('/player/loyalty', [\App\Http\Controllers\Api\V1\LoyaltyXpController::class, 'show'])->middleware('throttle:arcade-coupon-wallet');
         Route::get('/player/progress', [\App\Http\Controllers\Api\V1\PersonalProgressController::class, 'show'])->middleware('throttle:arcade-coupon-wallet');

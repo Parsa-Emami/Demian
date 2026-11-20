@@ -14,6 +14,7 @@
 @endif
 @if (in_array('report.global', $permissions, true))
   <a class="button secondary" href="{{ route('cashier.report.global') }}">گزارش همه شعب</a>
+  <a class="button secondary" href="{{ route('cashier.referrals') }}">دعوت دوستان و جذب مشتری</a>
 @endif
 @if ($staff->role === 'super_admin')
   <a class="button secondary" href="{{ route('cashier.gifts') }}">اهدای کد تخفیف به بازیکن</a>

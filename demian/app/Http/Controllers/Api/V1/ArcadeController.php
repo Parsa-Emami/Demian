@@ -152,14 +152,19 @@ final class ArcadeController extends Controller
         ]);
         $accepted = ($legal['policy_version'] ?? null) === config('demian-legal.version')
             && $request->boolean('accept_terms') && $request->boolean('privacy_acknowledged');
+        $referral = $request->validate(['referral_code'=>['sometimes','string','regex:/^[A-Fa-f0-9]{16}$/D']])['referral_code'] ?? null;
         $contact = $contacts->fields($request, config('demian-arcade.require_contact'), true);
         $token = Str::random(64);
         $expires = now()->addDays((int) config('demian-arcade.player_session_days'));
         try {
-            $player = ArcadePlayer::query()->create(['display_name' => $name,
+            $player = DB::transaction(function () use ($name,$token,$expires,$accepted,$contact,$referral) {
+                $player = ArcadePlayer::query()->create(['display_name' => $name,
                 'token_hash' => hash('sha256', $token), 'token_expires_at' => $expires,
                 'legal_policy_version' => $accepted ? config('demian-legal.version') : null,
                 'legal_accepted_at' => $accepted ? now() : null, ...$contact]);
+                if ($referral !== null) app(\App\Services\Arcade\ReferralService::class)->attribute($player->id,$referral);
+                return $player;
+            },3);
         } catch (UniqueConstraintViolationException) {
             abort(409, 'برای این مشخصات حسابی وجود دارد. حساب قبلی را بازیابی کنید.');
         }
