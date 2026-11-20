@@ -212,6 +212,25 @@ final class CouponLedgerAudit
             }
         }
 
+        foreach (DB::table('arcade_identity_awards as a')
+            ->join('arcade_weekly_winners as w', 'w.id', '=', 'a.winner_id')
+            ->leftJoin('arcade_verified_phones as p', 'p.player_id', '=', 'w.player_id')
+            ->get(['a.id', 'a.period_key', 'a.identity_digest', 'a.blocked_until', 'a.expires_at',
+                'w.period_key as winner_period', 'w.player_id', 'p.phone_hash']) as $claim) {
+            if ($claim->period_key !== $claim->winner_period || $claim->blocked_until > $claim->expires_at) {
+                $issues[] = "Identity claim #{$claim->id} has invalid period or retention.";
+            } elseif ($claim->player_id && $claim->phone_hash) {
+                try {
+                    $expected = app(PhoneIdentityService::class)->digest('weekly-award-v1', $claim->period_key, $claim->phone_hash);
+                    if (! hash_equals($claim->identity_digest, $expected)) {
+                        $issues[] = "Identity claim #{$claim->id} digest mismatch.";
+                    }
+                } catch (\Throwable) {
+                    $issues[] = "Identity claim #{$claim->id} cannot be verified.";
+                }
+            }
+        }
+
         // Every gift provenance row must correspond to exactly one coupon.
         // The DB UNIQUE(gift_id) blocks doubles; this detects missing links.
         $giftCount = DB::table('arcade_coupon_gifts')->count();

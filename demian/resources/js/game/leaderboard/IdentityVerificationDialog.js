@@ -49,7 +49,7 @@ export function identityDialog({ recovery = false, send, confirm }, doc = global
                     submit.textContent = 'تأیید کد';
                     status.textContent = 'کد ارسال شد؛ ۵ دقیقه اعتبار و حداکثر ۵ تلاش.';
                 } else {
-                    const otp = form.elements.otp.value.replace(/[۰-۹٠-٩]/g, ch => String(ch.charCodeAt(0) % 16));
+                    const otp = form.elements.otp.value.replace(/[۰-۹٠-٩]/g, ch => String(ch.charCodeAt(0) - (ch.charCodeAt(0) >= 0x06f0 ? 0x06f0 : 0x0660)));
                     if (!/^\d{6}$/.test(otp)) throw new Error('کد شش‌رقمی وارد کنید.');
                     const result = await confirm(challenge, otp);
                     finish(result);

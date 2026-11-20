@@ -133,6 +133,7 @@ final class PhoneIdentityService
         $attempts = (int) $row->attempts + 1;
         DB::table('arcade_phone_challenges')->where('id', $id)->update([
             'attempts' => $attempts, 'consumed_at' => $valid || $attempts >= 5 ? now() : null,
+            ...($valid || $attempts >= 5 ? ['code_hash' => str_repeat('0', 64), 'phone_ciphertext' => '', 'phone_hash' => str_repeat('0', 64)] : []),
         ]);
         return $valid ? $row : null;
     }

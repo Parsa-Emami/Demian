@@ -12,6 +12,6 @@ Stacked on Phase 04. No host access, external SMS sent, secrets, financial flags
 - Privacy export includes own verified phone and date only; legal source bumped to 2026-11-20-v3, pending review. Admin anti-cheat review uses current existing permissions, no raw identifiers beyond existing internal account ID. Financial activation preflight requires configured SMS identity when weekly issue/campaign flags on. No actual SMS, device, or customer UAT.
 
 ## Verification
-Dedicated SQLite/MySQL feature coverage for normalized uniqueness, cross-account OTP, attempts, expiry, recovery, fail-closed send, erase, financial participation, rank preservation and re-registration claims. Gateway HTTP faked. Existing regression tests remain. Acceptance requires real provider, ownership/lost-number policy, legal review and physical-cafe pilot before host activation.
+Dedicated SQLite/MySQL feature coverage for normalized uniqueness, cross-account OTP, attempts, expiry, recovery, fail-closed send, erase, financial participation, rank preservation and re-registration claims. Gateway HTTP faked. Added review-only shared-device and retention tests; audit checks scoped claims without displaying them. Existing regression tests remain. Acceptance requires real provider, ownership/lost-number policy, legal review and physical-cafe pilot before host activation.
 
 Next: Phase 06 — anti-cheat activation & operational security.

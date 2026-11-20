@@ -3,7 +3,7 @@
 namespace Tests\Feature;
 
 use App\Services\Arcade\PhoneIdentityService;
-use App\Services\Arcade\IdentitySmsGateway;
+use App\Services\Arcade\ArcadeAntiCheat;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
@@ -111,14 +111,35 @@ final class VerifiedPhoneIdentityTest extends TestCase
         $this->assertDatabaseCount('arcade_phone_challenges', 0);
         $this->assertDatabaseCount('arcade_identity_devices', 0);
         $other = $this->player('Failed Delivery');
-        $this->mock(IdentitySmsGateway::class, function ($mock): void {
-            $mock->shouldReceive('configured')->andReturn(true);
-            $mock->shouldReceive('send')->once()->andReturn(false);
-        });
+        config()->set('demian-identity.gateway_url', 'https://sms-failure.example.test/send');
+        Http::fake(['https://sms-failure.example.test/send' => Http::response(['accepted' => false], 503)]);
         $data = ['phone' => '+989121234571', 'consent' => true];
         $this->withToken($other['token'])->postJson('/api/v1/arcade/player/identity/phone', $data)->assertServiceUnavailable();
         $this->postJson('/api/v1/arcade/player/identity/phone', $data)->assertStatus(429);
         $this->assertNull(DB::table('arcade_phone_challenges')->where('player_id', $other['player_id'])->value('sent_at'));
+    }
+
+    public function test_shared_installation_creates_review_only_and_never_blocks_other_accounts(): void
+    {
+        $device = (string) Str::uuid();
+        for ($i = 1; $i <= 3; $i++) {
+            $p = $this->player('Shared Device '.$i);
+            $proof = $this->send($p, '+98912123458'.$i);
+            $this->confirm($p, [...$proof, 'device_id' => $device])->assertOk();
+        }
+        $this->assertDatabaseCount('arcade_verified_phones', 3);
+        $this->assertDatabaseCount('arcade_identity_devices', 3);
+        $this->assertDatabaseCount('arcade_anticheat_holds', 0);
+        $report = DB::table('arcade_cheat_reports')->where('signal', 'shared_installation')->first();
+        $this->assertNotNull($report);
+        $this->assertStringNotContainsString($device, $report->evidence);
+        app(ArcadeAntiCheat::class)->assertStartAllowed($p['player_id']);
+        $this->travel(31)->days();
+        app(PhoneIdentityService::class)->prune();
+        $this->assertDatabaseCount('arcade_identity_devices', 0);
+        $this->assertDatabaseCount('arcade_phone_challenges', 0);
+        $this->assertDatabaseCount('arcade_phone_limits', 0);
+        $this->assertDatabaseCount('arcade_verified_phones', 3);
     }
 
     public function test_disabled_service_never_sends_sms(): void
