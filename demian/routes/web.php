@@ -63,6 +63,13 @@ Route::prefix('cashier')->name('cashier.')->group(function (): void {
         Route::post('/admin/tables/{tableId}/{action}',[\App\Http\Controllers\Cafe\CafeTableController::class,'change'])
             ->whereNumber('tableId')->whereIn('action',['enable','disable','rotate'])
             ->middleware([RequireCafePermission::class.':report.global','throttle:arcade-cashier-admin'])->name('tables.change');
+        Route::get('/admin/pilot',[\App\Http\Controllers\Cafe\CafePilotController::class,'index'])
+            ->middleware([RequireCafePermission::class.':operations.readiness','throttle:6,1'])->name('pilot');
+        Route::post('/admin/pilot',[\App\Http\Controllers\Cafe\CafePilotController::class,'create'])
+            ->middleware([RequireCafePermission::class.':operations.readiness','throttle:arcade-cashier-admin'])->name('pilot.create');
+        Route::post('/admin/pilot/{pilotId}/{operation}',[\App\Http\Controllers\Cafe\CafePilotController::class,'mutate'])
+            ->whereNumber('pilotId')->whereIn('operation',['record','start','stop','iterate','inconclusive','review_scale','action','resolve'])
+            ->middleware([RequireCafePermission::class.':operations.readiness','throttle:arcade-cashier-admin'])->name('pilot.mutate');
         Route::get('/admin/analytics', \App\Http\Controllers\Cafe\CafeBusinessAnalyticsController::class)
             ->middleware([RequireCafePermission::class.':report.global','throttle:6,1'])->name('business-analytics');
         Route::get('/admin/referrals', \App\Http\Controllers\Cafe\CafeReferralController::class)
