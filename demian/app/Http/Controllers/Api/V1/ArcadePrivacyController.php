@@ -13,6 +13,7 @@ final class ArcadePrivacyController extends Controller
     // Allowlisted personal-data fields; never export bearer/recovery hashes,
     // plaintext coupon secrets, payment references or anti-cheat evidence.
     private const RECORDS = [
+        'skill_leagues' => ['arcade_skill_standings', ['id','period_key','league','points','cohort_size','qualified','rank','movement','achieved_at']],
         'runs' => ['arcade_runs', ['id', 'game_id', 'character_slug', 'status', 'score', 'started_at', 'completed_at']],
         'best_scores' => ['arcade_leaderboard_entries', ['id', 'game_id', 'period_key', 'score', 'achieved_at']],
         'weekly_results' => ['arcade_weekly_results', ['id', 'period_key', 'game_id', 'score', 'technical_rank', 'achieved_at']],

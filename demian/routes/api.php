@@ -27,6 +27,7 @@ Route::prefix('v1/arcade')->middleware([ObserveArcadeRequest::class,
     Route::get('/games', [ArcadeController::class, 'games']);
     Route::get('/competition/weekly', [ArcadeController::class, 'weeklyCompetition']);
     Route::get('/competition/fair/rules', [ArcadeController::class, 'fairRules']);
+    Route::get('/competition/leagues', [\App\Http\Controllers\Api\V1\SkillLeagueController::class, 'board']);
     Route::get('/competition/fair', [ArcadeController::class, 'fairLeaderboard']);
     Route::get('/competition/leaderboard', [ArcadeController::class, 'weeklyRankings']);
     Route::get('/competition/leaderboard/weeks', [ArcadeController::class, 'weeklyRankingWeeks']);
@@ -41,6 +42,7 @@ Route::prefix('v1/arcade')->middleware([ObserveArcadeRequest::class,
     // Online checkout routes intentionally retired. Only authenticated
     // in-cafe staff may redeem coupons through CSRF-protected web routes.
     Route::middleware(AuthenticateArcadePlayer::class)->group(function (): void {
+        Route::get('/player/competition/league', [\App\Http\Controllers\Api\V1\SkillLeagueController::class, 'profile'])->middleware('throttle:arcade-coupon-wallet');
         Route::get('/player/identity', [ArcadeIdentityController::class, 'status'])->middleware('throttle:arcade-coupon-wallet');
         Route::post('/player/identity/phone', [ArcadeIdentityController::class, 'requestCode'])->middleware('throttle:arcade-identity-send');
         Route::post('/player/identity/confirm', [ArcadeIdentityController::class, 'confirm'])->middleware('throttle:arcade-identity-confirm');
