@@ -7,6 +7,10 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration {
     public function up(): void
     {
+        Schema::create('arcade_table_inventory_lock',function(Blueprint $t): void {
+            $t->unsignedTinyInteger('id')->primary();
+        });
+        \Illuminate\Support\Facades\DB::table('arcade_table_inventory_lock')->insert(['id'=>1]);
         Schema::create('arcade_cafe_tables',function(Blueprint $t): void {
             $t->id();
             $t->string('branch_id',40);
@@ -34,5 +38,6 @@ return new class extends Migration {
         Schema::dropIfExists('arcade_table_launch_nonces');
         Schema::dropIfExists('arcade_table_daily_launches');
         Schema::dropIfExists('arcade_cafe_tables');
+        Schema::dropIfExists('arcade_table_inventory_lock');
     }
 };

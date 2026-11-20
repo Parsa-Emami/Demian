@@ -59,6 +59,7 @@ final class CafeTableService
     {
         DB::transaction(function()use($actor,$version,$branch,$label): void {
             $this->staff($actor,$version);
+            abort_unless(DB::table('arcade_table_inventory_lock')->where('id',1)->lockForUpdate()->first(),503);
             abort_unless(DB::table('arcade_cashier_staff')->where('branch_id',$branch)->where('is_active',true)->exists(),422);
             if(DB::table('arcade_cafe_tables')->count()>=self::TABLE_CAP)
                 throw ValidationException::withMessages(['label'=>'Table inventory limit reached.']);
@@ -97,11 +98,13 @@ final class CafeTableService
         DB::transaction(function()use($code,$nonce): void {
             $row=DB::table('arcade_cafe_tables')->where('code',$code)->where('active',true)->lockForUpdate()->first();
             abort_unless($row,404);
+            $day=now('Asia/Tehran')->toDateString();
+            DB::table('arcade_table_daily_launches')->insertOrIgnore(['table_id'=>$row->id,'day'=>$day,'launches'=>0]);
+            $daily=DB::table('arcade_table_daily_launches')->where('table_id',$row->id)->where('day',$day)->lockForUpdate()->first();
+            if((int)$daily->launches>=self::DAILY_CAP)return;
             $seen=DB::table('arcade_table_launch_nonces')->insertOrIgnore([
                 'nonce_hash'=>hash('sha256',$nonce),'expires_at'=>now()->utc()->addDay()]);
             if(!$seen)return;
-            $day=now('Asia/Tehran')->toDateString();
-            DB::table('arcade_table_daily_launches')->insertOrIgnore(['table_id'=>$row->id,'day'=>$day,'launches'=>0]);
             DB::table('arcade_table_daily_launches')->where('table_id',$row->id)->where('day',$day)
                 ->where('launches','<',self::DAILY_CAP)->increment('launches');
         },3);

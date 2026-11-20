@@ -20,9 +20,9 @@ Route::get('/admin', fn () => redirect()->route(
 ))->name('cafe.admin');
 
 Route::get('/t/{code}',[\App\Http\Controllers\Cafe\PublicTableController::class,'show'])
-    ->where('code','[a-f0-9]{32}')->middleware('throttle:30,1')->name('table.show');
+    ->where('code','[a-f0-9]{32}')->middleware('throttle:120,1,table-landing')->name('table.show');
 Route::post('/t/{code}',[\App\Http\Controllers\Cafe\PublicTableController::class,'launch'])
-    ->where('code','[a-f0-9]{32}')->middleware('throttle:10,1')->name('table.launch');
+    ->where('code','[a-f0-9]{32}')->middleware('throttle:120,1,table-launch')->name('table.launch');
 
 Route::prefix('cashier')->name('cashier.')->group(function (): void {
     Route::get('/login', [CashierController::class, 'loginForm'])->name('login');

@@ -93,4 +93,20 @@ final class CafeTablePhase17Test extends TestCase
         $this->get('/t/'.$t->code)->assertServiceUnavailable();
         $this->assertDatabaseCount('arcade_table_daily_launches',0);
     }
+
+    public function test_daily_cap_limits_counter_and_nonce_storage_and_preserves_retirement_history(): void
+    {
+        $actor=$this->staff('super_admin');
+        $service=app(CafeTableService::class);
+        $service->create($actor,1,'main','4');
+        $t=DB::table('arcade_cafe_tables')->first();
+        DB::table('arcade_table_daily_launches')->insert(['table_id'=>$t->id,'day'=>'2026-11-21','launches'=>CafeTableService::DAILY_CAP-1]);
+        $service->launch($t->code,str_repeat('b',64));
+        $service->launch($t->code,str_repeat('c',64));
+        $this->assertDatabaseCount('arcade_table_launch_nonces',1);
+        $service->change($actor,1,$t->id,'disable');
+        self::assertSame(CafeTableService::DAILY_CAP,$service->report()[0]['launches_30d']);
+        self::assertFalse($service->report()[0]['active']);
+        $this->assertDatabaseHas('arcade_table_daily_launches',['table_id'=>$t->id,'day'=>'2026-11-21','launches'=>CafeTableService::DAILY_CAP]);
+    }
 }
