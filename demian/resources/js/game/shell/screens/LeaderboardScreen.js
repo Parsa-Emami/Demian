@@ -2,6 +2,7 @@ import { RECORD_GAMES, recordHeading, formatGameRecord } from '../../leaderboard
 import BaseScreen from './BaseScreen.js';
 import SkillLeaguePanel from '../../leaderboard/SkillLeaguePanel.js';
 import PersonalProgressPanel from '../../leaderboard/PersonalProgressPanel.js';
+import LoyaltyXpPanel from '../../leaderboard/LoyaltyXpPanel.js';
 import { remainingWeeklySeconds, formatWeeklyCountdown } from '../../leaderboard/WeeklyCountdown.js';
 
 export default class LeaderboardScreen extends BaseScreen {
@@ -20,6 +21,7 @@ export default class LeaderboardScreen extends BaseScreen {
         this.status = this.element.querySelector('[data-ranking-status]');
         this.skillLeagues = new SkillLeaguePanel(this.service,this.status);
         this.personalProgress = new PersonalProgressPanel(this.service,this.skillLeagues.root);
+        this.loyalty = new LoyaltyXpPanel(this.service,this.personalProgress.root);
         this.countdown = this.element.querySelector('[data-ranking-countdown]');
         this.personalBest = this.element.querySelector('[data-ranking-personal-best]');
         this.form = this.element.querySelector('[data-ranking-name-form]');
@@ -95,6 +97,7 @@ export default class LeaderboardScreen extends BaseScreen {
             try {
                 const code = this.recoveryForm.elements.recovery_code.value;
                 this.personalProgress.reset();
+                this.loyalty.reset();
                 this.skillLeagues.reset();
                 const recovered = await this.service.recoverAccount(code);
                 this.recoveryForm.reset();
@@ -113,6 +116,7 @@ export default class LeaderboardScreen extends BaseScreen {
             this.deleteAccount.disabled = true;
             try {
                 this.personalProgress.reset();
+                this.loyalty.reset();
                 this.skillLeagues.reset();
                 await this.service.eraseAccount();
                 this.recoveryLink.value = '';
@@ -186,6 +190,7 @@ export default class LeaderboardScreen extends BaseScreen {
     async beforeOpen() {
         this.skillLeagues.open();
         this.personalProgress.open();
+        this.loyalty.open();
         this.form.elements.display_name.value = this.service.displayName;
         this.issueRecovery.disabled = !this.service.connected;
         this.verifyPhoneButton.disabled = !this.service.connected;
@@ -431,6 +436,7 @@ export default class LeaderboardScreen extends BaseScreen {
     async beforeClose() {
         this.skillLeagues.reset();
         this.personalProgress.reset();
+        this.loyalty.reset();
         this.generation++;
         this.loading = false;
         this.snapshot = null;
@@ -443,6 +449,7 @@ export default class LeaderboardScreen extends BaseScreen {
     dispose() {
         this.skillLeagues.dispose();
         this.personalProgress.dispose();
+        this.loyalty.dispose();
         this.generation++;
         if (this.timer != null) clearInterval(this.timer);
         this.timer = null;

@@ -509,6 +509,11 @@ export default class ArcadeLeaderboardService {
         return this.request('/competition/leagues?' + query);
     }
 
+    async myLoyalty() {
+        if (!this.connected || !this.identity?.token) return null;
+        return this.request('/player/loyalty', { authenticated: true });
+    }
+
     async myPersonalProgress(game = 'dino-run') {
         if (!this.connected || !this.identity?.token) return null;
         if (!['dino-run','cafe-critters','coffee-crash','cafe-drift','after-hours','cafe-rush','open-world'].includes(game)) {
