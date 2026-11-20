@@ -161,8 +161,10 @@ export default class ArcadeLeaderboardService {
             }
             if (!acceptance) throw new Error('برای حساب آنلاین، مطالعه و پذیرش قوانین لازم است؛ حالت تمرینی همچنان فعال است.');
         }
+        const referral = /^#ref=([A-Fa-f0-9]{16})$/.exec(globalThis.location?.hash ?? '')?.[1];
+        const includeReferral = referral && globalThis.confirm?.('ثبت‌نام با کد دعوت '+referral+'؟');
         this.identity = await this.request('/players', {
-            method: 'POST', body: { display_name: this.displayName, ...(acceptance ?? {}) },
+            method: 'POST', body: { display_name: this.displayName, ...(acceptance ?? {}), ...(includeReferral?{referral_code:referral}:{}) },
         });
         this.acceptedLegalVersion = acceptance?.policy_version ?? null;
         this.profile = { display_name: this.identity.display_name ?? this.profile.display_name };

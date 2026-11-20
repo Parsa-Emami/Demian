@@ -43,6 +43,8 @@ Route::prefix('cashier')->name('cashier.')->group(function (): void {
             [CafeAdminController::class, 'setStaffActive'])
             ->whereNumber('subjectId')->whereIn('operation', ['enable', 'disable'])
             ->middleware('throttle:arcade-cashier-admin')->name('staff.action');
+        Route::get('/admin/referrals', \App\Http\Controllers\Cafe\CafeReferralController::class)
+            ->middleware(RequireCafePermission::class.':report.global')->name('referrals');
         Route::get('/admin/reports/global', [CafeAdminController::class, 'globalReport'])
             ->middleware(RequireCafePermission::class.':report.global')->name('report.global');
         Route::post('/admin/coupons/revoke', [CafeAdminController::class, 'revoke'])

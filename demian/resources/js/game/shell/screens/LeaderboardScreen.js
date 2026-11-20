@@ -3,6 +3,7 @@ import BaseScreen from './BaseScreen.js';
 import SkillLeaguePanel from '../../leaderboard/SkillLeaguePanel.js';
 import PersonalProgressPanel from '../../leaderboard/PersonalProgressPanel.js';
 import LoyaltyXpPanel from '../../leaderboard/LoyaltyXpPanel.js';
+import ReferralPanel from '../../leaderboard/ReferralPanel.js';
 import MissionPanel from '../../leaderboard/MissionPanel.js';
 import { remainingWeeklySeconds, formatWeeklyCountdown } from '../../leaderboard/WeeklyCountdown.js';
 
@@ -24,6 +25,7 @@ export default class LeaderboardScreen extends BaseScreen {
         this.personalProgress = new PersonalProgressPanel(this.service,this.skillLeagues.root);
         this.loyalty = new LoyaltyXpPanel(this.service,this.personalProgress.root);
         this.missions = new MissionPanel(this.service,this.loyalty.root);
+        this.referrals = new ReferralPanel(this.service,this.missions.root);
         this.countdown = this.element.querySelector('[data-ranking-countdown]');
         this.personalBest = this.element.querySelector('[data-ranking-personal-best]');
         this.form = this.element.querySelector('[data-ranking-name-form]');
@@ -100,7 +102,7 @@ export default class LeaderboardScreen extends BaseScreen {
                 const code = this.recoveryForm.elements.recovery_code.value;
                 this.personalProgress.reset();
                 this.loyalty.reset();
-                this.missions.reset();
+                this.missions.reset(); this.referrals.reset();
                 this.skillLeagues.reset();
                 const recovered = await this.service.recoverAccount(code);
                 this.recoveryForm.reset();
@@ -120,7 +122,7 @@ export default class LeaderboardScreen extends BaseScreen {
             try {
                 this.personalProgress.reset();
                 this.loyalty.reset();
-                this.missions.reset();
+                this.missions.reset(); this.referrals.reset();
                 this.skillLeagues.reset();
                 await this.service.eraseAccount();
                 this.recoveryLink.value = '';
@@ -195,7 +197,7 @@ export default class LeaderboardScreen extends BaseScreen {
         this.skillLeagues.open();
         this.personalProgress.open();
         this.loyalty.open();
-        this.missions.open();
+        this.missions.open(); this.referrals.open();
         this.form.elements.display_name.value = this.service.displayName;
         this.issueRecovery.disabled = !this.service.connected;
         this.verifyPhoneButton.disabled = !this.service.connected;
@@ -442,7 +444,7 @@ export default class LeaderboardScreen extends BaseScreen {
         this.skillLeagues.reset();
         this.personalProgress.reset();
         this.loyalty.reset();
-        this.missions.reset();
+        this.missions.reset(); this.referrals.reset();
         this.generation++;
         this.loading = false;
         this.snapshot = null;
@@ -456,7 +458,7 @@ export default class LeaderboardScreen extends BaseScreen {
         this.skillLeagues.dispose();
         this.personalProgress.dispose();
         this.loyalty.dispose();
-        this.missions.dispose();
+        this.missions.dispose(); this.referrals.dispose();
         this.generation++;
         if (this.timer != null) clearInterval(this.timer);
         this.timer = null;

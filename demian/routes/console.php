@@ -108,3 +108,8 @@ Artisan::command('inspire', function () {
     $this->line(json_encode(app(\App\Services\Arcade\PhoneIdentityService::class)->prune(), JSON_THROW_ON_ERROR));
 })->purpose('Purge expired OTPs, installation signals and resolved identity claims.');
 \Illuminate\Support\Facades\Schedule::command('arcade:identity:prune')->everyFifteenMinutes()->withoutOverlapping(10)->onOneServer();
+
+\Illuminate\Support\Facades\Artisan::command('arcade:referrals:evaluate', function (\App\Services\Arcade\ReferralService $service): void {
+    $this->info('Referral records examined: '.$service->sweep());
+})->purpose('Evaluate bounded referral eligibility and expire identity claims.');
+\Illuminate\Support\Facades\Schedule::command('arcade:referrals:evaluate')->everyFifteenMinutes()->withoutOverlapping(10)->onOneServer();
