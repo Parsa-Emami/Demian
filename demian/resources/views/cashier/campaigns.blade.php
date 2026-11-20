@@ -91,6 +91,21 @@
 <button type="submit">ثبت ROI مستند</button>
 </form>
 @endif
+@if($campaign['allocation'])
+@php($allocation = $campaign['allocation'])
+<h4>سهمیه پویای برندگان · {{ $allocation['status'] === 'sealed' ? 'نهایی و قفل‌شده' : 'پیش‌نمایش موقت' }}</h4>
+<p class="muted">حداقل ۲۰ مشارکت معتبر در هر بازی؛ هدف ۱۵٪ تا سقف سهمیه بازی، بودجه و یک جایزه برای هر حساب. نرخ دریافت جایزه نسبت آماری است، نه احتمال تضمین‌شده.</p>
+<p>مشارکت‌کنندگان یکتا: {{ $allocation['participants'] }} · واجد شرایط: {{ $allocation['eligible'] }} · ظرفیت مالی: {{ $allocation['funded_capacity'] }} · برندگان: {{ $allocation['winner_count'] }} · نرخ: {{ $allocation['award_rate_bps'] === null ? '—' : number_format($allocation['award_rate_bps'] / 100, 2).'٪' }}</p>
+<p>حداکثر تعهد برندگان: {{ number_format($allocation['maximum_commitment_minor']) }} · ظرفیت تخصیص‌نیافته: {{ $allocation['unallocated_capacity'] }}</p>
+@if($allocation['status'] !== 'sealed' && !$allocation['ready'])<p class="alert">کمپین فعال نیست یا موجودی کد کافی نیست؛ پیش‌نمایش مجوز صدور نیست.</p>@endif
+<table><thead><tr><th>بازی</th><th>مشارکت</th><th>واجد شرایط</th><th>هدف</th><th>سهمیه</th><th>برندگان</th><th>نرخ</th></tr></thead><tbody>
+@foreach($allocation['games'] as $game => $row)
+<tr><td>{{ $game }}</td><td>{{ $row['participants'] }}</td><td>{{ $row['eligible'] }}</td><td>{{ $row['target'] }}</td><td>{{ $row['quota'] }}</td><td>{{ $row['winners'] }}</td><td>{{ $row['award_rate_bps'] === null ? '—' : number_format($row['award_rate_bps'] / 100, 2).'٪' }}</td></tr>
+@endforeach
+</tbody></table>
+@else
+<p class="muted">کمپین بدون سیاست پویای نسخه‌دار (سابقه یا پیش‌نویس قدیمی).</p>
+@endif
 <h4>برندگان تأییدشده و وضعیت تحویل</h4>
 <table><thead><tr><th>بازی</th><th>رتبه</th><th>شناسه کوتاه بازیکن</th><th>وضعیت کد</th></tr></thead><tbody>
 @forelse($campaign['winners'] as $winner)

@@ -256,6 +256,52 @@ final class RewardCampaignStep14Test extends TestCase
         $this->loginAs($root)->get('/cashier/admin/campaigns')->assertOk()->assertSee('AUDIT-2026-01')->assertDontSee($code);
     }
 
+    public function test_dynamic_campaign_preview_seal_and_issue_agree_and_detect_tampering(): void
+    {
+        config()->set('demian-coupons.dynamic_allocation_required', true);
+        $root = $this->staff();
+        $id = $this->campaign($root, $this->economicData());
+        $this->import($root, $id, [$this->code(1), $this->code(2)]);
+        app(RewardCampaignService::class)->transition($root, 1, $id, 'activate');
+        $campaign = DB::table('arcade_reward_campaigns')->where('id', $id)->first();
+        $preview = app(\App\Services\Arcade\WeeklyAllocationService::class)->preview($campaign);
+        $this->assertSame('provisional', $preview['status']);
+        $this->assertSame(0, $preview['winner_count']);
+        $this->assertDatabaseCount('arcade_weekly_winners', 0);
+        $this->seal(20);
+        $this->assertDatabaseCount('arcade_weekly_results', 20);
+        $this->assertDatabaseCount('arcade_weekly_winners', 2);
+        $preview = app(\App\Services\Arcade\WeeklyAllocationService::class)->preview($campaign);
+        $this->assertSame('sealed', $preview['status']);
+        $this->assertSame(1000, $preview['award_rate_bps']);
+        $this->assertSame(10000, $preview['maximum_commitment_minor']);
+        DB::table('arcade_weekly_winners')->where('prize_rank', 1)->update(['previous_winner' => true]);
+        try {
+            app(CouponIssuanceService::class)->issueWeek(self::WEEK);
+            $this->fail('Altered award proof was accepted.');
+        } catch (RuntimeException $expected) {
+            $this->assertStringContainsString('proof mismatch', $expected->getMessage());
+        }
+        $this->assertDatabaseCount('arcade_coupons', 0);
+        DB::table('arcade_weekly_winners')->where('prize_rank', 1)->update(['previous_winner' => false]);
+        $this->assertSame(2, app(CouponIssuanceService::class)->issueWeek(self::WEEK)['created']);
+        $this->assertSame(0, app(CouponIssuanceService::class)->issueWeek(self::WEEK)['created']);
+        $this->loginAs($root)->get('/cashier/admin/campaigns')->assertOk()->assertSee('سهمیه پویای برندگان');
+    }
+
+    public function test_dynamic_campaign_below_minimum_keeps_technical_results_without_awards(): void
+    {
+        config()->set('demian-coupons.dynamic_allocation_required', true);
+        $root = $this->staff();
+        $id = $this->campaign($root, $this->economicData());
+        $this->import($root, $id, [$this->code(1), $this->code(2)]);
+        app(RewardCampaignService::class)->transition($root, 1, $id, 'activate');
+        $this->seal(19);
+        $this->assertDatabaseCount('arcade_weekly_results', 19);
+        $this->assertDatabaseCount('arcade_weekly_winners', 0);
+        $this->assertDatabaseCount('arcade_coupons', 0);
+    }
+
     public function test_default_off_and_all_non_superadmin_roles_are_rejected(): void
     {
         $root = $this->staff();

@@ -149,6 +149,14 @@ final class CouponLedgerAudit
         foreach (DB::table('arcade_reward_campaigns')->orderBy('id')->get() as $campaign) {
             try {
                 app(CampaignEconomics::class)->assertIssuance($campaign, 0);
+                $period = DB::table('arcade_weekly_periods')->where('period_key', $campaign->period_key)->first();
+                if ($period && $period->status === 'sealed') {
+                    $winners = DB::table('arcade_weekly_winners')->where('period_key', $campaign->period_key)->get();
+                    // Account erasure preserves historical rows but nulls identifiers; do not treat lawful erasure as tampering.
+                    if ($winners->every(fn ($w) => $w->player_id !== null && $w->run_id !== null)) {
+                        app(WeeklyAllocationService::class)->assertSealed($campaign, $winners);
+                    }
+                }
                 $report = app(CampaignEconomics::class)->report($campaign);
                 if ($report['economics']) {
                     $receipts = DB::table('arcade_coupon_redemptions as r')

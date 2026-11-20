@@ -69,6 +69,7 @@ final class CouponIssuanceService
             if (! $campaign && app(CampaignEconomics::class)->required() && $winners->isNotEmpty()) {
                 throw new RuntimeException('Weekly awards require an approved budgeted campaign.');
             }
+            if ($campaign) app(WeeklyAllocationService::class)->assertSealed($campaign, $winners);
             $effectiveTerms = $campaign
                 ? json_decode($campaign->terms, true, 512, JSON_THROW_ON_ERROR) : $terms;
             $created = 0;
