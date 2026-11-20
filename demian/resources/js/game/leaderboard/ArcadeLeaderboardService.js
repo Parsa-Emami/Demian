@@ -499,6 +499,21 @@ export default class ArcadeLeaderboardService {
         return this.request('/player', { authenticated: true });
     }
     /** Step 13: public verified preview / immutable archived comparative ranks. */
+    async skillLeague(league = 'bronze', week = '') {
+        if (!this.connected || !['bronze','silver','gold','legend','placement'].includes(league)) {
+            throw new Error('لیگ آنلاین معتبر نیست.');
+        }
+        if (week && !/^\d{4}-\d{2}-\d{2}$/.test(week)) throw new Error('تاریخ هفته معتبر نیست.');
+        const query = new URLSearchParams({league});
+        if (week) query.set('week',week);
+        return this.request('/competition/leagues?' + query);
+    }
+
+    async mySkillLeague() {
+        if (!this.connected || !this.identity?.token) return null;
+        return this.request('/player/competition/league', { authenticated: true });
+    }
+
     async weeklyRanking(week = '') {
         if (!this.connected) throw new Error('لیدربورد مشترک به سرور آنلاین نیاز دارد.');
         if (week && !/^\d{4}-\d{2}-\d{2}$/.test(week)) {

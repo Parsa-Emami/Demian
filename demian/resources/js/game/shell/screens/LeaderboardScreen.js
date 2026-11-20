@@ -1,5 +1,6 @@
 import { RECORD_GAMES, recordHeading, formatGameRecord } from '../../leaderboard/GameRecord.js';
 import BaseScreen from './BaseScreen.js';
+import SkillLeaguePanel from '../../leaderboard/SkillLeaguePanel.js';
 import { remainingWeeklySeconds, formatWeeklyCountdown } from '../../leaderboard/WeeklyCountdown.js';
 
 export default class LeaderboardScreen extends BaseScreen {
@@ -16,6 +17,7 @@ export default class LeaderboardScreen extends BaseScreen {
         this.weeksLoaded = false;
         this.body = this.element.querySelector('[data-ranking-rows]');
         this.status = this.element.querySelector('[data-ranking-status]');
+        this.skillLeagues = new SkillLeaguePanel(this.service,this.status);
         this.countdown = this.element.querySelector('[data-ranking-countdown]');
         this.personalBest = this.element.querySelector('[data-ranking-personal-best]');
         this.form = this.element.querySelector('[data-ranking-name-form]');
@@ -176,6 +178,7 @@ export default class LeaderboardScreen extends BaseScreen {
     }
 
     async beforeOpen() {
+        this.skillLeagues.open();
         this.form.elements.display_name.value = this.service.displayName;
         this.issueRecovery.disabled = !this.service.connected;
         this.verifyPhoneButton.disabled = !this.service.connected;
@@ -419,6 +422,7 @@ export default class LeaderboardScreen extends BaseScreen {
     }
 
     async beforeClose() {
+        this.skillLeagues.reset();
         this.generation++;
         this.loading = false;
         this.snapshot = null;
@@ -429,6 +433,7 @@ export default class LeaderboardScreen extends BaseScreen {
     }
 
     dispose() {
+        this.skillLeagues.dispose();
         this.generation++;
         if (this.timer != null) clearInterval(this.timer);
         this.timer = null;
