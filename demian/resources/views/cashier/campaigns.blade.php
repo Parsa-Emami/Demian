@@ -63,6 +63,7 @@
 </tbody></table>
 @if($finance['economics'])
 <p>بودجه مصوب: {{ number_format($finance['economics']['budget_minor']) }} · سقف هزینه متغیر {{ $finance['economics']['cost_ceiling_bps'] / 100 }}٪ · کف حاشیه مشارکت {{ $finance['economics']['margin_floor_bps'] / 100 }}٪</p>
+<p>حداکثر تعهد وعده‌داده‌شده: {{ number_format($finance['projection']['maximum_liability_minor']) }} · خالص افزایشی پیش‌بینی‌شده در سناریوی کل جوایز و حداقل فاکتور: {{ number_format($finance['projection']['net_incremental_minor']) }}</p>
 <p class="muted">سناریوی محافظه‌کارانه با فرض سهم افزایشی {{ $finance['economics']['incremental_share_bps'] / 100 }}٪؛ هزینه واقعی کالا یا افزایش فروش اثبات نشده است.</p>
 <table><tbody>
 @foreach(['estimated_variable_cost_minor' => 'هزینه متغیر برآوردی', 'estimated_coupon_order_contribution_minor' => 'مشارکت برآوردی فاکتورهای کوپن', 'assumed_incremental_contribution_minor' => 'مشارکت افزایشی فرضی', 'net_incremental_minor' => 'خالص افزایشی برآوردی', 'roi_percent' => 'ROI سناریویی (%)', 'break_even_share_percent' => 'حداقل سهم خرید افزایشی برای سربه‌سر (%)'] as $field => $label)

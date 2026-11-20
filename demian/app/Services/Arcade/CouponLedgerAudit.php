@@ -150,6 +150,23 @@ final class CouponLedgerAudit
             try {
                 app(CampaignEconomics::class)->assertIssuance($campaign, 0);
                 $report = app(CampaignEconomics::class)->report($campaign);
+                if ($report['economics']) {
+                    $receipts = DB::table('arcade_coupon_redemptions as r')
+                        ->join('arcade_coupons as c', 'c.id', '=', 'r.coupon_id')
+                        ->where('c.campaign_id', $campaign->id)
+                        ->get(['r.subtotal_minor', 'r.discount_minor', 'r.currency', 'c.currency as coupon_currency',
+                            'c.min_order_minor', 'c.max_discount_minor', 'c.discount_percent']);
+                    foreach ($receipts as $receipt) {
+                        $subtotal = (int) $receipt->subtotal_minor;
+                        $discount = (int) $receipt->discount_minor;
+                        if ($receipt->currency !== $receipt->coupon_currency || $subtotal < (int) $receipt->min_order_minor
+                            || $discount !== min(CampaignEconomics::floorBps($subtotal, (int) $receipt->discount_percent * 100), (int) $receipt->max_discount_minor)
+                            || ! app(CampaignEconomics::class)->marginSafe($subtotal, $discount, $report['economics'])) {
+                            $issues[] = "Campaign #{$campaign->id} invalid financial redemption.";
+                            break;
+                        }
+                    }
+                }
                 if ($report['economics'] && ($report['discount_minor'] > $report['committed_minor']
                     || $report['discount_minor'] + $report['outstanding_minor'] > $report['economics']['budget_minor'])) {
                     $issues[] = "Campaign #{$campaign->id} exceeds its frozen financial liability.";

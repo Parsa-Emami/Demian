@@ -170,6 +170,16 @@ final class RewardCampaignStep14Test extends TestCase
         $this->assertDatabaseCount('arcade_reward_campaigns', 0);
     }
 
+    public function test_new_weekly_issue_cannot_bypass_economics_through_legacy_configuration(): void
+    {
+        $this->economicData();
+        config()->set('demian-coupons.campaigns_enabled', false);
+        $this->seal(1);
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('approved budgeted campaign');
+        app(CouponIssuanceService::class)->issueWeek(self::WEEK);
+    }
+
     public function test_economics_freezes_capacity_and_prevents_unbudgeted_issuance(): void
     {
         $root = $this->staff();
@@ -221,6 +231,7 @@ final class RewardCampaignStep14Test extends TestCase
         $service = app(InCafeCouponService::class);
         $receipt = $service->redeem($cashier, $code, 'POS-0011', 10000, $key);
         $this->assertSame(2000, $receipt['discount_minor']);
+        $this->assertSame('passed', app(CouponLedgerAudit::class)->inspect()['status']);
         $this->assertTrue($service->redeem($cashier, $code, 'POS-0011', 10000, $key)['idempotent_replay']);
         $read = fn () => app(CampaignEconomics::class)->report(DB::table('arcade_reward_campaigns')->where('id', $id)->first());
         $report = $read();

@@ -87,9 +87,6 @@ final class CampaignEconomics
         if ($e['capacity'] !== $capacity || $cap * $capacity > $e['budget_minor']) {
             throw new RuntimeException('Maximum promised discount liability exceeds the weekly budget.');
         }
-        if ($e['planned_operating_minor'] > $e['budget_minor']) {
-            throw new RuntimeException('Planned operating expense exceeds approved discount budget; revise the plan.');
-        }
         if (! isset($terms['ranks']) || ! is_array($terms['ranks']) || count($terms['ranks']) !== 10) {
             throw new RuntimeException('Invalid campaign discount tiers.');
         }
@@ -100,12 +97,24 @@ final class CampaignEconomics
                 throw new RuntimeException('Minimum purchase and discount terms violate the approved contribution margin floor.');
             }
         }
-        $gross = $minimum * $capacity;
-        $worstDiscount = min(self::floorBps($minimum, max($terms['ranks']) * 100), $cap) * $capacity;
-        $scenario = $this->scenario($gross, $worstDiscount, $e);
+        $scenario = $this->projection($terms, $e);
         if ($scenario['net_incremental_minor'] < 0) {
             throw new RuntimeException('Campaign fails the approved full-redemption minimum-basket break-even scenario.');
         }
+    }
+
+    public function projection(array $terms, array $e): array
+    {
+        $minimum = (int) $terms['min_order_minor'];
+        $capacity = $e['capacity'];
+        $gross = $minimum * $capacity;
+        $discount = min(self::floorBps($minimum, max($terms['ranks']) * 100), (int) $terms['max_discount_minor']) * $capacity;
+        return [
+            'gross_minor' => $gross,
+            'discount_minor' => $discount,
+            'maximum_liability_minor' => (int) $terms['max_discount_minor'] * $capacity,
+            ...$this->scenario($gross, $discount, $e, self::ceilBps($minimum, $e['cost_ceiling_bps']) * $capacity),
+        ];
     }
 
     public function marginSafe(int $subtotal, int $discount, array $economics): bool
@@ -116,9 +125,9 @@ final class CampaignEconomics
         return $net - $cost >= self::ceilBps($net, $economics['margin_floor_bps']);
     }
 
-    public function scenario(int $subtotal, int $discount, array $e): array
+    public function scenario(int $subtotal, int $discount, array $e, ?int $cost = null): array
     {
-        $cost = self::ceilBps($subtotal, $e['cost_ceiling_bps']);
+        $cost ??= self::ceilBps($subtotal, $e['cost_ceiling_bps']);
         $contribution = $subtotal - $cost;
         $incremental = self::floorBps(max(0, $contribution), $e['incremental_share_bps']);
         $investment = $discount + $e['planned_operating_minor'];
@@ -181,10 +190,11 @@ final class CampaignEconomics
         $e = $this->frozen($campaign);
         if (! $e) return;
         $terms = json_decode($campaign->terms, true, 512, JSON_THROW_ON_ERROR);
+        $rank = DB::table('arcade_weekly_winners')->where('id', $coupon->winner_id)->value('prize_rank');
         if ($coupon->currency !== $terms['currency']
             || (int) $coupon->min_order_minor !== $terms['min_order_minor']
             || (int) $coupon->max_discount_minor !== $terms['max_discount_minor']
-            || ! in_array((int) $coupon->discount_percent, $terms['ranks'], true)) {
+            || (int) $coupon->discount_percent !== ($terms['ranks'][(int) $rank] ?? null)) {
             throw new RuntimeException('Coupon terms differ from the frozen financial plan.');
         }
         abort_unless($this->marginSafe($subtotal, $discount, $e), 422,
@@ -203,10 +213,16 @@ final class CampaignEconomics
         $outstandingMinor = (int) $outstanding->sum('max_discount_minor');
         $receipts = DB::table('arcade_coupon_redemptions as r')->join('arcade_coupons as c', 'c.id', '=', 'r.coupon_id')
             ->where('c.campaign_id', $campaign->id);
-        $totals = $receipts->selectRaw('COUNT(*) AS n, COALESCE(SUM(r.subtotal_minor),0) AS gross, COALESCE(SUM(r.discount_minor),0) AS discount')->first();
+        $totals = (clone $receipts)->selectRaw('COUNT(*) AS n, COALESCE(SUM(r.subtotal_minor),0) AS gross, COALESCE(SUM(r.discount_minor),0) AS discount')->first();
         $gross = (int) $totals->gross;
         $discount = (int) $totals->discount;
         $redeemed = (int) $totals->n;
+        $estimatedCost = 0;
+        if ($e) {
+            foreach ($receipts->select('r.subtotal_minor')->cursor() as $receipt) {
+                $estimatedCost += self::ceilBps((int) $receipt->subtotal_minor, $e['cost_ceiling_bps']);
+            }
+        }
         $measurement = DB::table('arcade_reward_campaign_events')->where('campaign_id', $campaign->id)
             ->where('event_type', 'economics_measured')->orderByDesc('id')->first();
         $actual = null;
@@ -228,7 +244,8 @@ final class CampaignEconomics
             'net_sales_minor' => $gross - $discount,
             'redemption_percent' => $issued > 0 ? round(100 * $redeemed / $issued, 2) : null,
             'budget_remaining_minor' => $e ? $e['budget_minor'] - $committed : null,
-            'scenario' => $e ? $this->scenario($gross, $discount, $e) : null,
+            'scenario' => $e ? $this->scenario($gross, $discount, $e, $estimatedCost) : null,
+            'projection' => $e ? $this->projection(json_decode($campaign->terms, true, 512, JSON_THROW_ON_ERROR), $e) : null,
             'measurement' => $actual,
         ];
     }
