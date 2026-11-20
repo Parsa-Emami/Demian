@@ -81,6 +81,23 @@ final class ArcadeAntiCheatApiTest extends TestCase
         $this->assertStringNotContainsString($player['token'],$report->evidence);
     }
 
+    public function test_future_server_start_and_cross_game_endpoint_are_rejected(): void
+    {
+        $player = $this->player();
+        $run = $this->withToken($player['token'])->postJson('/api/v1/arcade/turn-runs', [
+            'game_id'=>'cafe-critters','request_id'=>(string)Str::uuid(),'rules_version'=>CafeCrittersReplayVerifier::VERSION,
+        ])->assertCreated()->json();
+        $this->postJson('/api/v1/arcade/runs/'.$run['run_id'].'/complete', [
+            'ticks'=>60,'transitions'=>[['tick'=>0,'mask'=>1]],
+        ])->assertNotFound();
+        DB::table('arcade_runs')->where('id',$run['run_id'])->update(['started_at'=>now()->addSeconds(30)]);
+        $this->postJson('/api/v1/arcade/turn-runs/'.$run['run_id'].'/complete', [
+            'ticks'=>600,'actions'=>[['tick'=>0,'kind'=>'invalid']],
+        ])->assertUnprocessable();
+        $this->assertDatabaseCount('arcade_replays',0);
+        $this->assertDatabaseCount('arcade_leaderboard_entries',0);
+    }
+
     public function test_untrusted_player_token_cannot_use_staff_review_or_monitoring_routes(): void
     {
         $player=$this->player();

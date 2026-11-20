@@ -21,6 +21,8 @@ final class ArcadeAntiCheat
     private const SIGNALS = [
         'duplicate_verified_phone' => ['risk' => 50, 'severity' => 'medium'],
         'shared_installation' => ['risk' => 25, 'severity' => 'low'],
+        'periodic_jump_cadence' => ['risk' => 30, 'severity' => 'low'],
+        'parallel_ranked_runs' => ['risk' => 35, 'severity' => 'medium'],
         'start_velocity' => ['risk' => 45, 'severity' => 'medium'],
         'invalid_replay_velocity' => ['risk' => 60, 'severity' => 'high'],
         'shared_network_cohort' => ['risk' => 35, 'severity' => 'medium'],
@@ -139,6 +141,12 @@ final class ArcadeAntiCheat
                     'starts' => $count, 'window_minutes' => $minutes,
                 ]);
         }
+        $parallel = DB::table('arcade_runs')->where('player_id', $run->player_id)
+            ->where('status', 'started')->where('expires_at', '>', now())->count();
+        if ($parallel >= 3) {
+            $this->signal('parallel_ranked_runs', $run->player_id, null,
+                now('UTC')->format('Y-m-d-H'), ['active_runs' => $parallel]);
+        }
         if ($digest !== null) {
             $minutes = $this->setting('ip_cohort_minutes', 30);
             $accounts = DB::table('arcade_anticheat_observations')
@@ -161,7 +169,7 @@ final class ArcadeAntiCheat
      * Server-computed score/seed only; client score is never an input.
      * Called in the same transaction as immutable replay persistence.
      */
-    public function verified(ArcadeRun $run, int $inputCount, ?string $ip = null): void
+    public function verified(ArcadeRun $run, int $inputCount, ?string $ip = null, ?array $evidence = null): void
     {
         if (! $this->enabled()) return;
         $this->observe('verified', $run->player_id, $run->id,
@@ -172,6 +180,8 @@ final class ArcadeAntiCheat
             ->where('status', 'verified')->where('id', '<>', $run->id)
             ->where('completed_at', '>=', now()->subDays(
                 $this->setting('replay_clone_days', 7)));
+        // Identical actions on a fixed weekly puzzle/course can be legitimate.
+        // Flag clone evidence, but it is never proof or a sufficient hold alone.
         $clone = (clone $previous)->where('replay_hash', $run->replay_hash)
             ->where('player_id', '<>', $run->player_id)->exists();
         if ($clone) {
@@ -183,8 +193,15 @@ final class ArcadeAntiCheat
 
         // A single excellent score is not intrinsically fraud. Require a
         // representative history and use only coarse, deterministic limits.
-        $history = (clone $previous)->orderByDesc('completed_at')->limit(300)
-            ->pluck('score')->map(static fn ($n): int => (int) $n)->all();
+        // Distinct players, same version and current weekly course; one
+        // high-volume account cannot manufacture a baseline. Compare bests.
+        $week = app(WeeklyCompetitionService::class)->window($run->started_at);
+        $history = (clone $previous)->where('player_id', '<>', $run->player_id)
+            ->where('started_at', '>=', $week['starts_at']->toDateTimeString())
+            ->where('started_at', '<', $week['ends_at']->toDateTimeString())
+            ->selectRaw('player_id, MAX(score) as best_score, MAX(completed_at) as last_play')
+            ->groupBy('player_id')->orderByDesc('last_play')->orderBy('player_id')->limit(300)
+            ->pluck('best_score')->map(static fn ($n): int => (int) $n)->all();
         sort($history, SORT_NUMERIC);
         if (count($history) >= $this->setting('score_outlier_min_history', 20)) {
             $median = $history[intdiv(count($history), 2)];
@@ -202,6 +219,10 @@ final class ArcadeAntiCheat
             $this->signal('short_high_score', $run->player_id, $run->id,
                 'rules-v1', ['score' => (int) $run->score,
                     'ticks' => (int) $run->ticks, 'tick_rate' => 60]);
+        }
+        if ($run->game_id === 'dino-run' && $evidence !== null) {
+            $cadence = ReplayRiskAnalysis::cadence($evidence, (int) $run->ticks);
+            if ($cadence !== null) $this->signal('periodic_jump_cadence', $run->player_id, $run->id, 'cadence-v1', $cadence);
         }
         if ($run->ticks >= 600 && $inputCount / $run->ticks >= .85) {
             $this->signal('dense_control_trace', $run->player_id, $run->id,
@@ -304,7 +325,7 @@ final class ArcadeAntiCheat
                 ->where('id', $reportId)->lockForUpdate()->first();
             abort_unless($report && $report->player_id, 404);
             if ($hours !== null) {
-                abort_if(in_array($report->signal, ['shared_installation', 'shared_network_cohort', 'duplicate_verified_phone'], true), 409,
+                abort_if(in_array($report->signal, ['shared_installation', 'shared_network_cohort', 'duplicate_verified_phone', 'periodic_jump_cadence', 'parallel_ranked_runs'], true), 409,
                     'Identity or shared-network signal alone cannot justify a hold.');
                 abort_unless($report->status === 'confirmed', 409,
                     'A reviewer must confirm the report before restricting starts.');
@@ -350,6 +371,23 @@ final class ArcadeAntiCheat
             'action' => $action, 'previous_status' => $old,
             'next_status' => $new, 'note' => $note, 'created_at' => now(),
         ]);
+    }
+
+    /** Bounded aggregate review queue, no identities beyond private player IDs. */
+    public function riskQueue(): array
+    {
+        $window = now()->subDays(7);
+        $rows = DB::table('arcade_cheat_reports')->whereNotNull('player_id')
+            ->whereIn('status', ['open','investigating'])->where('last_seen', '>=', $window)
+            ->selectRaw('player_id, signal, MAX(risk_score) AS risk_score')
+            ->groupBy('player_id','signal')->orderBy('player_id')->orderBy('signal')->get();
+        $queue = [];
+        foreach ($rows->groupBy('player_id') as $player => $reports) {
+            $risk = ReplayRiskAnalysis::aggregate($reports);
+            if ($risk['risk'] > 0) $queue[] = ['player_id' => $player, ...$risk];
+        }
+        usort($queue, static fn ($a,$b) => ($b['risk'] <=> $a['risk']) ?: strcmp($a['player_id'],$b['player_id']));
+        return array_slice($queue, 0, 100);
     }
 
     public function dashboard(): array

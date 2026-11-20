@@ -22,6 +22,17 @@
 </p>
 </section>
 <section class="panel">
+<h2>اولویت بررسی ترکیبی · ۷ روز اخیر</h2>
+<p class="muted">امتیاز ۰ تا ۱۰۰ فقط اولویت صف بررسی است؛ احتمال تقلب محسوب نمی‌شود. تکرار یک سیگنال امتیاز را افزایش نمی‌دهد و شبکه مشترک یا شناسه نصب در این امتیاز وارد نمی‌شود.</p>
+<table><thead><tr><th>حساب داخلی</th><th>امتیاز بررسی</th><th>گروه‌های مستقل شواهد</th><th>نشانه‌ها</th><th>اولویت</th></tr></thead><tbody>
+@forelse($riskQueue as $row)
+<tr><td><small>{{ $row['player_id'] }}</small></td><td>{{ $row['risk'] }}</td><td>{{ $row['families'] }}</td><td>{{ $row['signals'] }}</td><td>{{ $row['priority'] }}</td></tr>
+@empty
+<tr><td colspan="5">پرونده قابل اولویت‌بندی وجود ندارد.</td></tr>
+@endforelse
+</tbody></table>
+</section>
+<section class="panel">
 <h2>۱۰۰ پرونده آخر (شناسه‌های داخلی)</h2>
 <table><thead><tr><th>پرونده</th><th>حساب / بازی</th><th>نشانه / ریسک</th><th>شواهد سروری</th><th>وضعیت</th><th>تکرار / زمان</th></tr></thead><tbody>
 @forelse($reports as $report)
