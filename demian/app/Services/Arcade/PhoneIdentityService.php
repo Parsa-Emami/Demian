@@ -194,7 +194,7 @@ final class PhoneIdentityService
     public function prune(): array
     {
         return [
-            'challenges' => DB::table('arcade_phone_challenges')->where('expires_at', '<=', now())->delete(),
+            'challenges' => DB::table('arcade_phone_challenges')->where(fn ($q) => $q->where('expires_at', '<=', now())->orWhereNotNull('consumed_at'))->delete(),
             'limits' => DB::table('arcade_phone_limits')->where('expires_at', '<=', now())->delete(),
             'devices' => DB::table('arcade_identity_devices')->where('last_seen', '<', now()->subDays(30))->delete(),
             'award_claims' => DB::table('arcade_identity_awards')->where('expires_at', '<=', now())

@@ -85,7 +85,7 @@ class AppServiceProvider extends ServiceProvider
             Limit::perMinute(300)->by('identity:confirm:network:'.$request->ip()),
         ]);
         RateLimiter::for('arcade-identity-recovery', static fn (Request $request): array => [
-            Limit::perMinute(3)->by('identity:recovery:'.hash('sha256', (string) $request->input('recovery_code', ''))),
+            Limit::perMinute(3)->by('identity:recovery:'.hash('sha256', is_string($request->input('recovery_code')) ? $request->input('recovery_code') : '')),
             Limit::perMinute(120)->by('identity:recovery:network:'.$request->ip()),
         ]);
         RateLimiter::for('arcade-player-rename', static fn (Request $request): Limit =>

@@ -294,6 +294,54 @@ final class RewardCampaignStep14Test extends TestCase
         $this->loginAs($root)->get('/cashier/admin/campaigns')->assertOk()->assertSee('سهمیه پویای برندگان');
     }
 
+    public function test_verified_identity_only_counts_for_financial_seats_and_freezes_claims(): void
+    {
+        config()->set('demian-identity.enabled', true);
+        config()->set('demian-identity.required', true);
+        config()->set('demian-identity.key', str_repeat('i', 64));
+        config()->set('demian-identity.gateway_url', 'https://sms.example.test/send');
+        config()->set('demian-identity.gateway_token', str_repeat('s', 32));
+        $root = $this->staff();
+        $id = $this->campaign($root, $this->economicData());
+        $this->import($root, $id, [$this->code(1), $this->code(2)]);
+        app(RewardCampaignService::class)->transition($root, 1, $id, 'activate');
+        $players = $this->seal(21, false);
+        $identity = app(\App\Services\Arcade\PhoneIdentityService::class);
+        // First technical rank stays unverified; 20 distinct verified identities
+        // count toward the award threshold but technical ranks are unchanged.
+        foreach (array_slice($players, 1) as $i => $player) {
+            $phone = '+98912001'.sprintf('%04d', $i);
+            DB::table('arcade_verified_phones')->insert([
+                'player_id' => $player['player_id'], 'phone_hash' => $identity->digest('phone-v1', $phone),
+                'phone_ciphertext' => Crypt::encryptString($phone), 'verified_at' => now(),
+            ]);
+        }
+        $campaign = DB::table('arcade_reward_campaigns')->where('id', $id)->first();
+        $preview = app(\App\Services\Arcade\WeeklyAllocationService::class)->preview($campaign);
+        $this->assertSame(20, $preview['participants']);
+        $this->assertSame(2, $preview['winner_count']);
+        app(WeeklySettlementService::class)->seal('2026-11-07');
+        $this->assertDatabaseCount('arcade_weekly_results', 21);
+        $this->assertDatabaseCount('arcade_identity_awards', 2);
+        $this->assertSame([2, 3], DB::table('arcade_weekly_winners')->orderBy('prize_rank')->pluck('technical_rank')->map(fn ($v) => (int) $v)->all());
+        $this->assertSame(2, app(CouponIssuanceService::class)->issueWeek(self::WEEK)['created']);
+        $winner = $players[1]['player_id'];
+        $this->withToken($players[1]['token'])->deleteJson('/api/v1/arcade/player')->assertOk();
+        $this->assertDatabaseMissing('arcade_verified_phones', ['player_id' => $winner]);
+        $this->assertDatabaseCount('arcade_identity_awards', 2);
+        $next = $this->postJson('/api/v1/arcade/players', ['display_name' => 'New Device'])->assertCreated()->json();
+        $phone = '+989120010000';
+        DB::table('arcade_verified_phones')->insert([
+            'player_id' => $next['player_id'], 'phone_hash' => $identity->digest('phone-v1', $phone),
+            'phone_ciphertext' => Crypt::encryptString($phone), 'verified_at' => now(),
+        ]);
+        $eligible = app(\App\Services\Arcade\VerifiedPrizeIdentity::class)->eligibility('weekly:tehran:2026-11-14', [
+            'dino-run' => [['player_id' => $next['player_id']]],
+        ], [], []);
+        $this->assertContains($next['player_id'], $eligible['excluded']);
+        $this->assertContains($next['player_id'], $eligible['historical']);
+    }
+
     public function test_dynamic_paused_campaign_never_silently_discards_qualified_awards(): void
     {
         config()->set('demian-coupons.dynamic_allocation_required', true);
