@@ -109,9 +109,10 @@ final class ArcadeAntiCheatTest extends TestCase
             'player_id'=>$player->id,'signal'=>'start_velocity',
             'severity'=>'medium','status'=>'open',
         ]);
-        $this->assertDatabaseCount('arcade_cheat_reports',1);
+        $this->assertDatabaseCount('arcade_cheat_reports',2);
+        $this->assertDatabaseHas('arcade_cheat_reports',['player_id'=>$player->id,'signal'=>'parallel_ranked_runs','status'=>'open']);
         $this->assertDatabaseCount('arcade_anticheat_observations',12);
-        $this->assertGreaterThan(1,(int) DB::table('arcade_cheat_reports')
+        $this->assertGreaterThan(1,(int) DB::table('arcade_cheat_reports')->where('signal','start_velocity')
             ->value('hits'));
         $anti->assertStartAllowed($player->id);
         $this->assertSame(0, DB::table('arcade_anticheat_holds')->count());
@@ -180,6 +181,34 @@ final class ArcadeAntiCheatTest extends TestCase
         $evidence=json_decode($outlier->evidence,true);
         $this->assertSame(20,$evidence['sample_size']);
         $this->assertSame(100,$evidence['baseline_median']);
+    }
+
+    public function test_periodic_controls_and_parallel_activity_do_not_automatically_punish(): void
+    {
+        $player = $this->player();
+        $run = $this->newRun($player, 'verified', 'dino-run', 2500, hash('sha256','periodic'));
+        $run->update(['ticks' => 3600]);
+        $events = [];
+        for ($t = 0; $t < 3600; $t += 90) {
+            $events[] = ['tick'=>$t,'mask'=>1];
+            $events[] = ['tick'=>$t+3,'mask'=>0];
+        }
+        $anti = app(ArcadeAntiCheat::class);
+        $anti->verified($run, count($events), '203.0.113.4', $events);
+        $report = DB::table('arcade_cheat_reports')->where('signal','periodic_jump_cadence')->first();
+        $this->assertNotNull($report);
+        $this->assertSame(30, $anti->riskQueue()[0]['risk']);
+        $this->assertDatabaseCount('arcade_anticheat_holds',0);
+        $root = $this->staff('super_admin');
+        $anti->review((int)$report->id,$root,1,'confirmed','Review of periodic control evidence');
+        try {
+            $anti->setHold((int)$report->id,$root,1,24,'Periodic control alone is not proof');
+            $this->fail('Heuristic-only hold accepted.');
+        } catch (HttpException $e) {
+            $this->assertSame(409,$e->getStatusCode());
+        }
+        $this->assertDatabaseHas('arcade_runs',['id'=>$run->id,'status'=>'verified','score'=>2500]);
+        $this->assertDatabaseCount('arcade_anticheat_holds',0);
     }
 
     public function test_only_stepup_superadmin_can_review_confirm_and_temporarily_hold_new_starts(): void

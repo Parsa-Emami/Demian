@@ -1,6 +1,7 @@
 import MasterMotionController from './motion/MasterMotionController.js';
 import { motionCharacter } from './motion/MasterMotionLibrary.js';
 import { sanitizeCharacterAnimation } from './CharacterVisualContract.js';
+import { unifiedAnimationAlias } from './UnifiedAnimationStandard.js';
 
 const DIRECTION_FALLBACKS = Object.freeze({
     n: ['n', 'ne', 'nw'],
@@ -58,11 +59,13 @@ export default class FrameAnimator {
 
     has(name) {
         const safeName = sanitizeCharacterAnimation(name);
-        return Boolean(this.atlas.animations?.[safeName]);
+        return Boolean(this.atlas.animations?.[safeName] || unifiedAnimationAlias(this.atlas, safeName));
     }
 
     resolveName(name) {
         const safeName = sanitizeCharacterAnimation(name);
+        const unifiedAlias = unifiedAnimationAlias(this.atlas, safeName);
+        if (unifiedAlias) return unifiedAlias;
         if (this.atlas.animations?.[safeName]) {
             return safeName;
         }
@@ -128,6 +131,44 @@ export default class FrameAnimator {
 
         this.applyCurrentFrame();
         return resolvedName;
+    }
+
+    restorePlaybackFrom(previous) {
+        if (!previous) {
+            this.play('idle');
+            return;
+        }
+        this.setDirection(previous.direction);
+        this.setFacing(previous.facing);
+        this.setPlaybackRate(previous.playbackRate);
+        this.play(previous.requestedAnimationName ?? previous.animationName ?? 'idle', { restart: true });
+        const oldFrames = previous.currentFrames(), nextFrames = this.currentFrames();
+        if (!oldFrames.length || !nextFrames.length) return;
+        const oldPosition = previous.frameIndex + previous.frameProgress();
+        const oldLoop = previous.animation?.loop !== false;
+        const nextLoop = this.animation.loop !== false;
+        let position;
+        if (oldLoop && nextLoop) {
+            const oldCycles = Math.max(1, Number(previous.animation.cycleCount) || 1);
+            const nextCycles = Math.max(1, Number(this.animation.cycleCount) || 1);
+            position = ((oldPosition / oldFrames.length * oldCycles) % nextCycles) / nextCycles * nextFrames.length;
+        } else {
+            position = previous.finished ? nextFrames.length - 1
+                : oldPosition / oldFrames.length * nextFrames.length;
+        }
+        this.frameIndex = Math.min(nextFrames.length - 1, Math.floor(Math.max(0, position) + 1e-10));
+        const fraction = Math.min(.999999999, Math.max(0, position - this.frameIndex));
+        this.finished = !nextLoop && previous.finished;
+        this.elapsed = this.finished ? 0 : fraction / (Math.max(1, Number(this.animation.fps) || 1) * this.playbackRate);
+        this.locomotionPhase = previous.locomotionPhase;
+        this.locomotionFrequency = previous.locomotionFrequency;
+        this.motionState = previous.motionState;
+        if (this.masterMotion && previous.masterMotion &&
+            this.masterMotion.definition.slug === previous.masterMotion.definition.slug) {
+            this.masterMotion = previous.masterMotion;
+        }
+        this.previousSample = null;
+        this.applyCurrentFrame();
     }
 
     setFacing(direction) {

@@ -28,6 +28,8 @@ final class ArcadePrivacyController extends Controller
             'status' => config('demian-legal.publication_approved') ? 'approved' : 'draft-pending-legal-review',
             'require_acceptance' => config('demian-legal.require_acceptance'),
             'require_contact' => config('demian-arcade.require_contact'),
+            'phone_verification_available' => app(\App\Services\Arcade\PhoneIdentityService::class)->ready(),
+            'verified_phone_required_for_prizes' => app(\App\Services\Arcade\PhoneIdentityService::class)->required(),
             'pages' => config('demian-legal.pages'),
         ])->header('Cache-Control', 'public, max-age=60');
     }
@@ -35,6 +37,7 @@ final class ArcadePrivacyController extends Controller
     public function snapshot(Request $request): JsonResponse
     {
         $player = $request->attributes->get('arcade_player');
+        $identity = app(\App\Services\Arcade\PhoneIdentityService::class)->identity($player->id);
         $counts = [];
         foreach (self::RECORDS as $kind => [$table]) {
             $counts[$kind] = DB::table($table)->where('player_id', $player->id)->count();
@@ -46,6 +49,8 @@ final class ArcadePrivacyController extends Controller
                 'registered_at' => $player->created_at?->toIso8601String(),
                 'legal_policy_version' => $player->legal_policy_version,
                 'contact_type' => $player->contact_type, 'contact_value' => $player->contact_value,
+                'verified_phone' => $identity ? \Illuminate\Support\Facades\Crypt::decryptString($identity->phone_ciphertext) : null,
+                'phone_verified_at' => $identity?->verified_at,
                 'legal_accepted_at' => $player->legal_accepted_at?->toIso8601String(),
             ],
             'record_counts' => $counts,

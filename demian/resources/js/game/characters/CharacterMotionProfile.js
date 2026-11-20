@@ -33,6 +33,8 @@ export const CHARACTER_LOCOMOTION_STATES = Object.freeze([
     'dash',
     'slide',
     'dodge',
+    'crouch',
+    'crawl',
     'turn',
 ]);
 
@@ -86,6 +88,11 @@ export function advanceCharacterAnimation(animator, {
             syncMasterMotion(animator, state, deltaTime);
             return;
         }
+    }
+    if (['crouch', 'crawl'].includes(state) && animator.animation?.frames?.length === 1) {
+        animator.seek(0);
+        syncMasterMotion(animator, state, deltaTime);
+        return;
     }
     if (actionDuration > 0 && ['dash', 'slide', 'dodge'].includes(state)) {
         animator.seek(stateTime / actionDuration);

@@ -175,7 +175,33 @@ final class WeeklySettlementService
                 ->whereIn('status', ['issued', 'reserved'])
                 ->where('expires_at', '>', $utcNow->toDateTimeString())
                 ->distinct()->pluck('player_id')->all();
-            $winners = $this->selector->select($prizeRankings, $historical, $activeRecipients);
+            $allocation = null;
+            $campaign = DB::table('arcade_reward_campaigns')->where('period_key', $key)->lockForUpdate()->first();
+            if ($campaign) {
+                $terms = json_decode($campaign->terms, true, 512, JSON_THROW_ON_ERROR);
+                if (isset($terms['allocation'])) {
+                    // Never allocate the later week ahead of an earlier funded
+                    // dynamic week: historical winner priority must be chronological.
+                    $earlier = DB::table('arcade_reward_campaigns as c')
+                        ->join('arcade_weekly_periods as p', 'p.period_key', '=', 'c.period_key')
+                        ->where('c.period_key', '<', $key)->where('p.status', 'open')
+                        ->whereIn('c.status', ['active', 'paused'])
+                        ->whereNotNull('c.activated_at')->exists();
+                    if ($earlier) throw new RuntimeException('Settle earlier funded weeks before allocating prizes.');
+                }
+                $allocation = app(WeeklyAllocationService::class)->plan($campaign, $prizeRankings, $historical, $activeRecipients, true);
+            }
+            if ($allocation) {
+                $winners = $allocation['winners'];
+            } elseif ($campaign && app(PhoneIdentityService::class)->required()) {
+                throw new RuntimeException('Legacy campaign needs verified identity policy reconciliation.');
+            } elseif (! $campaign && app(WeeklyAllocationService::class)->required()) {
+                // A technical leaderboard can be archived without a sponsor;
+                // never create unfunded financial awards for a new live week.
+                $winners = [];
+            } else {
+                $winners = $this->selector->select($prizeRankings, $historical, $activeRecipients);
+            }
 
             $snapshot = [];
             ksort($rankings, SORT_STRING);
@@ -211,10 +237,14 @@ final class WeeklySettlementService
                     ];
                 }
             }
+            if ($allocation) $allocation['summary']['winner_sha256'] = DynamicWinnerAllocation::winnerDigest($awards);
             // Fixed canonical digest of the complete ranked snapshot at sealing.
             $digest = hash('sha256', json_encode($snapshot, JSON_THROW_ON_ERROR));
             if ($snapshot) DB::table('arcade_weekly_results')->insert($snapshot);
             if ($awards) DB::table('arcade_weekly_winners')->insert($awards);
+            if ($allocation && ($allocation['summary']['identity_policy'] ?? null) === VerifiedPrizeIdentity::POLICY) {
+                app(VerifiedPrizeIdentity::class)->seal($key, $utcNow);
+            }
             // Separate from prize selection: an auditable 0–1000 comparative
             // score and one cross-game personal best, persisted atomically.
             // NO new coupon recipients, ranks or source digest are changed.
@@ -230,7 +260,8 @@ final class WeeklySettlementService
                 'period_key' => $key, 'event_type' => 'sealed',
                 'details' => json_encode([
                     'participants' => count($snapshot), 'winners' => count($awards),
-                    'sha256' => $digest, 'algorithm' => 'first-time-priority-v1',
+                    'sha256' => $digest, 'algorithm' => $allocation ? DynamicWinnerAllocation::VERSION : ($campaign || ! app(WeeklyAllocationService::class)->required() ? 'first-time-priority-v1' : 'unfunded-technical-v1'),
+                    ...($allocation ? ['allocation' => $allocation['summary']] : []),
                 ], JSON_THROW_ON_ERROR),
                 'created_at' => $utcNow->toDateTimeString(),
             ]);

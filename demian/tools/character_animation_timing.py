@@ -1,6 +1,10 @@
 """Shared V14 motion metadata; does not alter any artwork or sprite rectangles."""
 from copy import deepcopy
 from math import isfinite
+from pathlib import Path
+import json
+
+STANDARD = json.loads((Path(__file__).resolve().parents[1] / 'resources/game/sprite-animation-standard-v2.json').read_text())
 
 
 def apply_animation_timing(atlas, cycle_counts=None, locomotion_profile=None):
@@ -12,7 +16,10 @@ def apply_animation_timing(atlas, cycle_counts=None, locomotion_profile=None):
             animations[name]['cycleCount'] = max(1, min(4, int(cycles.get(name, cycles.get(family, 1)))))
     # The source sequence begins with anticipation and ends in standing.
     # Airborne clips use push-off, tuck and leg extension; landing has its own clip.
-    for name, start, end, fps in [('takeoff', 12, 24, 72), ('jump', 24, 32, 32), ('fall', 32, 43, 44)]:
+    for name in ('takeoff', 'jump', 'fall'):
+        rule = STANDARD['states'][name]
+        start, end = rule['jumpRange']
+        fps = rule['fps']
         animation = animations[name]
         east = [f'jump_e_{i:03}' for i in range(start, end)]
         west = [f'jump_w_{i:03}' for i in range(start, end)]
@@ -28,6 +35,13 @@ def apply_animation_timing(atlas, cycle_counts=None, locomotion_profile=None):
         source = animation.get('sharedFrameSource')
         if source in ('walk', 'run', 'jump'):
             animations[name] = {**deepcopy(animations[source]), 'sharedFrameSource': source}
+    for name, rule in STANDARD['states'].items():
+        animation = animations[name]
+        if len(animation['frames']) != rule['frames'] or animation['fps'] != rule['fps'] or animation['loop'] != rule['loop']:
+            raise ValueError(f'Animation {name} violates unified V2 frame and timing standard')
+        if 'cycles' in rule and animation.get('cycleCount') not in rule['cycles']:
+            raise ValueError(f'Animation {name} has unsupported cycle count')
+    atlas.setdefault('fallbacks', {}).update(STANDARD['aliases'])
     atlas['motion']['timingVersion'] = 'natural-locomotion-v2'
     atlas['motion']['jumpProgressDriver'] = 'vertical-velocity'
     winged = atlas.get('movement', {}).get('style') == 'wing-assisted'
@@ -35,8 +49,8 @@ def apply_animation_timing(atlas, cycle_counts=None, locomotion_profile=None):
         'id': 'uzudi-wing-assisted-v2' if winged else 'shared-ground-v2',
         'referenceCharacter': 'uzudi' if winged else None,
         'phaseDriver': 'travelled-distance',
-        'strideLengths': {'walk': 3.4, 'run': 6, 'sprint': 6.4},
-        'maxStrideHz': 1.55, 'landingSeconds': .16,
+        'strideLengths': deepcopy(STANDARD['strideLengths']),
+        'maxStrideHz': STANDARD['maxStrideHz'], 'landingSeconds': STANDARD['landingSeconds'],
         'jumpBufferSeconds': .14, 'coyoteSeconds': .11,
         'heldApexGravity': .65, 'releasedRiseGravity': 1.65,
         'recoveryInterruptible': True,

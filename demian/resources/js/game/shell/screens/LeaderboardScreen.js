@@ -24,6 +24,19 @@ export default class LeaderboardScreen extends BaseScreen {
         this.issueRecovery = this.element.querySelector('[data-ranking-issue-recovery]');
         this.recoveryLink = this.element.querySelector('[data-ranking-recovery-link]');
         this.recoveryStatus = this.element.querySelector('[data-ranking-recovery-status]');
+        this.verifyPhoneButton = document.createElement('button');
+        this.verifyPhoneButton.type = 'button';
+        this.verifyPhoneButton.textContent = 'تأیید شماره تلفن برای جایزه';
+        this.verifyPhoneButton.className = 'ranking-panel__mode';
+        this.verifyPhoneButton.addEventListener('click', async () => {
+            this.verifyPhoneButton.disabled = true;
+            try {
+                const result = await this.service.verifyPhone();
+                this.recoveryStatus.textContent = result?.verified ? 'مالکیت شماره تأیید شد. برای دریافت جایزه، سایر شرایط رقابت نیز لازم است.' : 'تأیید شماره لغو شد.';
+            } catch (error) { this.recoveryStatus.textContent = error.message; }
+            finally { this.verifyPhoneButton.disabled = !this.service.connected; }
+        });
+        this.recoveryStatus.before(this.verifyPhoneButton);
         this.deleteAccount = this.element.querySelector('[data-ranking-delete-account]');
         this.exportAccount = this.element.querySelector('[data-ranking-export-account]');
         this.issueBackup = this.element.querySelector('[data-ranking-issue-backup]');
@@ -165,6 +178,7 @@ export default class LeaderboardScreen extends BaseScreen {
     async beforeOpen() {
         this.form.elements.display_name.value = this.service.displayName;
         this.issueRecovery.disabled = !this.service.connected;
+        this.verifyPhoneButton.disabled = !this.service.connected;
         this.issueBackup.disabled = !this.service.connected;
         this.backupCode.value = '';
         this.deleteAccount.disabled = !this.service.connected;
