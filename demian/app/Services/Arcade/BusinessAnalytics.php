@@ -11,7 +11,7 @@ final class BusinessAnalytics
 {
     public const WINDOWS = [7,30,90];
 
-    public function __construct(private readonly Clock $clock,private readonly RetentionReport $retention) {}
+    public function __construct(private readonly Clock $clock,private readonly RetentionReport $retention,private readonly CommercialAnalytics $commercial) {}
 
     private function within($query,string $column,CarbonImmutable $from,CarbonImmutable $to)
     {
@@ -79,9 +79,9 @@ final class BusinessAnalytics
             'games'=>$games];
     }
 
-    private function weightedRetention(int $days): array
+    private function weightedRetention(int $days,CarbonImmutable $to): array
     {
-        $report=$this->retention->snapshot($days,true);
+        $report=$this->retention->snapshot($days,true,$to);
         $result=['status'=>$report['status'],'players'=>$report['players'],'cohorts'=>[],'rates'=>[]];
         if ($report['truncated']) {
             foreach (['d1','d7','d30'] as $field) $result['rates'][$field]=null;
@@ -103,7 +103,13 @@ final class BusinessAnalytics
     public function snapshot(int $days): array
     {
         if (!in_array($days,self::WINDOWS,true)) throw new InvalidArgumentException('Unsupported analytics window.');
-        $to=CarbonImmutable::instance($this->clock->now())->setTimezone('Asia/Tehran')->startOfDay();
+        $asOf=CarbonImmutable::instance($this->clock->now())->setTimezone('Asia/Tehran');
+        return DB::transaction(fn()=>$this->readSnapshot($days,$asOf),1);
+    }
+
+    private function readSnapshot(int $days,CarbonImmutable $asOf): array
+    {
+        $to=$asOf->startOfDay();
         $from=$to->subDays($days);
         $engagement=$this->engagement($from,$to);
         $trend=[];
@@ -115,18 +121,42 @@ final class BusinessAnalytics
                 'registrations'=>$this->within(DB::table('arcade_players'),'created_at',$start,$end)->count(),
                 'active_players'=>(int)$row->players,'verified_runs'=>(int)$row->runs];
         }
-        $month=$to->format('Y-m');
+        $previous=$from->subDays($days);
+        $acquisition=$this->acquisition($from,$to);
+        $priorAcquisition=$this->acquisition($previous,$from);
+        $priorEngagement=$this->engagement($previous,$from);
+        $changes=[];
+        foreach(['registrations'=>[$acquisition['registrations'],$priorAcquisition['registrations']],
+            'active_players'=>[$engagement['active_players'],$priorEngagement['active_players']],
+            'verified_runs'=>[$engagement['verified_runs'],$priorEngagement['verified_runs']]] as $key=>[$current,$prior]){
+            $changes[$key]=['current'=>$current,'previous'=>$prior,'delta'=>$current-$prior,
+                'change_percent'=>$prior>0?round(100*($current-$prior)/$prior,2):null];
+        }
+        $month=$asOf->format('Y-m');
         $monthAwards=(int)DB::table('arcade_referral_awards')->where('month',$month)
-            ->where('expires_at','>',CarbonImmutable::instance($this->clock->now())->utc()->toDateTimeString())->count();
+            ->where('expires_at','>',$asOf->utc()->toDateTimeString())->count();
         $cost=DB::table('arcade_referral_costs')->where('month',$month)->value('spend_irr');
         return [
-            'schema'=>1,'timezone'=>'Asia/Tehran','days'=>$days,'from'=>$from->toDateString(),
-            'until_exclusive'=>$to->toDateString(),'generated_at'=>CarbonImmutable::instance($this->clock->now())->utc()->toIso8601String(),
-            'acquisition'=>$this->acquisition($from,$to),'engagement'=>$engagement,
+            'schema'=>2,'timezone'=>'Asia/Tehran','days'=>$days,'from'=>$from->toDateString(),
+            'until_exclusive'=>$to->toDateString(),'generated_at'=>$asOf->utc()->toIso8601String(),
+            'acquisition'=>$acquisition,'engagement'=>$engagement,
             'wau'=>$this->runs($to->subDays(7),$to)->distinct()->count('player_id'),
             'mau'=>$this->runs($to->subDays(30),$to)->distinct()->count('player_id'),
-            'retention'=>$this->weightedRetention($days),'coupon_cohort'=>$this->couponCohort($from,$to),
+            'retention'=>$this->weightedRetention($days,$to),'coupon_cohort'=>$this->couponCohort($from,$to),
             'cafe_receipts'=>$this->money($from,$to),'trend'=>$trend,
+            'engagement_comparison'=>$changes,
+            'commercial'=>$this->commercial->snapshot($from,$to,$asOf),
+            'definitions'=>[
+                'window'=>'Complete Tehran calendar days; previous period has equal length; zero denominator is null.',
+                'accounts'=>'Surviving registered accounts, not unique persons or all visitors; historic counts can change after erasure.',
+                'receipts'=>'In-cafe coupon-bearing receipts only, not total cafe revenue or profit. Amounts in currency minor units.',
+                'coupon_cohort'=>'Issued within window, redeemed before cutoff; separate from receipt flows.',
+                'qr'=>'Explicit launch clicks, not verified scans, footfall or unique customers; capped table-days are lower bounds.',
+                'quiet_hours'=>'Offer-day cohort; reserved cap is not spent cash. No causal incremental uplift.',
+                'campaigns'=>'Lifetime current values for overlapping weekly campaigns, including historical shop channel; scenarios are assumptions. Operator measurements are not independent causal proof.',
+                'live'=>'Outstanding liability and current-month CAC are live, not historical window totals.',
+                'coverage'=>'No POS, occupancy sensor, practice/offline telemetry or customer attribution from QR. Missing measurements stay null.',
+            ],
             'referral_month_live'=>['month'=>$month,'recorded_spend_irr'=>$cost===null?null:(int)$cost,
                 'award_count'=>$monthAwards,'cac_irr'=>$cost===null||$monthAwards===0?null:intdiv((int)$cost,$monthAwards)],
         ];

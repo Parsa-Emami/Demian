@@ -15,8 +15,16 @@ final class CafeBusinessAnalyticsController extends Controller
         $staff=$request->attributes->get('cafe_staff');
         CafeAccess::authorize($staff,'report.global');
         $data=$request->validate(['days'=>['sometimes','integer','in:7,30,90'],
-            'format'=>['sometimes','in:html,json']]);
+            'format'=>['sometimes','in:html,json,csv']]);
         $report=$analytics->snapshot((int)($data['days']??30));
+        if (($data['format']??'html')==='csv') {
+            return response()->streamDownload(function()use($report): void {
+                $out=fopen('php://output','wb');
+                \App\Services\Arcade\AnalyticsCsv::write($out,$report);
+                fclose($out);
+            },'demian-business-analytics.csv',['Content-Type'=>'text/csv; charset=UTF-8',
+                'Cache-Control'=>'private, no-store','X-Content-Type-Options'=>'nosniff']);
+        }
         if (($data['format']??'html')==='json') {
             return response()->json($report)->header('Content-Disposition','attachment; filename="demian-business-analytics.json"')
                 ->header('Cache-Control','private, no-store')->header('X-Content-Type-Options','nosniff');
