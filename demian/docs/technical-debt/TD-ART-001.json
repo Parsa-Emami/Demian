@@ -1,0 +1,498 @@
+{
+  "schemaVersion": 1,
+  "id": "TD-ART-001",
+  "status": "open",
+  "priority": "P0-before-production",
+  "sourceCommit": "c59574aa7f5a58c434178db4b3e194937dca9d12",
+  "scope": "Phases 2–4 of Master Quality Upgrade; no new raster art in this commit",
+  "completionEvidence": null,
+  "ownerApprovalRequired": true,
+  "tool": "ChatGPT Work with image generation or equivalent approved artist workflow",
+  "phases": [
+    {
+      "phase": 2,
+      "id": "TD-ART-002",
+      "status": "deferred",
+      "deliverables": [
+        "approved Art Bible",
+        "reference boards",
+        "palette and lighting tokens",
+        "visual acceptance rubric",
+        "licensed asset inventory"
+      ]
+    },
+    {
+      "phase": 3,
+      "id": "TD-ART-003",
+      "status": "deferred",
+      "reference": "darya",
+      "deliverables": [
+        "eight reference-driven character source packs",
+        "six variants and atlas pairs per character",
+        "portrait and motion review"
+      ]
+    },
+    {
+      "phase": 4,
+      "id": "TD-ART-004",
+      "status": "deferred",
+      "reference": "arsal",
+      "deliverables": [
+        "ten reference-driven character source packs",
+        "six variants and atlas pairs per character",
+        "portrait and motion review"
+      ]
+    }
+  ],
+  "variants": [
+    "desktop",
+    "mobile",
+    "compact",
+    "detail",
+    "runtime",
+    "lite"
+  ],
+  "sourceFiles": [
+    "reference.jpg or reference.png",
+    "master.png",
+    "runner-motion.png",
+    "slides.png",
+    "layout.json",
+    "motion provenance with source hashes"
+  ],
+  "states": [
+    "idle",
+    "walk",
+    "run",
+    "sprint",
+    "takeoff",
+    "jump",
+    "fall",
+    "land",
+    "slide",
+    "dodge",
+    "turn",
+    "celebrate",
+    "interaction"
+  ],
+  "phase5": {
+    "status": "split",
+    "next": "Phase 5A: animation runtime engineering using existing assets",
+    "deferred": "Phase 5B: final art retargeting, optical-flow/pose quality and human visual sign-off after 2–4",
+    "mustNot": "Change physics, hitboxes, ranked rules or label interim visuals final"
+  },
+  "roster": [
+    {
+      "slug": "darya",
+      "name": "DARYA / دریا",
+      "family": "female-base-v1",
+      "phase": 3,
+      "motionReference": "darya",
+      "accessories": [
+        {
+          "kind": "pishi",
+          "anchor": "ground",
+          "offset": [
+            -0.3,
+            0
+          ],
+          "collision": "cosmetic"
+        }
+      ],
+      "status": "pending-art-rebuild",
+      "referenceStatus": "existing-source-requires-owner-confirmation",
+      "sources": [
+        "demian/public/assets/characters/darya/source-v14/layout.json",
+        "demian/public/assets/characters/darya/source-v14/master.png",
+        "demian/public/assets/characters/darya/source-v14/reference.jpg",
+        "demian/public/assets/characters/darya/source-v14/runner-motion.png",
+        "demian/public/assets/characters/darya/source-v14/slides.png"
+      ],
+      "identityManifest": "demian/public/assets/characters/darya/manifests/darya_identity_contract.json",
+      "identityManifestExists": true
+    },
+    {
+      "slug": "setayesh",
+      "name": "SETAYESH / ستایش",
+      "family": "female-base-v1",
+      "phase": 3,
+      "motionReference": "darya",
+      "accessories": [],
+      "status": "pending-art-rebuild",
+      "referenceStatus": "existing-source-requires-owner-confirmation",
+      "sources": [
+        "demian/public/assets/characters/setayesh/source-v14/layout.json",
+        "demian/public/assets/characters/setayesh/source-v14/master.png",
+        "demian/public/assets/characters/setayesh/source-v14/reference.jpg",
+        "demian/public/assets/characters/setayesh/source-v14/runner-motion.png",
+        "demian/public/assets/characters/setayesh/source-v14/slides.png"
+      ],
+      "identityManifest": "demian/public/assets/characters/setayesh/manifests/setayesh_identity_contract.json",
+      "identityManifestExists": true
+    },
+    {
+      "slug": "uzudi",
+      "name": "UZUDI / اوزودی",
+      "family": "male-base-v1",
+      "phase": 4,
+      "motionReference": "arsal",
+      "accessories": [
+        {
+          "kind": "wings",
+          "anchor": "chest",
+          "span": 0.3,
+          "amplitude": 0.18,
+          "phaseOffset": 0
+        }
+      ],
+      "status": "pending-art-rebuild",
+      "referenceStatus": "existing-source-requires-owner-confirmation",
+      "sources": [
+        "demian/public/assets/characters/uzudi/source-v14/layout.json",
+        "demian/public/assets/characters/uzudi/source-v14/master.png",
+        "demian/public/assets/characters/uzudi/source-v14/reference.jpg",
+        "demian/public/assets/characters/uzudi/source-v14/runner-motion.png",
+        "demian/public/assets/characters/uzudi/source-v14/slides.png"
+      ],
+      "identityManifest": "demian/public/assets/characters/uzudi/manifests/uzudi_identity_contract.json",
+      "identityManifestExists": true
+    },
+    {
+      "slug": "negar",
+      "name": "NEGAR / نگار",
+      "family": "female-base-v1",
+      "phase": 3,
+      "motionReference": "darya",
+      "accessories": [],
+      "status": "pending-art-rebuild",
+      "referenceStatus": "existing-source-requires-owner-confirmation",
+      "sources": [
+        "demian/public/assets/characters/negar/source-v14/layout.json",
+        "demian/public/assets/characters/negar/source-v14/master.png",
+        "demian/public/assets/characters/negar/source-v14/reference.jpg",
+        "demian/public/assets/characters/negar/source-v14/runner-motion.png",
+        "demian/public/assets/characters/negar/source-v14/slides.png"
+      ],
+      "identityManifest": "demian/public/assets/characters/negar/manifests/negar_identity_contract.json",
+      "identityManifestExists": true
+    },
+    {
+      "slug": "elaheh",
+      "name": "ELAHEH / الهه",
+      "family": "female-base-v1",
+      "phase": 3,
+      "motionReference": "darya",
+      "accessories": [],
+      "status": "pending-art-rebuild",
+      "referenceStatus": "existing-source-requires-owner-confirmation",
+      "sources": [
+        "demian/public/assets/characters/elaheh/source-v14/layout.json",
+        "demian/public/assets/characters/elaheh/source-v14/master.png",
+        "demian/public/assets/characters/elaheh/source-v14/reference.jpg",
+        "demian/public/assets/characters/elaheh/source-v14/runner-motion.png",
+        "demian/public/assets/characters/elaheh/source-v14/slides.png"
+      ],
+      "identityManifest": "demian/public/assets/characters/elaheh/manifests/elaheh_identity_contract.json",
+      "identityManifestExists": true
+    },
+    {
+      "slug": "tiam",
+      "name": "TIAM / تیام",
+      "family": "female-base-v1",
+      "phase": 3,
+      "motionReference": "darya",
+      "accessories": [
+        {
+          "kind": "homayoun",
+          "anchor": "shoulderNear",
+          "offset": [
+            -0.025,
+            -0.045
+          ],
+          "collision": "cosmetic"
+        }
+      ],
+      "status": "pending-art-rebuild",
+      "referenceStatus": "identity-reference-must-be-recovered-or-approved",
+      "sources": [
+        "demian/public/assets/characters/tiam/source-v14/layout.json",
+        "demian/public/assets/characters/tiam/source-v14/locomotion-v15-provenance.json",
+        "demian/public/assets/characters/tiam/source-v14/locomotion-v15.png",
+        "demian/public/assets/characters/tiam/source-v14/master.png",
+        "demian/public/assets/characters/tiam/source-v14/runner-motion.png",
+        "demian/public/assets/characters/tiam/source-v14/slides.png"
+      ],
+      "identityManifest": "demian/public/assets/characters/tiam/manifests/tiam_identity_contract.json",
+      "identityManifestExists": true
+    },
+    {
+      "slug": "amirreza",
+      "name": "AMIRREZA / امیررضا",
+      "family": "male-base-v1",
+      "phase": 4,
+      "motionReference": "arsal",
+      "accessories": [
+        {
+          "kind": "wings",
+          "anchor": "chest",
+          "span": 0.3,
+          "amplitude": 0.18,
+          "phaseOffset": 0
+        }
+      ],
+      "status": "pending-art-rebuild",
+      "referenceStatus": "identity-reference-must-be-recovered-or-approved",
+      "sources": [
+        "demian/public/assets/characters/amirreza/source-v14/layout.json",
+        "demian/public/assets/characters/amirreza/source-v14/locomotion-v15-provenance.json",
+        "demian/public/assets/characters/amirreza/source-v14/locomotion-v15.png",
+        "demian/public/assets/characters/amirreza/source-v14/master.png",
+        "demian/public/assets/characters/amirreza/source-v14/runner-motion.png",
+        "demian/public/assets/characters/amirreza/source-v14/slides.png",
+        "demian/public/assets/characters/amirreza/source-v14/uzudi-motion-guide.png"
+      ],
+      "identityManifest": "demian/public/assets/characters/amirreza/manifests/amirreza_identity_contract.json",
+      "identityManifestExists": true
+    },
+    {
+      "slug": "hanna",
+      "name": "HANNA / حنا",
+      "family": "female-base-v1",
+      "phase": 3,
+      "motionReference": "darya",
+      "accessories": [],
+      "status": "pending-art-rebuild",
+      "referenceStatus": "identity-reference-must-be-recovered-or-approved",
+      "sources": [
+        "demian/public/assets/characters/hanna/source-v14/layout.json",
+        "demian/public/assets/characters/hanna/source-v14/locomotion-v15-provenance.json",
+        "demian/public/assets/characters/hanna/source-v14/locomotion-v15.png",
+        "demian/public/assets/characters/hanna/source-v14/master.png",
+        "demian/public/assets/characters/hanna/source-v14/runner-motion.png",
+        "demian/public/assets/characters/hanna/source-v14/slides.png"
+      ],
+      "identityManifest": "demian/public/assets/characters/hanna/manifests/hanna_identity_contract.json",
+      "identityManifestExists": true
+    },
+    {
+      "slug": "ainaz",
+      "name": "AINAZ / آیناز",
+      "family": "female-base-v1",
+      "phase": 3,
+      "motionReference": "darya",
+      "accessories": [],
+      "status": "pending-art-rebuild",
+      "referenceStatus": "identity-reference-must-be-recovered-or-approved",
+      "sources": [
+        "demian/public/assets/characters/ainaz/source-v14/layout.json",
+        "demian/public/assets/characters/ainaz/source-v14/locomotion-v15-provenance.json",
+        "demian/public/assets/characters/ainaz/source-v14/locomotion-v15.png",
+        "demian/public/assets/characters/ainaz/source-v14/master.png",
+        "demian/public/assets/characters/ainaz/source-v14/runner-motion.png",
+        "demian/public/assets/characters/ainaz/source-v14/slides.png"
+      ],
+      "identityManifest": "demian/public/assets/characters/ainaz/manifests/ainaz_identity_contract.json",
+      "identityManifestExists": true
+    },
+    {
+      "slug": "arsal",
+      "name": "ARSAL / ارسل",
+      "family": "male-base-v1",
+      "phase": 4,
+      "motionReference": "arsal",
+      "accessories": [],
+      "status": "pending-art-rebuild",
+      "referenceStatus": "existing-source-requires-owner-confirmation",
+      "sources": [
+        "demian/public/assets/characters/arsal/source-v14/layout.json",
+        "demian/public/assets/characters/arsal/source-v14/locomotion-v15-provenance.json",
+        "demian/public/assets/characters/arsal/source-v14/locomotion-v15.png",
+        "demian/public/assets/characters/arsal/source-v14/master.png",
+        "demian/public/assets/characters/arsal/source-v14/reference.jpg",
+        "demian/public/assets/characters/arsal/source-v14/runner-motion.png",
+        "demian/public/assets/characters/arsal/source-v14/slides.png"
+      ],
+      "identityManifest": "demian/public/assets/characters/arsal/manifests/arsal_identity_contract.json",
+      "identityManifestExists": true
+    },
+    {
+      "slug": "iman",
+      "name": "IMAN / ایمان",
+      "family": "male-base-v1",
+      "phase": 4,
+      "motionReference": "arsal",
+      "accessories": [],
+      "status": "pending-art-rebuild",
+      "referenceStatus": "existing-source-requires-owner-confirmation",
+      "sources": [
+        "demian/public/assets/characters/iman/source-v14/authored-motion.png",
+        "demian/public/assets/characters/iman/source-v14/authored-walk.png",
+        "demian/public/assets/characters/iman/source-v14/layout.json",
+        "demian/public/assets/characters/iman/source-v14/locomotion-v15-provenance.json",
+        "demian/public/assets/characters/iman/source-v14/locomotion-v15.png",
+        "demian/public/assets/characters/iman/source-v14/master.png",
+        "demian/public/assets/characters/iman/source-v14/reference.jpg",
+        "demian/public/assets/characters/iman/source-v14/runner-motion.png",
+        "demian/public/assets/characters/iman/source-v14/slides.png"
+      ],
+      "identityManifest": "demian/public/assets/characters/iman/manifests/iman_identity_contract.json",
+      "identityManifestExists": true
+    },
+    {
+      "slug": "amin",
+      "name": "AMIN / امین",
+      "family": "male-base-v1",
+      "phase": 4,
+      "motionReference": "arsal",
+      "accessories": [],
+      "status": "pending-art-rebuild",
+      "referenceStatus": "existing-source-requires-owner-confirmation",
+      "sources": [
+        "demian/public/assets/characters/amin/source-v14/authored-motion.png",
+        "demian/public/assets/characters/amin/source-v14/layout.json",
+        "demian/public/assets/characters/amin/source-v14/locomotion-v15-provenance.json",
+        "demian/public/assets/characters/amin/source-v14/locomotion-v15.png",
+        "demian/public/assets/characters/amin/source-v14/master.png",
+        "demian/public/assets/characters/amin/source-v14/reference.png",
+        "demian/public/assets/characters/amin/source-v14/runner-motion.png",
+        "demian/public/assets/characters/amin/source-v14/slides.png"
+      ],
+      "identityManifest": "demian/public/assets/characters/amin/manifests/amin_identity_contract.json",
+      "identityManifestExists": true
+    },
+    {
+      "slug": "hossein",
+      "name": "HOSSEIN / حسین",
+      "family": "male-base-v1",
+      "phase": 4,
+      "motionReference": "arsal",
+      "accessories": [],
+      "status": "pending-art-rebuild",
+      "referenceStatus": "existing-source-requires-owner-confirmation",
+      "sources": [
+        "demian/public/assets/characters/hossein/source-v14/authored-motion.png",
+        "demian/public/assets/characters/hossein/source-v14/layout.json",
+        "demian/public/assets/characters/hossein/source-v14/locomotion-v15-provenance.json",
+        "demian/public/assets/characters/hossein/source-v14/locomotion-v15.png",
+        "demian/public/assets/characters/hossein/source-v14/master.png",
+        "demian/public/assets/characters/hossein/source-v14/reference.png",
+        "demian/public/assets/characters/hossein/source-v14/runner-motion.png",
+        "demian/public/assets/characters/hossein/source-v14/slides.png"
+      ],
+      "identityManifest": "demian/public/assets/characters/hossein/manifests/hossein_identity_contract.json",
+      "identityManifestExists": true
+    },
+    {
+      "slug": "taher-db",
+      "name": "TAHER DB / طاهر DB",
+      "family": "male-base-v1",
+      "phase": 4,
+      "motionReference": "arsal",
+      "accessories": [],
+      "status": "pending-art-rebuild",
+      "referenceStatus": "existing-source-requires-owner-confirmation",
+      "sources": [
+        "demian/public/assets/characters/taher-db/source-v14/layout.json",
+        "demian/public/assets/characters/taher-db/source-v14/master.png",
+        "demian/public/assets/characters/taher-db/source-v14/reference.jpg",
+        "demian/public/assets/characters/taher-db/source-v14/runner-motion.png",
+        "demian/public/assets/characters/taher-db/source-v14/sheet-map.json",
+        "demian/public/assets/characters/taher-db/source-v14/slides.png"
+      ],
+      "identityManifest": "demian/public/assets/characters/taher-db/manifests/taher-db_identity_contract.json",
+      "identityManifestExists": true
+    },
+    {
+      "slug": "sorkhi",
+      "name": "SORKHI / سرخی",
+      "family": "male-base-v1",
+      "phase": 4,
+      "motionReference": "arsal",
+      "accessories": [],
+      "status": "pending-art-rebuild",
+      "referenceStatus": "existing-source-requires-owner-confirmation",
+      "sources": [
+        "demian/public/assets/characters/sorkhi/source-v14/layout.json",
+        "demian/public/assets/characters/sorkhi/source-v14/master.png",
+        "demian/public/assets/characters/sorkhi/source-v14/reference.jpg",
+        "demian/public/assets/characters/sorkhi/source-v14/runner-motion.png",
+        "demian/public/assets/characters/sorkhi/source-v14/sheet-map.json",
+        "demian/public/assets/characters/sorkhi/source-v14/slides.png"
+      ],
+      "identityManifest": "demian/public/assets/characters/sorkhi/manifests/sorkhi_identity_contract.json",
+      "identityManifestExists": true
+    },
+    {
+      "slug": "yalda",
+      "name": "YALDA / یلدا",
+      "family": "female-base-v1",
+      "phase": 3,
+      "motionReference": "darya",
+      "accessories": [],
+      "status": "pending-art-rebuild",
+      "referenceStatus": "existing-source-requires-owner-confirmation",
+      "sources": [
+        "demian/public/assets/characters/yalda/source-v14/layout.json",
+        "demian/public/assets/characters/yalda/source-v14/master.png",
+        "demian/public/assets/characters/yalda/source-v14/reference.jpg",
+        "demian/public/assets/characters/yalda/source-v14/runner-motion.png",
+        "demian/public/assets/characters/yalda/source-v14/slides.png"
+      ],
+      "identityManifest": "demian/public/assets/characters/yalda/manifests/yalda_identity_contract.json",
+      "identityManifestExists": true
+    },
+    {
+      "slug": "mori",
+      "name": "MORI / موری",
+      "family": "male-base-v1",
+      "phase": 4,
+      "motionReference": "arsal",
+      "accessories": [],
+      "status": "pending-art-rebuild",
+      "referenceStatus": "existing-source-requires-owner-confirmation",
+      "sources": [
+        "demian/public/assets/characters/mori/source-v14/layout.json",
+        "demian/public/assets/characters/mori/source-v14/master.png",
+        "demian/public/assets/characters/mori/source-v14/reference.jpg",
+        "demian/public/assets/characters/mori/source-v14/runner-motion.png",
+        "demian/public/assets/characters/mori/source-v14/slides.png"
+      ],
+      "identityManifest": "demian/public/assets/characters/mori/manifests/mori_identity_contract.json",
+      "identityManifestExists": true
+    },
+    {
+      "slug": "mahyar",
+      "name": "MAHYAR / مهیار",
+      "family": "male-base-v1",
+      "phase": 4,
+      "motionReference": "arsal",
+      "accessories": [],
+      "status": "pending-art-rebuild",
+      "referenceStatus": "existing-source-requires-owner-confirmation",
+      "sources": [
+        "demian/public/assets/characters/mahyar/source-v14/layout.json",
+        "demian/public/assets/characters/mahyar/source-v14/master.png",
+        "demian/public/assets/characters/mahyar/source-v14/reference.jpg",
+        "demian/public/assets/characters/mahyar/source-v14/runner-motion.png",
+        "demian/public/assets/characters/mahyar/source-v14/slides.png"
+      ],
+      "identityManifest": "demian/public/assets/characters/mahyar/manifests/mahyar_identity_contract.json",
+      "identityManifestExists": true
+    }
+  ],
+  "releaseGate": {
+    "productionBlockedUntil": "All phase 2–4 deliverables and phase 5B visual acceptance completed and approved; existing operational gates also apply",
+    "allowDevelopmentAndPractice": true,
+    "doNotChangeRuntimeFlags": true,
+    "includesFutureCharacters": true
+  },
+  "evidenceRequired": [
+    "approved identity reference",
+    "actual new or owner-approved reference-driven PNG masters",
+    "source and output SHA-256",
+    "per-state contact sheet and real animation playback",
+    "six matching atlas/image variants",
+    "browser tests and physical device review",
+    "owner visual acceptance"
+  ]
+}
