@@ -78,6 +78,7 @@ final class QuietHoursService
             abort_unless($end->gt(CarbonImmutable::now('Asia/Tehran')),409,'Offer expired while awaiting approval.');
             $day=$start->toDateString();
             $offers=DB::table('arcade_quiet_offers')->where('local_day',$day);
+            abort_if((clone $offers)->where('currency','!=',$t['currency'])->exists(),409,'Cannot mix currencies in a daily budget.');
             abort_if((clone $offers)->where('branch_id',$input['branch_id'])
                 ->where('starts_at','<',$end->utc())->where('ends_at','>',$start->utc())->exists(),409,'Overlapping window.');
             $reserved=(int)(clone $offers)->selectRaw('COALESCE(SUM(capacity * max_discount_minor),0) AS amount')->value('amount');
@@ -142,7 +143,12 @@ final class QuietHoursService
         $phone=$this->recipient($player);
         $day=CarbonImmutable::now('Asia/Tehran')->toDateString();
         $eligible=$phone!==null&&!$this->prior($player->id,$this->identityDigest($phone,$day),$day);
-        $rows=$this->active()->where('currency',$t['currency'])->where('policy_version',$t['version'])->orderBy('ends_at')->limit(50)->get();
+        $rows=$this->active()->where('currency',$t['currency'])->where('policy_version',$t['version'])
+            ->where('percent','<=',$t['max_percent'])->where('max_discount_minor','<=',$t['max_discount_minor'])
+            ->where('min_order_minor','>=',$t['min_order_minor'])
+            ->where('cost_ceiling_bps',$t['cost_ceiling_bps'])->where('margin_floor_bps',$t['margin_floor_bps'])
+            ->whereRaw('100 * occupied_seats <= ? * total_seats',[$t['threshold']])
+            ->orderBy('ends_at')->limit(50)->get();
         return ['available'=>true,'eligible'=>$eligible,'data'=>$rows->map(function($o): array {
             $used=DB::table('arcade_quiet_claims')->where('offer_id',$o->id)->count();
             return ['id'=>(int)$o->id,'branch'=>$o->branch_id,'percent'=>(int)$o->percent,'currency'=>$o->currency,
@@ -176,8 +182,9 @@ final class QuietHoursService
                 &&100*(int)$o->occupied_seats<=$t['threshold']*(int)$o->total_seats
                 &&(int)$o->cost_ceiling_bps===$t['cost_ceiling_bps']&&(int)$o->margin_floor_bps===$t['margin_floor_bps'],409,'Offer no longer available.');
             abort_if(DB::table('arcade_quiet_claims')->where('offer_id',$id)->count()>=(int)$o->capacity,409,'Offer exhausted.');
-            $total=(int)DB::table('arcade_quiet_offers')->where('local_day',$day)
-                ->selectRaw('COALESCE(SUM(capacity * max_discount_minor),0) AS amount')->value('amount');
+            $daily=DB::table('arcade_quiet_offers')->where('local_day',$day);
+            abort_if((clone $daily)->where('currency','!=',$t['currency'])->exists(),409,'Cannot mix currencies in a daily budget.');
+            $total=(int)$daily->selectRaw('COALESCE(SUM(capacity * max_discount_minor),0) AS amount')->value('amount');
             abort_if($total>$t['daily_budget_minor'],409,'Daily budget no longer approved.');
             $code='DMC-'.strtoupper(bin2hex(random_bytes(16)));$now=CarbonImmutable::now('UTC');
             $coupon=DB::table('arcade_coupons')->insertGetId(['winner_id'=>null,'source'=>'quiet_hours','player_id'=>$player->id,
