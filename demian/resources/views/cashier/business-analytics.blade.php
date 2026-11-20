@@ -2,7 +2,8 @@
 @section('title', 'تحلیل کسب‌وکار | دمیان')
 @section('content')
 <div class="row"><a class="button secondary" href="{{ route('cashier.index') }}">بازگشت</a>
-<a class="button secondary" href="{{ route('cashier.business-analytics',['days'=>$report['days'],'format'=>'json']) }}">دریافت JSON تجمیعی</a></div>
+<a class="button secondary" href="{{ route('cashier.business-analytics',['days'=>$report['days'],'format'=>'json']) }}">دریافت JSON تجمیعی</a>
+<a class="button secondary" href="{{ route('cashier.business-analytics',['days'=>$report['days'],'format'=>'csv']) }}">دریافت CSV</a></div>
 <section class="panel">
 <h1>تحلیل کسب‌وکار و رفتار بازیکنان</h1>
 <form method="get" action="{{ route('cashier.business-analytics') }}">
@@ -58,4 +59,5 @@
 <p>ماه {{ $r['month'] }} · هزینه ثبت‌شده: {{ $r['recorded_spend_irr']===null?'ثبت نشده':number_format($r['recorded_spend_irr']).' ریال' }} · دعوت پاداش‌دار: {{ $r['award_count'] }} · CAC: {{ $r['cac_irr']===null?'داده ناکافی':number_format($r['cac_irr']).' ریال' }}</p>
 <a href="{{ route('cashier.referrals') }}">داشبورد و ثبت هزینه دعوت</a>
 </section>
+@include('cashier.business-commercial',['bi'=>$report['commercial'],'changes'=>$report['engagement_comparison']])
 @endsection
