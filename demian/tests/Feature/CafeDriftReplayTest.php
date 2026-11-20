@@ -57,6 +57,31 @@ final class CafeDriftReplayTest extends TestCase
         $this->assertTrue(collect($cases)->contains(fn (array $case): bool => $case['nearMisses'] > 0 && $case['beans'] > 0));
     }
 
+    public function test_drift_financial_gate_defaults_to_pending_even_with_prize_switch_enabled(): void
+    {
+        $this->rewardConfig();
+        config()->set('demian-arcade.drift_acceptance_required', true);
+        $this->assertTrue(app(RankedGameCatalog::class)->supportsRanked('cafe-drift'));
+        $this->assertFalse(app(RankedGameCatalog::class)->supportsPrizes('cafe-drift'));
+        $this->assertFalse(app(\App\Services\Arcade\DriftPrizeReadiness::class)->inspect()['checks']['version_bound_manual_acceptance']);
+        $this->travelTo(CarbonImmutable::parse('2026-11-21T12:00:00Z'));
+        $player=$this->player();
+        $run=$this->start($player);
+        $this->complete($player,$run,1);
+        $this->assertDatabaseHas('arcade_weekly_rule_locks',['game_id'=>'cafe-drift','ranked_enabled'=>true,'prize_eligible'=>false]);
+        $this->assertDatabaseCount('arcade_coupons',0);
+    }
+
+    public function test_additional_weekly_seed_differential_replays(): void
+    {
+        $cases=$this->fixtures(...range(4170,4193));
+        $this->assertCount(96,$cases);
+        $verifier=app(CafeDriftReplayVerifier::class);
+        foreach($cases as $case) {
+            $this->assertSame($case['expected'],$verifier->verify($case['seed'],$case['ticks'],$case['frames']));
+        }
+    }
+
     public function test_accepted_score_is_server_computed_and_retries_are_atomic_and_immutable(): void
     {
         $this->travelTo(CarbonImmutable::parse('2026-11-21T12:00:00Z'));
