@@ -404,6 +404,10 @@ final class WeeklyFairScoringTest extends TestCase
         $this->getJson('/api/v1/arcade/player/competition/league')->assertUnauthorized();
         $settler=app(WeeklySettlementService::class);
         $settler->seal('2026-11-07');
+        $this->assertDatabaseCount('arcade_personal_progress',20);
+        $this->assertDatabaseMissing('arcade_personal_progress',['player_id'=>$players[20]]);
+        $this->assertDatabaseMissing('arcade_personal_progress',['player_id'=>$players[21]]);
+        $this->getJson('/api/v1/arcade/player/progress')->assertUnauthorized();
         $this->assertDatabaseCount('arcade_skill_standings',20);
         $this->assertDatabaseHas('arcade_skill_seasons',['period_key'=>self::WEEK,'participants'=>20,'qualified'=>20]);
         $this->assertDatabaseHas('arcade_skill_standings',['player_id'=>$players[0],'league'=>'legend','points'=>1000,'rank'=>1]);
@@ -418,10 +422,19 @@ final class WeeklyFairScoringTest extends TestCase
         $this->assertArrayNotHasKey('phone_hash',$payload['data'][0]);
         $this->withToken(hash('sha256', $players[0]))->getJson('/api/v1/arcade/player/competition/league')
             ->assertOk()->assertJsonPath('verified',true)->assertJsonPath('last_result.league','legend');
+        $this->getJson('/api/v1/arcade/player/progress?game=dino-run')->assertOk()
+            ->assertJsonPath('verified',true)->assertJsonPath('personal_best',1000)
+            ->assertJsonPath('status','calibrating')->assertJsonPath('next_goal',null)
+            ->assertJsonPath('rules.financial_rewards',false)->assertJsonCount(1,'history');
+        $this->getJson('/api/v1/arcade/player/progress?game=bad')->assertUnprocessable();
+        $this->getJson('/api/v1/arcade/player/data/records?type=personal_progress')->assertOk()
+            ->assertJsonCount(1,'data');
         $settler->seal('2026-11-07');
+        $this->assertDatabaseCount('arcade_personal_progress',20);
         $this->assertDatabaseCount('arcade_skill_standings',20);
         $this->assertDatabaseCount('arcade_coupons',0);
         DB::table('arcade_players')->where('id',$players[0])->delete();
+        $this->assertDatabaseMissing('arcade_personal_progress',['player_id'=>$players[0]]);
         $this->assertDatabaseHas('arcade_skill_standings',['player_id'=>null,'rank'=>1,'league'=>'legend']);
         $this->getJson('/api/v1/arcade/competition/leagues?league=legend')->assertOk()
             ->assertJsonPath('data.0.rank',2);
