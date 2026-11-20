@@ -417,8 +417,10 @@ final class WeeklyFairScoringTest extends TestCase
         $settler->seal('2026-12-12');
         $this->assertDatabaseCount('arcade_personal_progress',6);
         $this->assertDatabaseCount('arcade_loyalty_xp',6);
+        $this->assertDatabaseCount('arcade_mission_weeks',6);
+        $this->assertDatabaseHas('arcade_mission_weeks',['player_id'=>$player,'period_key'=>'weekly:tehran:2026-12-05','total_xp'=>20,'adaptive_xp'=>15,'adaptive_target'=>1050]);
         $this->assertDatabaseHas('arcade_loyalty_xp',['player_id'=>$player,'period_key'=>'weekly:tehran:2026-12-05','total_xp'=>175,'progress_xp'=>50,'continuity_xp'=>25]);
-        $this->getJson('/api/v1/arcade/player/loyalty')->assertOk()->assertJsonPath('total_xp',775)
+        $this->getJson('/api/v1/arcade/player/loyalty')->assertOk()->assertJsonPath('total_xp',820)->assertJsonPath('mission_xp',45)
             ->assertJsonPath('level',4)->assertJsonPath('tier','regular')->assertJsonPath('rules.financial_rewards',false)
             ->assertJsonCount(6,'history');
         $this->assertDatabaseCount('arcade_coupons',0);
@@ -449,6 +451,7 @@ final class WeeklyFairScoringTest extends TestCase
         $this->assertDatabaseMissing('arcade_personal_progress',['player_id'=>$players[21]]);
         $this->getJson('/api/v1/arcade/player/progress')->assertUnauthorized();
         $this->getJson('/api/v1/arcade/player/loyalty')->assertUnauthorized();
+        $this->getJson('/api/v1/arcade/player/missions')->assertUnauthorized();
         $this->assertDatabaseCount('arcade_loyalty_xp',20);
         $this->assertDatabaseMissing('arcade_loyalty_xp',['player_id'=>$players[20]]);
         $this->assertDatabaseMissing('arcade_loyalty_xp',['player_id'=>$players[21]]);
@@ -480,6 +483,7 @@ final class WeeklyFairScoringTest extends TestCase
         DB::table('arcade_players')->where('id',$players[0])->delete();
         $this->assertDatabaseMissing('arcade_personal_progress',['player_id'=>$players[0]]);
         $this->assertDatabaseMissing('arcade_loyalty_xp',['player_id'=>$players[0]]);
+        $this->assertDatabaseMissing('arcade_mission_weeks',['player_id'=>$players[0]]);
         $this->assertDatabaseHas('arcade_skill_standings',['player_id'=>null,'rank'=>1,'league'=>'legend']);
         $this->getJson('/api/v1/arcade/competition/leagues?league=legend')->assertOk()
             ->assertJsonPath('data.0.rank',2);

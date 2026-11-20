@@ -37,10 +37,10 @@ final class LoyaltyXpPolicy
 
     public static function rules(): array
     {
-        return ['version'=>self::VERSION,'weekly_cap'=>self::WEEKLY_CAP,
+        return ['version'=>self::VERSION,'weekly_cap'=>self::WEEKLY_CAP+MissionPolicy::CAP,'base_weekly_cap'=>self::WEEKLY_CAP,'mission_weekly_cap'=>MissionPolicy::CAP,
             'participation_xp'=>100,'additional_game_xp'=>25,'additional_game_cap'=>2,
             'breakthrough_xp'=>50,'consecutive_week_xp'=>25,'tiers'=>self::TIERS,
-            'mission_xp_enabled'=>false,'financial_rewards'=>false,'currency_budget_minor'=>0,
+            'mission_xp_enabled'=>true,'financial_rewards'=>false,'currency_budget_minor'=>0,
             'transferable'=>false,'purchaseable'=>false];
     }
 }

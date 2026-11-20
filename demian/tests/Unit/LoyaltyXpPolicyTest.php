@@ -14,7 +14,8 @@ final class LoyaltyXpPolicyTest extends TestCase
         $this->assertSame(225,P::calculate(7,true,true)['total_xp']);
         $this->assertSame(P::calculate(3,true,true),P::calculate(7,true,true));
         $this->assertSame(0,P::rules()['currency_budget_minor']);
-        $this->assertFalse(P::rules()['mission_xp_enabled']);
+        $this->assertTrue(P::rules()['mission_xp_enabled']);
+        $this->assertSame(300,P::rules()['weekly_cap']);
         $this->assertFalse(P::rules()['transferable']);
     }
 

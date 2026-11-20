@@ -50,19 +50,24 @@ final class LoyaltyXpService
     {
         $verified=app(PhoneIdentityService::class)->identity($player)!==null;
         $base=['verified'=>$verified,'status'=>$verified?'awaiting_first_week':'unverified',
-            'total_xp'=>0,'active_weeks'=>0,...LoyaltyXpPolicy::level(0),'history'=>[],'rules'=>LoyaltyXpPolicy::rules()];
+            'total_xp'=>0,'mission_xp'=>0,'active_weeks'=>0,...LoyaltyXpPolicy::level(0),'history'=>[],'rules'=>LoyaltyXpPolicy::rules()];
         if (!$verified) return $base;
         $query=DB::table('arcade_loyalty_xp as x')->join('arcade_weekly_periods as w','w.period_key','=','x.period_key')
             ->where('w.status','sealed')->where('x.player_id',$player);
         $summary=(clone $query)->selectRaw('COALESCE(SUM(x.total_xp),0) AS xp, COUNT(*) AS weeks')->first();
-        $xp=(int)$summary->xp;
+        $missions=DB::table('arcade_mission_weeks as m')->join('arcade_weekly_periods as w','w.period_key','=','m.period_key')
+            ->where('w.status','sealed')->where('m.player_id',$player);
+        $missionTotal=(int)(clone $missions)->sum('m.total_xp');
+        $recentMissions=(clone $missions)->orderByDesc('m.period_key')->limit(12)->pluck('m.total_xp','m.period_key');
+        $xp=(int)$summary->xp+$missionTotal;
         $history=(clone $query)->orderByDesc('x.period_key')->limit(12)->get([
             'x.period_key','x.distinct_games','x.participation_xp','x.variety_xp','x.progress_xp','x.continuity_xp','x.total_xp','x.late_seal',
         ])->map(static fn($r)=>['period_key'=>$r->period_key,'distinct_games'=>(int)$r->distinct_games,
             'participation_xp'=>(int)$r->participation_xp,'variety_xp'=>(int)$r->variety_xp,
             'progress_xp'=>(int)$r->progress_xp,'continuity_xp'=>(int)$r->continuity_xp,
-            'total_xp'=>(int)$r->total_xp,'late_seal'=>(bool)$r->late_seal])->all();
-        return [...$base,'status'=>$xp>0?'active':$base['status'],'total_xp'=>$xp,'active_weeks'=>(int)$summary->weeks,
+            'base_xp'=>(int)$r->total_xp,'mission_xp'=>(int)($recentMissions[$r->period_key]??0),
+            'total_xp'=>(int)$r->total_xp+(int)($recentMissions[$r->period_key]??0),'late_seal'=>(bool)$r->late_seal])->all();
+        return [...$base,'status'=>$xp>0?'active':$base['status'],'total_xp'=>$xp,'mission_xp'=>$missionTotal,'active_weeks'=>(int)$summary->weeks,
             ...LoyaltyXpPolicy::level($xp),'history'=>$history];
     }
 }
