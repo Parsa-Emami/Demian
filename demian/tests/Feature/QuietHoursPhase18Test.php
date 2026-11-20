@@ -129,6 +129,9 @@ final class QuietHoursPhase18Test extends TestCase
         $this->travel(3)->hours();
         self::assertTrue($service->redeem($mainCashier,$wallet['code'],'BILL-001',100000,$key)['idempotent_replay']);
         $this->assertDatabaseCount('arcade_coupon_redemptions',1);
+        self::assertSame('passed',app(\App\Services\Arcade\CouponLedgerAudit::class)->inspect()['status']);
+        DB::table('arcade_quiet_offers')->where('id',$offer)->update(['percent'=>9]);
+        self::assertSame('failed',app(\App\Services\Arcade\CouponLedgerAudit::class)->inspect()['status']);
     }
 
     public function test_expiry_pause_and_erased_identity_cannot_reclaim(): void
@@ -148,5 +151,6 @@ final class QuietHoursPhase18Test extends TestCase
         $this->travel(91)->days();
         app(QuietHoursService::class)->prune();
         $this->assertDatabaseHas('arcade_quiet_claims',['offer_id'=>$id,'identity_digest'=>null]);
+        self::assertSame('passed',app(\App\Services\Arcade\CouponLedgerAudit::class)->inspect()['status']);
     }
 }

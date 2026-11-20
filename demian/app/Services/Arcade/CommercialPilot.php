@@ -151,9 +151,17 @@ final class CommercialPilot
         $budget=$this->observedPilotDiscount($p);
         $consistent=true;
         foreach($rows as $row) {
-            $observed=$this->observed($p,$this->date($row->day));
+            try {$observed=$this->observed($p,$this->date($row->day));}
+            catch(\Symfony\Component\HttpKernel\Exception\HttpException $e){
+                if($e->getStatusCode()!==409)throw $e;
+                $consistent=false;continue;
+            }
             foreach($observed as $k=>$v)if((int)$row->$k!==$v)$consistent=false;
         }
+        $foreignCurrency=DB::table('arcade_coupon_redemptions')->where('channel','in_cafe')->where('branch_id',$p->branch_id)
+            ->where('currency','!=',$p->currency)->where('redeemed_at','>=',$this->date($p->pilot_start)->utc())
+            ->where('redeemed_at','<',$this->date($p->pilot_start)->addDays((int)$p->days)->utc())->exists();
+        if($foreignCurrency)$consistent=false;
         $recommendation=($budget>(int)$p->discount_budget_minor||$a['incidents']>0)?'stop':
             (!$enough||!$consistent||$uplift===null?'inconclusive':($uplift>=(int)$p->target_uplift_bps/100?'review_scale':'iterate'));
         return [...$result,'complete'=>$complete,'enough_receipts'=>$enough,'ledger_consistent'=>$consistent,
