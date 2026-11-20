@@ -1,0 +1,30 @@
+{
+  "schema": 1,
+  "policy": "multi-game-prize-acceptance-v1",
+  "game_id": "coffee-crash",
+  "rules_version": "coffee-crash-weekly-v2",
+  "scope": "original-game",
+  "risk": "seeded_solver_and_undo_automation",
+  "status": "pending",
+  "reviewer": null,
+  "evidence_reference": null,
+  "reviewed_on": null,
+  "eligible_from": null,
+  "independent_pilot_participants": 0,
+  "source_hashes": {},
+  "checks": {
+    "server_replay_parity": false,
+    "tamper_and_terminal_state": false,
+    "cross_account_and_retry": false,
+    "physical_android_touch": false,
+    "physical_ios_touch": false,
+    "desktop_keyboard": false,
+    "equal_input_equal_score": false,
+    "background_and_disconnect": false,
+    "game_specific_automation_risk": false,
+    "identical_competitive_scope": false,
+    "privacy_and_identity": false,
+    "cashier_coupon_redemption": false,
+    "owner_budget": false
+  }
+}

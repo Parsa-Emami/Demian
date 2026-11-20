@@ -66,6 +66,10 @@ final class CouponIssuanceService
                 $campaign = $campaignService->lockedForIssuance(
                     $periodKey, $winners->count(), $winners->count() - $issued);
             }
+            if (! $campaign && app(CampaignEconomics::class)->required() && $winners->isNotEmpty()) {
+                throw new RuntimeException('Weekly awards require an approved budgeted campaign.');
+            }
+            if ($campaign) app(WeeklyAllocationService::class)->assertSealed($campaign, $winners);
             $effectiveTerms = $campaign
                 ? json_decode($campaign->terms, true, 512, JSON_THROW_ON_ERROR) : $terms;
             $created = 0;
@@ -92,13 +96,17 @@ final class CouponIssuanceService
                     $existing++;
                     continue;
                 }
-                if ($winner->game_id === CafeDriftReplayVerifier::GAME_ID
-                    && (! $campaign || ! app(RankedGameCatalog::class)->supportsPrizes($winner->game_id)
-                        || ! DB::table('arcade_weekly_rule_locks')->where('period_key', $periodKey)
-                            ->where('game_id', $winner->game_id)->where('rules_version', $winner->rules_version)
-                            ->where('ranked_enabled', true)->where('prize_eligible', true)->exists())) {
-                    throw new RuntimeException('Café Drift prizes require an eligible season and an active sponsor campaign.');
+                $catalog=app(RankedGameCatalog::class);
+                if ($catalog->requiresPrizeLock($winner->game_id)) {
+                    $lock=DB::table('arcade_weekly_rule_locks')->where('period_key',$periodKey)
+                        ->where('game_id',$winner->game_id)->first();
+                    if (!$campaign || !$catalog->prizeEligibleForLock($winner->game_id,$lock,$winner->rules_version)) {
+                        throw new RuntimeException('Game prizes require an eligible season, current acceptance and active campaign.');
+                    }
+                } elseif (!$catalog->supportsPrizes($winner->game_id,$winner->rules_version)) {
+                    throw new RuntimeException('Game prize policy is disabled.');
                 }
+                app(VerifiedPrizeIdentity::class)->assertNewAward($winner, $period, $campaign);
                 $item = $campaign ? $campaignService->claim($campaign) : null;
                 $code = $item ? Crypt::decryptString($item->code_ciphertext)
                     : 'DMC-'.strtoupper(bin2hex(random_bytes(16)));

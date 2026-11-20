@@ -18,8 +18,15 @@ final class WeeklyPrizeSelector
      * @param list<string> $historicalWinnerIds Players awarded in earlier weeks.
      * @return array<string, list<array{game_id: string, player_id: string, score: int, achieved_at: string, technical_rank: int, prize_rank: int, previous_winner: bool}>>
      */
-    public function select(array $rankingsByGame, array $historicalWinnerIds = [], array $ineligiblePlayerIds = []): array
+    public function select(array $rankingsByGame, array $historicalWinnerIds = [], array $ineligiblePlayerIds = [], ?array $quotas = null): array
     {
+        if ($quotas !== null) {
+            foreach ($quotas as $game => $quota) {
+                if (! array_key_exists($game, $rankingsByGame) || ! is_int($quota) || $quota < 0 || $quota > self::MAX_WINNERS_PER_GAME) {
+                    throw new \InvalidArgumentException('Invalid per-game prize quota.');
+                }
+            }
+        }
         $historical = array_fill_keys($historicalWinnerIds, true);
         $ineligible = array_fill_keys($ineligiblePlayerIds, true);
         $candidates = [];
@@ -64,10 +71,11 @@ final class WeeklyPrizeSelector
         foreach ($candidates as $candidate) {
             $choices[$candidate['player_id']][] = $candidate;
         }
+        $limits = $quotas === null ? array_fill_keys(array_keys($winners), self::MAX_WINNERS_PER_GAME) : $quotas;
         $seats = $winners;
         foreach (array_keys($choices) as $player) {
             $visited = [];
-            $this->place($player, $choices, $seats, $visited);
+            $this->place($player, $choices, $seats, $visited, $limits);
         }
         foreach ($seats as $game => $entries) {
             usort($entries, static fn (array $a, array $b): int =>
@@ -90,11 +98,11 @@ final class WeeklyPrizeSelector
         return $winners;
     }
 
-    private function place(string $player, array &$choices, array &$seats, array &$visited): bool
+    private function place(string $player, array &$choices, array &$seats, array &$visited, array $limits): bool
     {
         foreach ($choices[$player] as $entry) {
             $game = $entry['game_id'];
-            if (! isset($visited[$game]) && count($seats[$game]) < self::MAX_WINNERS_PER_GAME) {
+            if (! isset($visited[$game]) && count($seats[$game]) < ($limits[$game] ?? 0)) {
                 $seats[$game][] = $entry;
                 return true;
             }
@@ -104,7 +112,7 @@ final class WeeklyPrizeSelector
             if (isset($visited[$game])) continue;
             $visited[$game] = true;
             foreach (array_reverse($seats[$game], true) as $index => $current) {
-                if ($this->place($current['player_id'], $choices, $seats, $visited)) {
+                if ($this->place($current['player_id'], $choices, $seats, $visited, $limits)) {
                     $seats[$game][$index] = $entry;
                     return true;
                 }

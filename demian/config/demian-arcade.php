@@ -3,6 +3,7 @@
 return [
     'require_contact' => (bool) env('DEMIAN_ARCADE_REQUIRE_CONTACT', true),
     'weekly_content_at' => env('DEMIAN_WEEKLY_CONTENT_AT'),
+    'drift_acceptance_required' => false, // Test opt-in only; always required outside testing.
     'drift_prizes_enabled' => (bool) env('DEMIAN_ARCADE_DRIFT_PRIZES_ENABLED', false),
     'drift_ranked_enabled' => (bool) env('DEMIAN_ARCADE_DRIFT_RANKED_ENABLED', true),
     'rules_path' => resource_path('game/runner-rules.json'),
@@ -10,6 +11,9 @@ return [
     'critters_ranked_enabled' => (bool) env('DEMIAN_ARCADE_CRITTERS_RANKED_ENABLED', false),
     'coffee_ranked_enabled' => (bool) env('DEMIAN_ARCADE_COFFEE_RANKED_ENABLED', false),
     // Financial prize acceptance is independent from public verified rankings.
+    'multi_game_acceptance_required' => false, // Test opt-in only; always required outside testing.
+    'after_hours_prizes_enabled' => (bool) env('DEMIAN_ARCADE_AFTER_HOURS_PRIZES_ENABLED', false),
+    'cafe_rush_prizes_enabled' => (bool) env('DEMIAN_ARCADE_CAFE_RUSH_PRIZES_ENABLED', false),
     'critters_prizes_enabled' => (bool) env('DEMIAN_ARCADE_CRITTERS_PRIZES_ENABLED', false),
     'coffee_prizes_enabled' => (bool) env('DEMIAN_ARCADE_COFFEE_PRIZES_ENABLED', false),
     // Original-game input-frame replay gates. OFF until differential UAT and
