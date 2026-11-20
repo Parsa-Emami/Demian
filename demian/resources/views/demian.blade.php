@@ -15,6 +15,7 @@
     <meta name="full-screen" content="yes">
     <meta name="x5-fullscreen" content="true"> --}}
     <link rel="manifest" href="manifest.webmanifest">
+    <link rel="icon" type="image/png" sizes="192x192" href="icons/demian-192.png">
     <link rel="apple-touch-icon" href="icons/demian-192.png">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -381,16 +382,9 @@
                         <span></span><span></span><span></span>
                     </div>
                     <div class="cafe-menu__content">
-                        <div data-menu-reveal class="cafe-menu__eyebrow">
-                            <span class="arcade-live-dot"></span>
-                            DEMIAN · PLAY YOUR WAY
-                        </div>
                         <div data-menu-reveal>
                             <p class="shell-kicker">به دمیان خوش آمدی</p>
                             <h1 class="cafe-menu__title"><b>DEMIAN</b></h1>
-                            <p class="cafe-menu__lead">
-                                کمی بگرد. کمی بدو. یک رکورد تازه بساز.
-                            </p>
                         </div>
                         <button type="button" data-sidebar-toggle class="cafe-menu__showcase" aria-label="نمایش مجموعه و انتخاب کاراکتر">
                             <span class="cafe-menu__showcase-copy">
