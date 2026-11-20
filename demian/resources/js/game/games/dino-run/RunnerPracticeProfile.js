@@ -1,4 +1,5 @@
 import ranked from '../../../../game/runner-rules.json' with { type: 'json' };
+import { runnerWeek } from '../../content/WeeklyContent.js';
 
 export const PRACTICE_VERSION = 'cafe-runner-practice-v1';
 export const PRACTICE_BEST_KEY = 'demian.dino-run.best.' + PRACTICE_VERSION;
@@ -34,4 +35,10 @@ export function beginnerDifficulty(seconds = 0) {
     const time = Number.isFinite(seconds) ? Math.max(0, seconds) : 0;
     const progress = 1 - Math.exp(-time / BEGINNER_PROFILE.difficultyRampSeconds);
     return { progress, level: 2 + 4 * progress, pressure: 1 + .65 * progress };
+}
+
+export function beginnerProfileForWeek(week, character) {
+    const weekly = runnerWeek(BEGINNER_PROFILE, week, character);
+    return Object.freeze({ ...BEGINNER_PROFILE, obstacleCatalog: Object.freeze(weekly.obstacleCatalog),
+        attackers: Object.freeze(weekly.attackers) });
 }

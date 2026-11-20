@@ -11,12 +11,12 @@ Status: implemented, pending GitHub Actions acceptance. This branch is independe
 | First hazard lead | 2 s subject to viewport cap | Unchanged 1.05 s |
 | Gap | 1.8 s minimum, gradually reducing to 1.25 s | Existing rules |
 | Opening hazards | First two ground props, no attacks before 20 s and four obstacles | Existing rules and weekly catalog |
-| Record | Separate local best and bounded practice records | Existing versioned local scores and authoritative server replay |
+| Record | Separate local best and bounded practice records, explicit practice leaderboard tab | Existing versioned local scores and authoritative server replay |
 | Prize | Never | Existing financial approval gates |
 
 Preserve jump physics, collision geometry, original/weekly rules versions, seeds, server replay fixtures, existing scores and source-side reward policy. Do not reinterpret old local scores as verified online scores. The practice profile is not an API-supported rules version. Explicit practice bypasses identity, pending replay retry and run start; finish checks the practice profile even if a local mode field is modified. Server continues to recompute all official scores using server-owned rules. A valid official replay remains valid regardless of where inputs were learned; this is not bot-proofing.
 
-First-run UX: default practice, two-action tutorial remains optional, explicit ranked transition only while ready; failure/offline returns to clearly labelled nonfinancial practice. Restart begins in practice. No changes to sprites, PWA assets or database schema. Existing static export CI produces the frontend; no hand-edit of compiled output.
+First-run UX: default practice, two-action tutorial remains optional, explicit ranked transition only while ready; failure/offline returns to clearly labelled nonfinancial practice. Restart begins in practice. No changes to sprites, PWA assets or database schema. Existing static export CI produces the frontend; no hand-edit of compiled output. Practice preserves the weekly hazard/attacker rotation while keeping beginner tuning. The official character is pinned while playing.
 
 CI: deterministic novice courses across seeds/widths, difficulty bounds, first encounter timing, storage isolation, no API calls, negative PHP rules-version test, desktop/mobile browser regression and existing official parity fixtures. Physical-device playtesting and real customer win/return rate remain future acceptance; skill guidance applied: platformer and game-feel.
 

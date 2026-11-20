@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import DinoRunModel, { RUNNER_CONFIG } from '../../../resources/js/game/games/dino-run/DinoRunModel.js';
-import { BEGINNER_PROFILE, PRACTICE_VERSION, beginnerDifficulty } from '../../../resources/js/game/games/dino-run/RunnerPracticeProfile.js';
+import { BEGINNER_PROFILE, PRACTICE_VERSION, beginnerDifficulty, beginnerProfileForWeek } from '../../../resources/js/game/games/dino-run/RunnerPracticeProfile.js';
 import ArcadeLeaderboardService from '../../../resources/js/game/leaderboard/ArcadeLeaderboardService.js';
 
 const tick = 1 / 60;
@@ -84,4 +84,20 @@ test('practice bypasses registration, pending retry, run start and all score upl
     assert.equal(service.practiceScores().length, 2);
     assert.equal(service.practiceScores()[0].score, 5000);
     assert.deepEqual((await service.list('device', 'dino-run')).data, []);
+    const practice = await service.list('practice', 'dino-run');
+    assert.equal(practice.mode, 'practice');
+    assert.equal(practice.data.length, 2);
+    assert.equal(requests, 0);
+    await assert.rejects(service.list('practice', 'cafe-drift'));
+});
+
+test('weekly content retains the separate beginner difficulty contract', () => {
+    const a = beginnerProfileForWeek(0, 'darya');
+    const b = beginnerProfileForWeek(30, 'darya');
+    assert.equal(a.version, PRACTICE_VERSION);
+    assert.equal(b.version, PRACTICE_VERSION);
+    assert.equal(a.attackChance, BEGINNER_PROFILE.attackChance);
+    assert.equal(b.startSpeed, BEGINNER_PROFILE.startSpeed);
+    assert.ok(!a.attackers.includes('darya'));
+    assert.notDeepEqual(a.obstacleCatalog, b.obstacleCatalog);
 });

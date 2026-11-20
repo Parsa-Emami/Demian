@@ -606,6 +606,10 @@ export default class ArcadeLeaderboardService {
     }
     async list(period = 'weekly', gameId = 'dino-run', week = '') {
         if (!RECORD_GAMES.includes(gameId)) throw new Error('Unknown ranked game.');
+        if (period === 'practice') {
+            if (gameId !== 'dino-run') throw new Error('Practice records are only available for Dino Run.');
+            return { mode: 'practice', rules_version: 'cafe-runner-practice-v1', data: this.practiceScores().map((row, index) => ({ ...row, rank: index + 1 })) };
+        }
         if (this.connected && period !== 'device') {
             const query = new URLSearchParams({ period, limit: '20' });
             if (week) query.set('week', week);

@@ -1,4 +1,4 @@
-import { runnerWeek, WEEKLY_VERSIONS } from '../../content/WeeklyContent.js';
+import { runnerWeek, weeklyIndex, WEEKLY_VERSIONS } from '../../content/WeeklyContent.js';
 import BaseGame from '../../contracts/BaseGame.js';
 import DinoRunModel, { RUNNER_CONFIG } from './DinoRunModel.js';
 import DinoRunEnvironment from './DinoRunEnvironment.js';
@@ -6,7 +6,7 @@ import { BUILTIN_CHARACTER_SLUGS, builtinCharacterAssetPair } from '../../charac
 import { arcadeCharacterLabel } from '../arcade/ArcadeCharacterRoster.js';
 import { UI_LAYER, assignUiLayer } from '../../ui/UiLayer.js';
 import RunnerReplay from './RunnerReplay.js';
-import { BEGINNER_PROFILE, PRACTICE_BEST_KEY, isBeginnerProfile } from './RunnerPracticeProfile.js';
+import { beginnerProfileForWeek, PRACTICE_BEST_KEY, isBeginnerProfile } from './RunnerPracticeProfile.js';
 import CanvasCharacterAvatar from '../../characters/CanvasCharacterAvatar.js';
 
 const BEST_KEY = `demian.dino-run.best.${RUNNER_CONFIG.version}`;
@@ -100,6 +100,7 @@ export default class DinoRunGame extends BaseGame {
         const lesson = document.createElement('button');
         lesson.type = 'button';
         lesson.className = 'runner-ready__lesson';
+        lesson.dataset.runnerLesson = 'true';
         try { this.lessonLearned = localStorage.getItem(LESSON_KEY) === 'done'; } catch {}
         lesson.textContent = this.lessonLearned ? 'مرور پرش و اسلاید' : 'تمرین پیشنهادی · پرش و اسلاید';
         lesson.addEventListener('click', () => this.showLesson('jump'));
@@ -143,7 +144,7 @@ export default class DinoRunGame extends BaseGame {
         start.focus();
         if (done) {
             try { localStorage.setItem(LESSON_KEY, 'done'); } catch {}
-            this.ready.querySelector('.runner-ready__lesson').textContent = 'مرور پرش و اسلاید';
+            this.ready.querySelector('[data-runner-lesson]').textContent = 'مرور پرش و اسلاید';
         }
     }
     startLesson() {
@@ -165,7 +166,11 @@ export default class DinoRunGame extends BaseGame {
         this.characterManager.activeRecord = this.characterManager.characters.find((r) => r.is_active);
     }
     async selectCharacter(slug) {
-        if (!BUILTIN_CHARACTER_SLUGS.includes(slug) || this.selecting) return;
+        if (!BUILTIN_CHARACTER_SLUGS.includes(slug) || this.selecting || this.starting) return;
+        if (this.run?.mode === 'ranked' && this.model.status === 'running') {
+            this.context.app.shell.toast('کاراکتر مسابقه تا پایان دور ثابت است.');
+            return;
+        }
         this.selecting = true;
         try {
             const avatar = await this.context.services.characterVisuals.createCanvasAvatar(slug, { player: true });
@@ -183,6 +188,7 @@ export default class DinoRunGame extends BaseGame {
         const context = this.context;
         const ranked = mode === 'ranked' && seed === undefined;
         this.starting = true; this.finished = false;
+        this.ready.hidden = true;
         this.lessonStep = null; this.lessonActive = false;
         this.lessonPanel.hidden = true;
         this.run = null; this.replay = new RunnerReplay();
@@ -202,7 +208,7 @@ export default class DinoRunGame extends BaseGame {
         const profile = this.run.mode === 'ranked'
             ? (this.run.rules_version === WEEKLY_VERSIONS['dino-run']
                 ? runnerWeek(RUNNER_CONFIG, this.run.content_week, this.avatar.slug) : RUNNER_CONFIG)
-            : BEGINNER_PROFILE;
+            : beginnerProfileForWeek(weeklyIndex(), this.avatar.slug);
         this.bestKey = isBeginnerProfile(profile) ? PRACTICE_BEST_KEY : BEST_KEY;
         this.best = readBest(this.bestKey);
         this.model.reset({ seed: this.run.seed, width: this.run.track_width, profile });
