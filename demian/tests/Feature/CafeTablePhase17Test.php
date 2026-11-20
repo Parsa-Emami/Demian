@@ -55,6 +55,8 @@ final class CafeTablePhase17Test extends TestCase
         $new=DB::table('arcade_cafe_tables')->first();
         $this->assertNotSame($new->code,$t->code);
         $this->get('/t/'.$t->code)->assertNotFound();
+        $this->post('/cashier/admin/tables/'.$t->id.'/disable',$this->credentials())->assertStatus(429);
+        $this->travel(61)->seconds();
         $this->post('/cashier/admin/tables/'.$t->id.'/disable',$this->credentials())->assertRedirect();
         $this->get('/t/'.$new->code)->assertNotFound();
         $this->assertDatabaseCount('arcade_cashier_admin_events',3);
