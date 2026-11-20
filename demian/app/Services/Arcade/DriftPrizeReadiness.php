@@ -23,6 +23,11 @@ final class DriftPrizeReadiness
         'app/Services/Arcade/VerifiedPrizeIdentity.php',
         'app/Services/Arcade/CouponIssuanceService.php',
         'app/Services/Arcade/CampaignEconomics.php',
+        'app/Services/Arcade/DriftPrizeReadiness.php',
+        'app/Services/Arcade/RankedGameCatalog.php',
+        'app/Services/Arcade/WeeklyCompetitionService.php',
+        'app/Services/Arcade/WeeklySettlementService.php',
+        'app/Services/Arcade/PhoneIdentityService.php',
     ];
     public const REVIEW_CHECKS = [
         'physical_android_touch','physical_ios_touch','desktop_keyboard',

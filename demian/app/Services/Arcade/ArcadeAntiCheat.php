@@ -326,7 +326,7 @@ final class ArcadeAntiCheat
             abort_unless($report && $report->player_id, 404);
             if ($hours !== null) {
                 abort_if(in_array($report->signal, ['shared_installation', 'shared_network_cohort', 'duplicate_verified_phone', 'periodic_jump_cadence', 'parallel_ranked_runs', 'cross_account_replay'], true), 409,
-                    'Identity or shared-network signal alone cannot justify a hold.');
+                    'A single identity, shared-network or ambiguous replay signal cannot justify a hold.');
                 abort_unless($report->status === 'confirmed', 409,
                     'A reviewer must confirm the report before restricting starts.');
             }
