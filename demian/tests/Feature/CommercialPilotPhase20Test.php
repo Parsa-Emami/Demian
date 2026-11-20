@@ -104,6 +104,9 @@ final class CommercialPilotPhase20Test extends TestCase
         $this->expectStatus(409,fn()=>$service->resolve($actor,1,$id,$action,'DONE-002'));
         $this->assertDatabaseHas('arcade_commercial_pilots',['id'=>$id,'status'=>'closed','decision'=>'review_scale','mode'=>'rehearsal']);
         $this->assertDatabaseHas('arcade_pilot_actions',['id'=>$action,'status'=>'done']);
+        $decision=json_decode(DB::table('arcade_pilot_events')->where('pilot_id',$id)->where('event_type','decision')->value('details'),true,512,JSON_THROW_ON_ERROR);
+        self::assertSame('rehearsal',$decision['mode']);
+        self::assertSame(42000,$decision['report']['pilot']['contribution_minor']);
         $this->assertDatabaseCount('arcade_pilot_daily',14);
         $this->assertDatabaseCount('arcade_coupons',0);
         $this->withSession(['cafe_authenticated_at'=>now()->timestamp])->get('/cashier/admin/pilot?id='.$id)->assertOk()->assertSee('review_scale');
@@ -120,5 +123,31 @@ final class CommercialPilotPhase20Test extends TestCase
         $service->transition($actor,1,$id,'stop','INCIDENT-001');
         $this->assertDatabaseHas('arcade_commercial_pilots',['id'=>$id,'status'=>'stopped','decision'=>'stop']);
         $this->expectStatus(409,fn()=>$service->record($actor,1,$id,$this->day('2026-11-21')));
+    }
+
+    public function test_real_coupon_ledger_minimum_and_budget_warning(): void
+    {
+        $actor=$this->staff();$service=app(CommercialPilot::class);$id=$service->create($actor,1,$this->plan(['discount_budget_minor'=>100]));
+        $this->baseline($service,$actor,$id);$service->start($actor,1,$id,'START-001');
+        $player=\App\Models\ArcadePlayer::query()->create(['display_name'=>'Fixture','token_hash'=>hash('sha256',Str::random(64)),
+            'token_expires_at'=>now()->addDay()]);
+        $coupon=DB::table('arcade_coupons')->insertGetId(['player_id'=>$player->id,'winner_id'=>null,'source'=>'weekly',
+            'code_hash'=>hash('sha256',Str::random(64)),'code_ciphertext'=>'test','policy_version'=>'fixture','discount_percent'=>10,
+            'currency'=>'IRR','min_order_minor'=>100,'max_discount_minor'=>1000,'status'=>'redeemed',
+            'issued_at'=>'2026-11-21 08:00:00','expires_at'=>'2026-11-30 08:00:00','redeemed_at'=>'2026-11-21 10:00:00',
+            'created_at'=>now(),'updated_at'=>now()]);
+        DB::table('arcade_coupon_redemptions')->insert(['coupon_id'=>$coupon,'reservation_id'=>null,'order_hash'=>hash('sha256',Str::random(64)),
+            'currency'=>'IRR','channel'=>'in_cafe','branch_id'=>'main','subtotal_minor'=>2000,'discount_minor'=>200,
+            'redeemed_at'=>'2026-11-21 10:00:00']);
+        $this->travelTo(CarbonImmutable::parse('2026-11-22 00:00:00','Asia/Tehran'));
+        $this->expectStatus(422,fn()=>$service->record($actor,1,$id,$this->day('2026-11-21',['net_sales_minor'=>1799])));
+        $service->record($actor,1,$id,$this->day('2026-11-21'));
+        $r=$service->detail($id)['report'];
+        self::assertSame(1800,$r['pilot']['coupon_net_minor']);
+        self::assertSame(200,$r['recorded_pilot_discount_minor']);
+        self::assertTrue($r['discount_budget_exceeded']);
+        self::assertSame('stop',$r['recommendation']);
+        DB::table('arcade_coupon_redemptions')->where('coupon_id',$coupon)->update(['subtotal_minor'=>3000]);
+        self::assertFalse($service->detail($id)['report']['ledger_consistent']);
     }
 }

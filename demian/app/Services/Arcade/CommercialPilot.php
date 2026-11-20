@@ -80,10 +80,10 @@ final class CommercialPilot
         $r=DB::table('arcade_coupon_redemptions')->where('channel','in_cafe')->where('branch_id',$p->branch_id)
             ->where('redeemed_at','>=',$from)->where('redeemed_at','<',$to);
         abort_if((clone $r)->where('currency','!=',$p->currency)->exists(),409,'Separate currencies before evaluating sales.');
-        $m=$r->selectRaw('COUNT(*) AS receipts, COALESCE(SUM(discount_minor),0) AS discount')->first();
+        $m=$r->selectRaw('COUNT(*) AS receipts, COALESCE(SUM(discount_minor),0) AS discount, COALESCE(SUM(subtotal_minor - discount_minor),0) AS net')->first();
         $qr=DB::table('arcade_table_daily_launches as d')->join('arcade_cafe_tables as t','t.id','=','d.table_id')
             ->where('t.branch_id',$p->branch_id)->where('d.day',$day->toDateString());
-        return ['coupon_receipts'=>(int)$m->receipts,'coupon_discount_minor'=>(int)$m->discount,
+        return ['coupon_receipts'=>(int)$m->receipts,'coupon_discount_minor'=>(int)$m->discount,'coupon_net_minor'=>(int)$m->net,
             'qr_launches'=>(int)(clone $qr)->sum('d.launches'),
             'saturated_table_days'=>(int)$qr->where('d.launches','>=',CafeTableService::DAILY_CAP)->count()];
     }
@@ -100,7 +100,7 @@ final class CommercialPilot
             abort_if(DB::table('arcade_pilot_daily')->where('pilot_id',$id)->where('day',$day->toDateString())->exists(),409,'Daily evidence is immutable.');
             $observed=$this->observed($p,$day);
             abort_unless((int)$d['receipts']>=$observed['coupon_receipts']&&(int)$d['receipts']<=100000
-                &&(int)$d['receipts']>=0&&(int)$d['net_sales_minor']>=0
+                &&(int)$d['receipts']>=0&&(int)$d['net_sales_minor']>=$observed['coupon_net_minor']
                 &&(int)$d['net_sales_minor']<=100000000000000
                 &&(int)$d['variable_cost_minor']>=0&&(int)$d['variable_cost_minor']<=100000000000000
                 &&(int)$d['operating_cost_minor']>=0&&(int)$d['operating_cost_minor']<=100000000000000
@@ -140,7 +140,7 @@ final class CommercialPilot
         foreach(['baseline','pilot'] as $period){
             $r=$rows->where('period',$period);
             $a=['days'=>$r->count()];
-            foreach(['receipts','net_sales_minor','variable_cost_minor','operating_cost_minor','coupon_receipts','coupon_discount_minor','qr_launches','saturated_table_days','incidents'] as $k)
+            foreach(['receipts','net_sales_minor','variable_cost_minor','operating_cost_minor','coupon_receipts','coupon_discount_minor','coupon_net_minor','qr_launches','saturated_table_days','incidents'] as $k)
                 $a[$k]=(int)$r->sum($k);
             $a['contribution_minor']=$a['net_sales_minor']-$a['variable_cost_minor']-$a['operating_cost_minor'];
             $result[$period]=$a;
@@ -162,6 +162,7 @@ final class CommercialPilot
             ->where('currency','!=',$p->currency)->where('redeemed_at','>=',$this->date($p->pilot_start)->utc())
             ->where('redeemed_at','<',$this->date($p->pilot_start)->addDays((int)$p->days)->utc())->exists();
         if($foreignCurrency)$consistent=false;
+        if(!$consistent)$uplift=null;
         $recommendation=($budget>(int)$p->discount_budget_minor||$a['incidents']>0)?'stop':
             (!$enough||!$consistent||$uplift===null?'inconclusive':($uplift>=(int)$p->target_uplift_bps/100?'review_scale':'iterate'));
         return [...$result,'complete'=>$complete,'enough_receipts'=>$enough,'ledger_consistent'=>$consistent,
@@ -185,7 +186,7 @@ final class CommercialPilot
             $this->lock($actor,$version);$p=$this->pilot($id);
             if($action==='stop'){
                 abort_unless(in_array($p->status,['draft','active'],true),409);
-                $status='stopped';$decision='stop';
+                $status='stopped';$decision='stop';$report=$this->summarize($p);
             }else{
                 abort_unless($p->status==='active'&&$this->today()->gte($this->date($p->pilot_start)->addDays((int)$p->days)),409);
                 $report=$this->summarize($p);
@@ -197,7 +198,7 @@ final class CommercialPilot
             }
             DB::table('arcade_commercial_pilots')->where('id',$id)->update(['status'=>$status,'decision'=>$decision,
                 'stopped_at_epoch'=>now()->timestamp,'updated_at'=>now()]);
-            $this->log($id,$actor,'decision',$ref,['decision'=>$decision]);
+            $this->log($id,$actor,'decision',$ref,['decision'=>$decision,'report'=>$report,'mode'=>$p->mode]);
         },3);
     }
 

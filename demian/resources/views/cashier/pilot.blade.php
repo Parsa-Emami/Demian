@@ -28,11 +28,11 @@
 <section class="panel"><h2>برنامه {{ $p->branch_id }} / {{ $p->mode }}</h2>
 <p>وضعیت: {{ $p->status }} · پایه از {{ $p->baseline_start }} · شروع پایلوت {{ $p->pilot_start }} · {{ $p->days }} روز · {{ $p->currency }}</p>
 <table><thead><tr><th>شاخص</th><th>پایه</th><th>پایلوت</th></tr></thead><tbody>
-@foreach(['days'=>'روزهای ثبت','receipts'=>'کل رسید گزارش‌شده صندوق','net_sales_minor'=>'فروش خالص صندوق','variable_cost_minor'=>'هزینه متغیر','operating_cost_minor'=>'هزینه عملیاتی','contribution_minor'=>'سهم مشارکت پس از هزینه‌ها','coupon_receipts'=>'رسید کوپن','coupon_discount_minor'=>'تخفیف کوپن','qr_launches'=>'ورود QR (نه مشتری)','incidents'=>'رخداد بحرانی'] as $k=>$label)
+@foreach(['days'=>'روزهای ثبت','receipts'=>'کل رسید گزارش‌شده صندوق','net_sales_minor'=>'فروش خالص صندوق','variable_cost_minor'=>'هزینه متغیر','operating_cost_minor'=>'هزینه عملیاتی','contribution_minor'=>'سهم مشارکت پس از هزینه‌ها','coupon_receipts'=>'رسید کوپن','coupon_discount_minor'=>'تخفیف کوپن','coupon_net_minor'=>'فروش خالص ثبت‌شده کوپن','qr_launches'=>'ورود QR (نه مشتری)','incidents'=>'رخداد بحرانی'] as $k=>$label)
 <tr><td>{{ $label }}</td><td>{{ number_format($report['baseline'][$k]) }}</td><td>{{ number_format($report['pilot'][$k]) }}</td></tr>@endforeach</tbody></table>
 <p>رشد سهم مشارکت: {{ $report['contribution_change_percent']===null?'نامشخص':$report['contribution_change_percent'].'٪' }} · بودجه {{ number_format($p->discount_budget_minor) }} · تخفیف واقعی دفتر {{ number_format($report['recorded_pilot_discount_minor']) }}</p>
-<p>تطبیق دفتر: {{ $report['ledger_consistent']?'موفق':'عدم تطبیق' }} · توصیه: {{ $report['recommendation'] }} · تصمیم ثبت‌شده: {{ $p->decision??'—' }}</p>
-<p class="muted">مقایسه قبل/بعد با داده اظهارشده صندوق است، نه آزمایش تصادفی یا ROI علّی. ارقام تمرینی نباید وارد گزارش تجاری واقعی شوند. بودجه این برنامه صرفاً هشدار مدیریتی است؛ محدودیت‌های صدور در سرویس‌های مالی مستقل اجرا می‌شوند.</p>
+<p>تطبیق فعلی دفتر: {{ $report['ledger_consistent']?'موفق':'عدم تطبیق' }} · توصیه: {{ $report['recommendation'] }} · تصمیم ثبت‌شده: {{ $p->decision??'—' }}</p>
+<p class="muted">خلاصه شواهد هنگام تصمیم نهایی در رویداد ممیزی ذخیره می‌شود. مقایسه قبل/بعد با داده اظهارشده صندوق است، نه آزمایش تصادفی یا ROI علّی. ارقام تمرینی نباید وارد گزارش تجاری واقعی شوند. بودجه این برنامه صرفاً هشدار مدیریتی است؛ محدودیت‌های صدور در سرویس‌های مالی مستقل اجرا می‌شوند.</p>
 </section>
 @if(in_array($p->status,['draft','active'],true))
 <section class="panel"><h2>ثبت گزارش روز کامل</h2>

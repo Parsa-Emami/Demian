@@ -28,7 +28,7 @@ return new class extends Migration {
             $t->date('day');$t->string('period',12);$t->unsignedInteger('receipts');
             $t->unsignedBigInteger('net_sales_minor');$t->unsignedBigInteger('variable_cost_minor');
             $t->unsignedBigInteger('operating_cost_minor');$t->unsignedInteger('coupon_receipts');
-            $t->unsignedBigInteger('coupon_discount_minor');$t->unsignedInteger('qr_launches');
+            $t->unsignedBigInteger('coupon_discount_minor');$t->unsignedBigInteger('coupon_net_minor');$t->unsignedInteger('qr_launches');
             $t->unsignedSmallInteger('saturated_table_days');$t->unsignedSmallInteger('incidents');
             $t->string('evidence_ref',80);$t->foreignId('actor_id')->constrained('arcade_cashier_staff')->restrictOnDelete();
             $t->timestamp('created_at');$t->unique(['pilot_id','day']);
