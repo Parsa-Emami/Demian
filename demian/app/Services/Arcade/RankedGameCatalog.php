@@ -48,7 +48,21 @@ final class RankedGameCatalog
      *  Puzzle solvers may automate public answers even with valid server replay.
      *  Commercial eligibility requires a separately approved rollout gate.
      */
-    public function supportsPrizes(string $id): bool
+    public function requiresPrizeLock(string $id): bool
+    {
+        return $id === CafeDriftReplayVerifier::GAME_ID
+            || (isset(MultiGamePrizeReadiness::GAMES[$id]) && app(MultiGamePrizeReadiness::class)->required($id));
+    }
+
+    public function prizeEligibleForLock(string $id, ?object $lock, ?string $version = null): bool
+    {
+        if (!$lock) return !$this->requiresPrizeLock($id) && $this->supportsPrizes($id,$version);
+        return (bool)$lock->ranked_enabled && (bool)$lock->prize_eligible
+            && ($version === null || $version === $lock->rules_version)
+            && $this->supportsPrizes($id,$lock->rules_version);
+    }
+
+    public function supportsPrizes(string $id, ?string $version = null): bool
     {
         if (! $this->supportsRanked($id)) return false;
         return match ($id) {
@@ -61,11 +75,10 @@ final class RankedGameCatalog
                 && (config('app.env') !== 'production' || (
                     config('demian-legal.publication_approved') === true
                     && config('demian-legal.require_acceptance') === true)),
-            'cafe-critters' => config('demian-arcade.critters_prizes_enabled') === true,
-            'coffee-crash' => config('demian-arcade.coffee_prizes_enabled') === true,
-            // A separate route challenge cannot authorize coupons for the original game.
-            // Until real-game replay and anti-bot acceptance, this is code-locked OFF.
-            'after-hours', 'cafe-rush', 'open-world' => false,
+            'cafe-critters', 'coffee-crash', 'after-hours', 'cafe-rush' =>
+                app(MultiGamePrizeReadiness::class)->approved($id, $version),
+            // The bounded route proof is not full Open World gameplay.
+            'open-world' => false,
             default => false,
         };
     }
