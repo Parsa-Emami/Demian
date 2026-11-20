@@ -142,11 +142,7 @@ export default class CanvasCharacterAvatar {
     replaceVisualAssets(image, atlas) {
         const previous = this.animator;
         const next = new FrameAnimator(atlas);
-        next.setDirection(previous.direction);
-        next.setFacing(previous.facing);
-        next.setPlaybackRate(previous.playbackRate);
-        next.play(previous.requestedAnimationName ?? previous.animationName ?? 'idle');
-        next.seek(previous.progress());
+        next.restoreVisualState(previous);
         this.texture = { image };
         this.atlas = atlas;
         this.animator = next;
