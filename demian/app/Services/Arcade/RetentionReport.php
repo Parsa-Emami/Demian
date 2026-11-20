@@ -10,7 +10,7 @@ final class RetentionReport
 {
     public function __construct(private readonly \Domain\Shared\Clock $clock) {}
 
-    public function snapshot(int $days = 90): array
+    public function snapshot(int $days = 90, bool $strictEvidence = false): array
     {
         $today = CarbonImmutable::instance($this->clock->now())->setTimezone('Asia/Tehran')->startOfDay();
         $days = max(1, min(90, $days));
@@ -20,9 +20,12 @@ final class RetentionReport
             ->where('created_at', '<', $today->utc())->orderBy('id')->limit(10001)->get();
         if ($players->count() > 10000) $truncated = true;
         foreach ($players->take(10000)->chunk(100) as $batch) {
-            $runs = DB::table('arcade_runs')->select(['player_id', 'started_at'])->where('status', 'verified')
+            $query = DB::table('arcade_runs')->select(['player_id', 'started_at'])->where('status', 'verified')
                 ->whereIn('player_id', $batch->pluck('id'))->where('started_at', '>=', $today->subDays($days)->utc())
-                ->where('started_at', '<', $today->utc())->orderBy('id')->limit(20001)->get();
+                ->where('started_at', '<', $today->utc());
+            if ($strictEvidence) $query->whereNotNull('replay_hash')->whereNotNull('completed_at')
+                ->where('completed_at','<',$today->utc());
+            $runs = $query->orderBy('id')->limit(20001)->get();
             if ($runs->count() > 20000) { $truncated = true; break; }
             $active = [];
             foreach ($runs as $run) $active[$run->player_id][CarbonImmutable::parse($run->started_at, 'UTC')->setTimezone('Asia/Tehran')->toDateString()] = true;
