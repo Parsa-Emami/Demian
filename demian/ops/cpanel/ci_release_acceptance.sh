@@ -98,9 +98,14 @@ await check(api + '/legal', 200);
 await check(api + '/player', 401);
 await check(api + '/player/coupons', 401);
 await check('/cashier/login', 503);
-for (const path of ['/', '/characters', '/.env', '/composer.json', '/storage/logs/laravel.log', '/vendor/autoload.php']) {
+for (const path of ['/', '/characters', '/.env', '/composer.json', '/vendor/autoload.php']) {
     await check(path, 404);
 }
+// The built-in server may deny a storage symlink before Laravel routing.
+// Both denial statuses are safe; redirects and successful reads are not.
+const privateLog = await request('/storage/logs/laravel.log');
+assert.ok([403, 404].includes(privateLog.status), 'private log must not be served');
+checks.push({ path: '/storage/logs/laravel.log', status: privateLog.status });
 const options = origin => ({ method: 'OPTIONS', headers: { Origin: origin,
     'Access-Control-Request-Method': 'POST', 'Access-Control-Request-Headers': 'authorization,content-type' } });
 const allowed = await request(api + '/runs', options('https://game.example.test'));
