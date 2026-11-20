@@ -42,6 +42,14 @@ jobs:
       - run: npm run validate:final
       - run: npm run validate:ui-layers
       - run: npm run validate:characters:v14
+      - name: Unified V2 all-frame animation audit
+        run: python3 tools/audit_sprite_animation_v2.py --output "$RUNNER_TEMP/animation-v2"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: character-animation-v2-${{ github.sha }}
+          path: ${{ runner.temp }}/animation-v2/
+          if-no-files-found: warn
       - name: Unified V2 character raster audit and family contact sheets
         run: python3 tools/audit_character_visual_v2.py --output "$RUNNER_TEMP/character-v2"
       - uses: actions/upload-artifact@v4

@@ -6,7 +6,7 @@ from character_art_registry import ACTIVE_CHARACTER_ROSTER
 from character_animation_timing import apply_animation_timing
 
 ROOT = Path(__file__).resolve().parents[1]
-VARIANTS = ('desktop', 'mobile', 'compact', 'runtime', 'lite')
+VARIANTS = ('desktop', 'mobile', 'compact', 'runtime', 'lite', 'detail')
 
 
 def write(path, data, compact=False):
@@ -23,7 +23,7 @@ def main():
             path = directory / f'{slug}-atlas-v14-{variant}.json'
             atlas = apply_animation_timing(json.loads(path.read_text()), counts, layout.get('locomotionProfile'))
             atlas['meta']['imageRevision'] = hashlib.sha256((directory / atlas['meta']['image']).read_bytes()).hexdigest()
-            write(path, atlas, compact=variant in ('runtime', 'lite'))
+            write(path, atlas, compact=variant in ('runtime', 'lite', 'detail'))
         path = directory / 'manifests' / f'{slug}_animation_manifest.json'
         manifest = json.loads(path.read_text())
         manifest['states'] = {name: {'frames': len(a['frames']), 'fps': a['fps'], 'loop': a['loop'],
