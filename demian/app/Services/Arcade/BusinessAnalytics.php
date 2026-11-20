@@ -19,11 +19,11 @@ final class BusinessAnalytics
             ->where($column,'<',$to->utc()->toDateTimeString());
     }
 
-    private function runs(CarbonImmutable $from,CarbonImmutable $to)
+    private function runs(CarbonImmutable $from,CarbonImmutable $to,?CarbonImmutable $completionCutoff=null)
     {
         return $this->within(DB::table('arcade_runs'),'started_at',$from,$to)
             ->where('status','verified')->whereNotNull('replay_hash')->whereNotNull('completed_at')
-            ->where('completed_at','<',$to->utc()->toDateTimeString());
+            ->where('completed_at','<',($completionCutoff??$to)->utc()->toDateTimeString());
     }
 
     private function ratio(int $n,int $d): ?float
@@ -33,7 +33,7 @@ final class BusinessAnalytics
 
     private function money(CarbonImmutable $from,CarbonImmutable $to): array
     {
-        return $this->within(DB::table('arcade_coupon_redemptions')->where('channel','cafe'),'redeemed_at',$from,$to)
+        return $this->within(DB::table('arcade_coupon_redemptions')->where('channel','in_cafe'),'redeemed_at',$from,$to)
             ->select('currency')->selectRaw('COUNT(*) AS receipts, SUM(subtotal_minor) AS gross, SUM(discount_minor) AS discount')
             ->groupBy('currency')->orderBy('currency')->get()->map(static function($r): array {
                 return ['currency'=>$r->currency,'receipts'=>(int)$r->receipts,'gross_minor'=>(int)$r->gross,
@@ -63,7 +63,7 @@ final class BusinessAnalytics
         $issued=$this->within(DB::table('arcade_coupons'),'issued_at',$from,$to);
         $total=(int)(clone $issued)->count();
         $used=(int)(clone $issued)->join('arcade_coupon_redemptions as r','r.coupon_id','=','arcade_coupons.id')
-            ->where('r.channel','cafe')->where('r.redeemed_at','<',$to->utc()->toDateTimeString())->count();
+            ->where('r.channel','in_cafe')->where('r.redeemed_at','<',$to->utc()->toDateTimeString())->count();
         return ['issued'=>$total,'redeemed_in_cafe_before_cutoff'=>$used,'redemption_percent'=>$this->ratio($used,$total)];
     }
 
@@ -81,7 +81,7 @@ final class BusinessAnalytics
 
     private function weightedRetention(int $days): array
     {
-        $report=$this->retention->snapshot($days);
+        $report=$this->retention->snapshot($days,true);
         $result=['status'=>$report['status'],'players'=>$report['players'],'cohorts'=>[],'rates'=>[]];
         if ($report['truncated']) {
             foreach (['d1','d7','d30'] as $field) $result['rates'][$field]=null;
@@ -109,7 +109,7 @@ final class BusinessAnalytics
         $trend=[];
         for($start=$from;$start->lt($to);$start=$end) {
             $end=$start->addDays(7)->min($to);
-            $q=$this->runs($start,$end);
+            $q=$this->runs($start,$end,$to);
             $row=$q->selectRaw('COUNT(*) AS runs, COUNT(DISTINCT player_id) AS players')->first();
             $trend[]=['from'=>$start->toDateString(),'until_exclusive'=>$end->toDateString(),
                 'registrations'=>$this->within(DB::table('arcade_players'),'created_at',$start,$end)->count(),
@@ -117,7 +117,7 @@ final class BusinessAnalytics
         }
         $month=$to->format('Y-m');
         $monthAwards=(int)DB::table('arcade_referral_awards')->where('month',$month)
-            ->where('expires_at','>',$to->utc()->toDateTimeString())->count();
+            ->where('expires_at','>',CarbonImmutable::instance($this->clock->now())->utc()->toDateTimeString())->count();
         $cost=DB::table('arcade_referral_costs')->where('month',$month)->value('spend_irr');
         return [
             'schema'=>1,'timezone'=>'Asia/Tehran','days'=>$days,'from'=>$from->toDateString(),

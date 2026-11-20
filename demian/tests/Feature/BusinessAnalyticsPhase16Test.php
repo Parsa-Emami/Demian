@@ -94,4 +94,40 @@ final class BusinessAnalyticsPhase16Test extends TestCase
         $this->expectException(\InvalidArgumentException::class);
         app(BusinessAnalytics::class)->snapshot(365);
     }
+
+    public function test_money_is_grouped_by_currency_and_only_cafe_receipts_count(): void
+    {
+        $a=$this->player('2026-11-12 10:00:00');
+        foreach ([['IRR','in_cafe','2026-11-15 10:00:00',100000,10000],
+            ['USD','in_cafe','2026-11-16 10:00:00',1000,100],
+            ['IRR','shop','2026-11-17 10:00:00',50000,5000],
+            ['IRR','in_cafe','2026-11-20 10:00:00',90000,9000]] as [$currency,$channel,$at,$gross,$discount]) {
+            $coupon=DB::table('arcade_coupons')->insertGetId(['player_id'=>$a,
+                'winner_id'=>null,'code_hash'=>hash('sha256',Str::random(64)),
+                'code_ciphertext'=>'fixture','policy_version'=>'fixture','discount_percent'=>10,
+                'currency'=>$currency,'min_order_minor'=>100,'max_discount_minor'=>10000,'status'=>'redeemed',
+                'issued_at'=>'2026-11-14 10:00:00','expires_at'=>'2026-12-01 10:00:00','redeemed_at'=>$at,
+                'created_at'=>now(),'updated_at'=>now()]);
+            DB::table('arcade_coupon_redemptions')->insert(['coupon_id'=>$coupon,'reservation_id'=>null,
+                'order_hash'=>hash('sha256',Str::random(64)),'currency'=>$currency,'channel'=>$channel,
+                'subtotal_minor'=>$gross,'discount_minor'=>$discount,'redeemed_at'=>$at]);
+        }
+        $r=app(BusinessAnalytics::class)->snapshot(7);
+        self::assertSame(4,$r['coupon_cohort']['issued']);
+        self::assertSame(2,$r['coupon_cohort']['redeemed_in_cafe_before_cutoff']);
+        self::assertSame(50.0,$r['coupon_cohort']['redemption_percent']);
+        self::assertSame([
+            ['currency'=>'IRR','receipts'=>1,'gross_minor'=>100000,'discount_minor'=>10000,'net_minor'=>90000],
+            ['currency'=>'USD','receipts'=>1,'gross_minor'=>1000,'discount_minor'=>100,'net_minor'=>900],
+        ],$r['cafe_receipts']);
+    }
+
+    public function test_trend_allocates_cross_boundary_completion_to_start_bucket(): void
+    {
+        $id=$this->player('2026-10-25 10:00:00');
+        $this->run($id,'2026-10-27 20:29:59');
+        $r=app(BusinessAnalytics::class)->snapshot(30);
+        self::assertSame(1,$r['engagement']['verified_runs']);
+        self::assertSame(1,array_sum(array_column($r['trend'],'verified_runs')));
+    }
 }
