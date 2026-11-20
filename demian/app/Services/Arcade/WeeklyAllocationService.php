@@ -31,7 +31,20 @@ final class WeeklyAllocationService
         if (! $economics) throw new RuntimeException('Dynamic allocation needs a budgeted campaign.');
         $cap = (int) $terms['max_discount_minor'];
         $capacity = min((int) $campaign->max_awards, intdiv($economics['budget_minor'], $cap));
-        $plan = app(DynamicWinnerAllocation::class)->allocate($rankings, $historical, $excluded, $capacity, $policy);
+        $identityPolicy = $terms['identity_policy'] ?? null;
+        if ($sealing && app(PhoneIdentityService::class)->required() && $identityPolicy !== VerifiedPrizeIdentity::POLICY) {
+            throw new RuntimeException('Reconcile legacy campaign before verified-identity settlement.');
+        }
+        $verified = null;
+        if ($identityPolicy === VerifiedPrizeIdentity::POLICY) {
+            if ($sealing && ! app(PhoneIdentityService::class)->ready()) throw new RuntimeException('Verified identity service not ready.');
+            $eligibility = app(VerifiedPrizeIdentity::class)->eligibility($campaign->period_key, $rankings, $historical, $excluded, $sealing);
+            $historical = $eligibility['historical'];
+            $excluded = $eligibility['excluded'];
+            $verified = $eligibility['verified_ids'];
+        }
+        $plan = app(DynamicWinnerAllocation::class)->allocate($rankings, $historical, $excluded, $capacity, $policy, $verified);
+        $plan['summary']['identity_policy'] = $identityPolicy;
         $available = DB::table('arcade_reward_inventory')->where('campaign_id', $campaign->id)
             ->where('status', 'available')->count();
         $summary = &$plan['summary'];
@@ -41,7 +54,8 @@ final class WeeklyAllocationService
         $summary['coupon_cap_minor'] = $cap;
         $summary['maximum_commitment_minor'] = $summary['winner_count'] * $cap;
         $summary['inventory_available'] = $available;
-        $summary['ready'] = $campaign->status === 'active' && $available >= $summary['winner_count'];
+        $summary['ready'] = $campaign->status === 'active' && $available >= $summary['winner_count']
+            && ($identityPolicy !== VerifiedPrizeIdentity::POLICY || app(PhoneIdentityService::class)->ready());
         if ($sealing && $summary['winner_count'] > 0 && ! $summary['ready']) {
             throw new RuntimeException('Dynamic prize campaign is not active or inventory is insufficient; retry settlement.');
         }

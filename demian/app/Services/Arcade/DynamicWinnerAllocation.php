@@ -35,12 +35,13 @@ final class DynamicWinnerAllocation
 
     /** Counts are distinct verified accounts, not attempts. Ineligible accounts
      * count toward participation, but cannot receive a seat. */
-    public function allocate(array $rankings, array $historical, array $excluded, int $capacity, array $policy): array
+    public function allocate(array $rankings, array $historical, array $excluded, int $capacity, array $policy, ?array $verifiedIds = null): array
     {
         $policy = self::canonical($policy);
         if ($capacity < 0 || $capacity > 200) throw new RuntimeException('Invalid funded capacity.');
         ksort($rankings, SORT_STRING);
         $blocked = array_fill_keys($excluded, true);
+        $verified = $verifiedIds === null ? null : array_fill_keys($verifiedIds, true);
         $all = $eligible = $stats = $limits = $quotas = [];
         foreach ($rankings as $game => $rows) {
             if (! isset($policy['game_caps'][$game])) throw new RuntimeException('Unknown prize game.');
@@ -48,7 +49,8 @@ final class DynamicWinnerAllocation
             foreach ($rows as $row) {
                 if (($row['verified'] ?? null) !== true || ! is_string($row['player_id'] ?? null)
                     || trim($row['player_id']) === '') throw new RuntimeException('Unverified prize participant.');
-                $ids[$row['player_id']] = true;
+                if ($verified === null || isset($verified[$row['player_id']])) $ids[$row['player_id']] = true;
+                else $blocked[$row['player_id']] = true;
             }
             $n = count($ids);
             $available = array_diff_key($ids, $blocked);

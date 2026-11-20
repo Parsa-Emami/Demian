@@ -49,6 +49,7 @@ return new class extends Migration
             $table->string('period_key', 24);
             $table->char('identity_digest', 64);
             $table->foreignId('winner_id')->unique()->constrained('arcade_weekly_winners')->restrictOnDelete();
+            $table->timestamp('blocked_until');
             $table->timestamp('expires_at')->index();
             $table->unique(['period_key', 'identity_digest'], 'arcade_one_identity_weekly_award');
         });

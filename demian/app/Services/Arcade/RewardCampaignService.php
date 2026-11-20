@@ -61,7 +61,8 @@ final class RewardCampaignService
         $economics = app(CampaignEconomics::class)->fromInput($data, $terms, $capacity);
         if ($economics !== null) {
             $terms['economics'] = $economics;
-            if (app(WeeklyAllocationService::class)->required()) $terms['allocation'] = DynamicWinnerAllocation::policy();
+            if (app(WeeklyAllocationService::class)->required() || app(PhoneIdentityService::class)->required()) $terms['allocation'] = DynamicWinnerAllocation::policy();
+            if (app(PhoneIdentityService::class)->required()) $terms['identity_policy'] = VerifiedPrizeIdentity::POLICY;
         }
         return $terms;
     }
@@ -96,6 +97,12 @@ final class RewardCampaignService
         }
         if (array_key_exists('allocation', $terms)) {
             $canonical['allocation'] = DynamicWinnerAllocation::canonical($terms['allocation']);
+        }
+        if (array_key_exists('identity_policy', $terms)) {
+            if ($terms['identity_policy'] !== VerifiedPrizeIdentity::POLICY || ! isset($canonical['allocation'], $canonical['economics'])) {
+                throw new RuntimeException('Invalid frozen verified identity policy.');
+            }
+            $canonical['identity_policy'] = $terms['identity_policy'];
         }
         return hash('sha256', json_encode($canonical, JSON_THROW_ON_ERROR));
     }
@@ -276,6 +283,12 @@ final class RewardCampaignService
             }
             if ($action === 'activate') {
                 app(CampaignEconomics::class)->frozen($campaign, true);
+                $terms = json_decode($campaign->terms, true, 512, JSON_THROW_ON_ERROR);
+                if (app(PhoneIdentityService::class)->required() || isset($terms['identity_policy'])) {
+                    if (($terms['identity_policy'] ?? null) !== VerifiedPrizeIdentity::POLICY || ! app(PhoneIdentityService::class)->ready()) {
+                        throw new RuntimeException('Verified identity policy and approved SMS gateway required before activating new awards.');
+                    }
+                }
                 $period = DB::table('arcade_weekly_periods')
                     ->where('period_key', $campaign->period_key)->first();
                 if (! $period || $period->status !== 'open') {

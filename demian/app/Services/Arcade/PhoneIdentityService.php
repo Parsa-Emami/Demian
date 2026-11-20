@@ -198,10 +198,9 @@ final class PhoneIdentityService
             'limits' => DB::table('arcade_phone_limits')->where('expires_at', '<=', now())->delete(),
             'devices' => DB::table('arcade_identity_devices')->where('last_seen', '<', now()->subDays(30))->delete(),
             'award_claims' => DB::table('arcade_identity_awards')->where('expires_at', '<=', now())
-                ->whereExists(fn ($q) => $q->selectRaw('1')->from('arcade_coupons as c')
+                ->whereNotExists(fn ($q) => $q->selectRaw('1')->from('arcade_coupons as c')
                     ->whereColumn('c.winner_id', 'arcade_identity_awards.winner_id')
-                    ->where(fn ($q) => $q->whereIn('c.status', ['redeemed', 'revoked'])->orWhere('c.expires_at', '<=', now())))
-                ->delete(),
+                    ->whereIn('c.status', ['issued', 'reserved'])->where('c.expires_at', '>', now()))->delete(),
         ];
     }
 }

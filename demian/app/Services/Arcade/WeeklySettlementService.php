@@ -193,6 +193,8 @@ final class WeeklySettlementService
             }
             if ($allocation) {
                 $winners = $allocation['winners'];
+            } elseif ($campaign && app(PhoneIdentityService::class)->required()) {
+                throw new RuntimeException('Legacy campaign needs verified identity policy reconciliation.');
             } elseif (! $campaign && app(WeeklyAllocationService::class)->required()) {
                 // A technical leaderboard can be archived without a sponsor;
                 // never create unfunded financial awards for a new live week.
@@ -240,6 +242,9 @@ final class WeeklySettlementService
             $digest = hash('sha256', json_encode($snapshot, JSON_THROW_ON_ERROR));
             if ($snapshot) DB::table('arcade_weekly_results')->insert($snapshot);
             if ($awards) DB::table('arcade_weekly_winners')->insert($awards);
+            if ($allocation && ($allocation['summary']['identity_policy'] ?? null) === VerifiedPrizeIdentity::POLICY) {
+                app(VerifiedPrizeIdentity::class)->seal($key, $utcNow);
+            }
             // Separate from prize selection: an auditable 0–1000 comparative
             // score and one cross-game personal best, persisted atomically.
             // NO new coupon recipients, ranks or source digest are changed.

@@ -94,6 +94,7 @@
 @if($campaign['allocation'])
 @php($allocation = $campaign['allocation'])
 <h4>سهمیه پویای برندگان · {{ $allocation['status'] === 'sealed' ? 'نهایی و قفل‌شده' : 'پیش‌نمایش موقت' }}</h4>
+@if(($allocation['identity_policy'] ?? null) === 'verified-phone-weekly-v1')<p class="muted">فقط حساب دارای شماره تأییدشده در مشارکت مالی و سهمیه جایزه محاسبه می‌شود؛ رتبه فنی دیگر حساب‌ها محفوظ است.</p>@endif
 <p class="muted">حداقل ۲۰ مشارکت معتبر در هر بازی؛ هدف ۱۵٪ تا سقف سهمیه بازی، بودجه و یک جایزه برای هر حساب. نرخ دریافت جایزه نسبت آماری است، نه احتمال تضمین‌شده.</p>
 <p>مشارکت‌کنندگان یکتا: {{ $allocation['participants'] }} · واجد شرایط: {{ $allocation['eligible'] }} · ظرفیت مالی: {{ $allocation['funded_capacity'] }} · برندگان: {{ $allocation['winner_count'] }} · نرخ: {{ $allocation['award_rate_bps'] === null ? '—' : number_format($allocation['award_rate_bps'] / 100, 2).'٪' }}</p>
 <p>حداکثر تعهد برندگان: {{ number_format($allocation['maximum_commitment_minor']) }} · ظرفیت تخصیص‌نیافته: {{ $allocation['unallocated_capacity'] }}</p>

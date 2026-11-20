@@ -103,6 +103,7 @@ final class CouponIssuanceService
                             ->where('ranked_enabled', true)->where('prize_eligible', true)->exists())) {
                     throw new RuntimeException('Café Drift prizes require an eligible season and an active sponsor campaign.');
                 }
+                app(VerifiedPrizeIdentity::class)->assertNewAward($winner, $period, $campaign);
                 $item = $campaign ? $campaignService->claim($campaign) : null;
                 $code = $item ? Crypt::decryptString($item->code_ciphertext)
                     : 'DMC-'.strtoupper(bin2hex(random_bytes(16)));
