@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\V1\ArcadeController;
 use App\Http\Controllers\Api\V1\ArcadeHealthController;
 use App\Http\Controllers\Api\V1\ArcadeTelemetryController;
 use App\Http\Controllers\Api\V1\ArcadePrivacyController;
+use App\Http\Controllers\Api\V1\ArcadeIdentityController;
 use App\Http\Controllers\Api\V1\ArcadeTurnRunController;
 use App\Http\Controllers\Api\V1\CouponController;
 use App\Http\Controllers\Api\V1\CouponDeliveryController;
@@ -36,9 +37,13 @@ Route::prefix('v1/arcade')->middleware([ObserveArcadeRequest::class,
         ->whereIn('gameId', ['after-hours', 'cafe-rush', 'open-world', 'cafe-drift']);
     Route::post('/players', [ArcadeController::class, 'register'])->middleware('throttle:arcade-registration');
     Route::post('/players/recover', [ArcadeController::class, 'recover'])->middleware('throttle:arcade-account-recover');
+    Route::post('/players/recover/phone', [ArcadeIdentityController::class, 'recoveryCode'])->middleware('throttle:arcade-identity-recovery');
     // Online checkout routes intentionally retired. Only authenticated
     // in-cafe staff may redeem coupons through CSRF-protected web routes.
     Route::middleware(AuthenticateArcadePlayer::class)->group(function (): void {
+        Route::get('/player/identity', [ArcadeIdentityController::class, 'status'])->middleware('throttle:arcade-coupon-wallet');
+        Route::post('/player/identity/phone', [ArcadeIdentityController::class, 'requestCode'])->middleware('throttle:arcade-identity-send');
+        Route::post('/player/identity/confirm', [ArcadeIdentityController::class, 'confirm'])->middleware('throttle:arcade-identity-confirm');
         Route::get('/player/coupons', [CouponController::class, 'wallet'])
             ->middleware('throttle:arcade-coupon-wallet');
         Route::post('/player/coupons/{couponId}/acknowledge',

@@ -1,6 +1,7 @@
 import MasterMotionController from './motion/MasterMotionController.js';
 import { motionCharacter } from './motion/MasterMotionLibrary.js';
 import { sanitizeCharacterAnimation } from './CharacterVisualContract.js';
+import { shippedMotionSlug, sharedVisualAlias } from './UnifiedSpriteMotion.js';
 
 const DIRECTION_FALLBACKS = Object.freeze({
     n: ['n', 'ne', 'nw'],
@@ -38,7 +39,7 @@ const DEFAULT_ANIMATION_FALLBACKS = Object.freeze({
 export default class FrameAnimator {
     constructor(atlas) {
         this.atlas = atlas;
-        const slug = atlas.meta?.slug ?? atlas.meta?.name?.split('/')[0]?.trim().toLowerCase();
+        const slug = shippedMotionSlug(atlas) ?? atlas.meta?.slug ?? atlas.meta?.name?.split('/')[0]?.trim().toLowerCase();
         this.masterMotion = motionCharacter(slug) ? new MasterMotionController(slug) : null;
         this.requestedAnimationName = null;
         this.animationName = null;
@@ -58,11 +59,13 @@ export default class FrameAnimator {
 
     has(name) {
         const safeName = sanitizeCharacterAnimation(name);
-        return Boolean(this.atlas.animations?.[safeName]);
+        return Boolean(this.atlas.animations?.[safeName] || sharedVisualAlias(this.atlas, safeName));
     }
 
     resolveName(name) {
         const safeName = sanitizeCharacterAnimation(name);
+        const sharedAlias = sharedVisualAlias(this.atlas, safeName);
+        if (sharedAlias) return sharedAlias;
         if (this.atlas.animations?.[safeName]) {
             return safeName;
         }
@@ -128,6 +131,33 @@ export default class FrameAnimator {
 
         this.applyCurrentFrame();
         return resolvedName;
+    }
+
+    restoreVisualState(previous) {
+        if (!previous) return this.play('idle');
+        this.setDirection(previous.direction);
+        this.setFacing(previous.facing);
+        this.setPlaybackRate(previous.playbackRate);
+        const resolved = this.play(previous.requestedAnimationName ?? previous.animationName ?? 'idle', { restart: true });
+        const oldFrames = previous.currentFrames(), newFrames = this.currentFrames();
+        this.locomotionPhase = previous.locomotionPhase;
+        this.locomotionFrequency = previous.locomotionFrequency;
+        this.motionState = previous.motionState;
+        if (oldFrames.length && newFrames.length) {
+            const position = previous.frameIndex + previous.frameProgress();
+            if (previous.animation?.loop !== false && this.animation.loop !== false) {
+                const normalized = position / oldFrames.length;
+                const oldCycles = Math.max(1, Number(previous.animation.cycleCount) || 1);
+                const newCycles = Math.max(1, Number(this.animation.cycleCount) || 1);
+                this.seekLoop(oldCycles === newCycles ? normalized : ((normalized * oldCycles) % 1) / newCycles);
+            } else {
+                this.seek(previous.finished ? 1 : Math.min(1, position / Math.max(1, oldFrames.length - 1)));
+            }
+        }
+        this.previousSample = null;
+        this.masterMotion?.sync({state: this.motionState ?? this.animationName,
+            phase: this.locomotionPhase, progress: this.progress(), facing: this.facing});
+        return resolved;
     }
 
     setFacing(direction) {

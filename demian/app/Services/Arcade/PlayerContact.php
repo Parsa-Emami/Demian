@@ -47,7 +47,7 @@ final class PlayerContact
         ];
     }
 
-    private function phone(string $value): string
+    public function phone(string $value): string
     {
         $value = strtr($value, array_combine(
             mb_str_split('۰۱۲۳۴۵۶۷۸۹٠١٢٣٤٥٦٧٨٩'), str_split('01234567890123456789')

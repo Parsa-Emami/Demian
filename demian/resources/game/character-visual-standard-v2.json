@@ -1,0 +1,298 @@
+{
+  "version": "demian-character-standard-v2",
+  "packVersion": 14,
+  "families": {
+    "female-base-v1": {
+      "reference": "darya"
+    },
+    "male-base-v1": {
+      "reference": "arsal"
+    }
+  },
+  "canonicalRig": {
+    "hipHeight": 0.28,
+    "chestHeight": 0.48,
+    "headHeight": 0.72,
+    "upperLeg": 0.2,
+    "lowerLeg": 0.2,
+    "upperArm": 0.125,
+    "lowerArm": 0.115,
+    "shoulderSpread": 0.035,
+    "headRadius": 0.17
+  },
+  "atlas": {
+    "pivot": {
+      "x": 0.5,
+      "y": 0.94
+    },
+    "worldSize": 3.75,
+    "referenceBodyHeightRatio": 0.7,
+    "variants": {
+      "desktop": 144,
+      "mobile": 112,
+      "compact": 80,
+      "runtime": 96,
+      "lite": 64,
+      "detail": 128
+    },
+    "requiredStates": [
+      "idle",
+      "walk",
+      "run",
+      "sprint",
+      "jump",
+      "land",
+      "slide",
+      "crouch"
+    ],
+    "sampleStates": [
+      "idle",
+      "walk",
+      "run",
+      "jump",
+      "land",
+      "slide",
+      "crouch"
+    ]
+  },
+  "portrait": {
+    "version": 2,
+    "referenceSize": 224,
+    "eyeX": 0.5,
+    "eyeY": 0.56,
+    "eyeToChin": 0.18,
+    "safeInset": 0.04,
+    "minCrop": 72
+  },
+  "reviewThresholds": {
+    "standingHeightDelta": 0.08,
+    "headWidthRatioDelta": 0.22,
+    "gaitHeightRatioDelta": 0.18
+  },
+  "characters": {
+    "darya": {
+      "family": "female-base-v1",
+      "landmarks": [
+        112,
+        106,
+        124,
+        60,
+        52,
+        161
+      ],
+      "accessories": [
+        "pishi"
+      ]
+    },
+    "setayesh": {
+      "family": "female-base-v1",
+      "landmarks": [
+        112,
+        114,
+        134,
+        60,
+        56,
+        169
+      ],
+      "accessories": []
+    },
+    "uzudi": {
+      "family": "male-base-v1",
+      "landmarks": [
+        109,
+        88,
+        112,
+        68,
+        43,
+        142
+      ],
+      "accessories": [
+        "wings"
+      ]
+    },
+    "negar": {
+      "family": "female-base-v1",
+      "landmarks": [
+        115,
+        101,
+        122,
+        60,
+        52,
+        153
+      ],
+      "accessories": []
+    },
+    "elaheh": {
+      "family": "female-base-v1",
+      "landmarks": [
+        113,
+        99,
+        122,
+        62,
+        47,
+        158
+      ],
+      "accessories": []
+    },
+    "tiam": {
+      "family": "female-base-v1",
+      "landmarks": [
+        109,
+        99,
+        119,
+        73,
+        54,
+        159
+      ],
+      "accessories": [
+        "homayoun"
+      ]
+    },
+    "amirreza": {
+      "family": "male-base-v1",
+      "landmarks": [
+        111,
+        100,
+        123,
+        79,
+        59,
+        143
+      ],
+      "accessories": [
+        "wings"
+      ]
+    },
+    "hanna": {
+      "family": "female-base-v1",
+      "landmarks": [
+        111,
+        92,
+        109,
+        73,
+        55,
+        149
+      ],
+      "accessories": []
+    },
+    "ainaz": {
+      "family": "female-base-v1",
+      "landmarks": [
+        113,
+        91,
+        110,
+        78,
+        50,
+        150
+      ],
+      "accessories": []
+    },
+    "arsal": {
+      "family": "male-base-v1",
+      "landmarks": [
+        113,
+        96,
+        119,
+        82,
+        55,
+        145
+      ],
+      "accessories": []
+    },
+    "iman": {
+      "family": "male-base-v1",
+      "landmarks": [
+        112,
+        101,
+        126,
+        76,
+        55,
+        146
+      ],
+      "accessories": []
+    },
+    "amin": {
+      "family": "male-base-v1",
+      "landmarks": [
+        112,
+        104,
+        129,
+        78,
+        61,
+        145
+      ],
+      "accessories": []
+    },
+    "hossein": {
+      "family": "male-base-v1",
+      "landmarks": [
+        119,
+        107,
+        129,
+        77,
+        60,
+        146
+      ],
+      "accessories": []
+    },
+    "taher-db": {
+      "family": "male-base-v1",
+      "landmarks": [
+        111,
+        99,
+        124,
+        79,
+        53,
+        151
+      ],
+      "accessories": []
+    },
+    "sorkhi": {
+      "family": "male-base-v1",
+      "landmarks": [
+        113,
+        93,
+        116,
+        79,
+        45,
+        148
+      ],
+      "accessories": []
+    },
+    "yalda": {
+      "family": "female-base-v1",
+      "landmarks": [
+        113,
+        86,
+        109,
+        63,
+        42,
+        151
+      ],
+      "accessories": []
+    },
+    "mori": {
+      "family": "male-base-v1",
+      "landmarks": [
+        112,
+        95,
+        116,
+        80,
+        54,
+        144
+      ],
+      "accessories": []
+    },
+    "mahyar": {
+      "family": "male-base-v1",
+      "landmarks": [
+        111,
+        90,
+        111,
+        85,
+        53,
+        139
+      ],
+      "accessories": []
+    }
+  }
+}
