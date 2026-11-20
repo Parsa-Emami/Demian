@@ -19,6 +19,8 @@ use RuntimeException;
 final class ArcadeAntiCheat
 {
     private const SIGNALS = [
+        'duplicate_verified_phone' => ['risk' => 50, 'severity' => 'medium'],
+        'shared_installation' => ['risk' => 25, 'severity' => 'low'],
         'start_velocity' => ['risk' => 45, 'severity' => 'medium'],
         'invalid_replay_velocity' => ['risk' => 60, 'severity' => 'high'],
         'shared_network_cohort' => ['risk' => 35, 'severity' => 'medium'],
@@ -100,6 +102,13 @@ final class ArcadeAntiCheat
                 ->update(['hits' => DB::raw('hits + 1'), 'last_seen' => now(),
                     'updated_at' => now()]);
         }
+    }
+
+    public function identityReview(string $player, string $signal, array $evidence): void
+    {
+        if (! app(PhoneIdentityService::class)->ready()
+            || ! in_array($signal, ['duplicate_verified_phone', 'shared_installation'], true)) return;
+        $this->signal($signal, $player, null, now('UTC')->format('Y-m'), $evidence);
     }
 
     public function assertStartAllowed(string $playerId): void
@@ -295,6 +304,8 @@ final class ArcadeAntiCheat
                 ->where('id', $reportId)->lockForUpdate()->first();
             abort_unless($report && $report->player_id, 404);
             if ($hours !== null) {
+                abort_if(in_array($report->signal, ['shared_installation', 'shared_network_cohort', 'duplicate_verified_phone'], true), 409,
+                    'Identity or shared-network signal alone cannot justify a hold.');
                 abort_unless($report->status === 'confirmed', 409,
                     'A reviewer must confirm the report before restricting starts.');
             }
