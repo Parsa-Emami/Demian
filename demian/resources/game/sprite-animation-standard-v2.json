@@ -1,0 +1,131 @@
+{
+  "version": "demian-unified-animation-v2",
+  "packVersion": 14,
+  "families": {
+    "female-base-v1": "darya",
+    "male-base-v1": "arsal"
+  },
+  "states": {
+    "idle": {
+      "frames": 40,
+      "fps": 24,
+      "loop": true
+    },
+    "walk": {
+      "frames": 64,
+      "fps": 72,
+      "loop": true,
+      "cycles": [
+        1
+      ]
+    },
+    "run": {
+      "frames": 80,
+      "fps": 96,
+      "loop": true,
+      "cycles": [
+        1,
+        2
+      ]
+    },
+    "sprint": {
+      "frames": 80,
+      "fps": 112,
+      "loop": true,
+      "cycles": [
+        1,
+        2
+      ]
+    },
+    "takeoff": {
+      "frames": 12,
+      "fps": 72,
+      "loop": false,
+      "jumpRange": [
+        12,
+        24
+      ]
+    },
+    "jump": {
+      "frames": 8,
+      "fps": 32,
+      "loop": false,
+      "jumpRange": [
+        24,
+        32
+      ]
+    },
+    "fall": {
+      "frames": 11,
+      "fps": 44,
+      "loop": false,
+      "jumpRange": [
+        32,
+        43
+      ]
+    },
+    "land": {
+      "frames": 24,
+      "fps": 150,
+      "loop": false
+    },
+    "slide": {
+      "frames": 64,
+      "fps": 80,
+      "loop": true
+    },
+    "crouch": {
+      "frames": 1,
+      "fps": 1,
+      "loop": false
+    }
+  },
+  "aliases": {
+    "dodge": "slide",
+    "crawl": "crouch"
+  },
+  "aliasArtStatus": {
+    "dodge": "shared-authored-slide",
+    "crawl": "held-low-pose-not-authored-crawl"
+  },
+  "strideLengths": {
+    "walk": 3.4,
+    "run": 6,
+    "sprint": 6.4
+  },
+  "maxStrideHz": 1.55,
+  "landingSeconds": 0.16,
+  "pivot": {
+    "x": 0.5,
+    "y": 0.94
+  },
+  "variants": [
+    "desktop",
+    "mobile",
+    "compact",
+    "runtime",
+    "lite",
+    "detail"
+  ],
+  "logicalFrames": 672,
+  "review": {
+    "maxAdjacentHeightDelta": 0.12,
+    "maxAdjacentFootDelta": 0.045,
+    "maxAdjacentCenterDelta": 0.12,
+    "referenceHeightRatioDelta": 0.18,
+    "priorityArtReview": [
+      "negar",
+      "elaheh",
+      "hanna",
+      "ainaz",
+      "yalda"
+    ],
+    "identitySensitive": [
+      "taher-db",
+      "sorkhi",
+      "mori",
+      "mahyar",
+      "tiam"
+    ]
+  }
+}

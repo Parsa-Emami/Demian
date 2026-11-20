@@ -1,0 +1,17 @@
+# Roadmap 90+ — Phase 08 Unified Sprite Sheet & Animation System
+
+Phase 08 is stacked on Phase 07 PR #93. The shipped V14 source already has 672 logical poses for each of 18 characters across six atlases. This phase makes existing shared timing an explicit versioned contract, checks every logical frame and direction, and corrects runtime visual continuity without changing ranked physics. Darya/female and Arsal/male remain reference families.
+
+## Changes
+- Shared contract: idle 40, walk 64, run/sprint 80, takeoff 12, jump 8, fall 11, land 24, slide 64, crouch 1 logical frames (per clip direction). Preserve authored one/two-stride run cycles; normalized travelled-distance phase, 1.55 Hz cap and vertical-velocity jump. No forced duplicate physical cells.
+- Dodge consistently resolves to dedicated slide art. Crawl resolves to held low pose (crouch), NOT an authored moving crawl sequence; no new controls, speed, collision or ability. Preserve all existing signature animations.
+- Canvas and Three.js avatar quality changes transfer exact subframe, gait phase, direction, playback rate, finished one-shot state and shared motion controller; no stride reset on memory/quality upgrade. Explicit-duration Canvas actions sample by action progress like SpriteCharacter. Crouch/crawl holds low pose.
+- Future V14 authoring rebuild uses shared JSON timing/aliases, rejects incompatible timing. Existing PNGs and atlas revisions are unchanged. No database or engine change.
+- All 108 atlas variants: 72,576 logical records, every cell verified for bounds, nonempty alpha, gutters, image digest, common pivot and frame map, jump phase sequence, counts/timing; deduplicate physical cells for pixel metrics. Per-action adjacent height/foot/center discontinuities and family silhouette differences are reported; 18 mobile contact sheets show every named frame. Heuristic flags are not proof of art defects and never alter a score.
+
+## Current visual evidence and remaining authored work
+Inspected Phase 7 actual CI artifact 14619110518 (both family contact sheets and JSON). Automated checks passed; the family report flagged jump silhouette differences for Negar, Elaheh, Hanna, Ainaz, Yalda; land for Negar and Hanna; head-width proxy for Hanna and Ainaz. Darya includes Pishi; raw silhouette ratios are not anatomical measurements, and a real tuck can be shorter than the reference. Preserve body proportions rather than stretching poses to match a bounding box. Taher DB, Sorkhi, Elaheh, Mori, Mahyar and Tiam remain identity/linework review priorities. Redraw needed poses from each identity's authored sources with Darya/Arsal poses as visual reference; independent art approval required. Dedicated crawl and exact anatomical/line-weight redraws are not delivered by this commit. Existing authored assets are preserved, and new contact sheets facilitate review, not claim artist acceptance.
+
+## Validation
+Run npm test:ci, npm run validate:characters:v14, npm run validate:animation:v2, npm run build:static, npm run validate:build, npm run validate:ui-layers. CI uploads all frame sheets and JSON evidence. Physical devices and human art review are not certified. Static playable bundle is produced by normal CI, not manually regenerated in this connector. Merge only after upstream phases and exact-head CI acceptance.
+Applied repository skills: router, create-game-assets. No dependency updates.

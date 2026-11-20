@@ -277,10 +277,6 @@ export default class SpriteCharacter {
         const previousTexture = this.texture;
         const previousAnimator = this.animator;
         const animationName = previousAnimator?.requestedAnimationName ?? previousAnimator?.animationName ?? this.state ?? 'idle';
-        const animationProgress = previousAnimator?.progress?.() ?? 0;
-        const direction = previousAnimator?.direction ?? this.direction;
-        const facing = previousAnimator?.facing ?? this.facing;
-        const playbackRate = previousAnimator?.playbackRate ?? 1;
 
         this.texture = texture;
         this.texture.needsUpdate = true;
@@ -309,22 +305,8 @@ export default class SpriteCharacter {
             this.blendMaterial.opacity = 0;
             this.blendMaterial.needsUpdate = true;
         }
-        this.animator.setDirection(direction);
-        this.animator.setFacing(facing);
-        this.animator.setPlaybackRate(playbackRate);
-        const resolved = this.animator.play(animationName, { restart: true });
-        const frames = this.animator.currentFrames();
-        if (frames.length > 1 && Number.isFinite(animationProgress)) {
-            this.animator.frameIndex = Math.min(
-                frames.length - 1,
-                Math.max(0, Math.round(animationProgress * (frames.length - 1)))
-            );
-            this.animator.applyCurrentFrame();
-        }
-
-        if (!resolved) {
-            this.animator.play('idle', { restart: true });
-        }
+        if (previousAnimator) this.animator.restorePlaybackFrom(previousAnimator);
+        else this.animator.play(animationName, { restart: true });
 
         if (previousTexture && previousTexture !== this.texture) {
             previousTexture.dispose();

@@ -50,6 +50,14 @@ jobs:
           name: character-visual-v2-${{ github.sha }}
           path: ${{ runner.temp }}/character-v2/
           if-no-files-found: warn
+      - name: Phase 8 animation V2 frame-by-frame QA (all variants)
+        run: python3 tools/audit_unified_animation_v2.py --output "$RUNNER_TEMP/animation-v2"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: animation-v2-${{ github.sha }}
+          path: ${{ runner.temp }}/animation-v2/
+          if-no-files-found: warn
       - name: Restore previous hashed modules before a main release
         if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
         run: node tools/restore_previous_build.mjs

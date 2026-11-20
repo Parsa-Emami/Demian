@@ -111,7 +111,8 @@ export default class CanvasCharacterAvatar {
             jumpForce: actor.jumpForce ?? 6.5,
             physicsOwnsJumpHeight: Boolean(this.atlas.render?.physicsOwnsJumpHeight),
             movementSpeed: this.speedValue, travelledDistance: actor.travelledDistance ?? null,
-            stateTime: this.stateTime,
+            stateTime: Number.isFinite(actor.stateTime) ? actor.stateTime : this.stateTime,
+            actionDuration: Number.isFinite(actor.actionDuration) ? Math.max(0, actor.actionDuration) : 0,
         });
 
         const target = characterPresentationPose({
@@ -142,11 +143,7 @@ export default class CanvasCharacterAvatar {
     replaceVisualAssets(image, atlas) {
         const previous = this.animator;
         const next = new FrameAnimator(atlas);
-        next.setDirection(previous.direction);
-        next.setFacing(previous.facing);
-        next.setPlaybackRate(previous.playbackRate);
-        next.play(previous.requestedAnimationName ?? previous.animationName ?? 'idle');
-        next.seek(previous.progress());
+        next.restorePlaybackFrom(previous);
         this.texture = { image };
         this.atlas = atlas;
         this.animator = next;
