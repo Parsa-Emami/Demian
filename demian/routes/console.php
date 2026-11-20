@@ -113,3 +113,8 @@ Artisan::command('inspire', function () {
     $this->info('Referral records examined: '.$service->sweep());
 })->purpose('Evaluate bounded referral eligibility and expire identity claims.');
 \Illuminate\Support\Facades\Schedule::command('arcade:referrals:evaluate')->everyFifteenMinutes()->withoutOverlapping(10)->onOneServer();
+
+\Illuminate\Support\Facades\Artisan::command('arcade:tables:prune',function(): void {
+    app(\App\Services\Arcade\CafeTableService::class)->prune();
+})->purpose('Expire anonymous table launch deduplication markers and old aggregates.');
+\Illuminate\Support\Facades\Schedule::command('arcade:tables:prune')->dailyAt('04:20')->withoutOverlapping(10)->onOneServer();
