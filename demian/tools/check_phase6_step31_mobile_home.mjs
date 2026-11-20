@@ -143,7 +143,7 @@ try {
             assert.equal(portraitGrid.rows, Math.ceil(BUILTIN_CHARACTER_SLUGS.length / portraitGrid.columns));
             assert.ok(portraitGrid.scrollWidth <= portraitGrid.width + 2, `${view.name}: ${JSON.stringify(portraitGrid)}`);
             assert.ok(portraitGrid.framesFit, `${view.name}: portrait frames must fit within their cards`);
-            const limit = view.width === 390 ? BUILTIN_CHARACTER_SLUGS.length : 3;
+            const limit = BUILTIN_CHARACTER_SLUGS.length;
             for (let i = 0; i < limit; i++) {
                 const canvas = cards.nth(i).locator('[data-character-preview]');
                 await canvas.scrollIntoViewIfNeeded();
@@ -152,6 +152,7 @@ try {
                     i,
                     { timeout: 15000 }
                 );
+                assert.equal(await canvas.getAttribute('data-portrait-standard'), 'v2', `${view.name}/${i}: expected calibrated portrait, not atlas fallback`);
                 const painted = await canvas.evaluate(element => {
                     const ctx = element.getContext('2d', { willReadFrequently: true });
                     const pixels = ctx.getImageData(0, 0, element.width, element.height).data;
@@ -161,6 +162,7 @@ try {
                 });
                 assert.equal(painted, true, `Portrait ${i} must include visible pixels`);
             }
+            await page.screenshot({ path: resolve(output, `character-grid-${view.name}.png`), fullPage: false });
             if (view.width === 390) {
                 await page.locator('[data-character-card="builtin-negar"] [data-select-character]').click();
                 await page.waitForFunction(
