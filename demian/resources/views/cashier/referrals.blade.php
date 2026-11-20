@@ -1,8 +1,7 @@
-<!doctype html>
-<html lang="fa" dir="rtl">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>جذب مشتری دمیان</title></head>
-<body>
-<main>
+@extends('cashier.layout')
+@section('title', 'جذب مشتری | دمیان')
+@section('content')
+<section class="panel">
 <h1>داشبورد دعوت دوستان</h1>
 <p><a href="{{ route('cashier.index') }}">بازگشت به پنل</a></p>
 <p>وضعیت: {{ $report['available'] ? 'فعال' : 'غیرفعال' }}</p>
@@ -16,6 +15,5 @@
 <dt>هزینه پاداش نقدی و تخفیف</dt><dd>صفر (غیرفعال)</dd>
 <dt>هزینه واقعی جذب مشتری</dt><dd>اندازه‌گیری نشده؛ هزینه پیامک، نیروی انسانی و تبلیغات جداگانه محاسبه می‌شود.</dd>
 </dl>
-</main>
-</body>
-</html>
+</section>
+@endsection

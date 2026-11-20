@@ -1,3 +1,4 @@
+import {drawReferralQr} from './ReferralQr.js';
 const elem=(tag,text='')=>{const node=document.createElement(tag);node.textContent=text;return node;};
 export default class ReferralPanel {
     constructor(service,anchor){
@@ -6,10 +7,12 @@ export default class ReferralPanel {
         this.status=elem('p');this.status.setAttribute('role','status');
         this.stats=elem('p');this.link=elem('input');this.link.type='text';this.link.readOnly=true;
         this.link.setAttribute('aria-label','لینک دعوت اختصاصی');this.link.hidden=true;
+        this.qr=elem('canvas');this.qr.hidden=true;this.qr.style.maxWidth='100%';this.qr.style.height='auto';
+        this.qr.setAttribute('role','img');this.qr.setAttribute('aria-label','کد QR لینک دعوت');
         this.create=elem('button','ساخت کد دعوت');this.create.type='button';this.create.hidden=true;
         this.share=elem('button','اشتراک‌گذاری / کپی لینک');this.share.type='button';this.share.hidden=true;
         this.refresh=elem('button','به‌روزرسانی');this.refresh.type='button';
-        this.root.append(elem('summary','دعوت دوستان'),this.status,this.stats,this.link,this.create,this.share,this.refresh,
+        this.root.append(elem('summary','دعوت دوستان'),this.status,this.stats,this.link,this.qr,this.create,this.share,this.refresh,
             elem('p','پاداش دعوت فقط امتیاز غیرمالی است؛ تأیید تلفن و بازی معتبر در دو روز متفاوت لازم است.'));
         anchor.after(this.root);
         this.root.addEventListener('toggle',()=>this.root.open?void this.load():this.clear());
@@ -23,7 +26,7 @@ export default class ReferralPanel {
             }catch{this.link.select();}
         });
     }
-    clear(){this.serial++;this.status.textContent='';this.stats.textContent='';this.link.value='';this.link.hidden=true;this.create.hidden=true;this.share.hidden=true;}
+    clear(){this.serial++;this.status.textContent='';this.stats.textContent='';this.link.value='';this.link.hidden=true;this.qr.hidden=true;this.qr.width=this.qr.height=0;this.create.hidden=true;this.share.hidden=true;}
     reset(){this.root.open=false;this.clear();}
     open(){this.reset();this.root.hidden=!this.service.connected;}
     async load(create=false){
@@ -43,6 +46,7 @@ export default class ReferralPanel {
             if(/^[A-F0-9]{16}$/.test(d.code??'')){
                 const url=new URL(location.href);url.search='';url.hash='ref='+d.code;
                 this.link.value=url.href;this.link.hidden=false;this.share.hidden=false;
+                try{drawReferralQr(this.qr,url.href);this.qr.hidden=false;}catch{}
             }else this.create.hidden=false;
         }catch{if(current())this.status.textContent='دریافت دعوت ناموفق بود؛ دوباره تلاش کن.';}
     }

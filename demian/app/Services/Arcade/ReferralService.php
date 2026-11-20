@@ -15,7 +15,8 @@ final class ReferralService
 
     public function available(): bool
     {
-        return config('demian-referrals.enabled') === true && app(PhoneIdentityService::class)->ready();
+        return config('demian-referrals.enabled') === true && app(PhoneIdentityService::class)->ready()
+            && (app()->environment('testing') || config('demian-legal.publication_approved') === true);
     }
 
     private function lock(): void
