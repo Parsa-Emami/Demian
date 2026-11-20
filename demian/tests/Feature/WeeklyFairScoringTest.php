@@ -387,6 +387,7 @@ final class WeeklyFairScoringTest extends TestCase
     public function test_progress_uses_highwater_across_weeks_and_never_issues_coupons(): void
     {
         $player=$this->player();
+        DB::table('arcade_players')->where('id',$player)->update(['token_expires_at'=>now()->addDays(90)]);
         DB::table('arcade_verified_phones')->insert([
             'player_id'=>$player,'phone_hash'=>hash('sha256','progress-fixture'),
             'phone_ciphertext'=>'test-only-ciphertext','verified_at'=>'2026-11-08 12:00:00',
