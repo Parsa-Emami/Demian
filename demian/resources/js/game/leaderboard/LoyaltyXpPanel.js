@@ -17,7 +17,7 @@ export default class LoyaltyXpPanel {
         this.rows=elem('ol');this.rows.style.paddingInlineStart='1.5em';
         this.rows.setAttribute('aria-label','تاریخچه امتیاز تجربه هفتگی');
         this.root.append(elem('summary','سطح و وفاداری من'),this.status,this.stats,this.bar,this.rows,
-            elem('p','امتیاز تجربه در پایان هفته و فقط از عملکرد معتبر ثبت می‌شود. سقف ۲۲۵ XP در هفته؛ بدون ارزش مالی، خرید یا انتقال. سطح وفاداری با لیگ مهارت متفاوت است.'));
+            elem('p','امتیاز تجربه در پایان هفته و فقط از عملکرد معتبر ثبت می‌شود. سقف ۳۰۰ XP در هفته شامل حداکثر ۷۵ XP مأموریت؛ بدون ارزش مالی، خرید یا انتقال. سطح وفاداری با لیگ مهارت متفاوت است.'));
         anchor.after(this.root);
         this.onToggle=()=>{if(this.root.open)void this.load();else this.clear();};
         this.root.addEventListener('toggle',this.onToggle);
@@ -48,7 +48,7 @@ export default class LoyaltyXpPanel {
             for(const r of (Array.isArray(data.history)?data.history.slice(0,12):[])){
                 const week=String(r.period_key??'').split(':').at(-1);
                 this.rows.append(elem('li',week+' · '+number(r.total_xp)+' XP (مشارکت '+number(r.participation_xp)
-                    +'، تنوع '+number(r.variety_xp)+'، پیشرفت '+number(r.progress_xp)+'، استمرار '+number(r.continuity_xp)+')'));
+                    +'، تنوع '+number(r.variety_xp)+'، پیشرفت '+number(r.progress_xp)+'، استمرار '+number(r.continuity_xp)+'، مأموریت '+number(r.mission_xp)+')'));
             }
         }catch{if(current())this.status.textContent='دریافت سطح وفاداری ناموفق بود؛ دوباره تلاش کن.';}
     }

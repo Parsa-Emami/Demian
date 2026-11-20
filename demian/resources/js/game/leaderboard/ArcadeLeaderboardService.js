@@ -509,6 +509,11 @@ export default class ArcadeLeaderboardService {
         return this.request('/competition/leagues?' + query);
     }
 
+    async myMissions() {
+        if (!this.connected || !this.identity?.token) return null;
+        return this.request('/player/missions', { authenticated: true });
+    }
+
     async myLoyalty() {
         if (!this.connected || !this.identity?.token) return null;
         return this.request('/player/loyalty', { authenticated: true });

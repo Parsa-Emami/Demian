@@ -116,7 +116,7 @@ final class MissionService
         $response=['verified'=>$verified,'status'=>$verified?'provisional':'unverified',
             'server_now'=>$now->toIso8601String(),'day_ends_at'=>$local->startOfDay()->addDay()->utc()->toIso8601String(),
             'week_ends_at'=>$window['ends_at']->toIso8601String(),'period_key'=>$key,'rules'=>MissionPolicy::rules(),
-            'progress'=>MissionPolicy::evaluate(0,0,false),'today_complete'=>false,'targets'=>[],'last_finalized'=>null];
+            'progress'=>MissionPolicy::evaluate(0,0,false),'today_complete'=>false,'targets'=>[],'played_games'=>[],'last_finalized'=>null];
         if (!$verified) return $response;
         $e=$this->evidence([$player],$key,$start,$now,false)[$player]??['mask'=>0,'games'=>[]];
         $goals=$this->goals([$player],$key,$start)[$player]??[];
@@ -136,7 +136,7 @@ final class MissionService
             ->first(['m.period_key','m.total_xp','m.active_days','m.distinct_games','m.adaptive_xp']);
         $day=(int)$start->setTimezone('Asia/Tehran')->startOfDay()->diffInDays($local->startOfDay());
         return [...$response,'progress'=>MissionPolicy::evaluate($e['mask'],count($e['games']),$met),
-            'today_complete'=>(bool)($e['mask'] & (1<<$day)),'targets'=>$targets,
+            'today_complete'=>(bool)($e['mask'] & (1<<$day)),'targets'=>$targets,'played_games'=>array_keys($e['games']),
             'last_finalized'=>$last?['period_key'=>$last->period_key,'total_xp'=>(int)$last->total_xp,
                 'active_days'=>(int)$last->active_days,'distinct_games'=>(int)$last->distinct_games,
                 'adaptive_xp'=>(int)$last->adaptive_xp]:null];

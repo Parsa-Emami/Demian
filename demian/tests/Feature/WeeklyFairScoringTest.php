@@ -384,6 +384,43 @@ final class WeeklyFairScoringTest extends TestCase
             ->assertOk()->assertJsonCount(0, 'data');
     }
 
+    public function test_missions_count_distinct_tehran_days_not_runs_and_settle_once(): void
+    {
+        $this->travelTo(CarbonImmutable::parse('2026-11-12T12:00:00Z'));
+        $player=$this->player();
+        DB::table('arcade_verified_phones')->insert([
+            'player_id'=>$player,'phone_hash'=>hash('sha256','mission-fixture'),
+            'phone_ciphertext'=>'test-only-ciphertext','verified_at'=>'2026-11-09 12:00:00',
+        ]);
+        $run=$this->verified($player,1000);
+        $row=(array)DB::table('arcade_runs')->where('id',$run)->first();
+        foreach(['2026-11-10 12:00:00','2026-11-11 10:00:00','2026-11-12 10:00:00'] as $started) {
+            $id=(string)Str::uuid();
+            DB::table('arcade_runs')->insert([...$row,'id'=>$id,'request_id'=>(string)Str::uuid(),
+                'score'=>100,'replay_hash'=>hash('sha256',$id),'started_at'=>$started,
+                'expires_at'=>CarbonImmutable::parse($started,'UTC')->addHour()->toDateTimeString(),
+                'completed_at'=>CarbonImmutable::parse($started,'UTC')->addMinutes(2)->toDateTimeString()]);
+        }
+        $this->withToken(hash('sha256',$player))->getJson('/api/v1/arcade/player/missions')
+            ->assertOk()->assertJsonPath('status','provisional')->assertJsonPath('today_complete',true)
+            ->assertJsonPath('progress.active_days',3)->assertJsonPath('progress.distinct_games',1)
+            ->assertJsonPath('progress.total_xp',30)->assertJsonPath('last_finalized',null);
+        $this->assertDatabaseCount('arcade_mission_weeks',0);
+        $this->travelTo(CarbonImmutable::parse('2026-11-14T01:00:00Z'));
+        $settler=app(WeeklySettlementService::class);
+        $settler->seal('2026-11-07');
+        $settler->seal('2026-11-07');
+        $this->assertDatabaseCount('arcade_mission_weeks',1);
+        $this->assertDatabaseHas('arcade_mission_weeks',['player_id'=>$player,'day_mask'=>56,
+            'daily_xp'=>15,'consistency_xp'=>15,'total_xp'=>30]);
+        $this->getJson('/api/v1/arcade/player/missions')->assertOk()
+            ->assertJsonPath('progress.total_xp',0)->assertJsonPath('last_finalized.total_xp',30);
+        $this->getJson('/api/v1/arcade/player/loyalty')->assertOk()
+            ->assertJsonPath('total_xp',130)->assertJsonPath('mission_xp',30);
+        $this->getJson('/api/v1/arcade/player/data/records?type=missions')->assertOk()->assertJsonCount(1,'data');
+        $this->assertDatabaseCount('arcade_coupons',0);
+    }
+
     public function test_progress_uses_highwater_across_weeks_and_never_issues_coupons(): void
     {
         $player=$this->player();
