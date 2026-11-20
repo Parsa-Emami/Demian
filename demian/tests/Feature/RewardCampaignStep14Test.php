@@ -253,6 +253,15 @@ final class RewardCampaignStep14Test extends TestCase
         app(RewardCampaignService::class)->measure($root, 1, $id, $data);
         $this->assertSame(1000, $read()['measurement']['net_incremental_minor']);
         $this->assertEqualsWithDelta(33.33, $read()['measurement']['roi_percent'], .01);
+        $bi=app(\App\Services\Arcade\BusinessAnalytics::class)->snapshot(30)['commercial']['campaigns_lifetime_live'];
+        $this->assertSame('operator_measured',$bi['rows'][0]['financial_status']);
+        $this->assertEqualsWithDelta(33.33,$bi['rows'][0]['recorded_roi_percent'],.01);
+        $this->assertStringNotContainsString('AUDIT-2026-01',json_encode($bi));
+        DB::table('arcade_reward_campaigns')->where('id',$id)->update(['terms_hash'=>str_repeat('0',64)]);
+        $invalid=app(\App\Services\Arcade\BusinessAnalytics::class)->snapshot(30)['commercial']['campaigns_lifetime_live'];
+        $this->assertSame('invalid_or_unavailable',$invalid['rows'][0]['financial_status']);
+        $this->assertNull($invalid['rows'][0]['recorded_roi_percent']);
+        DB::table('arcade_reward_campaigns')->where('id',$id)->update(['terms_hash'=>RewardCampaignService::termsDigest(json_decode(DB::table('arcade_reward_campaigns')->where('id',$id)->value('terms'),true,512,JSON_THROW_ON_ERROR))]);
         $this->loginAs($root)->get('/cashier/admin/campaigns')->assertOk()->assertSee('AUDIT-2026-01')->assertDontSee($code);
     }
 
