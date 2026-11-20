@@ -42,7 +42,7 @@ export default class ReferralPanel {
             this.status.textContent='دعوت دوستان';
             const n=new Intl.NumberFormat('fa-IR');
             this.stats.textContent='ثبت‌نام: '+n.format(d.invited)+' · موفق: '+n.format(d.qualified)+' · امتیاز: '+n.format(d.points);
-            if(d.attribution)this.stats.textContent+=' · وضعیت دعوت ورودی: '+({pending:'در انتظار',qualified:'موفق',review:'بررسی',expired:'منقضی',capped:'سقف پاداش'}[d.attribution.status]??'—');
+            if(d.attribution)this.stats.textContent+=' · وضعیت دعوت ورودی: '+({pending:'در انتظار',qualified:'موفق',review:'بررسی',expired:'منقضی',capped:'سقف پاداش',rejected:'رد شده'}[d.attribution.status]??'—');
             if(/^[A-F0-9]{16}$/.test(d.code??'')){
                 const url=new URL(location.href);url.search='';url.hash='ref='+d.code;
                 this.link.value=url.href;this.link.hidden=false;this.share.hidden=false;

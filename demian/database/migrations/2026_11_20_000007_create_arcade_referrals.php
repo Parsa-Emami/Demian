@@ -30,6 +30,11 @@ return new class extends Migration {
             $t->index(['status','checked_at','id']);
             $t->index(['inviter_id','status']);
         });
+        Schema::create('arcade_referral_costs', function (Blueprint $t): void {
+            $t->string('month',7)->primary();
+            $t->unsignedBigInteger('spend_irr');
+            $t->timestamp('updated_at');
+        });
         Schema::create('arcade_referral_awards', function (Blueprint $t): void {
             $t->id();
             $t->char('invitee_digest',64)->unique();
@@ -43,6 +48,7 @@ return new class extends Migration {
     public function down(): void
     {
         Schema::dropIfExists('arcade_referral_awards');
+        Schema::dropIfExists('arcade_referral_costs');
         Schema::dropIfExists('arcade_referrals');
         Schema::dropIfExists('arcade_referral_codes');
         Schema::dropIfExists('arcade_referral_lock');

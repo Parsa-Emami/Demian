@@ -144,18 +144,54 @@ final class ReferralService
         return $ids->count();
     }
 
+    public function recordCost(int $actor,int $version,string $month,int $spend): void
+    {
+        abort_unless($month===now('Asia/Tehran')->format('Y-m') && $spend>=0 && $spend<=1000000000000,422);
+        DB::transaction(function () use ($actor,$version,$month,$spend): void {
+            $this->lock();
+            $staff=DB::table('arcade_cashier_staff')->where('id',$actor)->lockForUpdate()->first();
+            CafeAccess::authorize($staff,'report.global');
+            abort_unless((int)$staff->session_version===$version,403);
+            $old=DB::table('arcade_referral_costs')->where('month',$month)->value('spend_irr');
+            DB::table('arcade_referral_costs')->updateOrInsert(['month'=>$month],['spend_irr'=>$spend,'updated_at'=>now()->utc()]);
+            DB::table('arcade_cashier_admin_events')->insert(['actor_id'=>$actor,'event_type'=>'referral_cost_recorded',
+                'details'=>json_encode(['month'=>$month,'previous_irr'=>$old===null?null:(int)$old,'spend_irr'=>$spend],JSON_THROW_ON_ERROR),
+                'created_at'=>now()->utc()]);
+        },3);
+    }
+
+    public function review(int $actor,int $version,int $id,string $decision): void
+    {
+        abort_unless(in_array($decision,['reject','recheck'],true),422);
+        DB::transaction(function () use ($actor,$version,$id,$decision): void {
+            $this->lock();
+            $staff=DB::table('arcade_cashier_staff')->where('id',$actor)->lockForUpdate()->first();
+            CafeAccess::authorize($staff,'report.global');
+            abort_unless((int)$staff->session_version===$version,403);
+            $claim=DB::table('arcade_referrals')->where('id',$id)->lockForUpdate()->first();
+            abort_unless($claim && $claim->status==='review',409);
+            $status=$decision==='reject'?'rejected':'pending';
+            DB::table('arcade_referrals')->where('id',$id)->update(['status'=>$status,'checked_at'=>now()->utc()]);
+            DB::table('arcade_cashier_admin_events')->insert(['actor_id'=>$actor,'event_type'=>'referral_review',
+                'details'=>json_encode(['referral_id'=>$id,'decision'=>$decision],JSON_THROW_ON_ERROR),'created_at'=>now()->utc()]);
+        },3);
+    }
+
     public function report(): array
     {
         $counts=DB::table('arcade_referrals')->selectRaw('status, COUNT(*) AS total')->groupBy('status')->pluck('total','status');
         $total=(int)$counts->sum();
         $qualified=(int)($counts['qualified']??0);
         $month=now('Asia/Tehran')->format('Y-m');
+        $monthlyAwards=DB::table('arcade_referral_awards')->where('month',$month)->count();
+        $cost=DB::table('arcade_referral_costs')->where('month',$month)->value('spend_irr');
         return ['available'=>$this->available(),'registrations'=>$total,'qualified'=>$qualified,
             'pending'=>(int)($counts['pending']??0),'review'=>(int)($counts['review']??0),
             'expired'=>(int)($counts['expired']??0),'capped'=>(int)($counts['capped']??0),
             'conversion_percent'=>$total?round(100*$qualified/$total,2):0,
-            'monthly_awards'=>DB::table('arcade_referral_awards')->where('month',$month)->count(),
+            'monthly_awards'=>$monthlyAwards,'month'=>$month,'rejected'=>(int)($counts['rejected']??0),
             'monthly_cap'=>self::MONTHLY_GLOBAL_CAP,'financial_reward_cost'=>0,
-            'total_acquisition_cost'=>null,'financial_rewards'=>false];
+            'total_acquisition_cost'=>$cost===null?null:(int)$cost,
+            'cac_irr'=>$cost===null || !$monthlyAwards?null:intdiv((int)$cost,$monthlyAwards),'financial_rewards'=>false];
     }
 }

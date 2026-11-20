@@ -45,6 +45,10 @@ Route::prefix('cashier')->name('cashier.')->group(function (): void {
             ->middleware('throttle:arcade-cashier-admin')->name('staff.action');
         Route::get('/admin/referrals', \App\Http\Controllers\Cafe\CafeReferralController::class)
             ->middleware(RequireCafePermission::class.':report.global')->name('referrals');
+        Route::post('/admin/referrals/cost', [\App\Http\Controllers\Cafe\CafeReferralController::class,'cost'])
+            ->middleware([RequireCafePermission::class.':report.global','throttle:arcade-cashier-admin'])->name('referrals.cost');
+        Route::post('/admin/referrals/review', [\App\Http\Controllers\Cafe\CafeReferralController::class,'review'])
+            ->middleware([RequireCafePermission::class.':report.global','throttle:arcade-cashier-admin'])->name('referrals.review');
         Route::get('/admin/reports/global', [CafeAdminController::class, 'globalReport'])
             ->middleware(RequireCafePermission::class.':report.global')->name('report.global');
         Route::post('/admin/coupons/revoke', [CafeAdminController::class, 'revoke'])
