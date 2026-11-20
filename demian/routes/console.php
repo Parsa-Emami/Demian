@@ -101,3 +101,10 @@ Artisan::command('inspire', function () {
 \Illuminate\Support\Facades\Schedule::command('arcade:ops:check --json')
     ->everyFiveMinutes()->withoutOverlapping(5)->onOneServer()
     ->when(fn (): bool => config('demian-ops.enabled') === true);
+
+
+// Always remove expired identity metadata, even after disabling SMS delivery.
+\Illuminate\Support\Facades\Artisan::command('arcade:identity:prune', function (): void {
+    $this->line(json_encode(app(\App\Services\Arcade\PhoneIdentityService::class)->prune(), JSON_THROW_ON_ERROR));
+})->purpose('Purge expired OTPs, installation signals and resolved identity claims.');
+\Illuminate\Support\Facades\Schedule::command('arcade:identity:prune')->everyFifteenMinutes()->withoutOverlapping(10)->onOneServer();

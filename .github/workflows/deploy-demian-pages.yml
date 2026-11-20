@@ -42,6 +42,22 @@ jobs:
       - run: npm run validate:final
       - run: npm run validate:ui-layers
       - run: npm run validate:characters:v14
+      - name: Unified V2 all-frame animation audit
+        run: python3 tools/audit_sprite_animation_v2.py --output "$RUNNER_TEMP/animation-v2"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: character-animation-v2-${{ github.sha }}
+          path: ${{ runner.temp }}/animation-v2/
+          if-no-files-found: warn
+      - name: Unified V2 character raster audit and family contact sheets
+        run: python3 tools/audit_character_visual_v2.py --output "$RUNNER_TEMP/character-v2"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: character-visual-v2-${{ github.sha }}
+          path: ${{ runner.temp }}/character-v2/
+          if-no-files-found: warn
       - name: Restore previous hashed modules before a main release
         if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
         run: node tools/restore_previous_build.mjs
@@ -137,7 +153,7 @@ jobs:
             export DEMIAN_FIRST_FRAME_BASELINE="$baseline/site"
           fi
           timeout --signal=TERM --kill-after=10s 300s node tools/check_first_playable_matrix.mjs
-      - name: Phase 6 Step 31 mobile home and twelve character artwork QA
+      - name: Phase 7 V2 mobile and desktop artwork QA — every roster portrait
         run: timeout --signal=TERM --kill-after=10s 240s node tools/check_phase6_step31_mobile_home.mjs
       - name: Motion UI — authentic four-stage loader, interactive tips, mobile layouts and reduced motion
         run: timeout --signal=TERM --kill-after=10s 180s npm run test:experience:browser
@@ -235,6 +251,7 @@ jobs:
             demian/docs/phase6-step31/browser-compatibility.json
             demian/docs/phase6-step31/mobile-characters-browser.json
             demian/docs/phase6-step31/mobile-home-*.png
+            demian/docs/phase6-step31/character-grid-*.png
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v4
         with:

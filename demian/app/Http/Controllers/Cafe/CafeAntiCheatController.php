@@ -37,6 +37,7 @@ final class CafeAntiCheatController extends Controller
                 ->orderByDesc('id')->limit(50)
                 ->get(['id','report_id','actor_id','action','previous_status',
                     'next_status','created_at','note']),
+            'riskQueue' => $antiCheat->riskQueue(),
             'activeHolds' => DB::table('arcade_anticheat_holds')
                 ->where('expires_at','>',now())->count(),
             'canReview' => $staff->role === 'super_admin',

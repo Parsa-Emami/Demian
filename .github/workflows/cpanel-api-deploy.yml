@@ -88,6 +88,9 @@ jobs:
         with:
           name: cpanel-api-release
           path: .cpanel-release
+      - name: Require complete character art acceptance before production hosting
+        if: inputs.target == 'production'
+        run: python3 demian/tools/verify_character_art_acceptance.py
       - name: Require separate production approval and hosting configuration
         shell: bash
         run: |

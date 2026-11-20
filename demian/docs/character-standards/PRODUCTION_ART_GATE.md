@@ -1,0 +1,5 @@
+# Mandatory pre-host art gate
+
+Do not approve staging/production handoff as visually complete until all current and new characters are actually corrected in Work. Use Darya/Arsal V2 references; review anatomy, head/body, limbs, outline, pixel quality, identity, motion, crawl/dodge and desktop/mobile. Rebuild six variants, refresh playable, inspect actual frame sheets and record reviewer/date/checks, per-file hashes from files_for(slug), and evidence paths under docs with SHA256. Never mark approved from automated geometry alone.
+
+Production cPanel workflow runs verify_character_art_acceptance.py before SSH deployment. Pending/missing/stale roster or asset hashes block deployment; staging and GitHub Pages practice previews remain allowed. Manual host upload must follow the same gate (run the script against the exact source release before uploading). New/replaced assets invalidate the approval. This is not independent verification of artistic quality: truthful reviewer acceptance is required.

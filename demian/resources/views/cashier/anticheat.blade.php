@@ -3,7 +3,7 @@
 @section('content')
 <div class="row"><a class="button secondary" href="{{ route('cashier.index') }}">بازگشت</a></div>
 <h1>گام ۱۰ — پایش ضدتقلب</h1>
-<p class="muted">هشدارهای الگوریتمی فقط نشانه نیاز به بررسی هستند، نه اثبات تخلف. هیچ امتیاز یا کوپن خودکار حذف نمی‌شود. IP خام، کلید دسترسی و مدرک خام Replay نمایش داده نمی‌شود.</p>
+<p class="muted">هشدارهای الگوریتمی فقط نشانه نیاز به بررسی هستند، نه اثبات تخلف. هیچ امتیاز یا کوپن خودکار حذف نمی‌شود. شماره تکراری، مرورگر مشترک و شبکه مشترک صرفاً قرینه بررسی‌اند؛ به‌تنهایی مجوز محدودیت نیستند. IP خام، کلید دسترسی و مدرک خام Replay نمایش داده نمی‌شود.</p>
 @if(session('notice'))<div class="ok" role="status">{{ session('notice') }}</div>@endif
 @if($errors->any())<div class="alert" role="alert">{{ $errors->first() }}</div>@endif
 <section class="panel">
@@ -20,6 +20,17 @@
 <a href="{{ route('cashier.anticheat', ['status' => 'investigating']) }}">در حال بررسی</a> ·
 <a href="{{ route('cashier.anticheat', ['status' => 'confirmed']) }}">تأیید‌شده</a>
 </p>
+</section>
+<section class="panel">
+<h2>اولویت بررسی ترکیبی · ۷ روز اخیر</h2>
+<p class="muted">امتیاز ۰ تا ۱۰۰ فقط اولویت صف بررسی است؛ احتمال تقلب محسوب نمی‌شود. تکرار یک سیگنال امتیاز را افزایش نمی‌دهد و شبکه مشترک یا شناسه نصب در این امتیاز وارد نمی‌شود.</p>
+<table><thead><tr><th>حساب داخلی</th><th>امتیاز بررسی</th><th>گروه‌های مستقل شواهد</th><th>نشانه‌ها</th><th>اولویت</th></tr></thead><tbody>
+@forelse($riskQueue as $row)
+<tr><td><small>{{ $row['player_id'] }}</small></td><td>{{ $row['risk'] }}</td><td>{{ $row['families'] }}</td><td>{{ $row['signals'] }}</td><td>{{ $row['priority'] }}</td></tr>
+@empty
+<tr><td colspan="5">پرونده قابل اولویت‌بندی وجود ندارد.</td></tr>
+@endforelse
+</tbody></table>
 </section>
 <section class="panel">
 <h2>۱۰۰ پرونده آخر (شناسه‌های داخلی)</h2>
