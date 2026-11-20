@@ -1,6 +1,7 @@
 import { RECORD_GAMES, recordHeading, formatGameRecord } from '../../leaderboard/GameRecord.js';
 import BaseScreen from './BaseScreen.js';
 import SkillLeaguePanel from '../../leaderboard/SkillLeaguePanel.js';
+import PersonalProgressPanel from '../../leaderboard/PersonalProgressPanel.js';
 import { remainingWeeklySeconds, formatWeeklyCountdown } from '../../leaderboard/WeeklyCountdown.js';
 
 export default class LeaderboardScreen extends BaseScreen {
@@ -18,6 +19,7 @@ export default class LeaderboardScreen extends BaseScreen {
         this.body = this.element.querySelector('[data-ranking-rows]');
         this.status = this.element.querySelector('[data-ranking-status]');
         this.skillLeagues = new SkillLeaguePanel(this.service,this.status);
+        this.personalProgress = new PersonalProgressPanel(this.service,this.skillLeagues.root);
         this.countdown = this.element.querySelector('[data-ranking-countdown]');
         this.personalBest = this.element.querySelector('[data-ranking-personal-best]');
         this.form = this.element.querySelector('[data-ranking-name-form]');
@@ -92,6 +94,8 @@ export default class LeaderboardScreen extends BaseScreen {
             button.disabled = true;
             try {
                 const code = this.recoveryForm.elements.recovery_code.value;
+                this.personalProgress.reset();
+                this.skillLeagues.reset();
                 const recovered = await this.service.recoverAccount(code);
                 this.recoveryForm.reset();
                 this.form.elements.display_name.value = recovered.display_name;
@@ -108,6 +112,8 @@ export default class LeaderboardScreen extends BaseScreen {
             if (!globalThis.confirm?.('حساب، تمام رکوردهای جهانی و داده‌های این دستگاه برای همیشه حذف می‌شوند. ادامه می‌دهی؟')) return;
             this.deleteAccount.disabled = true;
             try {
+                this.personalProgress.reset();
+                this.skillLeagues.reset();
                 await this.service.eraseAccount();
                 this.recoveryLink.value = '';
                 this.backupCode.value = '';
@@ -179,6 +185,7 @@ export default class LeaderboardScreen extends BaseScreen {
 
     async beforeOpen() {
         this.skillLeagues.open();
+        this.personalProgress.open();
         this.form.elements.display_name.value = this.service.displayName;
         this.issueRecovery.disabled = !this.service.connected;
         this.verifyPhoneButton.disabled = !this.service.connected;
@@ -423,6 +430,7 @@ export default class LeaderboardScreen extends BaseScreen {
 
     async beforeClose() {
         this.skillLeagues.reset();
+        this.personalProgress.reset();
         this.generation++;
         this.loading = false;
         this.snapshot = null;
@@ -434,6 +442,7 @@ export default class LeaderboardScreen extends BaseScreen {
 
     dispose() {
         this.skillLeagues.dispose();
+        this.personalProgress.dispose();
         this.generation++;
         if (this.timer != null) clearInterval(this.timer);
         this.timer = null;

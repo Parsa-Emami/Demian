@@ -384,6 +384,40 @@ final class WeeklyFairScoringTest extends TestCase
             ->assertOk()->assertJsonCount(0, 'data');
     }
 
+    public function test_progress_uses_highwater_across_weeks_and_never_issues_coupons(): void
+    {
+        $player=$this->player();
+        DB::table('arcade_verified_phones')->insert([
+            'player_id'=>$player,'phone_hash'=>hash('sha256','progress-fixture'),
+            'phone_ciphertext'=>'test-only-ciphertext','verified_at'=>'2026-11-08 12:00:00',
+        ]);
+        $weeks=[
+            ['2026-11-07','2026-11-10',100],
+            ['2026-11-14','2026-11-17',900],
+            ['2026-11-21','2026-11-24',1000],
+            ['2026-11-28','2026-12-01',1],
+            ['2026-12-05','2026-12-08',1050],
+            ['2026-12-12','2026-12-15',1050],
+        ];
+        $settler=app(WeeklySettlementService::class);
+        foreach($weeks as [$week,$day,$score]) {
+            $this->travelTo(CarbonImmutable::parse($day.'T10:01:00Z'));
+            $this->verified($player,$score,'dino-run','cafe-runner-v2',$day.'T10:00:00Z');
+            $this->travelTo(CarbonImmutable::parse($week.'T01:00:00Z')->addWeek());
+            $settler->seal($week);
+        }
+        $this->assertDatabaseCount('arcade_personal_progress',6);
+        $this->assertDatabaseHas('arcade_personal_progress',['period_key'=>'weekly:tehran:2026-11-28','previous_best'=>1000,'target_score'=>1050,'badge'=>null]);
+        $this->assertDatabaseHas('arcade_personal_progress',['period_key'=>'weekly:tehran:2026-12-05','badge'=>'personal-breakthrough','score'=>1050]);
+        $this->assertSame(1,DB::table('arcade_personal_progress')->whereNotNull('badge')->count());
+        $this->withToken(hash('sha256',$player))->getJson('/api/v1/arcade/player/progress?game=dino-run')
+            ->assertOk()->assertJsonPath('personal_best',1050)->assertJsonPath('next_goal',1103)
+            ->assertJsonPath('weeks',6)->assertJsonPath('badges',1)->assertJsonCount(6,'history');
+        $settler->seal('2026-12-12');
+        $this->assertDatabaseCount('arcade_personal_progress',6);
+        $this->assertDatabaseCount('arcade_coupons',0);
+    }
+
     public function test_skill_leagues_are_phone_verified_sealed_private_and_nonfinancial(): void
     {
         $players=[];

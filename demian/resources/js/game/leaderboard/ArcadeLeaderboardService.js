@@ -509,6 +509,14 @@ export default class ArcadeLeaderboardService {
         return this.request('/competition/leagues?' + query);
     }
 
+    async myPersonalProgress(game = 'dino-run') {
+        if (!this.connected || !this.identity?.token) return null;
+        if (!['dino-run','cafe-critters','coffee-crash','cafe-drift','after-hours','cafe-rush','open-world'].includes(game)) {
+            throw new Error('بازی معتبر نیست.');
+        }
+        return this.request('/player/progress?' + new URLSearchParams({game}), { authenticated: true });
+    }
+
     async mySkillLeague() {
         if (!this.connected || !this.identity?.token) return null;
         return this.request('/player/competition/league', { authenticated: true });
