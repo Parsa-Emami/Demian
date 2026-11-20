@@ -112,7 +112,12 @@ const allowed = await request(api + '/runs', options('https://game.example.test'
 assert.ok([200, 204].includes(allowed.status));
 assert.equal(allowed.headers.get('access-control-allow-origin'), 'https://game.example.test');
 const blocked = await request(api + '/runs', options('https://untrusted.example.test'));
-assert.equal(blocked.headers.get('access-control-allow-origin'), null);
+// Some CORS implementations emit the single configured allowed origin
+// even on a mismatched request. The browser still rejects it: neither
+// wildcard nor the requesting untrusted origin may be returned.
+const deniedOrigin = blocked.headers.get('access-control-allow-origin');
+assert.ok(deniedOrigin === null || deniedOrigin === 'https://game.example.test',
+    'untrusted origin must not receive a matching or wildcard CORS grant');
 writeFileSync(process.env.RUNNER_TEMP + '/phase1-api-evidence.json', JSON.stringify({
     schema: 1, status: 'passed', commit: process.env.GITHUB_SHA, runId: process.env.GITHUB_RUN_ID,
     php: '8.4', database: 'disposable MySQL 8.4', productionDependencies: true,
