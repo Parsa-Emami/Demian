@@ -60,7 +60,8 @@ export default class ResultsScreen extends BaseScreen {
 
     renderRanking(result = {}) {
         const messages = { verified: 'رکورد توسط سرور تأیید و در لیدربورد ثبت شد.',
-            practice: 'رکورد روی همین دستگاه ذخیره شد.', pending: 'ثبت آنلاین انجام نشد؛ رکورد دستگاه محفوظ است.',
+            practice: 'رکورد روی همین دستگاه ذخیره شد.',
+            'beginner-practice': 'تمرین: رکورد شخصی روی دستگاه؛ بدون رتبه آنلاین یا تخفیف.', pending: 'ثبت آنلاین انجام نشد؛ رکورد دستگاه محفوظ است.',
             rejected: 'این دور برای رتبه‌بندی آنلاین پذیرفته نشد؛ رکورد دستگاه محفوظ است.' };
         if (this.ranking) this.ranking.textContent = messages[result.status] ?? '';
         if (this.retryRanking) this.retryRanking.hidden = !result.retryable;
