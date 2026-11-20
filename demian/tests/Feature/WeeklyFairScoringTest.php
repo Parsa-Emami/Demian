@@ -37,7 +37,7 @@ final class WeeklyFairScoringTest extends TestCase
         $id = (string) Str::uuid();
         DB::table('arcade_players')->insert([
             'id' => $id, 'display_name' => 'Fair scoring player',
-            'token_hash' => hash('sha256', $id),
+            'token_hash' => hash('sha256', hash('sha256', $id)),
             'token_expires_at' => now()->addDays(30),
             'created_at' => now(), 'updated_at' => now(),
         ]);
@@ -416,7 +416,7 @@ final class WeeklyFairScoringTest extends TestCase
         $this->assertArrayNotHasKey('player_id',$payload['data'][0]);
         $this->assertArrayNotHasKey('run_id',$payload['data'][0]);
         $this->assertArrayNotHasKey('phone_hash',$payload['data'][0]);
-        $this->withToken($players[0])->getJson('/api/v1/arcade/player/competition/league')
+        $this->withToken(hash('sha256', $players[0]))->getJson('/api/v1/arcade/player/competition/league')
             ->assertOk()->assertJsonPath('verified',true)->assertJsonPath('last_result.league','legend');
         $settler->seal('2026-11-07');
         $this->assertDatabaseCount('arcade_skill_standings',20);
