@@ -412,10 +412,6 @@
                             <button type="button" data-shell-action="rewards" class="shell-button shell-button--ghost">تخفیف‌های من <b aria-hidden="true">٪</b></button>
                         </div>
                         <button type="button" data-sidebar-toggle class="shell-button shell-button--ghost menu-character-button">انتخاب کاراکتر <span aria-hidden="true">◉</span></button>
-                        <div data-menu-reveal class="cafe-menu__footer">
-                            <span data-game-library-summary>۷ بازی · ۱۷ کاراکتر</span>
-                            <span>بازی‌های کوچک، ماجراجویی‌های بزرگ</span>
-                        </div>
                         <nav class="demian-legal-links" aria-label="قوانین و حریم خصوصی">
                             <a href="privacy/" target="_self">حریم خصوصی</a>
                             <a href="terms/" target="_self">شرایط استفاده</a>

@@ -60,6 +60,9 @@ try {
         const menu = page.locator('[data-screen="cafe-menu"]');
         assert.equal(await menu.locator('.cafe-menu__eyebrow, .cafe-menu__lead').count(), 0);
         assert.equal(/PLAY YOUR WAY|کمی بگرد/.test(await menu.innerText()), false);
+        assert.equal(await menu.locator('.cafe-menu__footer, [data-game-library-summary]').count(), 0);
+        assert.equal((await menu.innerText()).includes('بازی‌های کوچک، ماجراجویی‌های بزرگ'), false);
+        assert.equal(await menu.locator('.demian-legal-links a').count(), 3);
         assert.equal(await menu.locator('h1').innerText(), 'DEMIAN');
         assert.equal(await menu.locator('[data-shell-action="play"]').count(), 1);
         const favicon = page.locator('head link[rel="icon"]');

@@ -1,8 +1,8 @@
 {
   "schema": 1,
-  "release": "a97bc4c25b5e4834",
+  "release": "600f41e416def000",
   "maxPackBytes": 100663296,
-  "coreBytes": 13337857,
+  "coreBytes": 13337544,
   "core": [
     {
       "path": "assets/characters/ainaz/ainaz-atlas-v14-lite.json",
@@ -290,7 +290,7 @@
     },
     {
       "path": "index.html",
-      "bytes": 70666
+      "bytes": 70353
     },
     {
       "path": "manifest.webmanifest",
@@ -309,7 +309,7 @@
     {
       "id": "open-world",
       "bytes": 1200763,
-      "totalBytes": 14538620,
+      "totalBytes": 14538307,
       "files": [
         {
           "path": "assets/environments/demian-fbx/polished-v1/lod-1024/0-0.webp",
@@ -452,7 +452,7 @@
     {
       "id": "dino-run",
       "bytes": 1113255,
-      "totalBytes": 14451112,
+      "totalBytes": 14450799,
       "files": [
         {
           "path": "assets/environments/demian-fbx/floorplan.webp",
@@ -519,7 +519,7 @@
     {
       "id": "after-hours",
       "bytes": 1424857,
-      "totalBytes": 14762714,
+      "totalBytes": 14762401,
       "files": [
         {
           "path": "assets/environments/demian-fbx/floorplan-detail.webp",
@@ -586,7 +586,7 @@
     {
       "id": "cafe-rush",
       "bytes": 1424857,
-      "totalBytes": 14762714,
+      "totalBytes": 14762401,
       "files": [
         {
           "path": "assets/environments/demian-fbx/floorplan-detail.webp",
@@ -653,7 +653,7 @@
     {
       "id": "cafe-critters",
       "bytes": 1200763,
-      "totalBytes": 14538620,
+      "totalBytes": 14538307,
       "files": [
         {
           "path": "assets/environments/demian-fbx/polished-v1/lod-1024/0-0.webp",
@@ -796,7 +796,7 @@
     {
       "id": "coffee-crash",
       "bytes": 1113255,
-      "totalBytes": 14451112,
+      "totalBytes": 14450799,
       "files": [
         {
           "path": "assets/environments/demian-fbx/floorplan.webp",
@@ -863,7 +863,7 @@
     {
       "id": "cafe-drift",
       "bytes": 1001789,
-      "totalBytes": 14339646,
+      "totalBytes": 14339333,
       "files": [
         {
           "path": "build/assets/AfterHoursGame-CiGyo9W6.js",

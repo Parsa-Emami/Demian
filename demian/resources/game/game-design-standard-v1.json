@@ -1,0 +1,336 @@
+{
+  "schemaVersion": 1,
+  "standardId": "demian-game-design-v1",
+  "phase": 1,
+  "scope": "Seven currently available games; asynchronous single-player competition; mobile-first 2D.",
+  "environment": "demian-reference-cafe@2",
+  "pillars": [
+    "mastery",
+    "exploration",
+    "service",
+    "tension",
+    "discovery",
+    "puzzle"
+  ],
+  "principles": [
+    "fun before rewards",
+    "one clear core loop",
+    "skill over grinding",
+    "fair across characters and devices",
+    "practice without network",
+    "accessibility by default",
+    "no real-time multiplayer expansion",
+    "truthful evidence and financial gates"
+  ],
+  "metrics": {
+    "lab": {
+      "downMbps": 8,
+      "latencyMs": 80,
+      "cpuSlowdown": 2,
+      "menuTargetMs": 2000,
+      "playableTargetMs": 3000
+    },
+    "device": {
+      "midTierFpsTarget": 60,
+      "lowTierFpsMinimum": 30,
+      "touchLatencyTargetMs": 80,
+      "soakMinutes": 60
+    },
+    "playtest": {
+      "minimumUniqueParticipants": 20,
+      "firstTaskSuccessTargetPercent": 90,
+      "firstRunGoalUnderstandingTargetPercent": 90,
+      "funMedianTarget": 4,
+      "funScaleMaximum": 5
+    },
+    "release": {
+      "criticalOpenDefectsMaximum": 0,
+      "verifiedPrizeLeakMaximum": 0
+    },
+    "note": "Proposed quality targets, not measured results or replacement for existing CI thresholds; human and device evidence is pending."
+  },
+  "gates": [
+    {
+      "id": "GDS-01",
+      "priority": "P0",
+      "area": "identity",
+      "requirement": "All seven games share the Demian reference cafe; no game silently changes the environment or adds synchronous multiplayer.",
+      "evidence": "catalog-contract"
+    },
+    {
+      "id": "GDS-02",
+      "priority": "P0",
+      "area": "gameplay",
+      "requirement": "A single clear goal, teachable core loop, readable success/failure, pause and retry for each game.",
+      "evidence": "browser-and-human"
+    },
+    {
+      "id": "GDS-03",
+      "priority": "P0",
+      "area": "fairness",
+      "requirement": "Ranked physics, input and rules version are identical across character skins; no paid advantage or client-authoritative score.",
+      "evidence": "server-and-human"
+    },
+    {
+      "id": "GDS-04",
+      "priority": "P0",
+      "area": "safety",
+      "requirement": "Offline is practice; only verified server replay enters ranked; authorization gates for actual coupons remain intact.",
+      "evidence": "server"
+    },
+    {
+      "id": "GDS-05",
+      "priority": "P0",
+      "area": "input",
+      "requirement": "Semantic touch/keyboard/gamepad, safe areas, cancellation on blur, no stuck controls, accessible pause.",
+      "evidence": "browser-and-device"
+    },
+    {
+      "id": "GDS-06",
+      "priority": "P0",
+      "area": "performance",
+      "requirement": "Menu target 2s, playable target 3s on defined lab profile; 60 FPS target mid-tier and stable >=30 FPS low-tier.",
+      "evidence": "lab-and-device"
+    },
+    {
+      "id": "GDS-07",
+      "priority": "P0",
+      "area": "a11y",
+      "requirement": "Persian RTL, text alternatives, focus, reduced motion, independent audio controls, no information conveyed solely through color or sound.",
+      "evidence": "browser-and-human"
+    },
+    {
+      "id": "GDS-08",
+      "priority": "P1",
+      "area": "art",
+      "requirement": "Darya/Arsal motion references, character identity, consistent grounded anchors and human frame-by-frame signoff.",
+      "evidence": "human-art"
+    },
+    {
+      "id": "GDS-09",
+      "priority": "P1",
+      "area": "audio",
+      "requirement": "Distinct start, action, success and fail cues; bounded voices and user mute; no mastered-soundtrack claim until delivered.",
+      "evidence": "browser-and-human"
+    },
+    {
+      "id": "GDS-10",
+      "priority": "P0",
+      "area": "lifecycle",
+      "requirement": "Exit, restart, background, offline, update and reconnect preserve state integrity; no hidden timers or orphan listeners.",
+      "evidence": "browser-and-device"
+    },
+    {
+      "id": "GDS-11",
+      "priority": "P0",
+      "area": "operations",
+      "requirement": "Actual host load, TLS, restore, operator acceptance and external anti-bot review required before monetary-value rewards.",
+      "evidence": "external"
+    },
+    {
+      "id": "GDS-12",
+      "priority": "P1",
+      "area": "retention",
+      "requirement": "Track anonymized aggregate start/completion/retry and return metrics only with consent; no fabricated retention or coercive streaks.",
+      "evidence": "human-and-telemetry"
+    }
+  ],
+  "games": [
+    {
+      "id": "open-world",
+      "pillar": "exploration",
+      "loop": [
+        "explore",
+        "discover",
+        "interact",
+        "return"
+      ],
+      "session": {
+        "minSeconds": 120,
+        "maxSeconds": 600
+      },
+      "skill": "navigation",
+      "failure": "no punitive failure in free exploration; route trial has explicit rules",
+      "progression": "local discoveries and optional authored quests",
+      "competitive": "route-trial-opt-in-no-prizes",
+      "risks": [
+        "empty travel",
+        "unclear objective",
+        "local progress mistaken for ranked score"
+      ],
+      "acceptance": [
+        "first meaningful discovery within 60 seconds",
+        "all critical routes reachable",
+        "practice collectibles never alter ranked result"
+      ]
+    },
+    {
+      "id": "dino-run",
+      "pillar": "mastery",
+      "loop": [
+        "read hazard",
+        "jump or slide",
+        "survive",
+        "retry"
+      ],
+      "session": {
+        "minSeconds": 20,
+        "maxSeconds": 180
+      },
+      "skill": "timing",
+      "failure": "visible hazard collision; immediate result and retry",
+      "progression": "personal best and readable difficulty ramp",
+      "competitive": "server-replay-prize-gated",
+      "risks": [
+        "unreadable hazards",
+        "unfair initial difficulty",
+        "character hitbox advantage"
+      ],
+      "acceptance": [
+        "each obstacle has a viable response",
+        "score derived from server replay",
+        "identical ranked physics across characters"
+      ]
+    },
+    {
+      "id": "after-hours",
+      "pillar": "tension",
+      "loop": [
+        "observe",
+        "collect",
+        "restore power",
+        "escape"
+      ],
+      "session": {
+        "minSeconds": 90,
+        "maxSeconds": 300
+      },
+      "skill": "route planning and evasion",
+      "failure": "clearly telegraphed shadow or expired power",
+      "progression": "authored patterns and optional difficulty",
+      "competitive": "opt-in-no-prizes",
+      "risks": [
+        "unfair enemy behavior",
+        "invisible threats",
+        "audio-only cues"
+      ],
+      "acceptance": [
+        "every required objective is reachable",
+        "enemy threats readable without sound",
+        "ranked code lock forbids coupons"
+      ]
+    },
+    {
+      "id": "cafe-rush",
+      "pillar": "service",
+      "loop": [
+        "accept order",
+        "prepare",
+        "deliver",
+        "repeat"
+      ],
+      "session": {
+        "minSeconds": 120,
+        "maxSeconds": 120
+      },
+      "skill": "prioritization and precision",
+      "failure": "missed orders or shift timeout with clear explanation",
+      "progression": "difficulty quotas and combo mastery",
+      "competitive": "opt-in-no-prizes",
+      "risks": [
+        "ready orders obscured",
+        "repetitive movement",
+        "unfair customer schedules"
+      ],
+      "acceptance": [
+        "ready orders remain discoverable",
+        "seeded orders and scoring reproducible",
+        "ranked code lock forbids coupons"
+      ]
+    },
+    {
+      "id": "cafe-critters",
+      "pillar": "discovery",
+      "loop": [
+        "read clue",
+        "choose setup",
+        "discover guest",
+        "collect"
+      ],
+      "session": {
+        "minSeconds": 60,
+        "maxSeconds": 300
+      },
+      "skill": "deduction",
+      "failure": "constructive retry and bounded hints; calm mode untimed",
+      "progression": "guest album and seasonal clues",
+      "competitive": "opt-in-prizes-off-by-default",
+      "risks": [
+        "memorized answers",
+        "automated solvers",
+        "ambiguous clues"
+      ],
+      "acceptance": [
+        "clues identify one valid setup",
+        "bounded hints and no duplicate penalty",
+        "financial rewards remain gated"
+      ]
+    },
+    {
+      "id": "coffee-crash",
+      "pillar": "puzzle",
+      "loop": [
+        "inspect",
+        "swap",
+        "resolve combo",
+        "complete objective"
+      ],
+      "session": {
+        "minSeconds": 45,
+        "maxSeconds": 300
+      },
+      "skill": "planning",
+      "failure": "move budget or unmet goal; explicit end state",
+      "progression": "12 campaign levels and weekly objectives",
+      "competitive": "opt-in-level-one-prizes-off-by-default",
+      "risks": [
+        "dead boards",
+        "unbounded cascades",
+        "automated solvers"
+      ],
+      "acceptance": [
+        "every initial board has a legal move",
+        "cascade and reshuffle bounded",
+        "ranked only for verified level one"
+      ]
+    },
+    {
+      "id": "cafe-drift",
+      "pillar": "mastery",
+      "loop": [
+        "steer",
+        "avoid obstacle",
+        "maintain run",
+        "retry"
+      ],
+      "session": {
+        "minSeconds": 20,
+        "maxSeconds": 180
+      },
+      "skill": "continuous touch precision",
+      "failure": "collision with clear cause and instant result",
+      "progression": "personal best and optional varied routes",
+      "competitive": "server-replay-prizes-off-by-default",
+      "risks": [
+        "touch latency",
+        "unreadable collisions",
+        "device-dependent steering"
+      ],
+      "acceptance": [
+        "all obstacles readable in advance",
+        "equivalent semantic input across devices",
+        "prize rollout requires explicit approval"
+      ]
+    }
+  ]
+}
