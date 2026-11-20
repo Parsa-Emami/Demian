@@ -4,6 +4,7 @@ import { weeklyVersion, WEEKLY_VERSIONS } from '../content/WeeklyContent.js';
 import rules from '../../../game/runner-rules.json' with { type: 'json' };
 import { validRunnerSession } from './RunnerSessionContract.js';
 import { requestLegalAcknowledgement, LEGAL_VERSION } from './LegalConsent.js';
+import { identityDialog } from './IdentityVerificationDialog.js';
 
 const PROFILE_KEY = 'demian.arcade.profile.v1';
 const DEVICE_PREFIX = 'demian.arcade.records.v1.';
@@ -263,6 +264,32 @@ export default class ArcadeLeaderboardService {
         this.backupExpiresAt = result.backup_expires_at;
         return result.backup_code;
     }
+    installationId() {
+        const key = 'demian.arcade.installation:' + this.baseUrl;
+        try {
+            let value = safeRead(this.storage, key, null);
+            if (!/^[0-9a-f-]{36}$/i.test(value ?? '')) {
+                value = globalThis.crypto?.randomUUID?.();
+                if (value) safeWrite(this.storage, key, value);
+            }
+            return value ?? undefined;
+        } catch { return undefined; }
+    }
+    async verifyPhone() {
+        await this.ensureIdentity();
+        const state = await this.request('/player/identity', { authenticated: true });
+        if (state.verified) return state;
+        if (!state.available) throw new Error('سرویس پیامک هنوز فعال نشده است.');
+        await this.ensureRankedPolicy();
+        return identityDialog({
+            send: phone => this.request('/player/identity/phone', {
+                method: 'POST', authenticated: true, body: { phone, consent: true },
+            }),
+            confirm: (challenge_id, otp) => this.request('/player/identity/confirm', {
+                method: 'POST', authenticated: true, body: { challenge_id, otp, device_id: this.installationId() },
+            }),
+        });
+    }
     async recoverAccount(code) {
         const value = String(code ?? '').trim();
         if (!/^[A-Za-z0-9]{64}$/.test(value)) {
@@ -272,9 +299,22 @@ export default class ArcadeLeaderboardService {
             await this.retry();
             if (this.pending) throw new Error('ابتدا ارسال رکورد قبلی را تکمیل کن؛ رکورد تأییدنشده نباید حذف شود.');
         }
-        const response = await this.request('/players/recover', {
-            method: 'POST', body: { recovery_code: value },
-        });
+        let response;
+        try {
+            response = await this.request('/players/recover', {
+                method: 'POST', body: { recovery_code: value },
+            });
+        } catch (error) {
+            if (error.status !== 428) throw error;
+            response = await identityDialog({
+                recovery: true,
+                send: () => this.request('/players/recover/phone', { method: 'POST', body: { recovery_code: value } }),
+                confirm: (challenge_id, otp) => this.request('/players/recover', {
+                    method: 'POST', body: { recovery_code: value, challenge_id, otp, device_id: this.installationId() },
+                }),
+            });
+            if (!response) throw new Error('بازیابی لغو شد؛ نشست حساب تغییر نکرد.');
+        }
         if (typeof response.token !== 'string' || response.token.length !== 64
             || typeof response.player_id !== 'string'
             || typeof response.display_name !== 'string') {
@@ -459,6 +499,21 @@ export default class ArcadeLeaderboardService {
         return this.request('/player', { authenticated: true });
     }
     /** Step 13: public verified preview / immutable archived comparative ranks. */
+    async skillLeague(league = 'bronze', week = '') {
+        if (!this.connected || !['bronze','silver','gold','legend','placement'].includes(league)) {
+            throw new Error('لیگ آنلاین معتبر نیست.');
+        }
+        if (week && !/^\d{4}-\d{2}-\d{2}$/.test(week)) throw new Error('تاریخ هفته معتبر نیست.');
+        const query = new URLSearchParams({league});
+        if (week) query.set('week',week);
+        return this.request('/competition/leagues?' + query);
+    }
+
+    async mySkillLeague() {
+        if (!this.connected || !this.identity?.token) return null;
+        return this.request('/player/competition/league', { authenticated: true });
+    }
+
     async weeklyRanking(week = '') {
         if (!this.connected) throw new Error('لیدربورد مشترک به سرور آنلاین نیاز دارد.');
         if (week && !/^\d{4}-\d{2}-\d{2}$/.test(week)) {
@@ -566,6 +621,7 @@ export default class ArcadeLeaderboardService {
         safeWrite(this.storage, this.rejectedKey, []);
         this.accountKnown = false;
         safeWrite(this.storage, this.accountMarkerKey, false);
+        try { this.storage?.removeItem('demian.arcade.installation:' + this.baseUrl); } catch {}
         this.profile = { display_name: 'بازیکن کافه' };
         safeWrite(this.identityStorage, this.identityKey, null);
         try { this.storage?.removeItem?.(this.identityKey); } catch {}

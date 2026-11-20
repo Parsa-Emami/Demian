@@ -30,7 +30,7 @@ test('step32 static pages are self-contained, noindexed until review, and linked
             const html = readFileSync(file, 'utf8');
             assert.match(html, /lang="fa" dir="rtl"/);
             assert.match(html, /name="robots" content="noindex,nofollow"/);
-            assert.doesNotMatch(html, /نسخه سند|2026-11-19-v2/);
+            assert.doesNotMatch(html, /نسخه سند|2026-11-20-v3/);
             assert.match(html, /href="\.\.\/privacy\/"/);
             assert.match(html, /href="\.\.\/terms\/"/);
             assert.match(html, /href="\.\.\/competition-rules\/"/);

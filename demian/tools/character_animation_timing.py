@@ -1,6 +1,10 @@
 """Shared V14 motion metadata; does not alter any artwork or sprite rectangles."""
 from copy import deepcopy
 from math import isfinite
+import json
+from pathlib import Path
+
+STANDARD = json.loads((Path(__file__).resolve().parents[1] / 'resources/game/character-animation-standard-v2.json').read_text())
 
 
 def apply_animation_timing(atlas, cycle_counts=None, locomotion_profile=None):
@@ -60,4 +64,10 @@ def apply_animation_timing(atlas, cycle_counts=None, locomotion_profile=None):
         if isinstance(maximum, bool) or not isinstance(maximum, (int, float)) or not isfinite(maximum) or not .4 <= maximum <= 1.55:
             raise ValueError('Stride frequency must stay within .4–1.55 Hz')
         profile.update(id=identity, strideLengths=deepcopy(strides), maxStrideHz=maximum)
+    for name, rule in STANDARD['clips'].items():
+        clip = animations[name]
+        if len(clip['frames']) != rule['frames']:
+            raise ValueError(f'{name}: wrong shared logical frame count')
+        clip.update(fps=rule['fps'], loop=rule['loop'])
+    atlas.setdefault('fallbacks', {}).update({name: rule['source'] for name, rule in STANDARD['aliases'].items()})
     return atlas

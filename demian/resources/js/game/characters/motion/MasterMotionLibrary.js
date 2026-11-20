@@ -49,7 +49,7 @@ export function masterFootPath(phase, clip) {
 
 export function canonicalMotionState(state) {
     return ({ breathe: 'idle', blink: 'idle', ready: 'idle', tiptoe: 'walk', skid: 'run',
-        dash: 'sprint', hop: 'jump', hover: 'jump', dodge: 'slide', crouch: 'slide' })[state] ?? state;
+        dash: 'sprint', hop: 'jump', hover: 'jump', dodge: 'slide', crouch: 'slide', crawl: 'slide' })[state] ?? state;
 }
 
 export function sampleMasterPose(familyId, { state = 'idle', phase = 0, progress = 0, facing = 1, time = 0 } = {}) {

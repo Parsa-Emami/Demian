@@ -11,6 +11,7 @@ use App\Services\Arcade\ArcadeRunService;
 use App\Services\Arcade\LeaderboardService;
 use App\Services\Arcade\CompetitionClock;
 use App\Services\Arcade\PlayerContact;
+use App\Services\Arcade\PhoneIdentityService;
 use Illuminate\Database\UniqueConstraintViolationException;
 use App\Services\Arcade\RankedGameCatalog;
 use App\Services\Arcade\RunnerReplayVerifier;
@@ -206,10 +207,13 @@ final class ArcadeController extends Controller
     {
         $validated = $request->validate([
             'recovery_code' => ['required', 'string', 'size:64', 'regex:/^[A-Za-z0-9]{64}$/'],
+            'challenge_id' => ['nullable', 'uuid'],
+            'otp' => ['nullable', 'string', 'regex:/^[0-9]{6}$/D'],
+            'device_id' => ['nullable', 'uuid'],
         ]);
         $secretHash = hash('sha256', $validated['recovery_code']);
 
-        $session = DB::transaction(function () use ($secretHash): array {
+        $session = DB::transaction(function () use ($secretHash, $validated): array {
             $player = ArcadePlayer::query()->where(function ($query) use ($secretHash): void {
                 $query->where('recovery_hash', $secretHash)->orWhere('backup_hash', $secretHash);
             })->lockForUpdate()->first();
@@ -219,6 +223,10 @@ final class ArcadeController extends Controller
                 && $player->backup_expires_at?->isFuture();
             abort_unless($linkValid || $backupValid, 422,
                 'Recovery code expired or already used.');
+            $identity = app(PhoneIdentityService::class);
+            if (! $identity->recoverProof($player, $secretHash, $validated['challenge_id'] ?? null, $validated['otp'] ?? null)) {
+                return ['phone_challenge_required' => true];
+            }
             $token = Str::random(64);
             // Rotate the active token, consume the one-time recovery secret,
             // and leave all prior verified scores and run history untouched.
@@ -226,12 +234,14 @@ final class ArcadeController extends Controller
             $player->update(['token_hash' => hash('sha256', $token),
                 'token_expires_at' => $expires, 'recovery_hash' => null, 'recovery_expires_at' => null,
                 'backup_hash' => null, 'backup_expires_at' => null]);
+            DB::table('arcade_phone_challenges')->where('player_id', $player->id)->whereNull('consumed_at')->update(['consumed_at' => now()]);
+            $identity->observeDevice($player->id, $validated['device_id'] ?? null);
 
             return ['player_id' => $player->id, 'display_name' => $player->display_name,
                 'token' => $token, 'token_expires_at' => $expires->toIso8601String()];
         }, 3);
 
-        return response()->json($session)->header('Cache-Control', 'no-store, private');
+        return response()->json($session, isset($session['phone_challenge_required']) ? 428 : 200)->header('Cache-Control', 'no-store, private');
     }
 
     public function acknowledgeLegal(Request $request): JsonResponse
@@ -267,7 +277,8 @@ final class ArcadeController extends Controller
 
         return response()->json(['player_id' => $player->id, 'display_name' => $player->display_name,
             'token_expires_at' => $player->token_expires_at?->toIso8601String(),
-            'legal_policy_version' => $player->legal_policy_version, 'has_contact' => $player->contact_hash !== null]);
+            'legal_policy_version' => $player->legal_policy_version, 'has_contact' => $player->contact_hash !== null,
+            'phone_verified' => app(PhoneIdentityService::class)->identity($player->id) !== null])->header('Cache-Control', 'private, no-store');
     }
 
     public function updateContact(Request $request, PlayerContact $contacts): JsonResponse

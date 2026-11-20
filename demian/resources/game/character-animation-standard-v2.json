@@ -1,0 +1,109 @@
+{
+  "version": "unified-sprite-motion-v2",
+  "packVersion": 14,
+  "logicalFrames": 672,
+  "variants": [
+    "desktop",
+    "mobile",
+    "compact",
+    "runtime",
+    "lite",
+    "detail"
+  ],
+  "directions": [
+    "s",
+    "sw",
+    "w",
+    "nw",
+    "n",
+    "ne",
+    "e",
+    "se"
+  ],
+  "clips": {
+    "idle": {
+      "frames": 40,
+      "fps": 24,
+      "loop": true
+    },
+    "walk": {
+      "frames": 64,
+      "fps": 72,
+      "loop": true
+    },
+    "run": {
+      "frames": 80,
+      "fps": 96,
+      "loop": true
+    },
+    "sprint": {
+      "frames": 80,
+      "fps": 112,
+      "loop": true
+    },
+    "takeoff": {
+      "frames": 12,
+      "fps": 72,
+      "loop": false,
+      "range": [
+        12,
+        24
+      ]
+    },
+    "jump": {
+      "frames": 8,
+      "fps": 32,
+      "loop": false,
+      "range": [
+        24,
+        32
+      ]
+    },
+    "fall": {
+      "frames": 11,
+      "fps": 44,
+      "loop": false,
+      "range": [
+        32,
+        43
+      ]
+    },
+    "land": {
+      "frames": 24,
+      "fps": 150,
+      "loop": false
+    },
+    "slide": {
+      "frames": 64,
+      "fps": 80,
+      "loop": true
+    },
+    "crouch": {
+      "frames": 1,
+      "fps": 1,
+      "loop": false
+    }
+  },
+  "aliases": {
+    "dodge": {
+      "source": "slide",
+      "kind": "authored-slide-alias"
+    },
+    "crawl": {
+      "source": "crouch",
+      "kind": "static-low-pose-fallback"
+    }
+  },
+  "strideLengths": {
+    "walk": 3.4,
+    "run": 6,
+    "sprint": 6.4
+  },
+  "maxStrideHz": 1.55,
+  "landingSeconds": 0.16,
+  "frameReview": {
+    "maxFootDriftRatio": 0.035,
+    "maxAdjacentHeightChangeRatio": 0.12,
+    "maxAdjacentCenterChangeRatio": 0.12
+  }
+}
