@@ -19,6 +19,7 @@ final class MultiGamePrizeReadinessTest extends TestCase
     public function test_pending_independent_gates_keep_ranked_original_games_nonfinancial(): void
     {
         config()->set('demian-arcade.multi_game_acceptance_required',true);
+        config()->set('demian-arcade.weekly_content_at','2026-11-20T20:30:00Z');
         $this->travelTo(CarbonImmutable::parse('2026-11-21T12:00:00Z'));
         $gate=app(Gate::class);$catalog=app(RankedGameCatalog::class);
         $player=$this->postJson('/api/v1/arcade/players',['display_name'=>'Phase 14 QA'])->assertCreated()->json();
