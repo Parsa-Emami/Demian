@@ -1,0 +1,16 @@
+# Demian Unified Character Standard V2 — Phase 07
+
+Reference families: Darya (female-base-v1) and Arsal (male-base-v1). Full roster: eight female-base and ten male-base characters. Phase 7 is built on corrected Phase 6. No migration, gameplay physics, hitbox, abilities, character identity contract, or source sprite overwritten.
+
+## Normative contract
+`resources/game/character-visual-standard-v2.json` is the explicit roster, reference family, shared rig, pivot, atlas size, state and portrait contract. Shared skeleton is inherited from master-motion-v1; feet on 0.94 cell pivot, horizontal 0.5, square world size 3.75, canonical nominal body ratio 0.70. Preserve each face, hair, outfit, glasses, wings, Pishi and Homayoun. Body/limb art should follow its family's reference, not be copied from the reference's identity. Use uniform scaling; no stretching, automatic palette replacement or per-frame anatomy edits. Keep authored low slide, jump silhouettes and cosmetic accessory motion.
+
+## Runtime portrait correction
+Use shared optical anchor 50%/56% and 18% maximum eye-to-chin ratio (previously 21%) with 4% head inset and existing reviewed landmarks. Darya's hair-safe crop remains unchanged; tighter crops including Elaheh, Yalda, Hanna, Ainaz and male family are zoomed out to bring face scales closer. No re-painting, skin tone inference or fixed resizing of full gameplay sprite. Original posters preserved, unknown art and failed posters retain explicit fallback. All four emulated viewport sizes now check all 18 cards, calibrated V2 source and visible rendered pixels, no horizontal overflow. CI produces screenshots.
+
+## Raster review and release gate
+`python3 tools/audit_character_visual_v2.py --output /tmp/character-v2` emits reference-first contact sheets for both families (original, corrected portrait, mobile idle/walk/run/jump/land/slide/crouch), source/atlas/identity hashes and per-state median geometry, head-width proxy, semitransparency and dark pixel share. Existing V14 validator remains the strict all-variant frame-level gate. Differences beyond explicit review thresholds are flagged, not silently corrected. Body silhouettes include clothes and accessories; they do not prove hand/foot anatomy, head/body proportions or line weight. No new art certifies itself.
+
+For **human acceptance** compare each asset against its family reference at actual game scale and 2x nearest-neighbor. Inspect hands, feet, elbows/knees, head/torso proportions, outline continuity, palette/value discipline, edge pixels, accessories and foot grounding in each view and action. Prioritize Taher DB, Sorkhi, Elaheh, Mori, Mahyar and Tiam; evaluate every roster member. If correction is needed, edit the authored source sheets, preserve identity, rebuild with existing V14 pipeline, validate all six variants and rerun browser/QA. Record reviewer, date, reviewed artifact digest and exceptions. Do not mark all characters artist-approved based on metrics. Phase 8 is the subsequent frame/action unification and authored correction stage. The source art work and physical-device acceptance remain pending, and generated static playable build is CI-derived, not committed by this connector.
+
+Applied repository skills: router, create-game-assets. No external dependencies added; Pillow already installed in CI. 

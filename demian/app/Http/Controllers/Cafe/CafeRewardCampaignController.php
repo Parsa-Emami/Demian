@@ -5,6 +5,9 @@ namespace App\Http\Controllers\Cafe;
 use App\Http\Controllers\Controller;
 use App\Services\Arcade\CafeAccess;
 use App\Services\Arcade\CouponPolicy;
+use App\Services\Arcade\CampaignEconomics;
+use Illuminate\Validation\ValidationException;
+use RuntimeException;
 use App\Services\Arcade\RewardCampaignService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -48,6 +51,9 @@ final class CafeRewardCampaignController extends Controller
             'percent_third' => ['required', 'integer', 'between:1,30'],
             'percent_other' => ['required', 'integer', 'between:1,30'],
         ];
+        foreach (CampaignEconomics::FIELDS as $field => [$min, $max]) {
+            $rules[$field] = [app(CampaignEconomics::class)->required() ? 'required' : 'nullable', 'integer', "between:{$min},{$max}"];
+        }
         if ($creating) {
             $rules['period_key'] = ['required', 'regex:/^weekly:tehran:\d{4}-\d{2}-\d{2}$/D'];
         }
@@ -66,6 +72,8 @@ final class CafeRewardCampaignController extends Controller
 
         return view('cashier.campaigns', [
             'staff' => $staff, 'policy' => $policy->approved(), 'weeks' => $weeks,
+            'recommendedRates' => CampaignEconomics::RECOMMENDED_RATES,
+            'economicsFields' => CampaignEconomics::FIELDS,
             'campaigns' => $service->dashboard(),
             'batchKeys' => DB::table('arcade_reward_campaigns')->orderByDesc('id')
                 ->limit(30)->pluck('id')->mapWithKeys(
@@ -79,9 +87,13 @@ final class CafeRewardCampaignController extends Controller
     public function create(Request $request, RewardCampaignService $service): RedirectResponse
     {
         $staff = $this->stepUp($request);
-        $service->create((int) $staff->id,
-            (int) $request->session()->get('cafe_staff_version'),
-            $this->fields($request, true));
+        $fields = $this->fields($request, true);
+        try {
+            $service->create((int) $staff->id,
+                (int) $request->session()->get('cafe_staff_version'), $fields);
+        } catch (RuntimeException $error) {
+            throw ValidationException::withMessages(['economics' => $error->getMessage()]);
+        }
 
         return $this->done('کمپین پیش‌نویس ایجاد شد.');
     }
@@ -90,9 +102,13 @@ final class CafeRewardCampaignController extends Controller
         RewardCampaignService $service): RedirectResponse
     {
         $staff = $this->stepUp($request);
-        $service->revise((int) $staff->id,
-            (int) $request->session()->get('cafe_staff_version'),
-            $campaignId, $this->fields($request, false));
+        $fields = $this->fields($request, false);
+        try {
+            $service->revise((int) $staff->id,
+                (int) $request->session()->get('cafe_staff_version'), $campaignId, $fields);
+        } catch (RuntimeException $error) {
+            throw ValidationException::withMessages(['economics' => $error->getMessage()]);
+        }
 
         return $this->done('شرایط پیش‌نویس کمپین ثبت شد.');
     }
@@ -117,10 +133,30 @@ final class CafeRewardCampaignController extends Controller
         RewardCampaignService $service): RedirectResponse
     {
         $staff = $this->stepUp($request);
-        $service->transition((int) $staff->id,
-            (int) $request->session()->get('cafe_staff_version'), $campaignId, $action);
+        try {
+            $service->transition((int) $staff->id,
+                (int) $request->session()->get('cafe_staff_version'), $campaignId, $action);
+        } catch (RuntimeException $error) {
+            throw ValidationException::withMessages(['economics' => $error->getMessage()]);
+        }
 
         return $this->done('وضعیت کمپین ثبت شد.');
+    }
+
+    public function measure(Request $request, int $campaignId, RewardCampaignService $service): RedirectResponse
+    {
+        $staff = $this->stepUp($request);
+        $data = $request->validate([
+            'evidence_ref' => ['required', 'regex:/^[A-Za-z0-9][A-Za-z0-9._:-]{3,79}$/D'],
+            'incremental_contribution_minor' => ['required', 'integer', 'between:-200000000000000,200000000000000'],
+            'operating_minor' => ['required', 'integer', 'between:0,200000000000000'],
+        ]);
+        try {
+            $service->measure((int) $staff->id, (int) $request->session()->get('cafe_staff_version'), $campaignId, $data);
+        } catch (RuntimeException $error) {
+            throw ValidationException::withMessages(['economics' => $error->getMessage()]);
+        }
+        return $this->done('اندازه‌گیری مستند سود کمپین ثبت شد.');
     }
 
     public function voidCode(Request $request, RewardCampaignService $service): RedirectResponse

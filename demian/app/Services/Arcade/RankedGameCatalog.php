@@ -54,6 +54,7 @@ final class RankedGameCatalog
         return match ($id) {
             'dino-run' => true,
             'cafe-drift' => config('demian-arcade.drift_prizes_enabled') === true
+                && app(DriftPrizeReadiness::class)->approved()
                 && config('demian-coupons.campaigns_enabled') === true
                 && config('demian-coupons.issue_enabled') === true
                 && config('demian-coupons.policy_approved') === true

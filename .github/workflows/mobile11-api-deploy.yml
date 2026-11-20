@@ -42,6 +42,8 @@ jobs:
         run: |
           tar -czf "$RUNNER_TEMP/demian-api.tar.gz" \
             artisan app bootstrap config database routes resources/game resources/legal \
+            resources/js/game/games/cafe-drift/CafeDriftModel.js resources/js/game/games/cafe-drift/CafeDriftGame.js \
+            resources/js/game/games/cafe-drift/CafeDriftRenderer.js resources/css/cafe-drift.css \
             resources/views src public/index.php public/.htaccess composer.json composer.lock vendor
           test -s "$RUNNER_TEMP/demian-api.tar.gz"
           tar -tzf "$RUNNER_TEMP/demian-api.tar.gz" > "$RUNNER_TEMP/demian-api-entries.txt"

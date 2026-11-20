@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "policy": "drift-prize-acceptance-v1",
+  "rules_version": "cafe-drift-replay-v1",
+  "status": "pending",
+  "reviewer": null,
+  "evidence_reference": null,
+  "reviewed_on": null,
+  "eligible_from": null,
+  "independent_pilot_participants": 0,
+  "source_hashes": {},
+  "checks": {
+    "physical_android_touch": false,
+    "physical_ios_touch": false,
+    "desktop_keyboard": false,
+    "equal_input_equal_score": false,
+    "background_and_disconnect": false,
+    "server_replay": false,
+    "cross_account_and_retry": false,
+    "automated_solver_risk": false,
+    "cashier_coupon_redemption": false,
+    "privacy_and_identity": false,
+    "owner_budget": false
+  }
+}

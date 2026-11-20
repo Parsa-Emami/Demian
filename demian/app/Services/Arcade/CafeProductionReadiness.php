@@ -33,7 +33,8 @@ final class CafeProductionReadiness
         $add('no_online_store', config('demian-coupons.shop_enabled') === false);
         $tables = ['arcade_cashier_staff', 'arcade_cashier_admin_events',
             'arcade_coupon_redemptions', 'arcade_coupon_events',
-            'arcade_cashier_requests', 'arcade_coupons', 'arcade_weekly_periods'];
+            'arcade_cashier_requests', 'arcade_coupons', 'arcade_weekly_periods',
+            'arcade_verified_phones', 'arcade_phone_challenges', 'arcade_phone_limits', 'arcade_identity_devices', 'arcade_identity_awards'];
         try {
             DB::select('SELECT 1');
             $add('db_connection', true);
@@ -80,9 +81,26 @@ final class CafeProductionReadiness
                 $add('legal_publication_approved', config('demian-legal.publication_approved') === true);
                 $add('legal_acceptance_enforced', config('demian-legal.require_acceptance') === true);
             }
+            if (config('demian-arcade.drift_prizes_enabled') === true) {
+                foreach (app(DriftPrizeReadiness::class)->inspect()['checks'] as $check => $passed) {
+                    $add('drift_'.$check, $passed);
+                }
+            }
             $add('cafe_enabled', config('demian-coupons.cafe_enabled') === true);
             $add('discount_policy_approved',
                 config('demian-coupons.policy_approved') === true);
+            if (app(CampaignEconomics::class)->required()
+                && (config('demian-coupons.issue_enabled') === true || config('demian-coupons.campaigns_enabled') === true)) {
+                try {
+                    app(CampaignEconomics::class)->ceiling();
+                    $add('weekly_economics_budget_approved', config('demian-coupons.campaigns_enabled') === true);
+                } catch (\Throwable) {
+                    $add('weekly_economics_budget_approved', false);
+                }
+            }
+            if (app(PhoneIdentityService::class)->required() && (config('demian-coupons.issue_enabled') === true || config('demian-coupons.campaigns_enabled') === true)) {
+                $add('verified_identity_sms_configured', app(PhoneIdentityService::class)->ready());
+            }
             $key = config('demian-coupons.cafe_receipt_hash_key');
             $add('receipt_hmac_key_present', is_string($key) && strlen($key) >= 32);
             if (config('demian-coupons.manual_gifts_enabled') === true) {

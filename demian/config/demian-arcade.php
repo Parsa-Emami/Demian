@@ -3,6 +3,7 @@
 return [
     'require_contact' => (bool) env('DEMIAN_ARCADE_REQUIRE_CONTACT', true),
     'weekly_content_at' => env('DEMIAN_WEEKLY_CONTENT_AT'),
+    'drift_acceptance_required' => false, // Test opt-in only; always required outside testing.
     'drift_prizes_enabled' => (bool) env('DEMIAN_ARCADE_DRIFT_PRIZES_ENABLED', false),
     'drift_ranked_enabled' => (bool) env('DEMIAN_ARCADE_DRIFT_RANKED_ENABLED', true),
     'rules_path' => resource_path('game/runner-rules.json'),

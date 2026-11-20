@@ -23,10 +23,10 @@ final class RunnerReplayVerifier
         $base = $this->rules();
         $r = $week === null ? $base : WeeklyContent::runner($base, $week, $character);
         $invalid = fn (string $message) => ValidationException::withMessages(['replay' => $message]);
-        if ($ticks < 1 || $ticks > $r['maxTicks'] || count($transitions) > $r['maxTransitions'] || ! $transitions) throw $invalid('Replay limits exceeded.');
+        if ($ticks < 1 || $ticks > $r['maxTicks'] || count($transitions) > $r['maxTransitions'] || ! $transitions || ! array_is_list($transitions)) throw $invalid('Replay limits exceeded.');
         $previousTick = $previousMask = -1;
         foreach ($transitions as $entry) {
-            if (! isset($entry['tick'], $entry['mask']) || ! is_int($entry['tick']) || ! is_int($entry['mask'])
+            if (! is_array($entry) || count($entry) !== 2 || ! isset($entry['tick'], $entry['mask']) || ! is_int($entry['tick']) || ! is_int($entry['mask'])
                 || $entry['tick'] <= $previousTick || $entry['tick'] >= $ticks || $entry['mask'] < 0
                 || $entry['mask'] > 7 || $entry['mask'] === $previousMask) throw $invalid('Invalid input transitions.');
             $previousTick = $entry['tick']; $previousMask = $entry['mask'];
