@@ -255,6 +255,7 @@ final class WeeklySettlementService
                 ->sealFromTrustedSnapshot($key, $snapshot, $digest, $utcNow);
             app(SkillLeagueService::class)->seal($key, $snapshot, $digest, $utcNow);
             app(PersonalProgressService::class)->seal($key, $snapshot, $digest, $utcNow);
+            app(LoyaltyXpService::class)->seal($key, $digest, $utcNow);
             DB::table('arcade_weekly_periods')->where('period_key', $key)->update([
                 'status' => 'sealed', 'sealed_at' => $utcNow->toDateTimeString(),
                 'participants' => count($snapshot), 'winner_count' => count($awards),
