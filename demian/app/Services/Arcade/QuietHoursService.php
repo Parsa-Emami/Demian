@@ -75,6 +75,7 @@ final class QuietHoursService
         return DB::transaction(function()use($actor,$version,$input,$t,$start,$end,$now,$seats,$occupied,$percent,$minimum,$cap,$capacity): int {
             $this->staff($actor,$version);$this->lock();
             abort_unless(DB::table('arcade_cashier_staff')->where('branch_id',$input['branch_id'])->where('is_active',true)->exists(),422);
+            abort_unless($end->gt(CarbonImmutable::now('Asia/Tehran')),409,'Offer expired while awaiting approval.');
             $day=$start->toDateString();
             $offers=DB::table('arcade_quiet_offers')->where('local_day',$day);
             abort_if((clone $offers)->where('branch_id',$input['branch_id'])
@@ -171,7 +172,9 @@ final class QuietHoursService
             $o=$this->active()->where('id',$id)->lockForUpdate()->first();
             abort_unless($o&&$o->local_day===$day&&$o->currency===$t['currency']&&$o->policy_version===$t['version']
                 &&(int)$o->percent<=$t['max_percent']&&(int)$o->max_discount_minor<=$t['max_discount_minor']
-                &&(int)$o->min_order_minor>=$t['min_order_minor'],409,'Offer no longer available.');
+                &&(int)$o->min_order_minor>=$t['min_order_minor']
+                &&100*(int)$o->occupied_seats<=$t['threshold']*(int)$o->total_seats
+                &&(int)$o->cost_ceiling_bps===$t['cost_ceiling_bps']&&(int)$o->margin_floor_bps===$t['margin_floor_bps'],409,'Offer no longer available.');
             abort_if(DB::table('arcade_quiet_claims')->where('offer_id',$id)->count()>=(int)$o->capacity,409,'Offer exhausted.');
             $total=(int)DB::table('arcade_quiet_offers')->where('local_day',$day)
                 ->selectRaw('COALESCE(SUM(capacity * max_discount_minor),0) AS amount')->value('amount');
