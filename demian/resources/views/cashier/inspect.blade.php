@@ -18,6 +18,7 @@
     @endswitch
   </div>
 @endif
+@if($details['quiet_branch'] ?? null)<p>تخفیف ساعات خلوت؛ تنها در شعبه {{ $details['quiet_branch'] }} و تا زمان انقضا.</p>@endif
 <div class="big">{{ $details['percent'] }}٪ تخفیف</div>
 <div class="cards">
   <div class="card">واحد پولی<strong>{{ $details['currency'] }}</strong></div>

@@ -13,6 +13,7 @@ final class ArcadePrivacyController extends Controller
     // Allowlisted personal-data fields; never export bearer/recovery hashes,
     // plaintext coupon secrets, payment references or anti-cheat evidence.
     private const RECORDS = [
+        'quiet_hours_claims' => ['arcade_quiet_claims', ['id','offer_id','coupon_id','local_day','created_at']],
         'referral_attribution' => ['arcade_referrals', ['id','status','created_at','expires_at','qualified_at']],
         'missions' => ['arcade_mission_weeks', ['id','period_key','policy_version','day_mask','active_days','distinct_games','daily_xp','consistency_xp','variety_xp','adaptive_xp','total_xp','adaptive_game_id','adaptive_rules_version','adaptive_target','created_at']],
         'loyalty_xp' => ['arcade_loyalty_xp', ['id','period_key','policy_version','distinct_games','participation_xp','variety_xp','progress_xp','continuity_xp','total_xp','late_seal','created_at']],

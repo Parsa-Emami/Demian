@@ -1,0 +1,54 @@
+name: Quiet-hours frontend acceptance
+on:
+  push:
+    branches: [roadmap/90-phase-18-quiet-hours]
+  pull_request:
+    branches: [roadmap/90-phase-17-table-qr]
+    paths:
+      - 'demian/resources/js/**'
+      - 'demian/tests/js/**'
+      - '.github/workflows/quiet-hours-frontend-ci.yml'
+permissions:
+  contents: read
+concurrency:
+  group: quiet-hours-frontend-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  source-test-build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    defaults:
+      run:
+        working-directory: demian
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: demian/package-lock.json
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install Pillow
+      - run: npm ci
+      - run: npm run validate:skills
+      - run: npm run test:ci
+      - run: npm run validate:final
+      - run: npm run validate:ui-layers
+      - run: npm run build:static
+        env:
+          DEMIAN_PUBLIC_ORIGIN: https://demiancafe.ir
+          DEMIAN_ARCADE_API_URL: ''
+          DEMIAN_PAGES_CUSTOM_DOMAIN: ''
+      - run: npm run validate:static-assets
+      - run: npm run validate:build
+      - run: npx playwright install chromium --only-shell
+      - run: timeout --signal=TERM --kill-after=10s 180s npm run test:weekly13:browser
+      - uses: actions/upload-artifact@v4
+        if: success()
+        with:
+          name: quiet-hours-static-preview-${{ github.sha }}
+          path: demian/_site
+          retention-days: 3
+          if-no-files-found: error

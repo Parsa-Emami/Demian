@@ -19,6 +19,7 @@
   <a class="button secondary" href="{{ route('cashier.referrals') }}">دعوت دوستان و جذب مشتری</a>
 @endif
 @if ($staff->role === 'super_admin')
+  <a class="button secondary" href="{{ route('cashier.quiet-hours') }}">تخفیف ساعات خلوت</a>
   <a class="button secondary" href="{{ route('cashier.gifts') }}">اهدای کد تخفیف به بازیکن</a>
   @if(config('demian-coupons.delivery_support_enabled'))
   <a class="button secondary" href="{{ route('cashier.coupon-support') }}">درخواست‌های رسیدگی به جوایز</a>
