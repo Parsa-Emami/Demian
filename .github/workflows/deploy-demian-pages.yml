@@ -243,6 +243,7 @@ jobs:
             demian/docs/phase6-step31/browser-compatibility.json
             demian/docs/phase6-step31/mobile-characters-browser.json
             demian/docs/phase6-step31/mobile-home-*.png
+            demian/docs/phase6-step31/character-grid-*.png
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v4
         with:
