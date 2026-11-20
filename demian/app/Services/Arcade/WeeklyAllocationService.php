@@ -17,6 +17,15 @@ final class WeeklyAllocationService
         $terms = json_decode($campaign->terms, true, 512, JSON_THROW_ON_ERROR);
         if (! array_key_exists('allocation', $terms)) return null;
         $policy = DynamicWinnerAllocation::canonical($terms['allocation']);
+        // Include eligible games with no submissions in the management table.
+        $locks = DB::table('arcade_weekly_rule_locks')->where('period_key', $campaign->period_key)->get()->keyBy('game_id');
+        $catalog = app(RankedGameCatalog::class);
+        foreach ($policy['game_caps'] as $game => $limit) {
+            $lock = $locks->get($game);
+            if ($catalog->supportsPrizes($game) && ($lock ? $lock->ranked_enabled && $lock->prize_eligible : $game !== CafeDriftReplayVerifier::GAME_ID)) {
+                $rankings[$game] ??= [];
+            }
+        }
         // Verify frozen campaign hash, capacity and financial terms.
         $economics = app(CampaignEconomics::class)->frozen($campaign, $sealing);
         if (! $economics) throw new RuntimeException('Dynamic allocation needs a budgeted campaign.');

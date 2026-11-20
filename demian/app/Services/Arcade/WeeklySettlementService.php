@@ -178,6 +178,17 @@ final class WeeklySettlementService
             $allocation = null;
             $campaign = DB::table('arcade_reward_campaigns')->where('period_key', $key)->lockForUpdate()->first();
             if ($campaign) {
+                $terms = json_decode($campaign->terms, true, 512, JSON_THROW_ON_ERROR);
+                if (isset($terms['allocation'])) {
+                    // Never allocate the later week ahead of an earlier funded
+                    // dynamic week: historical winner priority must be chronological.
+                    $earlier = DB::table('arcade_reward_campaigns as c')
+                        ->join('arcade_weekly_periods as p', 'p.period_key', '=', 'c.period_key')
+                        ->where('c.period_key', '<', $key)->where('p.status', 'open')
+                        ->whereIn('c.status', ['active', 'paused'])
+                        ->whereNotNull('c.activated_at')->exists();
+                    if ($earlier) throw new RuntimeException('Settle earlier funded weeks before allocating prizes.');
+                }
                 $allocation = app(WeeklyAllocationService::class)->plan($campaign, $prizeRankings, $historical, $activeRecipients, true);
             }
             if ($allocation) {
