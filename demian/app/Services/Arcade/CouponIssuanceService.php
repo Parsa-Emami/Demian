@@ -66,6 +66,10 @@ final class CouponIssuanceService
                 $campaign = $campaignService->lockedForIssuance(
                     $periodKey, $winners->count(), $winners->count() - $issued);
             }
+            if (! $campaign && app(CampaignEconomics::class)->required() && $winners->isNotEmpty()) {
+                throw new RuntimeException('Weekly awards require an approved budgeted campaign.');
+            }
+            if ($campaign) app(WeeklyAllocationService::class)->assertSealed($campaign, $winners);
             $effectiveTerms = $campaign
                 ? json_decode($campaign->terms, true, 512, JSON_THROW_ON_ERROR) : $terms;
             $created = 0;
@@ -99,6 +103,7 @@ final class CouponIssuanceService
                             ->where('ranked_enabled', true)->where('prize_eligible', true)->exists())) {
                     throw new RuntimeException('Café Drift prizes require an eligible season and an active sponsor campaign.');
                 }
+                app(VerifiedPrizeIdentity::class)->assertNewAward($winner, $period, $campaign);
                 $item = $campaign ? $campaignService->claim($campaign) : null;
                 $code = $item ? Crypt::decryptString($item->code_ciphertext)
                     : 'DMC-'.strtoupper(bin2hex(random_bytes(16)));

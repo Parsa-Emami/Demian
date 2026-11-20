@@ -13,6 +13,9 @@ final class ArcadePrivacyController extends Controller
     // Allowlisted personal-data fields; never export bearer/recovery hashes,
     // plaintext coupon secrets, payment references or anti-cheat evidence.
     private const RECORDS = [
+        'loyalty_xp' => ['arcade_loyalty_xp', ['id','period_key','policy_version','distinct_games','participation_xp','variety_xp','progress_xp','continuity_xp','total_xp','late_seal','created_at']],
+        'personal_progress' => ['arcade_personal_progress', ['id','period_key','game_id','rules_version','policy_version','score','previous_best','previous_weeks','target_score','personal_record','badge','status','achieved_at']],
+        'skill_leagues' => ['arcade_skill_standings', ['id','period_key','league','points','cohort_size','qualified','rank','movement','achieved_at']],
         'runs' => ['arcade_runs', ['id', 'game_id', 'character_slug', 'status', 'score', 'started_at', 'completed_at']],
         'best_scores' => ['arcade_leaderboard_entries', ['id', 'game_id', 'period_key', 'score', 'achieved_at']],
         'weekly_results' => ['arcade_weekly_results', ['id', 'period_key', 'game_id', 'score', 'technical_rank', 'achieved_at']],
@@ -28,6 +31,8 @@ final class ArcadePrivacyController extends Controller
             'status' => config('demian-legal.publication_approved') ? 'approved' : 'draft-pending-legal-review',
             'require_acceptance' => config('demian-legal.require_acceptance'),
             'require_contact' => config('demian-arcade.require_contact'),
+            'phone_verification_available' => app(\App\Services\Arcade\PhoneIdentityService::class)->ready(),
+            'verified_phone_required_for_prizes' => app(\App\Services\Arcade\PhoneIdentityService::class)->required(),
             'pages' => config('demian-legal.pages'),
         ])->header('Cache-Control', 'public, max-age=60');
     }
@@ -35,6 +40,7 @@ final class ArcadePrivacyController extends Controller
     public function snapshot(Request $request): JsonResponse
     {
         $player = $request->attributes->get('arcade_player');
+        $identity = app(\App\Services\Arcade\PhoneIdentityService::class)->identity($player->id);
         $counts = [];
         foreach (self::RECORDS as $kind => [$table]) {
             $counts[$kind] = DB::table($table)->where('player_id', $player->id)->count();
@@ -46,6 +52,8 @@ final class ArcadePrivacyController extends Controller
                 'registered_at' => $player->created_at?->toIso8601String(),
                 'legal_policy_version' => $player->legal_policy_version,
                 'contact_type' => $player->contact_type, 'contact_value' => $player->contact_value,
+                'verified_phone' => $identity ? \Illuminate\Support\Facades\Crypt::decryptString($identity->phone_ciphertext) : null,
+                'phone_verified_at' => $identity?->verified_at,
                 'legal_accepted_at' => $player->legal_accepted_at?->toIso8601String(),
             ],
             'record_counts' => $counts,

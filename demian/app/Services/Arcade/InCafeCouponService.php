@@ -116,6 +116,7 @@ final class InCafeCouponService
                 'Coupon is expired, revoked, reserved or already redeemed.');
             $discount = $this->discount($coupon, $subtotal);
             abort_unless($discount > 0, 422, 'Discount amount is zero.');
+            app(CampaignEconomics::class)->assertRedemption($coupon, $subtotal, $discount);
             // Same physical bill can never claim another coupon, irrespective
             // of cashier identity. Unique SQL order_hash enforces this.
             abort_if(DB::table('arcade_coupon_redemptions')->where('order_hash', $ticketHash)
