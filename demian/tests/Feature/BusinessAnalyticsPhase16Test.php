@@ -30,7 +30,7 @@ final class BusinessAnalyticsPhase16Test extends TestCase
         return $player->id;
     }
 
-    private function run(string $player,string $time,string $status='verified'): void
+    private function seedRun(string $player,string $time,string $status='verified'): void
     {
         DB::table('arcade_runs')->insert(['id'=>(string)Str::uuid(),'player_id'=>$player,
             'request_id'=>(string)Str::uuid(),'game_id'=>'dino-run','rules_version'=>'fixture',
@@ -53,11 +53,11 @@ final class BusinessAnalyticsPhase16Test extends TestCase
         $a=$this->player('2026-11-13 21:00:00');
         $b=$this->player('2026-11-14 21:00:00');
         $old=$this->player('2026-10-01 21:00:00');
-        $this->run($a,'2026-11-14 21:00:00');
-        $this->run($a,'2026-11-15 21:00:00');
-        $this->run($b,'2026-11-16 21:00:00','started');
-        $this->run($old,'2026-11-18 21:00:00');
-        $this->run($b,'2026-11-19 21:00:00');
+        $this->seedRun($a,'2026-11-14 21:00:00');
+        $this->seedRun($a,'2026-11-15 21:00:00');
+        $this->seedRun($b,'2026-11-16 21:00:00','started');
+        $this->seedRun($old,'2026-11-18 21:00:00');
+        $this->seedRun($b,'2026-11-19 21:00:00');
         $r=app(BusinessAnalytics::class)->snapshot(7);
         self::assertSame('2026-11-13',$r['from']);
         self::assertSame('2026-11-20',$r['until_exclusive']);
@@ -125,7 +125,7 @@ final class BusinessAnalyticsPhase16Test extends TestCase
     public function test_trend_allocates_cross_boundary_completion_to_start_bucket(): void
     {
         $id=$this->player('2026-10-25 10:00:00');
-        $this->run($id,'2026-10-27 20:29:59');
+        $this->seedRun($id,'2026-10-27 20:29:59');
         $r=app(BusinessAnalytics::class)->snapshot(30);
         self::assertSame(1,$r['engagement']['verified_runs']);
         self::assertSame(1,array_sum(array_column($r['trend'],'verified_runs')));
