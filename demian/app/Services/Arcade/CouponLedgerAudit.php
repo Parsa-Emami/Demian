@@ -41,6 +41,33 @@ final class CouponLedgerAudit
                         ->where('details->gift_id', $gift?->id)->exists()) {
                     $issues[] = "Coupon #{$id} has invalid manual gift provenance.";
                 }
+            } elseif ($coupon->source === 'quiet_hours') {
+                $claim=DB::table('arcade_quiet_claims')->where('coupon_id',$id)->first();
+                $offer=$claim?DB::table('arcade_quiet_offers')->where('id',$claim->offer_id)->first():null;
+                if(!$claim||!$offer||$coupon->winner_id!==null||$coupon->gift_id!==null||$coupon->campaign_id!==null
+                    ||$coupon->player_id!==$claim->player_id||$claim->local_day!==$offer->local_day
+                    ||$coupon->currency!==$offer->currency||$coupon->policy_version!==$offer->policy_version
+                    ||(int)$coupon->discount_percent!==(int)$offer->percent||(int)$coupon->min_order_minor!==(int)$offer->min_order_minor
+                    ||(int)$coupon->max_discount_minor!==(int)$offer->max_discount_minor||$coupon->expires_at!==$offer->ends_at
+                    ||$coupon->issued_at<$offer->starts_at||$coupon->issued_at>=$offer->ends_at
+                    ||$claim->created_at!==$coupon->issued_at
+                    ||DB::table('arcade_quiet_claims')->where('offer_id',$offer->id)->count()>(int)$offer->capacity
+                    ||!DB::table('arcade_cashier_admin_events')->where('actor_id',$offer->created_by)
+                        ->where('event_type','quiet_offer_created')->where('details->offer_id',$offer->id)->exists()
+                    ||!DB::table('arcade_coupon_events')->where('coupon_id',$id)->where('event_type','issued')
+                        ->where('details->offer_id',$offer->id)->exists()) {
+                    $issues[]="Coupon #{$id} has invalid quiet-hour provenance.";
+                } else {
+                    foreach(DB::table('arcade_coupon_redemptions')->where('coupon_id',$id)->get() as $r) {
+                        $subtotal=(int)$r->subtotal_minor;$discount=(int)$r->discount_minor;
+                        if($r->channel!=='in_cafe'||$r->branch_id!==$offer->branch_id||$r->currency!==$offer->currency
+                            ||$r->redeemed_at<$offer->starts_at||$r->redeemed_at>=$offer->ends_at
+                            ||$subtotal<(int)$offer->min_order_minor
+                            ||$discount!==min(CampaignEconomics::floorBps($subtotal,(int)$offer->percent*100),(int)$offer->max_discount_minor)
+                            ||!app(CampaignEconomics::class)->marginSafe($subtotal,$discount,(array)$offer))
+                            $issues[]="Coupon #{$id} has invalid quiet-hour redemption.";
+                    }
+                }
             } elseif ($coupon->source === 'weekly') {
                 $winner = DB::table('arcade_weekly_winners')
                     ->where('id', $coupon->winner_id)->first();

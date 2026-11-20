@@ -34,6 +34,7 @@
 @endif
 @if (in_array('operations.readiness', $permissions, true))
   <a class="button secondary" href="{{ route('cashier.readiness') }}">آمادگی انتشار</a>
+  <a class="button secondary" href="{{ route('cashier.pilot') }}">پایلوت تجاری</a>
 @endif
 </div>
 <h2>اعتبارسنجی حضوری کد تخفیف</h2>
