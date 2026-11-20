@@ -50,6 +50,8 @@ final class InCafeCouponService
         abort_unless($coupon, 422, 'Code not found.');
         return [
             'state' => $this->state($coupon),
+            'quiet_branch' => $coupon->source==='quiet_hours'
+                ? app(QuietHoursService::class)->offerForCoupon((int)$coupon->id)?->branch_id : null,
             'owner_name' => $coupon->player_id
                 ? DB::table('arcade_players')->where('id', $coupon->player_id)->value('display_name') : null,
             'percent' => (int) $coupon->discount_percent,
@@ -117,6 +119,7 @@ final class InCafeCouponService
             $discount = $this->discount($coupon, $subtotal);
             abort_unless($discount > 0, 422, 'Discount amount is zero.');
             app(CampaignEconomics::class)->assertRedemption($coupon, $subtotal, $discount);
+            app(QuietHoursService::class)->assertRedemption($coupon,$cashier->branch_id,$subtotal,$discount);
             // Same physical bill can never claim another coupon, irrespective
             // of cashier identity. Unique SQL order_hash enforces this.
             abort_if(DB::table('arcade_coupon_redemptions')->where('order_hash', $ticketHash)

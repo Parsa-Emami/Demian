@@ -229,7 +229,7 @@ export default class ArcadeLeaderboardService {
             throw new Error('برای دریافت سوابق باید حساب آنلاین را بازیابی کنی.');
         }
         const allowed = ['runs', 'best_scores', 'weekly_results', 'weekly_wins',
-            'coupons', 'anticheat_observations'];
+            'coupons', 'quiet_hours_claims', 'anticheat_observations'];
         if (!allowed.includes(type)) throw new Error('نوع داده معتبر نیست.');
         return this.request('/player/data/records?type=' + encodeURIComponent(type) +
             (cursor ? '&cursor=' + encodeURIComponent(cursor) : ''), { authenticated: true });
@@ -594,6 +594,16 @@ export default class ArcadeLeaderboardService {
                 category, description },
         });
         return response.data;
+    }
+
+    async quietHours() {
+        if (!this.connected || !this.identity?.token) return { available: false, eligible: false, data: [] };
+        return this.request('/player/quiet-hours', { authenticated: true });
+    }
+
+    async claimQuietHours(id) {
+        if (!this.connected || !this.identity?.token || !Number.isSafeInteger(id) || id < 1) throw new Error('Invalid offer');
+        return this.request('/player/quiet-hours/' + id + '/claim', { method: 'POST', authenticated: true });
     }
 
     async myCoupons() {

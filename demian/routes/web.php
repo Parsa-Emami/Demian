@@ -48,6 +48,12 @@ Route::prefix('cashier')->name('cashier.')->group(function (): void {
             [CafeAdminController::class, 'setStaffActive'])
             ->whereNumber('subjectId')->whereIn('operation', ['enable', 'disable'])
             ->middleware('throttle:arcade-cashier-admin')->name('staff.action');
+        Route::get('/admin/quiet-hours',[\App\Http\Controllers\Cafe\CafeQuietHoursController::class,'index'])
+            ->middleware(RequireCafePermission::class.':coupon.revoke')->name('quiet-hours');
+        Route::post('/admin/quiet-hours',[\App\Http\Controllers\Cafe\CafeQuietHoursController::class,'create'])
+            ->middleware([RequireCafePermission::class.':coupon.revoke','throttle:arcade-cashier-admin'])->name('quiet-hours.create');
+        Route::post('/admin/quiet-hours/{offerId}/pause',[\App\Http\Controllers\Cafe\CafeQuietHoursController::class,'pause'])
+            ->whereNumber('offerId')->middleware([RequireCafePermission::class.':coupon.revoke','throttle:arcade-cashier-admin'])->name('quiet-hours.pause');
         Route::get('/admin/tables',[\App\Http\Controllers\Cafe\CafeTableController::class,'index'])
             ->middleware(RequireCafePermission::class.':report.global')->name('tables');
         Route::post('/admin/tables',[\App\Http\Controllers\Cafe\CafeTableController::class,'create'])

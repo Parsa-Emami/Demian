@@ -2,6 +2,7 @@ import BaseScreen from './BaseScreen.js';
 
 const digits = new Intl.NumberFormat('fa-IR');
 const expiry = new Intl.DateTimeFormat('fa-IR', { timeZone: 'Asia/Tehran', dateStyle: 'medium' });
+const timeExpiry = new Intl.DateTimeFormat('fa-IR', { timeZone: 'Asia/Tehran', dateStyle: 'medium', timeStyle: 'short' });
 const couponCode = /^DMC-[A-F0-9]{32}$/;
 
 export default class CouponWalletScreen extends BaseScreen {
@@ -64,6 +65,15 @@ export default class CouponWalletScreen extends BaseScreen {
                 && typeof coupon.code === 'string' && couponCode.test(coupon.code));
             this.status.textContent = active.length ? '' : 'هنوز کد تخفیفی نداری.';
             for (const coupon of active) this.list.append(this.createCard(coupon));
+            if (typeof this.service.quietHours === 'function') {
+                const offers = await this.service.quietHours().catch(() => null);
+                if (generation !== this.generation || token !== this.service.identity?.token
+                    || owner !== this.service.identity?.player_id) return;
+                if (offers?.available && Array.isArray(offers.data)) {
+                    for (const offer of offers.data) this.list.append(this.createOffer(offer, offers.eligible, generation, token, owner));
+                    if (offers.data.length && !active.length) this.status.textContent = 'پیشنهادهای ساعات خلوت';
+                }
+            }
         } catch {
             if (generation === this.generation) this.status.textContent = 'کدها بارگیری نشدند. دوباره تلاش کنید.';
         } finally {
@@ -71,17 +81,51 @@ export default class CouponWalletScreen extends BaseScreen {
         }
     }
 
+    createOffer(offer, eligible, generation, token, owner) {
+        const card = document.createElement('li');
+        card.className = 'wallet-card';
+        const title = document.createElement('strong');
+        title.textContent = 'ساعات خلوت · ' + digits.format(offer.percent) + '٪';
+        const text = document.createElement('p');
+        const end = Date.parse(offer.ends_at);
+        text.textContent = 'شعبه ' + offer.branch + ' · حداقل خرید ' + digits.format(offer.minimum_minor)
+            + ' · سقف ' + digits.format(offer.cap_minor) + ' ' + offer.currency
+            + (Number.isFinite(end) ? ' · تا ' + timeExpiry.format(end) : '');
+        const claim = document.createElement('button');
+        claim.type = 'button';
+        claim.className = 'shell-button shell-button--ghost';
+        claim.disabled = !eligible;
+        claim.textContent = eligible ? 'دریافت کد تخفیف' : 'نیازمند شماره تأییدشده ۴۸ ساعته و سهمیه روزانه';
+        claim.addEventListener('click', async () => {
+            if (generation !== this.generation || token !== this.service.identity?.token || owner !== this.service.identity?.player_id) return;
+            claim.disabled = true;
+            try {
+                await this.service.claimQuietHours(offer.id);
+                if (generation === this.generation && token === this.service.identity?.token && owner === this.service.identity?.player_id) await this.load();
+            } catch {
+                if (generation === this.generation && token === this.service.identity?.token && owner === this.service.identity?.player_id) {
+                    this.status.textContent = 'دریافت پیشنهاد ممکن نبود؛ اعتبار و سهمیه را دوباره بررسی کنید.';
+                    claim.disabled = false;
+                }
+            }
+        });
+        card.append(title, text, claim);
+        return card;
+    }
+
     createCard(coupon) {
         const card = document.createElement('li');
         card.className = 'wallet-card';
         card.dataset.walletState = coupon.status;
         const title = document.createElement('strong');
-        title.textContent = (coupon.source === 'gift' ? 'هدیهٔ کافه' : 'جایزهٔ هفتگی')
+        title.textContent = (coupon.source === 'quiet_hours' ? 'تخفیف ساعات خلوت' : coupon.source === 'gift' ? 'هدیهٔ کافه' : 'جایزهٔ هفتگی')
             + ' · ' + digits.format(coupon.discount_percent) + '٪ تخفیف';
         const details = document.createElement('p');
         details.className = 'wallet-card__meta';
         const end = Date.parse(coupon.expires_at);
-        if (Number.isFinite(end)) details.textContent = 'اعتبار تا ' + expiry.format(end);
+        if (Number.isFinite(end)) details.textContent = 'اعتبار تا ' + (coupon.source === 'quiet_hours' ? timeExpiry : expiry).format(end);
+        if (coupon.source === 'quiet_hours') details.textContent += ' · فقط شعبه ' + (coupon.quiet_branch ?? 'نامشخص')
+            + ' · حداقل ' + digits.format(coupon.min_order_minor) + ' · سقف ' + digits.format(coupon.max_discount_minor) + ' ' + coupon.currency;
         const code = document.createElement('input');
         code.readOnly = true;
         code.autocomplete = 'off';

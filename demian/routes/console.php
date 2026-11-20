@@ -118,3 +118,8 @@ Artisan::command('inspire', function () {
     app(\App\Services\Arcade\CafeTableService::class)->prune();
 })->purpose('Expire anonymous table launch deduplication markers and old aggregates.');
 \Illuminate\Support\Facades\Schedule::command('arcade:tables:prune')->dailyAt('04:20')->withoutOverlapping(10)->onOneServer();
+
+\Illuminate\Support\Facades\Artisan::command('arcade:quiet-hours:prune',function(): void {
+    app(\App\Services\Arcade\QuietHoursService::class)->prune();
+})->purpose('Prune expired quiet-hours identity deduplication digests.');
+\Illuminate\Support\Facades\Schedule::command('arcade:quiet-hours:prune')->dailyAt('04:30')->withoutOverlapping(10)->onOneServer();

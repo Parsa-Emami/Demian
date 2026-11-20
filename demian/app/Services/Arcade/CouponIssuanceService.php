@@ -161,6 +161,7 @@ final class CouponIssuanceService
                 return [
                     'coupon_id' => $coupon->id,
                     'source' => $coupon->source,
+                    ...($coupon->source==='quiet_hours' ? ['quiet_branch'=>app(QuietHoursService::class)->offerForCoupon((int)$coupon->id)?->branch_id] : []),
                     'gift_reason' => $coupon->source === 'gift' ? $coupon->gift_reason : null,
                     'period_key' => $coupon->period_key, 'game_id' => $coupon->game_id,
                     'prize_rank' => $coupon->prize_rank === null
