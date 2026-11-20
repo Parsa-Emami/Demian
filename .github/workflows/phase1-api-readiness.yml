@@ -1,0 +1,75 @@
+name: Phase 1 API release readiness (GitHub only)
+on:
+  workflow_call:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  package:
+    timeout-minutes: 20
+    runs-on: ubuntu-24.04
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: disposable-root
+          MYSQL_DATABASE: demian_release_ci
+          MYSQL_USER: demian_ci
+          MYSQL_PASSWORD: disposable-ci-only
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -pdisposable-root"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: mbstring, dom, xml, pdo_mysql, curl, fileinfo
+          coverage: none
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Install locked PHP production dependencies
+        working-directory: demian
+        run: composer install --no-interaction --no-dev --prefer-dist --optimize-autoloader
+      - name: Prepare secure, backend-only Laravel artifact
+        shell: bash
+        working-directory: demian
+        run: |
+          set -Eeuo pipefail
+          # Never ship precomputed configuration/routes from a CI environment.
+          tar --exclude='bootstrap/cache/*.php' -czf "$RUNNER_TEMP/demian-cpanel.tar.gz" \
+            artisan app bootstrap config database routes resources/game resources/legal \
+            resources/views src public/index.php public/.htaccess \
+            ops/cpanel/host_preflight.php composer.json composer.lock vendor
+          test -s "$RUNNER_TEMP/demian-cpanel.tar.gz"
+          tar -tzf "$RUNNER_TEMP/demian-cpanel.tar.gz" > "$RUNNER_TEMP/cpanel-entries.txt"
+          if grep -Eq '(^|/)([.]env|[.]git)(/|$)' "$RUNNER_TEMP/cpanel-entries.txt"; then
+            echo "Forbidden metadata/secret in cPanel artifact" >&2; exit 1
+          fi
+          grep -Fx 'artisan' "$RUNNER_TEMP/cpanel-entries.txt" >/dev/null
+          grep -Fx 'resources/legal/policy.json' "$RUNNER_TEMP/cpanel-entries.txt" >/dev/null
+          grep -Fx 'ops/cpanel/host_preflight.php' "$RUNNER_TEMP/cpanel-entries.txt" >/dev/null
+          tar -tvzf "$RUNNER_TEMP/demian-cpanel.tar.gz" > "$RUNNER_TEMP/cpanel-types.txt"
+          if grep -Eq '^[^d-]' "$RUNNER_TEMP/cpanel-types.txt"; then
+            echo "Release contains a forbidden symbolic link" >&2; exit 1
+          fi
+      - name: Boot and smoke-test the exact cPanel archive with disposable MySQL
+        run: bash demian/ops/cpanel/ci_release_acceptance.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cpanel-api-release
+          path: |
+            ${{ runner.temp }}/demian-cpanel.tar.gz
+            ${{ runner.temp }}/demian-cpanel.tar.gz.sha256
+            ${{ runner.temp }}/phase1-api-evidence.json
+          if-no-files-found: error
+          retention-days: 2
