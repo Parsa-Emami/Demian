@@ -19,6 +19,11 @@ Route::get('/admin', fn () => redirect()->route(
     session()->has('cafe_staff_id') ? 'cashier.index' : 'cashier.login'
 ))->name('cafe.admin');
 
+Route::get('/t/{code}',[\App\Http\Controllers\Cafe\PublicTableController::class,'show'])
+    ->where('code','[a-f0-9]{32}')->middleware('throttle:120,1,table-landing')->name('table.show');
+Route::post('/t/{code}',[\App\Http\Controllers\Cafe\PublicTableController::class,'launch'])
+    ->where('code','[a-f0-9]{32}')->middleware('throttle:120,1,table-launch')->name('table.launch');
+
 Route::prefix('cashier')->name('cashier.')->group(function (): void {
     Route::get('/login', [CashierController::class, 'loginForm'])->name('login');
     Route::post('/login', [CashierController::class, 'login'])
@@ -43,6 +48,15 @@ Route::prefix('cashier')->name('cashier.')->group(function (): void {
             [CafeAdminController::class, 'setStaffActive'])
             ->whereNumber('subjectId')->whereIn('operation', ['enable', 'disable'])
             ->middleware('throttle:arcade-cashier-admin')->name('staff.action');
+        Route::get('/admin/tables',[\App\Http\Controllers\Cafe\CafeTableController::class,'index'])
+            ->middleware(RequireCafePermission::class.':report.global')->name('tables');
+        Route::post('/admin/tables',[\App\Http\Controllers\Cafe\CafeTableController::class,'create'])
+            ->middleware([RequireCafePermission::class.':report.global','throttle:arcade-cashier-admin'])->name('tables.create');
+        Route::get('/admin/tables/{tableId}/print',[\App\Http\Controllers\Cafe\CafeTableController::class,'print'])
+            ->whereNumber('tableId')->middleware([RequireCafePermission::class.':report.global','throttle:30,1'])->name('tables.print');
+        Route::post('/admin/tables/{tableId}/{action}',[\App\Http\Controllers\Cafe\CafeTableController::class,'change'])
+            ->whereNumber('tableId')->whereIn('action',['enable','disable','rotate'])
+            ->middleware([RequireCafePermission::class.':report.global','throttle:arcade-cashier-admin'])->name('tables.change');
         Route::get('/admin/analytics', \App\Http\Controllers\Cafe\CafeBusinessAnalyticsController::class)
             ->middleware([RequireCafePermission::class.':report.global','throttle:6,1'])->name('business-analytics');
         Route::get('/admin/referrals', \App\Http\Controllers\Cafe\CafeReferralController::class)
