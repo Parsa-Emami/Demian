@@ -2,6 +2,11 @@ import MasterMotionController from './motion/MasterMotionController.js';
 import { motionCharacter } from './motion/MasterMotionLibrary.js';
 import { sanitizeCharacterAnimation } from './CharacterVisualContract.js';
 
+const finite = (value, fallback = 0) => Number.isFinite(Number(value)) ? Number(value) : fallback;
+const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
+const wrap = (value, length) => ((value % length) + length) % length;
+const rateOf = animation => Math.max(1, finite(animation?.fps, 1));
+
 const DIRECTION_FALLBACKS = Object.freeze({
     n: ['n', 'ne', 'nw'],
     ne: ['ne', 'e', 'n'],
@@ -67,14 +72,19 @@ export default class FrameAnimator {
             return safeName;
         }
 
-        const manifestFallback = sanitizeCharacterAnimation(this.atlas.fallbacks?.[safeName]);
+        const declaredFallback = this.atlas.fallbacks?.[safeName];
+        const manifestFallback = typeof declaredFallback === 'string' && declaredFallback.trim()
+            ? sanitizeCharacterAnimation(declaredFallback) : null;
         if (manifestFallback && this.atlas.animations?.[manifestFallback]) {
             return manifestFallback;
         }
 
-        const defaultFallback = DEFAULT_ANIMATION_FALLBACKS[safeName];
-        if (defaultFallback && this.atlas.animations?.[defaultFallback]) {
-            return defaultFallback;
+        let fallback = DEFAULT_ANIMATION_FALLBACKS[safeName];
+        const visited = new Set([safeName]);
+        while (fallback && !visited.has(fallback)) {
+            if (this.atlas.animations?.[fallback]) return fallback;
+            visited.add(fallback);
+            fallback = DEFAULT_ANIMATION_FALLBACKS[fallback];
         }
 
         return this.atlas.animations?.idle
@@ -104,6 +114,7 @@ export default class FrameAnimator {
             : 0;
         const previousCycles = Math.max(1, Number(this.animation?.cycleCount) || 1);
 
+        this.previousSample = null;
         this.requestedAnimationName = safeRequestedName;
         this.animationName = resolvedName;
         this.animation = this.atlas.animations[resolvedName];
@@ -120,7 +131,7 @@ export default class FrameAnimator {
                     : ((previousPhase * previousCycles) % 1) / nextCycles;
                 const framePosition = phase * nextFrames.length;
                 this.frameIndex = Math.min(nextFrames.length - 1, Math.floor(framePosition));
-                const fps = Math.max(Number(this.animation.fps) || 1, 1);
+                const fps = rateOf(this.animation);
                 const frameDuration = 1 / (fps * this.playbackRate);
                 this.elapsed = (framePosition - this.frameIndex) * frameDuration;
             }
@@ -130,39 +141,105 @@ export default class FrameAnimator {
         return resolvedName;
     }
 
+    playbackSnapshot() {
+        return {
+            requested: this.requestedAnimationName ?? this.animationName ?? 'idle',
+            frames: this.currentFrames().length,
+            position: this.frameIndex + this.frameProgress(),
+            loop: this.animation?.loop !== false,
+            cycles: Math.max(1, finite(this.animation?.cycleCount, 1)),
+            finished: this.finished,
+            direction: this.direction,
+            facing: this.facing,
+            rate: this.playbackRate,
+            locomotionPhase: this.locomotionPhase,
+            locomotionFrequency: this.locomotionFrequency,
+            motionState: this.motionState,
+        };
+    }
+
+    restorePosition(snapshot, { matchStride = false } = {}) {
+        const count = this.currentFrames().length;
+        if (!this.animation || !count || !snapshot.frames) return;
+        const loop = this.animation.loop !== false;
+        let position;
+        if (loop) {
+            let phase = snapshot.position / snapshot.frames;
+            const cycles = Math.max(1, finite(this.animation.cycleCount, 1));
+            if (matchStride && snapshot.loop && cycles !== snapshot.cycles) {
+                phase = wrap(phase * snapshot.cycles, 1) / cycles;
+            }
+            position = wrap(phase, 1) * count;
+        } else if (snapshot.finished) {
+            position = count - 1;
+        } else if (snapshot.position >= snapshot.frames - 1) {
+            position = count - 1 + clamp(snapshot.position - (snapshot.frames - 1), 0, .999999);
+        } else {
+            position = snapshot.position / Math.max(1, snapshot.frames - 1) * (count - 1);
+        }
+        this.frameIndex = clamp(Math.floor(position), 0, count - 1);
+        this.elapsed = (position - this.frameIndex) / (rateOf(this.animation) * this.playbackRate);
+        this.finished = !loop && snapshot.finished;
+        this.previousSample = null;
+        this.frameSerial += 1;
+        this.applyCurrentFrame();
+    }
+
+    adoptPlaybackFrom(previous) {
+        if (!previous) return this.play('idle');
+        const snapshot = previous.playbackSnapshot();
+        this.setDirection(snapshot.direction);
+        this.setFacing(snapshot.facing);
+        this.setPlaybackRate(snapshot.rate);
+        const resolved = this.play(snapshot.requested, { restart: true });
+        this.restorePosition(snapshot, { matchStride: true });
+        this.locomotionPhase = snapshot.locomotionPhase;
+        this.locomotionFrequency = snapshot.locomotionFrequency;
+        this.motionState = snapshot.motionState;
+        if (this.masterMotion && previous.masterMotion?.definition.slug === this.masterMotion.definition.slug) {
+            this.masterMotion.adoptFrom(previous.masterMotion);
+        }
+        return resolved;
+    }
+
     setFacing(direction) {
         const nextFacing = direction >= 0 ? 1 : -1;
         if (this.facing === nextFacing) return;
+        const frames = this.currentFrames();
+        const snapshot = this.playbackSnapshot();
         this.facing = nextFacing;
-        this.clampFrameIndex();
-        this.applyCurrentFrame();
+        if (frames !== this.currentFrames()) this.restorePosition(snapshot);
+        else this.applyCurrentFrame();
     }
 
     setDirection(direction) {
         if (!direction || this.direction === direction) return;
+        const frames = this.currentFrames();
+        const snapshot = this.playbackSnapshot();
         this.direction = direction;
-        this.clampFrameIndex();
-        this.applyCurrentFrame();
+        if (frames !== this.currentFrames()) this.restorePosition(snapshot);
+        else this.applyCurrentFrame();
     }
 
     setPlaybackRate(rate) {
-        const next = Math.min(3.25, Math.max(0.25, Number(rate) || 1));
+        const next = clamp(finite(rate, 1) || 1, .25, 3.25);
         if (next === this.playbackRate) return;
         const progress = this.frameProgress();
         this.playbackRate = next;
-        if (this.animation) this.elapsed = progress / (Math.max(1, Number(this.animation.fps) || 1) * next);
+        if (this.animation) this.elapsed = progress / (rateOf(this.animation) * next);
     }
 
     /** Sample a one-shot pose by physical progress, including after a held endpoint. */
     seek(progress) {
         const frames = this.currentFrames();
         if (!this.animation || frames.length === 0) return;
-        const phase = Math.min(1, Math.max(0, Number(progress) || 0));
+        const phase = clamp(finite(progress), 0, 1);
+        if (this.previousSample) this.previousSample.clockDistance = null;
         const position = phase * (frames.length - 1);
         const index = Math.floor(position);
         if (index !== this.frameIndex) this.frameSerial += 1;
         this.frameIndex = index;
-        this.elapsed = (position - index) / (Math.max(1, Number(this.animation.fps) || 1) * this.playbackRate);
+        this.elapsed = (position - index) / (rateOf(this.animation) * this.playbackRate);
         this.finished = this.animation.loop === false && phase === 1;
         this.applyCurrentFrame();
     }
@@ -176,11 +253,12 @@ export default class FrameAnimator {
     seekLoop(progress) {
         const frames = this.currentFrames();
         if (!this.animation || frames.length === 0) return;
-        const phase = ((Number(progress) || 0) % 1 + 1) % 1;
+        const phase = wrap(finite(progress), 1);
+        if (this.previousSample) this.previousSample.clockDistance = null;
         const position = phase * frames.length, index = Math.floor(position);
         if (index !== this.frameIndex) this.frameSerial += 1;
         this.frameIndex = index;
-        this.elapsed = (position - index) / (Math.max(1, Number(this.animation.fps) || 1) * this.playbackRate);
+        this.elapsed = (position - index) / (rateOf(this.animation) * this.playbackRate);
         this.finished = false;
         this.applyCurrentFrame();
     }
@@ -219,7 +297,7 @@ export default class FrameAnimator {
         const frames = this.currentFrames();
         if (frames.length === 0) return;
 
-        const fps = Math.max(Number(this.animation.fps) || 1, 1);
+        const fps = rateOf(this.animation);
         const frameDuration = 1 / (fps * this.playbackRate);
         // Character Core V4 stability fix: a stalled tab or long GC pause can
         // deliver a single huge deltaTime (seconds, not milliseconds). Without
@@ -229,7 +307,8 @@ export default class FrameAnimator {
         // catch-up per update()", which is unnoticeable in normal play
         // (frame deltas are ~0.016-0.033s) but keeps a resumed tab smooth.
         const MAX_FRAME_DELTA_SECONDS = 0.25;
-        const safeDeltaTime = Math.min(Math.max(0, Number(deltaTime) || 0), MAX_FRAME_DELTA_SECONDS);
+        const safeDeltaTime = clamp(finite(deltaTime), 0, MAX_FRAME_DELTA_SECONDS);
+        if (this.previousSample?.clockDistance != null) this.previousSample.clockDistance += safeDeltaTime / frameDuration;
         this.elapsed += safeDeltaTime;
 
         const steps = Math.floor(this.elapsed / frameDuration);
@@ -242,7 +321,7 @@ export default class FrameAnimator {
             this.finished = next >= frames.length;
             if (this.finished) this.elapsed = 0;
         }
-        this.frameSerial += steps;
+        this.frameSerial += this.animation.loop !== false ? steps : Math.min(steps, Math.max(0, frames.length - 1 - (next - steps)));
         this.applyCurrentFrame();
     }
 
@@ -260,13 +339,21 @@ export default class FrameAnimator {
             ),
             1
         );
-        return frameCount / Math.max(Number(animation.fps) || 1, 1);
+        return frameCount / rateOf(animation);
     }
 
     progress() {
         const frames = this.currentFrames();
         if (frames.length <= 1) return this.finished ? 1 : 0;
         return Math.min(1, Math.max(0, this.frameIndex / (frames.length - 1)));
+    }
+
+    continuousProgress() {
+        const count = this.currentFrames().length;
+        if (count <= 1) return this.finished ? 1 : 0;
+        if (this.finished) return 1;
+        const divisor = this.animation?.loop !== false ? count : count - 1;
+        return clamp((this.frameIndex + this.frameProgress()) / divisor, 0, 1);
     }
 
     currentFrameName() {
@@ -283,7 +370,7 @@ export default class FrameAnimator {
      */
     frameProgress() {
         if (!this.animation) return 0;
-        const fps = Math.max(Number(this.animation.fps) || 1, 1);
+        const fps = rateOf(this.animation);
         const frameDuration = 1 / (fps * this.playbackRate);
         if (!(frameDuration > 0)) return 0;
         return Math.min(1, Math.max(0, this.elapsed / frameDuration));
@@ -309,6 +396,7 @@ export default class FrameAnimator {
             frames: this.currentFrames(),
             animation: this.animation,
             position: this.frameIndex + this.frameProgress(),
+            clockDistance: 0,
         };
     }
 
@@ -321,8 +409,11 @@ export default class FrameAnimator {
         let position = current;
         if (previous?.frames === frames && previous.animation === this.animation) {
             let distance = current - previous.position;
-            if (this.animation.loop !== false && distance < 0) distance += frames.length;
-            position = previous.position + distance * t;
+            if (this.animation.loop !== false) {
+                if (previous.clockDistance != null) distance = previous.clockDistance;
+                else if (distance < 0) distance += frames.length;
+            }
+            position = t === 1 ? current : previous.position + distance * t;
         }
         position = this.animation?.loop !== false
             ? ((position % frames.length) + frames.length) % frames.length

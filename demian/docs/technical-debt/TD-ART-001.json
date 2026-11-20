@@ -76,10 +76,17 @@
     "interaction"
   ],
   "phase5": {
-    "status": "split",
-    "next": "Phase 5A: animation runtime engineering using existing assets",
+    "status": "runtime-source-implemented-visual-deferred",
+    "next": "Phase 6: physics and game feel only with approved versioned rules",
     "deferred": "Phase 5B: final art retargeting, optical-flow/pose quality and human visual sign-off after 2–4",
-    "mustNot": "Change physics, hitboxes, ranked rules or label interim visuals final"
+    "mustNot": "Change physics, hitboxes, ranked rules or label interim visuals final",
+    "runtimeEvidence": "Master Quality Phase 5A source and regression tests committed; full release CI and physical QA separate.",
+    "deferredTasks": [
+      "Retarget newly approved PNGs to master poses without double silhouettes or facial morph",
+      "Author real transition, stop, turn and dodge frames; audit aliases instead of inventing frames",
+      "Verify frame-by-frame foot planting, secondary motion and visual timing for all 18 characters and future additions",
+      "Rebuild six variants, inspect reduced-motion and device playback, record human QA and SHA evidence"
+    ]
   },
   "roster": [
     {
