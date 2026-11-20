@@ -28,7 +28,7 @@ final class RewardCampaignService
         return $staff;
     }
 
-    private function terms(array $data): array
+    private function terms(array $data, int $capacity): array
     {
         $approved = app(CouponPolicy::class)->approved();
         $percent = [
@@ -53,11 +53,18 @@ final class RewardCampaignService
             throw new RuntimeException('Campaign terms exceed approved business limits.');
         }
 
-        return [
+        $terms = [
             'version' => $approved['version'], 'currency' => $approved['currency'],
             'ranks' => $percent, 'min_order_minor' => $minimum,
             'max_discount_minor' => $maximum, 'valid_days' => $days,
         ];
+        $economics = app(CampaignEconomics::class)->fromInput($data, $terms, $capacity);
+        if ($economics !== null) {
+            $terms['economics'] = $economics;
+            if (app(WeeklyAllocationService::class)->required() || app(PhoneIdentityService::class)->required()) $terms['allocation'] = DynamicWinnerAllocation::policy();
+            if (app(PhoneIdentityService::class)->required()) $terms['identity_policy'] = VerifiedPrizeIdentity::POLICY;
+        }
+        return $terms;
     }
 
     public static function termsDigest(array|string $value): string
@@ -85,6 +92,18 @@ final class RewardCampaignService
             'valid_days' => $terms['valid_days'] ?? null,
         ];
 
+        if (array_key_exists('economics', $terms)) {
+            $canonical['economics'] = app(CampaignEconomics::class)->canonical($terms['economics']);
+        }
+        if (array_key_exists('allocation', $terms)) {
+            $canonical['allocation'] = DynamicWinnerAllocation::canonical($terms['allocation']);
+        }
+        if (array_key_exists('identity_policy', $terms)) {
+            if ($terms['identity_policy'] !== VerifiedPrizeIdentity::POLICY || ! isset($canonical['allocation'], $canonical['economics'])) {
+                throw new RuntimeException('Invalid frozen verified identity policy.');
+            }
+            $canonical['identity_policy'] = $terms['identity_policy'];
+        }
         return hash('sha256', json_encode($canonical, JSON_THROW_ON_ERROR));
     }
 
@@ -129,7 +148,7 @@ final class RewardCampaignService
             if ($title === '' || mb_strlen($title) > 100 || $capacity < 1 || $capacity > 200) {
                 throw new RuntimeException('Invalid campaign name or award capacity.');
             }
-            $terms = $this->terms($data);
+            $terms = $this->terms($data, $capacity);
             $payload = json_encode($terms, JSON_THROW_ON_ERROR);
             $id = DB::table('arcade_reward_campaigns')->insertGetId([
                 'period_key' => $key, 'title' => $title, 'status' => 'draft',
@@ -162,7 +181,7 @@ final class RewardCampaignService
             if ($title === '' || mb_strlen($title) > 100 || $capacity < 1 || $capacity > 200) {
                 throw new RuntimeException('Invalid campaign name or capacity.');
             }
-            $terms = $this->terms($data);
+            $terms = $this->terms($data, $capacity);
             $payload = json_encode($terms, JSON_THROW_ON_ERROR);
             DB::table('arcade_reward_campaigns')->where('id', $campaignId)->update([
                 'title' => $title, 'max_awards' => $capacity,
@@ -263,6 +282,13 @@ final class RewardCampaignService
                 throw new RuntimeException('Invalid campaign state transition.');
             }
             if ($action === 'activate') {
+                app(CampaignEconomics::class)->frozen($campaign, true);
+                $terms = json_decode($campaign->terms, true, 512, JSON_THROW_ON_ERROR);
+                if (app(PhoneIdentityService::class)->required() || isset($terms['identity_policy'])) {
+                    if (($terms['identity_policy'] ?? null) !== VerifiedPrizeIdentity::POLICY || ! app(PhoneIdentityService::class)->ready()) {
+                        throw new RuntimeException('Verified identity policy and approved SMS gateway required before activating new awards.');
+                    }
+                }
                 $period = DB::table('arcade_weekly_periods')
                     ->where('period_key', $campaign->period_key)->first();
                 if (! $period || $period->status !== 'open') {
@@ -334,6 +360,7 @@ final class RewardCampaignService
         if (! hash_equals($campaign->terms_hash, self::termsDigest($campaign->terms))) {
             throw new RuntimeException('Frozen campaign terms checksum mismatch.');
         }
+        app(CampaignEconomics::class)->assertIssuance($campaign, $missing);
         if ($winnerCount > (int) $campaign->max_awards) {
             throw new RuntimeException('Weekly winners exceed approved campaign award capacity.');
         }
@@ -382,6 +409,38 @@ final class RewardCampaignService
         ]);
     }
 
+    public function measure(int $actorId, int $version, int $campaignId, array $data): void
+    {
+        $this->gate();
+        DB::transaction(function () use ($actorId, $version, $campaignId, $data): void {
+            $this->actor($actorId, $version);
+            $campaign = DB::table('arcade_reward_campaigns')->where('id', $campaignId)->lockForUpdate()->first();
+            if (! $campaign || $campaign->status !== 'closed') {
+                throw new RuntimeException('Only a closed campaign may receive a final ROI measurement.');
+            }
+            $period = DB::table('arcade_weekly_periods')->where('period_key', $campaign->period_key)->first();
+            $report = app(CampaignEconomics::class)->report($campaign);
+            if (! $period || $period->status !== 'sealed' || $report['outstanding_count'] !== 0) {
+                throw new RuntimeException('Settle the week and wait until every voucher is resolved.');
+            }
+            $evidence = (string) ($data['evidence_ref'] ?? '');
+            $incremental = filter_var($data['incremental_contribution_minor'] ?? null, FILTER_VALIDATE_INT,
+                ['options' => ['min_range' => -200000000000000, 'max_range' => 200000000000000]]);
+            $operating = filter_var($data['operating_minor'] ?? null, FILTER_VALIDATE_INT,
+                ['options' => ['min_range' => 0, 'max_range' => 200000000000000]]);
+            if (! preg_match('/^[A-Za-z0-9][A-Za-z0-9._:-]{3,79}$/D', $evidence)
+                || $incremental === false || $operating === false) {
+                throw new RuntimeException('Invalid measured ROI evidence or monetary input.');
+            }
+            $this->log($campaignId, $actorId, 'economics_measured', [
+                'evidence_ref' => $evidence, 'incremental_contribution_minor' => $incremental,
+                'operating_minor' => $operating, 'discount_minor' => $report['discount_minor'],
+                'redeemed_count' => $report['redeemed_count'], 'issued_count' => $report['issued_count'],
+                'gross_minor' => $report['gross_minor'],
+            ]);
+        }, 3);
+    }
+
     public function dashboard(): array
     {
         $this->gate();
@@ -412,6 +471,8 @@ final class RewardCampaignService
                             'coupon_status' => $w->coupon_status ?? 'pending',
                         ])->all(),
                     'terms' => json_decode($campaign->terms, true, 512, JSON_THROW_ON_ERROR),
+                    'finance' => app(CampaignEconomics::class)->report($campaign),
+                    'allocation' => app(WeeklyAllocationService::class)->preview($campaign),
                 ];
             })->all();
     }

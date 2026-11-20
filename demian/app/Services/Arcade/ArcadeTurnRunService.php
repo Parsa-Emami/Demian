@@ -122,7 +122,7 @@ final class ArcadeTurnRunService
             AfterHoursFrameReplayVerifier::VERSION, CafeRushFrameReplayVerifier::VERSION, CafeDriftReplayVerifier::VERSION,
             WeeklyContent::version('cafe-rush'), WeeklyContent::version('after-hours')
         ],true);
-        abort_if($frameProof ? ! isset($data['frames']) : ! isset($data['actions']),
+        abort_if($frameProof ? (! isset($data['frames']) || isset($data['actions'])) : (! isset($data['actions']) || isset($data['frames'])),
             422, 'Replay payload does not match the signed rules version.');
         $hash = hash('sha256', json_encode([
             'ticks'=>$data['ticks'],
@@ -141,8 +141,7 @@ final class ArcadeTurnRunService
                 'This game has not passed ranked verification gates.');
             abort_unless($this->versionAllowed($current->game_id, $current->rules_version, $current->started_at), 409,
                 'Rules version changed or rollout revoked.');
-            $elapsed = max(0, $current->started_at->diffInMilliseconds(now()));
-            abort_if($data['ticks'] * 1000 / 60 > $elapsed + 2000, 422, 'Replay is ahead of server wall-clock time.');
+            ReplayTimeGuard::assertAllowed((int) $data['ticks'], $current->started_at, now());
         };
         $authorize($run);
         $week = WeeklyContent::index($run->started_at);

@@ -51,7 +51,7 @@ final class ArcadeRunService
     public function complete(ArcadePlayer $player, ArcadeRun $run, array $data): array
     {
         $run = ArcadeRun::query()->findOrFail($run->id);
-        abort_unless($run->player_id === $player->id, 404);
+        abort_unless($run->player_id === $player->id && $run->game_id === 'dino-run', 404);
         $hash = hash('sha256', json_encode(['ticks' => $data['ticks'], 'transitions' => $data['transitions']], JSON_THROW_ON_ERROR));
 
         if ($run->status === 'verified') {
@@ -61,8 +61,7 @@ final class ArcadeRunService
         $authorize = function (ArcadeRun $current) use ($data): void {
             abort_unless($current->status === 'started' && $current->expires_at->isFuture(), 410, 'Run expired.');
             abort_unless($current->rules_version === $this->verifier->versionAt($current->started_at), 409, 'Rules changed. Start a new run.');
-            $elapsed = max(0, $current->started_at->diffInMilliseconds(now()));
-            abort_if($data['ticks'] * 1000 / 60 > $elapsed + 2000, 422, 'Replay is ahead of server time.');
+            ReplayTimeGuard::assertAllowed((int) $data['ticks'], $current->started_at, now());
         };
         $authorize($run);
         $week = $run->rules_version === WeeklyContent::version('dino-run') ? WeeklyContent::index($run->started_at) : null;
