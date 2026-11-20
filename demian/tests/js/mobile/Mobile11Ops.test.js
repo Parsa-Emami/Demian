@@ -183,9 +183,9 @@ test('Step 29 checks nontrivial secrets, persistent shared session locks and sec
 });
 
 test('cPanel deploy consumes the same GitHub-only accepted package and checksum', () => {
-    assert.match(cpanelWorkflow, /uses: ./.github/workflows/phase1-api-readiness.yml/);
-    assert.match(cpanelWorkflow, /sha256sum -c demian-cpanel.tar.gz.sha256/);
-    assert.match(cpanelPackage, /workflow_call:/);
-    assert.match(cpanelPackage, /ci_release_acceptance.sh/);
-    assert.doesNotMatch(cpanelPackage, /secrets.|ssh |scp /);
+    assert.ok(cpanelWorkflow.includes('uses: ./.github/workflows/phase1-api-readiness.yml'));
+    assert.ok(cpanelWorkflow.includes('sha256sum -c demian-cpanel.tar.gz.sha256'));
+    assert.ok(cpanelPackage.includes('workflow_call:'));
+    assert.ok(cpanelPackage.includes('ci_release_acceptance.sh'));
+    for (const forbidden of ['secrets.', 'ssh ', 'scp ']) assert.ok(!cpanelPackage.includes(forbidden));
 });

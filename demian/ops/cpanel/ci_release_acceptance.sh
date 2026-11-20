@@ -64,7 +64,7 @@ php artisan migrate --force --no-interaction
 php artisan arcade:integrity --json
 php artisan arcade:audit-coupons --json
 php artisan schedule:list
-php -S 127.0.0.1:8099 -t public vendor/laravel/framework/src/Illuminate/Foundation/resources/server.php > "$lab/http.log" 2>&1 &
+(cd public && exec php -S 127.0.0.1:8099 -t . ../vendor/laravel/framework/src/Illuminate/Foundation/resources/server.php) > "$lab/http.log" 2>&1 &
 pid=$!
 node --input-type=module <<'JS'
 import assert from 'node:assert/strict';
