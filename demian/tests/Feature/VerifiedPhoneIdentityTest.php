@@ -63,7 +63,7 @@ final class VerifiedPhoneIdentityTest extends TestCase
         $this->assertDatabaseHas('arcade_cheat_reports', ['player_id' => $b['player_id'], 'signal' => 'duplicate_verified_phone']);
         $this->assertDatabaseCount('arcade_anticheat_holds', 0);
         $this->withToken($a['token'])->getJson('/api/v1/arcade/player/identity')->assertOk()
-            ->assertHeader('Cache-Control', 'private, no-store')->assertJsonPath('verified', true)
+            ->assertHeader('Cache-Control', 'no-store, private')->assertJsonPath('verified', true)
             ->assertJsonMissingPath('phone_hash')->assertJsonMissingPath('phone_ciphertext');
     }
 
