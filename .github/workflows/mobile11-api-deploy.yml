@@ -44,6 +44,12 @@ jobs:
             artisan app bootstrap config database routes resources/game resources/legal \
             resources/js/game/games/cafe-drift/CafeDriftModel.js resources/js/game/games/cafe-drift/CafeDriftGame.js \
             resources/js/game/games/cafe-drift/CafeDriftRenderer.js resources/css/cafe-drift.css \
+            resources/js/game/games/cafe-critters resources/js/game/games/coffee-crash \
+            resources/js/game/games/after-hours resources/js/game/games/cafe-rush \
+            resources/js/game/content/WeeklyContent.js resources/js/game/leaderboard/ArcadeLeaderboardService.js \
+            resources/js/game/leaderboard/RankedGameplayChallenge.js resources/js/game/core/InputController.js \
+            resources/js/game/input resources/js/game/shared/collision resources/js/game/shared/navigation \
+            resources/css/cafe-critters.css resources/css/coffee-crash.css resources/css/after-hours.css resources/css/cafe-rush.css \
             resources/views src public/index.php public/.htaccess composer.json composer.lock vendor
           test -s "$RUNNER_TEMP/demian-api.tar.gz"
           tar -tzf "$RUNNER_TEMP/demian-api.tar.gz" > "$RUNNER_TEMP/demian-api-entries.txt"

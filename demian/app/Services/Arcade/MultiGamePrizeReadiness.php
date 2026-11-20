@@ -90,7 +90,7 @@ final class MultiGamePrizeReadiness
         return $hashes;
     }
 
-    public function evidenceValid(string $game, string $version, array $evidence, array $hashes, CarbonImmutable $now): bool
+    public function evidenceValid(string $game, string $version, array $evidence, array $hashes, CarbonImmutable $now, ?string $periodKey=null): bool
     {
         if (!isset(self::GAMES[$game]) || !in_array($version,[self::GAMES[$game]['legacy'],WeeklyContent::version($game)],true)
             || ($evidence['schema']??null)!==1 || ($evidence['policy']??null)!==self::POLICY
@@ -112,6 +112,8 @@ final class MultiGamePrizeReadiness
             $review=CarbonImmutable::createFromFormat('!Y-m-d',$evidence['reviewed_on'],'Asia/Tehran');
             $from=CarbonImmutable::createFromFormat('!Y-m-d',$evidence['eligible_from'],'Asia/Tehran');
             $local=$now->setTimezone('Asia/Tehran');
+            if ($periodKey!==null && (!preg_match('/^weekly:tehran:\d{4}-\d{2}-\d{2}$/D',$periodKey)
+                || !$from || strcmp(substr($periodKey,-10),$from->format('Y-m-d'))<0)) return false;
             return $review && $from && $review->format('Y-m-d')===$evidence['reviewed_on']
                 && $from->format('Y-m-d')===$evidence['eligible_from'] && $review->lte($local)
                 && $local->lt($review->addDays(90)) && $from->isSaturday() && $from->gt($review)
@@ -119,7 +121,7 @@ final class MultiGamePrizeReadiness
         } catch (\Throwable) { return false; }
     }
 
-    public function inspect(string $game,?string $version=null): array
+    public function inspect(string $game,?string $version=null,?string $periodKey=null): array
     {
         $now=CarbonImmutable::now('UTC');
         $version??=$this->currentVersion($game,$now);
@@ -138,16 +140,16 @@ final class MultiGamePrizeReadiness
                 $path=resource_path('game/prize-acceptance/'.$game.'.json');
                 $evidence=is_file($path)?json_decode(file_get_contents($path),true,flags:JSON_THROW_ON_ERROR):[];
                 $checks['version_bound_manual_acceptance']=is_array($evidence)
-                    &&$this->evidenceValid($game,$version,$evidence,$this->sourceHashes($game),$now);
+                    &&$this->evidenceValid($game,$version,$evidence,$this->sourceHashes($game),$now,$periodKey);
             }
         } catch (\Throwable) {}
         return ['game_id'=>$game,'policy'=>self::POLICY,'passed'=>!in_array(false,$checks,true),'checks'=>$checks];
     }
 
-    public function approved(string $game,?string $version=null): bool
+    public function approved(string $game,?string $version=null,?string $periodKey=null): bool
     {
         if (!$this->requested($game)||!$this->originalScope($game)) return false;
         if (!$this->required($game)) return true; // Existing legacy test fixtures only.
-        return $this->inspect($game,$version)['passed'];
+        return $this->inspect($game,$version,$periodKey)['passed'];
     }
 }

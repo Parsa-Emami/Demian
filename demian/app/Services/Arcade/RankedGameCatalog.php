@@ -59,10 +59,10 @@ final class RankedGameCatalog
         if (!$lock) return !$this->requiresPrizeLock($id) && $this->supportsPrizes($id,$version);
         return (bool)$lock->ranked_enabled && (bool)$lock->prize_eligible
             && ($version === null || $version === $lock->rules_version)
-            && $this->supportsPrizes($id,$lock->rules_version);
+            && $this->supportsPrizes($id,$lock->rules_version,$lock->period_key ?? null);
     }
 
-    public function supportsPrizes(string $id, ?string $version = null): bool
+    public function supportsPrizes(string $id, ?string $version = null, ?string $periodKey = null): bool
     {
         if (! $this->supportsRanked($id)) return false;
         return match ($id) {
@@ -76,7 +76,7 @@ final class RankedGameCatalog
                     config('demian-legal.publication_approved') === true
                     && config('demian-legal.require_acceptance') === true)),
             'cafe-critters', 'coffee-crash', 'after-hours', 'cafe-rush' =>
-                app(MultiGamePrizeReadiness::class)->approved($id, $version),
+                app(MultiGamePrizeReadiness::class)->approved($id, $version, $periodKey),
             // The bounded route proof is not full Open World gameplay.
             'open-world' => false,
             default => false,
