@@ -24,7 +24,7 @@ test('F10-06/07/08/09/13 cPanel scripts have valid bash syntax and forbidden ope
     assert.match(backup,/SHA256|sha256sum/);
     assert.doesNotMatch(backup,/mysqldump.*>\s*[^|]/);
     const restore=read('restore_drill.sh');
-    assert.match(restore,/_(restore\|drill)/);
+    assert.ok(restore.includes('_(restore|drill)'), 'restore target must end with a disposable schema suffix');
     assert.match(restore,/age -d/);
     assert.match(restore,/production_db/);
     assert.doesNotMatch(restore,/DROP DATABASE|db:wipe|migrate:rollback/);
