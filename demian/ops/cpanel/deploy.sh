@@ -152,6 +152,9 @@ fi
 (
     cd "$release"
     "$php_bin" artisan migrate --force --no-interaction
+    # Database/schema/queue/session check on the actual cPanel PHP CLI;
+    # never swap current if the new release is missing a migration.
+    "$php_bin" artisan arcade:hosting:doctor --target="$target" --json
     "$php_bin" artisan arcade:integrity --json
     "$php_bin" artisan arcade:audit-coupons --json
     # Code rollout is allowed with financial features safely disabled.
