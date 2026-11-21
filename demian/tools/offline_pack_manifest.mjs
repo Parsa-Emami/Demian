@@ -1,12 +1,16 @@
 /** Mobile-09: deterministic, bounded, portable optional offline game packages. */
 import { existsSync, readdirSync, statSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { createHash } from 'node:crypto';
 import { BUILTIN_CHARACTER_SLUGS, characterPackVersion } from '../resources/js/game/characters/CharacterVisualContract.js';
 
 export const OFFLINE_GAME_IDS = Object.freeze([
     'open-world', 'dino-run', 'after-hours', 'cafe-rush', 'cafe-critters', 'coffee-crash', 'cafe-drift',
 ]);
 export const OFFLINE_MAX_PACK_BYTES = 96 * 1024 * 1024;
+// Hash only executable/config text under 2 MiB. Never duplicate-decode or
+// hash large textures in a mobile Service Worker during an offline install.
+export const OFFLINE_HASH_MAX_BYTES = 2 * 1024 * 1024;
 const CLEAN = /^[a-zA-Z0-9][a-zA-Z0-9/_\-.]*$/;
 
 
@@ -67,7 +71,13 @@ export function buildOfflinePackManifest({ release, entry, releaseId, viteManife
         if (!CLEAN.test(path) || path.includes('..') || path.startsWith('/')) throw new Error('Unsafe PWA asset: ' + path);
         const absolute = join(release, path);
         if (!existsSync(absolute) || !statSync(absolute).isFile()) throw new Error('Missing PWA asset: ' + path);
-        return { path, bytes: statSync(absolute).size };
+        const bytes = statSync(absolute).size;
+        const mustHash = /\.(?:js|css|json|html|webmanifest)$/.test(path)
+            && bytes <= OFFLINE_HASH_MAX_BYTES;
+        return {
+            path, bytes,
+            ...(mustHash ? { sha256: createHash('sha256').update(readFileSync(absolute)).digest('hex') } : {}),
+        };
     };
     const unique = paths => [...new Set(paths)].sort().map(file);
     const buildRoot = join(release, 'build/assets');
