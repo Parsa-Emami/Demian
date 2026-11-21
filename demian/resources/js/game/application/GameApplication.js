@@ -25,6 +25,7 @@ import ArcadeLeaderboardService from '../leaderboard/ArcadeLeaderboardService.js
 import DeviceQaController from '../performance/DeviceQaController.js';
 import AnonymousGameTelemetry from '../performance/AnonymousGameTelemetry.js';
 import GameMetrics from '../performance/GameMetrics.js';
+import GameplayQualityProbe from '../quality/GameplayQualityProbe.js';
 import StartupPerformanceDiagnostics from '../performance/StartupPerformanceDiagnostics.js';
 import FirstPlayableFrame from '../performance/FirstPlayableFrame.js';
 
@@ -81,6 +82,9 @@ export default class GameApplication {
         this.leaderboards = new ArcadeLeaderboardService();
         this.opsTelemetry = new AnonymousGameTelemetry();
         this.opsMetrics = new GameMetrics({ eventBus: this.eventBus, telemetry: this.opsTelemetry });
+        // QA only, local memory only: never record player identifiers, raw input, scores or bearer tokens.
+        this.gameplayQuality = new URLSearchParams(window.location.search).get('gameplayQa') === '1'
+            ? new GameplayQualityProbe({ eventBus: this.eventBus }) : null;
         this.animation = new AnimationService({
             reducedMotion: this.settings.resolvedReducedMotion(),
         });
@@ -286,7 +290,7 @@ export default class GameApplication {
             // cancels unrelated optional work. Overlap the real critical
             // image decode with the loading-screen/module transition.
             const criticalSlug = criticalSpriteSlug(gameId, this.characterVisuals);
-            if (criticalSlug) {
+            if (requiresSwitch && criticalSlug) {
                 void this.characterVisuals.loadPack(
                     criticalSlug,
                     criticalSpriteVariant(gameId, this.characterVisuals),
@@ -510,7 +514,13 @@ export default class GameApplication {
 
     async restartGame() {
         if (!this.activeGameId) return null;
-        return this.launchGame(this.activeGameId, { forceReload: true, restart: true });
+        // Reuse a fully initialized scene only for games that explicitly
+        // guarantee startSession() clears all state, inputs and pending ranked work.
+        // Never silently reuse Open World, After Hours or Café Rush.
+        const inPlace = this.activeGame?.supportsInPlaceRestart === true
+            && (typeof this.activeGame.canReuseForRestart !== 'function'
+                || this.activeGame.canReuseForRestart());
+        return this.launchGame(this.activeGameId, { forceReload: !inPlace, restart: true });
     }
 
     async exitGame() {
@@ -623,6 +633,7 @@ export default class GameApplication {
         this.settings.dispose();
         this.interaction.dispose();
         this.opsMetrics?.dispose();
+        this.gameplayQuality?.dispose();
         this.storyJournalSubscriptions?.forEach((unsubscribe) => unsubscribe());
         this.storyJournal.dispose();
         this.characterVisuals.dispose();
