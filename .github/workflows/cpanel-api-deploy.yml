@@ -48,7 +48,8 @@ jobs:
             resources/views src public/index.php public/.htaccess \
             ops/cpanel/host_preflight.php ops/cpanel/cron.sh \
             ops/cpanel/rollback.sh ops/cpanel/backup_offsite.sh \
-            ops/cpanel/restore_drill.sh ops/cpanel/install_webroot_bridge.php             composer.json composer.lock vendor
+            ops/cpanel/restore_drill.sh ops/cpanel/install_webroot_bridge.php \
+            composer.json composer.lock vendor
           test -s "$RUNNER_TEMP/demian-cpanel.tar.gz"
           tar -tzf "$RUNNER_TEMP/demian-cpanel.tar.gz" > "$RUNNER_TEMP/cpanel-entries.txt"
           if grep -Eq '(^|/)([.]env|[.]git)(/|$)' "$RUNNER_TEMP/cpanel-entries.txt"; then
@@ -67,7 +68,8 @@ jobs:
           fi
           # Content-addressed archive independently of the Git SHA.
           sha256sum "$RUNNER_TEMP/demian-cpanel.tar.gz" | cut -d' ' -f1 > "$RUNNER_TEMP/demian-cpanel.sha256"
-          grep -Eq '^[a-f0-9]{64}
+          grep -Eq '^[a-f0-9]{64}$' "$RUNNER_TEMP/demian-cpanel.sha256"
+      - uses: actions/upload-artifact@v4
         with:
           name: cpanel-api-release
           path: |
@@ -148,71 +150,3 @@ jobs:
         run: node demian/tools/smoke_arcade_api.mjs --base-url="$CPANEL_API_ORIGIN/api/v1/arcade" --users=20 --p95-ms=1500
       - name: Step 29 TLS, release identity and private-path acceptance (read-only)
         run: node demian/tools/verify_cpanel_host.mjs --origin="$CPANEL_API_ORIGIN" --release="$GITHUB_SHA" --client-origin="$CPANEL_CLIENT_ORIGIN"
- "$RUNNER_TEMP/demian-cpanel.sha256"
-      - uses: actions/upload-artifact@v4
-        with:
-          name: cpanel-api-release
-          path: ${{ runner.temp }}/demian-cpanel.tar.gz
-          if-no-files-found: error
-          retention-days: 2
-  deploy:
-    needs: package
-    if: github.ref == 'refs/heads/main'
-    runs-on: ubuntu-24.04
-    environment:
-      name: cpanel-${{ inputs.target }}
-      url: ${{ vars.CPANEL_API_ORIGIN }}
-    env:
-      CPANEL_TARGET: ${{ inputs.target }}
-      CPANEL_CONFIRM: ${{ inputs.production_acknowledgement }}
-      BACKUP_RECEIPT: ${{ inputs.backup_receipt || '-' }}
-      CPANEL_HOST: ${{ vars.CPANEL_SSH_HOST }}
-      CPANEL_USER: ${{ vars.CPANEL_SSH_USER }}
-      CPANEL_ROOT: ${{ vars.CPANEL_API_ROOT }}
-      CPANEL_PHP_BIN: ${{ vars.CPANEL_PHP_BIN }}
-      CPANEL_API_ORIGIN: ${{ vars.CPANEL_API_ORIGIN }}
-      CPANEL_SSH_KEY: ${{ secrets.CPANEL_DEPLOY_SSH_KEY }}
-      CPANEL_KNOWN_HOSTS: ${{ secrets.CPANEL_SSH_KNOWN_HOSTS }}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
-        with:
-          name: cpanel-api-release
-          path: .cpanel-release
-      - name: Require separate production approval and hosting configuration
-        shell: bash
-        run: |
-          set -Eeuo pipefail
-          [[ "$CPANEL_HOST" =~ ^[A-Za-z0-9.-]+$ ]]
-          [[ "$CPANEL_USER" =~ ^[A-Za-z_][A-Za-z0-9_-]*$ ]]
-          [[ "$CPANEL_ROOT" == "/home/$CPANEL_USER/"* && "$CPANEL_ROOT" != *..* ]]
-          [[ "$CPANEL_PHP_BIN" =~ ^[A-Za-z0-9_./-]+$ ]]
-          url_re='^https://[A-Za-z0-9.-]+(:[0-9]+)?$'
-          [[ "$CPANEL_API_ORIGIN" =~ $url_re ]]
-          [[ -n "$CPANEL_SSH_KEY" && -n "$CPANEL_KNOWN_HOSTS" ]]
-          [[ "$BACKUP_RECEIPT" =~ ^[A-Za-z0-9_.:-]+$ ]]
-          if [[ "$CPANEL_TARGET" == production ]]; then
-            [[ "$CPANEL_CONFIRM" == DEPLOY_PRODUCTION_WITH_BACKUP ]]
-            [[ "$BACKUP_RECEIPT" != "-" && ${#BACKUP_RECEIPT} -ge 8 ]]
-          fi
-      - name: Securely upload and deploy as unprivileged cPanel user
-        shell: bash
-        run: |
-          set -Eeuo pipefail
-          key="$RUNNER_TEMP/cpanel_key"
-          hosts="$RUNNER_TEMP/cpanel_hosts"
-          printf '%s\n' "$CPANEL_SSH_KEY" > "$key"
-          printf '%s\n' "$CPANEL_KNOWN_HOSTS" > "$hosts"
-          chmod 600 "$key" "$hosts"
-          ssh_flags=(-i "$key" -o IdentitiesOnly=yes -o BatchMode=yes \
-            -o StrictHostKeyChecking=yes -o "UserKnownHostsFile=$hosts")
-          ssh "${ssh_flags[@]}" "$CPANEL_USER@$CPANEL_HOST" "mkdir -p '$CPANEL_ROOT/incoming'"
-          scp "${ssh_flags[@]}" .cpanel-release/demian-cpanel.tar.gz \
-            "$CPANEL_USER@$CPANEL_HOST:$CPANEL_ROOT/incoming/$GITHUB_SHA.tar.gz"
-          ssh "${ssh_flags[@]}" "$CPANEL_USER@$CPANEL_HOST" \
-            "bash -s -- '$GITHUB_SHA' '$CPANEL_ROOT' '$CPANEL_API_ORIGIN' '$CPANEL_TARGET' '$CPANEL_PHP_BIN' '$BACKUP_RECEIPT'" \
-            < demian/ops/cpanel/deploy.sh
-      - name: Public read-only API smoke (bounded)
-        run: node demian/tools/smoke_arcade_api.mjs --base-url="$CPANEL_API_ORIGIN/api/v1/arcade" --users=20 --p95-ms=1500
-      - name: Step 29 TLS, release identity and private-path acceptance (read-only)
-        run: node demian/tools/verify_cpanel_host.mjs --origin="$CPANEL_API_ORIGIN" --release="$GITHUB_SHA"
