@@ -53,6 +53,10 @@ class AppServiceProvider extends ServiceProvider
             Limit::perMinute(20)->by('arcade:complete:player:'.self::arcadeTokenBucket($request)),
             Limit::perMinute(500)->by('arcade:complete:ip:'.$request->ip()),
         ]);
+        RateLimiter::for('arcade-fraud-appeal', static fn (Request $request): array => [
+            Limit::perHour(2)->by('arcade:fraud-appeal:player:'.self::arcadeTokenBucket($request)),
+            Limit::perHour(50)->by('arcade:fraud-appeal:ip:'.$request->ip()),
+        ]);
         RateLimiter::for('arcade-otp-send', static fn (Request $request): array => [
             Limit::perMinute(2)->by('arcade:otp:send:player:'.self::arcadeTokenBucket($request)),
             Limit::perHour(5)->by('arcade:otp:send:hour:'.self::arcadeTokenBucket($request)),

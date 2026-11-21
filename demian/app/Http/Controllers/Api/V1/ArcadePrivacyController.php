@@ -19,6 +19,7 @@ final class ArcadePrivacyController extends Controller
         'weekly_wins' => ['arcade_weekly_winners', ['id', 'period_key', 'game_id', 'prize_rank', 'score', 'created_at']],
         'coupons' => ['arcade_coupons', ['id', 'status', 'discount_percent', 'issued_at', 'expires_at', 'redeemed_at']],
         'anticheat_observations' => ['arcade_anticheat_observations', ['id', 'event_code', 'game_id', 'created_at']],
+        'fraud_appeals' => ['arcade_cheat_appeals', ['id', 'report_id', 'reason_code', 'status', 'created_at', 'reviewed_at']],
     ];
 
     public function policy(): JsonResponse

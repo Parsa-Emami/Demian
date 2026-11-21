@@ -36,7 +36,9 @@ export default class PlayerIdentityPanel {
                 });
                 if (result.status !== 'phone_verified') throw Error('تأیید شماره کامل نشد.');
                 this.code.value = '';
-                await this.refresh();
+                this.send.hidden = true;
+                this.form.hidden = true;
+                this.status.textContent = 'شماره تلفن توسط سرور تأیید شد؛ صدور کوپن همچنان تابع قوانین و نتایج رسمی است.';
             });
         };
         this.send?.addEventListener('click', this.onSend);

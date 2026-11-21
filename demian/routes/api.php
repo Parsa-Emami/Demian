@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\V1\ArcadeHealthController;
 use App\Http\Controllers\Api\V1\ArcadeTelemetryController;
 use App\Http\Controllers\Api\V1\ArcadePrivacyController;
 use App\Http\Controllers\Api\V1\ArcadeIdentityController;
+use App\Http\Controllers\Api\V1\ArcadeFraudAppealController;
 use App\Http\Controllers\Api\V1\ArcadeTurnRunController;
 use App\Http\Controllers\Api\V1\CouponController;
 use App\Http\Controllers\Api\V1\CouponDeliveryController;
@@ -50,6 +51,10 @@ Route::prefix('v1/arcade')->middleware([ObserveArcadeRequest::class,
             ->whereNumber('couponId')->middleware('throttle:arcade-coupon-support');
         Route::get('/player', [ArcadeController::class, 'me']);
         Route::get('/player/identity', [ArcadeIdentityController::class, 'status']);
+        Route::get('/player/fraud/appeals', [ArcadeFraudAppealController::class, 'index'])
+            ->middleware('throttle:arcade-coupon-wallet');
+        Route::post('/player/fraud/appeals', [ArcadeFraudAppealController::class, 'submit'])
+            ->middleware('throttle:arcade-fraud-appeal');
         Route::post('/player/phone/otp', [ArcadeIdentityController::class, 'sendOtp'])
             ->middleware('throttle:arcade-otp-send');
         Route::post('/player/phone/verify', [ArcadeIdentityController::class, 'verifyOtp'])
