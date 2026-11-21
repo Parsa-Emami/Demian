@@ -1,5 +1,7 @@
 import CafeGameRenderer2D from '../../rendering2d/CafeGameRenderer2D.js';
 import { drawSpriteCharacter } from '../../rendering2d/PixelActorRenderer.js';
+import { drawCafeGroundShadow } from '../../rendering2d/CafeAtmosphere2D.js';
+import { CAFE_MATERIALS as M } from '../../rendering2d/CafeWalkthroughPalette.js';
 import { CAFE_STATIC_COLLIDERS } from '../../shared/cafe/CafeReferenceLayout.js';
 import { RECIPES, RUSH_BOUNDS, RUSH_SPOTS, RUSH_GUESTS, VIP_AT, rushObjective } from './CafeRushMap.js';
 
@@ -58,20 +60,28 @@ export default class CafeRushRenderer {
             layer: 20, y: avatar.position?.z ?? 0,
             draw: () => drawSpriteCharacter(ctx, camera, avatar, { alpha, player: false }),
         });
-        this.scene.queue.flush(ctx);
+        // Optional staff art can arrive later. While it is missing, the
+        // placeholder still participates in the SAME Z-order and foot shadow
+        // instead of floating in front of every foreground character.
         for (const slug of model.elapsed >= VIP_AT ? ['setayesh', 'uzudi'] : ['setayesh']) {
             if (avatars[slug]) continue;
-            const at = camera.worldToScreen(RUSH_GUESTS[slug]);
-            const radius = Math.max(6, camera.pixelsPerUnit * .55);
-            ctx.save();
-            ctx.fillStyle = '#785747';
-            ctx.strokeStyle = '#e8c59b';
-            ctx.lineWidth = 1.5;
-            ctx.beginPath();
-            ctx.ellipse(at.x, at.y - radius * 1.5, radius, radius * 1.7, 0, 0, Math.PI * 2);
-            ctx.fill(); ctx.stroke();
-            ctx.restore();
+            const position = RUSH_GUESTS[slug];
+            this.scene.queue.add({ layer: 20, y: position.z, draw: () => {
+                const at = camera.worldToScreen(position);
+                const radius = Math.max(6, camera.pixelsPerUnit * .55);
+                drawCafeGroundShadow(ctx, { x: at.x, y: at.y, bodyWidth: radius * 2,
+                    bodyHeight: radius * 3.5, quality: this.scene.cafe.stream.profile.quality });
+                ctx.save();
+                ctx.fillStyle = M.woodDark;
+                ctx.strokeStyle = M.cream;
+                ctx.lineWidth = 1.5;
+                ctx.beginPath();
+                ctx.ellipse(at.x, at.y - radius * 1.5, radius, radius * 1.7, 0, 0, Math.PI * 2);
+                ctx.fill(); ctx.stroke();
+                ctx.restore();
+            }});
         }
+        this.scene.queue.flush(ctx);
         const carried = model.carriedOrder;
         if (carried) this.drawTray(ctx, camera, model, carried);
         const objective = rushObjective(model);
