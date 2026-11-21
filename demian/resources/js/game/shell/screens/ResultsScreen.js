@@ -1,4 +1,5 @@
 import { formatGameRecord, recordHeading } from '../../leaderboard/GameRecord.js';
+import { gameOutcomeHint } from '../../design/GameExperience.js';
 import BaseScreen from './BaseScreen';
 
 const resultValue = (value, digits) => typeof value === 'number'
@@ -19,6 +20,7 @@ export default class ResultsScreen extends BaseScreen {
         this.payload = null;
         this.ranking = this.element.querySelector('[data-results-ranking]');
         this.retryRanking = this.element.querySelector('[data-results-ranking-retry]');
+        this.learningTip = this.element.querySelector('[data-results-learning-tip]');
     }
 
     async beforeOpen(payload) {
@@ -32,6 +34,22 @@ export default class ResultsScreen extends BaseScreen {
         }).catch(() => { if (this.payload === current) this.renderRanking({ status: 'pending', retryable: true }); });
         if (this.title) this.title.textContent = payload.title ?? 'نتیجه‌ی بازی';
         if (this.subtitle) this.subtitle.textContent = payload.subtitle ?? 'مرحله به پایان رسید.';
+        // Inert, game-specific retry coaching. No unverified score is promoted.
+        const tip = gameOutcomeHint(payload.gameId, {
+            success: payload.failed !== true && payload.success !== false,
+        });
+        if (!this.learningTip && this.subtitle?.ownerDocument
+            && typeof this.subtitle.after === 'function') {
+            this.learningTip = this.subtitle.ownerDocument.createElement('p');
+            this.learningTip.className = 'results-learning-tip';
+            this.learningTip.dataset.resultsLearningTip = '';
+            this.learningTip.setAttribute('role', 'note');
+            this.subtitle.after(this.learningTip);
+        }
+        if (this.learningTip) {
+            this.learningTip.hidden = !tip;
+            this.learningTip.textContent = tip ? `گام بعدی: ${tip}` : '';
+        }
         const record = payload.resultMetric ?? payload.deviceRecord;
         const heading = payload.resultMetricLabel ?? (record ? recordHeading(payload.gameId, 'device') : 'امتیاز');
         if (this.scoreLabel) this.scoreLabel.textContent = heading;

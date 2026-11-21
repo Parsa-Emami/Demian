@@ -58,6 +58,7 @@ Backend با **Laravel / PHP و MySQL** مستقل از خروجی Frontend اس
 - [فاز صفر: تثبیت CI، معیارهای پذیرش و مبنای اندازه‌گیری](demian/docs/phase0/PHASE_00_STABILIZATION.md)
 - [بررسی ۲۴ PR قدیمی و وابستگی‌های ادغام](demian/docs/phase0/OPEN_PR_TRIAGE_2026-11-21.md)
 - [استاندارد طراحی هفت بازی](demian/docs/game-design/GAME_DESIGN_STANDARD_V1.fa.md)
+- [فاز ۱ — راهنمای اجرایی هفت بازی، آموزش و عدالت رقابتی](demian/docs/game-design/PHASE_01_GAME_EXPERIENCE.fa.md)
 - [بدهی هنری کاراکترها](demian/docs/technical-debt/TD-ART-001-ART-REBUILD.fa.md)
 - [راهنمای قبلی V14 (آرشیوی، نه وضعیت فعلی)](demian/docs/archive/README_V14_legacy_notes.fa.md)
 
