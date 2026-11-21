@@ -52,9 +52,13 @@ export default class CafeRushRenderer {
 
         const cast = [avatars.player, avatars.setayesh];
         if (model.elapsed >= VIP_AT) cast.push(avatars.uzudi);
-        cast.filter(Boolean).sort((first, second) =>
-            first.position.z - second.position.z).forEach(avatar =>
-            drawSpriteCharacter(ctx, camera, avatar, { alpha, player: false }));
+        // Same depth queue as Open World and After Hours. Flush before UI
+        // signs, which must always remain legible above moving characters.
+        for (const avatar of cast.filter(Boolean)) this.scene.queue.add({
+            layer: 20, y: avatar.position?.z ?? 0,
+            draw: () => drawSpriteCharacter(ctx, camera, avatar, { alpha, player: false }),
+        });
+        this.scene.queue.flush(ctx);
         for (const slug of model.elapsed >= VIP_AT ? ['setayesh', 'uzudi'] : ['setayesh']) {
             if (avatars[slug]) continue;
             const at = camera.worldToScreen(RUSH_GUESTS[slug]);
