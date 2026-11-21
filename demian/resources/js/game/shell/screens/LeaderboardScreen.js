@@ -8,6 +8,10 @@ export default class LeaderboardScreen extends BaseScreen {
         this.service = service;
         this.generation = 0;
         this.period = this.element.querySelector('[data-ranking-period]');
+        this.practiceOption = document.createElement('option');
+        this.practiceOption.value = 'practice';
+        this.practiceOption.textContent = 'تمرین Dino Run (بدون جایزه)';
+        this.period.append(this.practiceOption);
         this.game = this.element.querySelector('[data-ranking-game]');
         this.week = this.element.querySelector('[data-ranking-week]');
         this.weekWrap = this.element.querySelector('[data-ranking-week-wrap]');
@@ -208,9 +212,12 @@ export default class LeaderboardScreen extends BaseScreen {
         const game = this.game?.value ?? 'dino-run';
         const shared = this.service.connected && game === 'all-games';
         const deviceOnly = !shared && !this.onlineGames?.has(game);
-        for (const option of this.period.options) option.disabled = deviceOnly && option.value !== 'device';
-        if (deviceOnly) this.period.value = 'device';
-        else if (this.deviceOnly) this.period.value = 'weekly';
+        for (const option of this.period.options) option.disabled = option.value === 'practice'
+            ? game !== 'dino-run' : deviceOnly && option.value !== 'device';
+        if (this.practiceOption) this.practiceOption.hidden = game !== 'dino-run';
+        if (deviceOnly && this.period.value !== 'practice') this.period.value = 'device';
+        else if (deviceOnly && game !== 'dino-run') this.period.value = 'device';
+        else if (!deviceOnly && (this.deviceOnly || this.period.value === 'practice' && game !== 'dino-run')) this.period.value = 'weekly';
         this.deviceOnly = deviceOnly;
         const supportsHistory = shared || (!deviceOnly && game === 'cafe-drift' && this.period.value === 'weekly');
         this.weekWrap.hidden = !supportsHistory;
@@ -302,7 +309,7 @@ export default class LeaderboardScreen extends BaseScreen {
             const chosenWeek = !this.week.disabled ? this.week.value : '';
             const ownScore = shared
                 ? this.service.myWeeklyRanking(chosenWeek)
-                : this.period.value !== 'device' && ['dino-run', 'cafe-drift'].includes(activeGame)
+                : !['device', 'practice'].includes(this.period.value) && ['dino-run', 'cafe-drift'].includes(activeGame)
                     ? this.service.personalBest(this.period.value, activeGame, chosenWeek) : Promise.resolve(null);
             const result = shared
                 ? await this.service.weeklyRanking(chosenWeek)
@@ -321,7 +328,9 @@ export default class LeaderboardScreen extends BaseScreen {
                     this.status.textContent += ' هنوز امتیازی ثبت نشده است.';
                 }
             } else {
-                this.status.textContent = result.mode === 'device'
+                this.status.textContent = result.mode === 'practice'
+                    ? 'رکوردهای تمرینی Dino Run روی این دستگاه؛ بدون رتبه جهانی یا جایزه.'
+                    : result.mode === 'device'
                     ? 'رکوردهای همین مرورگر؛ ثبت جهانی نشده‌اند.'
                     : result.status === 'finalized'
                         ? 'نتیجهٔ نهایی این هفته · ثبت‌شده در آرشیو دمیان'

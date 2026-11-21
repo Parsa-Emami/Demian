@@ -3,6 +3,7 @@ import { RECORD_GAMES, deviceMetric } from './GameRecord.js';
 import { weeklyVersion, WEEKLY_VERSIONS } from '../content/WeeklyContent.js';
 import rules from '../../../game/runner-rules.json' with { type: 'json' };
 import { validRunnerSession } from './RunnerSessionContract.js';
+import { isBeginnerProfile, PRACTICE_RECORDS_KEY, PRACTICE_BEST_KEY } from '../games/dino-run/RunnerPracticeProfile.js';
 import { requestLegalAcknowledgement, LEGAL_VERSION } from './LegalConsent.js';
 
 const PROFILE_KEY = 'demian.arcade.profile.v1';
@@ -300,8 +301,8 @@ export default class ArcadeLeaderboardService {
         if (this.connected) { await this.ensureIdentity(); await this.request('/player', { method: 'PATCH', authenticated: true, body: { display_name: value } }); }
         this.profile = { display_name: value }; safeWrite(this.storage, PROFILE_KEY, this.profile);
     }
-    async start({ width, character, seed } = {}) {
-        if (!this.connected || seed !== undefined) return { mode: 'practice', seed: seed ?? Date.now(), track_width: width };
+    async start({ width, character, seed, practice = false } = {}) {
+        if (practice || !this.connected || seed !== undefined) return { mode: 'practice', seed: seed ?? Date.now(), track_width: width };
         if (this.needsAccountRestore) return { mode: 'practice', seed: Date.now(), track_width: width,
             reason: 'مدرک امتیاز قبلی محفوظ است؛ برای ارسال آن باید حساب اصلی را بازیابی کنی.' };
         // Do not overwrite a failed ranked run before its replay is accepted/rejected.
@@ -406,7 +407,20 @@ export default class ArcadeLeaderboardService {
         const rows = [...this.localScores(), row].sort((a, b) => b.score - a.score || a.achieved_at.localeCompare(b.achieved_at)).slice(0, 20);
         safeWrite(this.storage, LOCAL_KEY, rows); return row;
     }
+    practiceScores() {
+        const rows = safeRead(this.storage, PRACTICE_RECORDS_KEY, []);
+        return Array.isArray(rows) ? rows.filter(row => Number.isSafeInteger(row?.score) && row.score >= 0
+            && typeof row.achieved_at === 'string' && typeof row.display_name === 'string') : [];
+    }
     async finish(run, model, replay, character) {
+        if (isBeginnerProfile(model?.profile)) {
+            const row = { score: model.score, display_name: this.displayName, character_slug: character, achieved_at: new Date().toISOString() };
+            if (Number.isSafeInteger(row.score) && row.score >= 0) {
+                const rows = [...this.practiceScores(), row].sort((a, b) => b.score - a.score || a.achieved_at.localeCompare(b.achieved_at)).slice(0, 20);
+                safeWrite(this.storage, PRACTICE_RECORDS_KEY, rows);
+            }
+            return { status: 'beginner-practice', score: model.score };
+        }
         this.recordLocal(model, character);
         if (run?.mode !== 'ranked' || !replay?.valid) return { status: 'practice', score: model.score };
         const durable = this.savePending({ id: run.run_id, body: replay.payload(),
@@ -571,6 +585,8 @@ export default class ArcadeLeaderboardService {
         try { this.storage?.removeItem?.(this.identityKey); } catch {}
         safeWrite(this.storage, PROFILE_KEY, this.profile);
         safeWrite(this.storage, LOCAL_KEY, []);
+        safeWrite(this.storage, PRACTICE_RECORDS_KEY, []);
+        safeWrite(this.storage, PRACTICE_BEST_KEY, 0);
         for (const game of RECORD_GAMES) safeWrite(this.storage, DEVICE_PREFIX + game, []);
         return { status: 'deleted' };
     }
@@ -590,6 +606,10 @@ export default class ArcadeLeaderboardService {
     }
     async list(period = 'weekly', gameId = 'dino-run', week = '') {
         if (!RECORD_GAMES.includes(gameId)) throw new Error('Unknown ranked game.');
+        if (period === 'practice') {
+            if (gameId !== 'dino-run') throw new Error('Practice records are only available for Dino Run.');
+            return { mode: 'practice', rules_version: 'cafe-runner-practice-v1', data: this.practiceScores().map((row, index) => ({ ...row, rank: index + 1 })) };
+        }
         if (this.connected && period !== 'device') {
             const query = new URLSearchParams({ period, limit: '20' });
             if (week) query.set('week', week);
