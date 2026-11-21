@@ -50,6 +50,7 @@ jobs:
           bash -n demian/ops/cpanel/backup_offsite.sh
           bash -n demian/ops/cpanel/restore_drill.sh
           php -l demian/ops/cpanel/host_preflight.php
+          php -l demian/ops/cpanel/install_webroot_bridge.php
       - name: Check approved read-only load profile
         run: node --check demian/tools/load/mobile11_read_only.js
       - name: Validate actual 50-live-client load profile

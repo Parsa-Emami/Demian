@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 # Demian's cPanel release cutover: never run as root and never copy .env into webroot.
-# Usage: deploy.sh SHA ROOT HTTPS_ORIGIN staging|production PHP_BIN BACKUP_RECEIPT [ARTIFACT_SHA256]
+# Usage: deploy.sh SHA ROOT HTTPS_ORIGIN staging|production PHP_BIN BACKUP_RECEIPT [ARTIFACT_SHA256 [OPTIONAL_FIXED_WEBROOT]]
 set -Eeuo pipefail
 umask 027
-[[ "$#" -eq 6 || "$#" -eq 7 ]] || { echo "Expected 6 arguments and optional artifact SHA-256" >&2; exit 2; }
+[[ "$#" -ge 6 && "$#" -le 8 ]] || { echo "Expected 6..8 arguments" >&2; exit 2; }
 sha="$1"
 root="$2"
 origin="$3"
@@ -11,6 +11,7 @@ target="$4"
 php_bin="$5"
 receipt="$6"
 expected_digest="${7:-}"
+webroot="${8:-}"
 
 [[ "$sha" =~ ^[0-9a-f]{40}$ ]] || { echo "Invalid release SHA" >&2; exit 2; }
 [[ -n "$HOME" && "$root" == "$HOME/"* && "$root" != *..* && "$root" != */ ]] ||
@@ -20,6 +21,11 @@ url_re='^https://[A-Za-z0-9.-]+(:[0-9]+)?$'
 [[ "$target" == staging || "$target" == production ]] || exit 2
 [[ "$php_bin" =~ ^[A-Za-z0-9_./-]+$ ]] || exit 2
 [[ "$receipt" =~ ^[A-Za-z0-9_.:-]+$ ]] || exit 2
+if [[ -n "$webroot" ]]; then
+    [[ "$webroot" =~ ^/home/[A-Za-z0-9_./-]+$ && "$webroot" != *..* ]] || {
+        echo "Invalid dedicated API webroot" >&2; exit 2;
+    }
+fi
 if [[ -n "$expected_digest" && ! "$expected_digest" =~ ^[a-f0-9]{64}$ ]]; then
     echo "Invalid artifact digest" >&2; exit 2
 fi
@@ -37,9 +43,9 @@ command -v flock >/dev/null
 command -v tar >/dev/null
 command -v curl >/dev/null
 
-# A cPanel domain/subdomain MUST be configured by the owner with its
-# document root at ROOT/current/public, and must allow this symlink target.
-# Never point a web root at ROOT, releases, or shared/.env.
+# The owner must configure either ROOT/current/public as a permitted
+# DocumentRoot, or a separately confirmed fixed API webroot with the minimal
+# bridge installed. Never point DocumentRoot at the Laravel project root.
 mkdir -p "$root/releases" "$root/incoming" "$root/shared"
 mkdir -p "$root/shared/storage/framework/cache/data" \
     "$root/shared/storage/framework/sessions" \
@@ -103,7 +109,8 @@ if [[ ! -d "$release" ]]; then
     [[ -f "$tmp/artisan" && -f "$tmp/vendor/autoload.php" &&
        -f "$tmp/public/index.php" && -f "$tmp/public/.htaccess" ]] ||
         { echo "Artifact missing Laravel public entrypoint or Composer dependencies" >&2; exit 1; }
-    [[ -f "$tmp/ops/cpanel/cron.sh" && -f "$tmp/ops/cpanel/rollback.sh" ]] || {
+    [[ -f "$tmp/ops/cpanel/cron.sh" && -f "$tmp/ops/cpanel/rollback.sh" &&
+       -f "$tmp/ops/cpanel/install_webroot_bridge.php" ]] || {
         echo "cPanel cron or rollback contract is missing" >&2; exit 1
     }
     [[ -f "$tmp/ops/cpanel/host_preflight.php" && ! -L "$tmp/ops/cpanel/host_preflight.php" ]] || {
@@ -148,6 +155,9 @@ if [[ "$target" == production ]]; then
         grep -Eq 'artisan schedule:run|ops/cpanel/cron.sh' ; then
         echo "Production Laravel scheduler cron for this release root is missing" >&2; exit 1
     fi
+fi
+if [[ -n "$webroot" ]]; then
+    "$php_bin" "$release/ops/cpanel/install_webroot_bridge.php"         "$root" "$webroot" DEMIAN_API_SUBDOMAIN_ONLY
 fi
 (
     cd "$release"

@@ -48,7 +48,7 @@ jobs:
             resources/views src public/index.php public/.htaccess \
             ops/cpanel/host_preflight.php ops/cpanel/cron.sh \
             ops/cpanel/rollback.sh ops/cpanel/backup_offsite.sh \
-            ops/cpanel/restore_drill.sh composer.json composer.lock vendor
+            ops/cpanel/restore_drill.sh ops/cpanel/install_webroot_bridge.php             composer.json composer.lock vendor
           test -s "$RUNNER_TEMP/demian-cpanel.tar.gz"
           tar -tzf "$RUNNER_TEMP/demian-cpanel.tar.gz" > "$RUNNER_TEMP/cpanel-entries.txt"
           if grep -Eq '(^|/)([.]env|[.]git)(/|$)' "$RUNNER_TEMP/cpanel-entries.txt"; then
@@ -61,6 +61,7 @@ jobs:
           grep -Fx 'ops/cpanel/rollback.sh' "$RUNNER_TEMP/cpanel-entries.txt" >/dev/null
           grep -Fx 'ops/cpanel/backup_offsite.sh' "$RUNNER_TEMP/cpanel-entries.txt" >/dev/null
           grep -Fx 'ops/cpanel/restore_drill.sh' "$RUNNER_TEMP/cpanel-entries.txt" >/dev/null
+          grep -Fx 'ops/cpanel/install_webroot_bridge.php' "$RUNNER_TEMP/cpanel-entries.txt" >/dev/null
           if tar -tvzf "$RUNNER_TEMP/demian-cpanel.tar.gz" | grep -Eq '^l'; then
             echo "Release contains a forbidden symbolic link" >&2; exit 1
           fi
@@ -89,6 +90,7 @@ jobs:
       CPANEL_USER: ${{ vars.CPANEL_SSH_USER }}
       CPANEL_ROOT: ${{ vars.CPANEL_API_ROOT }}
       CPANEL_PHP_BIN: ${{ vars.CPANEL_PHP_BIN }}
+      CPANEL_WEBROOT: ${{ vars.CPANEL_WEBROOT || '' }}
       CPANEL_API_ORIGIN: ${{ vars.CPANEL_API_ORIGIN }}
       CPANEL_SSH_KEY: ${{ secrets.CPANEL_DEPLOY_SSH_KEY }}
       CPANEL_KNOWN_HOSTS: ${{ secrets.CPANEL_SSH_KNOWN_HOSTS }}
@@ -108,6 +110,11 @@ jobs:
           [[ "$CPANEL_PHP_BIN" =~ ^[A-Za-z0-9_./-]+$ ]]
           url_re='^https://[A-Za-z0-9.-]+(:[0-9]+)?$'
           [[ "$CPANEL_API_ORIGIN" =~ $url_re ]]
+          if [[ -n "$CPANEL_WEBROOT" ]]; then
+            [[ "$CPANEL_WEBROOT" == "/home/$CPANEL_USER/"* ]]
+            [[ "$CPANEL_WEBROOT" =~ ^/home/[A-Za-z0-9_./-]+$ && "$CPANEL_WEBROOT" != *..* ]]
+            [[ "$CPANEL_WEBROOT" != "$CPANEL_ROOT/"* ]]
+          fi
           [[ -n "$CPANEL_SSH_KEY" && -n "$CPANEL_KNOWN_HOSTS" ]]
           [[ "$BACKUP_RECEIPT" =~ ^[A-Za-z0-9_.:-]+$ ]]
           if [[ "$CPANEL_TARGET" == production ]]; then
@@ -133,7 +140,7 @@ jobs:
           scp "${ssh_flags[@]}" .cpanel-release/demian-cpanel.tar.gz \
             "$CPANEL_USER@$CPANEL_HOST:$CPANEL_ROOT/incoming/$GITHUB_SHA.tar.gz"
           ssh "${ssh_flags[@]}" "$CPANEL_USER@$CPANEL_HOST" \
-            "bash -s -- '$GITHUB_SHA' '$CPANEL_ROOT' '$CPANEL_API_ORIGIN' '$CPANEL_TARGET' '$CPANEL_PHP_BIN' '$BACKUP_RECEIPT' '$expected_digest'" \
+            "bash -s -- '$GITHUB_SHA' '$CPANEL_ROOT' '$CPANEL_API_ORIGIN' '$CPANEL_TARGET' '$CPANEL_PHP_BIN' '$BACKUP_RECEIPT' '$expected_digest' '$CPANEL_WEBROOT'" \
             < demian/ops/cpanel/deploy.sh
       - name: Public read-only API smoke (bounded)
         run: node demian/tools/smoke_arcade_api.mjs --base-url="$CPANEL_API_ORIGIN/api/v1/arcade" --users=20 --p95-ms=1500
