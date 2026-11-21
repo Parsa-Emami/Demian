@@ -56,6 +56,14 @@ jobs:
           DEMIAN_ARCADE_API_URL: ${{ github.ref == 'refs/heads/main' && vars.DEMIAN_ARCADE_ENABLE_RANKED == 'true' && vars.DEMIAN_ARCADE_API_URL || '' }}
       - name: Validate optimized production assets
         run: npm run validate:static-assets
+      - name: Phase 11 exact-SHA immutable static release audit (CI evidence only)
+        run: node tools/qa/phase11_release_audit.mjs --site=_site --source=. --sha="$GITHUB_SHA" --output=docs/phase11/ci/bundle-audit.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: phase11-pwa-bundle-${{ github.sha }}
+          path: demian/docs/phase11/ci/bundle-audit.json
+          if-no-files-found: error
+          retention-days: 30
       - name: Archive compatible hashed chunks for next main deployment
         if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
         uses: actions/upload-artifact@v4
@@ -280,6 +288,15 @@ jobs:
         env:
           DEMIAN_QA_BUILD_RESULT: ${{ needs.build.result }}
           DEMIAN_QA_BACKEND_RESULT: ${{ needs.backend.result }}
+      - uses: actions/download-artifact@v4
+        with:
+          name: phase11-pwa-bundle-${{ github.sha }}
+          path: ${{ runner.temp }}/phase11
+      - name: Phase 11 composite CI audit (NOT a commercial release approval)
+        run: node demian/tools/qa/phase11_verify_ci.mjs "${RUNNER_TEMP}/phase11/bundle-audit.json"
+        env:
+          DEMIAN_PHASE11_BUILD_RESULT: ${{ needs.build.result }}
+          DEMIAN_PHASE11_BACKEND_RESULT: ${{ needs.backend.result }}
   deploy:
     if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
     environment:
