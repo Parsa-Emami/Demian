@@ -14,6 +14,7 @@ const cpanelRelease = read('../../../ops/cpanel/deploy.sh');
 const cpanelPreflight = read('../../../ops/cpanel/host_preflight.php');
 const cpanelOps = read('../../../../.github/workflows/mobile11-ops-ci.yml');
 const cpanelWorkflow = read('../../../../.github/workflows/cpanel-api-deploy.yml');
+const cpanelPackage = read('../../../../.github/workflows/phase1-api-readiness.yml');
 const cpanelLoad = read('../../../tools/load/cpanel_50_active.js');
 const cpanelWrites = read('../../../tools/load/cpanel_50_writes_staging.js');
 const webRoutes = read('../../../routes/web.php');
@@ -133,8 +134,8 @@ test('cPanel CI deployment is manual, approved, pinned to known hosts and packag
     assert.match(cpanelWorkflow, /CPANEL_SSH_KNOWN_HOSTS/);
     assert.match(cpanelWorkflow, /StrictHostKeyChecking=yes/);
     assert.match(cpanelWorkflow, /DEPLOY_PRODUCTION_WITH_BACKUP/);
-    assert.match(cpanelWorkflow, /--no-dev/);
-    assert.match(cpanelWorkflow, /public\/index.php public\/\.htaccess/);
+    assert.match(cpanelPackage, /--no-dev/);
+    assert.match(cpanelPackage, /public\/index.php public\/\.htaccess/);
     assert.match(webRoutes, /demian-arcade\.api_only/);
 });
 test('50 concurrent VUs remain staging-only and read-only', () => {
@@ -163,7 +164,7 @@ test('Step 29 rejects untrusted cPanel release archives before extraction', () =
     assert.ok(cpanelRelease.indexOf('host_preflight.php" "$env_file"')
         < cpanelRelease.indexOf('artisan migrate --force'));
     assert.match(cpanelRelease, /crontab -l/);
-    assert.match(cpanelWorkflow, /ops\/cpanel\/host_preflight\.php/);
+    assert.match(cpanelPackage, /ops\/cpanel\/host_preflight\.php/);
     assert.match(cpanelOps, /CpanelHostPreflightTest\.php/);
 });
 
@@ -179,4 +180,12 @@ test('Step 29 checks nontrivial secrets, persistent shared session locks and sec
         assert.ok(cpanelPreflight.includes(flag), 'Missing cPanel preflight clause: ' + flag);
     }
     assert.doesNotMatch(cpanelPreflight, /var_dump|print_r|echo\s+\$values/);
+});
+
+test('cPanel deploy consumes the same GitHub-only accepted package and checksum', () => {
+    assert.ok(cpanelWorkflow.includes('uses: ./.github/workflows/phase1-api-readiness.yml'));
+    assert.ok(cpanelWorkflow.includes('sha256sum -c demian-cpanel.tar.gz.sha256'));
+    assert.ok(cpanelPackage.includes('workflow_call:'));
+    assert.ok(cpanelPackage.includes('ci_release_acceptance.sh'));
+    for (const forbidden of ['secrets.', 'ssh ', 'scp ']) assert.ok(!cpanelPackage.includes(forbidden));
 });
