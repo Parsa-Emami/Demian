@@ -3,7 +3,7 @@
 @section('content')
 <div class="row"><a class="button secondary" href="{{ route('cashier.index') }}">بازگشت</a></div>
 <h1>گام ۱۰ — پایش ضدتقلب</h1>
-<p class="muted">هشدارهای الگوریتمی فقط نشانه نیاز به بررسی هستند، نه اثبات تخلف. هیچ امتیاز یا کوپن خودکار حذف نمی‌شود. IP خام، کلید دسترسی و مدرک خام Replay نمایش داده نمی‌شود.</p>
+<p class="muted">هشدارهای الگوریتمی فقط نشانه نیاز به بررسی هستند، نه اثبات تخلف. هیچ امتیاز یا کوپن خودکار حذف نمی‌شود. شماره تکراری، مرورگر مشترک و شبکه مشترک صرفاً قرینه بررسی‌اند؛ به‌تنهایی مجوز محدودیت نیستند. IP خام، کلید دسترسی و مدرک خام Replay نمایش داده نمی‌شود.</p>
 @if(session('notice'))<div class="ok" role="status">{{ session('notice') }}</div>@endif
 @if($errors->any())<div class="alert" role="alert">{{ $errors->first() }}</div>@endif
 <section class="panel">
