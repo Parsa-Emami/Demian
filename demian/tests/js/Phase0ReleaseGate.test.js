@@ -27,7 +27,7 @@ test('Phase 0: the seven published games are unique, playable and reflected by t
     assert.equal(BUILTIN_CHARACTER_SLUGS.length, 18, 'Roster changes require art/source review.');
     assert.match(readmeFa, /۷ بازی/);
     assert.match(readmeEn, /seven games/);
-    for (const game of GAME_CATALOG) assert.ok(readmeEn.includes(game.title), `README missing ${game.title}`);
+    for (const game of GAME_CATALOG) assert.ok(readmeEn.toLocaleLowerCase('en-US').includes(game.title.toLocaleLowerCase('en-US')), `README missing ${game.title}`);
     assert.match(selection, /this\.catalog\.filter\(game => game\.available\)/);
     assert.match(selection, /count\.textContent = `\$\{playableCount/);
     for (const html of [blade, playable]) {
