@@ -4,6 +4,7 @@ import { readFileSync } from 'node:fs';
 import { GAME_CATALOG } from '../../resources/js/game/catalog/GameCatalog.js';
 import { GAME_DEFINITIONS } from '../../resources/js/game/registry/GameDefinitions.js';
 import { RECORD_GAMES, deviceMetric } from '../../resources/js/game/leaderboard/GameRecord.js';
+import ArcadeLeaderboardService from '../../resources/js/game/leaderboard/ArcadeLeaderboardService.js';
 import { gameExperience, GAME_EXPERIENCE_IDS, gameModeExplanation, gameOutcomeHint } from
     '../../resources/js/game/design/GameExperience.js';
 
@@ -77,4 +78,29 @@ test('Phase 1: the shared UI consumes the authored brief without adding unoffici
     assert.match(css, /min-height:\s*44px/);
     assert.match(css, /prefers-reduced-motion/);
     assert.match(css, /forced-colors/);
+});
+
+test('Phase 1: offline entry is always practice for every game and cannot emit leaderboard requests', async () => {
+    let requests = 0;
+    const storage = () => {
+        const data = new Map();
+        return {
+            getItem: key => data.get(key) ?? null,
+            setItem: (key, value) => data.set(key, value),
+            removeItem: key => data.delete(key),
+        };
+    };
+    const service = new ArcadeLeaderboardService({
+        baseUrl: '', storage: storage(), identityStorage: storage(),
+        fetcher: async () => { requests++; throw new Error('offline must not fetch'); },
+    });
+    for (const { id } of GAME_CATALOG) {
+        const run = id === 'dino-run'
+            ? await service.start({ width: 420, character: 'darya' })
+            : await service.startTurnRun(id, { gameplay: id === 'after-hours' || id === 'cafe-rush' });
+        assert.equal(run.mode, 'practice', id);
+    }
+    assert.equal(requests, 0, 'No request may be sent without a configured HTTPS API.');
+    assert.deepEqual(await service.finishTurnRun({ mode: 'practice', game_id: 'cafe-critters' }, [], 0),
+        { status: 'practice' });
 });
