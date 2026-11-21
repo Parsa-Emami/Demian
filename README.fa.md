@@ -61,6 +61,7 @@ Backend با **Laravel / PHP و MySQL** مستقل از خروجی Frontend اس
 - [فاز ۱ — راهنمای اجرایی هفت بازی، آموزش و عدالت رقابتی](demian/docs/game-design/PHASE_01_GAME_EXPERIENCE.fa.md)
 - [فاز ۶ — استاندارد محیط، نور و تأیید تصویری کافه](demian/docs/gameplay/PHASE_06_ENVIRONMENT_ART_BIBLE.fa.md)
 - [فاز ۷ — استاندارد تجربهٔ کاربر، دسترس‌پذیری و صدا](demian/docs/gameplay/PHASE_07_UX_AUDIO_ACCESSIBILITY.fa.md)
+- [فاز ۸ — پذیرش عملکرد، حافظه و PWA](demian/docs/gameplay/PHASE_08_MOBILE_PWA_ACCEPTANCE.fa.md)
 - [بدهی هنری کاراکترها](demian/docs/technical-debt/TD-ART-001-ART-REBUILD.fa.md)
 - [راهنمای قبلی V14 (آرشیوی، نه وضعیت فعلی)](demian/docs/archive/README_V14_legacy_notes.fa.md)
 

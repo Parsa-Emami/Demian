@@ -189,6 +189,14 @@ jobs:
         run: npm run test:mobile-pwa:browser
       - name: Mobile-09 selective offline game downloads, reload and cleanup
         run: npm run test:mobile-09:browser
+      - name: Quality roadmap Phase 8 - corrupted release integrity, recovery and offline practice in Chromium
+        run: timeout --signal=TERM --kill-after=10s 300s npm run test:phase8:pwa
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: phase8-pwa-integrity-${{ github.sha }}
+          path: demian/docs/phase08-mobile/qa/
+          if-no-files-found: warn
       - name: Mobile-01 mid-tier phone laboratory baseline
         run: npm run benchmark:mobile:ci
         env:
