@@ -14,6 +14,9 @@ test('F11-14 protected GO/NO-GO candidate is main-only and cannot publish',()=>{
  assert.match(workflow,/environment:\n      name: cpanel-production/);
  assert.match(workflow,/REVIEWED_FINAL_EVIDENCE_NO_P0/);
  assert.match(workflow,/release-qa/);
+ assert.match(workflow,/phase11-pwa-bundle-/);
+ assert.match(workflow,/actions\/download-artifact@v4/);
+ assert.match(workflow,/data.pwaReleaseId!==process.env.INPUT_PWA/);
  assert.match(workflow,/head_sha == \$sha/);
  assert.match(workflow,/productionDeployed:false/);
  assert.match(workflow,/couponIssuanceEnabled:false/);
