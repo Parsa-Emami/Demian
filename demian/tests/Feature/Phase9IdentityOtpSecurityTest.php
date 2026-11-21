@@ -16,6 +16,7 @@ final class Phase9IdentityOtpSecurityTest extends TestCase
     use RefreshDatabase;
 
     private array $smsCodes = [];
+    private bool $smsDeliveryFailure = false;
 
     protected function setUp(): void
     {
@@ -26,7 +27,9 @@ final class Phase9IdentityOtpSecurityTest extends TestCase
         config()->set('demian-arcade.otp.gateway_key', str_repeat('s', 40));
         Http::fake(function ($request) {
             $this->smsCodes[] = ['to' => $request['to'], 'code' => $request['code']];
-            return Http::response(['accepted' => true], 200);
+            return $this->smsDeliveryFailure
+                ? Http::response(['error' => 'private'], 503)
+                : Http::response(['accepted' => true], 200);
         });
     }
 
@@ -70,7 +73,7 @@ final class Phase9IdentityOtpSecurityTest extends TestCase
     public function test_delivery_failure_never_creates_a_valid_challenge(): void
     {
         $p = $this->player();
-        Http::fake(['sms.example.test/*' => Http::response(['error' => 'private'], 503)]);
+        $this->smsDeliveryFailure = true;
         $response = $this->withToken($p['token'])
             ->postJson('/api/v1/arcade/player/phone/otp')->assertStatus(500);
         $this->assertStringNotContainsString('private', $response->getContent());
