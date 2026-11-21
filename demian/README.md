@@ -35,5 +35,6 @@ The Laravel API, MySQL database, verified leaderboard and rewards are separate f
 - [Phase 8: mobile performance, PWA integrity and device QA](docs/gameplay/PHASE_08_MOBILE_PWA_ACCEPTANCE.fa.md)
 - [Phase 9: authenticated OTP, fraud appeals and safe financial reward gates](docs/gameplay/PHASE_09_SECURITY_IDENTITY_FRAUD.fa.md)
 - [Phase 10: cPanel production architecture, verification and recovery](docs/gameplay/PHASE_10_CPANEL_PRODUCTION_ARCHITECTURE.fa.md)
+- [Phase 11 — final QA and controlled go/no-go](docs/gameplay/PHASE_11_FINAL_QA_GO_NO_GO.fa.md)
 - [Open visual-art technical debt](docs/technical-debt/TD-ART-001-ART-REBUILD.fa.md)
 - [Legacy V14 release notes (archived)](docs/archive/README_V14_legacy_notes.fa.md)

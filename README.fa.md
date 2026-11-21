@@ -64,6 +64,7 @@ Backend با **Laravel / PHP و MySQL** مستقل از خروجی Frontend اس
 - [فاز ۸ — پذیرش عملکرد، حافظه و PWA](demian/docs/gameplay/PHASE_08_MOBILE_PWA_ACCEPTANCE.fa.md)
 - [فاز ۹ — امنیت و احراز هویت با OTP و اعتراض ضدتقلب](demian/docs/gameplay/PHASE_09_SECURITY_IDENTITY_FRAUD.fa.md)
 - [فاز ۱۰ — معماری Production و استقرار ایمن روی cPanel](demian/docs/gameplay/PHASE_10_CPANEL_PRODUCTION_ARCHITECTURE.fa.md)
+- [فاز ۱۱ — QA نهایی، پذیرش واقعی و Go/No-Go](demian/docs/gameplay/PHASE_11_FINAL_QA_GO_NO_GO.fa.md)
 - [بدهی هنری کاراکترها](demian/docs/technical-debt/TD-ART-001-ART-REBUILD.fa.md)
 - [راهنمای قبلی V14 (آرشیوی، نه وضعیت فعلی)](demian/docs/archive/README_V14_legacy_notes.fa.md)
 

@@ -1,0 +1,171 @@
+name: Phase 11 protected GO / NO-GO candidate audit
+# No deployments, migrations, score writes or financial activation.
+on:
+  workflow_dispatch:
+    inputs:
+      release_sha:
+        description: "Exact main commit SHA with successful full release QA"
+        required: true
+        type: string
+      pwa_release_id:
+        description: "Actual 16-character CI PWA release ID"
+        required: true
+        type: string
+      staging_deploy_run_id:
+        description: "Successful manual cPanel staging workflow run ID"
+        required: true
+        type: string
+      approval:
+        description: "Type REVIEWED_FINAL_EVIDENCE_NO_P0"
+        required: true
+        type: string
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: demian-phase11-human-review
+  cancel-in-progress: false
+jobs:
+  preflight:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    outputs:
+      release_sha: ${{ steps.identity.outputs.release_sha }}
+      pwa_release_id: ${{ steps.identity.outputs.pwa_release_id }}
+      staging_run_id: ${{ steps.identity.outputs.staging_run_id }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Match source HEAD, explicit acknowledgement and manually collected evidence
+        id: identity
+        shell: bash
+        env:
+          INPUT_SHA: ${{ inputs.release_sha }}
+          INPUT_PWA: ${{ inputs.pwa_release_id }}
+          INPUT_STAGING: ${{ inputs.staging_deploy_run_id }}
+          INPUT_APPROVAL: ${{ inputs.approval }}
+        run: |
+          set -Eeuo pipefail
+          [[ "$INPUT_SHA" =~ ^[0-9a-f]{40}$ && "$INPUT_SHA" == "$GITHUB_SHA" ]]
+          [[ "$INPUT_PWA" =~ ^[0-9a-f]{16}$ ]]
+          [[ "$INPUT_STAGING" =~ ^[0-9]{5,14}$ ]]
+          [[ "$INPUT_APPROVAL" == REVIEWED_FINAL_EVIDENCE_NO_P0 ]]
+          [[ "$(git rev-parse HEAD)" == "$INPUT_SHA" ]]
+          echo "release_sha=$INPUT_SHA" >> "$GITHUB_OUTPUT"
+          echo "pwa_release_id=$INPUT_PWA" >> "$GITHUB_OUTPUT"
+          echo "staging_run_id=$INPUT_STAGING" >> "$GITHUB_OUTPUT"
+      - name: Verify exact-SHA GitHub main release QA and successful cPanel workflow
+        id: official-ci
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          INPUT_STAGING: ${{ inputs.staging_deploy_run_id }}
+        run: |
+          set -Eeuo pipefail
+          runs="$(gh api "/repos/${GITHUB_REPOSITORY}/actions/runs?head_sha=${GITHUB_SHA}&per_page=100")"
+          release_run="$(jq -r --arg sha "$GITHUB_SHA" \
+            '[.workflow_runs[] | select(.head_sha == $sha and .head_branch == "main" and .name == "Deploy Demian mobile release" and (.event == "push" or .event == "workflow_dispatch") and .conclusion == "success")] | sort_by(.run_number) | last | .id // empty' <<< "$runs")"
+          [[ "$release_run" =~ ^[0-9]+$ ]]
+          echo "release_run_id=$release_run" >> "$GITHUB_OUTPUT"
+          jobs="$(gh api "/repos/${GITHUB_REPOSITORY}/actions/runs/${release_run}/jobs?per_page=100")"
+          jq -e '.jobs | any(.name == "release-qa" and .conclusion == "success")' <<< "$jobs" >/dev/null
+          staging="$(gh api "/repos/${GITHUB_REPOSITORY}/actions/runs/${INPUT_STAGING}")"
+          jq -e --arg sha "$GITHUB_SHA" \
+            '.head_sha == $sha and .head_branch == "main" and .name == "Demian cPanel Laravel API (manual and gated)" and .event == "workflow_dispatch" and .conclusion == "success"' \
+            <<< "$staging" >/dev/null
+          echo "CI and cPanel workflow success matched exact main SHA."
+          echo "IMPORTANT: the run metadata does not prove staging target or actual host. Owner must independently verify these."
+      - uses: actions/download-artifact@v4
+        with:
+          name: phase11-pwa-bundle-${{ github.sha }}
+          run-id: ${{ steps.official-ci.outputs.release_run_id }}
+          github-token: ${{ github.token }}
+          path: ${{ runner.temp }}/phase11-checked-static
+      - name: Verify operator-proposed PWA ID matches immutable artifact from successful GitHub run
+        shell: bash
+        env:
+          INPUT_PWA: ${{ inputs.pwa_release_id }}
+        run: |
+          set -Eeuo pipefail
+          node -e '
+            const fs=require("fs");
+            const file=process.env.RUNNER_TEMP+"/phase11-checked-static/bundle-audit.json";
+            const data=JSON.parse(fs.readFileSync(file,"utf8"));
+            if (data.schema!==1 || data.phase!==11 || data.status!=="passed"
+              || data.commitSha!==process.env.GITHUB_SHA
+              || data.pwaReleaseId!==process.env.INPUT_PWA
+              || data.productionGoAuthorized!==false
+              || !/^[a-f0-9]{64}$/.test(data.bundleFingerprintSha256??"")) {
+                throw Error("Live SHA-bound release artifact differs from proposed PWA.");
+            }
+          '
+  protected-review:
+    needs: preflight
+    # Repo owner MUST enable Required Reviewers and prevent self-review for
+    # cpanel-production environment. Otherwise do NOT treat this as approval.
+    environment:
+      name: cpanel-production
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Validate acceptance dossier from protected Environment secret (not self-referential Git)
+        shell: bash
+        env:
+          RELEASE_SHA: ${{ needs.preflight.outputs.release_sha }}
+          PWA_RELEASE: ${{ needs.preflight.outputs.pwa_release_id }}
+          ACCEPTANCE_B64: ${{ secrets.DEMIAN_PHASE11_ACCEPTANCE_B64 }}
+        run: |
+          set -Eeuo pipefail
+          umask 077
+          [[ -n "$ACCEPTANCE_B64" && ${#ACCEPTANCE_B64} -le 48000 ]] || {
+            echo "Missing or oversized protected Phase 11 acceptance dossier" >&2
+            exit 1
+          }
+          temp="$RUNNER_TEMP/phase11-acceptance.json"
+          trap 'rm -f -- "$temp" "$RUNNER_TEMP/phase11-verdict.json"' EXIT
+          printf '%s' "$ACCEPTANCE_B64" | base64 -d > "$temp"
+          unset ACCEPTANCE_B64
+          node demian/tools/qa/phase11_release_policy.mjs \
+            --file="$temp" --sha="$RELEASE_SHA" --pwa-release="$PWA_RELEASE" \
+            --output="$RUNNER_TEMP/phase11-verdict.json"
+          # The verdict itself is never a self-issued production GO.
+          jq -e '.decision == "HUMAN_REVIEW_REQUIRED" and .productionAuthorized == false' \
+            "$RUNNER_TEMP/phase11-verdict.json" >/dev/null
+      - name: Save protected review CANDIDATE only; never deploy or enable vouchers
+        env:
+          RELEASE_SHA: ${{ needs.preflight.outputs.release_sha }}
+          PWA_RELEASE: ${{ needs.preflight.outputs.pwa_release_id }}
+          STAGING_RUN: ${{ needs.preflight.outputs.staging_run_id }}
+        run: |
+          set -Eeuo pipefail
+          node -e '
+            const fs=require("fs");
+            const record={
+              schema:1,phase:11,kind:"protected-environment-review-candidate",
+              sha:process.env.RELEASE_SHA,pwaRelease:process.env.PWA_RELEASE,
+              stagingWorkflowRunId:process.env.STAGING_RUN,
+              reviewWorkflowRunId:process.env.GITHUB_RUN_ID,
+              repository:process.env.GITHUB_REPOSITORY,
+              reviewedEnvironment:"cpanel-production",
+              recordedAt:new Date().toISOString(),
+              productionDeployed:false,couponIssuanceEnabled:false,
+              scope:"candidate-for-separate-authorized-manual-deployment",
+              warning:"GitHub Environment Required Reviewers must be configured by the owner. No live host changes were made."
+            };
+            fs.writeFileSync("phase11-review-candidate.json",JSON.stringify(record,null,2)+"\n");
+          '
+      - uses: actions/upload-artifact@v4
+        with:
+          name: phase11-review-candidate-${{ github.sha }}
+          path: phase11-review-candidate.json
+          retention-days: 90
+          if-no-files-found: error
