@@ -70,12 +70,28 @@ const review = (row, now) => isObj(row)
     && typeof row.github === 'string'
     && /^[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,37})$/.test(row.github)
     && isDate(row.approvedAt, now);
-const load = (row, scenario, now) => isObj(row)
-    && row.scenario === scenario && row.origin === 'staging'
-    && row.status === 'metrics-within-budget'
-    && row.observedVus >= 50 && row.checkedP95P99 === true
-    && row.productionHostCertified !== true
-    && isEvidence(row.evidence, now);
+const LOAD_BUDGETS = Object.freeze({
+    read_only: { p95: 1500, p99: 3000, minDuration: 120000, minRequests: 100 },
+    account_write: { p95: 2000, p99: 4000, minDuration: 1000, minRequests: 150 },
+    verified_replay: { p95: 2000, p99: 4000, minDuration: 1000, minRequests: 100 },
+});
+const load = (row, scenario, now) => {
+    const budget = LOAD_BUDGETS[scenario];
+    return isObj(row)
+        && row.scenario === scenario && row.origin === 'staging'
+        && row.status === 'metrics-within-budget'
+        && Number.isInteger(row.observedVus) && row.observedVus >= 50
+        && Number.isInteger(row.durationMs) && row.durationMs >= budget.minDuration
+        && Number.isInteger(row.requestCount) && row.requestCount >= budget.minRequests
+        && Number.isFinite(row.p95Ms) && row.p95Ms > 0 && row.p95Ms <= budget.p95
+        && Number.isFinite(row.p99Ms) && row.p99Ms > 0 && row.p99Ms <= budget.p99
+        && row.p99Ms >= row.p95Ms
+        && Number.isFinite(row.httpErrorRate) && row.httpErrorRate >= 0 && row.httpErrorRate <= 0.01
+        && Number.isFinite(row.applicationErrorRate) && row.applicationErrorRate >= 0
+        && row.applicationErrorRate <= 0.01
+        && row.productionHostCertified !== true
+        && isEvidence(row.evidence, now);
+};
 
 /**
  * Never throws for an incomplete evidence manifest. Incomplete inputs are an

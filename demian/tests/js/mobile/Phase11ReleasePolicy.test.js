@@ -21,7 +21,9 @@ const sample=()=>({
  })),
  devices:[device('android','budget',1),device('android','midrange',2),device('ios','safari',3)],
  loadRuns:['read_only','account_write','verified_replay'].map((scenario,i)=>({
-  scenario,origin:'staging',status:'metrics-within-budget',observedVus:50,checkedP95P99:true,
+  scenario,origin:'staging',status:'metrics-within-budget',observedVus:50,
+  durationMs:scenario==='read_only'?180000:20000,requestCount:500,
+  p95Ms:800,p99Ms:1300,httpErrorRate:0.001,applicationErrorRate:0.001,
   productionHostCertified:false,evidence:ev(i+200),
  })),
  reviewers:Object.fromEntries(['engineering','security','operations','cafeOwner']
@@ -66,6 +68,10 @@ test('F11-14 missing/stale/duplicate/foreign SHA and unresolved risks fail close
   m=>{m.devices[1].metrics.touchLatencyP95Ms=1000;},
   m=>{m.devices[2].games=['dino-run'];},
   m=>{m.loadRuns[1].observedVus=12;},
+  m=>{m.loadRuns[0].p99Ms=9000;},
+  m=>{m.loadRuns[1].applicationErrorRate=0.5;},
+  m=>{m.loadRuns[2].durationMs=0;},
+  m=>{delete m.loadRuns[0].p95Ms;},
   m=>{m.reviewers.security.github=m.reviewers.engineering.github;},
   m=>{m.cafePilot.actualPlayers=false;},
   m=>{m.operations.encryptedOffsiteBackupRestored=false;},
