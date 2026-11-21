@@ -49,7 +49,8 @@ function run(scenario) {
         else if (scenario !== 'first' && scenario !== 'first_failure') symlinkSync(previous, current);
         writeFileSync(join(root, 'shared', '.env'), `APP_ENV=staging\nAPP_DEBUG=false\nAPP_URL=${origin}\nAPP_KEY=base64:${'A'.repeat(44)}\nDEMIAN_ARCADE_API_ONLY=true\nDB_CONNECTION=mysql\n`, { mode: 0o600 });
         writeFileSync(trace, '');
-        for (const file of ['artisan', 'vendor/autoload.php', 'public/index.php', 'public/.htaccess', 'ops/cpanel/host_preflight.php', 'ops/cpanel/cron.sh', 'ops/cpanel/rollback.sh']) {
+        for (const file of ['artisan', 'vendor/autoload.php', 'public/index.php', 'public/.htaccess', 'ops/cpanel/host_preflight.php', 'ops/cpanel/cron.sh', 'ops/cpanel/rollback.sh',
+            'ops/cpanel/install_webroot_bridge.php']) {
             const path = join(pkg, file);
             mkdirSync(join(path, '..'), { recursive: true });
             writeFileSync(path, 'fixture\n');

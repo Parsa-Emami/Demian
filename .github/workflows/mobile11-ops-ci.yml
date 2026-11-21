@@ -13,6 +13,8 @@ on:
       - 'demian/tests/js/mobile/CpanelDeployment.test.js'
       - 'demian/tests/js/mobile/CpanelHostSmoke.test.js'
       - 'demian/tests/ops/CpanelHostPreflightTest.php'
+      - 'demian/tests/ops/CpanelBridgeInstallTest.php'
+      - 'demian/tests/js/mobile/Phase10CpanelOps.test.js'
       - 'demian/tools/verify_cpanel_host.mjs'
       - 'demian/tools/smoke_arcade_api.mjs'
       - 'demian/tools/load/**'
@@ -108,6 +110,7 @@ jobs:
           grep -Fx 'artisan' "$RUNNER_TEMP/cpanel-entries.txt" >/dev/null
           grep -Fx 'ops/cpanel/host_preflight.php' "$RUNNER_TEMP/cpanel-entries.txt" >/dev/null
           php tests/ops/CpanelHostPreflightTest.php
+          php tests/ops/CpanelBridgeInstallTest.php
           if grep -Eq '(^|/)([.]env|[.]git)(/|$)' "$RUNNER_TEMP/cpanel-entries.txt"; then
             echo "Forbidden secret file in release" >&2; exit 1
           fi
