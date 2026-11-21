@@ -30,8 +30,10 @@ export default class ResultsScreen extends BaseScreen {
         this.payload = payload ?? {};
         payload = this.payload;
         const current = this.payload;
-        if (this.ranking) this.ranking.textContent = payload.ranking ? 'در حال بررسی رکورد…' : '';
         this.renderRanking({ status: payload.ranking ? 'pending' : 'unknown' });
+        // Pending verification is not a rejection. Say that a check is under
+        // way until the exact response for this result has been resolved.
+        if (payload.ranking && this.ranking) this.ranking.textContent = 'در حال بررسی رکورد…';
         if (this.retryRanking) this.retryRanking.hidden = true;
         if (payload.ranking) Promise.resolve(payload.ranking).then(result => {
             if (this.payload === current) this.renderRanking(result);
