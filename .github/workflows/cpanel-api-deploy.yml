@@ -92,6 +92,7 @@ jobs:
       CPANEL_PHP_BIN: ${{ vars.CPANEL_PHP_BIN }}
       CPANEL_WEBROOT: ${{ vars.CPANEL_WEBROOT || '' }}
       CPANEL_API_ORIGIN: ${{ vars.CPANEL_API_ORIGIN }}
+      CPANEL_CLIENT_ORIGIN: ${{ vars.CPANEL_CLIENT_ORIGIN }}
       CPANEL_SSH_KEY: ${{ secrets.CPANEL_DEPLOY_SSH_KEY }}
       CPANEL_KNOWN_HOSTS: ${{ secrets.CPANEL_SSH_KNOWN_HOSTS }}
     steps:
@@ -110,6 +111,7 @@ jobs:
           [[ "$CPANEL_PHP_BIN" =~ ^[A-Za-z0-9_./-]+$ ]]
           url_re='^https://[A-Za-z0-9.-]+(:[0-9]+)?$'
           [[ "$CPANEL_API_ORIGIN" =~ $url_re ]]
+          [[ "$CPANEL_CLIENT_ORIGIN" =~ $url_re && "$CPANEL_CLIENT_ORIGIN" != "$CPANEL_API_ORIGIN" ]]
           if [[ -n "$CPANEL_WEBROOT" ]]; then
             [[ "$CPANEL_WEBROOT" == "/home/$CPANEL_USER/"* ]]
             [[ "$CPANEL_WEBROOT" =~ ^/home/[A-Za-z0-9_./-]+$ && "$CPANEL_WEBROOT" != *..* ]]
@@ -145,7 +147,7 @@ jobs:
       - name: Public read-only API smoke (bounded)
         run: node demian/tools/smoke_arcade_api.mjs --base-url="$CPANEL_API_ORIGIN/api/v1/arcade" --users=20 --p95-ms=1500
       - name: Step 29 TLS, release identity and private-path acceptance (read-only)
-        run: node demian/tools/verify_cpanel_host.mjs --origin="$CPANEL_API_ORIGIN" --release="$GITHUB_SHA"
+        run: node demian/tools/verify_cpanel_host.mjs --origin="$CPANEL_API_ORIGIN" --release="$GITHUB_SHA" --client-origin="$CPANEL_CLIENT_ORIGIN"
  "$RUNNER_TEMP/demian-cpanel.sha256"
       - uses: actions/upload-artifact@v4
         with:
