@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 const workflow=readFileSync(new URL('../../../../.github/workflows/phase11-controlled-go-no-go.yml',import.meta.url),'utf8');
+const pages=readFileSync(new URL('../../../../.github/workflows/deploy-demian-pages.yml',import.meta.url),'utf8');
 test('F11-14 protected GO/NO-GO candidate is main-only and cannot publish',()=>{
  assert.match(workflow,/workflow_dispatch:/);
  assert.doesNotMatch(workflow,/\n  push:/);
@@ -14,4 +15,14 @@ test('F11-14 protected GO/NO-GO candidate is main-only and cannot publish',()=>{
  assert.match(workflow,/productionDeployed:false/);
  assert.match(workflow,/couponIssuanceEnabled:false/);
  assert.doesNotMatch(workflow,/scp |rsync |artisan migrate|actions\/deploy-pages/);
+});
+
+test('F11-14 ranked production PWA build is blocked unless a protected same-SHA review run succeeded',()=>{
+ assert.match(pages,/Ranked main release requires protected Phase 11 decision on exact SHA/);
+ assert.match(pages,/DEMIAN_PHASE11_APPROVAL_RUN_ID/);
+ assert.match(pages,/vars.DEMIAN_ARCADE_ENABLE_RANKED == 'true'/);
+ assert.match(pages,/Phase 11 protected GO \/ NO-GO candidate audit/);
+ assert.match(pages,/head_sha == \$sha/);
+ assert.match(pages,/protected-review/);
+ assert.match(pages,/github.ref == 'refs\/heads\/main'/);
 });

@@ -47,6 +47,25 @@ jobs:
         run: node tools/restore_previous_build.mjs
         env:
           GH_TOKEN: ${{ github.token }}
+      - name: Ranked main release requires protected Phase 11 decision on exact SHA
+        if: github.ref == 'refs/heads/main' && vars.DEMIAN_ARCADE_ENABLE_RANKED == 'true'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PHASE11_APPROVAL_RUN_ID: ${{ vars.DEMIAN_PHASE11_APPROVAL_RUN_ID || '' }}
+        run: |
+          set -Eeuo pipefail
+          [[ "$PHASE11_APPROVAL_RUN_ID" =~ ^[0-9]{5,14}$ ]] || {
+            echo "Ranked remains blocked until a real protected Phase 11 review run is supplied" >&2
+            exit 1
+          }
+          run="$(gh api "/repos/${GITHUB_REPOSITORY}/actions/runs/${PHASE11_APPROVAL_RUN_ID}")"
+          jq -e --arg sha "$GITHUB_SHA" \
+            '.head_sha == $sha and .head_branch == "main" and .name == "Phase 11 protected GO / NO-GO candidate audit" and .event == "workflow_dispatch" and .conclusion == "success"' \
+            <<< "$run" >/dev/null
+          jobs="$(gh api "/repos/${GITHUB_REPOSITORY}/actions/runs/${PHASE11_APPROVAL_RUN_ID}/jobs?per_page=100")"
+          jq -e '.jobs | any(.name == "protected-review" and .conclusion == "success")' <<< "$jobs" >/dev/null
+          echo "Phase 11 protected same-SHA review verified; ranked frontend build authorized by repository owner."
       - name: Build static release (API opt-in only after provisioning)
         run: npm run build:static
         env:
