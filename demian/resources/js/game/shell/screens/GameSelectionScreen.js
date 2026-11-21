@@ -79,9 +79,17 @@ export default class GameSelectionScreen extends BaseScreen {
         this.grid.innerHTML = this.catalog.map((game) => `
             <article class="game-card game-card--${escape(game.accent)} ${game.available ? 'is-available' : 'is-locked'}" data-game-card="${escape(game.id)}" data-scroll-rail-item="${escape(game.id)}" role="listitem" dir="rtl">
                 <div class="game-card__glow" aria-hidden="true"></div>
+                <div class="game-card__scene-preview" aria-hidden="true">
+                    <img loading="lazy" decoding="async"
+                        src="${game.id === 'dino-run'
+                            ? 'assets/environments/cafe-runner-v1/interior.webp'
+                            : 'assets/environments/demian-fbx/polished-v1/preview.webp'}"
+                        alt="" width="320" height="180">
+                    <span>نمای محیط کافه</span>
+                </div>
                 <div class="game-card__topline">
                     <span class="game-card__icon" aria-hidden="true">${escape(game.icon)}</span>
-                    <span class="game-card__status">${game.available ? 'آمادهٔ بازی' : `فاز ${game.phase}`}</span>
+                    <span class="game-card__status" aria-label="${game.available ? 'قابل اجرا' : 'در دست ساخت'}">${game.available ? 'آمادهٔ بازی' : `فاز ${game.phase}`}</span>
                 </div>
                 <div>
                     <h3>${escape(game.title)}</h3>
