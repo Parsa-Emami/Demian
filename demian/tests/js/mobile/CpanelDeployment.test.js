@@ -4,6 +4,7 @@ import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, readlinkSync, exis
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { spawnSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
 
 const source = new URL('../../../ops/cpanel/deploy.sh', import.meta.url);
 const sha = 'a'.repeat(40);
@@ -68,7 +69,10 @@ function run(scenario) {
         assert.equal(spawnSync('tar', ['-czf', archive, '-C', pkg, '.']).status, 0);
         writeFileSync(join(bin, 'mock-php'), php, { mode: 0o755 });
         writeFileSync(join(bin, 'curl'), curl, { mode: 0o755 });
-        const result = spawnSync('bash', [source.pathname, sha, root, origin, 'staging', join(bin, 'mock-php'), '-'], {
+        const digest = createHash('sha256').update(readFileSync(archive)).digest('hex');
+        const extra = scenario === 'archive_bad_digest' ? ['0'.repeat(64)]
+            : scenario === 'archive_good_digest' ? [digest] : [];
+        const result = spawnSync('bash', [source.pathname, sha, root, origin, 'staging', join(bin, 'mock-php'), '-', ...extra], {
             env: { ...process.env, HOME: home, PATH: `${bin}:${process.env.PATH}`, TRACE: trace, SHA: sha,
                 SCENARIO: scenario === 'first_failure' ? 'health' : scenario }, encoding: 'utf8', timeout: 15000,
         });
@@ -126,3 +130,16 @@ for (const scenario of ['healthy', 'first']) {
         assert.match(r.trace, /^preflight\noptimize\nroute:list\npreflight\nmigrate\n/);
     });
 }
+
+test('cPanel rejects tampered archive digest before invoking Laravel preflight', () => {
+    const r=run('archive_bad_digest');
+    assert.notEqual(r.status,0);
+    assert.equal(r.trace,'');
+    assert.equal(r.archive,true);
+});
+test('cPanel accepts matching content digest for the exact archived bytes', () => {
+    const r=run('archive_good_digest');
+    assert.equal(r.status,0,r.diagnostic);
+    assert.equal(r.current,'new');
+    assert.equal(r.archive,false);
+});
