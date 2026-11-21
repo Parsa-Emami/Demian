@@ -190,4 +190,18 @@ final class Phase9IdentityOtpSecurityTest extends TestCase
         $this->assertDatabaseCount('arcade_player_phone_challenges', 0);
         $this->assertDatabaseMissing('arcade_players', ['id' => $p['player_id']]);
     }
+    public function test_verified_contact_does_not_allow_a_sixth_sms_in_a_rolling_hour_without_verification(): void
+    {
+        $p = $this->player('+989101234568');
+        $this->withToken($p['token']);
+        for ($i = 0; $i < 5; $i++) {
+            $this->postJson('/api/v1/arcade/player/phone/otp')->assertOk();
+            $this->travel(61)->seconds();
+        }
+        $this->postJson('/api/v1/arcade/player/phone/otp')->assertStatus(429);
+        $this->assertDatabaseHas('arcade_player_phone_challenges', [
+            'player_id' => $p['player_id'], 'sent_in_window' => 5,
+        ]);
+    }
+
 }

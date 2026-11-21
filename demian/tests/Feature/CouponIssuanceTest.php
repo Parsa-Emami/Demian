@@ -285,4 +285,40 @@ final class CouponIssuanceTest extends TestCase
         $this->assertDatabaseCount('arcade_coupons', 1);
     }
 
+    public function test_phase9_verified_phone_gate_blocks_guest_prizes_and_rolls_back_all_winners(): void
+    {
+        $players = $this->sealed(2);
+        config()->set('demian-arcade.prize_identity_required', true);
+        $verify = static function (array $player): void {
+            DB::table('arcade_players')->where('id', $player['player_id'])->update([
+                'contact_type' => 'phone',
+                'contact_hash' => hash('sha256', 'verified-fixture:'.$player['player_id']),
+                'phone_verified_at' => now(),
+            ]);
+        };
+        // Incomplete registration must not mint a coupon.
+        try {
+            $this->issue();
+            $this->fail('Unverified guest received a financial voucher.');
+        } catch (RuntimeException $e) {
+            $this->assertStringContainsString('verify', $e->getMessage());
+        }
+        $this->assertDatabaseCount('arcade_coupons', 0);
+
+        // Even if the first winner is verified, failure on a later winner
+        // rolls back all earlier inserts in the same ledger transaction.
+        $verify($players[0]);
+        try {
+            $this->issue();
+            $this->fail('Partially verified winner set minted voucher.');
+        } catch (RuntimeException $e) {
+            $this->assertStringContainsString('verify', $e->getMessage());
+        }
+        $this->assertDatabaseCount('arcade_coupons', 0);
+        $verify($players[1]);
+        $issued = $this->issue();
+        $this->assertSame(2, $issued['created']);
+        $this->assertDatabaseCount('arcade_coupons', 2);
+    }
+
 }
