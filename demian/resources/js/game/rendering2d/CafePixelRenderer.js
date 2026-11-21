@@ -2,6 +2,7 @@ import { CAFE_BOUNDS, CAFE_STATIC_COLLIDERS } from '../shared/cafe/CafeReference
 import { CAFE_ROOMS } from '../shared/cafe/CafeWalkthroughScene.js';
 import { fbxFloorplanImage, fbxCafeArtRevision, preloadFbxCafeArt } from './FbxCafeAssets.js';
 import CafeArtStream from './CafeArtStream.js';
+import { cafeObjectScreenRect, drawCafeLightfield } from './CafeAtmosphere2D.js';
 
 /** Orthographic bake of the complete FBX, shared by gameplay and both maps.
  * Canvas keeps the existing character controls and sprites deterministic and fast.
@@ -34,15 +35,14 @@ export default class CafePixelRenderer {
                 ctx.fillStyle = '#d6cfc0'; ctx.fillRect(r.x,r.y,r.width,r.height);
             }
             for (const collider of this.colliders) {
-                const r = camera.worldRect(collider.position,collider.halfExtents);
+                const r = cafeObjectScreenRect(camera, collider);
+                if (!r) continue;
                 ctx.fillStyle = '#565e55'; ctx.fillRect(r.x,r.y,r.width,r.height);
             }
         }
         ctx.save(); ctx.beginPath(); ctx.rect(rect.x, rect.y, rect.width, rect.height); ctx.clip();
         this.stream.draw(ctx, camera); ctx.restore();
-        if (atmosphere === 'night') {
-            ctx.fillStyle = 'rgba(17,24,31,.24)'; ctx.fillRect(0,0,camera.viewportWidth,camera.viewportHeight);
-        }
+        drawCafeLightfield(ctx, camera, { atmosphere, quality: this.stream.profile.quality });
         ctx.restore();
     }
     dispose() { this.stream.dispose(); }

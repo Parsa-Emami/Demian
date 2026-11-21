@@ -60,7 +60,8 @@ export default class PixelCamera2D {
     jumpTo(target) { return this.follow(target, { immediate: true }); }
 
     update(deltaTime = 1 / 60) {
-        const alpha = 1 - Math.exp(-this.smoothing * Math.max(0, deltaTime));
+        const dt = Number.isFinite(deltaTime) ? Math.min(0.15, Math.max(0, deltaTime)) : 0;
+        const alpha = 1 - Math.exp(-this.smoothing * dt);
         this.position.x += (this.target.x - this.position.x) * alpha;
         this.position.z += (this.target.z - this.position.z) * alpha;
         this.pixelsPerUnit += (this.targetPixelsPerUnit - this.pixelsPerUnit) * alpha;
