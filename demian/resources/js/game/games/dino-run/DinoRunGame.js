@@ -29,7 +29,7 @@ function collisionGuide(model) {
 }
 
 export default class DinoRunGame extends BaseGame {
-    constructor() { super(); this.model = new DinoRunModel(); this.best = readBest(); this.finished = false; this.uiTime = 0; }
+    constructor() { super(); this.supportsInPlaceRestart = true; this.model = new DinoRunModel(); this.best = readBest(); this.finished = false; this.uiTime = 0; }
     async preload(context) {
         // Only the player is on the first-playable-frame path. Two additional
         // attacker atlases previously blocked the entire runner launch.

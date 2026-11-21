@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { WORLD_CONFIG } from '../world/WorldConfig';
+import { safeCameraDamping } from './CameraDamping.js';
 
 const DESKTOP_FOLLOW_SPAN = WORLD_CONFIG.camera.desktopFollowSpan;
 const DESKTOP_OVERVIEW_SPAN = WORLD_CONFIG.camera.desktopOverviewSpan;
@@ -51,8 +52,8 @@ export default class CameraController {
     update(focusPoint, deltaTime = 1 / 60) {
         this.followPoint.copy(focusPoint);
         const desiredTarget = this.mode === 'FOLLOW' ? this.followPoint : this.overviewTarget;
-        const targetAlpha = 1 - Math.exp(-7.5 * deltaTime);
-        const zoomAlpha = 1 - Math.exp(-6.5 * deltaTime);
+        const targetAlpha = safeCameraDamping(7.5, deltaTime);
+        const zoomAlpha = safeCameraDamping(6.5, deltaTime);
 
         this.currentTarget.lerp(desiredTarget, targetAlpha);
         this.currentSpan = THREE.MathUtils.lerp(this.currentSpan, this.targetSpan, zoomAlpha);
