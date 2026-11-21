@@ -517,7 +517,8 @@ export default class GameApplication {
         // Reuse a fully initialized scene only for games that explicitly
         // guarantee startSession() clears all state, inputs and pending ranked work.
         // Never silently reuse Open World, After Hours or Café Rush.
-        const inPlace = this.activeGame?.supportsInPlaceRestart === true
+        const inPlace = !this.runtime.faulted
+            && this.activeGame?.supportsInPlaceRestart === true
             && (typeof this.activeGame.canReuseForRestart !== 'function'
                 || this.activeGame.canReuseForRestart());
         return this.launchGame(this.activeGameId, { forceReload: !inPlace, restart: true });
