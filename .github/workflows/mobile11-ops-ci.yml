@@ -47,6 +47,8 @@ jobs:
           bash -n demian/ops/cpanel/deploy.sh
           bash -n demian/ops/cpanel/cron.sh
           bash -n demian/ops/cpanel/rollback.sh
+          bash -n demian/ops/cpanel/backup_offsite.sh
+          bash -n demian/ops/cpanel/restore_drill.sh
           php -l demian/ops/cpanel/host_preflight.php
       - name: Check approved read-only load profile
         run: node --check demian/tools/load/mobile11_read_only.js
