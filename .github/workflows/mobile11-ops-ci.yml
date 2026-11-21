@@ -10,9 +10,13 @@ on:
       - 'demian/tools/load/cpanel_50_active.js'
       - 'demian/tests/js/mobile/Mobile11Ops.test.js'
       - 'demian/tests/js/mobile/ReleaseRollback.test.js'
-      - 'demian/tests/js/mobile/CpanelDeployment.test.js'
+      - 'demian/tests/js/mobile/CpanelDeployment.test.js tests/js/mobile/Phase10CpanelOps.test.js tests/js/mobile/Phase10LoadAssessment.test.js'
       - 'demian/tests/js/mobile/CpanelHostSmoke.test.js'
       - 'demian/tests/ops/CpanelHostPreflightTest.php'
+      - 'demian/tests/ops/CpanelBridgeInstallTest.php'
+      - 'demian/tests/js/mobile/Phase10CpanelOps.test.js'
+      - 'demian/tests/js/mobile/Phase10LoadAssessment.test.js'
+      - 'demian/tools/load/assess_phase10_k6.mjs'
       - 'demian/tools/verify_cpanel_host.mjs'
       - 'demian/tools/smoke_arcade_api.mjs'
       - 'demian/tools/load/**'
@@ -45,7 +49,12 @@ jobs:
           bash -n demian/ops/mobile-11/backup_mysql.sh
           bash -n demian/ops/mobile-11/ci_mysql_restore.sh
           bash -n demian/ops/cpanel/deploy.sh
+          bash -n demian/ops/cpanel/cron.sh
+          bash -n demian/ops/cpanel/rollback.sh
+          bash -n demian/ops/cpanel/backup_offsite.sh
+          bash -n demian/ops/cpanel/restore_drill.sh
           php -l demian/ops/cpanel/host_preflight.php
+          php -l demian/ops/cpanel/install_webroot_bridge.php
       - name: Check approved read-only load profile
         run: node --check demian/tools/load/mobile11_read_only.js
       - name: Validate actual 50-live-client load profile
@@ -103,6 +112,7 @@ jobs:
           grep -Fx 'artisan' "$RUNNER_TEMP/cpanel-entries.txt" >/dev/null
           grep -Fx 'ops/cpanel/host_preflight.php' "$RUNNER_TEMP/cpanel-entries.txt" >/dev/null
           php tests/ops/CpanelHostPreflightTest.php
+          php tests/ops/CpanelBridgeInstallTest.php
           if grep -Eq '(^|/)([.]env|[.]git)(/|$)' "$RUNNER_TEMP/cpanel-entries.txt"; then
             echo "Forbidden secret file in release" >&2; exit 1
           fi

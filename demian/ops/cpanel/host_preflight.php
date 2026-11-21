@@ -145,4 +145,43 @@ if (isset($values['LOG_LEVEL'])
         ['warning', 'error', 'critical', 'alert', 'emergency'], true)) {
     preflightFail('A sensitive production API must not log at debug/verbose level.');
 }
+// Financial feature flags are separate human approvals, NOT deployment
+// permissions. Refuse accidental production payouts on an unverified account.
+$enabled = static fn (string $name): bool =>
+    in_array(strtolower((string) ($values[$name] ?? 'false')), ['true', '1'], true);
+$financial = [
+    'DEMIAN_COUPONS_ISSUE_ENABLED', 'DEMIAN_COUPONS_AUTO_ISSUE_ENABLED',
+    'DEMIAN_COUPONS_MANUAL_GIFTS_ENABLED', 'DEMIAN_COUPONS_CAFE_ENABLED',
+    'DEMIAN_WEEKLY_AUTO_AWARDS_ENABLED',
+];
+if ($target === 'production' && count(array_filter($financial, $enabled)) > 0) {
+    foreach ([
+        'DEMIAN_PRIZE_VERIFIED_PHONE_REQUIRED',
+        'DEMIAN_PHONE_OTP_ENABLED', 'DEMIAN_COUPONS_POLICY_APPROVED',
+        'DEMIAN_LEGAL_PUBLICATION_APPROVED',
+        'DEMIAN_LEGAL_REQUIRE_ACCEPTANCE', 'DEMIAN_OPS_ENABLED',
+    ] as $flag) {
+        if (!$enabled($flag)) preflightFail('Financial rollout gate not approved: '.$flag);
+    }
+    $gatewayUrl = (string) ($values['DEMIAN_PHONE_OTP_GATEWAY_URL'] ?? '');
+    $gateway = parse_url($gatewayUrl);
+    if (!is_array($gateway) || ($gateway['scheme'] ?? '') !== 'https'
+        || !filter_var($gateway['host'] ?? '', FILTER_VALIDATE_DOMAIN, FILTER_FLAG_HOSTNAME)
+        || isset($gateway['user']) || isset($gateway['pass'])
+        || isset($gateway['query']) || isset($gateway['fragment'])
+        || strlen((string) ($values['DEMIAN_PHONE_OTP_GATEWAY_KEY'] ?? '')) < 24) {
+        preflightFail('Verified prize rollout requires a secure configured SMS gateway.');
+    }
+    if ($enabled('DEMIAN_COUPONS_AUTO_ISSUE_ENABLED')
+        || $enabled('DEMIAN_WEEKLY_AUTO_AWARDS_ENABLED')) {
+        foreach (['DEMIAN_COUPONS_ISSUE_ENABLED', 'DEMIAN_WEEKLY_MANAGEMENT_ENABLED',
+            'DEMIAN_WEEKLY_SETTLEMENT_ENABLED'] as $flag) {
+            if (!$enabled($flag)) preflightFail('Automatic awards require manual approval: '.$flag);
+        }
+    }
+}
+$free = @disk_free_space($storage);
+if ($free === false || $free < 536870912) {
+    preflightFail('Less than 512 MiB of writable storage remains for logs and migrations.');
+}
 fwrite(STDOUT, "[cPanel Step 29] PASS: PHP runtime, private env, persistent storage, database and HTTPS contract.\n");
