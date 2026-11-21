@@ -1,4 +1,5 @@
-const TONES = Object.freeze({
+import { CAFE_SOUNDTRACKS, cafeMusicFrame } from './CafeSoundtrack.js';
+export const FEEDBACK_TONES = Object.freeze({
     start: [392, 587, .18, .065, 'sine', 180],
     win: [523, 880, .32, .09, 'triangle', 250],
     lose: [294, 175, .22, .07, 'triangle', 220],
@@ -6,15 +7,10 @@ const TONES = Object.freeze({
     discover: [440, 659, .21, .052, 'triangle', 230],
     ui: [440, 523, .065, .023, 'sine', 85],
     error: [261, 196, .15, .04, 'triangle', 260],
-});
-
-const THEMES = Object.freeze({
-    'open-world': 174.61,
-    'dino-run': 196,
-    'after-hours': 146.83,
-    'cafe-rush': 220,
-    'cafe-critters': 261.63,
-    'coffee-crash': 233.08,
+    jump: [360, 620, .12, .048, 'sine', 110],
+    collision: [210, 115, .18, .066, 'triangle', 175],
+    interaction: [420, 550, .09, .038, 'sine', 90],
+    combo: [565, 990, .18, .065, 'triangle', 130],
 });
 
 function audioFactory() {
@@ -36,6 +32,8 @@ export default class FeedbackAudioEngine {
         this.musicBus = null;
         this.voices = new Set();
         this.musicNodes = [];
+        this.musicTimer = null;
+        this.musicStep = 0;
         this.lastPlayed = new Map();
         this.soundEnabled = true;
         this.musicEnabled = true;
@@ -85,7 +83,7 @@ export default class FeedbackAudioEngine {
     setGame(gameId, { paused = false } = {}) {
         if (this.disposed) return;
         const changed = gameId !== this.gameId;
-        this.gameId = gameId && Object.hasOwn(THEMES, gameId) ? gameId : null;
+        this.gameId = gameId && Object.hasOwn(CAFE_SOUNDTRACKS, gameId) ? gameId : null;
         this.paused = Boolean(paused);
         if (changed) this.stopMusic();
         this.syncMusic();
@@ -106,7 +104,7 @@ export default class FeedbackAudioEngine {
     }
 
     play(kind) {
-        const cue = TONES[kind];
+        const cue = FEEDBACK_TONES[kind];
         if (!cue || this.disposed || this.hidden || !this.soundEnabled
             || this.context?.state !== 'running' || this.voices.size >= 4) return false;
         const [start, end, duration, level, waveform, cooldown] = cue;
@@ -159,24 +157,62 @@ export default class FeedbackAudioEngine {
         }
         if (this.musicNodes.length) return;
         try {
-            const root = THEMES[this.gameId];
-            for (const [ratio, level] of [[1, .035], [1.5, .016]]) {
+            const frame = cafeMusicFrame(this.gameId, 0);
+            if (!frame) return;
+            for (const [frequency, wave] of [[frame.leadHz, frame.leadWave], [frame.bassHz, 'sine']]) {
                 const osc = this.context.createOscillator();
                 const gain = this.context.createGain();
-                osc.type = 'sine';
-                osc.frequency.value = root * ratio;
-                gain.gain.value = level;
+                osc.type = wave;
+                osc.frequency.value = frequency;
+                gain.gain.value = .0001;
                 osc.connect(gain);
                 gain.connect(this.musicBus);
                 osc.start();
                 this.musicNodes.push({ osc, gain });
             }
+            this.musicStep = 0;
+            this.advanceMusic();
+        } catch {
+            this.stopMusic();
+        }
+    }
+
+    /**
+     * Schedule one note at a time, always reusing two oscillators. Timers are
+     * canceled on pause, mute, hidden tab, game switch and disposal.
+     */
+    advanceMusic() {
+        if (this.disposed || this.hidden || this.paused || !this.musicEnabled
+            || this.musicNodes.length !== 2 || this.context?.state !== 'running') return;
+        const frame = cafeMusicFrame(this.gameId, this.musicStep);
+        if (!frame) return;
+        const now = this.context.currentTime;
+        if (!Number.isFinite(now)) return;
+        try {
+            for (const [index, target] of [frame.leadHz, frame.bassHz].entries()) {
+                const { osc, gain } = this.musicNodes[index];
+                const volume = index === 0 ? .034 : .016;
+                osc.frequency.setValueAtTime(target, now);
+                gain.gain.setValueAtTime(.0001, now);
+                gain.gain.linearRampToValueAtTime(volume, now + .05);
+                gain.gain.setValueAtTime(volume, now + frame.beatSeconds * .53);
+                gain.gain.linearRampToValueAtTime(.0001, now + frame.beatSeconds * .91);
+            }
+            this.musicStep++;
+            this.musicTimer = globalThis.setTimeout(() => {
+                this.musicTimer = null;
+                this.advanceMusic();
+            }, Math.max(50, Math.round(frame.beatSeconds * 1000)));
+            this.musicTimer?.unref?.();
         } catch {
             this.stopMusic();
         }
     }
 
     stopMusic() {
+        if (this.musicTimer !== null) globalThis.clearTimeout(this.musicTimer);
+        this.musicTimer = null;
+        this.musicStep = 0;
         for (const { osc, gain } of this.musicNodes) {
             try { osc.stop(); } catch {}
             disconnect(osc);

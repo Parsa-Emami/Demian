@@ -31,5 +31,6 @@ The Laravel API, MySQL database, verified leaderboard and rewards are separate f
 - [Seven-game design standard](docs/game-design/GAME_DESIGN_STANDARD_V1.fa.md)
 - [Phase 1: playable onboarding, difficulty guidance and score-policy contract](docs/game-design/PHASE_01_GAME_EXPERIENCE.fa.md)
 - [Phase 6: source-backed café Canvas2D visual system and QA](docs/gameplay/PHASE_06_ENVIRONMENT_ART_BIBLE.fa.md)
+- [Phase 7: accessible seven-game UX and original procedural audio](docs/gameplay/PHASE_07_UX_AUDIO_ACCESSIBILITY.fa.md)
 - [Open visual-art technical debt](docs/technical-debt/TD-ART-001-ART-REBUILD.fa.md)
 - [Legacy V14 release notes (archived)](docs/archive/README_V14_legacy_notes.fa.md)

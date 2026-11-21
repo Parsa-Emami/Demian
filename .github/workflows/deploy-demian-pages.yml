@@ -125,6 +125,14 @@ jobs:
           name: phase6-cafe-visual-${{ github.sha }}
           path: demian/docs/phase06-environment/qa/
           if-no-files-found: warn
+      - name: Quality roadmap Phase 7 - two mobile viewports, audio mute, pause, retry, practice/verified, offline
+        run: timeout --signal=TERM --kill-after=10s 240s npm run test:phase7:ux
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: phase7-ux-qa-${{ github.sha }}
+          path: demian/docs/phase07-ux/qa/
+          if-no-files-found: warn
       - name: Phase 6 Step 30 fast cold startup, buffered menu click and all games under 4G
         run: timeout --signal=TERM --kill-after=10s 240s npm run test:step30:startup
       - name: Retrieve exact pre-change static artifact for paired startup comparison

@@ -27,6 +27,7 @@ export default class CharacterManagerUI {
         this.cameraLabels = [...document.querySelectorAll('[data-camera-label]')];
         this.qualityLabels = [...document.querySelectorAll('[data-quality-label]')];
         this.npcLabels = [...document.querySelectorAll('[data-npc-label]')];
+        this.selectedAnnouncement = root.querySelector('[data-character-selection-live]');
         this.activeNameElements = [
             ...document.querySelectorAll('[data-active-character-name]'),
         ];
@@ -460,6 +461,9 @@ export default class CharacterManagerUI {
         this.focusLabelElements.forEach((element) => {
             element.textContent = `تمرکز ${localizedName}`;
         });
+        if (this.selectedAnnouncement && this.selectedAnnouncement.textContent !== `کاراکتر فعال: ${localizedName}`) {
+            this.selectedAnnouncement.textContent = `کاراکتر فعال: ${localizedName}`;
+        }
 
         document.title = `${DOCUMENT_TITLE} · ${latinName}`;
     }

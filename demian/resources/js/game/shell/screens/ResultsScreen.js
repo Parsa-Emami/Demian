@@ -1,5 +1,6 @@
 import { formatGameRecord, recordHeading } from '../../leaderboard/GameRecord.js';
 import { gameOutcomeHint } from '../../design/GameExperience.js';
+import { rankingResultUX } from '../../ui/GameFailureUX.js';
 import BaseScreen from './BaseScreen';
 
 const resultValue = (value, digits) => typeof value === 'number'
@@ -21,13 +22,18 @@ export default class ResultsScreen extends BaseScreen {
         this.ranking = this.element.querySelector('[data-results-ranking]');
         this.retryRanking = this.element.querySelector('[data-results-ranking-retry]');
         this.learningTip = this.element.querySelector('[data-results-learning-tip]');
+        this.recordNote = this.element.querySelector('[data-results-record-note]');
+        this.rewardNote = this.element.querySelector('[data-results-reward-note]');
     }
 
     async beforeOpen(payload) {
         this.payload = payload ?? {};
         payload = this.payload;
         const current = this.payload;
-        if (this.ranking) this.ranking.textContent = payload.ranking ? 'در حال بررسی رکورد…' : '';
+        this.renderRanking({ status: payload.ranking ? 'pending' : 'unknown' });
+        // Pending verification is not a rejection. Say that a check is under
+        // way until the exact response for this result has been resolved.
+        if (payload.ranking && this.ranking) this.ranking.textContent = 'در حال بررسی رکورد…';
         if (this.retryRanking) this.retryRanking.hidden = true;
         if (payload.ranking) Promise.resolve(payload.ranking).then(result => {
             if (this.payload === current) this.renderRanking(result);
@@ -77,10 +83,11 @@ export default class ResultsScreen extends BaseScreen {
     }
 
     renderRanking(result = {}) {
-        const messages = { verified: 'رکورد توسط سرور تأیید و در لیدربورد ثبت شد.',
-            practice: 'رکورد روی همین دستگاه ذخیره شد.', pending: 'ثبت آنلاین انجام نشد؛ رکورد دستگاه محفوظ است.',
-            rejected: 'این دور برای رتبه‌بندی آنلاین پذیرفته نشد؛ رکورد دستگاه محفوظ است.' };
-        if (this.ranking) this.ranking.textContent = messages[result.status] ?? '';
-        if (this.retryRanking) this.retryRanking.hidden = !result.retryable;
+        const info = rankingResultUX(result.status);
+        if (this.ranking) this.ranking.textContent = result.status === 'unknown'
+            ? '' : info.heading;
+        if (this.recordNote) this.recordNote.textContent = info.heading;
+        if (this.rewardNote) this.rewardNote.textContent = info.detail;
+        if (this.retryRanking) this.retryRanking.hidden = result.retryable !== true;
     }
 }

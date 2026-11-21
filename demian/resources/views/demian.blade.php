@@ -179,6 +179,7 @@
                                 <p class="mt-1 text-xs text-zinc-400">
                                     کاراکترت را انتخاب کن؛ ماجراجویی از همین‌جا شروع می‌شود.
                                 </p>
+                                <p data-character-selection-live class="sr-only" role="status" aria-live="polite" aria-atomic="true"></p>
                             </div>
 
                             <span class="arcade-badge">14</span>
@@ -350,6 +351,7 @@
 
             <div data-game-shell data-ui-layer="shell" class="game-shell absolute inset-0" dir="rtl">
                 <div data-shell-toast-host data-ui-layer="shell-toast" class="shell-toast-host" aria-live="polite" aria-atomic="false"></div>
+                <p data-shell-network-status class="shell-network-status" role="status" aria-live="polite" hidden></p>
                  <p data-shell-announcer class="sr-only" role="status" aria-live="polite" aria-atomic="true"></p>
 
                 <section
@@ -605,9 +607,10 @@
                             <div class="settings-toggle-grid">
                                 <label><input type="checkbox" name="hudVisible"><span>نمایش HUD</span></label>
                                 <label><input type="checkbox" name="hintsVisible"><span>نمایش راهنما</span></label>
-                                <label><input type="checkbox" name="soundEnabled"><span>افکت صوتی</span></label>
-                                <label><input type="checkbox" name="musicEnabled"><span>موسیقی</span></label>
+                                <label><input type="checkbox" name="soundEnabled"><span>افکت صوتی (SFX)</span></label>
+                                <label><input type="checkbox" name="musicEnabled"><span>موسیقی پس‌زمینه</span></label>
                             </div>
+                            <p class="settings-audio-explainer">موسیقی و افکت‌ها مستقل تنظیم می‌شوند. صدا فقط بعد از لمس یا فشردن کلید فعال می‌شود و هنگام Pause یا خروج قطع خواهد شد.</p>
                             <details data-touch-settings class="control-settings touch-settings">
                                 <summary>جوی‌استیک و کنترل لمسی</summary>
                                 <p>پیش‌نمایش زنده است. برای اعمال چیدمان در بازی، تنظیمات را ذخیره کن.</p>
@@ -740,11 +743,13 @@
                         <h2 data-results-title>نتیجه‌ی بازی</h2>
                         <p data-results-subtitle>مرحله به پایان رسید.</p>
                         <div class="results-panel__score"><small data-results-score-label>امتیاز</small><strong data-results-score>0</strong></div>
+                        <p data-results-record-note class="results-record-note" role="note">نمایش نتیجه به معنی تأیید آنلاین نیست.</p>
                         <div data-results-stats class="results-panel__stats"></div>
                         <p data-results-ranking role="status" aria-live="polite"></p>
+                        <p data-results-reward-note class="results-reward-note" role="note">کوپن فقط پس از تأیید سرور و تخصیص رسمی ایجاد می‌شود.</p>
                         <button type="button" data-shell-action="retry-ranking" data-results-ranking-retry class="shell-button" hidden>تلاش دوباره برای ثبت آنلاین</button>
                         <div class="shell-modal__actions shell-modal__actions--row">
-                            <button type="button" data-shell-action="restart" class="shell-button shell-button--primary">دوباره</button>
+                            <button type="button" data-shell-action="restart" class="shell-button shell-button--primary">تلاش دوباره</button>
                             <button type="button" data-shell-action="replay" data-results-replay class="shell-button" hidden>بازپخش</button>
                             <button type="button" data-shell-action="exit-game" class="shell-button">بازگشت به کافه</button>
                             <button type="button" data-shell-action="leaderboard" class="shell-button">لیدربورد</button>
