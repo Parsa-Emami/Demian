@@ -117,6 +117,14 @@ jobs:
       - run: npm run test:device-qa:browser
       - name: Phase 4 Step 20 fast menu, all games and delayed decorative assets
         run: timeout --signal=TERM --kill-after=10s 240s npm run test:fast-loading:browser
+      - name: Quality roadmap Phase 6 - 4 viewport day/night Cafe Canvas2D and seven-game screenshot evidence
+        run: timeout --signal=TERM --kill-after=10s 240s npm run test:phase6:visual
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: phase6-cafe-visual-\${{ github.sha }}
+          path: demian/docs/phase06-environment/qa/
+          if-no-files-found: warn
       - name: Phase 6 Step 30 fast cold startup, buffered menu click and all games under 4G
         run: timeout --signal=TERM --kill-after=10s 240s npm run test:step30:startup
       - name: Retrieve exact pre-change static artifact for paired startup comparison
