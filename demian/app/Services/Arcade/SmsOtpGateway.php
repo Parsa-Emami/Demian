@@ -24,7 +24,8 @@ final class SmsOtpGateway
             && is_string($parts['host'] ?? null)
             && filter_var($parts['host'], FILTER_VALIDATE_DOMAIN, FILTER_FLAG_HOSTNAME) !== false
             && ! in_array(strtolower($parts['host']), ['localhost', 'localhost.localdomain'], true)
-            && ! isset($parts['user'], $parts['pass'], $parts['fragment'])
+            && ! isset($parts['user']) && ! isset($parts['pass'])
+            && ! isset($parts['query']) && ! isset($parts['fragment'])
             && strlen($key) >= 24;
     }
 

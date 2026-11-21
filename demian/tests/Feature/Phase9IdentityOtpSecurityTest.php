@@ -53,6 +53,10 @@ final class Phase9IdentityOtpSecurityTest extends TestCase
         config()->set('demian-arcade.otp.enabled', true);
         config()->set('demian-arcade.otp.gateway_url', 'http://127.0.0.1/secret');
         $this->postJson('/api/v1/arcade/player/phone/otp')->assertStatus(503);
+        config()->set('demian-arcade.otp.gateway_url', 'https://client:secret@sms.example.test/send');
+        $this->postJson('/api/v1/arcade/player/phone/otp')->assertStatus(503);
+        config()->set('demian-arcade.otp.gateway_url', 'https://sms.example.test/send?key=leaked');
+        $this->postJson('/api/v1/arcade/player/phone/otp')->assertStatus(503);
         config()->set('demian-arcade.otp.gateway_url', 'https://sms.example.test/send');
         $response = $this->postJson('/api/v1/arcade/player/phone/otp')
             ->assertOk()->assertHeader('Cache-Control', 'no-store, private')
