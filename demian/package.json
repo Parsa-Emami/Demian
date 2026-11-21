@@ -74,6 +74,7 @@
         "test:mobile-touch:browser": "node tools/check_mobile_touch.mjs",
         "test:mobile-pwa:browser": "node tools/check_production_pwa.mjs",
         "test:mobile-09:browser": "node tools/check_mobile09_pwa.mjs",
+        "test:phase8:pwa": "node tools/check_phase08_pwa_integrity.mjs",
         "benchmark:mobile": "node tools/benchmark_mobile.mjs",
         "benchmark:mobile:ci": "node tools/benchmark_mobile.mjs",
         "test:weekly13:browser": "node tools/check_weekly13_ui.mjs"
