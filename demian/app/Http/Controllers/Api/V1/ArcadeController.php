@@ -11,6 +11,7 @@ use App\Services\Arcade\ArcadeRunService;
 use App\Services\Arcade\LeaderboardService;
 use App\Services\Arcade\CompetitionClock;
 use App\Services\Arcade\PlayerContact;
+use App\Services\Arcade\ArcadePrizeIdentity;
 use Illuminate\Database\UniqueConstraintViolationException;
 use App\Services\Arcade\RankedGameCatalog;
 use App\Services\Arcade\RunnerReplayVerifier;
@@ -165,7 +166,8 @@ final class ArcadeController extends Controller
 
         return response()->json(['player_id' => $player->id, 'display_name' => $player->display_name,
             'token' => $token, 'token_expires_at' => $expires->toIso8601String(),
-            'has_contact' => $player->contact_hash !== null], 201);
+            'has_contact' => $player->contact_hash !== null,
+            'identity' => app(ArcadePrizeIdentity::class)->status($player)], 201);
     }
 
     public function issueRecoveryLink(Request $request): JsonResponse
@@ -267,7 +269,9 @@ final class ArcadeController extends Controller
 
         return response()->json(['player_id' => $player->id, 'display_name' => $player->display_name,
             'token_expires_at' => $player->token_expires_at?->toIso8601String(),
-            'legal_policy_version' => $player->legal_policy_version, 'has_contact' => $player->contact_hash !== null]);
+            'legal_policy_version' => $player->legal_policy_version,
+            'has_contact' => $player->contact_hash !== null,
+            'identity' => app(ArcadePrizeIdentity::class)->status($player)]);
     }
 
     public function updateContact(Request $request, PlayerContact $contacts): JsonResponse

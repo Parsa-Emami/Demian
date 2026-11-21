@@ -47,6 +47,7 @@ final class ArcadePrivacyController extends Controller
                 'legal_policy_version' => $player->legal_policy_version,
                 'contact_type' => $player->contact_type, 'contact_value' => $player->contact_value,
                 'legal_accepted_at' => $player->legal_accepted_at?->toIso8601String(),
+                'phone_verified_at' => $player->phone_verified_at?->toIso8601String(),
             ],
             'record_counts' => $counts,
             'record_types' => array_keys(self::RECORDS),
