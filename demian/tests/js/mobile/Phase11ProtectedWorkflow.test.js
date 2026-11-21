@@ -7,7 +7,10 @@ test('F11-14 protected GO/NO-GO candidate is main-only and cannot publish',()=>{
  assert.match(workflow,/workflow_dispatch:/);
  assert.doesNotMatch(workflow,/\n  push:/);
  assert.match(workflow,/github.ref == 'refs\/heads\/main'/);
- assert.match(workflow,/acceptance\.production\.json/);
+ assert.match(workflow,/DEMIAN_PHASE11_ACCEPTANCE_B64/);
+ assert.match(workflow,/base64 -d/);
+ assert.match(workflow,/phase11_release_policy\.mjs/);
+ assert.doesNotMatch(workflow,/\[\[ -f demian\/ops\/phase11\/acceptance\.production\.json/);
  assert.match(workflow,/environment:\n      name: cpanel-production/);
  assert.match(workflow,/REVIEWED_FINAL_EVIDENCE_NO_P0/);
  assert.match(workflow,/release-qa/);

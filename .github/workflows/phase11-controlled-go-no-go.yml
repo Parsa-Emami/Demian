@@ -54,20 +54,10 @@ jobs:
           [[ "$INPUT_PWA" =~ ^[0-9a-f]{16}$ ]]
           [[ "$INPUT_STAGING" =~ ^[0-9]{5,14}$ ]]
           [[ "$INPUT_APPROVAL" == REVIEWED_FINAL_EVIDENCE_NO_P0 ]]
-          [[ -f demian/ops/phase11/acceptance.production.json ]]
           [[ "$(git rev-parse HEAD)" == "$INPUT_SHA" ]]
           echo "release_sha=$INPUT_SHA" >> "$GITHUB_OUTPUT"
           echo "pwa_release_id=$INPUT_PWA" >> "$GITHUB_OUTPUT"
           echo "staging_run_id=$INPUT_STAGING" >> "$GITHUB_OUTPUT"
-      - name: Enforce all physical device, real host, independent security and cafe gates
-        env:
-          INPUT_SHA: ${{ inputs.release_sha }}
-          INPUT_PWA: ${{ inputs.pwa_release_id }}
-        run: |
-          node demian/tools/qa/phase11_release_policy.mjs \
-            --file=demian/ops/phase11/acceptance.production.json \
-            --sha="$INPUT_SHA" --pwa-release="$INPUT_PWA" \
-            --output="$RUNNER_TEMP/phase11-evidence-assessment.json"
       - name: Verify exact-SHA GitHub main release QA and successful cPanel workflow
         shell: bash
         env:
@@ -95,6 +85,35 @@ jobs:
       name: cpanel-production
     runs-on: ubuntu-24.04
     steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Validate acceptance dossier from protected Environment secret (not self-referential Git)
+        shell: bash
+        env:
+          RELEASE_SHA: ${{ needs.preflight.outputs.release_sha }}
+          PWA_RELEASE: ${{ needs.preflight.outputs.pwa_release_id }}
+          ACCEPTANCE_B64: ${{ secrets.DEMIAN_PHASE11_ACCEPTANCE_B64 }}
+        run: |
+          set -Eeuo pipefail
+          umask 077
+          [[ -n "$ACCEPTANCE_B64" && ${#ACCEPTANCE_B64} -le 48000 ]] || {
+            echo "Missing or oversized protected Phase 11 acceptance dossier" >&2
+            exit 1
+          }
+          temp="$RUNNER_TEMP/phase11-acceptance.json"
+          trap 'rm -f -- "$temp" "$RUNNER_TEMP/phase11-verdict.json"' EXIT
+          printf '%s' "$ACCEPTANCE_B64" | base64 -d > "$temp"
+          unset ACCEPTANCE_B64
+          node demian/tools/qa/phase11_release_policy.mjs \
+            --file="$temp" --sha="$RELEASE_SHA" --pwa-release="$PWA_RELEASE" \
+            --output="$RUNNER_TEMP/phase11-verdict.json"
+          # The verdict itself is never a self-issued production GO.
+          jq -e '.decision == "HUMAN_REVIEW_REQUIRED" and .productionAuthorized == false' \
+            "$RUNNER_TEMP/phase11-verdict.json" >/dev/null
       - name: Save protected review CANDIDATE only; never deploy or enable vouchers
         env:
           RELEASE_SHA: ${{ needs.preflight.outputs.release_sha }}

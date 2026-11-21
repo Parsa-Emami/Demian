@@ -60,7 +60,7 @@ node demian/tools/qa/phase11_remote_smoke.mjs \
 
 ## سند F11 و گیت نهایی
 
-الگوی ops/phase11/acceptance.example.json **به عمد همه‌چیز را مسدود** می‌گذارد. در صورت انجام واقعی تست‌ها، نسخهٔ غیرشخصی را به ops/phase11/acceptance.production.json تبدیل کن و برای commit/merge آن بازبینی امنیت و حریم خصوصی بگیر. قالب لازم:
+الگوی ops/phase11/acceptance.example.json **به عمد همه‌چیز را مسدود** می‌گذارد. در صورت انجام واقعی تست‌ها، نسخهٔ غیرشخصی را در فایل محلی ops/phase11/acceptance.production.json تهیه کن و **آن را کامیت نکن**؛ چون درج SHA خود کامیت در فایلی داخل همان کامیت غیرممکن است و با هر تغییر SHA عوض می‌شود. محتوای فایل را پس از تأیید امنیتی به‌صورت Base64 در Secret محیط cpanel-production با نام DEMIAN_PHASE11_ACCEPTANCE_B64 (سقف ۴۸KB؛ فایل خام کوچک) ثبت کن. این Secret فقط پس از تأیید محافظت‌شدهٔ محیط در Workflow خوانده می‌شود. قالب لازم:
 
 - releaseSha: دقیقاً ۴۰ حرف SHA نهایی main؛ pwaReleaseId: دقیقاً ۱۶ حرف Release Artifact همان نسخه؛ recordedAt به UTC و تازه.
 - checks: دقیقاً F11-01 تا F11-13؛ برای هرکدام status=accepted، releaseSha، checkedAt، reviewedBy و evidence با URL واقعی GitHub Issue/PR/Action/Commit، SHA256 و observedAt.
@@ -83,6 +83,8 @@ node demian/tools/qa/phase11_release_policy.mjs \
 ~~~
 
 **NO_GO** در صورت هر نقص؛ **HUMAN_REVIEW_REQUIRED** حتی اگر همهٔ مدرک‌های ثبت‌شده معتبر به‌نظر برسند. ابزار به‌تنهایی GO یا مجوز Production صادر نمی‌کند.
+
+برای ساخت Secret در دستگاه مورد اعتماد پس از بسته‌شدن مدارک: در Linux/WSL دستور base64 -w0 demian/ops/phase11/acceptance.production.json را اجرا کن و فقط در Settings → Environments → cpanel-production → Environment secrets جای‌گذاری کن؛ به Shell History، Git یا پیام عمومی ارسال نکن. روی ویندوز PowerShell می‌توان از [Convert]::ToBase64String([IO.File]::ReadAllBytes('path-to-acceptance.production.json')) استفاده کرد. محتوای فایل باید فقط خلاصهٔ بدون PII باشد. Workflow پس از پایان، فایل موقت را پاک می‌کند.
 
 ## Workflow تصمیم انسانی
 
