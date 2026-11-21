@@ -5,7 +5,7 @@ set -Eeuo pipefail
 umask 077
 [[ "$#" -eq 5 ]] || { echo "Expected root, SHA, origin, PHP and acknowledgement" >&2; exit 2; }
 root="$1"; sha="$2"; origin="$3"; php_bin="$4"; ack="$5"
-[[ -n "\${HOME:-}" && "$root" == "$HOME/"* && "$root" != *..* && "$root" != */ ]] || exit 2
+[[ -n "${HOME:-}" && "$root" == "$HOME/"* && "$root" != *..* && "$root" != */ ]] || exit 2
 [[ "$sha" =~ ^[0-9a-f]{40}$ ]] || exit 2
 [[ "$origin" =~ ^https://[A-Za-z0-9.-]+(:[0-9]+)?$ ]] || exit 2
 [[ "$php_bin" =~ ^[A-Za-z0-9_./-]+$ ]] || exit 2

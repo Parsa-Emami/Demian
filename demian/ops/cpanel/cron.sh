@@ -9,7 +9,7 @@ current="$1"; php_bin="$2"; mode="$3"
 [[ "$current" == "$HOME/"* && "$current" == */current && "$current" != *..* ]] || exit 2
 [[ "$php_bin" =~ ^[A-Za-z0-9_./-]+$ ]] || exit 2
 [[ "$mode" == schedule || "$mode" == queue ]] || exit 2
-root="\${current%/current}"
+root="${current%/current}"
 [[ -L "$current" && -f "$current/artisan" && -f "$root/shared/.env" ]] || exit 2
 real="$(readlink -f "$current")"
 [[ "$real" == "$root/releases/"* && -d "$real" ]] || exit 2
