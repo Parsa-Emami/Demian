@@ -70,9 +70,10 @@ jobs:
           node --check demian/tools/qa/phase11_release_policy.mjs
           node --check demian/tools/qa/phase11_release_audit.mjs
           node --check demian/tools/qa/phase11_verify_ci.mjs
+          node --check demian/tools/qa/phase11_remote_smoke.mjs
       - name: Run release and integrity guard tests
         working-directory: demian
-        run: node --test tests/js/mobile/Mobile11Ops.test.js tests/js/mobile/CpanelHostSmoke.test.js tests/js/mobile/ReleaseRollback.test.js tests/js/mobile/CpanelDeployment.test.js tests/js/mobile/Phase10CpanelOps.test.js tests/js/mobile/Phase10LoadAssessment.test.js tests/js/mobile/Phase11ReleaseAudit.test.js tests/js/mobile/Phase11ReleasePolicy.test.js tests/js/mobile/Phase11CompositeCi.test.js tests/js/mobile/Phase11ProtectedWorkflow.test.js
+        run: node --test tests/js/mobile/Mobile11Ops.test.js tests/js/mobile/CpanelHostSmoke.test.js tests/js/mobile/ReleaseRollback.test.js tests/js/mobile/CpanelDeployment.test.js tests/js/mobile/Phase10CpanelOps.test.js tests/js/mobile/Phase10LoadAssessment.test.js tests/js/mobile/Phase11ReleaseAudit.test.js tests/js/mobile/Phase11ReleasePolicy.test.js tests/js/mobile/Phase11CompositeCi.test.js tests/js/mobile/Phase11ProtectedWorkflow.test.js tests/js/mobile/Phase11RemoteSmoke.test.js
 
   cpanel-runtime:
     runs-on: ubuntu-24.04
