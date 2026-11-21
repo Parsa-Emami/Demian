@@ -83,6 +83,15 @@ final class CafeProductionReadiness
             $add('cafe_enabled', config('demian-coupons.cafe_enabled') === true);
             $add('discount_policy_approved',
                 config('demian-coupons.policy_approved') === true);
+            if (app(CampaignEconomics::class)->required()
+                && (config('demian-coupons.issue_enabled') === true || config('demian-coupons.campaigns_enabled') === true)) {
+                try {
+                    app(CampaignEconomics::class)->ceiling();
+                    $add('weekly_economics_budget_approved', config('demian-coupons.campaigns_enabled') === true);
+                } catch (\Throwable) {
+                    $add('weekly_economics_budget_approved', false);
+                }
+            }
             $key = config('demian-coupons.cafe_receipt_hash_key');
             $add('receipt_hmac_key_present', is_string($key) && strlen($key) >= 32);
             if (config('demian-coupons.manual_gifts_enabled') === true) {
