@@ -92,6 +92,12 @@ node demian/tools/qa/phase11_release_policy.mjs \
 
 **Workflow به‌هیچ‌وجه Deploy، Migration یا فعال‌سازی جوایز ندارد.** بعد از تصمیم GO واقعی، عملیات انتشار cPanel از workflow جدا و دستی فاز ۱۰ با بکاپ و Preflight انجام می‌شود. انتشار خودکار PWA استاتیک هنگام commit روی main نیز هرگز معادل روشن‌شدن Ranked یا جوایز نیست.
 
+### گیت مستقل انتشار Ranked روی GitHub Pages
+
+بعد از پذیرش تجاری فاز ۱۱، صاحب مخزن متغیر GitHub به نام DEMIAN_PHASE11_APPROVAL_RUN_ID را برابر شمارهٔ اجرای موفق و بازبینی‌شدهٔ Workflow فاز ۱۱ روی **همان SHA** می‌گذارد. سپس فقط با اختیار رسمی، DEMIAN_ARCADE_ENABLE_RANKED=true و DEMIAN_ARCADE_API_URL را برای Build اصلی تنظیم و GitHub Pages Build را دوباره اجرا می‌کند. Workflow انتشار، موفقیت protected-review و تطبیق SHA را از GitHub API بررسی می‌کند. هر تغییر SHA نیازمند پذیرش تازه است. بدون این Run ID معتبر، Build مربوط به Ranked **متوقف می‌شود**؛ حالت تمرینی همچنان قابل انتشار است. روشن‌شدن Ranked، صدور یا مصرف Coupon را به‌تنهایی مجاز نمی‌کند.
+
+**ترتیب نهایی cPanel:** ادغام PRهای پیش‌نیاز و CI سبز روی main؛ تهیهٔ Staging واقعی و SSL/DB مستقل؛ آزمون Android/iOS و Anti-cheat؛ سه سناریوی ۵۰ VU و Offsite Restore؛ پذیرش هنری و مالی؛ ذخیرهٔ صورت‌جلسه در Secret محیط؛ Workflow بازبینی F11؛ استقرار دستی API از Workflow فاز ۱۰ با Backup؛ Smoke واقعی read-only؛ و در نهایت فعال‌سازی تدریجی Ranked/جوایز صرفاً بعد از تایید صاحب کافه و مسئولان.
+
 ## مدیریت حادثه و وضعیت نهایی
 
 هنگام P0، Replay تقلبی پذیرفته‌شده، صدور کوپن تکراری، افشای داده، کندی شدید یا قطعی: Feature Flagهای مالی/Ranked را متوقف کن، حالت Practice-only را نگه دار، Ledger و شواهد را حفظ و صاحب کافه را مطلع کن. Rollback فقط **کد** را با تأیید سازگاری Schema به نسخهٔ سالم بازمی‌گرداند؛ DB Migration و دادهٔ مشتری را خودکار برنگردان. ناسازگاری Schema نیازمند اصلاح Forward-only یا Restore انسانی با RPO/RTO مصوب است.
