@@ -116,7 +116,9 @@ try {
         GAME_CATALOG.length * 3);
     for (const game of GAME_CATALOG) {
         const guide = page.locator(`[data-game-design-guide="${game.id}"]`);
-        assert.ok((await guide.locator('.game-card__goal').innerText()).includes(gameExperience(game.id).goalFa));
+        const goalText = await guide.locator('.game-card__goal').evaluate(node => node.textContent ?? '');
+        assert.ok(goalText.includes(gameExperience(game.id).goalFa),
+            `Game ${game.id}: goal text mismatched DOM: ${JSON.stringify(goalText)}`);
     }
     const guideToggle = page.locator('[data-game-design-guide="coffee-crash"] summary');
     await guideToggle.focus();
