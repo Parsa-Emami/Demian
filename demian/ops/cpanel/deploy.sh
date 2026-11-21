@@ -1,15 +1,16 @@
 #!/usr/bin/env bash
 # Demian's cPanel release cutover: never run as root and never copy .env into webroot.
-# Usage: deploy.sh SHA ROOT HTTPS_ORIGIN staging|production PHP_BIN BACKUP_RECEIPT
+# Usage: deploy.sh SHA ROOT HTTPS_ORIGIN staging|production PHP_BIN BACKUP_RECEIPT [ARTIFACT_SHA256]
 set -Eeuo pipefail
 umask 027
-[[ "$#" -eq 6 ]] || { echo "Six positional arguments required" >&2; exit 2; }
+[[ "$#" -eq 6 || "$#" -eq 7 ]] || { echo "Expected 6 arguments and optional artifact SHA-256" >&2; exit 2; }
 sha="$1"
 root="$2"
 origin="$3"
 target="$4"
 php_bin="$5"
 receipt="$6"
+expected_digest="${7:-}"
 
 [[ "$sha" =~ ^[0-9a-f]{40}$ ]] || { echo "Invalid release SHA" >&2; exit 2; }
 [[ -n "$HOME" && "$root" == "$HOME/"* && "$root" != *..* && "$root" != */ ]] ||
@@ -19,6 +20,12 @@ url_re='^https://[A-Za-z0-9.-]+(:[0-9]+)?$'
 [[ "$target" == staging || "$target" == production ]] || exit 2
 [[ "$php_bin" =~ ^[A-Za-z0-9_./-]+$ ]] || exit 2
 [[ "$receipt" =~ ^[A-Za-z0-9_.:-]+$ ]] || exit 2
+if [[ -n "$expected_digest" && ! "$expected_digest" =~ ^[a-f0-9]{64}$ ]]; then
+    echo "Invalid artifact digest" >&2; exit 2
+fi
+if [[ "$target" == production && -z "$expected_digest" ]]; then
+    echo "Production requires a content-addressed release artifact" >&2; exit 2
+fi
 if [[ "$target" == production && "$receipt" == "-" ]]; then
     echo "Production requires an independently verified offsite backup receipt" >&2
     exit 2
@@ -62,6 +69,13 @@ fi
 
 archive="$root/incoming/$sha.tar.gz"
 [[ -s "$archive" ]] || { echo "Release artifact missing" >&2; exit 1; }
+# SHA of the archive is independent of the source Git commit. Check the bytes
+# received over SSH before listing, extracting or executing any content.
+if [[ -n "$expected_digest" ]]; then
+    actual_digest="$("$php_bin" -r 'echo hash_file("sha256", $argv[1]);' "$archive")"
+    [[ "$actual_digest" == "$expected_digest" ]] ||
+        { echo "Release archive SHA-256 mismatched; nothing extracted" >&2; exit 1; }
+fi
 entries="$root/incoming/$sha.entries"
 trap 'rm -f -- "$entries"' EXIT
 tar -tzf "$archive" > "$entries"
@@ -89,6 +103,9 @@ if [[ ! -d "$release" ]]; then
     [[ -f "$tmp/artisan" && -f "$tmp/vendor/autoload.php" &&
        -f "$tmp/public/index.php" && -f "$tmp/public/.htaccess" ]] ||
         { echo "Artifact missing Laravel public entrypoint or Composer dependencies" >&2; exit 1; }
+    [[ -f "$tmp/ops/cpanel/cron.sh" && -f "$tmp/ops/cpanel/rollback.sh" ]] || {
+        echo "cPanel cron or rollback contract is missing" >&2; exit 1
+    }
     [[ -f "$tmp/ops/cpanel/host_preflight.php" && ! -L "$tmp/ops/cpanel/host_preflight.php" ]] || {
         echo "cPanel production preflight contract is missing" >&2; exit 1;
     }
@@ -127,7 +144,8 @@ if [[ "$target" == production ]]; then
     # A hosted cron schedule is a hard production gate. Scheduling itself
     # remains an owner-controlled cPanel operation, never installed by CI.
     command -v crontab >/dev/null || { echo "cPanel Cron Jobs unavailable" >&2; exit 1; }
-    if ! crontab -l 2>/dev/null | grep -F "$root/current" | grep -F 'artisan schedule:run' >/dev/null; then
+    if ! crontab -l 2>/dev/null | grep -F "$root/current" |
+        grep -Eq 'artisan schedule:run|ops/cpanel/cron.sh' ; then
         echo "Production Laravel scheduler cron for this release root is missing" >&2; exit 1
     fi
 fi
