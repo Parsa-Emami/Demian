@@ -36,7 +36,9 @@ try {
     $check($status === 0, 'owner-approved empty subdomain installs');
     $index = file_get_contents($web.'/index.php');
     $rules = file_get_contents($web.'/.htaccess');
-    $check(str_contains($index, $root.'/current')
+    $check(str_contains($index, $root)
+        && str_contains($index, "'/current'")
+        && str_contains($index, "'/releases/'")
         && str_contains($index, 'handleRequest')
         && str_contains($index, "DEMIAN_CPANEL_BRIDGE_V1"), 'bridge loads only current release');
     $check(!str_contains($index, 'APP_KEY=fixture-private'), 'no .env secrets in webroot');
