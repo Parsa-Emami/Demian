@@ -8,7 +8,7 @@ Scope: **the new 12-phase Demian quality roadmap (F0-01 ... F0-08)**, not the ol
 | --- | --- | --- |
 | Default branch | `main` at `780773d` | GitHub commit API |
 | Latest main frontend workflow | failed | Actions run 44801501565 |
-| JavaScript CI | 801 passed, 1 failed | `build` job logs for run 44801501565 |
+| JavaScript CI (initial baseline) | 801 passed, 1 failed | `build` job logs for run 44801501565 |
 | Failing test | `Step 20 UX: game counts and menu affordances reflect the real catalog` | `Phase4Step20UxAccessibility.test.js:135` |
 | Root cause | test still demanded removed `data-game-library-summary` on homepage | Blade view and source |
 | Laravel / MySQL | passed | same workflow, backend matrix |
@@ -18,6 +18,12 @@ Scope: **the new 12-phase Demian quality roadmap (F0-01 ... F0-08)**, not the ol
 | Performance / size before fix | not re-measured for `780773d`; last green deployment on `7f4da70` | Actions 44696281948 |
 
 CI source: https://github.com/Parsa-Emami/Demian/actions/runs/44801501565
+
+## Weekly rollover CI discovery (2026-11-21)
+- The first Phase-0 PR run (44869263008) cleared the obsolete homepage-selector failure but exposed **four additional stale test fixtures** after weekly versions became active at `2026-11-20T20:30:00Z` (Saturday 00:00 Tehran).
+- Root cause was not a production bypass: the client correctly rejects old/missing version or content-week proofs and falls back to practice.
+- Fix tests in `Phase5Step23DinoRun.test.js`, `VerifiedGameplayFrameTransport.test.js` and `VerifiedTurnReplayTransport.test.js` to issue version-matched, week-bound proof fixtures. Keep negative cases strict, and add an explicit epoch-boundary assertion.
+- CI run on the **final revised SHA** is required before acceptance; prior failed runs are not proof of readiness.
 
 ## F0 deliverable ledger
 - **F0-01 (repair failed test):** remove the obsolete homepage-summary selector from the runtime screen; update the regression assertion to protect intentional removal. Keep the live `data-game-library-count`.
