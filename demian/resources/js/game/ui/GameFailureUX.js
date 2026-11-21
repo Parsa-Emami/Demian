@@ -3,7 +3,7 @@
  * text, bearer tokens, phone numbers or an unverified prize claim.
  */
 export function gameLoadRecovery(error, { online = true } = {}) {
-    if (!online) return 'اینترنت دستگاه قطع است. بعضی بازی‌ها در حالت تمرینی قابل اجرا هستند؛ اتصال را بررسی کن و دوباره تلاش کن.';
+    if (!online) return 'دستگاه آفلاین است. بعضی بازی‌ها در حالت تمرینی قابل اجرا هستند؛ اتصال را بررسی کن و دوباره تلاش کن.';
     const code = String(error?.status ?? error?.statusCode ?? error?.code ?? '');
     const message = String(error?.message ?? '').slice(0, 240).toLowerCase();
     if (['401', '403', '419'].includes(code) || /unauthorized|csrf|session expired|token expired/.test(message)) {

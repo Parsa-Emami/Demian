@@ -160,7 +160,7 @@ test('F7-01/02/03/04/05/06/09: shared shell and character controls remain semant
 test('F7-12: browser regression covers 320 / 390, settings, navigation, retry and result truthfulness', () => {
     const script=read('../../tools/check_phase07_ux_flow.mjs');
     for(const fragment of ['width:320','width:390','launchGame(','pauseGame()',
-       'resumeGame()','restartGame()','data-results-record-note',
+       'data-shell-action="resume"','restartGame()','data-results-record-note',
        'data-shell-network-status','soundEnabled','musicEnabled','phase07-ux-qa.json']) {
         assert.ok(script.includes(fragment),fragment);
     }
