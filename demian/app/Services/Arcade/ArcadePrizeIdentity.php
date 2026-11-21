@@ -18,6 +18,8 @@ final class ArcadePrizeIdentity
         return [
             'status' => $state,
             'phone_verified' => $state === 'phone_verified',
+            'phone_contact_registered' => $player->contact_type === 'phone' && $player->contact_hash !== null,
+            'otp_available' => app(SmsOtpGateway::class)->ready(),
             'prize_identity_required' => config('demian-arcade.prize_identity_required') === true,
             'prize_identity_eligible' => $state === 'phone_verified',
         ];

@@ -82,7 +82,7 @@ export default class GameShell {
         this.selectionScreen = new GameSelectionScreen({ id: SCREEN_IDS.SELECTION, element: screen(SCREEN_IDS.SELECTION), animation: this.animation, catalog: this.catalog, registry: this.app.registry, visuals: this.app.characterVisuals });
         this.loadingScreen = new LoadingScreen({ id: SCREEN_IDS.LOADING, element: screen(SCREEN_IDS.LOADING), animation: this.animation });
         this.pauseScreen = new PauseScreen({ id: SCREEN_IDS.PAUSE, element: screen(SCREEN_IDS.PAUSE), animation: this.animation });
-        this.settingsScreen = new SettingsScreen({ id: SCREEN_IDS.SETTINGS, element: screen(SCREEN_IDS.SETTINGS), animation: this.animation, settings: this.settings, input: this.app.input });
+        this.settingsScreen = new SettingsScreen({ id: SCREEN_IDS.SETTINGS, element: screen(SCREEN_IDS.SETTINGS), animation: this.animation, settings: this.settings, input: this.app.input, leaderboards: this.app.leaderboards });
         this.resultsScreen = new ResultsScreen({ id: SCREEN_IDS.RESULTS, element: screen(SCREEN_IDS.RESULTS), animation: this.animation });
         this.leaderboardScreen = new LeaderboardScreen({ id: SCREEN_IDS.LEADERBOARD, element: screen(SCREEN_IDS.LEADERBOARD), animation: this.animation, service: this.app.leaderboards });
         this.couponWalletScreen = new CouponWalletScreen({ id: SCREEN_IDS.COUPONS, element: screen(SCREEN_IDS.COUPONS), animation: this.animation, service: this.app.leaderboards });
