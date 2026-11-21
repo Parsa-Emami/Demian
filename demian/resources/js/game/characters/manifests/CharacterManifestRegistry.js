@@ -12,7 +12,9 @@ import { MOTION_CHARACTERS } from '../motion/MasterMotionLibrary.js';
  *     "new character onboarding" flow should read from this registry
  *     rather than from ad hoc hardcoded arrays.
  *
- * The active roster includes Darya, Setayesh, Uzudi, Negar, Tiam, AmirReza, Hanna and Ainaz, rebuilt from references.
+ * The active roster is generated from MOTION_CHARACTERS; never duplicate a
+ * manually maintained list here. An installed pack is not a substitute for
+ * independent production-art acceptance (see TD-ART-001).
  */
 
 const MANIFEST_URL_PATH = 'assets/characters/character-manifest-v4.json';

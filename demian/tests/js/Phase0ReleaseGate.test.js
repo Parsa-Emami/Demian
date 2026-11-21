@@ -3,12 +3,17 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { GAME_CATALOG } from '../../resources/js/game/catalog/GameCatalog.js';
 import { BUILTIN_CHARACTER_SLUGS } from '../../resources/js/game/characters/CharacterVisualContract.js';
+import { GAME_DEFINITIONS } from '../../resources/js/game/registry/GameDefinitions.js';
 
 const read = relativePath => readFileSync(new URL(relativePath, import.meta.url), 'utf8');
 const blade = read('../../resources/views/demian.blade.php');
 const playable = read('../../../playable/index.html');
 const selection = read('../../resources/js/game/shell/screens/GameSelectionScreen.js');
 const workflow = read('../../../.github/workflows/deploy-demian-pages.yml');
+const characterManifest = JSON.parse(read('../../public/assets/characters/character-manifest-v4.json'));
+const motionContract = JSON.parse(read('../../resources/game/character-motion.json'));
+const readmeFa = read('../../../README.fa.md');
+const readmeEn = read('../../README.md');
 
 test('Phase 0: the seven published games are unique, playable and reflected by the live selection count', () => {
     assert.equal(GAME_CATALOG.length, 7, 'New games require an explicit catalog/design review.');
@@ -16,6 +21,13 @@ test('Phase 0: the seven published games are unique, playable and reflected by t
     assert.equal(GAME_CATALOG.filter(game => game.available).length, GAME_CATALOG.length);
     assert.ok(BUILTIN_CHARACTER_SLUGS.length > 0);
     assert.equal(new Set(BUILTIN_CHARACTER_SLUGS).size, BUILTIN_CHARACTER_SLUGS.length);
+    assert.deepEqual(new Set(Object.keys(GAME_DEFINITIONS)), new Set(GAME_CATALOG.map(game => game.id)));
+    assert.deepEqual(characterManifest.characters.map(item => item.slug), BUILTIN_CHARACTER_SLUGS);
+    assert.deepEqual(motionContract.characters.map(item => item.slug), BUILTIN_CHARACTER_SLUGS);
+    assert.equal(BUILTIN_CHARACTER_SLUGS.length, 18, 'Roster changes require art/source review.');
+    assert.match(readmeFa, /۷ بازی/);
+    assert.match(readmeEn, /seven games/);
+    for (const game of GAME_CATALOG) assert.ok(readmeEn.includes(game.title), `README missing ${game.title}`);
     assert.match(selection, /this\.catalog\.filter\(game => game\.available\)/);
     assert.match(selection, /count\.textContent = `\$\{playableCount/);
     for (const html of [blade, playable]) {

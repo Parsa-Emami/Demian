@@ -28,7 +28,7 @@ CI source: https://github.com/Parsa-Emami/Demian/actions/runs/44801501565
 ## F0 deliverable ledger
 - **F0-01 (repair failed test):** remove the obsolete homepage-summary selector from the runtime screen; update the regression assertion to protect intentional removal. Keep the live `data-game-library-count`.
 - **F0-02 (24 PRs):** each PR is classified in [OPEN_PR_TRIAGE_2026-11-21.md](OPEN_PR_TRIAGE_2026-11-21.md). Do not force-merge stacked financial/animation work into a stabilization patch.
-- **F0-03 (source/catalog consistency):** add a source-level release contract asserting the fixed seven-game roster, unique IDs, live game count, nonempty/unique character roster, and consistency of Blade and tracked playable home markup.
+- **F0-03 (source/catalog consistency):** assert the fixed seven-game roster, unique IDs, GameDefinitions, live game count, all 18 slugs in the runtime motion contract and public Manifest, Blade/tracked playable markup and both current READMEs. Historical V14 notes are archived rather than presented as current release metadata.
 - **F0-04 (frontend build):** use existing pinned `npm ci`, `test:ci`, motion, character, final/static/bundle gates and generated static artifact; evidence must come from **the new SHA**.
 - **F0-05 (Laravel):** retain the two-database PHPUnit, Blade compilation, restore and 50-user disposable lab tests in `arcade-backend.yml`. These are **not** equivalent to external hosting load tests.
 - **F0-06 (browser):** retain Chromium and the existing Firefox/WebKit compatibility run plus per-game smoke and PWA/rollback checks. Physical Android/iOS acceptance remains independent.

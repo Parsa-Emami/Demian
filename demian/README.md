@@ -1,15 +1,33 @@
-# Demian mobile release 14
+# Demian — current seven-game café arcade
 
-راهنمای اجرای خروجی کامل، ساخت از سورس، نصب Laravel و کنترل‌ها در [README فارسی](../README.fa.md) است.
+The active mobile-first catalog contains **seven games**: Open World, Dino Run, After Hours, Café Rush, Café Critters, Coffee Crash and Café Drift. Sessions are single-player; competitive leaderboards are asynchronous, not shared live multiplayer.
 
-The active catalog contains Open World and Dino Run. The installed V14 roster is Darya, Setayesh and Uzudi. The full source scaffold, previous game modules, original configuration and migrations remain available. Historical phase documents describe earlier versions; use the current guide for this release.
+The authoritative sources are [GameCatalog.js](resources/js/game/catalog/GameCatalog.js), [GameDefinitions.js](resources/js/game/registry/GameDefinitions.js), and the [18-character manifest](public/assets/characters/character-manifest-v4.json). Generated sprite packs and presence in the manifest are **not proof of completed visual/art acceptance**.
 
-- Ready static release: `../playable/` (serve over HTTP).
-- Shared character contract: `docs/character-standards/MOBILE_CHARACTER_V14.fa.md`.
-- Actual checks and limitations: `docs/release-v14/QA.fa.md`.
-- Exact image-generation prompts: `docs/release-v14/art-prompts.json`.
-- Runtime: local Canvas2D, no generation service, no GPU shader pipeline.
+## Build and validate
 
-## FBX café environment
+```sh
+npm ci
+npm run test:ci
+npm run validate:final
+npm run validate:ui-layers
+npm run validate:characters:v14
+npm run build:static
+npm run validate:static-assets
+npm run validate:build
+python3 -m http.server 8080 --directory _site
+```
 
-The active café map is built from the supplied FBX, with a shared collision footprint and an on-demand 3D model view. See [the source and rebuild guide](docs/fbx-cafe/README.fa.md). The original upload is preserved in four lossless gzip parts under `sources/`.
+Use Node.js 24, Python 3 with Pillow, and the project's lockfile. The tracked `../playable/` folder is a static preview and can be served using `python3 -m http.server 8080 --directory playable` from the repository root. Rebuild it from source only after release validation.
+
+## Backend / production
+
+The Laravel API, MySQL database, verified leaderboard and rewards are separate from GitHub Pages. A passing Pages build does **not** prove live backend readiness, physical Android/iOS acceptance, coupon integrity, or production host capacity. CI runs PHPUnit on SQLite and MySQL as well as browser regression tests. Ranked/reward gates must remain fail-closed pending independent acceptance.
+
+## Current source of truth
+
+- [Phase 0 release stabilization & acceptance](docs/phase0/PHASE_00_STABILIZATION.md)
+- [Open PR dependency triage](docs/phase0/OPEN_PR_TRIAGE_2026-11-21.md)
+- [Seven-game design standard](docs/game-design/GAME_DESIGN_STANDARD_V1.fa.md)
+- [Open visual-art technical debt](docs/technical-debt/TD-ART-001-ART-REBUILD.fa.md)
+- [Legacy V14 release notes (archived)](docs/archive/README_V14_legacy_notes.fa.md)
