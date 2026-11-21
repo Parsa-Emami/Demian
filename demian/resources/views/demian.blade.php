@@ -607,9 +607,10 @@
                             <div class="settings-toggle-grid">
                                 <label><input type="checkbox" name="hudVisible"><span>نمایش HUD</span></label>
                                 <label><input type="checkbox" name="hintsVisible"><span>نمایش راهنما</span></label>
-                                <label><input type="checkbox" name="soundEnabled"><span>افکت صوتی</span></label>
-                                <label><input type="checkbox" name="musicEnabled"><span>موسیقی</span></label>
+                                <label><input type="checkbox" name="soundEnabled"><span>افکت صوتی (SFX)</span></label>
+                                <label><input type="checkbox" name="musicEnabled"><span>موسیقی پس‌زمینه</span></label>
                             </div>
+                            <p class="settings-audio-explainer">موسیقی و افکت‌ها مستقل تنظیم می‌شوند. صدا فقط بعد از لمس یا فشردن کلید فعال می‌شود و هنگام Pause یا خروج قطع خواهد شد.</p>
                             <details data-touch-settings class="control-settings touch-settings">
                                 <summary>جوی‌استیک و کنترل لمسی</summary>
                                 <p>پیش‌نمایش زنده است. برای اعمال چیدمان در بازی، تنظیمات را ذخیره کن.</p>
