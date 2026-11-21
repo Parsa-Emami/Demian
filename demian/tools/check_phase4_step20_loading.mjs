@@ -8,6 +8,7 @@
  */
 import assert from 'node:assert/strict';
 import { GAME_CATALOG } from '../resources/js/game/catalog/GameCatalog.js';
+import { gameExperience } from '../resources/js/game/design/GameExperience.js';
 import { createReadStream, existsSync, mkdirSync, statSync, writeFileSync } from 'node:fs';
 import { createServer } from 'node:http';
 import { resolve, extname, sep } from 'node:path';
@@ -108,6 +109,22 @@ try {
     assert.match(await page.locator('[data-game-library-count]').innerText(),
         new RegExp(new Intl.NumberFormat('fa-IR').format(GAME_CATALOG.length)),
         'The visible game count must reflect the catalog, not stale placeholder copy.');
+    // Phase 1: authored onboarding is discoverable and keyboard-operable for
+    // all seven games without launching ranked sessions or loading extra art.
+    assert.equal(await page.locator('[data-game-design-guide]').count(), GAME_CATALOG.length);
+    assert.equal(await page.locator('[data-game-design-guide] .game-card__learning-steps li').count(),
+        GAME_CATALOG.length * 3);
+    for (const game of GAME_CATALOG) {
+        const guide = page.locator(`[data-game-design-guide="${game.id}"]`);
+        assert.ok((await guide.locator('.game-card__goal').innerText()).includes(gameExperience(game.id).goalFa));
+    }
+    const guideToggle = page.locator('[data-game-design-guide="coffee-crash"] summary');
+    await guideToggle.focus();
+    await page.keyboard.press('Enter');
+    assert.equal(await page.locator('[data-game-design-guide="coffee-crash"] details').evaluate(el => el.open), true);
+    await page.keyboard.press('Enter');
+    assert.equal(await page.locator('[data-game-design-guide="coffee-crash"] details').evaluate(el => el.open), false);
+    assert.equal(await page.evaluate(() => window.demianGameApplication?.sessionState), 'menu');
     await page.locator('[data-screen="game-selection"] [data-shell-action="back-cafe"]').click();
     await page.locator('[data-screen="cafe-menu"]').waitFor({ state: 'visible' });
     const settingsTrigger = page.locator('[data-screen="cafe-menu"] [data-shell-action="settings"]');
@@ -169,7 +186,8 @@ try {
     await wait(page, () => window.demianGameApplication?.sessionState === 'playing', 10000);
     await page.evaluate(() => window.demianGameApplication.showMenu());
     await wait(page, () => window.demianGameApplication?.sessionState === 'menu');
-    report.ux = { gameCards: 6, keyboardTrap: true, focusReturn: true, nestedPauseSettings: true };
+    report.ux = { gameCards: GAME_CATALOG.length, phase1Guides: GAME_CATALOG.length,
+        keyboardTrap: true, focusReturn: true, nestedPauseSettings: true };
 
     assert.deepEqual(report.errors, [], 'No uncaught errors in full boot/game/menu cycle.');
 

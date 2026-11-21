@@ -1,5 +1,6 @@
 import BaseScreen from './BaseScreen';
 import ScrollSnapRail from '../../../ui/ScrollSnapRail.js';
+import { gameExperience } from '../../design/GameExperience.js';
 import { preloadFbxCafeArt } from '../../rendering2d/FbxCafeAssets.js';
 import { optionalAssetPolicy } from '../../characters/runtime/MobileNetworkPolicy.js';
 import { prewarmCriticalGameSprite } from '../../performance/GameAssetWarmup.js';
@@ -14,6 +15,33 @@ function escape(value) {
         .replaceAll('>', '&gt;')
         .replaceAll('"', '&quot;')
         .replaceAll("'", '&#039;');
+}
+
+
+// Guide copy comes from an authored, reviewed contract. Escape every value:
+// these cards contain no dynamic HTML sourced from players or the backend.
+function renderGameGuide(game) {
+    const guide = gameExperience(game.id);
+    if (!guide) return '';
+    const steps = guide.tutorialFa.map(step => `<li>${escape(step)}</li>`).join('');
+    return `
+        <div class="game-card__guide" data-game-design-guide="${escape(game.id)}">
+            <p class="game-card__goal"><strong>هدف:</strong> ${escape(guide.goalFa)}</p>
+            <details class="game-card__guide-details">
+                <summary>راهنمای بازی، سختی و رقابت</summary>
+                <div class="game-card__guide-body">
+                    <ol class="game-card__learning-steps" aria-label="سه گام شروع بازی">${steps}</ol>
+                    <p><strong>لمس:</strong> ${escape(guide.controls.touchFa)}</p>
+                    <p><strong>کیبورد:</strong> ${escape(guide.controls.keyboardFa)}</p>
+                    <p><strong>شروع:</strong> ${escape(guide.difficultyFa.intro)}</p>
+                    <p><strong>تمرین:</strong> ${escape(guide.difficultyFa.practice)}</p>
+                    <p><strong>مهارت:</strong> ${escape(guide.difficultyFa.mastery)}</p>
+                    <p class="game-card__mode-note"><strong>تمرینی:</strong> ${escape(guide.modes.practiceFa)}</p>
+                    <p class="game-card__mode-note"><strong>رقابتی:</strong> ${escape(guide.modes.rankedFa)}</p>
+                </div>
+            </details>
+        </div>
+    `;
 }
 
 export default class GameSelectionScreen extends BaseScreen {
@@ -60,6 +88,7 @@ export default class GameSelectionScreen extends BaseScreen {
                     <p class="game-card__subtitle">${escape(game.subtitle)}</p>
                     <p class="game-card__description">${escape(game.description)}</p>
                 </div>
+                ${renderGameGuide(game)}
                 <button
                     type="button"
                     class="game-card__action"
