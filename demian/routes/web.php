@@ -93,6 +93,10 @@ Route::prefix('cashier')->name('cashier.')->group(function (): void {
         Route::get('/admin/anti-cheat', [CafeAntiCheatController::class, 'index'])
             ->middleware(RequireCafePermission::class.':audit.ledger')
             ->name('anticheat');
+        Route::post('/admin/anti-cheat/appeal',
+            [CafeAntiCheatController::class, 'appeal'])
+            ->middleware([RequireCafePermission::class.':audit.ledger',
+                'throttle:arcade-cashier-admin'])->name('anticheat.appeal');
         Route::post('/admin/anti-cheat/review',
             [CafeAntiCheatController::class, 'review'])
             ->middleware([RequireCafePermission::class.':audit.ledger',

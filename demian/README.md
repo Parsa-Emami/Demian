@@ -33,5 +33,6 @@ The Laravel API, MySQL database, verified leaderboard and rewards are separate f
 - [Phase 6: source-backed café Canvas2D visual system and QA](docs/gameplay/PHASE_06_ENVIRONMENT_ART_BIBLE.fa.md)
 - [Phase 7: accessible seven-game UX and original procedural audio](docs/gameplay/PHASE_07_UX_AUDIO_ACCESSIBILITY.fa.md)
 - [Phase 8: mobile performance, PWA integrity and device QA](docs/gameplay/PHASE_08_MOBILE_PWA_ACCEPTANCE.fa.md)
+- [Phase 9: authenticated OTP, fraud appeals and safe financial reward gates](docs/gameplay/PHASE_09_SECURITY_IDENTITY_FRAUD.fa.md)
 - [Open visual-art technical debt](docs/technical-debt/TD-ART-001-ART-REBUILD.fa.md)
 - [Legacy V14 release notes (archived)](docs/archive/README_V14_legacy_notes.fa.md)

@@ -652,6 +652,22 @@
                                 <button type="button" data-shell-action="reset-settings" class="shell-button shell-button--ghost">پیش‌فرض</button>
                             </div>
                         </form>
+                        <section data-player-identity-panel class="player-identity-panel" dir="rtl"
+                            aria-label="تأیید هویت و شماره تلفن">
+                            <h3>هویت بازیکن و تأیید شماره</h3>
+                            <p data-player-identity-status role="status" aria-live="polite">
+                                وضعیت هویت از سرور دریافت می‌شود.
+                            </p>
+                            <button type="button" data-player-otp-send class="shell-button shell-button--ghost" hidden>ارسال کد پیامکی</button>
+                            <form data-player-otp-form autocomplete="one-time-code" hidden>
+                                <label for="player-otp-code">کد شش‌رقمی پیامک</label>
+                                <input id="player-otp-code" name="code" class="arcade-input" type="text"
+                                    inputmode="numeric" pattern="[0-9]{6}" minlength="6" maxlength="6"
+                                    autocomplete="one-time-code" required>
+                                <button type="submit" class="shell-button shell-button--primary">تأیید شماره</button>
+                            </form>
+                            <small>رکوردهای تمرینی معتبر مالی نیستند. تأیید شماره هم به معنی صدور خودکار کوپن نیست.</small>
+                        </section>
                     </div>
                 </section>
 

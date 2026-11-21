@@ -1,9 +1,10 @@
 import BaseScreen from './BaseScreen';
 import { applyTouchControlLayout, readTouchControls } from '../../input/TouchControlPreferences.js';
 import ControlBindingPanel from '../../input/ControlBindingPanel.js';
+import PlayerIdentityPanel from '../../ui/PlayerIdentityPanel.js';
 
 export default class SettingsScreen extends BaseScreen {
-    constructor({ settings, input, ...options }) {
+    constructor({ settings, input, leaderboards, ...options }) {
         super({ ...options, layer: 'modal' });
         this.settings = settings;
         this.form = this.element.querySelector('[data-settings-form]');
@@ -12,6 +13,9 @@ export default class SettingsScreen extends BaseScreen {
         this.form?.addEventListener('input', this.onTouchPreview);
         this.form?.addEventListener('change', this.onTouchPreview);
         this.controls = new ControlBindingPanel(this.element.querySelector('[data-control-bindings]'), input);
+        this.identityPanel = new PlayerIdentityPanel({
+            root: this.element.querySelector('[data-player-identity-panel]'), leaderboards,
+        });
     }
 
     async beforeOpen() {
@@ -24,6 +28,8 @@ export default class SettingsScreen extends BaseScreen {
             else field.value = String(value);
         });
         this.refreshTouchPreview();
+        // Network-dependent account status must not delay opening settings.
+        void this.identityPanel.refresh();
     }
 
     refreshTouchPreview() {
@@ -42,6 +48,7 @@ export default class SettingsScreen extends BaseScreen {
         this.form?.removeEventListener('input', this.onTouchPreview);
         this.form?.removeEventListener('change', this.onTouchPreview);
         this.controls.dispose();
+        this.identityPanel.dispose();
         super.dispose();
     }
 

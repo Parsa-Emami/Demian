@@ -26,6 +26,7 @@ import '../css/experience-motion.css';
 import '../css/weekly-game-refresh.css';
 import '../css/phase1-game-experience.css';
 import '../css/phase7-ux-audio.css';
+import '../css/phase9-identity.css';
 import GameApplication from './game/application/GameApplication';
 import CharacterManagerUI from './ui/CharacterManagerUI';
 import SidebarController from './ui/SidebarController';
