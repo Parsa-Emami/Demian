@@ -18,14 +18,15 @@ import '../css/phase4-step21-feedback.css';
 import '../css/phase6-step31-mobile-menu.css';
 import '../css/phase6-step32-legal.css';
 import '../css/experience-motion.css';
+import '../css/weekly-game-refresh.css';
+import '../css/phase1-game-experience.css';
+import '../css/phase7-ux-audio.css';
+import '../css/phase9-identity.css';
 import GameApplication from './game/application/GameApplication';
 import CharacterManagerUI from './ui/CharacterManagerUI';
 import SidebarController from './ui/SidebarController';
 import MobileGameUI from './ui/MobileGameUI';
 import MobilePerformanceManager from './game/performance/MobilePerformanceManager.js';
-import { installChunkRecoveryNotice } from './game/performance/ChunkRecoveryNotice.js';
-
-installChunkRecoveryNotice();
 
 document.addEventListener('DOMContentLoaded', async () => {
     new MobilePerformanceManager().mount();
@@ -78,11 +79,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             managerRoot.querySelector('[data-screen="cafe-menu"] [data-shell-action="' + pending + '"]')?.click();
         }
         // Static hosting/PWA is optional. Never block gameplay startup.
-        // Offline PWA management is optional for first paint and first menu.
-        // Import after hydration so it is outside the critical startup bundle.
         void import('./game/performance/PwaUpdateController.js')
             .then(({ default: registerDemianPwa }) => registerDemianPwa({ app: application }))
-            .catch(error => console.warn('PWA update controller unavailable:', error));
+            .catch(error => console.warn('Optional PWA controller unavailable:', error));
     } catch (error) {
         console.error('Demian Game Platform could not start:', error);
         document.dispatchEvent(new Event('demian:menu-hydrated'));

@@ -1,3 +1,5 @@
+import { resolvePortraitFrame } from './CharacterPortraitStandard.js';
+
 const PREVIEW_ANIMATIONS = Object.freeze([
     'idle',
     'ready',
@@ -83,7 +85,6 @@ export default class CharacterPreviewRenderer {
         this.clear(canvas);
 
         try {
-            let posterFailure = null;
             if (character.preview_url) {
                 try {
                     const image = await this.loadImage(resolveUrl(character.preview_url));
@@ -92,11 +93,12 @@ export default class CharacterPreviewRenderer {
                     const height = Number(image.naturalHeight || image.height);
                     if (!(width > 0 && height > 0)) throw new Error('Character poster has no decoded dimensions.');
                     this.prepareCanvas(canvas);
-                    this.drawFrame(canvas, image, { x: 0, y: 0, w: width, h: height });
+                    const frame = (character.portrait && resolvePortraitFrame(character.slug, width, height))
+                        || { x: 0, y: 0, w: width, h: height };
+                    this.drawFrame(canvas, image, frame);
                     canvas.dataset.previewState = 'ready';
                     return;
                 } catch (error) {
-                    posterFailure = error;
                     if (canvas.dataset.previewRenderId !== renderId) return;
                 }
             }

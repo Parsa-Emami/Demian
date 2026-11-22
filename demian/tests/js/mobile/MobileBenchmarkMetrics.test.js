@@ -10,7 +10,7 @@ import {
 describe('Mobile-01 benchmark measurement contract', () => {
     it('defines exactly the six production games in a stable order', () => {
         assert.deepEqual(MOBILE_GAME_IDS, [
-            'open-world', 'dino-run', 'after-hours', 'cafe-rush', 'cafe-critters', 'coffee-crash',
+            'open-world', 'dino-run', 'after-hours', 'cafe-rush', 'cafe-critters', 'coffee-crash', 'cafe-drift',
         ]);
     });
 

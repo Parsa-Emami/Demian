@@ -1,3 +1,4 @@
+import { weeklyIndex, WEEKLY_VERSIONS } from '../content/WeeklyContent.js';
 import { cafeRouteGoals, CAFE_ROUTE_LIMITS, CAFE_ROUTE_VERSIONS } from './CafeRouteGoalCatalog.js';
 
 /**
@@ -32,22 +33,22 @@ export default class RankedRouteChallenge {
         panel.setAttribute('role', 'group');
         panel.setAttribute('aria-label', 'چالش رقابتی مسیر کافه');
         const title = document.createElement('h3');
-        title.textContent = 'چالش مسیر کافه';
+        title.textContent = this.gameId === 'open-world' ? 'مسیر این هفته' : 'چالش مسیر کافه';
         const description = document.createElement('p');
-        description.textContent = 'برای ثبت امتیاز سروری، یک مسیر زمان‌دار مستقل از حالت تمرینی آغاز کن.';
+        description.textContent = 'نقطه‌ها را به ترتیب پیدا کن و زمان مسیرت را ثبت کن.';
         const status = document.createElement('p');
         status.setAttribute('role', 'status');
         status.setAttribute('aria-live', 'polite');
         const button = document.createElement('button');
         button.type = 'button';
-        button.textContent = 'شروع چالش ثبت امتیاز';
+        button.textContent = 'شروع مسیر زمان‌دار';
         button.addEventListener('click', () => { void this.start(); });
         panel.append(title, description, status, button);
         root.append(panel);
         this.panel = panel;
         this.button = button;
         this.status = status;
-        this.setMessage('جوایز واقعی فقط پس از تأیید امنیت و سیاست مالی کافه فعال می‌شوند.');
+        this.setMessage('');
     }
 
     setMessage(value) {
@@ -68,26 +69,28 @@ export default class RankedRouteChallenge {
         try {
             const service = this.context.services.leaderboards;
             if (!service) throw new Error('سرویس امتیازدهی در دسترس نیست.');
-            const run = await service.startTurnRun(this.gameId);
+            const offered = await service.startTurnRun(this.gameId);
             if (nonce !== this.nonce) return;
-            if (run?.mode !== 'ranked') throw new Error(
-                'چالش رقابتی هنوز فعال نیست. می‌توانی بازی را تمرینی ادامه بدهی.'
-            );
-            // A stale client must never record an authoritative replay against a
-            // different rules version or route geometry, even if IDs still match.
+            const run = offered?.mode === 'ranked' ? offered : this.gameId === 'open-world'
+                ? { mode: 'practice', game_id: this.gameId, seed: 0, content_week: weeklyIndex() } : null;
+            if (!run) throw new Error('چالش رقابتی هنوز فعال نیست.');
+            const weekly = this.gameId === 'open-world'
+                && (run.mode === 'practice' || run.rules_version === WEEKLY_VERSIONS[this.gameId]);
             if (run.game_id !== this.gameId
-                || run.rules_version !== CAFE_ROUTE_VERSIONS[this.gameId]
-                || !Number.isSafeInteger(run.seed) || run.seed < 0) {
+                || (!weekly && run.rules_version !== CAFE_ROUTE_VERSIONS[this.gameId])
+                || !Number.isSafeInteger(run.seed) || run.seed < 0
+                || (weekly && (!Number.isSafeInteger(run.content_week) || run.content_week < 0))) {
                 throw new Error('نسخه یا شناسه چالش سرور با بازی مطابقت ندارد.');
             }
-            const goals = cafeRouteGoals(this.gameId, run.seed);
-            if (!Array.isArray(run.goals) || run.goals.length !== goals.length
+            const goals = cafeRouteGoals(this.gameId, run.seed, weekly ? run.content_week : null);
+            if (run.mode === 'ranked' && (!Array.isArray(run.goals) || run.goals.length !== goals.length
                 || run.goals.some((goal, i) => !goal
                     || goal.id !== goals[i].id
                     || !Number.isFinite(goal.x) || !Number.isFinite(goal.z)
                     || Math.abs(goal.x - goals[i].x) > 1e-5
-                    || Math.abs(goal.z - goals[i].z) > 1e-5)
-            ) throw new Error('قوانین سرور و کلاینت همخوان نیست.');
+                    || Math.abs(goal.z - goals[i].z) > 1e-5))) {
+                throw new Error('قوانین سرور و کلاینت همخوان نیست.');
+            }
             await this.onStart?.(run);
             if (nonce !== this.nonce) return;
             this.run = run;
@@ -96,6 +99,7 @@ export default class RankedRouteChallenge {
             this.frame = 0;
             this.lastMoveFrame = 0;
             this.nextGoal = 0;
+            this.lastGoalTick = 0;
             this.state = 'running';
             this.setMessage('مقصد ۱: ' + goals[0].title);
         } catch (error) {
@@ -145,12 +149,13 @@ export default class RankedRouteChallenge {
         if (!goal || goal.id !== target) return false;
         const p = this.position?.();
         if (!p || Math.hypot(p.x - goal.x, p.z - goal.z) >= 2.0) return false;
-        const minTick = this.actions.at(-1)?.tick ?? -1;
+        if (this.frame - this.lastGoalTick < 20) return false;
         // Record exact physical position at the interaction, not an old sample.
         this.recordMove();
         const checkTick = Math.max(this.frame, (this.actions.at(-1)?.tick ?? -1) + 1);
         if (checkTick >= CAFE_ROUTE_LIMITS[this.gameId]) return false;
         this.actions.push({ tick: checkTick, kind: 'checkpoint', target });
+        this.lastGoalTick = checkTick;
         this.nextGoal++;
         if (this.nextGoal === this.goals.length) {
             void this.complete();
@@ -164,6 +169,14 @@ export default class RankedRouteChallenge {
     async complete() {
         if (this.state !== 'running') return;
         const nonce = this.nonce;
+        const ticks = this.actions.at(-1).tick + 1;
+        if (this.gameId === 'open-world') this.context.services.leaderboards.recordDevice?.(this.gameId, { ticks, passed: this.nextGoal });
+        if (this.run.mode === 'practice') {
+            this.state = 'finished';
+            this.setMessage('زمان مسیر در رکوردهای این دستگاه ذخیره شد.');
+            if (this.button) this.button.disabled = false;
+            return;
+        }
         this.state = 'submitting';
         this.setMessage('در حال اعتبارسنجی حرکت و تعامل در سرور…');
         try {
@@ -174,7 +187,7 @@ export default class RankedRouteChallenge {
             if (nonce !== this.nonce) return;
             if (result.status === 'verified') {
                 this.state = 'verified';
-                this.setMessage('امتیاز تأییدشدهٔ چالش: ' + result.score);
+                this.setMessage('زمان مسیر در لیدربورد ثبت شد.');
             } else {
                 this.state = 'pending';
                 this.setMessage('مدرک ارسال نشد؛ برای بازیابی به لیدربورد مراجعه کن.');

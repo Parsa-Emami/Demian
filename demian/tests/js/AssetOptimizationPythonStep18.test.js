@@ -38,7 +38,7 @@ test('Step 18: production WebP transcode is lossless, atomic for a release and a
             // An RGBA image with complex transparency and stable visible RGB
             // exercises exact=True: do not assume a lossy WebP visual match.
             const create = spawnSync(python, ['-c',
-                "from PIL import Image; import sys; img=Image.new('RGBA',(256,256),(20,120,220,128)); img.save(sys.argv[1])", png,
+                "from PIL import Image; import sys; img=Image.new('RGBA',(256,256),(20,120,220,128)); img = img.quantize() if sys.argv[2] == 'lite' else img; img.save(sys.argv[1])", png, variant,
             ], { encoding: 'utf8' });
             assert.equal(create.status, 0, create.stderr);
             writeFileSync(join(dir, slug + '-atlas-v14-' + variant + '.json'),

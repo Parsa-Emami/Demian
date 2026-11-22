@@ -81,10 +81,13 @@ final class OpsReport
             }
         }
         if ($metrics['game_load_samples'] >= 10 && $metrics['game_load_p95_ms'] !== null
-            && $metrics['game_load_p95_ms'] > (int) config('demian-ops.game_load_budget_ms', 7000)) {
+            && $metrics['game_load_p95_ms'] > (int) config('demian-ops.game_load_budget_ms', 3000)) {
             $alerts[] = 'game_load_high';
         }
 
+        foreach ($metrics['game_load_by_game'] as $game) {
+            if ($game['samples'] >= 10 && $game['p95_ms'] >= (int) config('demian-ops.game_load_budget_ms', 3000)) $alerts[] = 'game_load_high';
+        }
         $alerts = array_values(array_unique($alerts));
         return [
             'status' => $alerts ? 'degraded' : 'ok',
@@ -156,7 +159,7 @@ final class OpsReport
     public static function aggregate(array $entries): array
     {
         $http = []; $load = []; $groups = []; $fives = 0; $fours = 0;
-        $slow = 0; $estimated = 0.; $clientErrors = 0; $frames = [];
+        $slow = 0; $estimated = 0.; $clientErrors = 0; $frames = []; $gameLoads = []; $menu = [];
         foreach ($entries as $entry) {
             if (($entry['event'] ?? null) === 'http') {
                 $status = (int) ($entry['status'] ?? 0);
@@ -177,18 +180,29 @@ final class OpsReport
                 $value = $entry['duration_ms'] ?? null;
                 if ($kind === 'game_load' && is_int($value) && $value >= 0 && $value <= 60000) {
                     $load[] = $value;
+                    $game = $entry['game'] ?? '';
+                    if (in_array($game, ['open-world', 'dino-run', 'after-hours', 'cafe-rush', 'cafe-critters', 'coffee-crash', 'cafe-drift'], true)) $gameLoads[$game][] = $value;
                 }
+                if ($kind === 'menu_ready' && is_int($value) && $value >= 0 && $value <= 60000) $menu[] = $value;
                 if ($kind === 'game_error') $clientErrors++;
                 if ($kind === 'fps' && isset($entry['fps']) && is_int($entry['fps'])
                     && $entry['fps'] >= 0 && $entry['fps'] <= 120) $frames[] = $entry['fps'];
             }
         }
         ksort($groups);
+        ksort($gameLoads);
+        $perGame = [];
+        foreach ($gameLoads as $game => $values) {
+            $perGame[$game] = ['samples' => count($values), 'p95_ms' => self::percentile($values, 95),
+                'over_budget' => count(array_filter($values, static fn ($ms) => $ms >= 3000))];
+        }
         return [
             'http_samples' => count($http), 'estimated_requests' => round($estimated, 2),
             'http_4xx' => $fours, 'http_5xx' => $fives, 'slow_samples' => $slow,
             'http_p95_ms' => self::percentile($http, 95), 'route_groups' => $groups,
             'game_load_samples' => count($load), 'game_load_p95_ms' => self::percentile($load, 95),
+            'game_load_by_game' => $perGame, 'menu_ready_samples' => count($menu),
+            'menu_ready_p95_ms' => self::percentile($menu, 95),
             'game_errors' => $clientErrors, 'fps_samples' => count($frames),
             'fps_p10' => self::percentile($frames, 10), 'truncated' => false,
         ];

@@ -4,6 +4,7 @@
  * JSON privacy before any optimization changes are considered.
  */
 import assert from 'node:assert/strict';
+import { GAME_CATALOG } from '../resources/js/game/catalog/GameCatalog.js';
 import { createReadStream, mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { createServer } from 'node:http';
 import { resolve, extname, sep } from 'node:path';
@@ -35,7 +36,7 @@ const server = createServer((req, res) => {
         res.end('Not found');
     }
 });
-const games = ['coffee-crash', 'dino-run', 'after-hours', 'cafe-rush', 'cafe-critters', 'open-world'];
+const games = ['coffee-crash', ...GAME_CATALOG.map(game => game.id).filter(id => id !== 'coffee-crash')];
 const report = {
     schema: 1, status: 'pending', physicalPhoneVerified: false, liveHostVerified: false,
     evidence: 'headless Chromium; emulated 4G/CPU and installed-service-worker browser path',
@@ -115,7 +116,7 @@ try {
         await page.locator('[data-startup-download]').click();
         const file = await downloaded;
         const localJson = JSON.parse(readFileSync(await file.path(), 'utf8'));
-        assert.equal(localJson.gameStarts.length, 6);
+        assert.equal(localJson.gameStarts.length, games.length);
         assert.equal(localJson.privacy.startsWith('local-only'), true);
         assert.ok(!JSON.stringify(localJson).includes(origin));
         assert.ok(!Object.hasOwn(localJson, 'userAgent'));
@@ -164,7 +165,7 @@ try {
     }
     assert.deepEqual(report.errors, []);
     report.status = 'passed';
-    console.log('Startup diagnosis cold/warm, six games, PWA + browser sanity: PASSED');
+    console.log('Startup diagnosis cold/warm, full catalog, PWA + browser sanity: PASSED');
 } catch (error) {
     report.status = 'failed';
     report.failure = error.stack || String(error);

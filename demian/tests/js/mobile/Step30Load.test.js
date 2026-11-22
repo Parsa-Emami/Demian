@@ -9,6 +9,7 @@ const view = readFileSync(new URL('../../../resources/views/demian.blade.php', i
 const game = readFileSync(new URL('../../../resources/js/game/application/GameApplication.js', import.meta.url), 'utf8');
 const entry = readFileSync(new URL('../../../resources/js/app.js', import.meta.url), 'utf8');
 const roster = readFileSync(new URL('../../../resources/js/game/managers/CharacterManager.js', import.meta.url), 'utf8');
+const rosterPolicy = readFileSync(new URL('../../../resources/js/game/performance/CharacterRosterStartup.js', import.meta.url), 'utf8');
 
 test('Step 30 independent staging proof generator reproduces authoritative known PHP fixtures', () => {
     const sample = [
@@ -59,6 +60,8 @@ test('Static early menu is visible before the engine and early click stays singl
     assert.match(game, /const instantMenu = this\.root\.dataset\.instantMenu === 'true'/);
     assert.match(entry, /const pending = managerRoot\.dataset\.pendingMenuAction/);
     assert.match(entry, /delete managerRoot\.dataset\.pendingMenuAction/);
-    assert.match(roster, /staticBuiltinsOnly/);
-    assert.match(roster, /this\.characters = staticBuiltinsOnly \? \[\] : await this\.repository\.list\(\)/);
+    assert.match(rosterPolicy, /staticBuiltinsOnly/);
+    assert.match(rosterPolicy, /if \(staticBuiltinsOnly\) return Promise\.resolve\(\{ characters: \[\], error: null \}\)/);
+    assert.match(roster, /return preloadCharacterRoster\(repository, options\)/);
+    assert.match(roster, /rosterPromise \?\? CharacterManager\.preloadRoster\(this\.repository\)/);
 });

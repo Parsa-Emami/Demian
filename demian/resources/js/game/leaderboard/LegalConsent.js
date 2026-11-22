@@ -7,7 +7,7 @@ export const LEGAL_VERSION = policy.version;
  * is created. The dialog is never shown for local/offline practice or for an
  * existing authenticated account. No choice is inferred from page navigation.
  */
-export function requestLegalAcknowledgement(doc = globalThis.document) {
+export function requestLegalAcknowledgement(doc = globalThis.document, { contact = false, newProfile = false } = {}) {
     if (!doc?.body || typeof doc.createElement !== 'function') {
         return Promise.resolve(null);
     }
@@ -21,8 +21,9 @@ export function requestLegalAcknowledgement(doc = globalThis.document) {
             '<h2 id="demian-legal-heading">ثبت حساب آنلاین دمیان</h2>' +
             '<p>برای ذخیرهٔ رکورد آنلاین، نام نمایشی و شواهد بازی طبق سیاست حریم خصوصی پردازش می‌شوند. ' +
             'می‌توانید بدون حساب آنلاین در حالت تمرینی بازی کنید.</p>' +
-            '<p><strong>توجه:</strong> متن قوانین فعلاً در انتظار تأیید نهایی متولی کافه است و ' +
-            'صدور جایزه واقعی فعال نشده است.</p>' +
+            (newProfile ? '<label>نام نمایشی<input name="display_name" required minlength="2" maxlength="32" autocomplete="nickname"></label>' : '') +
+            (contact ? '<label>راه ارتباطی<select name="contact_type"><option value="phone">شماره تلفن</option><option value="instagram">اینستاگرام</option><option value="email">ایمیل</option></select></label>' +
+                '<label>شماره یا شناسهٔ تماس<input name="contact_value" required maxlength="160" autocomplete="off"></label>' : '') +
             '<p><a href="privacy/" target="_blank" rel="noopener noreferrer">سیاست حریم خصوصی</a> · ' +
             '<a href="terms/" target="_blank" rel="noopener noreferrer">شرایط استفاده</a> · ' +
             '<a href="competition-rules/" target="_blank" rel="noopener noreferrer">قوانین رقابت</a></p>' +
@@ -46,6 +47,9 @@ export function requestLegalAcknowledgement(doc = globalThis.document) {
                 policy_version: LEGAL_VERSION,
                 accept_terms: true,
                 privacy_acknowledged: true,
+                ...(newProfile ? { display_name: form.elements.display_name.value.trim() } : {}),
+                ...(contact ? { contact_type: form.elements.contact_type.value,
+                    contact_value: form.elements.contact_value.value.trim() } : {}),
             } : null);
         };
         dialog.querySelector('[data-legal-cancel]').addEventListener('click', () => finish(false));

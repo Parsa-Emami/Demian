@@ -77,6 +77,20 @@ try {
         'APP_ENV' => 'production', 'APP_URL' => 'https://api.example.test',
     ]);
     $invoke($production, true, 'valid production');
+    $money = array_replace($production, ['DEMIAN_COUPONS_ISSUE_ENABLED' => 'true']);
+    $invoke($money, false, 'financial issuance without verified identity');
+    $money['DEMIAN_PRIZE_VERIFIED_PHONE_REQUIRED'] = 'true';
+    $invoke($money, false, 'financial issuance without enabled OTP');
+    $money['DEMIAN_PHONE_OTP_ENABLED'] = 'true';
+    $money['DEMIAN_COUPONS_POLICY_APPROVED'] = 'true';
+    $money['DEMIAN_LEGAL_PUBLICATION_APPROVED'] = 'true';
+    $money['DEMIAN_LEGAL_REQUIRE_ACCEPTANCE'] = 'true';
+    $money['DEMIAN_OPS_ENABLED'] = 'true';
+    $money['DEMIAN_PHONE_OTP_GATEWAY_URL'] = 'https://sms.example.test/send';
+    $money['DEMIAN_PHONE_OTP_GATEWAY_KEY'] = str_repeat('G', 40);
+    $invoke($money, true, 'production financial policy with genuine gateway contract');
+    $money['DEMIAN_PHONE_OTP_GATEWAY_URL'] = 'https://sms.example.test/send?key=oops';
+    $invoke($money, false, 'reject SMS key in gateway URL');
 
     foreach ([
         ['APP_DEBUG', 'true'],

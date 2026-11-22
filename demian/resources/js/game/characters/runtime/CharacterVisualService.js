@@ -1,4 +1,5 @@
 import CanvasCharacterAvatar from '../CanvasCharacterAvatar.js';
+import CanvasAvatarHydrator from './CanvasAvatarHydrator.js';
 import {
     BUILTIN_CHARACTER_SLUGS,
     DEFAULT_ACTIVE_SLUG,
@@ -49,6 +50,7 @@ export default class CharacterVisualService {
         this.counters = { hits: 0, misses: 0, fallbacks: 0, evictions: 0,
             failedPairs: 0, transientRetries: 0, backgroundCancelled: 0 };
         this.unsubscribe = [];
+        this.canvasHydrator = new CanvasAvatarHydrator({ service: this, eventBus });
         this.onOnline = () => this.clearTransientFailures();
         globalThis.window?.addEventListener?.('online', this.onOnline);
 
@@ -68,7 +70,7 @@ export default class CharacterVisualService {
             // Stop optional network traffic as soon as navigation away begins,
             // rather than waiting until the next game's assets are ready.
             this.unsubscribe.push(eventBus.on('game:loading', ({ gameId } = {}) => {
-                if (gameId && gameId !== 'open-world') this.cancelBackgroundLoads();
+                if (gameId) this.cancelBackgroundLoads();
             }));
         }
     }
@@ -103,7 +105,7 @@ export default class CharacterVisualService {
         return player ? variants.active : variants.npc;
     }
 
-    async loadPack(slug, preferredVariant = this.runtimeVariant({ player: true }), { background = false } = {}) {
+    async loadPack(slug, preferredVariant = this.runtimeVariant({ player: true }), { background = false, speculative = false } = {}) {
         if (this.disposed) throw new Error('Sprite service disposed');
         const normalizedSlug = BUILTIN_CHARACTER_SLUGS.includes(slug) ? slug : this.activeSlug;
         // A downloaded offline pack deliberately contains the small lite art.
@@ -115,8 +117,11 @@ export default class CharacterVisualService {
             || ['2g', 'slow-2g'].includes(connection?.effectiveType);
         // An explicit Save-Data / 2G preference should never fetch the large
         // player detail atlas before the lightweight fully playable variant.
-        const variants = orderedSpriteVariants(economicalNetwork
+        // Menu speculation must never cascade through multiple large artwork
+        // variants: the explicit game launch retains the normal fallback chain.
+        const candidates = orderedSpriteVariants(economicalNetwork
             ? 'lite' : normalizeSpriteVariant(preferredVariant));
+        const variants = speculative ? candidates.slice(0, 1) : candidates;
         let lastError = null;
 
         for (const variant of variants) {
@@ -136,23 +141,26 @@ export default class CharacterVisualService {
             let meta = this.pendingLoadMeta.get(key);
             // A foreground request joining an optional preload must make the
             // shared download critical, preventing a scene-change abort.
-            if (pending && !background && meta) meta.background = false;
+            if (pending && !background && meta) {
+                meta.background = false;
+                meta.speculative = false;
+            }
             // Never attach a new foreground request to an already cancelled task.
             if (pending && meta?.controller.signal.aborted) pending = null;
             if (!pending) {
                 this.counters.misses++;
                 const controller = new AbortController();
-                meta = { controller, background };
+                meta = { controller, background, speculative: background && speculative };
                 pending = this.loadGate.run(() => withTransientRetry(
                     () => this.loadPair(normalizedSlug, variant, {
                         signal: controller.signal, background: meta.background,
                     }),
                     {
                         signal: controller.signal,
-                        attempts: 2,
+                        attempts: meta.speculative ? 1 : 2,
                         onRetry: () => { this.counters.transientRetries++; },
                     },
-                ));
+                ), { priority: () => meta.background ? 0 : 1 });
                 this.packPromises.set(key, pending);
                 this.pendingLoadMeta.set(key, meta);
             }
@@ -173,7 +181,12 @@ export default class CharacterVisualService {
                 if (isAborted(error, meta?.controller.signal)) throw abortedError();
                 lastError = error;
                 this.counters.failedPairs++;
-                this.failedPairs.set(key, { error, retryAfter: Date.now() + 30000 });
+                // A failed hint must not suppress the real launch for 30s.
+                // A foreground request may promote the shared hint to critical,
+                // in which case normal failure accounting still applies.
+                if (!meta?.speculative) {
+                    this.failedPairs.set(key, { error, retryAfter: Date.now() + 30000 });
+                }
             } finally {
                 if (this.packPromises.get(key) === pending) {
                     this.packPromises.delete(key);
@@ -355,18 +368,22 @@ export default class CharacterVisualService {
 
     async createCanvasAvatar(actorId, { player = false, index = 0, variant = null, background = false } = {}) {
         const slug = this.resolveSlug(actorId, { player, index });
-        const pack = await this.loadPack(slug, variant ?? this.runtimeVariant({ player }), { background });
-        return new CanvasCharacterAvatar({
+        const target = variant ?? this.runtimeVariant({ player });
+        const pack = await this.loadPack(slug, variant ?? (player ? 'lite' : target), { background });
+        const avatar = new CanvasCharacterAvatar({
             slug,
             image: pack.image,
             atlas: pack.atlas,
             player,
         });
+        if (player && variant === null && target !== pack.variant) this.canvasHydrator.stage(avatar, target);
+        return avatar;
     }
 
     dispose() {
         if (this.disposed) return;
         this.disposed = true;
+        this.canvasHydrator.dispose();
         this.loadGate.dispose();
         for (const meta of this.pendingLoadMeta.values()) meta.controller.abort();
         this.pendingLoadMeta.clear();

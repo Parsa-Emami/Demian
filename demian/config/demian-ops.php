@@ -7,7 +7,7 @@ return [
     'sample_rate' => min(1.0, max(0.0, (float) env('DEMIAN_OPS_SUCCESS_SAMPLE_RATE', 0.2))),
     'slow_request_ms' => max(100, min(30000, (int) env('DEMIAN_OPS_SLOW_REQUEST_MS', 1500))),
     'http_p95_budget_ms' => max(100, min(30000, (int) env('DEMIAN_OPS_HTTP_P95_MS', 1000))),
-    'game_load_budget_ms' => max(500, min(60000, (int) env('DEMIAN_OPS_GAME_LOAD_P95_MS', 7000))),
+    'game_load_budget_ms' => max(500, min(60000, (int) env('DEMIAN_OPS_GAME_LOAD_P95_MS', 3000))),
     'error_rate_budget' => min(1.0, max(0.001, (float) env('DEMIAN_OPS_ERROR_RATE', 0.01))),
     'minimum_http_samples' => max(10, min(1000, (int) env('DEMIAN_OPS_MIN_HTTP_SAMPLES', 20))),
     'disk_min_free_bytes' => 512 * 1024 * 1024,

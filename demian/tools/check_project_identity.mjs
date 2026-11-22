@@ -57,6 +57,21 @@ try {
         assert.equal(Object.hasOwn(schema, 'offers'), false);
         assert.equal(await page.locator('[data-creator-link]').innerText(), 'parsaaemm');
         assert.equal(await page.locator('[data-project-about]').count(), 0);
+        const menu = page.locator('[data-screen="cafe-menu"]');
+        assert.equal(await menu.locator('.cafe-menu__eyebrow, .cafe-menu__lead').count(), 0);
+        assert.equal(/PLAY YOUR WAY|کمی بگرد/.test(await menu.innerText()), false);
+        assert.equal(await menu.locator('.cafe-menu__footer, [data-game-library-summary]').count(), 0);
+        assert.equal((await menu.innerText()).includes('بازی‌های کوچک، ماجراجویی‌های بزرگ'), false);
+        assert.equal(await menu.locator('.demian-legal-links a').count(), 3);
+        assert.equal(await menu.locator('h1').innerText(), 'DEMIAN');
+        assert.equal(await menu.locator('[data-shell-action="play"]').count(), 1);
+        const favicon = page.locator('head link[rel="icon"]');
+        assert.equal(await favicon.count(), 1);
+        assert.equal(await favicon.getAttribute('href'), 'icons/demian-192.png');
+        const iconResponse = await page.request.get(new URL('icons/demian-192.png', page.url()).href);
+        assert.equal(iconResponse.status(), 200);
+        assert.match(iconResponse.headers()['content-type'], /^image\/png/);
+        assert.deepEqual([...((await iconResponse.body()).subarray(0, 8))], [137, 80, 78, 71, 13, 10, 26, 10]);
         const credit = page.locator('[data-creator-link]');
         await credit.scrollIntoViewIfNeeded();
         const geometry = await page.evaluate(() => {

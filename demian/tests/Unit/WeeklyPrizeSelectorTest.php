@@ -12,6 +12,20 @@ final class WeeklyPrizeSelectorTest extends TestCase
         return ['player_id' => $id, 'score' => $score, 'achieved_at' => $at, 'verified' => true];
     }
 
+    public function test_cross_game_reassignment_fills_the_most_distinct_awards(): void
+    {
+        $shared = $exclusive = [];
+        for ($i = 1; $i <= 10; $i++) {
+            $shared[] = $this->row('shared-'.$i, 100 - $i);
+            $exclusive[] = $this->row('exclusive-'.$i, 20 - $i);
+        }
+        $result = (new WeeklyPrizeSelector())->select(['a' => [...$shared, ...$exclusive], 'b' => $shared]);
+        $this->assertCount(10, $result['a']);
+        $this->assertCount(10, $result['b']);
+        $this->assertSame(range(11, 20), array_column($result['a'], 'technical_rank'));
+        $this->assertCount(20, array_unique(array_column(array_merge(...array_values($result)), 'player_id')));
+    }
+
     public function test_limits_to_ten_with_stable_score_time_and_id_order(): void
     {
         $rows = [];

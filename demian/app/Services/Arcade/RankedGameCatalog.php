@@ -15,6 +15,7 @@ final class RankedGameCatalog
         'after-hours' => ['title' => 'AFTER HOURS', 'ranked' => false, 'verification' => null],
         'cafe-rush' => ['title' => 'CAFÉ RUSH', 'ranked' => false, 'verification' => null],
         'cafe-critters' => ['title' => 'CAFÉ CRITTERS', 'ranked' => false, 'verification' => null],
+        'cafe-drift' => ['title' => 'CAFÉ DRIFT', 'ranked' => false, 'verification' => null],
         'coffee-crash' => ['title' => 'COFFEE CRASH', 'ranked' => false, 'verification' => null],
     ];
 
@@ -25,7 +26,7 @@ final class RankedGameCatalog
                 'ranked_scope' => isset(CafeRouteReplayVerifier::VERSIONS[$id])
                     && config('demian-arcade.gameplay_ranked_enabled.'.$id) !== true
                     ? 'route-trial' : 'original-game',
-                ...(in_array($id, ['cafe-critters', 'coffee-crash', 'after-hours', 'cafe-rush', 'open-world'], true) && $this->supportsRanked($id)
+                ...(in_array($id, ['cafe-critters', 'coffee-crash', 'after-hours', 'cafe-rush', 'open-world', 'cafe-drift'], true) && $this->supportsRanked($id)
                     ? ['ranked' => true, 'verification' => 'server-replay'] : [])],
             array_keys(self::GAMES),
             array_values(self::GAMES),
@@ -34,6 +35,7 @@ final class RankedGameCatalog
 
     public function supportsRanked(string $id): bool
     {
+        if ($id === 'cafe-drift') return config('demian-arcade.drift_ranked_enabled') === true;
         if ($id === 'cafe-critters') return config('demian-arcade.critters_ranked_enabled') === true;
         if ($id === 'coffee-crash') return config('demian-arcade.coffee_ranked_enabled') === true;
         if (isset(CafeRouteReplayVerifier::VERSIONS[$id])) {
@@ -51,6 +53,13 @@ final class RankedGameCatalog
         if (! $this->supportsRanked($id)) return false;
         return match ($id) {
             'dino-run' => true,
+            'cafe-drift' => config('demian-arcade.drift_prizes_enabled') === true
+                && config('demian-coupons.campaigns_enabled') === true
+                && config('demian-coupons.issue_enabled') === true
+                && config('demian-coupons.policy_approved') === true
+                && (config('app.env') !== 'production' || (
+                    config('demian-legal.publication_approved') === true
+                    && config('demian-legal.require_acceptance') === true)),
             'cafe-critters' => config('demian-arcade.critters_prizes_enabled') === true,
             'coffee-crash' => config('demian-arcade.coffee_prizes_enabled') === true,
             // A separate route challenge cannot authorize coupons for the original game.

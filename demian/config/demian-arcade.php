@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'require_contact' => (bool) env('DEMIAN_ARCADE_REQUIRE_CONTACT', true),
+    'weekly_content_at' => env('DEMIAN_WEEKLY_CONTENT_AT'),
+    'drift_prizes_enabled' => (bool) env('DEMIAN_ARCADE_DRIFT_PRIZES_ENABLED', false),
+    'drift_ranked_enabled' => (bool) env('DEMIAN_ARCADE_DRIFT_RANKED_ENABLED', true),
     'rules_path' => resource_path('game/runner-rules.json'),
     // Reward-bearing Critters trials are opt-in only after end-to-end UAT.
     'critters_ranked_enabled' => (bool) env('DEMIAN_ARCADE_CRITTERS_RANKED_ENABLED', false),
@@ -61,8 +65,17 @@ return [
     'weekly_auto_award_from' => env('DEMIAN_WEEKLY_AUTO_AWARD_FROM', ''),
     // An absolute limit on bearer capabilities, not a refresh-token grant.
     'player_session_days' => 30,
+    // Real financial rewards require verified phone identity in production.
+    // Legacy/testing rollouts can be staged; production issuance rejects
+    // an unset gate, even when a coupon policy is otherwise approved.
+    'prize_identity_required' => (bool) env('DEMIAN_PRIZE_VERIFIED_PHONE_REQUIRED', false),
+    'otp' => [
+        'enabled' => (bool) env('DEMIAN_PHONE_OTP_ENABLED', false),
+        'gateway_url' => env('DEMIAN_PHONE_OTP_GATEWAY_URL', ''),
+        'gateway_key' => env('DEMIAN_PHONE_OTP_GATEWAY_KEY', ''),
+    ],
     'recovery_link_minutes' => 20,
     // Manually saved, single-use long-term backup capability for anonymous accounts.
     'backup_code_days' => 180,
-    'characters' => ['darya', 'setayesh', 'uzudi', 'negar', 'tiam', 'amirreza', 'hanna', 'ainaz', 'arsal', 'iman', 'amin', 'hossein'],
+    'characters' => ['darya', 'setayesh', 'uzudi', 'negar', 'elaheh', 'tiam', 'amirreza', 'hanna', 'ainaz', 'arsal', 'iman', 'amin', 'hossein', 'taher-db', 'sorkhi', 'yalda', 'mori', 'mahyar'],
 ];

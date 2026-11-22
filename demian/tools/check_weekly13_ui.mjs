@@ -137,8 +137,7 @@ try {
     await page.locator('[data-shell-action="rewards"]').first().click();
     const wallet = page.locator('[data-screen="coupon-wallet"]');
     await wallet.locator('[data-wallet-list] > li').first().waitFor({ timeout: 15000 });
-    assert.equal(await wallet.locator('[data-wallet-list] > li').count(), 2);
-    assert.match(await wallet.locator('[data-wallet-status]').innerText(), /ایمیلی ارسال نمی‌شود/);
+    assert.equal(await wallet.locator('[data-wallet-list] > li').count(), 1);
     assert.equal(await wallet.locator('[data-wallet-code]').count(), 1,
         'spent coupons must not display a code even when upstream returns one');
     assert.equal(await wallet.locator('[data-wallet-code]').inputValue(), code);

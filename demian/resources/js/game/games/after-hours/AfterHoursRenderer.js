@@ -25,12 +25,38 @@ export default class AfterHoursRenderer {
         }, { atmosphere: 'night' });
     }
 
+    bindHud(hud) {
+        this.rail = hud.querySelector('.game-readout__rail');
+        this.details = hud.querySelector('.game-readout__details');
+        this.detailsBody = hud.querySelector('.game-readout__body');
+        this.updateInsets = () => this.measureInsets();
+        this.details?.addEventListener('toggle', this.updateInsets);
+        if (typeof ResizeObserver === 'function') {
+            this.resizeObserver = new ResizeObserver(this.updateInsets);
+            for (const node of [this.rail, this.detailsBody]) if (node) this.resizeObserver.observe(node);
+        }
+    }
+
+    measureInsets() {
+        const canvas = this.context.renderer.canvas?.getBoundingClientRect();
+        const rail = this.rail?.getBoundingClientRect();
+        if (!canvas?.height || !rail?.height) {
+            this.scene.camera.setVerticalInsets();
+            return;
+        }
+        const ratio = this.scene.camera.viewportHeight / canvas.height;
+        const bottom = this.details?.open ? this.detailsBody?.getBoundingClientRect().bottom ?? rail.bottom : rail.bottom;
+        const isPortrait = canvas.width < canvas.height;
+        this.scene.camera.setVerticalInsets(Math.max(0, bottom - canvas.top + 14) * ratio, isPortrait ? canvas.height * .14 * ratio : 0);
+    }
+
     resize(position) {
         const size = this.scene.resize();
         const { logicalWidth: width, logicalHeight: height } = size;
         const zoom = width < height
             ? Math.max(width / 32, height / 65)
             : Math.max(width / 62, height / 49);
+        this.measureInsets();
         this.scene.camera.setZoom(zoom, { immediate: true, minimum: 6 });
         if (position) this.scene.camera.jumpTo(position);
     }
@@ -38,15 +64,22 @@ export default class AfterHoursRenderer {
     render(model, avatar, alpha, dt) {
         const camera = this.scene.camera;
         const player = model.player.position;
-        const ctx = this.scene.begin({ clear: '#090e19', target: player, deltaTime: dt });
+        const ctx = this.scene.begin({ clear: '#090e19', target: { x: player.x, z: player.z - (camera.viewportWidth < camera.viewportHeight ? 3.5 : 0) }, deltaTime: dt });
         this.drawLighting(ctx, camera, model);
         this.drawNoise(ctx, camera, model);
         for (const target of model.targets()) {
             if (!target.collected) this.drawMarker(ctx, camera, target, model);
         }
         const shadow = model.shadow;
-        if (distance(player, shadow.position) < 45) this.drawShadow(ctx, camera, shadow, alpha);
-        drawSpriteCharacter(ctx, camera, avatar, { alpha, player: false });
+        // Both figures are sorted by the same world-Z depth used by the
+        // Canvas camera; a shadow cannot always cover the player from behind.
+        if (distance(player, shadow.position) < 45) this.scene.queue.add({
+            layer: 20, y: shadow.position.z,
+            draw: () => this.drawShadow(ctx, camera, shadow, alpha),
+        });
+        this.scene.queue.add({ layer: 20, y: player.z,
+            draw: () => drawSpriteCharacter(ctx, camera, avatar, { alpha, player: false }),
+        });
         this.scene.end(ctx);
     }
 
@@ -68,7 +101,7 @@ export default class AfterHoursRenderer {
         for (const circuit of CIRCUITS) {
             const rect = sceneRect(camera, circuit.minZ, circuit.maxZ);
             const dark = circuit.id === model.darkCircuit;
-            ctx.fillStyle = dark ? 'rgba(8, 15, 38, .73)' : 'rgba(15, 21, 34, .27)';
+            ctx.fillStyle = dark ? 'rgba(8, 15, 38, .54)' : 'rgba(15, 21, 34, .17)';
             ctx.fillRect(rect.x, rect.y, rect.width, rect.height);
             ctx.fillStyle = dark ? 'rgba(116, 156, 218, .34)' : 'rgba(254, 191, 109, .25)';
             ctx.fillRect(rect.x, rect.y, rect.width, 2);
@@ -197,5 +230,9 @@ export default class AfterHoursRenderer {
         ctx.restore();
     }
 
-    dispose() { this.scene.dispose(); }
+    dispose() {
+        this.details?.removeEventListener('toggle', this.updateInsets);
+        this.resizeObserver?.disconnect();
+        this.scene.dispose();
+    }
 }

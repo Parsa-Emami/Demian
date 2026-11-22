@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync, truncateSync, readFileSync, renameSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, dirname } from 'node:path';
-import { buildOfflinePackManifest, OFFLINE_GAME_IDS, OFFLINE_MAX_PACK_BYTES } from '../../../tools/offline_pack_manifest.mjs';
+import { buildOfflinePackManifest, splitOfflineModules, OFFLINE_GAME_IDS, OFFLINE_MAX_PACK_BYTES } from '../../../tools/offline_pack_manifest.mjs';
 import { BUILTIN_CHARACTER_SLUGS, characterPackVersion } from '../../../resources/js/game/characters/CharacterVisualContract.js';
 import { sendPwaMessage } from '../../../resources/js/game/performance/PwaOfflineManager.js';
 
@@ -31,36 +31,6 @@ function fixture() {
         'assets/environments/demian-fbx/floorplan-detail.webp',
         'assets/environments/demian-fbx/polished-v1/lod-1024/0-0.webp',
     ]) write(path);
-    const vite = {
-        'resources/js/app.js': { file: entry.file, isEntry: true, css: entry.css,
-            dynamicImports: ['resources/js/game/performance/PwaUpdateController.js'] },
-        'resources/js/game/performance/PwaUpdateController.js': {
-            file:'assets/PwaUpdateController-deadbeef.js', isDynamicEntry:true },
-    };
-    write('build/assets/PwaUpdateController-deadbeef.js');
-    const ids = {
-        'open-world': 'OpenWorldGame', 'dino-run': 'DinoRunGame',
-        'after-hours': 'AfterHoursGame', 'cafe-rush': 'CafeRushGame',
-        'cafe-critters': 'CafeCrittersGame', 'coffee-crash': 'CoffeeCrashGame',
-    };
-    const css = {
-        'dino-run': 'phase5-step23-dino-run', 'after-hours': 'after-hours',
-        'cafe-rush': 'cafe-rush', 'cafe-critters': 'cafe-critters',
-        'coffee-crash': 'coffee-crash',
-    };
-    for (const [id,name] of Object.entries(ids)) {
-        const src = 'resources/js/game/games/' + id + '/' + name + '.js';
-        const output = 'assets/' + name + '-deadbeef.js';
-        vite[src] = { file: output, isDynamicEntry: true };
-        write('build/' + output);
-        if (css[id]) {
-            const style = 'resources/css/' + css[id] + '.css';
-            const cssOut = 'assets/' + css[id] + '-deadbeef.css';
-            vite[style] = { file: cssOut, isDynamicEntry: true };
-            write('build/' + cssOut);
-        }
-    }
-    write('build/manifest.json', JSON.stringify(vite));
     for (const slug of BUILTIN_CHARACTER_SLUGS) {
         const v = characterPackVersion(slug), base = 'assets/characters/' + slug + '/' + slug;
         write(base + '-preview-v' + v + '.png');
@@ -78,8 +48,6 @@ test('six portable offline bundles share one complete core and contain no creden
     assert.ok(manifest.core.length > 35);
     assert.ok(manifest.core.some(f => f.path === 'index.html'));
     assert.ok(manifest.core.some(f => f.path.endsWith('.woff2')));
-    assert.ok(manifest.core.some(f => f.path.includes('PwaUpdateController-deadbeef.js')));
-    assert.ok(manifest.games.find(g => g.id === 'cafe-rush').files.some(f => f.path.includes('cafe-rush-deadbeef.css')));
     assert.ok(manifest.core.some(f => f.path.includes('-lite.png')));
     for (const pack of manifest.games) {
         assert.equal(pack.totalBytes, manifest.coreBytes + pack.bytes);
@@ -147,4 +115,36 @@ test('worker only downloads on explicit message, refuses private API caching, an
     assert.match(sw, /await caches\.delete\(cacheName\)/);
     assert.match(sw, /event\.waitUntil\(self\.skipWaiting\(\)\)/);
     assert.doesNotMatch(sw, /fetch\([^)]*\/api\/v1\/arcade/);
+});
+
+test('offline game packs include versioned game chunks and their shared dependencies', () => {
+    const names = {
+        'open-world': 'open-world/OpenWorldGame.js',
+        'dino-run': 'dino-run/DinoRunGame.js',
+        'after-hours': 'after-hours/AfterHoursGame.js',
+        'cafe-rush': 'cafe-rush/CafeRushGame.js',
+        'cafe-critters': 'cafe-critters/CafeCrittersGame.js',
+        'coffee-crash': 'coffee-crash/CoffeeCrashGame.js',
+        'cafe-drift': 'cafe-drift/CafeDriftGame.js',
+    };
+    const vite = {
+        'resources/js/app.js': { file: 'assets/app.js', imports: ['_base'],
+            dynamicImports: Object.values(names).map(n => 'resources/js/game/games/' + n) },
+        '_base': { file: 'assets/boot.js' },
+        '_game-shared': { file: 'assets/shared-game.js' },
+    };
+    for (const [id, name] of Object.entries(names)) {
+        vite['resources/js/game/games/' + name] = {
+            file: 'assets/' + id + '.js', isDynamicEntry: true, imports: ['_game-shared'],
+        };
+    }
+    const result = splitOfflineModules(vite);
+    assert.ok(result.core.includes('build/assets/boot.js'));
+    assert.ok(!result.core.includes('build/assets/open-world.js'));
+    for (const id of OFFLINE_GAME_IDS) {
+        assert.ok(result.games[id].includes('build/assets/' + id + '.js'));
+        assert.ok(result.games[id].includes('build/assets/shared-game.js'));
+    }
+    delete vite['resources/js/game/games/' + names['open-world']];
+    assert.throws(() => splitOfflineModules(vite), /Missing offline game chunk/);
 });

@@ -29,6 +29,7 @@ final class ManualCouponGiftService
             && config('demian-coupons.cafe_enabled') === true, 503,
             'Physical cafe gift issuance is disabled.');
 
+        app(ArcadePrizeIdentity::class)->assertRolloutReady();
         $base = $this->policy->approved();
         $maxPercent = (int) config('demian-coupons.gift_max_percent', 0);
         $maxDays = (int) config('demian-coupons.gift_max_valid_days', 0);
@@ -111,6 +112,12 @@ final class ManualCouponGiftService
             $recipient = DB::table('arcade_players')
                 ->where('id', $fields['player_id'])->lockForUpdate()->first();
             abort_unless($recipient, 422, 'Selected player account no longer exists.');
+            app(ArcadePrizeIdentity::class)->assertVerifiedRecipient($fields['player_id']);
+            abort_if(DB::table('arcade_coupons')->where('player_id', $fields['player_id'])
+                ->where('source', 'gift')->whereIn('status', ['issued', 'reserved'])
+                ->where('expires_at', '>', now()->utc())->exists(), 409,
+                'This player already has an active gift.');
+
 
             $start = CarbonImmutable::now('Asia/Tehran')->startOfDay()
                 ->utc()->toDateTimeString();

@@ -268,7 +268,9 @@ export default class GameRuntime {
         this.firstRender = false;
 
         try {
-            game.render(alpha, renderDelta);
+            const rendered = game.render(alpha, renderDelta);
+            if (rendered === false || version !== this.lifecycleVersion || this.currentGame !== game
+                || this.paused || this.faulted) return;
             this.errorCounts.delete('render');
             this.lastErrorReport.delete('render');
         } catch (error) {

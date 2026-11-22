@@ -1,0 +1,121 @@
+{
+  "mainStates": [
+    "turn",
+    "idle",
+    "jump",
+    "celebrate"
+  ],
+  "mainRowBounds": [
+    0,
+    176,
+    352,
+    528,
+    704
+  ],
+  "motionColumns": 8,
+  "motionRowBounds": [
+    0,
+    176,
+    352,
+    528
+  ],
+  "motionRowStates": [
+    "walk",
+    "run",
+    "land"
+  ],
+  "referenceAsset": "../source-v14/reference.jpg",
+  "referenceInputs": [
+    {
+      "name": "42393(3).png",
+      "role": "identity-costume-and-turnaround",
+      "sha256": "bbd696b2708c6097f78f23ab8388b2ac14d587043d8923a2be0b7e3fabb5e0b2"
+    },
+    {
+      "name": "exec-da16d058-7e68-48c8-bb75-5f4f8453ca0f.png",
+      "role": "generated-motion-key-poses",
+      "sha256": "4ba833d8c5dd924a5b8225ece22226f927dedb105d94511315ef4eb4e29f6c46"
+    },
+    {
+      "name": "darya-master.png",
+      "role": "locomotion-pose-guide",
+      "sha256": "e38eaa5d9e21f765c065a0106f58c632dee256668b521a00d18cc2d5b23f7e58"
+    },
+    {
+      "name": "darya-runner-motion.png",
+      "role": "locomotion-pose-guide",
+      "sha256": "ffdc67040789483df1cb17b5a2d7a00a241e8ebd7d885ce548942ce06b04f8b4"
+    },
+    {
+      "name": "darya-slides.png",
+      "role": "locomotion-pose-guide",
+      "sha256": "277de9feeace8358e95444071b5448d5f7faed5c87d606a6b5201593fa856ab6"
+    }
+  ],
+  "identity": [
+    "short espresso-brown curls, brown eyes and uncovered face",
+    "black turtleneck and distressed slate-indigo cuffed jeans",
+    "cream-and-black sneakers"
+  ],
+  "bodyScaleReferencePoses": {
+    "walk": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "run": [
+      0,
+      1,
+      2,
+      5,
+      6,
+      7
+    ],
+    "jump": [
+      7
+    ],
+    "land": [
+      6,
+      7
+    ],
+    "celebrate": [
+      0,
+      7
+    ]
+  },
+  "locomotionCycleCounts": {
+    "walk": 1,
+    "run": 1
+  },
+  "locomotionReference": {
+    "character": "darya",
+    "states": [
+      "walk",
+      "run",
+      "jump",
+      "land",
+      "slide"
+    ]
+  },
+  "idleLoopDirections": [
+    "e"
+  ],
+  "slideSharesIdleScale": true,
+  "poseSelections": {
+    "slide": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ]
+  },
+  "faceSampleHeightRatio": 0.54,
+  "faceSkinRedGreenRatio": 1.1,
+  "indexedPalette": true
+}

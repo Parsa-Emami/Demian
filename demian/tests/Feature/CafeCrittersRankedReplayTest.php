@@ -255,7 +255,7 @@ final class CafeCrittersRankedReplayTest extends TestCase
         $games = $this->getJson('/api/v1/arcade/games')
             ->assertOk()->json('games');
         $ranked = array_values(array_filter($games, fn (array $game) => $game['ranked']));
-        $this->assertSame(['dino-run', 'cafe-critters'],
+        $this->assertSame(['dino-run', 'cafe-critters', 'cafe-drift'],
             array_values(array_map(fn (array $x) => $x['game_id'], $ranked)));
     }
     public function test_real_javascript_critters_model_actions_match_php_for_six_seeds(): void

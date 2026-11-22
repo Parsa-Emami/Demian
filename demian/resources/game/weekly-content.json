@@ -1,0 +1,172 @@
+{
+  "epoch": "2026-11-20T20:30:00Z",
+  "versions": {
+    "dino-run": "cafe-runner-weekly-v3",
+    "cafe-critters": "cafe-critters-weekly-v2",
+    "coffee-crash": "coffee-crash-weekly-v2",
+    "cafe-rush": "cafe-rush-frames-v2",
+    "after-hours": "after-hours-frames-v2",
+    "open-world": "open-world-route-weekly-v3"
+  },
+  "crittersPacks": 1000,
+  "runnerCast": [
+    "uzudi",
+    "amirreza",
+    "darya",
+    "setayesh",
+    "negar",
+    "tiam",
+    "hanna",
+    "ainaz",
+    "arsal",
+    "iman",
+    "amin",
+    "hossein"
+  ],
+  "rushStationReach": 3.25,
+  "shiftCards": {
+    "front": [
+      [
+        1.1,
+        -27.2
+      ],
+      [
+        1.1,
+        -26
+      ],
+      [
+        1.1,
+        -24.8
+      ],
+      [
+        1.1,
+        -23.6
+      ],
+      [
+        1.1,
+        -22.4
+      ],
+      [
+        -10.9,
+        -37
+      ],
+      [
+        -10.9,
+        -35.8
+      ],
+      [
+        -10.9,
+        -34.6
+      ],
+      [
+        -10.9,
+        -33.4
+      ],
+      [
+        -10.9,
+        -32.2
+      ],
+      [
+        7,
+        -51.2
+      ],
+      [
+        7,
+        -50
+      ],
+      [
+        7,
+        -48.8
+      ],
+      [
+        7,
+        -47.6
+      ],
+      [
+        7,
+        -46.4
+      ]
+    ],
+    "back": [
+      [
+        3.7,
+        -70.9
+      ],
+      [
+        3.7,
+        -69.7
+      ],
+      [
+        3.7,
+        -68.5
+      ],
+      [
+        3.7,
+        -67.3
+      ],
+      [
+        3.7,
+        -66.1
+      ],
+      [
+        -11.8,
+        -67.9
+      ],
+      [
+        -11.8,
+        -66.7
+      ],
+      [
+        -11.8,
+        -65.5
+      ],
+      [
+        -6.4,
+        -75.1
+      ],
+      [
+        -6.4,
+        -73.9
+      ],
+      [
+        -6.4,
+        -72.7
+      ]
+    ]
+  },
+  "worldPoints": [
+    [
+      "save-entrance",
+      0.36,
+      -4.68
+    ],
+    [
+      "save-counter",
+      3.24,
+      -30.6
+    ],
+    [
+      "save-lounge",
+      0.36,
+      -68.76
+    ],
+    [
+      "save-arcade",
+      3.96,
+      -88.92
+    ],
+    [
+      "save-restroom",
+      6.12,
+      -119.16
+    ]
+  ],
+  "coffeeSeedOffsets": {
+    "29": 1,
+    "77": 1,
+    "103": 1,
+    "154": 1,
+    "263": 1,
+    "304": 1
+  }
+}

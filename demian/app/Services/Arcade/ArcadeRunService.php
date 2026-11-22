@@ -4,6 +4,8 @@ namespace App\Services\Arcade;
 
 use App\Models\ArcadePlayer;
 use App\Models\ArcadeRun;
+use Domain\Arcade\VerifiedReplay;
+use Domain\Arcade\WeeklyContent;
 use Illuminate\Support\Facades\DB;
 
 final class ArcadeRunService
@@ -13,7 +15,6 @@ final class ArcadeRunService
     public function start(ArcadePlayer $player, array $data): ArcadeRun
     {
         $rules = $this->verifier->rules();
-        abort_unless($data['rules_version'] === $rules['version'], 409, 'Refresh the game to use current rules.');
 
         return DB::transaction(function () use ($player, $data, $rules): ArcadeRun {
             ArcadePlayer::query()->lockForUpdate()->findOrFail($player->id);
@@ -28,8 +29,10 @@ final class ArcadeRunService
 
             app(ArcadeAntiCheat::class)->assertStartAllowed($player->id);
             $started = now();
+            $version = $this->verifier->versionAt($started);
+            abort_unless($data['rules_version'] === $version, 409, 'Refresh the game to use current rules.');
             $seasonDeadline = app(WeeklyCompetitionService::class)
-                ->authorizeNewRun($started, $data['game_id'], $rules['version']);
+                ->authorizeNewRun($started, $data['game_id'], $version);
             $requestedExpiry = $started->copy()->addSeconds(
                 $rules['maxTicks'] / $rules['tickRate']
                 + (int) config('demian-arcade.completion_grace_seconds'));
@@ -37,7 +40,7 @@ final class ArcadeRunService
                 ? $requestedExpiry : $seasonDeadline;
 
             $run = ArcadeRun::query()->create(['player_id' => $player->id, 'request_id' => $data['request_id'],
-                'game_id' => $data['game_id'], 'rules_version' => $rules['version'], 'character_slug' => $data['character_slug'],
+                'game_id' => $data['game_id'], 'rules_version' => $version, 'character_slug' => $data['character_slug'],
                 'seed' => random_int(1, 4294967295), 'track_width' => $data['track_width'], 'status' => 'started',
                 'started_at' => $started, 'expires_at' => $expiry]);
             app(ArcadeAntiCheat::class)->started($run, request()->ip());
@@ -47,43 +50,25 @@ final class ArcadeRunService
 
     public function complete(ArcadePlayer $player, ArcadeRun $run, array $data): array
     {
+        $run = ArcadeRun::query()->findOrFail($run->id);
         abort_unless($run->player_id === $player->id, 404);
         $hash = hash('sha256', json_encode(['ticks' => $data['ticks'], 'transitions' => $data['transitions']], JSON_THROW_ON_ERROR));
 
-        return DB::transaction(function () use ($player, $run, $data, $hash): array {
-            ArcadePlayer::query()->lockForUpdate()->findOrFail($player->id);
-            $locked = ArcadeRun::query()->lockForUpdate()->findOrFail($run->id);
-            if ($locked->status === 'verified') {
-                abort_unless(hash_equals($locked->replay_hash, $hash), 409, 'Run already completed with different evidence.');
-
-                return $this->result($locked);
-            }
-            abort_unless($locked->status === 'started' && $locked->expires_at->isFuture(), 410, 'Run expired.');
-            abort_unless($locked->rules_version === $this->verifier->rules()['version'], 409, 'Rules changed. Start a new run.');
-            app(WeeklySettlementService::class)->assertOpenForCompletion($locked->started_at);
-            $elapsed = abs($locked->started_at->diffInMilliseconds(now()));
+        if ($run->status === 'verified') {
+            abort_unless(hash_equals($run->replay_hash, $hash), 409, 'Run already completed with different evidence.');
+            return $this->result($run);
+        }
+        $authorize = function (ArcadeRun $current) use ($data): void {
+            abort_unless($current->status === 'started' && $current->expires_at->isFuture(), 410, 'Run expired.');
+            abort_unless($current->rules_version === $this->verifier->versionAt($current->started_at), 409, 'Rules changed. Start a new run.');
+            $elapsed = max(0, $current->started_at->diffInMilliseconds(now()));
             abort_if($data['ticks'] * 1000 / 60 > $elapsed + 2000, 422, 'Replay is ahead of server time.');
-            $score = $this->verifier->verify($locked->seed, $locked->track_width, $data['ticks'], $data['transitions']);
-            $locked->fill([...$score, 'status' => 'verified', 'replay_hash' => $hash, 'completed_at' => now()])->save();
-            DB::table('arcade_replays')->insert(['run_id' => $locked->id,
-                'transitions' => json_encode($data['transitions'], JSON_THROW_ON_ERROR), 'created_at' => now()]);
-            foreach (LeaderboardService::periodKeys($locked->started_at) as $period) {
-                $key = ['game_id' => $locked->game_id, 'rules_version' => $locked->rules_version,
-                    'period_key' => $period, 'player_id' => $player->id];
-                $best = DB::table('arcade_leaderboard_entries')->where($key)->first();
-                // For equal scores, an earlier-started verified run wins.
-                // This matches public ordering regardless of completion order.
-                $better = ! $best || $locked->score > $best->score
-                    || ($locked->score === (int) $best->score
-                        && $locked->started_at->lt(\Carbon\CarbonImmutable::parse($best->achieved_at, 'UTC')));
-                if ($better) DB::table('arcade_leaderboard_entries')->updateOrInsert($key,
-                    ['run_id' => $locked->id, 'score' => $locked->score, 'achieved_at' => $locked->started_at]);
-            }
-
-            app(ArcadeAntiCheat::class)->verified($locked,
-                count($data['transitions']), request()->ip());
-            return $this->result($locked);
-        }, 3);
+        };
+        $authorize($run);
+        $week = $run->rules_version === WeeklyContent::version('dino-run') ? WeeklyContent::index($run->started_at) : null;
+        $score = $this->verifier->verify($run->seed, $run->track_width, $data['ticks'], $data['transitions'], $week, $run->character_slug);
+        $proof = new VerifiedReplay($run->getRawOriginal(), $hash, $score, $data['transitions']);
+        return $this->result(app(ReplayCompletionService::class)->commit($player, $proof, $authorize));
     }
 
     private function result(ArcadeRun $run): array

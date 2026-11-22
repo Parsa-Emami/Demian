@@ -18,7 +18,7 @@ import numpy as np
 from PIL import Image
 from scipy import ndimage
 from character_animation_timing import apply_animation_timing
-from character_art_registry import ACTIVE_CHARACTER_DEFINITIONS, speech_payload
+from character_art_registry import ACTIVE_CHARACTER_DEFINITIONS, encode_atlas_image, speech_payload
 
 ROOT = Path(__file__).resolve().parents[1]
 CHARACTERS = ROOT / 'public/assets/characters'
@@ -229,7 +229,7 @@ def build_character(slug):
         return min(factor, (WORK - GUTTER * 2) / max(p.width for p in selected), (WORK * FOOT_PIVOT - GUTTER) / max(p.height for p in selected))
     base_scale = cap_scale(tuple(key for key in ('turn', 'idle', 'walk', 'jump', 'land', 'celebrate') if key not in motion_keys), base_scale)
     motion_scale = cap_scale(tuple(motion_keys), motion_scale)
-    slide_scale = cap_scale(('slide',), slide_scale)
+    slide_scale = cap_scale(('slide',), base_scale if layout.get('slideSharesIdleScale') else slide_scale)
     body_ratio = float(np.median([p.height * base_scale for p in poses['idle']]) / WORK)
     # Separate source sheets can have different head/body proportions. Skin
     # segmentation can also merge a raised hand or rolled sleeve into the face.
@@ -265,7 +265,8 @@ def build_character(slug):
         return anim(east, fps, loop, framesRight=east, framesLeft=west,
             framesByDirection={d: west if 'w' in d else east for d in DIRECTIONS}, motion=key,
             locomotionStyle=movement_style)
-    idle_map = {d: names['idle'] if d in ('e', 'se') else [names['turn'][i]] * COUNTS['idle'] for i, d in enumerate(DIRECTIONS)}
+    idle_loop_directions = layout.get('idleLoopDirections', ('e', 'se'))
+    idle_map = {d: names['idle'] if d in idle_loop_directions else [names['turn'][i]] * COUNTS['idle'] for i, d in enumerate(DIRECTIONS)}
     animations = {
         'idle': anim(names['idle'], 24, framesByDirection=idle_map),
         'breathe': anim(names['idle'], 24, framesByDirection=idle_map),
@@ -301,7 +302,7 @@ def build_character(slug):
                 sheet.paste(pose.resize((cell, cell), Image.Resampling.LANCZOS), (x, y))
                 frames[names[key][i]] = {'x': x, 'y': y, 'w': cell, 'h': cell}; index += 1
         image_name = f'{slug}-spritesheet-v14-{variant}.png'
-        atlas = {'meta': {'name': LABELS[slug], 'version': VERSION, 'variant': variant, 'image': image_name,
+        atlas = {'meta': {'name': LABELS[slug], 'slug': slug, 'version': VERSION, 'variant': variant, 'image': image_name,
             'size': {'w': sheet.width, 'h': sheet.height}, 'frameSize': {'w': cell, 'h': cell},
             'grid': {'columns': COLS, 'rows': ROWS}, 'generatedFrameCount': len(frames),
             'animationCount': len(animations), 'directions': list(DIRECTIONS), 'artIntegrity': 'valid',
@@ -335,7 +336,7 @@ def build_character(slug):
         apply_animation_timing(atlas, layout.get('locomotionCycleCounts'), layout.get('locomotionProfile'))
         animations = atlas['animations']
         temporary_image = directory / f'.{image_name}.work.{os.getpid()}'
-        sheet.save(temporary_image, format='PNG', optimize=True)
+        encode_atlas_image(sheet, layout.get('indexedPalette')).save(temporary_image, format='PNG', optimize=True)
         temporary_image.replace(directory / image_name)
         atlas['meta']['imageRevision'] = hashlib.sha256((directory / image_name).read_bytes()).hexdigest()
         write_json(directory / f'{slug}-atlas-v14-{variant}.json', atlas)

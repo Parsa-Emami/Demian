@@ -4,6 +4,7 @@ import RenderQuality from '../performance/RenderQuality.js';
 import { resolveRenderFrameRate } from '../performance/FrameRatePolicy.js';
 import InputRouter from '../input/InputRouter';
 import GameRegistry from '../registry/GameRegistry';
+import { criticalSpriteSlug, criticalSpriteVariant } from '../performance/GameAssetWarmup.js';
 import { GAME_DEFINITIONS } from '../registry/GameDefinitions';
 import GameRuntime from '../runtime/GameRuntime';
 import CharacterVisualService from '../characters/runtime/CharacterVisualService.js';
@@ -23,7 +24,10 @@ import SessionStateMachine, { SESSION_STATES } from './SessionStateMachine';
 import ArcadeLeaderboardService from '../leaderboard/ArcadeLeaderboardService.js';
 import DeviceQaController from '../performance/DeviceQaController.js';
 import AnonymousGameTelemetry from '../performance/AnonymousGameTelemetry.js';
+import GameMetrics from '../performance/GameMetrics.js';
+import GameplayQualityProbe from '../quality/GameplayQualityProbe.js';
 import StartupPerformanceDiagnostics from '../performance/StartupPerformanceDiagnostics.js';
+import FirstPlayableFrame from '../performance/FirstPlayableFrame.js';
 
 const MENU_BACKDROP_GAME_ID = 'open-world';
 
@@ -77,20 +81,17 @@ export default class GameApplication {
         this.settings = new SettingsStore();
         this.leaderboards = new ArcadeLeaderboardService();
         this.opsTelemetry = new AnonymousGameTelemetry();
-        this.opsSubscriptions = [
-            this.eventBus.on('application:boot-timing', ({ durationMs }) =>
-                this.opsTelemetry.emit('menu_ready', { durationMs })),
-            this.eventBus.on('game:load-timing', ({ gameId, durationMs }) =>
-                this.opsTelemetry.emit('game_load', { game: gameId, durationMs })),
-            this.eventBus.on('game:load-failed', ({ gameId }) =>
-                this.opsTelemetry.emit('game_error', { game: gameId })),
-        ];
+        this.opsMetrics = new GameMetrics({ eventBus: this.eventBus, telemetry: this.opsTelemetry });
+        // QA only, local memory only: never record player identifiers, raw input, scores or bearer tokens.
+        this.gameplayQuality = new URLSearchParams(window.location.search).get('gameplayQa') === '1'
+            ? new GameplayQualityProbe({ eventBus: this.eventBus }) : null;
         this.animation = new AnimationService({
             reducedMotion: this.settings.resolvedReducedMotion(),
         });
         this.input = new InputRouter({ root: document, touchRoot: this.root, initialContext: 'MENU' });
         this.controlLayouts = new ControlLayoutService({ root: this.root, eventTarget: document });
         this.registry = new GameRegistry(GAME_DEFINITIONS);
+        this.firstPlayableFrame = new FirstPlayableFrame();
         this.runtime = new GameRuntime({
             inputRouter: this.input,
             eventBus: this.eventBus,
@@ -101,6 +102,13 @@ export default class GameApplication {
             observeRender: timestamp => {
                 this.deviceQa?.rendered(timestamp);
                 this.startupDiagnostics?.rendered(timestamp);
+                if (this.firstPlayableFrame.pending) {
+                    const frame = this.firstPlayableFrame.observe({ game: this.runtime.currentGame, timestamp,
+                        playing: this.sessionState === SESSION_STATES.PLAYING,
+                        presentedFrames: this.rendererService.presentedFrames,
+                        loaderHidden: this.shell.loadingScreen?.element.hidden === true && this.shell.manager.primaryId === null });
+                    if (frame) this.eventBus.emit('game:first-playable-frame', frame);
+                }
                 this.opsTelemetry?.frame(timestamp, this.activeGameId,
                     this.sessionState === SESSION_STATES.PLAYING);
             },
@@ -231,6 +239,7 @@ export default class GameApplication {
 
     async enterMenuState({ initial = false } = {}) {
         if (this.disposed) return;
+        this.firstPlayableFrame.clear();
 
         // Menu has its own lightweight HTML/CSS screen. Keeping a full
         // Open World instance alive as a decorative backdrop costs network
@@ -264,6 +273,7 @@ export default class GameApplication {
     }
 
     launchGame(gameId, params = {}) {
+        const loadingStartedAt = globalThis.performance?.now?.() ?? Date.now();
         const operation = this.switchQueue.then(async () => {
             if (this.disposed) {
                 throw new Error('Disposed GameApplication cannot launch a game.');
@@ -272,15 +282,31 @@ export default class GameApplication {
                 throw new Error(`Game "${gameId}" is not available in this phase.`);
             }
 
-            const loadingStartedAt = globalThis.performance?.now?.() ?? Date.now();
+            this.firstPlayableFrame.start(gameId, loadingStartedAt);
+            const requiresSwitch = this.activeGameId !== gameId || !this.activeGame || params.forceReload;
+            const pendingModule = requiresSwitch ? this.registry.load(gameId) : null;
+            void pendingModule?.catch(() => undefined);
+            // Join/promote any speculative menu sprite before game:loading
+            // cancels unrelated optional work. Overlap the real critical
+            // image decode with the loading-screen/module transition.
+            const criticalSlug = criticalSpriteSlug(gameId, this.characterVisuals);
+            if (requiresSwitch && criticalSlug) {
+                void this.characterVisuals.loadPack(
+                    criticalSlug,
+                    criticalSpriteVariant(gameId, this.characterVisuals),
+                    { background: false },
+                ).catch(() => {
+                    // Game.preload() still owns surfaced failures and fallbacks.
+                });
+            }
             this.transitionSession(SESSION_STATES.LOADING, { gameId });
             await this.shell.showLoading(gameId, {
                 progress: 0,
                 step: 'شروع دریافت منابع ضروری…',
             });
 
-            if (this.activeGameId !== gameId || !this.activeGame || params.forceReload) {
-                await this.performGameSwitch(gameId, params);
+            if (requiresSwitch) {
+                await this.performGameSwitch(gameId, params, pendingModule);
             } else {
                 this.eventBus.emit('game:loading-step', {
                     gameId,
@@ -295,6 +321,7 @@ export default class GameApplication {
                 progress: 100,
                 step: 'بازی آماده است',
             });
+            this.firstPlayableFrame.arm(this.activeGame, this.rendererService.presentedFrames);
             const durationMs = Math.max(0, (globalThis.performance?.now?.() ?? Date.now()) - loadingStartedAt);
             this.loadingTimings.push({ type: 'game', gameId, durationMs });
             if (this.loadingTimings.length > 24) this.loadingTimings.shift();
@@ -303,6 +330,8 @@ export default class GameApplication {
         });
 
         const guarded = operation.catch(async (error) => {
+            this.firstPlayableFrame.clear();
+            this.eventBus.emit('game:load-failed', { gameId, error });
             await this.enterMenuState().catch(() => undefined);
             throw error;
         });
@@ -316,27 +345,23 @@ export default class GameApplication {
         }
 
         this.paused = false;
-        this.transitionSession(SESSION_STATES.PLAYING, { gameId: this.activeGameId });
-        this.applyRenderQuality(); // Restore gameplay frame-rate preference.
+        this.runtime.pause({ notifyGame: false });
         this.root.dataset.activeGame = this.activeGameId;
         this.applyOrientationPreference(this.activeDefinition.orientation);
         this.input.setContext(this.activeDefinition.inputContext);
-
-        if (this.runtime.paused) {
-            // A freshly entered game must not receive resume() before its first session.
-            this.runtime.resume({ notifyGame: false });
-        }
-
         await this.activeGame.startSession?.(params);
+        this.transitionSession(SESSION_STATES.PLAYING, { gameId: this.activeGameId });
+        this.applyRenderQuality();
         this.activeGame.resize?.();
         await this.shell.hideAll('playing');
+        this.runtime.resume({ notifyGame: false });
         this.eventBus.emit('game:session-started', {
             gameId: this.activeGameId,
             definition: this.activeDefinition,
         });
     }
 
-    async performGameSwitch(gameId, params = {}) {
+    async performGameSwitch(gameId, params = {}, pendingModule = null) {
         const definition = this.registry.get(gameId);
         assertCafeGameDefinition(gameId, definition);
         const previousGame = this.activeGame;
@@ -358,7 +383,7 @@ export default class GameApplication {
 
         let nextGame = null;
         try {
-            nextGame = await this.registry.create(gameId);
+            nextGame = await this.registry.create(gameId, pendingModule);
             this.eventBus.emit('game:loading-step', {
                 gameId, progress: 25, step: 'ماژول بازی دریافت شد',
             });
@@ -409,9 +434,6 @@ export default class GameApplication {
                 definition,
             });
 
-            if (runtimeWasRunning && !runtimeWasPaused && !this.paused) {
-                this.runtime.resume({ notifyGame: false });
-            }
             return nextGame;
         } catch (error) {
             nextGame?.dispose?.();
@@ -427,7 +449,6 @@ export default class GameApplication {
                 previousGame?.resume?.();
                 this.runtime.resume({ notifyGame: false });
             }
-            this.eventBus.emit('game:load-failed', { gameId, error });
             throw error;
         }
     }
@@ -493,7 +514,14 @@ export default class GameApplication {
 
     async restartGame() {
         if (!this.activeGameId) return null;
-        return this.launchGame(this.activeGameId, { forceReload: true, restart: true });
+        // Reuse a fully initialized scene only for games that explicitly
+        // guarantee startSession() clears all state, inputs and pending ranked work.
+        // Never silently reuse Open World, After Hours or Café Rush.
+        const inPlace = !this.runtime.faulted
+            && this.activeGame?.supportsInPlaceRestart === true
+            && (typeof this.activeGame.canReuseForRestart !== 'function'
+                || this.activeGame.canReuseForRestart());
+        return this.launchGame(this.activeGameId, { forceReload: !inPlace, restart: true });
     }
 
     async exitGame() {
@@ -508,6 +536,7 @@ export default class GameApplication {
         this.transitionSession(SESSION_STATES.RESULTS, { gameId: this.activeGameId });
         this.input.setContext('PAUSE');
         this.runtime.pause();
+        this.leaderboards.recordDevice(this.activeGameId, result.deviceRecord);
         this.eventBus.emit('game:completed', {
             gameId: this.activeGameId,
             title: result.title ?? this.activeDefinition?.title,
@@ -604,7 +633,8 @@ export default class GameApplication {
         this.animation.dispose();
         this.settings.dispose();
         this.interaction.dispose();
-        this.opsSubscriptions?.forEach((unsubscribe) => unsubscribe());
+        this.opsMetrics?.dispose();
+        this.gameplayQuality?.dispose();
         this.storyJournalSubscriptions?.forEach((unsubscribe) => unsubscribe());
         this.storyJournal.dispose();
         this.characterVisuals.dispose();

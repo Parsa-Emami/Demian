@@ -35,6 +35,66 @@ const report = { schema: 1, step: 31, status: 'pending', emulatedDevices: true,
         'Real 15-30 min thermal soak and staging 50 concurrent users remain external release gates.',
     ],
 };
+async function launchFromLibrary(page, engine, game) {
+    await page.evaluate(id => {
+        const rail = window.demianGameApplication.shell.selectionScreen.rail;
+        const index = rail.items.findIndex(card => card.dataset.gameCard === id);
+        if (index < 0 || !rail.scrollTo(index, { behavior: 'auto' })) {
+            throw Error('Cannot navigate RTL game library to ' + id);
+        }
+    }, game);
+    const button = page.locator('[data-screen="game-selection"] [data-game-launch="' + game + '"]');
+    await page.waitForFunction(id => {
+        const node = document.querySelector('[data-screen="game-selection"] [data-game-launch="' + id + '"]');
+        if (!node) return false;
+        const bounds = node.getBoundingClientRect();
+        const x = bounds.left + bounds.width / 2;
+        const y = bounds.top + bounds.height / 2;
+        const hit = document.elementFromPoint(x, y);
+        return bounds.width > 25 && bounds.height > 25
+            && y >= 2 && y < innerHeight - 2
+            && x >= 2 && x < innerWidth - 2
+            && Boolean(hit) && (node === hit || node.contains(hit));
+    }, game, { timeout: 8000 });
+    await page.waitForTimeout(280);
+    const previousClicks = await page.evaluate(() => window.__step31Clicks.length);
+    await button.click();
+    const clickEvidence = await page.evaluate(({ id, previousClicks }) => {
+        const button = document.querySelector('[data-screen="game-selection"] [data-game-launch="' + id + '"]');
+        const rect = button?.getBoundingClientRect();
+        return {
+            eventDelivered: window.__step31Clicks.slice(previousClicks).includes(id),
+            pointer: rect ? {x: rect.x + rect.width / 2, y: rect.y + rect.height / 2} : null,
+            allClicks: window.__step31Clicks,
+            scrollTop: document.querySelector('[data-screen="game-selection"] .shell-page')?.scrollTop,
+        };
+    }, { id: game, previousClicks });
+    assert.equal(clickEvidence.eventDelivered, true,
+        engine + '/' + game + ' pointer click was not dispatched: ' + JSON.stringify(clickEvidence));
+    await wait(page, id => {
+        const app = window.demianGameApplication;
+        return (app?.activeGameId === id && app.sessionState === 'playing')
+            || (window.__step31LaunchErrors ?? []).some(row => row.gameId === id);
+    }, 40000, game).catch(async () => {
+        const snap = await page.evaluate(() => ({
+            state: window.demianGameApplication?.sessionState,
+            game: window.demianGameApplication?.activeGameId,
+            loadErrors: window.__step31LaunchErrors ?? [],
+            clicked: window.__step31Clicks ?? [],
+            shell: window.demianGameApplication?.shell?.manager?.primaryId ?? null,
+        }));
+        throw Error('Never reached playing for ' + engine + '/' + game + ': ' + JSON.stringify(snap));
+    });
+    const failedGame = await page.evaluate(id => {
+        const app = window.demianGameApplication;
+        return (window.__step31LaunchErrors ?? []).filter(row => row.gameId === id)
+            .concat(app?.sessionState !== 'playing' ? [{
+                gameId: id, message: 'Session state = ' + app?.sessionState,
+            }] : []);
+    }, game);
+    assert.deepEqual(failedGame, [], engine + '/' + game + ' launch failed');
+}
+
 let runtime = null;
 try {
     await new Promise(done => server.listen(0, '127.0.0.1', done));
@@ -94,71 +154,7 @@ try {
             browserReport.keyboardAccessible = true;
             for (const game of GAME_IDS) {
                 const beginning = Date.now();
-                // Exercise the same shell public route, real loading screen,
-                // game-specific preload, session begin, and return path.
-                // Scroll via the same native RTL rail controller that the
-                // previous/next buttons use. Wait for scroll-snap to settle
-                // before sending a real pointer click: Playwright's implicit
-                // scrollIntoView is not equivalent in Firefox RTL layouts.
-                await page.evaluate(id => {
-                    const rail = window.demianGameApplication.shell.selectionScreen.rail;
-                    const index = rail.items.findIndex(card => card.dataset.gameCard === id);
-                    if (index < 0 || !rail.scrollTo(index, { behavior: 'auto' })) {
-                        throw Error('Cannot navigate RTL game library to ' + id);
-                    }
-                }, game);
-                const button = page.locator('[data-screen="game-selection"] [data-game-launch="' + game + '"]');
-                // On 390px layouts CSS switches the rail to a vertical grid;
-                // wait until the full button is on-screen and its center is
-                // hittable, avoiding mobile WebKit cancelling a tap mid-scroll.
-                await page.waitForFunction(id => {
-                    const node = document.querySelector('[data-screen="game-selection"] [data-game-launch="' + id + '"]');
-                    if (!node) return false;
-                    const bounds = node.getBoundingClientRect();
-                    const x = bounds.left + bounds.width / 2;
-                    const y = bounds.top + bounds.height / 2;
-                    const hit = document.elementFromPoint(x, y);
-                    return bounds.width > 25 && bounds.height > 25
-                        && y >= 2 && y < innerHeight - 2
-                        && x >= 2 && x < innerWidth - 2
-                        && Boolean(hit) && (node === hit || node.contains(hit));
-                }, game, { timeout: 8000 });
-                await page.waitForTimeout(280);
-                await button.click();
-                const clickEvidence = await page.evaluate(id => {
-                    const button = document.querySelector('[data-screen="game-selection"] [data-game-launch="' + id + '"]');
-                    const rect = button?.getBoundingClientRect();
-                    return {
-                        eventDelivered: window.__step31Clicks?.includes(id),
-                        pointer: rect ? {x: rect.x + rect.width / 2, y: rect.y + rect.height / 2} : null,
-                        allClicks: window.__step31Clicks,
-                        scrollTop: document.querySelector('[data-screen="game-selection"] .shell-page')?.scrollTop,
-                    };
-                }, game);
-                assert.equal(clickEvidence.eventDelivered, true,
-                    engine + '/' + game + ' pointer click was not dispatched: ' + JSON.stringify(clickEvidence));
-                await wait(page, id => {
-                    const app = window.demianGameApplication;
-                    return (app?.activeGameId === id && app.sessionState === 'playing')
-                        || (window.__step31LaunchErrors ?? []).some(row => row.gameId === id);
-                }, 40000, game).catch(async () => {
-                    const snap = await page.evaluate(() => ({
-                        state: window.demianGameApplication?.sessionState,
-                        game: window.demianGameApplication?.activeGameId,
-                        loadErrors: window.__step31LaunchErrors ?? [],
-                        clicked: window.__step31Clicks ?? [],
-                        shell: window.demianGameApplication?.shell?.manager?.primaryId ?? null,
-                    }));
-                    throw Error('Never reached playing for ' + engine + '/' + game + ': ' + JSON.stringify(snap));
-                });
-                const failedGame = await page.evaluate(id => {
-                    const app = window.demianGameApplication;
-                    return (window.__step31LaunchErrors ?? []).filter(row => row.gameId === id)
-                        .concat(app?.sessionState !== 'playing' ? [{
-                            gameId: id, message: 'Session state = ' + app?.sessionState,
-                        }] : []);
-                }, game);
-                assert.deepEqual(failedGame, [], engine + '/' + game + ' launch failed');
+                await launchFromLibrary(page, engine, game);
                 const elapsedMs = Date.now() - beginning;
                 const layout = await page.evaluate(() => ({
                     visible: !document.querySelector('[data-game-shell]')?.hidden,
@@ -176,9 +172,8 @@ try {
             // self-contained minigame must remain playable without inventing
             // a verified server score.
             await context.setOffline(true);
-            await page.locator('[data-screen="game-selection"] [data-game-launch="cafe-critters"]').click();
-            await wait(page, () => window.demianGameApplication?.activeGameId === 'cafe-critters'
-                && window.demianGameApplication?.sessionState === 'playing');
+            await wait(page, () => !navigator.onLine);
+            await launchFromLibrary(page, engine, 'cafe-critters');
             assert.equal(await page.evaluate(() => window.demianGameApplication.activeGame?.rankRun ?? null),
                 null, 'Offline compatibility must not invent a verified ranked run');
             await context.setOffline(false);

@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { GAME_CATALOG } from '../resources/js/game/catalog/GameCatalog.js';
 import { createReadStream, mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { createServer } from 'node:http';
 import { gzipSync } from 'node:zlib';
@@ -17,7 +18,7 @@ const report = {
     emulatedNetwork: true, physicalPhoneVerified: false, liveHostPerformanceVerified: false,
     limitations: [
         'Chromium CPU and network emulation is lab evidence only, not device or global CDN SLO.',
-        'The first prepaint test deliberately delays the initial shell JS by 2.4 seconds.',
+        'The first prepaint test deliberately delays the atomic JS bundle by 2.4 seconds.',
         'No production API or 50-user hosted concurrency is exercised by this browser test.',
     ],
 };
@@ -41,7 +42,7 @@ const wait = (page, check, timeout = 15000) => page.waitForFunction(check, null,
 let browser;
 try {
     assert.ok(compressedJsBytes < 400 * 1024,
-        'Initial shell exceeds hard 400 KiB compressed payload ceiling. Reduce unused code before merging.');
+        'Atomic entry exceeds hard 400 KiB compressed payload ceiling. Reduce unused code before merging.');
     await new Promise(done => server.listen(0, '127.0.0.1', done));
     const { chromium } = await import('playwright');
     browser = await chromium.launch({ headless: true,
@@ -74,7 +75,7 @@ try {
             await wait(page, () => window.demianGameApplication?.sessionState === 'menu'
                 && document.querySelector('[data-screen="game-selection"]')?.hidden === false, 20000);
             const readyMs = Date.now() - started;
-            assert.equal(await page.locator('[data-game-card]').count(), 6);
+            assert.equal(await page.locator('[data-game-card]').count(), GAME_CATALOG.length);
             assert.equal(await page.evaluate(() =>
                 document.querySelector('[data-character-manager]').dataset.pendingMenuAction ?? null), null);
             assert.equal(await page.evaluate(() =>
@@ -87,7 +88,7 @@ try {
     }
 
     // TEST B: emulated cold 4G / CPU x2. Assert the user's requested latency
-    // ceilings for JS hydration and first-playable state of all six games.
+    // ceilings for JS hydration and first-playable state of all games.
     {
         const context = await browser.newContext({
             viewport: { width: 390, height: 844 }, deviceScaleFactor: 2,
@@ -111,15 +112,23 @@ try {
             report.firstReadyMs = bootMs;
             await page.locator('[data-screen="cafe-menu"] [data-shell-action="play"]').click();
             await wait(page, () => !document.querySelector('[data-screen="game-selection"]')?.hidden);
-            for (const game of ['coffee-crash', 'dino-run', 'after-hours', 'cafe-rush', 'cafe-critters', 'open-world']) {
+            for (const game of ['coffee-crash', ...GAME_CATALOG.map(game => game.id).filter(id => id !== 'coffee-crash')]) {
                 const start = Date.now();
-                await page.evaluate(id => window.demianGameApplication.launchGame(id), game);
-                await wait(page, () => window.demianGameApplication.sessionState === 'playing', 15000);
-                const ms = Date.now() - start;
-                report.games.push({ game, firstPlayMs: ms, status: 'passed' });
+                const previousSequence = await page.evaluate(() => window.demianGameApplication.firstPlayableFrame.sequence);
+                await page.locator(`[data-game-card="${game}"] [data-game-launch]`).tap();
+                await page.waitForFunction(({game, previousSequence}) => {
+                    const app = window.demianGameApplication;
+                    const frame = app.firstPlayableFrame.last;
+                    return frame?.gameId === game && frame.sequence > previousSequence
+                        && app.sessionState === 'playing' && app.shell.loadingScreen.element.hidden;
+                }, {game, previousSequence}, {timeout: 15000});
+                const ms = await page.evaluate(() => window.demianGameApplication.firstPlayableFrame.last.durationMs);
+                report.games.push({ game, firstPlayMs: ms, tapToVerifiedFrameMs: Date.now() - start, status: 'passed' });
                 assert.ok(ms < 7000, 'Cold 4G first gameplay >7 seconds: ' + game + ' / ' + ms);
                 await page.evaluate(() => window.demianGameApplication.showMenu());
                 await wait(page, () => window.demianGameApplication.sessionState === 'menu');
+                await page.locator('[data-screen="cafe-menu"] [data-shell-action="play"]').tap();
+                await wait(page, () => !document.querySelector('[data-screen="game-selection"]')?.hidden);
             }
             report.cold4g = { latencyMs: 80, downMbps: 8, cpuSlowdown: 2, initialMenuMs: bootMs };
             assert.deepEqual(report.errors, [], 'No runtime exceptions in cold 4G test');
@@ -138,7 +147,7 @@ if (report.status !== 'passed') {
     console.error('[Step 30] Startup regression:', report.errors);
     process.exitCode = 1;
 } else {
-    console.log('[Step 30] Fast startup, cold 4G and six games passed:', {
+    console.log('[Step 30] Fast startup, cold 4G and all games passed:', {
         prepaint: report.prepaint, cold4g: report.cold4g,
         games: report.games, compressedJsBytes,
     });

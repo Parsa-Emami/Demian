@@ -9,6 +9,7 @@ on:
       - 'demian/database/**'
       - 'demian/routes/**'
       - 'demian/resources/game/**'
+      - 'demian/resources/legal/**'
       - 'demian/resources/views/**'
       - 'demian/tests/**'
       - 'demian/composer.*'
@@ -44,10 +45,13 @@ jobs:
         working-directory: demian
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
       - uses: shivammathur/setup-php@v2
         with:
           php-version: '8.3'
-          extensions: mbstring, dom, xml, sqlite3, pdo_sqlite, pdo_mysql
+          extensions: mbstring, dom, xml, sqlite3, pdo_sqlite, pdo_mysql, opcache
           coverage: none
       - run: composer install --no-interaction --prefer-dist
       - name: Compile and lint Blade views
@@ -86,3 +90,24 @@ jobs:
           DB_PASSWORD: arcade-test-password
           CACHE_STORE: array
           SESSION_DRIVER: array
+      - name: Fifty-user HTTP and API abuse acceptance on disposable MySQL
+        if: matrix.database == 'mysql'
+        run: node tools/load/ci_http_acceptance.mjs
+        env:
+          APP_ENV: testing
+          APP_DEBUG: false
+          APP_KEY: base64:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
+          DB_CONNECTION: mysql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_DATABASE: demian_test
+          DB_USERNAME: root
+          DB_PASSWORD: arcade-test-password
+          CACHE_STORE: file
+          SESSION_DRIVER: file
+      - uses: actions/upload-artifact@v4
+        if: always() && matrix.database == 'mysql'
+        with:
+          name: backend-acceptance-${{ github.run_id }}-${{ github.job }}
+          path: demian/docs/acceptance-lab/
+          if-no-files-found: warn

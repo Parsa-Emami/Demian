@@ -13,7 +13,7 @@ import json
 import math
 from pathlib import Path
 from PIL import Image
-from character_art_registry import ACTIVE_CHARACTER_ROSTER
+from character_art_registry import ACTIVE_CHARACTER_ROSTER, encode_atlas_image
 
 ROOT = Path(__file__).resolve().parents[1]
 ASSETS = ROOT / 'public/assets/characters'
@@ -58,16 +58,17 @@ def build(slug, variant, cell, stride):
     sheet = Image.new('RGBA', (columns * cell, rows * cell))
     rectangles = {}
     with Image.open(directory / source['meta']['image']) as image:
+        indexed = image.mode == 'P'
         for i, name in enumerate(selected):
             frame = source['frames'][name]
-            pose = image.crop((frame['x'], frame['y'], frame['x'] + frame['w'], frame['y'] + frame['h']))
+            pose = image.crop((frame['x'], frame['y'], frame['x'] + frame['w'], frame['y'] + frame['h'])).convert('RGBA')
             pose = pose.resize((cell, cell), Image.Resampling.LANCZOS)
             x, y = i % columns * cell, i // columns * cell
             sheet.paste(pose, (x, y))
             rectangles[name] = {'x': x, 'y': y, 'w': cell, 'h': cell}
     filename = f'{slug}-spritesheet-v14-{variant}.png'
     temporary = directory / f'.{filename}.tmp'
-    sheet.save(temporary, format='PNG', optimize=True)
+    encode_atlas_image(sheet, indexed).save(temporary, format='PNG', optimize=True)
     temporary.replace(directory / filename)
     atlas['frames'] = {name: rectangles[target] for name, target in aliases.items()}
     atlas['meta'].update(variant=variant, image=filename, size={'w': sheet.width, 'h': sheet.height},

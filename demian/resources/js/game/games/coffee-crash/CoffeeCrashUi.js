@@ -8,7 +8,7 @@ const GUIDE = `<p>دو خوراکیِ کنار هم را جابه‌جا کن ت
     <p>حرکت نامعتبر رایگان است. راهنما رایگان است. هر مرحله یک بار بازگشت حرکت دارد. صفحهٔ بدون حرکت خودکار بازچینی می‌شود.</p>`;
 
 export default class CoffeeCrashUi {
-    constructor(root, actions) {
+    constructor(root, actions, levels = LEVELS) {
         this.actions = actions;
         this.selected = null;
         this.focused = 0;
@@ -62,7 +62,7 @@ export default class CoffeeCrashUi {
         this.dialog.className = 'coffee-dialog';
         this.dialog.dataset.gameDialog = 'coffee-crash';
         this.dialog.setAttribute('aria-labelledby', 'coffee-dialog-title');
-        this.dialog.innerHTML = `<span class="coffee-eyebrow" lang="en" dir="ltr">DEMIAN / COFFEE CRASH</span><h2 id="coffee-dialog-title">جورچین قهوه</h2><div class="coffee-guide">${GUIDE}</div><fieldset class="coffee-levels"><legend>مرحله را انتخاب کن</legend>${LEVELS.map(level => `<button type="button" data-coffee-level-choice="${level.id}" aria-pressed="false"><b>${n(level.id)}</b><span>${level.name}</span><small></small></button>`).join('')}</fieldset><div class="coffee-dialog-actions"><button type="button" data-coffee-dialog-action="start" data-shift-action="confirm">شروع سفارش</button><button type="button" data-coffee-dialog-action="skip">متوجه شدم و دیگر نمایش نده</button><button type="button" data-coffee-dialog-action="close">بازگشت</button></div>`;
+        this.dialog.innerHTML = `<span class="coffee-eyebrow" lang="en" dir="ltr">DEMIAN / COFFEE CRASH</span><h2 id="coffee-dialog-title">جورچین قهوه</h2><div class="coffee-guide">${GUIDE}</div><fieldset class="coffee-levels"><legend>سه مرحلهٔ این هفته</legend>${levels.map(level => `<button type="button" data-coffee-level-choice="${level.id}" aria-pressed="false"><b>${n(level.id)}</b><span>${level.name}</span><small></small></button>`).join('')}</fieldset><div class="coffee-dialog-actions"><button type="button" data-coffee-dialog-action="start" data-shift-action="confirm">شروع سفارش</button><button type="button" data-coffee-dialog-action="skip">متوجه شدم و دیگر نمایش نده</button><button type="button" data-coffee-dialog-action="close">بازگشت</button></div>`;
         root.querySelector('[data-game-overlay-host]').append(this.dialog);
         this.dialog.addEventListener('click', event => {
             const choice = event.target.closest('[data-coffee-level-choice]');
@@ -177,8 +177,8 @@ export default class CoffeeCrashUi {
         this.dialog.querySelector('[data-coffee-dialog-action="close"]').hidden = !entry;
         for (const button of this.dialog.querySelectorAll('[data-coffee-level-choice]')) {
             const id = Number(button.dataset.coffeeLevelChoice);
-            button.disabled = id > store.unlocked;
-            button.querySelector('small').textContent = store.records[id] ? '★'.repeat(store.records[id].stars) : id > store.unlocked ? 'قفل' : 'آماده';
+            button.disabled = !store.weekly && id > store.unlocked;
+            button.querySelector('small').textContent = store.records[id] ? '★'.repeat(store.records[id].stars) : button.disabled ? 'قفل' : 'آماده';
         }
         this.chooseLevel(level);
         if (!this.dialog.open) this.dialog.showModal();

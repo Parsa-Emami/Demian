@@ -51,9 +51,10 @@ def optimize_release(release: Path) -> dict:
             report["inputBytes"] += original_bytes
             # method 3 balances output size and CPU time in CI. exact=True
             # preserves even transparent pixels' invisible RGB payload.
-            with Image.open(png_path) as image:
-                if image.format != "PNG" or image.mode not in ("RGBA", "RGB"):
+            with Image.open(png_path) as source_image:
+                if source_image.format != "PNG" or source_image.mode not in ("RGBA", "RGB", "P"):
                     raise ValueError(f"Unsupported sprite input format: {png_path.name}")
+                image = source_image.convert("RGBA")
                 expected = atlas["meta"]["size"]
                 if (image.width, image.height) != (expected["w"], expected["h"]):
                     raise ValueError(f"Atlas dimensions mismatch: {png_path.name}")
@@ -61,8 +62,7 @@ def optimize_release(release: Path) -> dict:
                 with Image.open(webp_path) as decoded:
                     if (image.size != decoded.size
                         or ImageChops.difference(image.convert("RGB"), decoded.convert("RGB")).getbbox()
-                        or ImageChops.difference(image.getchannel("A") if image.mode == "RGBA"
-                            else Image.new("L", image.size, 255),
+                        or ImageChops.difference(image.getchannel("A"),
                             decoded.convert("RGBA").getchannel("A")).getbbox()):
                         webp_path.unlink(missing_ok=True)
                         raise ValueError(f"Lossless pixel round trip failed: {png_path.name}")

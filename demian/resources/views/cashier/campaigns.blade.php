@@ -8,7 +8,7 @@
 @if($errors->any())<div class="alert" role="alert">{{ $errors->first() }}</div>@endif
 <section class="panel">
 <h2>۱. ایجاد کمپین هفته آینده</h2>
-<p class="muted">سیاست مصوب: {{ $policy['currency'] }}؛ حداقل خرید {{ number_format($policy['min_order_minor']) }}؛ حداکثر تخفیف {{ number_format($policy['max_discount_minor']) }}؛ اعتبار {{ $policy['valid_days'] }} روز. سقف درصدها: ۳۰، ۲۰، ۲۰، ۱۰.</p>
+<p class="muted">سیاست مصوب: {{ $policy['currency'] }}؛ حداقل خرید {{ number_format($policy['min_order_minor']) }}؛ حداکثر تخفیف {{ number_format($policy['max_discount_minor']) }}؛ اعتبار ۱۴ روز از اعلام نتیجه. سقف درصدها: ۳۰، ۲۰، ۲۰، ۱۰.</p>
 @if($weeks)
 <form method="post" action="{{ route('cashier.campaigns.create') }}" autocomplete="off">
 @csrf
@@ -24,8 +24,7 @@
 <input id="min_order_minor" name="min_order_minor" type="number" min="{{ $policy['min_order_minor'] }}" max="1000000000000" value="{{ old('min_order_minor', $policy['min_order_minor']) }}" required>
 <label for="max_discount_minor">سقف مبلغ تخفیف</label>
 <input id="max_discount_minor" name="max_discount_minor" type="number" min="1" max="{{ $policy['max_discount_minor'] }}" value="{{ old('max_discount_minor', $policy['max_discount_minor']) }}" required>
-<label for="valid_days">روزهای اعتبار پس از صدور</label>
-<input id="valid_days" name="valid_days" type="number" min="1" max="{{ $policy['valid_days'] }}" value="{{ old('valid_days', $policy['valid_days']) }}" required>
+
 @foreach(['percent_first' => 1, 'percent_second' => 2, 'percent_third' => 3, 'percent_other' => 4] as $field => $rank)
 <label for="{{ $field }}">درصد رتبه {{ $rank === 4 ? 'چهارم تا دهم' : $rank }} (سقف {{ $policy['ranks'][$rank] }})</label>
 <input id="{{ $field }}" name="{{ $field }}" type="number" min="1" max="{{ $policy['ranks'][$rank] }}" value="{{ old($field, $policy['ranks'][$rank]) }}" required>
@@ -76,7 +75,7 @@
 <label>حداکثر جوایز</label><input name="max_awards" type="number" min="1" max="200" value="{{ $campaign['max_awards'] }}" required>
 <label>حداقل خرید</label><input name="min_order_minor" type="number" min="{{ $policy['min_order_minor'] }}" value="{{ $campaign['terms']['min_order_minor'] }}" required>
 <label>سقف تخفیف</label><input name="max_discount_minor" type="number" min="1" max="{{ $policy['max_discount_minor'] }}" value="{{ $campaign['terms']['max_discount_minor'] }}" required>
-<label>روز اعتبار</label><input name="valid_days" type="number" min="1" max="{{ $policy['valid_days'] }}" value="{{ $campaign['terms']['valid_days'] }}" required>
+
 @foreach(['percent_first' => 1, 'percent_second' => 2, 'percent_third' => 3, 'percent_other' => 4] as $field => $rank)
 <label>درصد رتبه {{ $rank }}</label>
 <input name="{{ $field }}" type="number" min="1" max="{{ $policy['ranks'][$rank] }}" value="{{ $campaign['terms']['ranks'][$rank] }}" required>

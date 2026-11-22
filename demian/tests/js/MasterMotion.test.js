@@ -7,12 +7,18 @@ import FrameAnimator from '../../resources/js/game/characters/FrameAnimator.js';
 import { advanceCharacterAnimation } from '../../resources/js/game/characters/CharacterMotionProfile.js';
 import { BUILTIN_CHARACTER_SLUGS } from '../../resources/js/game/characters/CharacterVisualContract.js';
 
-test('the twelve runtime characters resolve explicit immutable families and cosmetics', () => {
+test('runtime characters resolve explicit immutable families and cosmetics', () => {
     assert.deepEqual(MOTION_CHARACTERS.map(entry => entry.slug), BUILTIN_CHARACTER_SLUGS);
-    assert.equal(MOTION_CHARACTERS.filter(entry => entry.family === 'female-base-v1').length, 6);
-    assert.equal(MOTION_CHARACTERS.filter(entry => entry.family === 'male-base-v1').length, 6);
+    assert.equal(MOTION_CHARACTERS.filter(entry => entry.family === 'female-base-v1').length, 8);
+    assert.equal(MOTION_CHARACTERS.filter(entry => entry.family === 'male-base-v1').length, 10);
     assert(Object.isFrozen(MASTER_MOTION.families));
     assert.equal(motionCharacter('TIAM').family, 'female-base-v1');
+    assert.equal(motionCharacter('taher-db').family, 'male-base-v1');
+    assert.equal(motionCharacter('sorkhi').family, 'male-base-v1');
+    assert.equal(motionCharacter('yalda').family, motionCharacter('darya').family);
+    assert.equal(motionCharacter('elaheh').family, motionCharacter('darya').family);
+    assert.equal(motionCharacter('mori').family, motionCharacter('arsal').family);
+    assert.equal(motionCharacter('mahyar').family, motionCharacter('arsal').family);
     assert.equal(motionCharacter('unregistered'), null);
     assert.throws(() => new MasterMotionController('unregistered'), RangeError);
 });

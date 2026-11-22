@@ -371,7 +371,7 @@ export default class InputRouter {
         const analog = usingTouchStick ? this.analog : this.gamepad.stick;
         if (context.analog && analog.magnitude > 0.01) {
             snapshot[context.analog.xAxis] = analog.x;
-            snapshot[context.analog.zAxis] = analog.z;
+            if (context.analog.zAxis) snapshot[context.analog.zAxis] = analog.z;
 
             if (
                 usingTouchStick && this.touchControls.touchAutoSprint &&

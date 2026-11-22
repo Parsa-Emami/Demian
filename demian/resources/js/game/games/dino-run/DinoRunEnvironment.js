@@ -1,3 +1,5 @@
+import { CAFE_MATERIALS as M } from '../../rendering2d/CafeWalkthroughPalette.js';
+
 const TAU = Math.PI * 2;
 const mod = (x, n) => ((x % n) + n) % n;
 const smooth = (x) => { const t = Math.max(0, Math.min(1, x)); return t * t * (3 - 2 * t); };
@@ -27,14 +29,14 @@ export default class DinoRunEnvironment {
         } catch {}
     }
     drawFallback(ctx, w, ground, distance, s) {
-        ctx.fillStyle = '#494e49'; ctx.fillRect(0, 0, w, ground);
+        ctx.fillStyle = M.wallShade; ctx.fillRect(0, 0, w, ground);
         const step = 520 * s, offset = mod(distance * s * .22, step);
         for (let x = -step; x < w + step; x += step) {
             const left = x - offset;
-            ctx.fillStyle = '#285448'; ctx.fillRect(left + 30 * s, ground * .58, 310 * s, ground * .25);
-            ctx.fillStyle = '#aa784b'; ctx.fillRect(left + 22 * s, ground * .56, 326 * s, 9 * s);
+            ctx.fillStyle = M.greenTile; ctx.fillRect(left + 30 * s, ground * .58, 310 * s, ground * .25);
+            ctx.fillStyle = M.wood; ctx.fillRect(left + 22 * s, ground * .56, 326 * s, 9 * s);
             for (let i = 0; i < 3; i++) {
-                ctx.fillStyle = '#ac8055'; ctx.fillRect(left + 50 * s, ground * (.22 + i * .105), 200 * s, 5 * s);
+                ctx.fillStyle = M.woodLight; ctx.fillRect(left + 50 * s, ground * (.22 + i * .105), 200 * s, 5 * s);
                 for (let b = 0; b < 9; b++) {
                     ctx.fillStyle = ['#c7ad75', '#754a4d', '#acb7a3'][b % 3];
                     ctx.fillRect(left + (60 + b * 19) * s, ground * (.22 + i * .105) - 20 * s, 12 * s, 20 * s);
@@ -44,7 +46,7 @@ export default class DinoRunEnvironment {
     }
     draw(ctx, { width: w, height: h, ground, scale: s, distance, time }) {
         const light = runnerLighting(time);
-        ctx.fillStyle = '#524d45'; ctx.fillRect(0, 0, w, h);
+        ctx.fillStyle = M.wallTrim; ctx.fillRect(0, 0, w, h);
         if (this.image) {
             const tileHeight = ground / .711, tileWidth = tileHeight * this.image.width / this.image.height;
             const offset = mod(distance * s * .22, tileWidth);
@@ -58,8 +60,8 @@ export default class DinoRunEnvironment {
             this.gradientHeight = h;
             this.gradientGround = ground;
             this.floor = ctx.createLinearGradient(0, ground, 0, h);
-            this.floor.addColorStop(0, '#8d7b66');
-            this.floor.addColorStop(1, '#403d37');
+            this.floor.addColorStop(0, M.wood);
+            this.floor.addColorStop(1, M.woodDark);
             this.vignette = ctx.createLinearGradient(0, 0, 0, h);
             this.vignette.addColorStop(0, 'rgba(10,15,18,.40)');
             this.vignette.addColorStop(.3, 'rgba(10,15,18,0)');
@@ -67,7 +69,7 @@ export default class DinoRunEnvironment {
             this.vignette.addColorStop(1, 'rgba(10,15,18,.25)');
         }
         ctx.fillStyle = this.floor; ctx.fillRect(0, ground, w, h - ground);
-        ctx.fillStyle = '#d0a46e'; ctx.fillRect(0, ground, w, Math.max(1, s * 1.5));
+        ctx.fillStyle = M.woodLight; ctx.fillRect(0, ground, w, Math.max(1, s * 1.5));
         ctx.strokeStyle = 'rgba(232,206,166,.10)'; ctx.lineWidth = 1;
         const tile = 100 * s, offset = mod(distance * s, tile);
         for (let x = -offset; x < w; x += tile) { ctx.beginPath(); ctx.moveTo(x, ground + s * 5); ctx.lineTo(x - 35 * s, h); ctx.stroke(); }

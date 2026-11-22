@@ -110,6 +110,15 @@ try {
             assert.ok(started.time <= 240 && started.time > 239,
                 'The first 60Hz frame may already have elapsed after closing the entry dialog');
 
+            const collapsedInset = await page.evaluate(() => window.demianGameApplication.activeGame.renderer.scene.camera.insetTop);
+            assert.ok(collapsedInset > 0);
+            await page.locator('.shift-hud .game-readout__details > summary').click();
+            await page.waitForFunction(inset => window.demianGameApplication.activeGame.renderer.scene.camera.insetTop > inset,
+                collapsedInset, { timeout: 3000 });
+            await page.locator('.shift-hud .game-readout__details > summary').click();
+            await page.waitForFunction(inset => Math.abs(window.demianGameApplication.activeGame.renderer.scene.camera.insetTop - inset) < 2,
+                collapsedInset, { timeout: 3000 });
+
             await page.keyboard.down('ArrowLeft');
             await page.waitForTimeout(320);
             await page.keyboard.up('ArrowLeft');
@@ -204,6 +213,9 @@ try {
             assert.ok(win.score >= 1000 && win.score < 2000);
             assert.equal(win.best?.score, win.score);
             assert.equal(win.challenge, 'idle');
+            await wait(page, () => document.querySelector('[data-results-score-label]').textContent === 'زمان خروج');
+            await page.locator('[data-screen="results"]').waitFor();
+            assert.match(await page.locator('[data-results-score]').innerText(), /[۰-۹]{2}:[۰-۹]{2}/);
 
             if (label === 'mobile-390-portrait') {
                 await page.screenshot({

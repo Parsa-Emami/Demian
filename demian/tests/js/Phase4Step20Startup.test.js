@@ -71,7 +71,12 @@ test('Step 20: all games use explicit deferred launch; ranked routes still gate 
     assert.doesNotMatch(boot, /menuBackdrop: true/);
     const idx = world.indexOf("this.discovery.unlockSavePoint('save-entrance')");
     assert.ok(idx > 0);
-    assert.match(world.slice(idx, idx + 600), /this\.chunkManager\.update\(this\.manifest\.spawn\)/);
+    const bootAt = world.indexOf('await this.characterManager.boot(', idx);
+    const readyAt = world.indexOf("renderScene({ phase: 'ready'", bootAt);
+    assert.ok(bootAt > idx && readyAt > bootAt);
+    assert.doesNotMatch(world.slice(idx, bootAt), /chunkManager\.update\(this\.manifest\.spawn\)/);
+    assert.match(world.slice(bootAt, readyAt), /this\.updateStreaming\(true\)/,
+        'Initial chunk streaming begins after the essential player, before gameplay.');
     assert.match(world, /await this\.chunkManager\.ensureAround\(this\.manifest\.spawn\)/,
         'Ranked World Route must still await its starting geometry.');
     assert.match(crash, /preload\(\)\s*\{\s*[\s\S]*?void preloadFbxCafeArt\(\)/);

@@ -53,6 +53,7 @@ export default class FeedbackBurstPool {
         const count = Math.min(this.economy ? 2 : PARTICLE_COUNTS[kind],
             this.maxNodes - this.active.size);
         let created = 0;
+        const activated = [];
         for (let index = 0; index < count; index++) {
             const node = this.getNode();
             if (!node) break;
@@ -63,13 +64,16 @@ export default class FeedbackBurstPool {
             node.dataset.feedbackKind = kind;
             node.hidden = false;
             node.classList.remove('is-active');
-            void node.offsetWidth;
-            node.classList.add('is-active');
+            activated.push(node);
             this.active.add(node);
             this.timers.set(node, this.schedule(() => this.release(node), 550));
             created++;
         }
-        if (created) this.lastPlayed.set(kind, time);
+        if (created) {
+            void this.host.offsetWidth;
+            for (const node of activated) node.classList.add('is-active');
+            this.lastPlayed.set(kind, time);
+        }
         return created;
     }
 

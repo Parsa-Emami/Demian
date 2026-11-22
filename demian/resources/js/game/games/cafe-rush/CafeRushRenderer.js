@@ -1,5 +1,7 @@
 import CafeGameRenderer2D from '../../rendering2d/CafeGameRenderer2D.js';
 import { drawSpriteCharacter } from '../../rendering2d/PixelActorRenderer.js';
+import { drawCafeGroundShadow } from '../../rendering2d/CafeAtmosphere2D.js';
+import { CAFE_MATERIALS as M } from '../../rendering2d/CafeWalkthroughPalette.js';
 import { CAFE_STATIC_COLLIDERS } from '../../shared/cafe/CafeReferenceLayout.js';
 import { RECIPES, RUSH_BOUNDS, RUSH_SPOTS, RUSH_GUESTS, VIP_AT, rushObjective } from './CafeRushMap.js';
 
@@ -52,26 +54,39 @@ export default class CafeRushRenderer {
 
         const cast = [avatars.player, avatars.setayesh];
         if (model.elapsed >= VIP_AT) cast.push(avatars.uzudi);
-        cast.filter(Boolean).sort((first, second) =>
-            first.position.z - second.position.z).forEach(avatar =>
-            drawSpriteCharacter(ctx, camera, avatar, { alpha, player: false }));
+        // Same depth queue as Open World and After Hours. Flush before UI
+        // signs, which must always remain legible above moving characters.
+        for (const avatar of cast.filter(Boolean)) this.scene.queue.add({
+            layer: 20, y: avatar.position?.z ?? 0,
+            draw: () => drawSpriteCharacter(ctx, camera, avatar, { alpha, player: false }),
+        });
+        // Optional staff art can arrive later. While it is missing, the
+        // placeholder still participates in the SAME Z-order and foot shadow
+        // instead of floating in front of every foreground character.
         for (const slug of model.elapsed >= VIP_AT ? ['setayesh', 'uzudi'] : ['setayesh']) {
             if (avatars[slug]) continue;
-            const at = camera.worldToScreen(RUSH_GUESTS[slug]);
-            const radius = Math.max(6, camera.pixelsPerUnit * .55);
-            ctx.save();
-            ctx.fillStyle = '#785747';
-            ctx.strokeStyle = '#e8c59b';
-            ctx.lineWidth = 1.5;
-            ctx.beginPath();
-            ctx.ellipse(at.x, at.y - radius * 1.5, radius, radius * 1.7, 0, 0, Math.PI * 2);
-            ctx.fill(); ctx.stroke();
-            ctx.restore();
+            const position = RUSH_GUESTS[slug];
+            this.scene.queue.add({ layer: 20, y: position.z, draw: () => {
+                const at = camera.worldToScreen(position);
+                const radius = Math.max(6, camera.pixelsPerUnit * .55);
+                drawCafeGroundShadow(ctx, { x: at.x, y: at.y, bodyWidth: radius * 2,
+                    bodyHeight: radius * 3.5, quality: this.scene.cafe.stream.profile.quality });
+                ctx.save();
+                ctx.fillStyle = M.woodDark;
+                ctx.strokeStyle = M.cream;
+                ctx.lineWidth = 1.5;
+                ctx.beginPath();
+                ctx.ellipse(at.x, at.y - radius * 1.5, radius, radius * 1.7, 0, 0, Math.PI * 2);
+                ctx.fill(); ctx.stroke();
+                ctx.restore();
+            }});
         }
+        this.scene.queue.flush(ctx);
         const carried = model.carriedOrder;
         if (carried) this.drawTray(ctx, camera, model, carried);
         const objective = rushObjective(model);
-        for (const spot of RUSH_SPOTS) this.drawSign(ctx, camera, spot, spot.id === objective.id ? objective.marker : '', model);
+        const nearby = model.nearby();
+        for (const spot of RUSH_SPOTS) this.drawSign(ctx, camera, spot, spot.id === objective.id ? objective.marker : '', model, spot === nearby);
         if (cue) this.drawCue(ctx, camera, model.elapsed, cue);
         this.scene.end(ctx);
     }
@@ -148,7 +163,7 @@ export default class CafeRushRenderer {
         ctx.restore();
     }
 
-    drawSign(ctx, camera, spot, active, model) {
+    drawSign(ctx, camera, spot, active, model, reachable) {
         const at = camera.worldToScreen(spot);
         const size = Math.max(10, Math.min(14, camera.pixelsPerUnit * .73));
         const pending = spot.kind === 'station' ? model.stationOrder(spot.id) : null;
@@ -160,8 +175,8 @@ export default class CafeRushRenderer {
         ctx.direction = 'rtl';
         const width = ctx.measureText(label).width + 19;
         const y = at.y + size * .97;
-        ctx.strokeStyle = active ? '#fbce82' : '#996c51';
-        ctx.fillStyle = active ? '#4b2821' : '#382823';
+        ctx.strokeStyle = reachable ? '#c8eab0' : active ? '#fbce82' : '#996c51';
+        ctx.fillStyle = reachable ? '#27432c' : active ? '#4b2821' : '#382823';
         ctx.lineWidth = active ? 2 : 1;
         ctx.beginPath();
         ctx.roundRect(at.x - width / 2, y - size * .75, width, size * 1.52, 6);

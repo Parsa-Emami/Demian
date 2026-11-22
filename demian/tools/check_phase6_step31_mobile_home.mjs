@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { createReadStream, existsSync, mkdirSync, statSync, writeFileSync } from 'node:fs';
 import { createServer } from 'node:http';
 import { extname, resolve, sep } from 'node:path';
+import { BUILTIN_CHARACTER_SLUGS } from '../resources/js/game/characters/CharacterVisualContract.js';
 
 const root = resolve(import.meta.dirname, '../_site');
 const output = resolve(import.meta.dirname, '../docs/phase6-step31');
@@ -55,12 +56,14 @@ try {
         { name: 'phone-320-portrait', width: 320, height: 568 },
         { name: 'phone-390-portrait', width: 390, height: 844 },
         { name: 'phone-844-landscape', width: 844, height: 390 },
+        { name: 'desktop-1360', width: 1360, height: 900 },
     ]) {
+        const mobile = view.name.startsWith('phone-');
         const context = await browser.newContext({
             viewport: { width: view.width, height: view.height },
-            deviceScaleFactor: 2,
-            isMobile: true,
-            hasTouch: true,
+            deviceScaleFactor: mobile ? 2 : 1,
+            isMobile: mobile,
+            hasTouch: mobile,
             serviceWorkers: 'block',
         });
         try {
@@ -75,12 +78,15 @@ try {
             );
             const menu = page.locator('[data-screen="cafe-menu"]');
             assert.equal(await menu.isVisible(), true);
-            const showcase = menu.locator('.cafe-menu__showcase');
-            assert.equal(await showcase.isVisible(), true);
-            await showcase.scrollIntoViewIfNeeded();
-            await page.waitForFunction(() => [...document.querySelectorAll('.cafe-menu__portrait img')]
-                .every(image => image.complete && image.naturalWidth > 0), null, { timeout: 12000 });
-            assert.equal(await showcase.locator('img').count(), 3);
+            const openCharacters = mobile ? menu.locator('.cafe-menu__showcase')
+                : menu.getByRole('button', { name: 'بازکردن مدیریت کاراکترها', exact: true });
+            await openCharacters.waitFor({ state: 'visible' });
+            await openCharacters.scrollIntoViewIfNeeded();
+            if (mobile) {
+                await page.waitForFunction(() => [...document.querySelectorAll('.cafe-menu__portrait img')]
+                    .every(image => image.complete && image.naturalWidth > 0), null, { timeout: 12000 });
+                assert.equal(await openCharacters.locator('img').count(), 3);
+            }
             const geometry = await page.evaluate(() => {
                 const screen = document.querySelector('[data-screen="cafe-menu"]');
                 const content = screen.querySelector('.cafe-menu__content');
@@ -103,15 +109,41 @@ try {
                 path: resolve(output, `mobile-home-${view.name}.png`),
                 fullPage: false,
             });
-            await showcase.click();
+            await openCharacters.click();
             await page.waitForFunction(
                 () => document.querySelector('[data-manager-shell]')?.dataset.sidebarState === 'expanded',
                 null,
                 { timeout: 10000 }
             );
+            await page.locator('.manager-sidebar').evaluate(async sidebar => {
+                const elements = [sidebar, sidebar.querySelector('.manager-sidebar__scroll'),
+                    sidebar.querySelector('.sidebar-expanded-content')];
+                const transitions = elements.flatMap(element => element.getAnimations())
+                    .filter(animation => animation instanceof CSSTransition);
+                await Promise.allSettled(transitions.map(transition => transition.finished));
+            });
             const cards = page.locator('[data-character-card]');
-            assert.equal(await cards.count(), 12, 'The menu character roster must not be empty');
-            const limit = view.width === 390 ? 12 : 3;
+            assert.equal(await cards.count(), BUILTIN_CHARACTER_SLUGS.length);
+            const portraitGrid = await page.locator('[data-character-list]').evaluate(element => ({
+                columns: getComputedStyle(element).gridTemplateColumns.split(' ').length,
+                rows: new Set([...element.children].map(card => Math.round(card.offsetTop))).size,
+                portraitCount: element.querySelectorAll('.character-card--portrait').length,
+                width: element.clientWidth,
+                scrollWidth: element.scrollWidth,
+                framesFit: [...element.children].every(card => {
+                    const bounds = card.getBoundingClientRect();
+                    const frame = card.querySelector('.character-card__preview').getBoundingClientRect();
+                    return frame.width > 0 && frame.height > 0 &&
+                        frame.left >= bounds.left - 1 && frame.right <= bounds.right + 1 &&
+                        frame.top >= bounds.top - 1 && frame.bottom <= bounds.bottom + 1;
+                }),
+            }));
+            assert.equal(portraitGrid.portraitCount, BUILTIN_CHARACTER_SLUGS.length);
+            assert.equal(portraitGrid.columns, view.width <= 365 ? 3 : 4);
+            assert.equal(portraitGrid.rows, Math.ceil(BUILTIN_CHARACTER_SLUGS.length / portraitGrid.columns));
+            assert.ok(portraitGrid.scrollWidth <= portraitGrid.width + 2, `${view.name}: ${JSON.stringify(portraitGrid)}`);
+            assert.ok(portraitGrid.framesFit, `${view.name}: portrait frames must fit within their cards`);
+            const limit = view.width === 390 ? BUILTIN_CHARACTER_SLUGS.length : 3;
             for (let i = 0; i < limit; i++) {
                 const canvas = cards.nth(i).locator('[data-character-preview]');
                 await canvas.scrollIntoViewIfNeeded();
@@ -152,6 +184,7 @@ try {
                 status: 'passed',
                 rosterCards: await cards.count(),
                 checkedPortraits: limit,
+                portraitGrid,
                 geometry,
                 javascriptErrors: pageErrors,
             });

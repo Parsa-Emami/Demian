@@ -1,0 +1,109 @@
+{
+  "mainStates": [
+    "turn",
+    "idle",
+    "jump",
+    "celebrate"
+  ],
+  "mainRowBounds": [
+    0,
+    240,
+    480,
+    720,
+    960
+  ],
+  "motionColumns": 8,
+  "motionRowBounds": [
+    0,
+    240,
+    480,
+    720
+  ],
+  "motionRowStates": [
+    "walk",
+    "run",
+    "land"
+  ],
+  "referenceAsset": "../source-v14/reference.jpg",
+  "referenceInputs": [
+    {
+      "name": "reference.jpg",
+      "role": "supplied-identity-sheet-and-key-poses",
+      "sha256": "771d08215f30a5cbf32b4cce4b6a2176019fcd9641820566865fe85bc3674310"
+    }
+  ],
+  "identity": [
+    "swept-back dark hair with short sides and a close full beard",
+    "navy short-sleeved polo and dark indigo jeans",
+    "black wristwatch and dark sneakers with tan soles",
+    "pink TEAM FOCUS and 1UP print on the back of the polo",
+    "raised peace sign and wink in the reference victory pose"
+  ],
+  "bodyScaleReferencePoses": {
+    "walk": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "run": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "jump": [
+      7
+    ],
+    "land": [
+      0,
+      6,
+      7
+    ],
+    "celebrate": [
+      0,
+      7
+    ]
+  },
+  "locomotionCycleCounts": {
+    "walk": 1,
+    "run": 1
+  },
+  "locomotionReference": {
+    "character": "arsal",
+    "states": [
+      "walk",
+      "run",
+      "jump",
+      "land",
+      "slide"
+    ]
+  },
+  "idleLoopDirections": [
+    "e"
+  ],
+  "slideSharesIdleScale": true,
+  "poseSelections": {
+    "slide": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ]
+  },
+  "faceSampleHeightRatio": 0.5,
+  "faceSkinRedGreenRatio": 1.1,
+  "indexedPalette": true
+}

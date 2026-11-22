@@ -8,7 +8,7 @@
  * (see check_startup_diagnostics.mjs) measures JS compilation separately.
  */
 const GAME_IDS = new Set([
-    'open-world', 'dino-run', 'after-hours', 'cafe-rush', 'cafe-critters', 'coffee-crash',
+    'open-world', 'dino-run', 'after-hours', 'cafe-rush', 'cafe-critters', 'coffee-crash', 'cafe-drift',
 ]);
 const MAX_GAME_RUNS = 24;
 const MAX_SPRITE_SAMPLES = 96;
@@ -182,6 +182,13 @@ export default class StartupPerformanceDiagnostics {
             attempt.record.status = 'playing';
             this.activeGame = null;
             this.updateStatus();
+        }));
+        this.subscriptions.push(this.eventBus.on('game:first-playable-frame', ({ gameId, durationMs }) => {
+            const record = this.games.at(-1);
+            if (record?.game === gameId && record.status === 'playing') {
+                record.firstPlayableFrameMs = rounded(durationMs);
+                this.updateStatus();
+            }
         }));
         this.subscriptions.push(this.eventBus.on('game:load-failed', ({ gameId }) => {
             const attempt = this.activeGame;

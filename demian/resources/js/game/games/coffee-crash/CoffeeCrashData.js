@@ -1,3 +1,5 @@
+import { coffeeStageSpec } from '../../content/WeeklyContent.js';
+
 export const COLS = 7;
 export const ROWS = 8;
 export const INGREDIENTS = Object.freeze([
@@ -20,3 +22,11 @@ export const LEVELS = Object.freeze(names.map((name, index) => Object.freeze({
 })));
 export const SPECIAL_LABELS = Object.freeze({ row: 'راه‌راه افقی', column: 'راه‌راه عمودی', bomb: 'بمب قهوه', rainbow: 'فنجان رنگین' });
 export const digits = new Intl.NumberFormat('fa-IR', { useGrouping: false });
+
+export function weeklyCoffeeLevels(week) {
+    return [1, 2, 3].map(stage => {
+        const spec = coffeeStageSpec(week, stage);
+        const goal = INGREDIENTS[spec.goals[0].type].label;
+        return { ...spec, name: stage === 1 ? `سفارش ${goal}` : stage === 2 ? `ترکیب ${goal}` : `سفارش ویژهٔ ${goal}` };
+    });
+}

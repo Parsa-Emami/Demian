@@ -173,10 +173,10 @@ final class ArcadePlatformTest extends TestCase
     public function test_games_endpoint_never_licenses_unverified_mini_game_scores(): void
     {
         $games = $this->getJson('/api/v1/arcade/games')->assertOk()->json('games');
-        $this->assertCount(6, $games);
+        $this->assertCount(7, $games);
         $ranked = array_values(array_filter($games, fn (array $game): bool => $game['ranked']));
-        $this->assertSame(['dino-run'], array_column($ranked, 'game_id'));
-        $this->assertSame('server-replay', $ranked[0]['verification']);
+        $this->assertSame(['dino-run', 'cafe-drift'], array_column($ranked, 'game_id'));
+        $this->assertSame(['server-replay', 'server-replay'], array_column($ranked, 'verification'));
         $this->getJson('/api/v1/arcade/leaderboards/dino-run?period=weekly')
             ->assertOk()->assertJsonPath('period', 'weekly')
             ->assertJsonStructure(['server_time', 'next_reset_at', 'seconds_remaining', 'data']);

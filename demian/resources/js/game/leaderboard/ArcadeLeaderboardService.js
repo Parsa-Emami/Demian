@@ -1,8 +1,12 @@
+import driftRules from '../../../game/cafe-drift-rules.json' with { type: 'json' };
+import { RECORD_GAMES, deviceMetric } from './GameRecord.js';
+import { weeklyVersion, WEEKLY_VERSIONS } from '../content/WeeklyContent.js';
 import rules from '../../../game/runner-rules.json' with { type: 'json' };
 import { validRunnerSession } from './RunnerSessionContract.js';
 import { requestLegalAcknowledgement, LEGAL_VERSION } from './LegalConsent.js';
 
 const PROFILE_KEY = 'demian.arcade.profile.v1';
+const DEVICE_PREFIX = 'demian.arcade.records.v1.';
 const LOCAL_KEY = `demian.arcade.scores.${rules.version}`;
 const safeRead = (storage, key, fallback) => { try { return JSON.parse(storage?.getItem(key)) ?? fallback; } catch { return fallback; } };
 const safeWrite = (storage, key, value) => { try { storage?.setItem(key, JSON.stringify(value)); } catch {} };
@@ -146,13 +150,22 @@ export default class ArcadeLeaderboardService {
         // Real users must confirm; canceling keeps all games in practice mode.
         let acceptance = null;
         if (globalThis.document?.body) {
-            acceptance = await requestLegalAcknowledgement();
+            const policy = await this.request('/legal');
+            const requiresContact = policy.require_contact === true;
+            acceptance = await requestLegalAcknowledgement(document, { contact: requiresContact, newProfile: requiresContact });
+            if (acceptance && requiresContact) {
+                const key = `demian.arcade.registration:${this.baseUrl}`;
+                acceptance.registration_key = safeRead(this.storage, key, null) ?? crypto.randomUUID();
+                safeWrite(this.storage, key, acceptance.registration_key);
+            }
             if (!acceptance) throw new Error('برای حساب آنلاین، مطالعه و پذیرش قوانین لازم است؛ حالت تمرینی همچنان فعال است.');
         }
         this.identity = await this.request('/players', {
             method: 'POST', body: { display_name: this.displayName, ...(acceptance ?? {}) },
         });
         this.acceptedLegalVersion = acceptance?.policy_version ?? null;
+        this.profile = { display_name: this.identity.display_name ?? this.profile.display_name };
+        safeWrite(this.storage, PROFILE_KEY, this.profile);
         safeWrite(this.identityStorage, this.identityKey, this.identity);
         this.accountKnown = true;
         safeWrite(this.storage, this.accountMarkerKey, true);
@@ -171,6 +184,17 @@ export default class ArcadeLeaderboardService {
         const active = await this.request('/legal');
         if (active?.version !== LEGAL_VERSION) {
             throw new Error('نسخه قوانین بازی تغییر کرده است؛ صفحه را به‌روزرسانی کن.');
+        }
+        if (active.require_contact === true && this.identity?.has_contact !== true) {
+            const player = await this.request('/player', { authenticated: true });
+            if (player.has_contact !== true) {
+                const contact = await requestLegalAcknowledgement(document, { contact: true });
+                if (!contact) throw new Error('برای بازی رقابتی یک راه ارتباطی وارد کنید.');
+                await this.request('/player/contact', { method: 'PATCH', authenticated: true,
+                    body: { contact_type: contact.contact_type, contact_value: contact.contact_value } });
+            }
+            this.identity.has_contact = true;
+            safeWrite(this.identityStorage, this.identityKey, this.identity);
         }
         if (active.require_acceptance !== true) return;
         if (this.acceptedLegalVersion === active.version) return;
@@ -289,9 +313,10 @@ export default class ArcadeLeaderboardService {
         try {
             await this.ensureIdentity();
             await this.ensureRankedPolicy();
+            const version = weeklyVersion('dino-run', rules.version);
             const result = await this.request('/runs', { method: 'POST', authenticated: true,
-                body: { request_id: crypto.randomUUID(), game_id: 'dino-run', character_slug: character, track_width: width, rules_version: rules.version } });
-            if (!validRunnerSession(result, width)) throw new Error('پاسخ شروع دور معتبر نیست.');
+                body: { request_id: crypto.randomUUID(), game_id: 'dino-run', character_slug: character, track_width: width, rules_version: version } });
+            if (!validRunnerSession(result, width, version)) throw new Error('پاسخ شروع دور معتبر نیست.');
             return { ...result, mode: 'ranked' };
         } catch (error) {
             if (error.status === 401) { this.identity = null; safeWrite(this.identityStorage, this.identityKey, null); }
@@ -301,7 +326,7 @@ export default class ArcadeLeaderboardService {
     async startTurnRun(gameId = 'cafe-critters', { gameplay = false } = {}) {
         const practice = { mode: 'practice', reason: 'این بازی در حالت تمرینی اجرا می‌شود.' };
         if (!['cafe-critters', 'coffee-crash',
-            'after-hours', 'cafe-rush', 'open-world'].includes(gameId) || !this.connected
+            'after-hours', 'cafe-rush', 'open-world', 'cafe-drift'].includes(gameId) || !this.connected
             || (gameplay && !['after-hours', 'cafe-rush'].includes(gameId))) return practice;
         if (this.needsAccountRestore) return { ...practice,
             reason: 'برای ارسال امتیاز آنلاین ابتدا حساب اصلی را بازیابی کن.' };
@@ -313,16 +338,19 @@ export default class ArcadeLeaderboardService {
         try {
             await this.ensureIdentity();
             await this.ensureRankedPolicy();
-            const expectedVersion = gameplay ? ({
+            const legacyVersion = gameplay ? ({
                 'after-hours': 'after-hours-frames-v1',
                 'cafe-rush': 'cafe-rush-frames-v1',
             })[gameId] : ({
                 'coffee-crash': 'coffee-crash-replay-v1',
+                'cafe-drift': driftRules.version,
                 'cafe-critters': 'cafe-critters-replay-v1',
                 'after-hours': 'after-hours-route-v1',
                 'cafe-rush': 'cafe-rush-route-v1',
                 'open-world': 'open-world-route-v2',
             })[gameId];
+            const expectedVersion = gameplay || ['coffee-crash', 'cafe-critters', 'open-world'].includes(gameId)
+                ? weeklyVersion(gameId, legacyVersion) : legacyVersion;
             const response = await this.request('/turn-runs', {
                 method: 'POST', authenticated: true,
                 body: { request_id: crypto.randomUUID(), game_id: gameId,
@@ -330,7 +358,8 @@ export default class ArcadeLeaderboardService {
             });
             if (response.game_id !== gameId
                 || response.rules_version !== expectedVersion
-                || !Number.isSafeInteger(response.seed)) throw new Error('نسخه یا بذر سرور نامعتبر است.');
+                || !Number.isSafeInteger(response.seed)
+                || (expectedVersion === WEEKLY_VERSIONS[gameId] && (!Number.isSafeInteger(response.content_week) || response.content_week < 0))) throw new Error('نسخه یا بذر سرور نامعتبر است.');
             return { ...response, mode: 'ranked' };
         } catch (error) {
             if (error.status === 401) {
@@ -344,13 +373,15 @@ export default class ArcadeLeaderboardService {
         const gameplayVersion = ({
             'after-hours': 'after-hours-frames-v1',
             'cafe-rush': 'cafe-rush-frames-v1',
+            'cafe-drift': driftRules.version,
         })[run?.game_id];
         if (run?.mode !== 'ranked'
             || !['cafe-critters', 'coffee-crash',
-                'after-hours', 'cafe-rush', 'open-world'].includes(run.game_id)
+                'after-hours', 'cafe-rush', 'open-world', 'cafe-drift'].includes(run.game_id)
             || !Array.isArray(actions) || !Number.isInteger(ticks)
             || !['actions', 'frames'].includes(proofKind)
-            || (proofKind === 'frames' && run.rules_version !== gameplayVersion)) {
+            || (proofKind === 'frames' && run.rules_version !== gameplayVersion
+                && !(gameplayVersion && run.rules_version === WEEKLY_VERSIONS[run.game_id]))) {
             return { status: 'practice' };
         }
         const body = { ticks, [proofKind]: actions.map(action =>
@@ -503,10 +534,13 @@ export default class ArcadeLeaderboardService {
             throw error;
         }
     }
-    async personalBest(period = 'weekly') {
+    async personalBest(period = 'weekly', gameId = 'dino-run', week = '') {
         if (!this.connected || !this.identity?.token) return null;
         try {
-            return await this.request(`/player/best?period=${encodeURIComponent(period)}`,
+            const query = new URLSearchParams({ period });
+            if (gameId !== 'dino-run') query.set('game_id', gameId);
+            if (week) query.set('week', week);
+            return await this.request(`/player/best?${query}`,
                 { authenticated: true });
         } catch (error) {
             if (error.status === 401) {
@@ -537,19 +571,31 @@ export default class ArcadeLeaderboardService {
         try { this.storage?.removeItem?.(this.identityKey); } catch {}
         safeWrite(this.storage, PROFILE_KEY, this.profile);
         safeWrite(this.storage, LOCAL_KEY, []);
+        for (const game of RECORD_GAMES) safeWrite(this.storage, DEVICE_PREFIX + game, []);
         return { status: 'deleted' };
     }
-    async list(period = 'weekly', gameId = 'dino-run') {
-        const games = ['dino-run', 'cafe-critters', 'coffee-crash',
-            'after-hours', 'cafe-rush', 'open-world'];
-        if (!games.includes(gameId)) throw new Error('Unknown ranked game.');
+    deviceRecords(game) {
+        const rows = safeRead(this.storage, DEVICE_PREFIX + game, []);
+        return Array.isArray(rows) ? rows.filter(row => row && deviceMetric(game, row) !== null
+            && typeof row.display_name === 'string' && typeof row.achieved_at === 'string') : [];
+    }
+    recordDevice(game, record) {
+        if (!RECORD_GAMES.includes(game) || game === 'dino-run' || !record || deviceMetric(game, record) === null) return;
+        const fields = ['score', 'ticks', 'passed', 'stage'];
+        const row = { display_name: this.displayName, achieved_at: new Date().toISOString() };
+        for (const field of fields) if (Number.isSafeInteger(record[field]) && record[field] >= 0) row[field] = record[field];
+        const rows = [...this.deviceRecords(game), row].sort((a, b) => deviceMetric(game, b) - deviceMetric(game, a)
+            || (b.score ?? 0) - (a.score ?? 0) || a.achieved_at.localeCompare(b.achieved_at));
+        safeWrite(this.storage, DEVICE_PREFIX + game, rows.slice(0, 20));
+    }
+    async list(period = 'weekly', gameId = 'dino-run', week = '') {
+        if (!RECORD_GAMES.includes(gameId)) throw new Error('Unknown ranked game.');
         if (this.connected && period !== 'device') {
-            return { ...await this.request(
-                `/leaderboards/${gameId}?period=${encodeURIComponent(period)}&limit=20`
-            ), mode: 'online' };
+            const query = new URLSearchParams({ period, limit: '20' });
+            if (week) query.set('week', week);
+            return { ...await this.request(`/leaderboards/${gameId}?${query}`), mode: 'online' };
         }
-        // Dino is the only game with legacy device leaderboard storage.
-        return { mode: 'device', data: gameId === 'dino-run'
-            ? this.localScores().map((row, index) => ({ ...row, rank: index + 1 })) : [] };
+        const rows = gameId === 'dino-run' ? this.localScores() : this.deviceRecords(gameId);
+        return { mode: 'device', data: rows.map((row, index) => ({ ...row, rank: index + 1 })) };
     }
 }

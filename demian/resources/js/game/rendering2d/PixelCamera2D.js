@@ -10,6 +10,8 @@ export default class PixelCamera2D {
         this.pixelsPerUnit = pixelsPerUnit;
         this.targetPixelsPerUnit = pixelsPerUnit;
         this.smoothing = smoothing;
+        this.insetTop = 0;
+        this.insetBottom = 0;
         this.pixelSnap = pixelSnap;
         this.position = { x: 0, z: 0 };
         this.target = { x: 0, z: 0 };
@@ -18,6 +20,15 @@ export default class PixelCamera2D {
     resize(width, height) {
         this.viewportWidth = Math.max(1, Number(width) || 1);
         this.viewportHeight = Math.max(1, Number(height) || 1);
+        this.clampTarget();
+        return this;
+    }
+
+    get playfieldCenterY() { return (this.viewportHeight + this.insetTop - this.insetBottom) / 2; }
+
+    setVerticalInsets(top = 0, bottom = 0) {
+        this.insetTop = clamp(top, 0, this.viewportHeight * .45);
+        this.insetBottom = clamp(bottom, 0, this.viewportHeight * .25);
         this.clampTarget();
         return this;
     }
@@ -49,7 +60,8 @@ export default class PixelCamera2D {
     jumpTo(target) { return this.follow(target, { immediate: true }); }
 
     update(deltaTime = 1 / 60) {
-        const alpha = 1 - Math.exp(-this.smoothing * Math.max(0, deltaTime));
+        const dt = Number.isFinite(deltaTime) ? Math.min(0.15, Math.max(0, deltaTime)) : 0;
+        const alpha = 1 - Math.exp(-this.smoothing * dt);
         this.position.x += (this.target.x - this.position.x) * alpha;
         this.position.z += (this.target.z - this.position.z) * alpha;
         this.pixelsPerUnit += (this.targetPixelsPerUnit - this.pixelsPerUnit) * alpha;
@@ -58,7 +70,7 @@ export default class PixelCamera2D {
 
     clampTarget() {
         const halfWidth = this.viewportWidth / (2 * this.targetPixelsPerUnit);
-        const halfHeight = this.viewportHeight / (2 * this.targetPixelsPerUnit);
+        const halfHeight = (this.viewportHeight - this.insetTop - this.insetBottom) / (2 * this.targetPixelsPerUnit);
         const minX = this.bounds.minX + halfWidth;
         const maxX = this.bounds.maxX - halfWidth;
         const minZ = this.bounds.minZ + halfHeight;
@@ -71,14 +83,14 @@ export default class PixelCamera2D {
         const sample = this.pixelSnap ? Math.round : (value) => value;
         return {
             x: sample(this.viewportWidth / 2 + ((Number(world?.x) || 0) - this.position.x) * this.pixelsPerUnit),
-            y: sample(this.viewportHeight / 2 + ((Number(world?.z) || 0) - this.position.z) * this.pixelsPerUnit),
+            y: sample(this.playfieldCenterY + ((Number(world?.z) || 0) - this.position.z) * this.pixelsPerUnit),
         };
     }
 
     screenToWorld(screen) {
         return {
             x: this.position.x + ((Number(screen?.x) || 0) - this.viewportWidth / 2) / this.pixelsPerUnit,
-            z: this.position.z + ((Number(screen?.y) || 0) - this.viewportHeight / 2) / this.pixelsPerUnit,
+            z: this.position.z + ((Number(screen?.y) || 0) - this.playfieldCenterY) / this.pixelsPerUnit,
         };
     }
 

@@ -50,6 +50,24 @@ export default class MasterMotionController {
         return this.pose;
     }
 
+    adoptFrom(previous) {
+        if (previous?.definition?.slug !== this.definition.slug) return this.reset();
+        this.phase = previous.phase;
+        this.distance = previous.distance;
+        this.elapsed = previous.elapsed;
+        this.previousPhase = null;
+        this.previousState = null;
+        const pose = this.sync({
+            state: previous.pose.state,
+            phase: previous.phase,
+            progress: previous.pose.progress,
+            facing: previous.pose.facing,
+        });
+        this.previousPhase = previous.previousPhase;
+        this.previousState = previous.previousState;
+        return pose;
+    }
+
     reset() {
         this.phase = 0;
         this.distance = 0;

@@ -24,7 +24,7 @@ final class WeeklyLeaderboardReadService
         private readonly WeeklyCompetitionService $competition,
     ) {}
 
-    private function window(?string $localSaturday = null): array
+    public function window(?string $localSaturday = null): array
     {
         $current = $this->competition->window(CarbonImmutable::now('UTC'));
         $key = $localSaturday === null

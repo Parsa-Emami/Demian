@@ -1,73 +1,67 @@
-/** Assert independently deployed game chunks and all Vite dependency edges. */
-import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
-import { resolve, relative, join, sep } from 'node:path';
+import { existsSync, lstatSync, readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { gzipSync } from 'node:zlib';
 
 const projectRoot = resolve(import.meta.dirname, '..');
-const index = process.argv.indexOf('--build-root');
-const root = index >= 0 ? resolve(process.cwd(), process.argv[index + 1] ?? '') :
-    resolve(projectRoot, 'public/build');
+const option = process.argv.indexOf('--build-root');
+const buildRoot = option >= 0
+    ? resolve(process.cwd(), process.argv[option + 1] ?? '')
+    : resolve(projectRoot, 'public/build');
 const failures = [];
 const fail = message => failures.push(message);
-const gameSources = Object.freeze({
-    'open-world': 'resources/js/game/games/open-world/OpenWorldGame.js',
-    'dino-run': 'resources/js/game/games/dino-run/DinoRunGame.js',
-    'after-hours': 'resources/js/game/games/after-hours/AfterHoursGame.js',
-    'cafe-rush': 'resources/js/game/games/cafe-rush/CafeRushGame.js',
-    'cafe-critters': 'resources/js/game/games/cafe-critters/CafeCrittersGame.js',
-    'coffee-crash': 'resources/js/game/games/coffee-crash/CoffeeCrashGame.js',
-});
-let manifest = {};
+const filePath = path => resolve(buildRoot, path);
+let manifest = null;
 try {
-    manifest = JSON.parse(readFileSync(join(root, 'manifest.json'), 'utf8'));
+    manifest = JSON.parse(readFileSync(filePath('manifest.json'), 'utf8'));
 } catch (error) {
-    fail('Missing or invalid Vite manifest: ' + error.message);
+    fail('Missing Vite build manifest: ' + error.message);
+    manifest = {};
 }
-const entry = manifest['resources/js/app.js'];
-if (!entry?.isEntry || !entry.file) fail('Application entry is missing.');
-const safe = file => typeof file === 'string' && /^[a-zA-Z0-9][a-zA-Z0-9_./-]*$/.test(file) &&
-    !file.includes('..') && !file.startsWith('/');
-const checkFile = (file, source) => {
-    if (!safe(file)) { fail('Unsafe output path from ' + source + ': ' + file); return; }
-    const target = resolve(root, file);
-    if (!target.startsWith(root + sep) || !existsSync(target) || !statSync(target).isFile()) {
-        fail('Missing output file from ' + source + ': ' + file);
-    }
-};
-for (const [source, asset] of Object.entries(manifest)) {
-    if (asset.file) checkFile(asset.file, source);
-    for (const file of [...(asset.css ?? []), ...(asset.assets ?? [])]) checkFile(file, source);
-    for (const dependency of [...(asset.imports ?? []), ...(asset.dynamicImports ?? [])]) {
-        if (!manifest[dependency]) fail('Unresolved manifest import: ' + source + ' -> ' + dependency);
+const entryKey = 'resources/js/app.js';
+const entry = manifest[entryKey];
+if (!entry?.isEntry || !entry.file) fail('Missing app JavaScript entry');
+const nameOK = path => typeof path === 'string'
+    && /^assets\/[a-zA-Z0-9][a-zA-Z0-9._/-]*$/.test(path)
+    && !path.split('/').some(part => part === '..' || part === '.');
+function checkFile(path) {
+    if (!nameOK(path)) { fail('Unsafe build filename: ' + String(path)); return; }
+    const absolute = filePath(path);
+    if (!existsSync(absolute) || !lstatSync(absolute).isFile() || lstatSync(absolute).size === 0) {
+        fail('Missing or empty split build resource: ' + path);
     }
 }
-const gameFiles = [];
-for (const [game, source] of Object.entries(gameSources)) {
-    const row = manifest[source];
+for (const [key, row] of Object.entries(manifest)) {
+    if (row.file) checkFile(row.file);
+    for (const asset of [...(row.css ?? []), ...(row.assets ?? [])]) checkFile(asset);
+    for (const ref of [...(row.imports ?? []), ...(row.dynamicImports ?? [])]) {
+        if (!manifest[ref]) fail('Unresolved Vite manifest import: ' + key + ' -> ' + ref);
+    }
+}
+const games = [
+    'open-world/OpenWorldGame.js', 'dino-run/DinoRunGame.js',
+    'after-hours/AfterHoursGame.js', 'cafe-rush/CafeRushGame.js',
+    'cafe-critters/CafeCrittersGame.js', 'coffee-crash/CoffeeCrashGame.js', 'cafe-drift/CafeDriftGame.js',
+];
+const unique = new Set([entry?.file]);
+for (const game of games) {
+    const key = 'resources/js/game/games/' + game;
+    const row = manifest[key];
     if (!row?.file || !row.isDynamicEntry || row.file === entry?.file) {
-        fail('Game did not emit a separate dynamic chunk: ' + game);
-        continue;
+        fail('Missing separate dynamic game module: ' + key);
+    } else {
+        unique.add(row.file);
+        if (!row.file.endsWith('.js')) fail('Invalid game chunk extension: ' + row.file);
     }
-    gameFiles.push(row.file);
-    if (!row.file.endsWith('.js')) fail('Invalid game JS chunk: ' + row.file);
 }
-if (new Set(gameFiles).size !== 6) fail('Every game must have a distinct JS chunk.');
-if (!entry?.file?.endsWith('.js')) fail('Application entry must be JavaScript.');
-let gzipBytes = 0;
-if (entry?.file && safe(entry.file) && existsSync(join(root, entry.file))) {
-    gzipBytes = gzipSync(readFileSync(join(root, entry.file))).byteLength;
-    if (gzipBytes >= 400 * 1024) fail('Initial shell exceeds 400 KiB gzip: ' + gzipBytes);
+if (unique.size !== games.length + 1) fail('Game modules are not separately emitted');
+if (entry?.file && existsSync(filePath(entry.file))) {
+    const bytes = gzipSync(readFileSync(filePath(entry.file))).length;
+    if (bytes > 340 * 1024) fail('Startup bundle exceeds 340 KiB compressed: ' + bytes);
 }
-const javascriptFiles = existsSync(join(root, 'assets'))
-    ? readdirSync(join(root, 'assets')).filter(name => name.endsWith('.js')) : [];
-if (javascriptFiles.length < 7) fail('Expected shell and at least six lazy JS chunks.');
 if (failures.length) {
-    console.error('Lazy chunk validation failed:\n' + failures.map(row => '- ' + row).join('\n'));
-    process.exitCode = 1;
-} else {
-    console.log('Lazy Demian build: PASSED');
-    console.log('Initial JS: ' + relative(root, join(root, entry.file)) + ' (' + gzipBytes + ' gzip bytes)');
-    for (const [game, source] of Object.entries(gameSources)) {
-        console.log(game + ': ' + manifest[source].file);
-    }
+    console.error('Versioned chunk build rejected (' + failures.length + '):\n'
+        + failures.map(x => '- ' + x).join('\n'));
+    process.exit(1);
 }
+console.log('Versioned dynamic chunk build validated: ' + unique.size
+    + ' entry/game files; startup gzip ' + gzipSync(readFileSync(filePath(entry.file))).length + ' bytes.');

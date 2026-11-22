@@ -1,0 +1,122 @@
+{
+  "mainStates": [
+    "turn",
+    "idle",
+    "walk",
+    "jump",
+    "celebrate"
+  ],
+  "mainRowBounds": [
+    0,
+    256,
+    512,
+    768,
+    1024,
+    1280
+  ],
+  "motionColumns": 8,
+  "motionRowBounds": [
+    0,
+    256,
+    512,
+    768
+  ],
+  "motionRowStates": [
+    "run",
+    "run",
+    "land"
+  ],
+  "locomotionReference": "arsal",
+  "locomotionCycleCounts": {
+    "run": 2,
+    "sprint": 2
+  },
+  "animationAliases": {
+    "tiptoe": "walk",
+    "hop": "jump",
+    "hover": "jump",
+    "skid": "run",
+    "dash": "run",
+    "dodge": "slide",
+    "salute": "wave"
+  },
+  "bodyScaleReferencePoses": {
+    "walk": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "run": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15
+    ],
+    "jump": [
+      7
+    ],
+    "land": [
+      5,
+      6,
+      7
+    ],
+    "celebrate": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ]
+  },
+  "idleLoopDirections": [
+    "se"
+  ],
+  "slideRows": [
+    1
+  ],
+  "slideSharesIdleScale": true,
+  "faceSampleHeightRatio": 0.5,
+  "faceSkinRedGreenRatio": 1.1,
+  "indexedPalette": true,
+  "referenceAsset": "../source-v14/reference.jpg",
+  "referenceInputs": [
+    {
+      "name": "image(20261118-111649).png",
+      "role": "user-supplied-mahyar-identity-sheet",
+      "sha256": "80e1926804a03615ff19d978aec5794a0486c5743c0efd47251ab51bdfd776c2"
+    },
+    {
+      "name": "../../arsal/source-v14/locomotion-v15.png",
+      "role": "pose-order-walk-run-and-jump",
+      "sha256": "04cbb37f965051b6b6146a09b8abf4a435da7ad67c9afde6ea1adcac2b446d9d"
+    }
+  ],
+  "identity": [
+    "swept-up dark brown hair and clean-shaven warm face",
+    "rectangular grey glasses",
+    "light sage-green crewneck sweatshirt",
+    "dark blue jeans",
+    "dark sneakers with cream soles",
+    "black watch on the left wrist when visible"
+  ]
+}

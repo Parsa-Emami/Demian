@@ -22,8 +22,10 @@
     </source>
 
     <php>
+        <env name="DEMIAN_ARCADE_REQUIRE_CONTACT" value="false"/>
         <env name="APP_URL" value="http://localhost"/>
         <env name="APP_ENV" value="testing"/>
+        <env name="DEMIAN_WEEKLY_CONTENT_AT" value="2099-11-20T20:30:00Z"/>
 
         <!-- Prevent maintenance state from depending on database/cache -->
         <env name="APP_MAINTENANCE_DRIVER" value="file"/>

@@ -1,0 +1,121 @@
+{
+  "mainStates": [
+    "turn",
+    "idle",
+    "walk",
+    "jump",
+    "celebrate"
+  ],
+  "mainRowBounds": [
+    0,
+    256,
+    512,
+    768,
+    1024,
+    1280
+  ],
+  "motionColumns": 8,
+  "motionRowBounds": [
+    0,
+    256,
+    512,
+    768
+  ],
+  "motionRowStates": [
+    "run",
+    "run",
+    "land"
+  ],
+  "locomotionReference": "arsal",
+  "locomotionCycleCounts": {
+    "run": 2,
+    "sprint": 2
+  },
+  "animationAliases": {
+    "tiptoe": "walk",
+    "hop": "jump",
+    "hover": "jump",
+    "skid": "run",
+    "dash": "run",
+    "dodge": "slide",
+    "salute": "wave"
+  },
+  "bodyScaleReferencePoses": {
+    "walk": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "run": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15
+    ],
+    "jump": [
+      7
+    ],
+    "land": [
+      5,
+      6,
+      7
+    ],
+    "celebrate": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ]
+  },
+  "idleLoopDirections": [
+    "se"
+  ],
+  "slideRows": [
+    1
+  ],
+  "slideSharesIdleScale": true,
+  "faceSampleHeightRatio": 0.5,
+  "faceSkinRedGreenRatio": 1.1,
+  "indexedPalette": true,
+  "referenceAsset": "../source-v14/reference.jpg",
+  "referenceInputs": [
+    {
+      "name": "03-image-20261118-111855-.png",
+      "role": "user-supplied-mori-identity-sheet",
+      "sha256": "fd089ef25f5b656b99b311ec444c255c7e17cb84d4e8dfb3e85f192e2a76803c"
+    },
+    {
+      "name": "../../arsal/source-v14/locomotion-v15.png",
+      "role": "pose-order-walk-run-and-jump",
+      "sha256": "04cbb37f965051b6b6146a09b8abf4a435da7ad67c9afde6ea1adcac2b446d9d"
+    }
+  ],
+  "identity": [
+    "short curly dark brown hair",
+    "round black glasses and light stubble",
+    "blue rib-knit crewneck sweater",
+    "dark indigo jeans",
+    "black sneakers with cream soles"
+  ]
+}

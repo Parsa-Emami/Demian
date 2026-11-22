@@ -61,6 +61,21 @@
       }
     },
     {
+      "id": "builtin-elaheh",
+      "name": "ELAHEH / الهه",
+      "slug": "elaheh",
+      "is_builtin": true,
+      "is_active": false,
+      "sprite_url": "assets/characters/elaheh/elaheh-spritesheet-v14-mobile.png",
+      "atlas_url": "assets/characters/elaheh/elaheh-atlas-v14-mobile.json",
+      "settings": {
+        "scale": 1,
+        "walk_speed": 3.55,
+        "run_speed": 6.9,
+        "jump_force": 6.8
+      }
+    },
+    {
       "id": "builtin-tiam",
       "name": "TIAM / تیام",
       "slug": "tiam",
@@ -173,6 +188,81 @@
       "is_active": false,
       "sprite_url": "assets/characters/hossein/hossein-spritesheet-v14-mobile.png",
       "atlas_url": "assets/characters/hossein/hossein-atlas-v14-mobile.json",
+      "settings": {
+        "scale": 1,
+        "walk_speed": 3.55,
+        "run_speed": 6.9,
+        "jump_force": 6.8
+      }
+    },
+    {
+      "id": "builtin-taher-db",
+      "name": "TAHER DB / طاهر DB",
+      "slug": "taher-db",
+      "is_builtin": true,
+      "is_active": false,
+      "sprite_url": "assets/characters/taher-db/taher-db-spritesheet-v14-mobile.png",
+      "atlas_url": "assets/characters/taher-db/taher-db-atlas-v14-mobile.json",
+      "settings": {
+        "scale": 1,
+        "walk_speed": 3.55,
+        "run_speed": 6.9,
+        "jump_force": 6.8
+      }
+    },
+    {
+      "id": "builtin-sorkhi",
+      "name": "SORKHI / سرخی",
+      "slug": "sorkhi",
+      "is_builtin": true,
+      "is_active": false,
+      "sprite_url": "assets/characters/sorkhi/sorkhi-spritesheet-v14-mobile.png",
+      "atlas_url": "assets/characters/sorkhi/sorkhi-atlas-v14-mobile.json",
+      "settings": {
+        "scale": 1,
+        "walk_speed": 3.55,
+        "run_speed": 6.9,
+        "jump_force": 6.8
+      }
+    },
+    {
+      "id": "builtin-yalda",
+      "name": "YALDA / یلدا",
+      "slug": "yalda",
+      "is_builtin": true,
+      "is_active": false,
+      "sprite_url": "assets/characters/yalda/yalda-spritesheet-v14-mobile.png",
+      "atlas_url": "assets/characters/yalda/yalda-atlas-v14-mobile.json",
+      "settings": {
+        "scale": 1,
+        "walk_speed": 3.55,
+        "run_speed": 6.9,
+        "jump_force": 6.8
+      }
+    },
+    {
+      "id": "builtin-mori",
+      "name": "MORI / موری",
+      "slug": "mori",
+      "is_builtin": true,
+      "is_active": false,
+      "sprite_url": "assets/characters/mori/mori-spritesheet-v14-mobile.png",
+      "atlas_url": "assets/characters/mori/mori-atlas-v14-mobile.json",
+      "settings": {
+        "scale": 1,
+        "walk_speed": 3.55,
+        "run_speed": 6.9,
+        "jump_force": 6.8
+      }
+    },
+    {
+      "id": "builtin-mahyar",
+      "name": "MAHYAR / مهیار",
+      "slug": "mahyar",
+      "is_builtin": true,
+      "is_active": false,
+      "sprite_url": "assets/characters/mahyar/mahyar-spritesheet-v14-mobile.png",
+      "atlas_url": "assets/characters/mahyar/mahyar-atlas-v14-mobile.json",
       "settings": {
         "scale": 1,
         "walk_speed": 3.55,

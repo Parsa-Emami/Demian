@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Cafe;
 
 use App\Http\Controllers\Controller;
+use App\Models\ArcadePlayer;
 use App\Services\Arcade\CafeAccess;
 use App\Services\Arcade\CafeStaffAdminService;
 use App\Services\Arcade\CouponLedgerAudit;
@@ -32,6 +33,34 @@ final class CafeAdminController extends Controller
         ]);
         abort_unless(Hash::check($data['password'], $staff->password_hash), 403,
             'Administrator password verification failed.');
+    }
+
+    public function players(Request $request): View
+    {
+        $staff = $this->actor($request, 'staff.directory');
+        $search = $request->validate(['q' => ['nullable', 'string', 'max:50',
+            'regex:/^[\p{L}\p{N} _‌-]+$/u']])['q'] ?? '';
+        $players = ArcadePlayer::query()->select('id', 'display_name', 'contact_type', 'created_at')
+            ->when($search !== '', fn ($query) => $query->where('display_name', 'like', '%'.$search.'%'))
+            ->orderBy('display_name')->orderBy('id')->paginate(25)->withQueryString();
+        $counts = DB::table('arcade_coupons')->whereIn('player_id', $players->pluck('id'))
+            ->where('status', 'issued')->where('expires_at', '>', now()->utc())
+            ->select('player_id', 'source', DB::raw('COUNT(*) AS total'))
+            ->groupBy('player_id', 'source')->get()->groupBy('player_id');
+
+        return view('cashier.players', compact('staff', 'players', 'counts', 'search'));
+    }
+
+    public function player(Request $request, ArcadePlayer $player): View
+    {
+        $staff = $this->actor($request, 'staff.directory');
+        $coupons = DB::table('arcade_coupons as c')->leftJoin('arcade_weekly_winners as w', 'w.id', '=', 'c.winner_id')
+            ->where('c.player_id', $player->id)->orderByDesc('c.id')->paginate(25, [
+                'c.id', 'c.source', 'c.status', 'c.discount_percent', 'c.expires_at', 'c.redeemed_at',
+                'w.game_id', 'w.period_key', 'w.prize_rank',
+            ]);
+        $contact = $staff->role === 'super_admin' ? $player->contact_value : null;
+        return view('cashier.player', compact('staff', 'player', 'coupons', 'contact'));
     }
 
     public function directory(Request $request): View

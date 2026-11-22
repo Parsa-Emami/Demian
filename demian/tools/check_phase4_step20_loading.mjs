@@ -7,6 +7,8 @@
  * blocking loading screen or make a sprite/texture mandatory for the menu.
  */
 import assert from 'node:assert/strict';
+import { GAME_CATALOG } from '../resources/js/game/catalog/GameCatalog.js';
+import { gameExperience } from '../resources/js/game/design/GameExperience.js';
 import { createReadStream, existsSync, mkdirSync, statSync, writeFileSync } from 'node:fs';
 import { createServer } from 'node:http';
 import { resolve, extname, sep } from 'node:path';
@@ -74,7 +76,7 @@ try {
     assert.equal(await page.evaluate(() => window.demianGameApplication?.activeGameId), null,
         'A full Open World instance must not be created as a menu backdrop.');
 
-    const games = ['coffee-crash', 'dino-run', 'after-hours', 'cafe-rush', 'cafe-critters', 'open-world'];
+    const games = ['coffee-crash', ...GAME_CATALOG.map(game => game.id).filter(id => id !== 'coffee-crash')];
     // The image loader's optional café preview takes up to 12s on failure.
     // Delay it in the first game to verify gameplay does not await that art.
     await page.route(/\/assets\/environments\/demian-fbx\/polished-v1\/preview\.webp/, async route => {
@@ -99,13 +101,32 @@ try {
             'Game assets must be released before returning to the menu.');
     }
     // Step 20 UX acceptance on the actual optimized browser release:
-    // navigation, six-game catalog, focus trapping and nested pause/settings.
+    // navigation, game catalog, focus trapping and nested pause/settings.
     await page.locator('[data-screen="cafe-menu"] [data-shell-action="play"]').click();
     await page.locator('[data-screen="game-selection"]').waitFor({ state: 'visible' });
-    assert.equal(await page.locator('[data-game-card]').count(), 6,
-        'The shared game selection must present all six current games.');
-    assert.match(await page.locator('[data-game-library-count]').innerText(), /۶/,
+    assert.equal(await page.locator('[data-game-card]').count(), GAME_CATALOG.length,
+        'The shared game selection must present the full current catalog.');
+    assert.match(await page.locator('[data-game-library-count]').innerText(),
+        new RegExp(new Intl.NumberFormat('fa-IR').format(GAME_CATALOG.length)),
         'The visible game count must reflect the catalog, not stale placeholder copy.');
+    // Phase 1: authored onboarding is discoverable and keyboard-operable for
+    // all seven games without launching ranked sessions or loading extra art.
+    assert.equal(await page.locator('[data-game-design-guide]').count(), GAME_CATALOG.length);
+    assert.equal(await page.locator('[data-game-design-guide] .game-card__learning-steps li').count(),
+        GAME_CATALOG.length * 3);
+    for (const game of GAME_CATALOG) {
+        const guide = page.locator(`[data-game-design-guide="${game.id}"]`);
+        const goalText = await guide.locator('.game-card__goal').evaluate(node => node.textContent ?? '');
+        assert.ok(goalText.includes(gameExperience(game.id).goalFa),
+            `Game ${game.id}: goal text mismatched DOM: ${JSON.stringify(goalText)}`);
+    }
+    const guideToggle = page.locator('[data-game-design-guide="coffee-crash"] summary');
+    await guideToggle.focus();
+    await page.keyboard.press('Enter');
+    assert.equal(await page.locator('[data-game-design-guide="coffee-crash"] details').evaluate(el => el.open), true);
+    await page.keyboard.press('Enter');
+    assert.equal(await page.locator('[data-game-design-guide="coffee-crash"] details').evaluate(el => el.open), false);
+    assert.equal(await page.evaluate(() => window.demianGameApplication?.sessionState), 'menu');
     await page.locator('[data-screen="game-selection"] [data-shell-action="back-cafe"]').click();
     await page.locator('[data-screen="cafe-menu"]').waitFor({ state: 'visible' });
     const settingsTrigger = page.locator('[data-screen="cafe-menu"] [data-shell-action="settings"]');
@@ -167,7 +188,8 @@ try {
     await wait(page, () => window.demianGameApplication?.sessionState === 'playing', 10000);
     await page.evaluate(() => window.demianGameApplication.showMenu());
     await wait(page, () => window.demianGameApplication?.sessionState === 'menu');
-    report.ux = { gameCards: 6, keyboardTrap: true, focusReturn: true, nestedPauseSettings: true };
+    report.ux = { gameCards: GAME_CATALOG.length, phase1Guides: GAME_CATALOG.length,
+        keyboardTrap: true, focusReturn: true, nestedPauseSettings: true };
 
     assert.deepEqual(report.errors, [], 'No uncaught errors in full boot/game/menu cycle.');
 
@@ -203,8 +225,12 @@ try {
             const index = requested.length;
             const started = Date.now();
             await phone.evaluate(id => window.demianGameApplication.launchGame(id), game);
-            await wait(phone, () => window.demianGameApplication?.sessionState === 'playing', 30000);
-            const elapsedMs = Date.now() - started;
+            await phone.waitForFunction(id => {
+                const app = window.demianGameApplication;
+                return app.firstPlayableFrame.last?.gameId === id && app.sessionState === 'playing'
+                    && app.shell.loadingScreen.element.hidden;
+            }, game, {timeout: 30000});
+            const elapsedMs = await phone.evaluate(() => window.demianGameApplication.firstPlayableFrame.last.durationMs);
             const firstRequests = requested.slice(index).map(value => new URL(value).pathname);
             report.mobile4g.launches.push({ game, elapsedMs, firstRequests });
             assert.ok(firstRequests.filter(url => /-preview-v\d+\.png$/.test(url)).length <= 5,

@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { GAME_CATALOG } from '../resources/js/game/catalog/GameCatalog.js';
 import { createReadStream, mkdirSync, statSync, writeFileSync } from 'node:fs';
 import { createServer } from 'node:http';
 import { extname, resolve, sep } from 'node:path';
@@ -55,7 +56,7 @@ try {
             await page.waitForFunction(() =>
                 document.querySelector('[data-screen="game-selection"]')?.hidden === false);
             const cards = page.locator('[data-game-card]');
-            assert.equal(await cards.count(), 6);
+            assert.equal(await cards.count(), GAME_CATALOG.length);
             const gameAction = page.locator('[data-game-card="dino-run"] [data-game-launch]');
             await gameAction.scrollIntoViewIfNeeded();
 

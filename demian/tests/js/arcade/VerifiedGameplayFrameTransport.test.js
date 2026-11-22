@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import ArcadeLeaderboardService from '../../../resources/js/game/leaderboard/ArcadeLeaderboardService.js';
+import { weeklyVersion, weeklyIndex, WEEKLY_VERSIONS } from '../../../resources/js/game/content/WeeklyContent.js';
 
 function store() {
     const data=new Map();
@@ -15,6 +16,7 @@ const player={player_id:'10000000-0000-4000-a000-000000000001',
     token:'C'.repeat(64)};
 test('seeded original Cafe Rush frame proofs use signed version and authenticated POST, never a client score',async()=>{
     const saved=store(),identity=store(),sent=[];
+    const issuedVersion=weeklyVersion('cafe-rush','cafe-rush-frames-v1');
     const api=new ArcadeLeaderboardService({
         baseUrl:'https://example.test/api/v1/arcade',
         storage:saved,identityStorage:identity,
@@ -23,11 +25,12 @@ test('seeded original Cafe Rush frame proofs use signed version and authenticate
             if(url.endsWith('/turn-runs')){
                 const body=JSON.parse(options.body);
                 assert.equal(body.game_id,'cafe-rush');
-                assert.equal(body.rules_version,'cafe-rush-frames-v1');
+                assert.equal(body.rules_version,issuedVersion);
                 assert.ok(/^[0-9a-f-]{36}$/i.test(body.request_id));
                 return {ok:true,json:async()=>({
                     run_id:'11111111-1111-4111-8111-111111111111',
                     game_id:'cafe-rush',seed:17,rules_version:body.rules_version,
+                    ...(issuedVersion===WEEKLY_VERSIONS['cafe-rush']?{content_week:weeklyIndex()}:{}),
                 })};
             }
             assert.ok(url.endsWith('/turn-runs/11111111-1111-4111-8111-111111111111/complete'));

@@ -1,3 +1,4 @@
+import { weeklyShiftCards } from '../../content/WeeklyContent.js';
 import AfterHoursShadow from './AfterHoursShadow.js';
 import {
     CIRCUITS, SHIFT_EXIT, SHIFT_LAYOUTS, SHIFT_LOCKER, SHIFT_PANELS, SHIFT_RULES, SHIFT_START,
@@ -16,14 +17,15 @@ export default class AfterHoursModel {
         this.reset();
     }
 
-    reset(difficulty = 'standard', layout = 0) {
+    reset(difficulty = 'standard', layout = 0, week = null) {
         this.difficulty = Object.hasOwn(SHIFT_RULES, difficulty) ? difficulty : 'standard';
         this.rules = SHIFT_RULES[this.difficulty];
         this.layout = Number.isInteger(layout) && layout >= 0 && layout < SHIFT_LAYOUTS.length ? layout : 0;
         this.status = 'ready';
         this.elapsed = 0;
         this.darkCircuit = 'storage';
-        this.cards = SHIFT_LAYOUTS[this.layout].map((point, index) => ({
+        this.contentWeek = week;
+        this.cards = (week === null ? SHIFT_LAYOUTS[this.layout] : weeklyShiftCards(week)).map((point, index) => ({
             ...point, id: `card-${index + 1}`, label: `کارت شیفت ${index + 1}`, kind: 'card', collected: false,
         }));
         this.relic = false;

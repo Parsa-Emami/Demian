@@ -39,8 +39,15 @@ export const GAME_CATALOG = Object.freeze([
     }),
     Object.freeze({
         id: 'coffee-crash', title: 'COFFEE CRASH', subtitle: 'جورچین قهوه',
-        description: 'خوراکی‌ها را جابه‌جا کن، ترکیب ویژه بساز و سفارش‌های دوازده مرحله را آماده کن.',
+        description: 'خوراکی‌ها را جابه‌جا کن، ترکیب ویژه بساز و سفارش‌های سه مرحلهٔ هر هفته را آماده کن.',
         icon: '✧', phase: 18, status: 'available', available: true,
+        orientation: 'any', accent: 'coffee',
+        environment: CAFE_ENVIRONMENT_ID, environmentLocked: true, referenceAssets: CAFE_REFERENCE_ASSET_ROOT,
+    }),
+    Object.freeze({
+        id: 'cafe-drift', title: 'CAFÉ DRIFT', subtitle: 'دریفت سینی',
+        description: 'با یک انگشت سینی را هدایت کن، از کنار صندلی‌ها جاخالی بده و رکورد هفتگی بزن.',
+        icon: '◈', phase: 19, status: 'available', available: true,
         orientation: 'any', accent: 'coffee',
         environment: CAFE_ENVIRONMENT_ID, environmentLocked: true, referenceAssets: CAFE_REFERENCE_ASSET_ROOT,
     }),

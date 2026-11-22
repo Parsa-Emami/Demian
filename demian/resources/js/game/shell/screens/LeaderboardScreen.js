@@ -1,3 +1,4 @@
+import { RECORD_GAMES, recordHeading, formatGameRecord } from '../../leaderboard/GameRecord.js';
 import BaseScreen from './BaseScreen.js';
 import { remainingWeeklySeconds, formatWeeklyCountdown } from '../../leaderboard/WeeklyCountdown.js';
 
@@ -33,7 +34,7 @@ export default class LeaderboardScreen extends BaseScreen {
         this.nextRefreshAt = 0;
         this.loading = false;
         this.lastForcedRolloverKey = null;
-        this.onPeriod = () => this.load();
+        this.onPeriod = () => { this.configureMode(); void this.load(); };
         this.onGame = () => void this.switchGame();
         this.onWeek = () => this.load();
         this.onSubmit = async event => {
@@ -176,24 +177,19 @@ export default class LeaderboardScreen extends BaseScreen {
             : this.service.needsAccountRestore
                 ? 'حساب قبلی در این نشست باز نیست. برای حفظ رکوردهای آن باید با کد بازیابی وارد شوی.'
                 : 'توکن ورود فقط در نشست مرورگر نگهداری می‌شود. قبل از بستن مرورگر، لینک بازیابی را دریافت و امن ذخیره کن.';
-        for (const option of this.period.options) {
-            option.disabled = !this.service.connected && option.value !== 'device';
-        }
+        this.onlineGames = new Set(this.service.connected ? ['dino-run'] : []);
+        this.deviceOnly = false;
         this.period.value = this.service.connected ? 'weekly' : 'device';
         if (this.game) {
-            const options = [...this.game.options];
-            options.forEach(option => { option.disabled = option.value !== 'dino-run'; });
-            this.game.value = this.service.connected ? 'all-games' : 'dino-run';
-            if (this.service.connected) options.find(option => option.value === 'all-games').disabled = false;
+            for (const option of this.game.options) option.disabled = option.value === 'all-games' && !this.service.connected;
+            this.game.value = RECORD_GAMES.includes(this.preferredGame) ? this.preferredGame
+                : this.service.connected ? 'all-games' : 'dino-run';
+            this.preferredGame = null;
             if (this.service.connected) {
                 try {
                     const catalog = await this.service.games();
-                    for (const option of options) {
-                        option.disabled = option.value !== 'all-games'
-                            && !catalog.games?.some(game =>
-                                game.game_id === option.value && game.ranked === true);
-                    }
-                } catch { /* preserve safe default */ }
+                    for (const game of catalog.games ?? []) if (game.ranked === true) this.onlineGames.add(game.game_id);
+                } catch {}
             }
         }
         this.snapshot = null;
@@ -209,13 +205,20 @@ export default class LeaderboardScreen extends BaseScreen {
     }
 
     configureMode() {
-        const shared = this.service.connected && this.game?.value === 'all-games';
-        this.weekWrap.hidden = !shared;
-        this.week.disabled = !shared;
+        const game = this.game?.value ?? 'dino-run';
+        const shared = this.service.connected && game === 'all-games';
+        const deviceOnly = !shared && !this.onlineGames?.has(game);
+        for (const option of this.period.options) option.disabled = deviceOnly && option.value !== 'device';
+        if (deviceOnly) this.period.value = 'device';
+        else if (this.deviceOnly) this.period.value = 'weekly';
+        this.deviceOnly = deviceOnly;
+        const supportsHistory = shared || (!deviceOnly && game === 'cafe-drift' && this.period.value === 'weekly');
+        this.weekWrap.hidden = !supportsHistory;
+        this.week.disabled = !supportsHistory;
         this.period.disabled = shared;
         if (shared) this.period.value = 'weekly';
         this.gameHeading.hidden = !shared;
-        this.scoreHeading.textContent = shared ? 'امتیاز رقابتی' : 'امتیاز';
+        this.scoreHeading.textContent = recordHeading(game, this.period.value);
         this.lastForcedRolloverKey = null;
     }
 
@@ -247,7 +250,7 @@ export default class LeaderboardScreen extends BaseScreen {
     async switchGame() {
         this.week.value = '';
         this.configureMode();
-        if (this.game.value === 'all-games') await this.loadWeeks();
+        if (!this.week.disabled) await this.loadWeeks();
         await this.load();
     }
 
@@ -273,7 +276,7 @@ export default class LeaderboardScreen extends BaseScreen {
 
     renderCountdown() {
         const isWeekly = this.period.value === 'weekly' && this.service.connected
-            && (this.game.value !== 'all-games' || this.week.value === '');
+            && (this.week.disabled || this.week.value === '');
         this.countdown.hidden = !isWeekly;
         if (!isWeekly) return null;
         const remaining = remainingWeeklySeconds(this.snapshot, this.receivedAtMs, this.monotonicNow());
@@ -290,21 +293,23 @@ export default class LeaderboardScreen extends BaseScreen {
         this.status.textContent = 'در حال دریافت امتیازهای تأییدشده…';
         this.personalBest.textContent = '';
         this.body.replaceChildren();
+        this.personalBest.textContent = '';
         this.snapshot = null;
         this.renderCountdown();
         try {
             const activeGame = this.game?.value ?? 'dino-run';
             const shared = activeGame === 'all-games' && this.service.connected;
-            const chosenWeek = shared ? this.week.value : '';
+            const chosenWeek = !this.week.disabled ? this.week.value : '';
             const ownScore = shared
                 ? this.service.myWeeklyRanking(chosenWeek)
-                : this.period.value !== 'device' && activeGame === 'dino-run'
-                    ? this.service.personalBest(this.period.value) : Promise.resolve(null);
+                : this.period.value !== 'device' && ['dino-run', 'cafe-drift'].includes(activeGame)
+                    ? this.service.personalBest(this.period.value, activeGame, chosenWeek) : Promise.resolve(null);
             const result = shared
                 ? await this.service.weeklyRanking(chosenWeek)
-                : await this.service.list(this.period.value, activeGame);
+                : await this.service.list(this.period.value, activeGame, chosenWeek);
             if (generation !== this.generation) return;
-            this.snapshot = result.mode === 'online' && (!shared || result.is_current) ? result : null;
+            this.scoreHeading.textContent = recordHeading(activeGame, this.period.value, result.rules_version);
+            this.snapshot = result.mode === 'online' && (!chosenWeek || result.is_current) ? result : null;
             this.receivedAtMs = this.monotonicNow();
             if (shared) {
                 this.status.textContent = result.status === 'finalized'
@@ -318,14 +323,25 @@ export default class LeaderboardScreen extends BaseScreen {
             } else {
                 this.status.textContent = result.mode === 'device'
                     ? 'رکوردهای همین مرورگر؛ ثبت جهانی نشده‌اند.'
-                    : 'رکوردهای تأییدشده سرور · شروع هفته شنبه ساعت ۰۰:۰۰ تهران';
+                    : result.status === 'finalized'
+                        ? 'نتیجهٔ نهایی این هفته · ثبت‌شده در آرشیو دمیان'
+                        : result.status === 'archive_pending'
+                            ? 'نتیجهٔ این هفته هنوز نهایی نشده است.'
+                            : 'رکوردهای تأییدشده سرور · شروع هفته شنبه ساعت ۰۰:۰۰ تهران';
+                if (activeGame === 'cafe-drift' && result.competition) {
+                    const { accepting_starts, prizes } = result.competition;
+                    this.status.textContent += accepting_starts ? ' · رقابت باز است' : ' · ثبت دور جدید بسته است';
+                    if (prizes === 'campaign_active') this.status.textContent += ' · کمپین جایزه فعال است';
+                    if (prizes === 'campaign_pending') this.status.textContent += ' · کمپین جایزه منتظر فعال‌سازی است';
+                    if (prizes === 'unavailable') this.status.textContent += ' · این دوره بدون جایزه است';
+                }
                 if (!result.data?.length) this.status.textContent += ' هنوز رکوردی ثبت نشده است.';
             }
             for (const row of result.data ?? []) {
                 const tr = document.createElement('tr');
                 if (this.service.identity?.player_id === row.player_id) tr.dataset.myRow = 'true';
-                const cells = [row.rank, row.display_name,
-                    shared ? row.competition_points : row.score];
+                const cells = [Number.isSafeInteger(row.rank) ? row.rank : '—', row.display_name,
+                    formatGameRecord(activeGame, row, result.rules_version, result.mode)];
                 for (const value of cells) {
                     const td = document.createElement('td');
                     td.textContent = typeof value === 'number' && Number.isFinite(value)
@@ -365,19 +381,22 @@ export default class LeaderboardScreen extends BaseScreen {
                     this.personalBest.textContent = 'هنوز رکورد رقابتی ثبت نکرده‌ای؛ رتبه شخصی پس از تأیید سرور نمایش داده می‌شود.';
                 }
             } else {
-                this.personalBest.textContent = result.mode === 'online' && activeGame !== 'dino-run'
+                this.personalBest.textContent = result.mode === 'online' && !['dino-run', 'cafe-drift'].includes(activeGame)
                     ? 'این جدول فقط نتایج بازپخش‌شده و تأییدشده توسط سرور را نمایش می‌دهد.'
                     : result.mode === 'online'
                         ? own?.best
                             ? 'رتبهٔ شما: ' + new Intl.NumberFormat('fa-IR').format(own.my_rank)
                                 + ' از ' + new Intl.NumberFormat('fa-IR').format(own.participants ?? 0)
                                 + ' · رکورد: ' + new Intl.NumberFormat('fa-IR').format(own.best.score)
+                                + (activeGame === 'cafe-drift' && Number.isSafeInteger(own.points_to_overtake)
+                                    ? ' · تا عبور از رتبهٔ بعدی: ' + new Intl.NumberFormat('fa-IR').format(own.points_to_overtake) + ' امتیاز'
+                                    : '')
                             : 'هنوز رکورد تأییدشده‌ای برای این دوره نداری.'
                         : '';
             }
         } catch {
             if (generation === this.generation) {
-                this.status.textContent = 'سرور در دسترس نیست. اتصال را بررسی کنید یا برای رکورد دستگاه، Dino Run را انتخاب کنید.';
+                this.status.textContent = 'سرور در دسترس نیست. اتصال را بررسی کن یا «این دستگاه» را انتخاب کن.';
                 this.renderCountdown();
             }
         } finally {

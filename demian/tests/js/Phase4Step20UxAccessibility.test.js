@@ -134,7 +134,10 @@ test('Step 20 UX: dynamic navigation announcements and progress use dedicated li
 
 test('Step 20 UX: game counts and menu affordances reflect the real catalog', () => {
     assert.match(blade, /data-game-library-count/);
-    assert.match(blade, /data-game-library-summary/);
+    // The homepage summary was intentionally removed; retain only the live game count.
+    assert.doesNotMatch(blade, /data-game-library-summary/);
+    assert.doesNotMatch(catalog, /data-game-library-summary/);
+    assert.match(catalog, /count\.textContent = `\$\{playableCount/);
     assert.match(catalog, /this\.catalog\.filter\(game => game\.available\)/);
     assert.match(catalog, /aria-label="\$\{game\.available/);
 });

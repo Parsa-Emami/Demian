@@ -20,6 +20,7 @@ import ChunkManager from './streaming/ChunkManager.js';
 import OpenWorldChunkRenderer from './render/OpenWorldChunkRenderer.js';
 import OpenWorldPixelRenderer from './render/OpenWorldPixelRenderer.js';
 import AiBudgetScheduler from './entities/AiBudgetScheduler.js';
+import UiFrameBudget from '../../performance/UiFrameBudget.js';
 import WorldDiscovery from './world/WorldDiscovery.js';
 import WorldFindCollection from './world/WorldFindCollection.js';
 import { worldChallengeLocked, applySavePoint } from './world/RankedWorldPolicy.js';
@@ -44,6 +45,7 @@ export default class OpenWorldGame extends BaseGame {
         this.repository = null;
         this.characterManager = null;
         this.firstFrameRendered = false;
+        this.backgroundHydrationPending = false;
         this.renderFailureCount = 0;
         this.manifest = DEMIAN_REFERENCE_CAFE_MANIFEST;
         this.partition = new WorldPartition(this.manifest);
@@ -58,6 +60,8 @@ export default class OpenWorldGame extends BaseGame {
         this.chunkRenderer = null;
         this.pixelRenderer = null;
         this.aiBudget = new AiBudgetScheduler({ maxUpdatesPerFrame: 6 });
+        // Presentation-only cadence; scored movement and fixed ticks stay 60 Hz.
+        this.uiFrameBudget = new UiFrameBudget({ refreshHz: globalThis.matchMedia?.('(pointer: coarse)')?.matches ? 10 : 15 });
         this.discovery = new WorldDiscovery();
         this.finds = new WorldFindCollection(this.manifest);
         this.saveStore = new OpenWorldSaveStore();
@@ -85,6 +89,13 @@ export default class OpenWorldGame extends BaseGame {
 
     async enter(context) {
         this.context = context;
+        // Begin remote roster discovery while creating collision, navigation
+        // and the initial render. On GitHub Pages this is resolved locally.
+        this.repository = new CharacterRepository({
+            baseUrl: context.options.apiBase,
+            csrfToken: context.options.csrfToken,
+        });
+        const rosterPromise = CharacterManager.preloadRoster(this.repository);
         this.abilityHud = new CharacterAbilityHud(context.root, context.input);
         this.actionHud = new CharacterActionHud(context.root, context.input);
         const { performanceProfile } = context.services;
@@ -111,15 +122,9 @@ export default class OpenWorldGame extends BaseGame {
 
         this.discovery.discoverChunk(this.partition.chunkAt(this.manifest.spawn)?.id);
         this.discovery.unlockSavePoint('save-entrance');
-        // The café is already visible. Stream nearby LOD chunks in the
-        // background rather than blocking the first playable frame on all
-        // surrounding tiles. Ranked routes still await required chunks.
-        this.chunkManager.update(this.manifest.spawn);
-
-        this.repository = new CharacterRepository({
-            baseUrl: context.options.apiBase,
-            csrfToken: context.options.csrfToken,
-        });
+        // Do not compete for network/CPU with the essential player sprite:
+        // updateStreaming(true) below still starts the exact same bounded LOD
+        // streaming after the player is playable.
         this.characterManager = new CharacterManager({
             scene: this.scene,
             repository: this.repository,
@@ -142,7 +147,9 @@ export default class OpenWorldGame extends BaseGame {
 
         this.bindCameraControls();
         const preferredSlug = context.services.characterVisuals.activeSlug;
-        await this.characterManager.boot({ preferredSlug });
+        await this.characterManager.boot({
+            preferredSlug, rosterPromise, initialVariant: 'lite',
+        });
         this.characterManager.setPosition(this.manifest.spawn);
         this.registerWorldInteractions();
         this.mountUi();
@@ -174,7 +181,9 @@ export default class OpenWorldGame extends BaseGame {
         // subsequent frames, but the scene is already visible before the loading
         // screen is removed.
         this.renderScene({ phase: 'ready', strict: false });
-        this.characterManager.startBackgroundHydration();
+        // Upgrade the active avatar and load NPC art only after the first
+        // renderable lite avatar, full collisions and input are ready.
+        this.backgroundHydrationPending = true;
     }
 
     setupWorldServices() {
@@ -296,7 +305,7 @@ export default class OpenWorldGame extends BaseGame {
                     });
                     if (outcome.ranked) {
                         this.context.app.shell.toast(outcome.accepted
-                            ? `مقصد رقابتی «${point.label}» ثبت شد.`
+                            ? `مقصد «${point.label}» ثبت شد.`
                             : 'این نقطه مقصد فعلی چالش نیست.',
                         outcome.accepted ? 'success' : 'info');
                     } else {
@@ -526,11 +535,12 @@ export default class OpenWorldGame extends BaseGame {
     update(deltaTime) {
         this.cameraController.update(this.characterManager.focusPoint(), deltaTime);
         this.world.updateCameraVisibility(this.camera);
+        // HUD DOM, minimap and studio summaries are presentation only.
+        // Do not throttle fixedUpdate(), collision, scoring or renderScene().
+        if (!this.uiFrameBudget.shouldRefresh(deltaTime)) return;
         const position = this.characterManager.position();
         const chunkStats = this.chunkManager.stats();
-        const activeChunkIds = [...this.chunkManager.loaded]
-            .filter(([, record]) => record.tier === 'active')
-            .map(([chunkId]) => chunkId);
+        const activeChunkIds = this.chunkManager.activeChunkIds();
         this.hud.update({
             position,
             forward: this.characterManager.forward(),
@@ -553,15 +563,18 @@ export default class OpenWorldGame extends BaseGame {
     }
 
     render(alpha = 1, deltaTime = 0) {
-        this.renderScene({ phase: 'frame', strict: true, alpha, deltaTime });
+        const rendered = this.renderScene({ phase: 'frame', strict: true, alpha, deltaTime });
+        if (rendered && this.backgroundHydrationPending && this.context.app.sessionState === 'playing') {
+            this.backgroundHydrationPending = false;
+            this.characterManager.startBackgroundHydration();
+        }
+        return rendered;
     }
 
     renderScene({ phase = 'frame', strict = true, alpha = 1, deltaTime = 0 } = {}) {
         if (!this.context?.renderer || !this.pixelRenderer) return false;
         try {
-            const activeChunkIds = [...(this.chunkManager?.loaded ?? new Map())]
-                .filter(([, record]) => record.tier === 'active')
-                .map(([chunkId]) => chunkId);
+            const activeChunkIds = this.chunkManager?.activeChunkIds() ?? [];
             const rendered = this.pixelRenderer.render({
                 characterManager: this.characterManager,
                 loadedChunks: this.chunkManager?.loaded ?? new Map(),
@@ -620,6 +633,7 @@ export default class OpenWorldGame extends BaseGame {
     }
 
     async exit() {
+        this.uiFrameBudget.reset();
         this.routeChallenge?.stop();
         this.setMapOpen(false);
         this.abilityHud?.dispose();

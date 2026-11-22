@@ -1,0 +1,24 @@
+.manager-shell [data-player-identity-panel] {
+    margin-block-start: 1.15rem;
+    padding: 1rem;
+    border: 1px solid rgba(239, 216, 169, .42);
+    border-radius: 16px;
+    background: rgba(15, 35, 27, .92);
+    color: #f9eed6;
+}
+.manager-shell [data-player-identity-panel] h3 { font: 800 1rem/1.5 Vazirmatn, system-ui, sans-serif; }
+.manager-shell [data-player-identity-panel] p,
+.manager-shell [data-player-identity-panel] small {
+    display: block; line-height: 1.8; overflow-wrap: anywhere;
+}
+.manager-shell [data-player-identity-panel] [hidden] { display: none !important; }
+.manager-shell [data-player-identity-panel] form:not([hidden]) { display: grid; gap: 9px; margin-block: 12px; }
+.manager-shell [data-player-identity-panel] :is(button,input) {
+    min-height: 44px; touch-action: manipulation;
+}
+.manager-shell [data-player-identity-panel] :is(button,input):focus-visible {
+    outline: 3px solid #ffe3a8; outline-offset: 3px;
+}
+@media (max-width: 370px) {
+    .manager-shell [data-player-identity-panel] { padding: .72rem; }
+}

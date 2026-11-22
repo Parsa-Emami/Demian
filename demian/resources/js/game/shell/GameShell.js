@@ -4,12 +4,15 @@ import ScreenManager from './ScreenManager';
 import BootScreen from './screens/BootScreen';
 import CafeMenuScreen from './screens/CafeMenuScreen';
 import GameSelectionScreen from './screens/GameSelectionScreen';
+import { prewarmCriticalGameSprite } from '../performance/GameAssetWarmup.js';
+import { optionalAssetPolicy } from '../characters/runtime/MobileNetworkPolicy.js';
 import LoadingScreen from './screens/LoadingScreen';
 import PauseScreen from './screens/PauseScreen';
 import SettingsScreen from './screens/SettingsScreen';
 import ResultsScreen from './screens/ResultsScreen';
 import LeaderboardScreen from './screens/LeaderboardScreen.js';
 import CouponWalletScreen from './screens/CouponWalletScreen.js';
+import { gameLoadRecovery } from '../ui/GameFailureUX.js';
 
 const SCREEN_IDS = Object.freeze({
     BOOT: 'boot',
@@ -45,14 +48,28 @@ export default class GameShell {
         this.catalog = catalog;
         this.shellRoot = root.querySelector('[data-game-shell]');
         this.announcer = this.shellRoot?.querySelector('[data-shell-announcer]') ?? null;
+        this.networkNotice = this.shellRoot?.querySelector('[data-shell-network-status]') ?? null;
         this.manager = new ScreenManager({ eventBus });
         this.unsubscribers = [];
         this.booted = false;
 
         this.onClick = this.onClick.bind(this);
+        this.menuWarmupSlug = null;
+        this.onMenuWarmupIntent = event => {
+            if (event.type === 'pointerover' && event.pointerType === 'touch') return;
+            const button = event.target?.closest?.('[data-shell-action="continue"]');
+            if (!button || !this.cafeScreen?.element?.contains(button)) return;
+            const slug = this.app.characterVisuals?.activeSlug;
+            if (!slug || slug === this.menuWarmupSlug || optionalAssetPolicy().reason !== 'normal') return;
+            void this.app.registry.load('open-world').catch(() => undefined);
+            this.menuWarmupSlug = slug;
+            void prewarmCriticalGameSprite('open-world', this.app.characterVisuals)
+                .then(success => { if (!success && this.menuWarmupSlug === slug) this.menuWarmupSlug = null; });
+        };
         this.onKeyDown = this.onKeyDown.bind(this);
         this.onSettingsSubmit = this.onSettingsSubmit.bind(this);
         this.onGamepadUi = this.onGamepadUi.bind(this);
+        this.onNetworkChange = this.onNetworkChange.bind(this);
     }
 
     boot() {
@@ -62,10 +79,10 @@ export default class GameShell {
         const screen = (id) => this.shellRoot.querySelector(`[data-screen="${id}"]`);
         this.bootScreen = new BootScreen({ id: SCREEN_IDS.BOOT, element: screen(SCREEN_IDS.BOOT), animation: this.animation });
         this.cafeScreen = new CafeMenuScreen({ id: SCREEN_IDS.CAFE, element: screen(SCREEN_IDS.CAFE), animation: this.animation });
-        this.selectionScreen = new GameSelectionScreen({ id: SCREEN_IDS.SELECTION, element: screen(SCREEN_IDS.SELECTION), animation: this.animation, catalog: this.catalog, registry: this.app.registry });
+        this.selectionScreen = new GameSelectionScreen({ id: SCREEN_IDS.SELECTION, element: screen(SCREEN_IDS.SELECTION), animation: this.animation, catalog: this.catalog, registry: this.app.registry, visuals: this.app.characterVisuals });
         this.loadingScreen = new LoadingScreen({ id: SCREEN_IDS.LOADING, element: screen(SCREEN_IDS.LOADING), animation: this.animation });
         this.pauseScreen = new PauseScreen({ id: SCREEN_IDS.PAUSE, element: screen(SCREEN_IDS.PAUSE), animation: this.animation });
-        this.settingsScreen = new SettingsScreen({ id: SCREEN_IDS.SETTINGS, element: screen(SCREEN_IDS.SETTINGS), animation: this.animation, settings: this.settings, input: this.app.input });
+        this.settingsScreen = new SettingsScreen({ id: SCREEN_IDS.SETTINGS, element: screen(SCREEN_IDS.SETTINGS), animation: this.animation, settings: this.settings, input: this.app.input, leaderboards: this.app.leaderboards });
         this.resultsScreen = new ResultsScreen({ id: SCREEN_IDS.RESULTS, element: screen(SCREEN_IDS.RESULTS), animation: this.animation });
         this.leaderboardScreen = new LeaderboardScreen({ id: SCREEN_IDS.LEADERBOARD, element: screen(SCREEN_IDS.LEADERBOARD), animation: this.animation, service: this.app.leaderboards });
         this.couponWalletScreen = new CouponWalletScreen({ id: SCREEN_IDS.COUPONS, element: screen(SCREEN_IDS.COUPONS), animation: this.animation, service: this.app.leaderboards });
@@ -86,9 +103,16 @@ export default class GameShell {
         ].forEach((entry) => this.manager.register(entry));
 
         this.root.addEventListener('click', this.onClick);
+        // User intent only: overlap active sprite fetch with entry to Open World.
+        for (const type of ['pointerover', 'pointerdown', 'focusin']) {
+            this.root.addEventListener(type, this.onMenuWarmupIntent);
+        }
         this.settingsScreen.form?.addEventListener('submit', this.onSettingsSubmit);
         window.addEventListener('keydown', this.onKeyDown);
         document.addEventListener('input:gamepad-ui', this.onGamepadUi);
+        window.addEventListener('online', this.onNetworkChange);
+        window.addEventListener('offline', this.onNetworkChange);
+        this.onNetworkChange();
 
         this.unsubscribers.push(
             this.eventBus.on('screen:changed', ({ id }) => {
@@ -101,10 +125,19 @@ export default class GameShell {
                 this.loadingScreen?.setProgress(progress, step);
             }),
             this.eventBus.on('game:load-failed', ({ error }) => {
-                this.toast(error?.message ?? 'بارگذاری بازی ناموفق بود.', 'error');
+                this.toast(gameLoadRecovery(error, { online: globalThis.navigator?.onLine !== false }), 'error');
             }),
             this.eventBus.on('game:completed', (result) => this.showResults(result))
         );
+    }
+
+    onNetworkChange() {
+        const offline = globalThis.navigator?.onLine === false;
+        if (!this.networkNotice) return;
+        this.networkNotice.hidden = !offline;
+        this.networkNotice.textContent = offline
+            ? 'دستگاه آفلاین است. رکورد تمرینی با رتبهٔ معتبر تفاوت دارد؛ تأیید آنلاین پس از اتصال ممکن است.'
+            : '';
     }
 
     showBoot(payload = {}) {
@@ -176,11 +209,8 @@ export default class GameShell {
         }
 
         switch (button.dataset.shellAction) {
-            case 'motion-comparison':
-                if (this.app.sessionState === 'playing') this.app.pauseGame();
-                await this.manager.show(SCREEN_IDS.MOTION);
-                break;
             case 'leaderboard':
+                this.leaderboardScreen.preferredGame = this.app.activeGameId;
                 if (this.app.sessionState === 'playing') this.app.pauseGame();
                 await this.manager.show(SCREEN_IDS.LEADERBOARD);
                 break;
@@ -369,8 +399,13 @@ export default class GameShell {
 
     async dispose() {
         this.root?.removeEventListener('click', this.onClick);
+        for (const type of ['pointerover', 'pointerdown', 'focusin']) {
+            this.root?.removeEventListener(type, this.onMenuWarmupIntent);
+        }
         this.settingsScreen?.form?.removeEventListener('submit', this.onSettingsSubmit);
         window.removeEventListener('keydown', this.onKeyDown);
+        window.removeEventListener('online', this.onNetworkChange);
+        window.removeEventListener('offline', this.onNetworkChange);
         document.removeEventListener('input:gamepad-ui', this.onGamepadUi);
         this.unsubscribers.forEach((unsubscribe) => unsubscribe?.());
         this.unsubscribers = [];

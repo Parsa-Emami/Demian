@@ -146,6 +146,16 @@
       "identityContract": "assets/characters/negar/manifests/negar_identity_contract.json"
     },
     {
+      "slug": "elaheh",
+      "displayName": "ELAHEH / الهه",
+      "family": "female-base-v1",
+      "packVersion": 14,
+      "defaultActive": false,
+      "skin": "elaheh",
+      "accessories": [],
+      "identityContract": "assets/characters/elaheh/manifests/elaheh_identity_contract.json"
+    },
+    {
       "slug": "tiam",
       "displayName": "TIAM / تیام",
       "family": "female-base-v1",
@@ -242,7 +252,57 @@
       "skin": "hossein",
       "accessories": [],
       "identityContract": "assets/characters/hossein/manifests/hossein_identity_contract.json"
+    },
+    {
+      "slug": "taher-db",
+      "displayName": "TAHER DB / طاهر DB",
+      "family": "male-base-v1",
+      "packVersion": 14,
+      "defaultActive": false,
+      "skin": "taher-db",
+      "accessories": [],
+      "identityContract": "assets/characters/taher-db/manifests/taher-db_identity_contract.json"
+    },
+    {
+      "slug": "sorkhi",
+      "displayName": "SORKHI / سرخی",
+      "family": "male-base-v1",
+      "packVersion": 14,
+      "defaultActive": false,
+      "skin": "sorkhi",
+      "accessories": [],
+      "identityContract": "assets/characters/sorkhi/manifests/sorkhi_identity_contract.json"
+    },
+    {
+      "slug": "yalda",
+      "displayName": "YALDA / یلدا",
+      "family": "female-base-v1",
+      "packVersion": 14,
+      "defaultActive": false,
+      "skin": "yalda",
+      "accessories": [],
+      "identityContract": "assets/characters/yalda/manifests/yalda_identity_contract.json"
+    },
+    {
+      "slug": "mori",
+      "displayName": "MORI / موری",
+      "family": "male-base-v1",
+      "packVersion": 14,
+      "defaultActive": false,
+      "skin": "mori",
+      "accessories": [],
+      "identityContract": "assets/characters/mori/manifests/mori_identity_contract.json"
+    },
+    {
+      "slug": "mahyar",
+      "displayName": "MAHYAR / مهیار",
+      "family": "male-base-v1",
+      "packVersion": 14,
+      "defaultActive": false,
+      "skin": "mahyar",
+      "accessories": [],
+      "identityContract": "assets/characters/mahyar/manifests/mahyar_identity_contract.json"
     }
   ],
-  "sourceSha256": "ab27808dda81e4841571994a346522d5fdde544478dd01c6434201449da4aace"
+  "sourceSha256": "b474476f01edd8ff5db1596473c71e10d43ad0cd74e90b70704e547cdd3adc1d"
 }

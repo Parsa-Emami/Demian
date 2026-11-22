@@ -1,0 +1,25 @@
+{
+  "character_key": "sorkhi",
+  "pack_version": 14,
+  "reference": "../source-v14/reference.jpg",
+  "master": "../source-v14/master.png",
+  "runner_motion": "../source-v14/runner-motion.png",
+  "slide_master": "../source-v14/slides.png",
+  "locomotion_reference": {
+    "character": "arsal",
+    "states": [
+      "walk",
+      "run",
+      "jump",
+      "land",
+      "slide"
+    ]
+  },
+  "inputs": [
+    {
+      "name": "reference.jpg",
+      "role": "supplied-identity-sheet-and-key-poses",
+      "sha256": "771d08215f30a5cbf32b4cce4b6a2176019fcd9641820566865fe85bc3674310"
+    }
+  ]
+}

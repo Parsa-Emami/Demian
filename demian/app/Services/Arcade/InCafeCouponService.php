@@ -50,6 +50,8 @@ final class InCafeCouponService
         abort_unless($coupon, 422, 'Code not found.');
         return [
             'state' => $this->state($coupon),
+            'owner_name' => $coupon->player_id
+                ? DB::table('arcade_players')->where('id', $coupon->player_id)->value('display_name') : null,
             'percent' => (int) $coupon->discount_percent,
             'currency' => $coupon->currency,
             'minimum_minor' => (int) $coupon->min_order_minor,

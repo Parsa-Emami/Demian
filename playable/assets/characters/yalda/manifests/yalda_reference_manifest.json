@@ -1,0 +1,42 @@
+{
+  "character_key": "yalda",
+  "pack_version": 14,
+  "reference": "../source-v14/reference.jpg",
+  "master": "../source-v14/master.png",
+  "runner_motion": "../source-v14/runner-motion.png",
+  "slide_master": "../source-v14/slides.png",
+  "locomotion_reference": {
+    "character": "darya",
+    "states": [
+      "idle",
+      "walk",
+      "run",
+      "jump",
+      "land",
+      "slide",
+      "celebrate"
+    ]
+  },
+  "inputs": [
+    {
+      "name": "reference.jpg",
+      "role": "supplied-yalda-identity-reference",
+      "sha256": "45d6a6893adebddebd697bc21910e7c5d135c6bd2e040f148f930e6183ac61f1"
+    },
+    {
+      "name": "darya/source-v14/master.png",
+      "role": "body-proportions-and-pose-reference",
+      "sha256": "39d87e68eb8615f8d9e81fff5d736bb4b3a58faafdc7a9739ad97b93ab5fa85f"
+    },
+    {
+      "name": "darya/source-v14/runner-motion.png",
+      "role": "body-proportions-and-pose-reference",
+      "sha256": "99cc876b0226a3499bf679b99f7174273233f12e3133b45829c24793fed66cf0"
+    },
+    {
+      "name": "darya/source-v14/slides.png",
+      "role": "body-proportions-and-pose-reference",
+      "sha256": "eeefd8ebfb5869b167965fb124fc788f336e6aadaca00a76d08c14926de4a93f"
+    }
+  ]
+}

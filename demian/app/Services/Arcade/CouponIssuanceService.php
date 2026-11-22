@@ -20,6 +20,7 @@ final class CouponIssuanceService
         if (config('demian-coupons.issue_enabled') !== true) {
             throw new RuntimeException('Coupon issuance is disabled.');
         }
+        app(ArcadePrizeIdentity::class)->assertRolloutReady();
         $terms = $this->policy->approved();
         if (! preg_match('/^weekly:tehran:\d{4}-\d{2}-\d{2}$/D', $periodKey)) {
             throw new \InvalidArgumentException('Invalid weekly period key.');
@@ -92,6 +93,17 @@ final class CouponIssuanceService
                     $existing++;
                     continue;
                 }
+                // Verified rank is NOT proof of phone ownership or right to a
+                // cash-equivalent voucher. Enforce this under the same issuer
+                // transaction before reserving sponsor inventory or codes.
+                app(ArcadePrizeIdentity::class)->assertVerifiedRecipient($winner->player_id);
+                if ($winner->game_id === CafeDriftReplayVerifier::GAME_ID
+                    && (! $campaign || ! app(RankedGameCatalog::class)->supportsPrizes($winner->game_id)
+                        || ! DB::table('arcade_weekly_rule_locks')->where('period_key', $periodKey)
+                            ->where('game_id', $winner->game_id)->where('rules_version', $winner->rules_version)
+                            ->where('ranked_enabled', true)->where('prize_eligible', true)->exists())) {
+                    throw new RuntimeException('Café Drift prizes require an eligible season and an active sponsor campaign.');
+                }
                 $item = $campaign ? $campaignService->claim($campaign) : null;
                 $code = $item ? Crypt::decryptString($item->code_ciphertext)
                     : 'DMC-'.strtoupper(bin2hex(random_bytes(16)));
@@ -108,7 +120,7 @@ final class CouponIssuanceService
                     'min_order_minor' => $effectiveTerms['min_order_minor'],
                     'max_discount_minor' => $effectiveTerms['max_discount_minor'],
                     'status' => 'issued', 'issued_at' => $now->toDateTimeString(),
-                    'expires_at' => $now->addDays($effectiveTerms['valid_days'])->toDateTimeString(),
+                    'expires_at' => CarbonImmutable::parse($period->sealed_at, 'UTC')->addDays(CouponPolicy::WEEKLY_VALID_DAYS)->toDateTimeString(),
                     'created_at' => $now->toDateTimeString(), 'updated_at' => $now->toDateTimeString(),
                 ]);
                 if ($item) {

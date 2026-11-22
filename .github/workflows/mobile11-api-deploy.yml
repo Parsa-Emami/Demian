@@ -41,10 +41,12 @@ jobs:
         working-directory: demian
         run: |
           tar -czf "$RUNNER_TEMP/demian-api.tar.gz" \
-            artisan app bootstrap config database routes resources/game \
+            artisan app bootstrap config database routes resources/game resources/legal \
             resources/views src public/index.php public/.htaccess composer.json composer.lock vendor
           test -s "$RUNNER_TEMP/demian-api.tar.gz"
-          tar -tzf "$RUNNER_TEMP/demian-api.tar.gz" | grep -qx 'artisan'
+          tar -tzf "$RUNNER_TEMP/demian-api.tar.gz" > "$RUNNER_TEMP/demian-api-entries.txt"
+          grep -Fx 'artisan' "$RUNNER_TEMP/demian-api-entries.txt" >/dev/null
+          grep -Fx 'resources/legal/policy.json' "$RUNNER_TEMP/demian-api-entries.txt" >/dev/null
           if tar -tzf "$RUNNER_TEMP/demian-api.tar.gz" | grep -Eq '(^|/)([.]env|[.]git)(/|$)'; then
             echo "Secret or Git metadata found in artifact" >&2; exit 1
           fi

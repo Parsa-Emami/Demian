@@ -35,6 +35,9 @@ export default class ChunkManager {
         this.sequence = 0;
         this.idleWaiters = new Set();
         this.currentChunkId = null;
+        this.activeChunkVersion = 0;
+        this.activeChunkSnapshotVersion = -1;
+        this.activeChunkSnapshot = Object.freeze([]);
     }
 
     desired(position) {
@@ -98,6 +101,7 @@ export default class ChunkManager {
     applyTier(record, tier) {
         if (record.tier === tier) return;
         record.tier = tier;
+        this.invalidateActiveChunks();
         record.handle?.setTier?.(tier);
         this.eventBus?.emit('world:chunk-tier-changed', { chunkId: record.definition.id, tier });
     }
@@ -140,6 +144,7 @@ export default class ChunkManager {
             };
             handle?.setTier?.(target.tier);
             this.loaded.set(chunkId, loaded);
+            this.invalidateActiveChunks();
             this.enforceBudget();
         } catch (error) {
             if (error?.name !== 'AbortError') {
@@ -175,6 +180,7 @@ export default class ChunkManager {
 
     unloadRecord(chunkId, record) {
         if (!this.loaded.delete(chunkId)) return;
+        this.invalidateActiveChunks();
         Promise.resolve(this.unloader.unload(record.handle, record.definition)).catch((error) => {
             this.eventBus?.emit('world:chunk-unload-failed', { chunkId, error });
         }).finally(() => this.resolveIdleIfNeeded());
@@ -196,6 +202,25 @@ export default class ChunkManager {
         if (this.running !== 0 || this.queue.size !== 0) return;
         this.idleWaiters.forEach((resolve) => resolve());
         this.idleWaiters.clear();
+    }
+
+    invalidateActiveChunks() {
+        this.activeChunkVersion++;
+    }
+
+    /** Shared immutable active list, rebuilt only on a real chunk/tier change.
+     * Used by the HUD and renderer; avoids per-frame arrays/filter allocations.
+     */
+    activeChunkIds() {
+        if (this.activeChunkSnapshotVersion !== this.activeChunkVersion) {
+            const ids = [];
+            for (const [id, record] of this.loaded) {
+                if (record.tier === 'active') ids.push(id);
+            }
+            this.activeChunkSnapshot = Object.freeze(ids);
+            this.activeChunkSnapshotVersion = this.activeChunkVersion;
+        }
+        return this.activeChunkSnapshot;
     }
 
     stats() {
@@ -224,6 +249,7 @@ export default class ChunkManager {
         });
         await Promise.allSettled(unloads);
         this.target.clear();
+        this.invalidateActiveChunks();
         this.resolveIdleIfNeeded();
         this.eventBus = null;
     }

@@ -15,6 +15,7 @@
     <meta name="full-screen" content="yes">
     <meta name="x5-fullscreen" content="true"> --}}
     <link rel="manifest" href="manifest.webmanifest">
+    <link rel="icon" type="image/png" sizes="192x192" href="icons/demian-192.png">
     <link rel="apple-touch-icon" href="icons/demian-192.png">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -83,38 +84,29 @@
 
     <script>
         (() => {
-            // This executes before Vite: a failed initial import needs a manual
-            // recovery UI, without ever silently restarting a ranked session.
-            const chunkFailure = /(?:dynamically imported module|importing a module script|chunkloaderror|loading chunk|\/build\/assets\/.*\.js)/i;
-            const present = reason => {
+            const recoveryKey = 'demian.deployment-recovery.v1';
+            const chunkFailure = /(?:dynamically imported module|importing a module script failed|chunkloaderror|loading chunk|\/build\/assets\/.*\.js)/i;
+
+            const recover = (reason) => {
                 const message = String(reason?.message ?? reason?.reason?.message ?? reason ?? '');
                 if (!chunkFailure.test(message)) return;
-                const mount = () => {
-                    if (document.querySelector('[data-demian-chunk-recovery]')) return;
-                    const panel = document.createElement('aside');
-                    panel.dataset.demianChunkRecovery = 'true';
-                    panel.setAttribute('role', 'alert');
-                    panel.setAttribute('dir', 'rtl');
-                    panel.style.cssText = 'position:fixed;inset:auto 12px 12px;z-index:2147483646;max-width:440px;margin-inline:auto;padding:16px;border-radius:12px;background:#202a21;color:#fff;box-shadow:0 6px 30px #0008;font:inherit';
-                    const copy = document.createElement('p');
-                    copy.textContent = 'فایل بازی دریافت نشد. اینترنت را بررسی کنید یا نسخهٔ جدید را دستی بارگذاری کنید.';
-                    const reload = document.createElement('button');
-                    reload.type = 'button';
-                    reload.textContent = 'بارگذاری نسخهٔ جدید';
-                    reload.style.cssText = 'margin-top:12px;padding:9px 14px;border:1px solid currentColor;border-radius:8px;background:transparent;color:inherit;cursor:pointer';
-                    reload.addEventListener('click', () => window.location.reload());
-                    panel.append(copy, reload);
-                    document.body.append(panel);
-                };
-                if (document.body) mount();
-                else document.addEventListener('DOMContentLoaded', mount, { once: true });
+
+                const previous = Number(sessionStorage.getItem(recoveryKey) || 0);
+                const now = Date.now();
+                if (now - previous < 60000) return;
+
+                sessionStorage.setItem(recoveryKey, String(now));
+                const url = new URL(window.location.href);
+                url.searchParams.set('__demian_refresh', String(now));
+                window.location.replace(url.toString());
             };
-            window.addEventListener('vite:preloadError', event => {
+
+            window.addEventListener('vite:preloadError', (event) => {
                 event.preventDefault();
-                present(event.payload ?? event);
+                recover(event.payload ?? event);
             });
-            window.addEventListener('unhandledrejection', event => present(event.reason));
-            window.addEventListener('error', event => present(event.error ?? event.message), true);
+            window.addEventListener('unhandledrejection', (event) => recover(event.reason));
+            window.addEventListener('error', (event) => recover(event.error ?? event.message), true);
         })();
     </script>
 
@@ -133,7 +125,7 @@
         data-sidebar-state="collapsed"
         data-mobile-actions="collapsed"
         data-runtime-version="14.0.0-mobile-runner"
-        data-deployment-mode="lazy-chunks"
+        data-deployment-mode="versioned-chunks"
         data-session-state="booting"
         data-game-orientation="auto"
         data-shell-screen="boot"
@@ -187,6 +179,7 @@
                                 <p class="mt-1 text-xs text-zinc-400">
                                     کاراکترت را انتخاب کن؛ ماجراجویی از همین‌جا شروع می‌شود.
                                 </p>
+                                <p data-character-selection-live class="sr-only" role="status" aria-live="polite" aria-atomic="true"></p>
                             </div>
 
                             <span class="arcade-badge">14</span>
@@ -206,22 +199,16 @@
                                 <h2 class="mt-1 text-lg font-black">انتخاب کاراکتر</h2>
                             </div>
 
-                            <div class="scroll-rail-controls" aria-label="پیمایش فهرست کاراکترها">
-                                <button type="button" data-character-scroll-previous class="scroll-rail-button" aria-label="کاراکتر قبلی">›</button>
-                                <output data-character-scroll-status class="scroll-rail-status" aria-live="polite">0 / 0</output>
-                                <button type="button" data-character-scroll-next class="scroll-rail-button" aria-label="کاراکتر بعدی">‹</button>
-                            </div>
                         </div>
 
                         <div
                             data-character-list
-                            class="character-selection-rail mt-4"
+                            class="character-selection-rail character-portrait-grid mt-4"
                             tabindex="0"
                             role="list"
                             aria-label="کاراکترهای قابل انتخاب"
                             aria-live="polite"
                         ></div>
-                        <p class="scroll-rail-hint">در گوشی کارت‌ها را به چپ و راست بکش یا از دکمه‌های پیمایش استفاده کن.</p>
                     </section>
 
                     <details class="arcade-panel manager-details mt-4 rounded-[28px] p-4">
@@ -364,6 +351,7 @@
 
             <div data-game-shell data-ui-layer="shell" class="game-shell absolute inset-0" dir="rtl">
                 <div data-shell-toast-host data-ui-layer="shell-toast" class="shell-toast-host" aria-live="polite" aria-atomic="false"></div>
+                <p data-shell-network-status class="shell-network-status" role="status" aria-live="polite" hidden></p>
                  <p data-shell-announcer class="sr-only" role="status" aria-live="polite" aria-atomic="true"></p>
 
                 <section
@@ -396,20 +384,13 @@
                         <span></span><span></span><span></span>
                     </div>
                     <div class="cafe-menu__content">
-                        <div data-menu-reveal class="cafe-menu__eyebrow">
-                            <span class="arcade-live-dot"></span>
-                            DEMIAN · PLAY YOUR WAY
-                        </div>
                         <div data-menu-reveal>
                             <p class="shell-kicker">به دمیان خوش آمدی</p>
                             <h1 class="cafe-menu__title"><b>DEMIAN</b></h1>
-                            <p class="cafe-menu__lead">
-                                کمی بگرد. کمی بدو. یک رکورد تازه بساز.
-                            </p>
                         </div>
-                        <button type="button" data-sidebar-toggle class="cafe-menu__showcase" aria-label="نمایش مجموعهٔ ۱۲ کاراکتر و انتخاب کاراکتر">
+                        <button type="button" data-sidebar-toggle class="cafe-menu__showcase" aria-label="نمایش مجموعه و انتخاب کاراکتر">
                             <span class="cafe-menu__showcase-copy">
-                                <span class="cafe-menu__showcase-kicker">YOUR CAST · 12 CHARACTERS</span>
+                                <span class="cafe-menu__showcase-kicker">YOUR CAST</span>
                                 <strong>قهرمان این داستان تویی</strong>
                                 <small>شخصیتت را انتخاب کن و وارد کافه شو</small>
                             </span>
@@ -432,12 +413,7 @@
                             <button type="button" data-shell-action="leaderboard" class="shell-button shell-button--ghost">لیدربورد هفتگی <b aria-hidden="true">♛</b></button>
                             <button type="button" data-shell-action="rewards" class="shell-button shell-button--ghost">تخفیف‌های من <b aria-hidden="true">٪</b></button>
                         </div>
-                        <button type="button" data-shell-action="motion-comparison" class="shell-button shell-button--ghost">مقایسهٔ الگوی حرکت</button>
                         <button type="button" data-sidebar-toggle class="shell-button shell-button--ghost menu-character-button">انتخاب کاراکتر <span aria-hidden="true">◉</span></button>
-                        <div data-menu-reveal class="cafe-menu__footer">
-                            <span data-game-library-summary>۶ بازی · ۱۲ کاراکتر</span>
-                            <span>بازی‌های کوچک، ماجراجویی‌های بزرگ</span>
-                        </div>
                         <nav class="demian-legal-links" aria-label="قوانین و حریم خصوصی">
                             <a href="privacy/" target="_self">حریم خصوصی</a>
                             <a href="terms/" target="_self">شرایط استفاده</a>
@@ -496,7 +472,7 @@
                             <button type="button" data-shell-action="back-cafe" class="shell-icon-button" aria-label="بازگشت به منوی کافه">×</button>
                         </header>
                         <div class="game-library-toolbar">
-                            <span class="game-library-toolbar__hint" data-game-library-count>۶ بازی برای انتخاب</span>
+                            <span class="game-library-toolbar__hint" data-game-library-count>۷ بازی برای انتخاب</span>
                             <div class="scroll-rail-controls" aria-label="پیمایش کتابخانه بازی">
                                 <button type="button" data-game-scroll-previous class="scroll-rail-button" aria-label="بازی قبلی">›</button>
                                 <output data-game-scroll-status class="scroll-rail-status" aria-live="polite">0 / 0</output>
@@ -631,9 +607,10 @@
                             <div class="settings-toggle-grid">
                                 <label><input type="checkbox" name="hudVisible"><span>نمایش HUD</span></label>
                                 <label><input type="checkbox" name="hintsVisible"><span>نمایش راهنما</span></label>
-                                <label><input type="checkbox" name="soundEnabled"><span>افکت صوتی</span></label>
-                                <label><input type="checkbox" name="musicEnabled"><span>موسیقی</span></label>
+                                <label><input type="checkbox" name="soundEnabled"><span>افکت صوتی (SFX)</span></label>
+                                <label><input type="checkbox" name="musicEnabled"><span>موسیقی پس‌زمینه</span></label>
                             </div>
+                            <p class="settings-audio-explainer">موسیقی و افکت‌ها مستقل تنظیم می‌شوند. صدا فقط بعد از لمس یا فشردن کلید فعال می‌شود و هنگام Pause یا خروج قطع خواهد شد.</p>
                             <details data-touch-settings class="control-settings touch-settings">
                                 <summary>جوی‌استیک و کنترل لمسی</summary>
                                 <p>پیش‌نمایش زنده است. برای اعمال چیدمان در بازی، تنظیمات را ذخیره کن.</p>
@@ -675,22 +652,39 @@
                                 <button type="button" data-shell-action="reset-settings" class="shell-button shell-button--ghost">پیش‌فرض</button>
                             </div>
                         </form>
+                        <section data-player-identity-panel class="player-identity-panel" dir="rtl"
+                            aria-label="تأیید هویت و شماره تلفن">
+                            <h3>هویت بازیکن و تأیید شماره</h3>
+                            <p data-player-identity-status role="status" aria-live="polite">
+                                وضعیت هویت از سرور دریافت می‌شود.
+                            </p>
+                            <button type="button" data-player-otp-send class="shell-button shell-button--ghost" hidden>ارسال کد پیامکی</button>
+                            <form data-player-otp-form autocomplete="one-time-code" hidden>
+                                <label for="player-otp-code">کد شش‌رقمی پیامک</label>
+                                <input id="player-otp-code" name="code" class="arcade-input" type="text"
+                                    inputmode="numeric" pattern="[0-9]{6}" minlength="6" maxlength="6"
+                                    autocomplete="one-time-code" required>
+                                <button type="submit" class="shell-button shell-button--primary">تأیید شماره</button>
+                            </form>
+                            <small>رکوردهای تمرینی معتبر مالی نیستند. تأیید شماره هم به معنی صدور خودکار کوپن نیست.</small>
+                        </section>
                     </div>
                 </section>
 
                 <section data-screen="leaderboard" class="shell-screen shell-screen--modal" role="dialog" aria-modal="true" aria-labelledby="ranking-title" aria-hidden="true" hidden>
                     <div class="shell-modal ranking-panel">
-                        <p class="shell-kicker">DEMIAN · CAFÉ RUN</p>
+                        <p class="shell-kicker">DEMIAN · RECORDS</p>
                         <h2 id="ranking-title">لیدربورد کافه</h2>
-                        <label>انتخاب بازی دارای بازپخش سروری
+                        <label>انتخاب بازی
                             <select data-ranking-game aria-label="بازی رقابتی">
                                 <option value="all-games">رتبه‌بندی مشترک · همه بازی‌ها</option>
                                 <option value="dino-run">Dino Run</option>
-                                <option value="cafe-critters" disabled>Café Critters</option>
-                                <option value="coffee-crash" disabled>Coffee Crash</option>
-                                <option value="after-hours" disabled>After Hours · Route Trial</option>
-                                <option value="cafe-rush" disabled>Café Rush · Route Trial</option>
-                                <option value="open-world" disabled>Open World · Route Trial</option>
+                                <option value="cafe-critters">Café Critters</option>
+                                <option value="coffee-crash">Coffee Crash</option>
+                                <option value="cafe-drift">Café Drift</option>
+                                <option value="after-hours">After Hours</option>
+                                <option value="cafe-rush">Café Rush</option>
+                                <option value="open-world">Open World</option>
                             </select>
                         </label>
                         <label>بازهٔ رکوردها
@@ -726,8 +720,7 @@
                                 <button type="submit" class="shell-button">بازیابی حساب</button>
                             </form>
                             <p data-ranking-recovery-status role="status" aria-live="polite"></p>
-                            <button type="button" data-ranking-export-account class="shell-button shell-button--ghost">دریافت خلاصه داده‌های حساب (JSON)</button>
-                            <p class="ranking-panel__refresh-info">برای دریافت تمام سوابق، API خصوصی خروجی صفحه‌بندی‌شده دارد. داده‌های حساس و اسرار ورود در فایل قرار نمی‌گیرند.</p>
+                            <button type="button" data-ranking-export-account class="shell-button shell-button--ghost">دریافت اطلاعات حساب</button>
                             <button type="button" data-ranking-delete-account class="shell-button shell-button--ghost">حذف کامل حساب و رکوردهای سرور</button>
                         </div>
                         <button type="button" data-shell-action="close-modal" class="shell-button shell-button--primary" data-screen-autofocus>بستن</button>
@@ -740,17 +733,9 @@
                     <div class="shell-modal coupon-wallet-panel">
                         <p class="shell-kicker">DEMIAN · MY REWARDS</p>
                         <h2 id="coupon-wallet-title">کدهای تخفیف من</h2>
-                        <p class="ranking-panel__refresh-info">
-                            کد تخفیف و مقدار آن فقط برای صاحب حساب نمایش داده می‌شود.
-                            برای دریافت جوایز ایمیلی ارسال نمی‌شود. هنگام خرید حضوری،
-                            کد معتبر را به صندوق‌دار نشان دهید.
-                        </p>
                         <p data-wallet-status role="status" aria-live="polite"></p>
                         <div data-wallet-restore-hint hidden>
-                            <p>اگر حساب شما در این دستگاه باز نیست، از بخش لیدربورد
-                                با لینک یا کد پشتیبان، همان حساب را بازیابی کنید.</p>
-                            <button type="button" data-shell-action="wallet-to-leaderboard"
-                                class="shell-button shell-button--ghost">بازیابی حساب در لیدربورد</button>
+                            <button type="button" data-shell-action="wallet-to-leaderboard" class="shell-button shell-button--ghost">بازیابی حساب</button>
                         </div>
                         <ul class="coupon-wallet-list" data-wallet-list aria-label="کدهای تخفیف حساب شما"></ul>
                         <div class="shell-modal__actions shell-modal__actions--row">
@@ -773,12 +758,14 @@
                         <p class="shell-kicker">پایان بازی</p>
                         <h2 data-results-title>نتیجه‌ی بازی</h2>
                         <p data-results-subtitle>مرحله به پایان رسید.</p>
-                        <div class="results-panel__score"><small>امتیاز</small><strong data-results-score>0</strong></div>
+                        <div class="results-panel__score"><small data-results-score-label>امتیاز</small><strong data-results-score>0</strong></div>
+                        <p data-results-record-note class="results-record-note" role="note">نمایش نتیجه به معنی تأیید آنلاین نیست.</p>
                         <div data-results-stats class="results-panel__stats"></div>
                         <p data-results-ranking role="status" aria-live="polite"></p>
+                        <p data-results-reward-note class="results-reward-note" role="note">کوپن فقط پس از تأیید سرور و تخصیص رسمی ایجاد می‌شود.</p>
                         <button type="button" data-shell-action="retry-ranking" data-results-ranking-retry class="shell-button" hidden>تلاش دوباره برای ثبت آنلاین</button>
                         <div class="shell-modal__actions shell-modal__actions--row">
-                            <button type="button" data-shell-action="restart" class="shell-button shell-button--primary">دوباره</button>
+                            <button type="button" data-shell-action="restart" class="shell-button shell-button--primary">تلاش دوباره</button>
                             <button type="button" data-shell-action="replay" data-results-replay class="shell-button" hidden>بازپخش</button>
                             <button type="button" data-shell-action="exit-game" class="shell-button">بازگشت به کافه</button>
                             <button type="button" data-shell-action="leaderboard" class="shell-button">لیدربورد</button>
