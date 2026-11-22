@@ -33,7 +33,7 @@ const GAME_STYLES = Object.freeze({
     'cafe-rush': ['resources/css/after-hours.css', 'resources/css/cafe-rush.css'],
     'cafe-critters': ['resources/css/after-hours.css', 'resources/css/cafe-critters.css'],
     'coffee-crash': ['resources/css/coffee-crash.css'],
-    'cafe-drift': ['resources/css/cafe-drift.css'],
+    'cafe-drift': [], // Already statically owned by the lazy CafeDriftGame chunk.
 });
 
 export function splitOfflineModules(viteManifest = {}) {

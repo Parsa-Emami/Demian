@@ -89,10 +89,7 @@ export const GAME_DEFINITIONS = Object.freeze({
     }),
     'cafe-drift': Object.freeze({
         title: 'Café Drift', inputContext: 'CAFE_DRIFT', orientation: 'any',
-        loader: () => withGameStyle(
-            () => import('../games/cafe-drift/CafeDriftGame.js'),
-            () => import('../../../css/cafe-drift.css'),
-        ),
+        loader: () => import('../games/cafe-drift/CafeDriftGame.js'),
         metadata: Object.freeze({
             phase: 19, status: 'available', supportsResults: true,
             renderer: 'shared-canvas2d-pixel', deployment: 'versioned-chunks',

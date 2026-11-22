@@ -40,7 +40,7 @@ const styles = {
     'cafe-rush': ['after-hours', 'cafe-rush'],
     'cafe-critters': ['after-hours', 'cafe-critters'],
     'coffee-crash': ['coffee-crash'],
-    'cafe-drift': ['cafe-drift'],
+    'cafe-drift': [],
 };
 assert.deepEqual(offline.games.map(x => x.id), OFFLINE_GAME_IDS);
 for (const [id, name] of Object.entries(games)) {
@@ -57,6 +57,18 @@ for (const [id, name] of Object.entries(games)) {
     const selected = offline.games.find(x => x.id === id);
     assert.ok(selected?.files.some(x => x.path === 'build/' + row.file),
         'Offline pack missing game: ' + id);
+    if (id === 'cafe-drift') {
+        // Café Drift imports its CSS from within the game module itself.
+        // Vite records this stylesheet in the game's CSS array; re-importing
+        // it as a standalone dynamic CSS entry would duplicate downloads.
+        assert.ok((row.css ?? []).length, 'Café Drift game-bound CSS missing');
+        for (const css of row.css ?? []) {
+            const path = 'build/' + css;
+            assert.ok(!eager.has(path), 'Café Drift CSS leaked into startup');
+            assert.ok(selected.files.some(asset => asset.path === path),
+                'Café Drift game-bound CSS absent from offline pack');
+        }
+    }
     for (const name of styles[id]) {
         const css = vite['resources/css/' + name + '.css'];
         assert.ok(css?.file, 'Missing dynamic stylesheet: ' + name);

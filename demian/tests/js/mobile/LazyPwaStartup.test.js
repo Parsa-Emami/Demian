@@ -13,7 +13,7 @@ test('all seven game packages retain their shared CSS but exclude it from the PW
         'cafe-drift': 'cafe-drift/CafeDriftGame.js',
     };
     const styleNames = ['phase5-step23-dino-run', 'after-hours', 'cafe-rush',
-        'cafe-critters', 'coffee-crash', 'cafe-drift'];
+        'cafe-critters', 'coffee-crash'];
     const vite = {
         'resources/js/app.js': { file: 'assets/app.js', isEntry: true, dynamicImports: [
             ...Object.values(games).map(file => 'resources/js/game/games/' + file),
@@ -30,6 +30,7 @@ test('all seven game packages retain their shared CSS but exclude it from the PW
         vite['resources/js/game/games/' + path] = {
             file: 'assets/' + id + '.js', isDynamicEntry: true,
             imports: ['resources/js/app.js'],
+            ...(id === 'cafe-drift' ? { css: ['assets/cafe-drift.css'] } : {}),
         };
     }
     for (const name of styleNames) {
