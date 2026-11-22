@@ -43,6 +43,9 @@ export function splitOfflineModules(viteManifest = {}) {
     const entry = viteManifest[entryKey];
     if (!entry) return { core: [], games: Object.fromEntries(
         OFFLINE_GAME_IDS.map(id => [id, []])) };
+    const gameKeys = new Set(Object.values(GAME_MODULES).map(path =>
+        'resources/js/game/games/' + path));
+    const gameStyleKeys = new Set(Object.values(GAME_STYLES).flat());
     const follow = (key, into, includeDynamic, seen = new Set()) => {
         if (seen.has(key)) return;
         seen.add(key);
@@ -51,16 +54,18 @@ export function splitOfflineModules(viteManifest = {}) {
         into.add('build/' + row.file);
         for (const path of [...(row.css ?? []), ...(row.assets ?? [])]) into.add('build/' + path);
         for (const child of row.imports ?? []) follow(child, into, includeDynamic, seen);
-        if (includeDynamic) {
+        // Built game chunks sometimes have a static import edge back to app.js.
+        // Do not traverse app's dynamic menu: that would download EVERY game
+        // whenever one selected game is saved for offline use.
+        if (includeDynamic && key !== entryKey) {
             for (const child of row.dynamicImports ?? []) {
-                if (child !== key) follow(child, into, true, seen);
+                if (child !== key && !gameKeys.has(child) && !gameStyleKeys.has(child)) {
+                    follow(child, into, true, seen);
+                }
             }
         }
     };
     follow(entryKey, core, false);
-    const gameKeys = new Set(Object.values(GAME_MODULES).map(path =>
-        'resources/js/game/games/' + path));
-    const gameStyleKeys = new Set(Object.values(GAME_STYLES).flat());
     for (const dynamic of entry.dynamicImports ?? []) {
         if (dynamic !== entryKey && !gameKeys.has(dynamic) && !gameStyleKeys.has(dynamic)) {
             follow(dynamic, core, true);

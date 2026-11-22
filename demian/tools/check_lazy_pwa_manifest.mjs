@@ -48,6 +48,12 @@ for (const [id, name] of Object.entries(games)) {
     assert.ok(row?.isDynamicEntry, 'Missing game chunk: ' + id);
     assert.ok(!eager.has('build/' + row.file), 'Eager game chunk: ' + id);
     assert.ok(graph.games[id].includes('build/' + row.file), 'Offline split misses ' + id);
+    for (const [otherId, otherName] of Object.entries(games)) {
+        if (otherId === id) continue;
+        const other = vite['resources/js/game/games/' + otherName];
+        assert.ok(!graph.games[id].includes('build/' + other.file),
+            'One selected game downloads unrelated game chunk: ' + id + ' / ' + otherId);
+    }
     const selected = offline.games.find(x => x.id === id);
     assert.ok(selected?.files.some(x => x.path === 'build/' + row.file),
         'Offline pack missing game: ' + id);

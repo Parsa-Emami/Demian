@@ -23,8 +23,14 @@ test('all seven game packages retain their shared CSS but exclude it from the PW
         'resources/js/game/performance/PwaUpdateController.js': {
             file: 'assets/pwa.js', isDynamicEntry: true },
     };
+    // Mimic the real Vite output: lazy game modules import the app entry,
+    // while app dynamically references all games. Only the selected game's
+    // output must be included in that offline package.
     for (const [id, path] of Object.entries(games)) {
-        vite['resources/js/game/games/' + path] = { file: 'assets/' + id + '.js', isDynamicEntry: true };
+        vite['resources/js/game/games/' + path] = {
+            file: 'assets/' + id + '.js', isDynamicEntry: true,
+            imports: ['resources/js/app.js'],
+        };
     }
     for (const name of styleNames) {
         vite['resources/css/' + name + '.css'] = {
@@ -34,6 +40,10 @@ test('all seven game packages retain their shared CSS but exclude it from the PW
     assert.ok(core.includes('build/assets/pwa.js'));
     assert.deepEqual(Object.keys(packs), OFFLINE_GAME_IDS);
     assert.ok(!core.some(path => path.includes('after-hours.css')));
+    assert.ok(packs['dino-run'].includes('build/assets/dino-run.js'));
+    assert.ok(!packs['dino-run'].includes('build/assets/open-world.js'));
+    assert.ok(!packs['dino-run'].includes('build/assets/coffee-crash.js'));
+    assert.ok(!packs['cafe-rush'].includes('build/assets/cafe-drift.js'));
     for (const id of ['after-hours', 'cafe-rush', 'cafe-critters'])
         assert.ok(packs[id].includes('build/assets/after-hours.css'));
     assert.ok(packs['cafe-drift'].includes('build/assets/cafe-drift.css'));
