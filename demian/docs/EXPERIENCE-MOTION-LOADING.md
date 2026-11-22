@@ -63,3 +63,14 @@ Use Chrome/Firefox DevTools Performance and Network with **Disable Cache** for c
 - if API is slow, check private Step33 dashboard and cPanel worker/DB locks separately.
 
 The custom Product Design interactive Work workflow remains distinct; this repository PR is an independently implemented code improvement based on the accessible interaction catalogue, not a claim of a pixel-faithful clone or visually approved mock.
+
+## P1 responsive loading motion
+
+Tune the existing visual feedback rather than introducing a second loading pipeline. The ring period changes from 2200 to 1000 ms, the heartbeat from 1050 to 720 ms and the fill transition from 250 ms width to 120 ms transform with a fixed-size RTL-origin fill. The former spinning spark rotates around its own center and contributes no useful progress signal; use a static accent instead. Stage truth, accessible values and the one-second elapsed clock remain unchanged. No minimum display time or extra animation awaits. Honor both OS reduced-motion and the in-game reduced-motion setting; use a static heartbeat on constrained/economy profiles. Stop decorative motion when leaving/hidden. The existing browser test now holds real module/preload promises to validate 0/25% independently of runner timing, tests desktop and mobile layouts, actual computed timing, reduced/economy policies, RTL geometry, first-playable frame and cleanup. Skills: project router, game-ui-ux, game-feel and performance-optimization. Canvas2D/three.js and all gameplay/ranked rules unchanged. Motion timings are design choices, not a measured gain in user-device startup latency.
+
+
+### PR #84 integration with seven-game main (2026-11-22)
+
+The loader remains a *truthful four-stage* indicator, including every game's optional PWA/CSS dependencies. The unit and emulated Chromium QA derive the current game-card count from `GAME_CATALOG` instead of asserting the retired six-game catalog. `LoadingScreen.afterClose()` explicitly cancels finished fill-mode Web Animations on its own hidden element; CSS-only motion is already disabled on leaving/hidden screens. Disposing the loader does the same, so return-to-menu and repeated launches do not retain compositor work or the elapsed timer. No global animation cancellation or automatic ranked-session reload is introduced.
+
+The 1s orbit / 720ms beat / 120ms RTL progress transform are **visual feedback durations**, not proof of a faster network or first playable frame. No source assets, score rules, API contracts, or deployment gates were replaced. Full GitHub Actions checks and physical Android/iOS acceptance are separate gates.

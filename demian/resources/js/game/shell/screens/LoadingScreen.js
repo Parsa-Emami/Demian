@@ -1,4 +1,4 @@
-import BaseScreen from './BaseScreen';
+import BaseScreen from './BaseScreen.js';
 
 const TIPS = Object.freeze({
     'open-world': [
@@ -64,6 +64,18 @@ export default class LoadingScreen extends BaseScreen {
         this.clearTimer();
     }
 
+    async afterClose() {
+        // BaseScreen's zero-duration exit uses Web Animations with fill:'both'.
+        // Finished, fill-mode animations may survive display:none; cancel them
+        // only after this loading screen has fully left. This also releases
+        // decorative compositor work without disturbing in-game animations.
+        this.stopFinishedMotion();
+    }
+
+    stopFinishedMotion() {
+        this.element.getAnimations?.({ subtree: true }).forEach(animation => animation.cancel());
+    }
+
     clearTimer() {
         if (this.timer !== null) globalThis.clearInterval(this.timer);
         this.timer = null;
@@ -85,6 +97,7 @@ export default class LoadingScreen extends BaseScreen {
         const completed = Math.min(4, Math.floor(safe / 25));
         this.stage = completed;
         this.bar?.style.setProperty('--loading-progress', safe + '%');
+        this.bar?.style.setProperty('--loading-progress-scale', String(safe / 100));
         this.bar?.setAttribute('aria-valuenow', String(Math.round(safe)));
         this.bar?.setAttribute('aria-valuetext', completed + ' از ۴ مرحله انجام شد' + (step ? '؛ ' + step : ''));
         if (this.value) this.value.textContent = completed.toLocaleString('fa-IR') + ' / ۴';
@@ -107,6 +120,7 @@ export default class LoadingScreen extends BaseScreen {
 
     dispose() {
         this.clearTimer();
+        this.stopFinishedMotion();
         this.tipButton?.removeEventListener('click', this.onNextTip);
         super.dispose();
     }
