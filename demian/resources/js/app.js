@@ -3,10 +3,6 @@ import '../css/mobile-character-polish.css';
 import '../css/mobile-performance-fix.css';
 import '../css/arcade-minigames.css';
 import '../css/mobile-release.css';
-import '../css/after-hours.css';
-import '../css/cafe-rush.css';
-import '../css/cafe-critters.css';
-import '../css/coffee-crash.css';
 import '../css/touch-controls.css';
 import '../css/game-hud.css';
 import '../css/ranked-route-challenge.css';
@@ -19,7 +15,6 @@ import '../css/weekly-13-ui.css';
 import '../css/mobile-19-controls.css';
 import '../css/phase4-step20-ux.css';
 import '../css/phase4-step21-feedback.css';
-import '../css/phase5-step23-dino-run.css';
 import '../css/phase6-step31-mobile-menu.css';
 import '../css/phase6-step32-legal.css';
 import '../css/experience-motion.css';
@@ -32,7 +27,6 @@ import CharacterManagerUI from './ui/CharacterManagerUI';
 import SidebarController from './ui/SidebarController';
 import MobileGameUI from './ui/MobileGameUI';
 import MobilePerformanceManager from './game/performance/MobilePerformanceManager.js';
-import registerDemianPwa from './game/performance/PwaUpdateController.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
     new MobilePerformanceManager().mount();
@@ -85,7 +79,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             managerRoot.querySelector('[data-screen="cafe-menu"] [data-shell-action="' + pending + '"]')?.click();
         }
         // Static hosting/PWA is optional. Never block gameplay startup.
-        void registerDemianPwa({ app: application });
+        void import('./game/performance/PwaUpdateController.js')
+            .then(({ default: registerDemianPwa }) => registerDemianPwa({ app: application }))
+            .catch(error => console.warn('Optional PWA controller unavailable:', error));
     } catch (error) {
         console.error('Demian Game Platform could not start:', error);
         document.dispatchEvent(new Event('demian:menu-hydrated'));

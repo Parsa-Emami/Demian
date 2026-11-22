@@ -84,29 +84,39 @@
 
     <script>
         (() => {
-            const recoveryKey = 'demian.deployment-recovery.v1';
-            const chunkFailure = /(?:dynamically imported module|importing a module script failed|chunkloaderror|loading chunk|\/build\/assets\/.*\.js)/i;
-
-            const recover = (reason) => {
+            // This executes before Vite: a failed initial import needs a manual
+            // recovery UI, without ever silently restarting a ranked session.
+            const chunkFailure = /(?:dynamically imported module|importing a module script|chunkloaderror|loading chunk|\/build\/assets\/.*\.js)/i;
+            const present = reason => {
                 const message = String(reason?.message ?? reason?.reason?.message ?? reason ?? '');
                 if (!chunkFailure.test(message)) return;
-
-                const previous = Number(sessionStorage.getItem(recoveryKey) || 0);
-                const now = Date.now();
-                if (now - previous < 60000) return;
-
-                sessionStorage.setItem(recoveryKey, String(now));
-                const url = new URL(window.location.href);
-                url.searchParams.set('__demian_refresh', String(now));
-                window.location.replace(url.toString());
+                const mount = () => {
+                    if (document.querySelector('[data-demian-chunk-recovery]')) return;
+                    const panel = document.createElement('aside');
+                    panel.dataset.demianChunkRecovery = 'true';
+                    panel.setAttribute('role', 'alert');
+                    panel.setAttribute('dir', 'rtl');
+                    panel.style.cssText = 'position:fixed;inset:auto 12px 12px;z-index:2147483646;max-width:440px;margin-inline:auto;padding:16px;border-radius:12px;background:#202a21;color:#fff;box-shadow:0 6px 30px #0008;font:inherit';
+                    const copy = document.createElement('p');
+                    copy.textContent = 'فایل بازی دریافت نشد. اینترنت را بررسی کنید یا نسخهٔ جدید را دستی بارگذاری کنید.';
+                    const reload = document.createElement('button');
+                    reload.type = 'button';
+                    reload.textContent = 'بارگذاری نسخهٔ جدید';
+                    reload.style.cssText = 'margin-top:12px;padding:9px 14px;border:1px solid currentColor;border-radius:8px;background:transparent;color:inherit;cursor:pointer';
+                    reload.addEventListener('click', () => window.location.reload());
+                    panel.append(copy, reload);
+                    document.body.append(panel);
+                };
+                if (document.body) mount();
+                else document.addEventListener('DOMContentLoaded', mount, { once: true });
             };
-
-            window.addEventListener('vite:preloadError', (event) => {
+            window.addEventListener('vite:preloadError', event => {
                 event.preventDefault();
-                recover(event.payload ?? event);
+                present(event.payload ?? event);
             });
-            window.addEventListener('unhandledrejection', (event) => recover(event.reason));
-            window.addEventListener('error', (event) => recover(event.error ?? event.message), true);
+            window.addEventListener('unhandledrejection', event => present(event.reason));
+            window.addEventListener('error', event => present(event.error ?? event.message), true);
+            window.addEventListener('demian:game-chunk-error', () => present({ message: 'loading chunk' }));
         })();
     </script>
 

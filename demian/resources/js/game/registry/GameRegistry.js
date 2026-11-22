@@ -75,6 +75,14 @@ export default class GameRegistry {
             return await pending;
         } catch (error) {
             if (this.moduleCache.get(id) === pending) this.moduleCache.delete(id);
+            // A missing immutable chunk never triggers automatic ranked-session reload.
+            if (typeof window !== 'undefined' &&
+                /dynamically imported module|importing a module script|loading chunk|chunkloaderror|failed to fetch/i
+                    .test(String(error?.message ?? error))) {
+                window.dispatchEvent(new CustomEvent('demian:game-chunk-error', {
+                    detail: { gameId: id },
+                }));
+            }
             throw error;
         }
     }

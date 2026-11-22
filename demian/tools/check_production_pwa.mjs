@@ -82,33 +82,38 @@ try {
                 assert.ok(pathname.startsWith(path + 'build/assets/'),
                     'root-relative font escaped deployment scope: ' + pathname);
             }
-            await page.waitForFunction(async () => {
-                const registration = await navigator.serviceWorker?.getRegistration();
-                return Boolean(registration?.active && navigator.serviceWorker.controller);
-            }, null, { timeout: 20000 });
-            // A worker can become the controller before install-time cache
-            // writes are observable in Chromium. Wait for the actual offline
-            // fallback to exist rather than asserting immediately after control.
-            await page.waitForFunction(async () => {
-                const names = (await caches.keys()).filter(
-                    k => k.startsWith('demian-offline-v1-'));
-                if (names.length !== 1) return false;
-                const cached = await caches.open(names[0]);
-                const requests = await cached.keys();
-                return requests.some(request =>
-                    new URL(request.url).pathname.endsWith('/offline.html'));
-            }, null, { timeout: 20000 });
-            const cache = await page.evaluate(async () => {
-                const keys = (await caches.keys()).filter(k => k.startsWith('demian-offline-v1-'));
-                const entries = [];
-                for (const name of keys) {
-                    const cached = await caches.open(name);
-                    entries.push(...(await cached.keys()).map(request => new URL(request.url).pathname));
-                }
-                return { names: keys, entries };
-            });
+            // Poll CacheStorage from Node with a *completed* browser
+            // evaluation on each attempt. An async waitForFunction callback
+            // can race install-time CacheStorage writes in Chromium: obtaining
+            // serviceWorker.controller is not proof that the fallback is ready.
+            // Use the exact final snapshot for all subsequent assertions,
+            // avoiding a second read across activation/update transitions.
+            const deadline = Date.now() + 20000;
+            let cache;
+            do {
+                cache = await page.evaluate(async () => {
+                    const registration = await navigator.serviceWorker?.getRegistration();
+                    const names = (await caches.keys()).filter(
+                        name => name.startsWith('demian-offline-v1-'));
+                    const entries = [];
+                    for (const name of names) {
+                        const cached = await caches.open(name);
+                        entries.push(...(await cached.keys()).map(request =>
+                            new URL(request.url).pathname));
+                    }
+                    return {
+                        controlled: Boolean(navigator.serviceWorker?.controller),
+                        active: Boolean(registration?.active),
+                        names, entries,
+                    };
+                });
+                if (cache.active && cache.controlled && cache.names.length === 1 &&
+                    cache.entries.some(item => item.endsWith('/offline.html'))) break;
+                await new Promise(done => setTimeout(done, 100));
+            } while (Date.now() < deadline);
             assert.equal(cache.names.length, 1, 'one release cache per installation scope');
-            assert.ok(cache.entries.some(item => item.endsWith('/offline.html')));
+            assert.ok(cache.entries.some(item => item.endsWith('/offline.html')),
+                'Offline fallback not found after bounded CacheStorage polling: ' + JSON.stringify(cache));
             assert.ok(cache.entries.every(item => !/\/api\/|\/build\/|\/assets\/characters\//.test(item)),
                 'PWA must not cache auth/score endpoints or release-critical game assets');
             await context.setOffline(true);
