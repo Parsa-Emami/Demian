@@ -24,6 +24,18 @@ const GAME_MODULES = Object.freeze({
     'cafe-drift': 'cafe-drift/CafeDriftGame.js',
 });
 
+// A selected game's styles belong to its optional offline package, not to the
+// eager shell/core. Café games also need After Hours shift-dialog controls.
+const GAME_STYLES = Object.freeze({
+    'open-world': [],
+    'dino-run': ['resources/css/phase5-step23-dino-run.css'],
+    'after-hours': ['resources/css/after-hours.css'],
+    'cafe-rush': ['resources/css/after-hours.css', 'resources/css/cafe-rush.css'],
+    'cafe-critters': ['resources/css/after-hours.css', 'resources/css/cafe-critters.css'],
+    'coffee-crash': ['resources/css/coffee-crash.css'],
+    'cafe-drift': ['resources/css/cafe-drift.css'],
+});
+
 export function splitOfflineModules(viteManifest = {}) {
     const core = new Set();
     const games = Object.fromEntries(OFFLINE_GAME_IDS.map(id => [id, new Set()]));
@@ -48,8 +60,9 @@ export function splitOfflineModules(viteManifest = {}) {
     follow(entryKey, core, false);
     const gameKeys = new Set(Object.values(GAME_MODULES).map(path =>
         'resources/js/game/games/' + path));
+    const gameStyleKeys = new Set(Object.values(GAME_STYLES).flat());
     for (const dynamic of entry.dynamicImports ?? []) {
-        if (dynamic !== entryKey && !gameKeys.has(dynamic)) {
+        if (dynamic !== entryKey && !gameKeys.has(dynamic) && !gameStyleKeys.has(dynamic)) {
             follow(dynamic, core, true);
         }
     }
@@ -57,6 +70,11 @@ export function splitOfflineModules(viteManifest = {}) {
         const key = 'resources/js/game/games/' + module;
         if (!viteManifest[key]) throw new Error('Missing offline game chunk: ' + key);
         follow(key, games[id], true);
+        // Traverse style dependencies only for this game. The build validator
+        // separately enforces that every requested style exists in the release.
+        for (const style of GAME_STYLES[id] ?? []) {
+            if (viteManifest[style]) follow(style, games[id], true);
+        }
         for (const path of core) games[id].delete(path);
     }
     return { core: [...core], games: Object.fromEntries(

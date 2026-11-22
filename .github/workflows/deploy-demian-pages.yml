@@ -105,6 +105,8 @@ jobs:
           if-no-files-found: error
       # Versioned chunks, bounded integrity-verified compatibility generations.
       - run: npm run validate:build
+      - name: Startup/PWA selective chunk and offline CSS release gate
+        run: node tools/check_lazy_pwa_manifest.mjs
       - run: npx playwright install chromium --only-shell
       - name: Install Firefox and WebKit for Phase 6 Step 31 engine compatibility
         run: npx playwright install --with-deps firefox webkit
