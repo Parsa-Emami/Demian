@@ -30,7 +30,7 @@ jobs:
         image: mysql:8.4
         env:
           MYSQL_ROOT_PASSWORD: disposable-root
-          MYSQL_DATABASE: demian_release_ci
+          MYSQL_DATABASE: demian_release_staging_ci
           MYSQL_USER: demian_ci
           MYSQL_PASSWORD: disposable-ci-only
         ports:

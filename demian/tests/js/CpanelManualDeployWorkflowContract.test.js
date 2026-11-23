@@ -15,7 +15,11 @@ test('Manual cPanel workflow is one dispatch-only pipeline with pinned artifact 
         assert.equal(occurrences(workflow, new RegExp('^  ' + job + ':$', 'gm')), 1,
             'Duplicate or missing job: ' + job);
     }
-    assert.equal(occurrences(workflow, /^      - uses: actions\/upload-artifact@v4$/gm), 1);
+    assert.equal(occurrences(workflow, /^      - uses: actions\/upload-artifact@v4$/gm), 2,
+        'One immutable package and one staging-only, non-financial host receipt');
+    assert.match(workflow, /if: inputs.target == 'staging'/);
+    assert.match(workflow, /name: cpanel-staging-receipt-/);
+    assert.match(workflow, /pr08_stage_receipt\.mjs/);
     assert.match(workflow, /uses: .\/.github\/workflows\/arcade-backend.yml/);
     assert.match(workflow, /if: github.ref == 'refs\/heads\/main'/);
     assert.match(workflow, /cancel-in-progress: false/);

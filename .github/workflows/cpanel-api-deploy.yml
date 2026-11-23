@@ -121,7 +121,37 @@ jobs:
           fi
           [[ -n "$CPANEL_SSH_KEY" && -n "$CPANEL_KNOWN_HOSTS" ]]
           [[ "$BACKUP_RECEIPT" =~ ^[A-Za-z0-9_.:-]+$ ]]
+          # PR08: refuse even STAGING deployments from an unprotected main.
+          # Repo Settings -> Branches or Rulesets must report ref_protected=true.
+          [[ "$GITHUB_REF_PROTECTED" == true ]] || {
+            echo "PR08 denied: main is unprotected. Owner must enable required checks and PR reviews." >&2
+            exit 1
+          }
+          if [[ "$CPANEL_TARGET" == staging ]]; then
+            # Host/root/pwa miswiring must never direct a staging command at live.
+            [[ "$CPANEL_ROOT" == *staging* ]] || {
+              echo "PR08 staging root is not isolated from production" >&2; exit 1
+            }
+            [[ "$CPANEL_API_ORIGIN" == https://*staging* ]] || {
+              echo "PR08 staging API origin must be explicitly isolated" >&2; exit 1
+            }
+            [[ "$CPANEL_CLIENT_ORIGIN" == https://*staging* ]] || {
+              echo "PR08 staging client origin must be explicitly isolated" >&2; exit 1
+            }
+            [[ "$BACKUP_RECEIPT" == "-" ]] || {
+              echo "Staging cannot reuse a production backup receipt" >&2; exit 1
+            }
+          fi
           if [[ "$CPANEL_TARGET" == production ]]; then
+            [[ "$CPANEL_ROOT" != *staging* ]] || {
+              echo "Production denied: root points to staging" >&2; exit 1
+            }
+            [[ "$CPANEL_API_ORIGIN" != https://*staging* ]] || {
+              echo "Production denied: API points to staging" >&2; exit 1
+            }
+            [[ "$CPANEL_CLIENT_ORIGIN" != https://*staging* ]] || {
+              echo "Production denied: client origin points to staging" >&2; exit 1
+            }
             [[ "$CPANEL_CONFIRM" == DEPLOY_PRODUCTION_WITH_BACKUP ]]
             [[ "$BACKUP_RECEIPT" =~ ^[a-f0-9]{64}$ ]] || {
               echo "Production requires a SHA-256 off-host backup/restore receipt" >&2
@@ -192,3 +222,37 @@ jobs:
         run: node demian/tools/smoke_arcade_api.mjs --base-url="$CPANEL_API_ORIGIN/api/v1/arcade" --users=20 --p95-ms=1500
       - name: Step 29 TLS, release identity and private-path acceptance (read-only)
         run: node demian/tools/verify_cpanel_host.mjs --origin="$CPANEL_API_ORIGIN" --release="$GITHUB_SHA" --client-origin="$CPANEL_CLIENT_ORIGIN"
+      - name: PR08 read-only on-host staging PHP, cron and database checks via pinned SSH
+        if: inputs.target == 'staging'
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          key="$RUNNER_TEMP/pr08_staging_ssh_key"
+          hosts="$RUNNER_TEMP/pr08_staging_known_hosts"
+          printf '%s\n' "$CPANEL_SSH_KEY" > "$key"
+          printf '%s\n' "$CPANEL_KNOWN_HOSTS" > "$hosts"
+          chmod 600 "$key" "$hosts"
+          ssh_flags=(-i "$key" -o IdentitiesOnly=yes -o BatchMode=yes \
+            -o StrictHostKeyChecking=yes -o "UserKnownHostsFile=$hosts")
+          report="$(ssh "${ssh_flags[@]}" "$CPANEL_USER@$CPANEL_HOST" \
+            "bash -s -- '$CPANEL_ROOT' '$GITHUB_SHA' '$CPANEL_PHP_BIN' '$CPANEL_API_ORIGIN'" \
+            < demian/ops/cpanel/staging_acceptance.sh)"
+          printf '%s\n' "$report" > "$RUNNER_TEMP/pr08-host-check.json"
+          jq -e --arg sha "$GITHUB_SHA" '
+            .schema == 1
+            and .kind == "demian-cpanel-staging-host-check"
+            and .target == "staging" and .sourceSha == $sha
+            and .php84Verified == true and .cronVerified == true
+            and .databaseDoctorPassed == true and .integrityPassed == true
+            and .couponAuditPassed == true and .productionAuthorized == false
+          ' "$RUNNER_TEMP/pr08-host-check.json" >/dev/null
+      - name: PR08 record only successful protected staging deploy and host smoke
+        if: inputs.target == 'staging'
+        run: node demian/tools/qa/pr08_stage_receipt.mjs "$RUNNER_TEMP/pr08-staging-receipt.json" ".cpanel-release/demian-cpanel.sha256" "$RUNNER_TEMP/pr08-host-check.json"
+      - uses: actions/upload-artifact@v4
+        if: inputs.target == 'staging'
+        with:
+          name: cpanel-staging-receipt-${{ github.sha }}
+          path: ${{ runner.temp }}/pr08-staging-receipt.json
+          if-no-files-found: error
+          retention-days: 30

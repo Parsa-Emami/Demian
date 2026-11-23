@@ -57,13 +57,13 @@ key="$(php -r 'echo "base64:".base64_encode(random_bytes(32));')"
 cat > "$lab/shared/.env" <<EOF
 APP_ENV=staging
 APP_DEBUG=false
-APP_URL=https://api.example.test
+APP_URL=https://api-staging.example.test
 APP_KEY=$key
 LOG_LEVEL=warning
 DB_CONNECTION=mysql
 DB_HOST=127.0.0.1
 DB_PORT=3306
-DB_DATABASE=demian_release_ci
+DB_DATABASE=demian_release_staging_ci
 DB_USERNAME=demian_ci
 DB_PASSWORD=disposable-ci-only
 CACHE_STORE=database
@@ -72,7 +72,7 @@ SESSION_DRIVER=database
 SESSION_SECURE_COOKIE=true
 SESSION_SAME_SITE=lax
 DEMIAN_ARCADE_API_ONLY=true
-DEMIAN_ARCADE_ALLOWED_ORIGINS=https://game.example.test
+DEMIAN_ARCADE_ALLOWED_ORIGINS=https://staging.game.example.test
 DEMIAN_COUPONS_POLICY_APPROVED=false
 DEMIAN_COUPONS_ISSUE_ENABLED=false
 DEMIAN_COUPONS_AUTO_ISSUE_ENABLED=false
@@ -83,7 +83,7 @@ DEMIAN_WEEKLY_AUTO_AWARDS_ENABLED=false
 EOF
 chmod 600 "$lab/shared/.env"
 cd "$lab/release"
-php ops/cpanel/host_preflight.php "$lab/shared/.env" staging https://api.example.test
+php ops/cpanel/host_preflight.php "$lab/shared/.env" staging https://api-staging.example.test
 ln -s "$lab/shared/.env" .env
 ln -s "$lab/shared/storage" storage
 printf '%s\n' "$GITHUB_SHA" > .mobile11-release
@@ -137,15 +137,15 @@ assert.ok([403, 404].includes(privateLog.status), 'private log must not be serve
 checks.push({ path: '/storage/logs/laravel.log', status: privateLog.status });
 const options = origin => ({ method: 'OPTIONS', headers: { Origin: origin,
     'Access-Control-Request-Method': 'POST', 'Access-Control-Request-Headers': 'authorization,content-type' } });
-const allowed = await request(api + '/runs', options('https://game.example.test'));
+const allowed = await request(api + '/runs', options('https://staging.game.example.test'));
 assert.ok([200, 204].includes(allowed.status));
-assert.equal(allowed.headers.get('access-control-allow-origin'), 'https://game.example.test');
+assert.equal(allowed.headers.get('access-control-allow-origin'), 'https://staging.game.example.test');
 const blocked = await request(api + '/runs', options('https://untrusted.example.test'));
 // Some CORS implementations emit the single configured allowed origin
 // even on a mismatched request. The browser still rejects it: neither
 // wildcard nor the requesting untrusted origin may be returned.
 const deniedOrigin = blocked.headers.get('access-control-allow-origin');
-assert.ok(deniedOrigin === null || deniedOrigin === 'https://game.example.test',
+assert.ok(deniedOrigin === null || deniedOrigin === 'https://staging.game.example.test',
     'untrusted origin must not receive a matching or wildcard CORS grant');
 writeFileSync(process.env.RUNNER_TEMP + '/phase1-api-evidence.json', JSON.stringify({
     schema: 1, status: 'passed', commit: process.env.GITHUB_SHA, runId: process.env.GITHUB_RUN_ID,

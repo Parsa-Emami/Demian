@@ -21,7 +21,7 @@ entries=(
     public/index.php public/.htaccess
     ops/cpanel/host_preflight.php ops/cpanel/cron.sh
     ops/cpanel/rollback.sh ops/cpanel/backup_offsite.sh
-    ops/cpanel/restore_drill.sh ops/cpanel/install_webroot_bridge.php
+    ops/cpanel/restore_drill.sh ops/cpanel/staging_acceptance.sh ops/cpanel/install_webroot_bridge.php
     composer.json composer.lock vendor
 )
 for entry in "${entries[@]}"; do
