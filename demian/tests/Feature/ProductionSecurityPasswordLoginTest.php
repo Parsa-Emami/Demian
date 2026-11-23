@@ -77,18 +77,23 @@ final class ProductionSecurityPasswordLoginTest extends TestCase
             'password_confirmation' => 'NewSecurePassword123!',
         ];
         $this->postJson('/api/v1/arcade/player/password', $payload)->assertUnauthorized();
-        $this->withToken($registered['token'])
+        $changed = $this->withToken($registered['token'])
             ->postJson('/api/v1/arcade/player/password', $payload)
-            ->assertOk()->assertJsonPath('status', 'password_updated');
+            ->assertOk()->assertJsonPath('status', 'password_updated')->json();
+        $this->assertNotSame($registered['token'], $changed['token']);
+        $this->withToken($registered['token'])
+            ->getJson('/api/v1/arcade/player')->assertUnauthorized();
         $this->assertTrue(Hash::check($payload['password'],
             ArcadePlayer::findOrFail($registered['player_id'])->password_hash));
-        $this->postJson('/api/v1/arcade/player/password',
-            [...$payload, 'password' => 'AnotherSecurePassword123!',
-                'password_confirmation' => 'AnotherSecurePassword123!'])
+        $this->withToken($changed['token'])
+            ->postJson('/api/v1/arcade/player/password',
+                [...$payload, 'password' => 'AnotherSecurePassword123!',
+                    'password_confirmation' => 'AnotherSecurePassword123!'])
             ->assertForbidden();
-        $this->postJson('/api/v1/arcade/player/password',
+        $rotated = $this->postJson('/api/v1/arcade/player/password',
             [...$payload, 'current_password' => 'NewSecurePassword123!'])
-            ->assertOk();
+            ->assertOk()->json();
+        $this->assertNotSame($changed['token'], $rotated['token']);
         $login = $this->postJson('/api/v1/arcade/players/login', [
             'contact_type' => 'phone', 'contact_value' => '09101234567',
             'password' => $payload['password'],
@@ -102,6 +107,62 @@ final class ProductionSecurityPasswordLoginTest extends TestCase
         $this->assertNotNull(ArcadePlayer::findOrFail($registered['player_id'])->password_hash);
         $this->withToken($registered['token'])->getJson('/api/v1/arcade/player')
             ->assertOk()->assertJsonMissingPath('password_hash');
+    }
+
+    public function test_backup_code_can_reset_password_without_otp_and_revokes_previous_session(): void
+    {
+        $registered = $this->registerPlayer();
+        $backup = $this->withToken($registered['token'])
+            ->postJson('/api/v1/arcade/player/backup-code')->assertOk()->json('backup_code');
+        $reset = $this->postJson('/api/v1/arcade/players/recover', [
+            'recovery_code' => $backup,
+            'new_password' => 'ReplacementPassword123!',
+            'new_password_confirmation' => 'ReplacementPassword123!',
+        ])->assertOk()->assertHeader('Cache-Control', 'no-store, private')->json();
+        $this->withToken($registered['token'])->getJson('/api/v1/arcade/player')->assertUnauthorized();
+        $this->postJson('/api/v1/arcade/players/recover', [
+            'recovery_code' => $backup,
+        ])->assertUnprocessable();
+        $this->postJson('/api/v1/arcade/players/login', [
+            'contact_type' => 'phone', 'contact_value' => '09101234567',
+            'password' => 'SecurePassword123!',
+        ])->assertUnauthorized();
+        $login = $this->postJson('/api/v1/arcade/players/login', [
+            'contact_type' => 'phone', 'contact_value' => '09101234567',
+            'password' => 'ReplacementPassword123!',
+        ])->assertOk()->json();
+        $this->assertSame($registered['player_id'], $reset['player_id']);
+        $this->assertSame($registered['player_id'], $login['player_id']);
+    }
+
+    public function test_short_recovery_link_cannot_reset_password(): void
+    {
+        $registered = $this->registerPlayer();
+        $link = $this->withToken($registered['token'])
+            ->postJson('/api/v1/arcade/player/recovery-link')->assertOk()->json('recovery_code');
+        $this->postJson('/api/v1/arcade/players/recover', [
+            'recovery_code' => $link,
+            'new_password' => 'UnapprovedNewPassword123!',
+            'new_password_confirmation' => 'UnapprovedNewPassword123!',
+        ])->assertForbidden();
+        $this->postJson('/api/v1/arcade/players/recover', [
+            'recovery_code' => $link,
+        ])->assertOk()->assertJsonPath('player_id', $registered['player_id']);
+    }
+
+    public function test_login_throttle_canonicalizes_alternative_phone_spellings(): void
+    {
+        $this->registerPlayer();
+        for ($i = 0; $i < 5; $i++) {
+            $this->postJson('/api/v1/arcade/players/login', [
+                'contact_type' => 'phone', 'contact_value' => '09101234567',
+                'password' => 'BadPassword123!',
+            ])->assertUnauthorized();
+        }
+        $this->postJson('/api/v1/arcade/players/login', [
+            'contact_type' => 'phone', 'contact_value' => '+989101234567',
+            'password' => 'SecurePassword123!',
+        ])->assertStatus(429);
     }
 
     private function staff(string $role, bool $active = true): int

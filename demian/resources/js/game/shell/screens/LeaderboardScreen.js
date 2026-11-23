@@ -79,12 +79,19 @@ export default class LeaderboardScreen extends BaseScreen {
             button.disabled = true;
             try {
                 const code = this.recoveryForm.elements.recovery_code.value;
-                const recovered = await this.service.recoverAccount(code);
+                const newPassword = this.recoveryForm.elements.new_password?.value ?? '';
+                const confirmation = this.recoveryForm.elements.new_password_confirmation?.value ?? '';
+                if (newPassword && newPassword !== confirmation) {
+                    throw new Error('رمز جدید و تکرار آن یکسان نیستند.');
+                }
+                const recovered = await this.service.recoverAccount(code,
+                    newPassword || null);
                 this.recoveryForm.reset();
                 this.form.elements.display_name.value = recovered.display_name;
                 await this.load();
                 this.backupCode.value = '';
-                this.recoveryStatus.textContent = 'حساب بازیابی شد؛ نشست قبلی، لینک کوتاه‌مدت و کد پشتیبان مصرف شدند. برای بازیابی بعدی کد تازه بساز.';
+                this.recoveryStatus.textContent = 'حساب بازیابی شد؛ نشست قبلی، لینک کوتاه‌مدت و کد پشتیبان مصرف شدند. ' +
+                    'اگر رمز تازه تعیین کردی، کد پشتیبان جدید بساز.';
             } catch (error) {
                 this.recoveryStatus.textContent = error.message;
             } finally {

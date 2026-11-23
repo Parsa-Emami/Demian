@@ -219,16 +219,29 @@ final class ArcadeController extends Controller
             'current_password' => ['nullable', 'string', 'max:128'],
         ]);
         $player = $request->attributes->get('arcade_player');
-        DB::transaction(function () use ($player, $data): void {
+        $oldTokenHash = hash('sha256', (string) $request->bearerToken());
+        $token = Str::random(64);
+        $expires = now()->addDays((int) config('demian-arcade.player_session_days'));
+        DB::transaction(function () use ($player, $data, $oldTokenHash, $token, $expires): void {
             $locked = ArcadePlayer::query()->whereKey($player->id)->lockForUpdate()->firstOrFail();
+            abort_unless(hash_equals((string) $locked->token_hash, $oldTokenHash)
+                && $locked->token_expires_at?->isFuture(), 401,
+                'Session expired or rotated.');
             if ($locked->password_hash !== null) {
                 abort_unless(Hash::check($data['current_password'] ?? '', $locked->password_hash), 403,
                     'رمز عبور فعلی معتبر نیست.');
             }
-            $locked->forceFill(['password_hash' => Hash::make($data['password'])])->save();
+            // Revoke a stolen bearer atomically with the password update.
+            $locked->forceFill([
+                'password_hash' => Hash::make($data['password']),
+                'token_hash' => hash('sha256', $token),
+                'token_expires_at' => $expires,
+            ])->save();
         }, 3);
 
-        return response()->json(['status' => 'password_updated'])
+        return response()->json(['status' => 'password_updated',
+            'player_id' => $player->id,
+            'token' => $token, 'token_expires_at' => $expires->toIso8601String()])
             ->header('Cache-Control', 'no-store, private');
     }
 
@@ -270,10 +283,11 @@ final class ArcadeController extends Controller
     {
         $validated = $request->validate([
             'recovery_code' => ['required', 'string', 'size:64', 'regex:/^[A-Za-z0-9]{64}$/'],
+            'new_password' => ['sometimes', 'required', 'string', 'min:12', 'max:128', 'confirmed'],
         ]);
         $secretHash = hash('sha256', $validated['recovery_code']);
 
-        $session = DB::transaction(function () use ($secretHash): array {
+        $session = DB::transaction(function () use ($secretHash, $validated): array {
             $player = ArcadePlayer::query()->where(function ($query) use ($secretHash): void {
                 $query->where('recovery_hash', $secretHash)->orWhere('backup_hash', $secretHash);
             })->lockForUpdate()->first();
@@ -283,13 +297,23 @@ final class ArcadeController extends Controller
                 && $player->backup_expires_at?->isFuture();
             abort_unless($linkValid || $backupValid, 422,
                 'Recovery code expired or already used.');
+            // Password reset is a stronger action than restoring an existing
+            // session. Only the separately stored long-lived, one-time backup
+            // capability authorizes it; a shared recovery link never does.
+            if (array_key_exists('new_password', $validated)) {
+                abort_unless($backupValid, 403,
+                    'Password reset requires a saved one-time backup code.');
+            }
             $token = Str::random(64);
             // Rotate the active token, consume the one-time recovery secret,
             // and leave all prior verified scores and run history untouched.
             $expires = now()->addDays((int) config('demian-arcade.player_session_days'));
             $player->update(['token_hash' => hash('sha256', $token),
                 'token_expires_at' => $expires, 'recovery_hash' => null, 'recovery_expires_at' => null,
-                'backup_hash' => null, 'backup_expires_at' => null]);
+                'backup_hash' => null, 'backup_expires_at' => null,
+                ...(isset($validated['new_password']) ? [
+                    'password_hash' => Hash::make($validated['new_password']),
+                ] : [])]);
 
             return ['player_id' => $player->id, 'display_name' => $player->display_name,
                 'token' => $token, 'token_expires_at' => $expires->toIso8601String()];
