@@ -154,6 +154,29 @@ $financial = [
     'DEMIAN_COUPONS_MANUAL_GIFTS_ENABLED', 'DEMIAN_COUPONS_CAFE_ENABLED',
     'DEMIAN_WEEKLY_AUTO_AWARDS_ENABLED',
 ];
+// Staging is a strict non-financial rehearsal, never an alias for the real
+// cashier or a production database. Financial UAT requires a separately
+// authorized disposable sandbox, not these shared-host deployment flags.
+if ($target === 'staging') {
+    $database = strtolower((string) ($values['DB_DATABASE'] ?? ''));
+    $apiHost = strtolower((string) parse_url($origin, PHP_URL_HOST));
+    if (!str_contains($database, 'staging') || !str_contains($apiHost, 'staging')) {
+        preflightFail('Staging must have an isolated staging-named database and HTTPS hostname.');
+    }
+    $stagingForbidden = array_merge($financial, [
+        'DEMIAN_ARCADE_CRITTERS_PRIZES_ENABLED',
+        'DEMIAN_ARCADE_COFFEE_PRIZES_ENABLED',
+        'DEMIAN_AFTER_HOURS_ROUTE_PRIZES',
+        'DEMIAN_CAFE_RUSH_ROUTE_PRIZES',
+        'DEMIAN_OPEN_WORLD_ROUTE_PRIZES',
+        'DEMIAN_WEEKLY_SETTLEMENT_ENABLED',
+    ]);
+    foreach ($stagingForbidden as $flag) {
+        if ($enabled($flag)) {
+            preflightFail('Staging financial flags must remain disabled: '.$flag);
+        }
+    }
+}
 if ($target === 'production' && count(array_filter($financial, $enabled)) > 0) {
     foreach ([
         'DEMIAN_PRIZE_VERIFIED_PHONE_REQUIRED',

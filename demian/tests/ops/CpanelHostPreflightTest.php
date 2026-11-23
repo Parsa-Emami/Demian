@@ -23,7 +23,7 @@ $valid = [
     'DEMIAN_ARCADE_ALLOWED_ORIGINS' => 'https://game.example.test',
     'DB_CONNECTION' => 'mysql',
     'DB_HOST' => 'localhost',
-    'DB_DATABASE' => 'qa_demian',
+    'DB_DATABASE' => 'qa_demian_staging',
     'DB_USERNAME' => 'qa_player',
     'DB_PASSWORD' => 'fake-standalone-ci-password',
     'CACHE_STORE' => 'database',
@@ -72,6 +72,16 @@ $invoke = static function (array $data, bool $shouldPass, string $name, string $
 $change = static fn (string $key, string $value): array => array_replace($valid, [$key => $value]);
 try {
     $invoke($valid, true, 'valid staging');
+    $invoke(array_replace($valid, ['DB_DATABASE' => 'qa_demian_prod']), false,
+        'reject shared production database in staging');
+    $invoke(array_replace($valid, ['DEMIAN_COUPONS_CAFE_ENABLED' => 'true']), false,
+        'reject real cashier redemption enabled in staging');
+    $invoke(array_replace($valid, ['DEMIAN_COUPONS_ISSUE_ENABLED' => 'true']), false,
+        'reject financial issuance enabled in staging');
+    $invoke(array_replace($valid, ['DEMIAN_WEEKLY_SETTLEMENT_ENABLED' => 'true']), false,
+        'reject automatic settlement in staging');
+    $invoke(array_replace($valid, ['DEMIAN_ARCADE_COFFEE_PRIZES_ENABLED' => 'true']), false,
+        'reject direct game prizes in staging');
 
     $production = array_replace($valid, [
         'APP_ENV' => 'production', 'APP_URL' => 'https://api.example.test',
