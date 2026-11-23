@@ -12,6 +12,7 @@ const input=()=>({
     githubRunId:1234567,apiOrigin:api,pwaOrigin:pwa,archiveSha256:HASH,
     productionAuthorized:false,financialFeaturesActivated:false,
     hostSmokePassed:true,privatePathsVerified:true,pinnedSshHostUsed:true,
+    stagingHostPreflightVerified:true,stagingCronVerified:true,
     releaseArchiveVerified:true,offsiteRestoreVerified:false,actualHost50VuAccepted:false,
  },
  pwaAudit:{
