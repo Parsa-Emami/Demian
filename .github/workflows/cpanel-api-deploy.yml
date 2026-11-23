@@ -121,6 +121,27 @@ jobs:
           fi
           [[ -n "$CPANEL_SSH_KEY" && -n "$CPANEL_KNOWN_HOSTS" ]]
           [[ "$BACKUP_RECEIPT" =~ ^[A-Za-z0-9_.:-]+$ ]]
+          # PR08: refuse even STAGING deployments from an unprotected main.
+          # Repo Settings -> Branches or Rulesets must report ref_protected=true.
+          [[ "$GITHUB_REF_PROTECTED" == true ]] || {
+            echo "PR08 denied: main is unprotected. Owner must enable required checks and PR reviews." >&2
+            exit 1
+          }
+          if [[ "$CPANEL_TARGET" == staging ]]; then
+            # Host/root/pwa miswiring must never direct a staging command at live.
+            [[ "$CPANEL_ROOT" == *staging* ]] || {
+              echo "PR08 staging root is not isolated from production" >&2; exit 1
+            }
+            [[ "$CPANEL_API_ORIGIN" == https://*staging* ]] || {
+              echo "PR08 staging API origin must be explicitly isolated" >&2; exit 1
+            }
+            [[ "$CPANEL_CLIENT_ORIGIN" == https://*staging* ]] || {
+              echo "PR08 staging client origin must be explicitly isolated" >&2; exit 1
+            }
+            [[ "$BACKUP_RECEIPT" == "-" ]] || {
+              echo "Staging cannot reuse a production backup receipt" >&2; exit 1
+            }
+          fi
           if [[ "$CPANEL_TARGET" == production ]]; then
             [[ "$CPANEL_CONFIRM" == DEPLOY_PRODUCTION_WITH_BACKUP ]]
             [[ "$BACKUP_RECEIPT" =~ ^[a-f0-9]{64}$ ]] || {
@@ -192,3 +213,13 @@ jobs:
         run: node demian/tools/smoke_arcade_api.mjs --base-url="$CPANEL_API_ORIGIN/api/v1/arcade" --users=20 --p95-ms=1500
       - name: Step 29 TLS, release identity and private-path acceptance (read-only)
         run: node demian/tools/verify_cpanel_host.mjs --origin="$CPANEL_API_ORIGIN" --release="$GITHUB_SHA" --client-origin="$CPANEL_CLIENT_ORIGIN"
+      - name: PR08 record only successful protected staging deploy and host smoke
+        if: inputs.target == 'staging'
+        run: node demian/tools/qa/pr08_stage_receipt.mjs "$RUNNER_TEMP/pr08-staging-receipt.json" ".cpanel-release/demian-cpanel.sha256"
+      - uses: actions/upload-artifact@v4
+        if: inputs.target == 'staging'
+        with:
+          name: cpanel-staging-receipt-${{ github.sha }}
+          path: ${{ runner.temp }}/pr08-staging-receipt.json
+          if-no-files-found: error
+          retention-days: 30
