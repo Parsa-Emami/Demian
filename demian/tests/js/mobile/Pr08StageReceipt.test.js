@@ -6,6 +6,10 @@ const base=()=>({
  apiOrigin:'https://api-staging.example.test',
  pwaOrigin:'https://staging.example.test',
  archiveSha256:'b'.repeat(64),mainProtected:true,
+ hostCheck:{schema:1,kind:'demian-cpanel-staging-host-check',target:'staging',
+  sourceSha:'a'.repeat(40),php84Verified:true,cronVerified:true,
+  databaseDoctorPassed:true,integrityPassed:true,couponAuditPassed:true,
+  productionAuthorized:false,offsiteRestoreVerified:false,fiftyVuHostCapacityVerified:false},
 });
 test('PR08 stage receipt is SHA-bound, has no financial or production GO flags',()=>{
  const result=makePr08StageReceipt(base());
