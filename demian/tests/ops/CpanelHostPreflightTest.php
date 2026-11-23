@@ -82,6 +82,10 @@ try {
         'reject automatic settlement in staging');
     $invoke(array_replace($valid, ['DEMIAN_ARCADE_COFFEE_PRIZES_ENABLED' => 'true']), false,
         'reject direct game prizes in staging');
+    $invoke(array_replace($valid, ['DEMIAN_ARCADE_DRIFT_PRIZES_ENABLED' => 'true']), false,
+        'reject Drift rewards in staging');
+    $invoke(array_replace($valid, ['DEMIAN_COUPONS_CAMPAIGNS_ENABLED' => 'true']), false,
+        'reject coupon campaigns in staging');
 
     $production = array_replace($valid, [
         'APP_ENV' => 'production', 'APP_URL' => 'https://api.example.test',
