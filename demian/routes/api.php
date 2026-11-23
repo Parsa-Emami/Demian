@@ -37,6 +37,7 @@ Route::prefix('v1/arcade')->middleware([ObserveArcadeRequest::class,
     Route::get('/leaderboards/{gameId}', [ArcadeTurnRunController::class, 'gameLeaderboard'])
         ->whereIn('gameId', ['after-hours', 'cafe-rush', 'open-world', 'cafe-drift']);
     Route::post('/players', [ArcadeController::class, 'register'])->middleware('throttle:arcade-registration');
+    Route::post('/players/login', [ArcadeController::class, 'login'])->middleware('throttle:arcade-password-login');
     Route::post('/players/recover', [ArcadeController::class, 'recover'])->middleware('throttle:arcade-account-recover');
     // Online checkout routes intentionally retired. Only authenticated
     // in-cafe staff may redeem coupons through CSRF-protected web routes.
@@ -51,6 +52,8 @@ Route::prefix('v1/arcade')->middleware([ObserveArcadeRequest::class,
             ->whereNumber('couponId')->middleware('throttle:arcade-coupon-support');
         Route::get('/player', [ArcadeController::class, 'me']);
         Route::get('/player/identity', [ArcadeIdentityController::class, 'status']);
+        Route::post('/player/password', [ArcadeController::class, 'setPassword'])
+            ->middleware('throttle:arcade-password-change');
         Route::get('/player/fraud/appeals', [ArcadeFraudAppealController::class, 'index'])
             ->middleware('throttle:arcade-coupon-wallet');
         Route::post('/player/fraud/appeals', [ArcadeFraudAppealController::class, 'submit'])
