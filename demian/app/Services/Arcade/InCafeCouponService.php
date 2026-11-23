@@ -53,11 +53,19 @@ final class InCafeCouponService
             || ! is_string($coupon->currency) || trim($coupon->currency) === '') {
             return false;
         }
-        $event = $source === 'gift' ? 'coupon_gift_issued' : 'issued';
-
-        return DB::table('arcade_coupon_events')
+        // Both weekly awards and manual gifts record a financial "issued"
+        // event. A separate "coupon_gift_issued" lives in the *admin* log.
+        $events = DB::table('arcade_coupon_events')
             ->where('coupon_id', $coupon->id)
-            ->where('event_type', $event)->count() === 1;
+            ->where('event_type', 'issued')->limit(2)->get();
+        if ($events->count() !== 1) return false;
+        $details = json_decode((string) $events[0]->details, true);
+        if (! is_array($details)) return false;
+
+        return $source === 'gift'
+            ? ($details['source'] ?? null) === 'gift'
+                && (int) ($details['gift_id'] ?? 0) === (int) $coupon->gift_id
+            : (int) ($details['winner_id'] ?? 0) === (int) $coupon->winner_id;
     }
 
     private function state(object $coupon): string
