@@ -9,7 +9,8 @@ import { Rate } from 'k6/metrics';
 const origin = __ENV.DEMIAN_BASE_URL || '';
 const approved = __ENV.DEMIAN_LOAD_APPROVED === 'YES' && __ENV.DEMIAN_PROVIDER_100_VU_APPROVED === 'YES';
 if (!approved || __ENV.DEMIAN_TARGET !== 'staging' ||
-    !/^https:\/\/[A-Za-z0-9.-]+(:[0-9]+)?$/.test(origin) || !new URL(origin).hostname.includes('staging')) {
+    !/^https:\/\/[A-Za-z0-9.-]+(:[0-9]+)?$/.test(origin) ||
+    !origin.toLowerCase().split('/')[2].split(':')[0].split('.').some(part => part.includes('staging'))) {
     throw new Error('A staging HTTPS origin and explicit owner load approval are required.');
 }
 
