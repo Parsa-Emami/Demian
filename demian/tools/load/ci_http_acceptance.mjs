@@ -15,21 +15,40 @@ assert.equal(process.env.DB_HOST, '127.0.0.1');
 assert.equal(process.env.CACHE_STORE, 'file');
 assert.equal(process.env.DB_USERNAME, 'root');
 assert.ok(!process.env.DB_URL);
+const users = Number(process.env.DEMIAN_CI_LOAD_USERS ?? 50);
+assert.ok(users === 50 || users === 100, 'Only the isolated 50/100-client CI profiles are authorized');
+const hundred = users === 100;
+const httpWorkers = hundred ? 16 : 8;
+let activeRequests = 0, maxInFlightRequests = 0;
 execFileSync('php', ['artisan', 'migrate:fresh', '--force', '--no-interaction'], { stdio: 'ignore', timeout: 60000 });
 execFileSync('php', ['artisan', 'cache:clear'], { stdio: 'ignore', timeout: 30000 });
 const base = 'http://127.0.0.1:8088/api/v1/arcade';
 const output = 'docs/acceptance-lab';
 mkdirSync(output, { recursive: true });
-const report = { status: 'pending', environment: 'isolated CI MySQL 8.4 with eight PHP HTTP workers and OPcache',
-    physicalDeviceVerified: false, productionCapacityCertified: false, independentSecurityAudit: false,
-    users: 50, security: [], timings: {}, failures: [] };
+const report = { schema: 2, phase: 'PR09', status: 'pending',
+    environment: 'disposable CI MySQL 8.4 / PHP CLI server / OPcache',
+    physicalDeviceVerified: false, productionCapacityCertified: false,
+    independentSecurityAudit: false, realHostCapacityVerified: false,
+    loadProfile: hundred ? '100-inflight-http-clients' : '50-inflight-http-clients',
+    users, phpHttpWorkers: httpWorkers, security: [], timings: {}, failures: [],
+    verifiedRuns: 0, initialReplayAttempts: 0, duplicateReplayAttempts: 0,
+    registrationBatches: [], maxInFlightRequests: 0, maxObservedConnections: null,
+    noRealPrizeIssuance: true, noProductionWrites: true };
 let server, spawnError;
 const samples = new Map();
 async function request(path, { token, body, method = body === undefined ? 'GET' : 'POST', group } = {}) {
     const started = performance.now();
-    const response = await fetch(base + path, { method, redirect: 'manual', signal: AbortSignal.timeout(15000),
+    activeRequests++;
+    maxInFlightRequests = Math.max(maxInFlightRequests,activeRequests);
+    let response;
+    try {
+      response = await fetch(base + path, { method, redirect: 'manual',
+        signal: AbortSignal.timeout(hundred ? 30000 : 15000),
         headers: { Accept: 'application/json', 'Content-Type': 'application/json', ...(token ? { Authorization: 'Bearer ' + token } : {}) },
         ...(body === undefined ? {} : { body: JSON.stringify(body) }) });
+    } finally {
+      activeRequests--;
+    }
     const text = await response.text();
     let data;
     try { data = JSON.parse(text); } catch { data = null; }
@@ -57,7 +76,7 @@ try {
         'enabled', 'Enable PHP OPcache for the HTTP acceptance test');
     server = spawn('php', [...phpOptions, '-S', '127.0.0.1:8088', '-t', resolve('public'),
         resolve('vendor/laravel/framework/src/Illuminate/Foundation/resources/server.php')], {
-        cwd: resolve('public'), detached: true, stdio: 'ignore', env: { ...process.env, PHP_CLI_SERVER_WORKERS: '8', APP_DEBUG: 'true' },
+        cwd: resolve('public'), detached: true, stdio: 'ignore', env: { ...process.env, PHP_CLI_SERVER_WORKERS: String(httpWorkers), APP_DEBUG: 'true' },
     });
     server.on('error', error => { spawnError = error; });
     let ready = false, readinessError = '';
@@ -71,7 +90,15 @@ try {
     const rules = (await request('/rules')).data.rules;
     const policy = (await request('/legal')).data;
     assert.equal(policy.require_contact, true, 'Required contacts must be enabled for the registration acceptance check');
-    const identities = await Promise.all(Array.from({ length: 50 }, async (_, index) => {
+    // The real public registration gate is 60/IP/minute: deliberately DO NOT
+    // bypass it or weaken its policy to prepare a 100-client test.
+    // Register in authorized <=50-IP-request waves; gameplay starts together.
+    const identities = [];
+    for (let offset = 0; offset < users; offset += 50) {
+      if (offset > 0) await delay(62000);
+      const count = Math.min(50, users - offset);
+      const wave = await Promise.all(Array.from({length:count}, async (_,i)=>{
+        const index = offset + i;
         const response = await request('/players', {
             body: {
                 display_name: 'CI Player ' + index,
@@ -89,7 +116,13 @@ try {
         assert.equal(response.data.has_contact, true);
         assert.equal(typeof response.data.token, 'string');
         return response.data;
-    }));
+      }));
+      identities.push(...wave);
+      report.registrationBatches.push({clients:wave.length,registrationIpLimitPreserved:true});
+    }
+    assert.equal(identities.length,users);
+    assert.equal(new Set(identities.map(x=>x.player_id)).size,users);
+    assert.equal(new Set(identities.map(x=>x.token)).size,users);
     const starts = await Promise.all(identities.map(async ({ token }) => {
         const payload = { request_id: randomUUID(), game_id: 'dino-run', character_slug: 'darya',
             track_width: 420, rules_version: rules.version };
@@ -123,27 +156,38 @@ try {
         return result.data;
     })));
     for (let index = 0; index < starts.length; index++) assert.deepEqual(complete[index * 2], complete[index * 2 + 1]);
+    report.verifiedRuns = starts.length;
+    report.initialReplayAttempts = complete.length;
+    assert.equal(new Set(starts.map(x=>x.run_id)).size,users);
+    assert.equal(complete.length,users*2);
+    assert.ok(maxInFlightRequests>=users,
+        'Insufficient 100-client HTTP concurrency; PHP workers can be fewer than clients');
     const retries = await Promise.all(starts.flatMap(row => [0, 1].map(() => request('/runs/' + row.run_id + '/complete',
         { token: row.token, body: row.replay, group: 'duplicate' }))));
     retries.forEach((result, index) => { assert.equal(result.status, 200); assert.deepEqual(result.data, complete[Math.floor(index / 2) * 2]); });
-    report.security.push({ name: 'forged score ignored and racing initial submissions and 100 duplicate receipts identical', passed: true });
+    report.duplicateReplayAttempts = retries.length;
+    assert.equal(retries.length,users*2);
+    report.security.push({ name: 'forged score ignored and racing initial submissions and idempotent duplicate receipts', passed: true });
     let limited = false;
     for (let attempt = 0; attempt < 12; attempt++) {
-        const result = await request('/runs', { token: starts[49].token, body: starts[49].payload });
+        const result = await request('/runs', { token: starts[users-1].token, body: starts[users-1].payload });
         if (result.status === 429) { limited = true; break; }
         assert.equal(result.status, 409);
     }
     assert.ok(limited, 'Per-player rate limit did not engage');
-    await probe('NAT peer remains eligible', 201, '/runs', { token: starts[48].token,
-        body: { ...starts[48].payload, request_id: randomUUID() } });
+    await probe('NAT peer remains eligible', 201, '/runs', { token: starts[users-2].token,
+        body: { ...starts[users-2].payload, request_id: randomUUID() } });
     report.security.push({ name: 'shared-cache rate limiting preserves unrelated café players', passed: true });
     for (const [group, values] of samples) {
         values.sort((a, b) => a - b);
         const percentile = p => Math.round(values[Math.ceil(values.length * p) - 1]);
         report.timings[group] = { count: values.length, p95Ms: percentile(.95), p99Ms: percentile(.99), maxMs: Math.round(values.at(-1)) };
     }
-    assert.ok(report.timings.complete.p95Ms < 2000, '50-player completion p95 exceeded 2 seconds');
-    assert.ok(report.timings.complete.p99Ms < 4000, '50-player completion p99 exceeded 4 seconds');
+    assert.ok(report.timings.complete.p95Ms < (hundred ? 4000 : 2000),
+        'Replay completion p95 exceeded the isolated CI profile budget');
+    assert.ok(report.timings.complete.p99Ms < (hundred ? 8000 : 4000),
+        'Replay completion p99 exceeded the isolated CI profile budget');
+    report.maxInFlightRequests = maxInFlightRequests;
     const integrity = JSON.parse(execFileSync('php', ['artisan', 'arcade:integrity', '--json'], { encoding: 'utf8', timeout: 30000 }));
     assert.equal(integrity.status, 'ok');
     report.integrity = integrity;
@@ -152,6 +196,8 @@ try {
     report.status = 'failed'; report.failures.push(error.message); process.exitCode = 1;
 } finally {
     if (server?.pid) { try { process.kill(-server.pid, 'SIGTERM'); } catch {} }
-    writeFileSync(output + '/http.json', JSON.stringify(report, null, 2) + '\n');
+    report.maxInFlightRequests = maxInFlightRequests;
+    writeFileSync(output + (hundred ? '/http-100.json' : '/http.json'),
+        JSON.stringify(report, null, 2) + '\n');
     console.log(JSON.stringify(report, null, 2));
 }
