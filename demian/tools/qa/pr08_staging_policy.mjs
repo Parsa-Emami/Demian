@@ -34,6 +34,8 @@ export function evaluatePr08Staging({receipt,probe,pwaAudit},{
         ||receipt.productionAuthorized!==false
         ||receipt.financialFeaturesActivated!==false
         ||receipt.hostSmokePassed!==true||receipt.privatePathsVerified!==true
+        ||receipt.stagingHostPreflightVerified!==true
+        ||receipt.stagingCronVerified!==true
         ||receipt.pinnedSshHostUsed!==true
         ||receipt.releaseArchiveVerified!==true
         ||receipt.offsiteRestoreVerified!==false
