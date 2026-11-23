@@ -168,6 +168,25 @@ try {
     retries.forEach((result, index) => { assert.equal(result.status, 200); assert.deepEqual(result.data, complete[Math.floor(index / 2) * 2]); });
     report.duplicateReplayAttempts = retries.length;
     assert.equal(retries.length,users*2);
+    // One hundred separately authenticated simultaneous profile reads,
+    // then one hundred leaderboard reads. No score or wallet writes.
+    const profiles = await Promise.all(identities.map(({token})=>
+        request('/player',{token,group:'identity'})));
+    profiles.forEach(({status,data},index)=>{
+        assert.equal(status,200,'Authenticated player profile under load');
+        assert.equal(data?.player_id,identities[index].player_id,
+            'Token must not read a peer identity behind the same NAT');
+    });
+    const boards = await Promise.all(Array.from({length:users},()=>
+        request('/leaderboards/dino-run?period=weekly',{group:'leaderboard'})));
+    boards.forEach(({status,data})=>{
+        assert.equal(status,200,'Weekly leaderboard query under 100-client burst');
+        assert.ok(Array.isArray(data?.data),'Leaderboard response contract');
+    });
+    report.security.push({
+        name:'100 authenticated identities isolated and weekly leaderboard safe under concurrency',
+        passed:true,
+    });
     report.security.push({ name: 'forged score ignored and racing initial submissions and idempotent duplicate receipts', passed: true });
     let limited = false;
     for (let attempt = 0; attempt < 12; attempt++) {
@@ -189,6 +208,12 @@ try {
     assert.ok(report.timings.complete.p99Ms < (hundred ? 8000 : 4000),
         'Replay completion p99 exceeded the isolated CI profile budget');
     report.maxInFlightRequests = maxInFlightRequests;
+    for (const group of ['identity','leaderboard']) {
+        assert.ok(report.timings[group].p95Ms < (hundred ? 4000 : 2000),
+            group+' burst p95 exceeded CI budget');
+        assert.ok(report.timings[group].p99Ms < (hundred ? 8000 : 4000),
+            group+' burst p99 exceeded CI budget');
+    }
     const integrity = JSON.parse(execFileSync('php', ['artisan', 'arcade:integrity', '--json'], { encoding: 'utf8', timeout: 30000 }));
     assert.equal(integrity.status, 'ok');
     report.integrity = integrity;
