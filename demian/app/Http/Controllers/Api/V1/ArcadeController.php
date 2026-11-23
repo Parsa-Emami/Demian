@@ -172,7 +172,8 @@ final class ArcadeController extends Controller
         return response()->json(['player_id' => $player->id, 'display_name' => $player->display_name,
             'token' => $token, 'token_expires_at' => $expires->toIso8601String(),
             'has_contact' => $player->contact_hash !== null,
-            'identity' => app(ArcadePrizeIdentity::class)->status($player)], 201);
+            'identity' => app(ArcadePrizeIdentity::class)->status($player)], 201)
+            ->header('Cache-Control', 'no-store, private');
     }
 
     public function login(Request $request, PlayerContact $contacts): JsonResponse

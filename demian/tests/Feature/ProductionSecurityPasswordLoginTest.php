@@ -140,7 +140,9 @@ final class ProductionSecurityPasswordLoginTest extends TestCase
         $this->asStaff($admin)->post('/characters', [])->assertForbidden();
         $this->asStaff($admin)->post('/characters/1/activate')->assertForbidden();
         $super = $this->staff('super_admin');
-        $this->asStaff($super)->get('/')->assertOk()->assertSee('Character manager');
+        $this->asStaff($super)->get('/')->assertOk()
+            ->assertHeader('Cache-Control', 'private, no-store, max-age=0')
+            ->assertSee('Character manager');
         $this->asStaff($super)->getJson('/characters')->assertOk();
         $this->asStaff($super)->postJson('/characters', [])->assertUnprocessable();
         DB::table('arcade_cashier_staff')->where('id', $super)->update(['is_active' => false]);
