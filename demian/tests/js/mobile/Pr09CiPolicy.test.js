@@ -4,7 +4,7 @@ import {evaluatePr09CiEvidence} from '../../../tools/load/pr09_ci_policy.mjs';
 const SHA='a'.repeat(40);
 function fixture(users=100){
  const timings=Object.fromEntries([['register',users],['start',users],
-  ['complete',users*2],['duplicate',users*2]].map(([name,count])=>
+  ['complete',users*2],['duplicate',users*2],['identity',users],['leaderboard',users]].map(([name,count])=>
   [name,{count,p95Ms:250,p99Ms:450,maxMs:550}]));
  return {
   schema:2,phase:'PR09',sourceSha:SHA,status:'passed',failures:[],
@@ -25,6 +25,7 @@ function fixture(users=100){
     'NAT peer remains eligible',
     'forged score ignored and racing initial submissions and idempotent duplicate receipts',
     'shared-cache rate limiting preserves unrelated café players',
+    '100 authenticated identities isolated and weekly leaderboard safe under concurrency',
   ].map(name=>({name,passed:true})),
  };
 }
@@ -44,6 +45,7 @@ test('PR09 rejects forged, stale, incomplete or security-untrusted performance e
   v=>{v.phpHttpWorkers=100;},v=>{v.registrationBatches=[{clients:100,registrationIpLimitPreserved:true}];},
   v=>{v.registrationBatches[1].registrationIpLimitPreserved=false;},
   v=>{v.timings.complete.count=100;},v=>{v.timings.complete.p95Ms=5000;},
+  v=>{v.timings.identity.count=99;},v=>{v.timings.leaderboard.p95Ms=9000;},
   v=>{v.timings.complete.p99Ms=9000;},
   v=>{v.timings.duplicate.p95Ms=NaN;},v=>{v.security.pop();},
   v=>{v.security[0].passed=false;},v=>{v.integrity.status='error';},
