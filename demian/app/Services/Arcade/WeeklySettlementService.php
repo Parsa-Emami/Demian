@@ -63,6 +63,10 @@ final class WeeklySettlementService
                 throw new RuntimeException('Unknown weekly period state.');
             }
             if ($period->status === 'sealed') {
+                // An idempotent replay is allowed only for an intact seal:
+                // do not silently report success after stored ranks or
+                // recipient assignments were altered after finalization.
+                app(WeeklySealAudit::class)->assertSealed($period);
                 return ['period_key' => $key, 'status' => 'already_sealed',
                     'participants' => (int) $period->participants, 'winners' => (int) $period->winner_count];
             }
