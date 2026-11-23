@@ -34,12 +34,40 @@ final class InCafeCouponService
         return ($lock ? $query->lockForUpdate() : $query)->first();
     }
 
+    /**
+     * A redeemable code must originate from exactly one recorded issuance
+     * event and carry bounded, positive, immutable voucher terms.
+     * Existing wallet previews also fail closed for damaged evidence.
+     */
+    private function validIssuance(object $coupon): bool
+    {
+        $source = (string) $coupon->source;
+        if (! in_array($source, ['weekly', 'gift'], true)
+            || ! $coupon->player_id
+            || ($source === 'weekly' && ! $coupon->winner_id)
+            || ($source === 'gift' && ! $coupon->gift_id)
+            || (int) $coupon->discount_percent < 1
+            || (int) $coupon->discount_percent > 30
+            || (int) $coupon->min_order_minor < 1
+            || (int) $coupon->max_discount_minor < 1
+            || ! is_string($coupon->currency) || trim($coupon->currency) === '') {
+            return false;
+        }
+        $event = $source === 'gift' ? 'coupon_gift_issued' : 'issued';
+
+        return DB::table('arcade_coupon_events')
+            ->where('coupon_id', $coupon->id)
+            ->where('event_type', $event)->count() === 1;
+    }
+
     private function state(object $coupon): string
     {
         if ($coupon->status === 'redeemed') return 'redeemed';
         if ($coupon->status === 'revoked' || ! $coupon->player_id) return 'revoked';
         if ($coupon->expires_at <= now()->utc()->toDateTimeString()) return 'expired';
-        if ($coupon->status !== 'issued') return 'unavailable';
+        if ($coupon->status !== 'issued' || ! $this->validIssuance($coupon)) {
+            return 'unavailable';
+        }
         return 'valid';
     }
 
@@ -67,10 +95,15 @@ final class InCafeCouponService
             && $subtotal <= 1000000000000, 422,
             'Bill does not satisfy the voucher terms.');
         $percent = (int) $coupon->discount_percent;
+        abort_unless($percent >= 1 && $percent <= 30
+            && (int) $coupon->max_discount_minor > 0, 409,
+            'Invalid immutable voucher terms.');
         // Integer-only minor units, avoids rounding and float drift.
+        // The final subtotal bound is defense in depth against corrupt terms.
         return min(
             intdiv($subtotal, 100) * $percent + intdiv(($subtotal % 100) * $percent, 100),
             (int) $coupon->max_discount_minor,
+            $subtotal,
         );
     }
 
