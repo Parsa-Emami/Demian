@@ -13,6 +13,7 @@ export function evaluatePr09CiEvidence(data,{headSha,users=100}={}){
  if(!budget||!SHA.test(headSha??''))failures.push('invalid_commit_or_test_size');
  if(!obj(data)||data.schema!==2||data.phase!=='PR09'||data.status!=='passed'
     ||!clean(data)||data.users!==users
+    ||data.sourceSha!==headSha
     ||data.loadProfile!==users+'-inflight-http-clients'
     ||data.environment!=='disposable CI MySQL 8.4 / PHP CLI server / OPcache'
     ||data.physicalDeviceVerified!==false
