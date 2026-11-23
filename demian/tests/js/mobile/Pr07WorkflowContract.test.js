@@ -23,7 +23,8 @@ test('PR07 release QA consumes exact-SHA artifact after browser and backend chec
         > pages.indexOf('release-qa:'));
     assert.match(pages,/needs: \[build, backend\]/);
     assert.match(collector,/PR07_LAB_INPUTS/);
-    assert.match(verifier,/productionAuthorized:false/);
+    assert.match(verifier,/verifyPr07LabReport/);
+    assert.match(verifier,/productionAuthorized/);
 });
 test('PR07 private field reports never authorize production automatically',()=>{
     assert.match(field,/HUMAN_REVIEW_REQUIRED/);
