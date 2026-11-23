@@ -25,7 +25,8 @@ execFileSync('php', ['artisan', 'cache:clear'], { stdio: 'ignore', timeout: 3000
 const base = 'http://127.0.0.1:8088/api/v1/arcade';
 const output = 'docs/acceptance-lab';
 mkdirSync(output, { recursive: true });
-const report = { schema: 2, phase: 'PR09', status: 'pending',
+const report = { schema: 2, phase: 'PR09', sourceSha: process.env.GITHUB_SHA,
+    status: 'pending',
     environment: 'disposable CI MySQL 8.4 / PHP CLI server / OPcache',
     physicalDeviceVerified: false, productionCapacityCertified: false,
     independentSecurityAudit: false, realHostCapacityVerified: false,
