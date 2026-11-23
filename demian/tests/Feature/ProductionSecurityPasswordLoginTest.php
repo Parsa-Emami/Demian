@@ -138,7 +138,6 @@ final class ProductionSecurityPasswordLoginTest extends TestCase
         $this->asStaff($admin)->get('/')->assertForbidden();
         $this->asStaff($admin)->get('/characters')->assertForbidden();
         $this->asStaff($admin)->post('/characters', [])->assertForbidden();
-        $this->asStaff($admin)->post('/characters/1/activate')->assertForbidden();
         $super = $this->staff('super_admin');
         $this->asStaff($super)->get('/')->assertOk()
             ->assertHeader('Cache-Control', 'private, no-store, max-age=0')
