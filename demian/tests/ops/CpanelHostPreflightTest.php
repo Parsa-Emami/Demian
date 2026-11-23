@@ -20,7 +20,7 @@ $valid = [
     'APP_KEY' => 'base64:'.$key,
     'APP_URL' => 'https://staging.example.test',
     'DEMIAN_ARCADE_API_ONLY' => 'true',
-    'DEMIAN_ARCADE_ALLOWED_ORIGINS' => 'https://game.example.test',
+    'DEMIAN_ARCADE_ALLOWED_ORIGINS' => 'https://staging.game.example.test',
     'DB_CONNECTION' => 'mysql',
     'DB_HOST' => 'localhost',
     'DB_DATABASE' => 'qa_demian_staging',
@@ -85,7 +85,13 @@ try {
 
     $production = array_replace($valid, [
         'APP_ENV' => 'production', 'APP_URL' => 'https://api.example.test',
+        'DB_DATABASE' => 'qa_demian_prod',
+        'DEMIAN_ARCADE_ALLOWED_ORIGINS' => 'https://game.example.test',
     ]);
+    $invoke(array_replace($production, ['DB_DATABASE' => 'qa_demian_staging']), false,
+        'production must not reuse staging database');
+    $invoke(array_replace($valid, ['DEMIAN_ARCADE_ALLOWED_ORIGINS' => 'https://game.example.test']), false,
+        'staging must not grant production PWA CORS');
     $invoke($production, true, 'valid production');
     $money = array_replace($production, ['DEMIAN_COUPONS_ISSUE_ENABLED' => 'true']);
     $invoke($money, false, 'financial issuance without verified identity');
