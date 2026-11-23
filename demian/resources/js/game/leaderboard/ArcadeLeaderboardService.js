@@ -203,7 +203,14 @@ export default class ArcadeLeaderboardService {
             body: { password, password_confirmation: passwordConfirmation,
                 current_password: currentPassword },
         });
-        if (response.status !== 'password_updated') throw new Error('ذخیره رمز عبور تأیید نشد.');
+        if (response.status !== 'password_updated'
+            || typeof response.token !== 'string' || response.token.length !== 64
+            || response.player_id !== this.identity.player_id) {
+            throw new Error('پاسخ امنیتی تغییر رمز معتبر نیست.');
+        }
+        this.identity = { ...this.identity, token: response.token,
+            token_expires_at: response.token_expires_at };
+        safeWrite(this.identityStorage, this.identityKey, this.identity);
         return true;
     }
     async ensureRankedPolicy() {
@@ -298,7 +305,7 @@ export default class ArcadeLeaderboardService {
         this.backupExpiresAt = result.backup_expires_at;
         return result.backup_code;
     }
-    async recoverAccount(code) {
+    async recoverAccount(code, newPassword = null) {
         const value = String(code ?? '').trim();
         if (!/^[A-Za-z0-9]{64}$/.test(value)) {
             throw new Error('کد بازیابی ۶۴ نویسهٔ معتبر لازم دارد.');
@@ -308,7 +315,9 @@ export default class ArcadeLeaderboardService {
             if (this.pending) throw new Error('ابتدا ارسال رکورد قبلی را تکمیل کن؛ رکورد تأییدنشده نباید حذف شود.');
         }
         const response = await this.request('/players/recover', {
-            method: 'POST', body: { recovery_code: value },
+            method: 'POST', body: { recovery_code: value,
+                ...(newPassword ? { new_password: newPassword,
+                    new_password_confirmation: newPassword } : {}) },
         });
         if (typeof response.token !== 'string' || response.token.length !== 64
             || typeof response.player_id !== 'string'

@@ -757,6 +757,12 @@
                                 <label for="ranking-recovery-code">کد بازیابی ذخیره‌شده یا دریافت‌شده از لینک
                                     <input id="ranking-recovery-code" name="recovery_code" type="password" minlength="64" maxlength="64" required autocomplete="off" spellcheck="false">
                                 </label>
+                                <label>رمز جدید (اختیاری؛ فقط با کد پشتیبان ذخیره‌شده)
+                                    <input name="new_password" type="password" minlength="12" maxlength="128" autocomplete="new-password">
+                                </label>
+                                <label>تکرار رمز جدید
+                                    <input name="new_password_confirmation" type="password" minlength="12" maxlength="128" autocomplete="new-password">
+                                </label>
                                 <button type="submit" class="shell-button">بازیابی حساب</button>
                             </form>
                             <p data-ranking-recovery-status role="status" aria-live="polite"></p>
