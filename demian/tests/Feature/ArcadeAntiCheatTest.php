@@ -98,6 +98,49 @@ final class ArcadeAntiCheatTest extends TestCase
         $this->assertDatabaseCount('arcade_anticheat_observations',0);
     }
 
+    public function test_confirmed_manual_hold_remains_enforced_when_signal_collection_is_disabled(): void
+    {
+        [$player, $report] = $this->flaggedPlayer();
+        $reviewer = $this->staff('super_admin');
+        $anti = app(ArcadeAntiCheat::class);
+        $anti->review($report->id, $reviewer, 1, 'confirmed',
+            'Evidence reviewed and temporary hold explicitly authorized');
+        $anti->setHold($report->id, $reviewer, 1, 2,
+            'Protect the ranked leaderboard while human review continues');
+        config()->set('demian-arcade.anticheat.enabled', false);
+        try {
+            $anti->assertStartAllowed($player->id);
+            $this->fail('A human-approved hold was bypassed when detection was paused.');
+        } catch (HttpException $expected) {
+            $this->assertSame(423, $expected->getStatusCode());
+        }
+        $this->assertDatabaseCount('arcade_anticheat_holds', 1);
+        $this->assertDatabaseCount('arcade_cheat_review_events', 2);
+        $this->travel(3)->hours();
+        $anti->assertStartAllowed($player->id);
+    }
+
+    public function test_overlapping_verified_runs_create_only_a_reviewable_signal(): void
+    {
+        $player = $this->player();
+        $anti = app(ArcadeAntiCheat::class);
+        $this->newRun($player, 'verified', 'cafe-rush', 120,
+            hash('sha256', 'first-proof'));
+        $second = $this->newRun($player, 'verified', 'dino-run', 160,
+            hash('sha256', 'second-proof'));
+        $anti->verified($second, 23, '203.0.113.10');
+        $this->assertDatabaseHas('arcade_cheat_reports', [
+            'player_id' => $player->id, 'run_id' => $second->id,
+            'signal' => 'overlapping_verified_runs', 'status' => 'open',
+        ]);
+        $this->assertDatabaseCount('arcade_anticheat_holds', 0);
+        $anti->assertStartAllowed($player->id);
+        $this->assertDatabaseHas('arcade_runs', [
+            'id' => $second->id, 'status' => 'verified', 'score' => 160,
+        ]);
+        $this->assertDatabaseCount('arcade_coupons', 0);
+    }
+
     public function test_velocity_detection_is_deduplicated_and_never_automatically_blocks_a_player(): void
     {
         $player=$this->player();
