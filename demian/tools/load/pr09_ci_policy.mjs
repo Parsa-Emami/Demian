@@ -36,7 +36,8 @@ export function evaluatePr09CiEvidence(data,{headSha,users=100}={}){
     ||data.registrationBatches.reduce((n,x)=>n+x.clients,0)!==users)
     failures.push('registration_60_per_minute_limit_bypassed');
  for(const [name,count] of [
-    ['register',users],['start',users],['complete',2*users],['duplicate',2*users]
+    ['register',users],['start',users],['complete',2*users],['duplicate',2*users],
+    ['identity',users],['leaderboard',users]
  ]){
     const record=data?.timings?.[name];
     if(!obj(record)||record.count!==count
@@ -44,6 +45,11 @@ export function evaluatePr09CiEvidence(data,{headSha,users=100}={}){
        ||!finite(record.maxMs,0,30000)
        ||record.p99Ms<record.p95Ms||record.maxMs<record.p99Ms)
        failures.push('missing_or_invalid_'+name+'_latencies');
+ }
+ for(const group of ['identity','leaderboard']){
+   if(!finite(data?.timings?.[group]?.p95Ms,0,budget?.p95??0)
+       ||!finite(data?.timings?.[group]?.p99Ms,0,budget?.p99??0))
+       failures.push('concurrent_'+group+'_slow_or_missing');
  }
  if(!finite(data?.timings?.complete?.p95Ms,0,budget?.p95??0)
     ||!finite(data?.timings?.complete?.p99Ms,0,budget?.p99??0))
@@ -54,6 +60,7 @@ export function evaluatePr09CiEvidence(data,{headSha,users=100}={}){
     'invalid rules','NAT peer remains eligible',
     'forged score ignored and racing initial submissions and idempotent duplicate receipts',
     'shared-cache rate limiting preserves unrelated café players',
+    '100 authenticated identities isolated and weekly leaderboard safe under concurrency',
  ];
  if(!Array.isArray(data?.security)||data.security.length!==probes.length
     ||!probes.every(x=>data.security.some(y=>y?.name===x&&y.passed===true)))
