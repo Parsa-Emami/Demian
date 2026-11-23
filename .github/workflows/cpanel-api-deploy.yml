@@ -213,9 +213,33 @@ jobs:
         run: node demian/tools/smoke_arcade_api.mjs --base-url="$CPANEL_API_ORIGIN/api/v1/arcade" --users=20 --p95-ms=1500
       - name: Step 29 TLS, release identity and private-path acceptance (read-only)
         run: node demian/tools/verify_cpanel_host.mjs --origin="$CPANEL_API_ORIGIN" --release="$GITHUB_SHA" --client-origin="$CPANEL_CLIENT_ORIGIN"
+      - name: PR08 read-only on-host staging PHP, cron and database checks via pinned SSH
+        if: inputs.target == 'staging'
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          key="$RUNNER_TEMP/pr08_staging_ssh_key"
+          hosts="$RUNNER_TEMP/pr08_staging_known_hosts"
+          printf '%s\n' "$CPANEL_SSH_KEY" > "$key"
+          printf '%s\n' "$CPANEL_KNOWN_HOSTS" > "$hosts"
+          chmod 600 "$key" "$hosts"
+          ssh_flags=(-i "$key" -o IdentitiesOnly=yes -o BatchMode=yes \
+            -o StrictHostKeyChecking=yes -o "UserKnownHostsFile=$hosts")
+          report="$(ssh "${ssh_flags[@]}" "$CPANEL_USER@$CPANEL_HOST" \
+            "bash -s -- '$CPANEL_ROOT' '$GITHUB_SHA' '$CPANEL_PHP_BIN' '$CPANEL_API_ORIGIN'" \
+            < demian/ops/cpanel/staging_acceptance.sh)"
+          printf '%s\n' "$report" > "$RUNNER_TEMP/pr08-host-check.json"
+          jq -e --arg sha "$GITHUB_SHA" '
+            .schema == 1
+            and .kind == "demian-cpanel-staging-host-check"
+            and .target == "staging" and .sourceSha == $sha
+            and .php84Verified == true and .cronVerified == true
+            and .databaseDoctorPassed == true and .integrityPassed == true
+            and .couponAuditPassed == true and .productionAuthorized == false
+          ' "$RUNNER_TEMP/pr08-host-check.json" >/dev/null
       - name: PR08 record only successful protected staging deploy and host smoke
         if: inputs.target == 'staging'
-        run: node demian/tools/qa/pr08_stage_receipt.mjs "$RUNNER_TEMP/pr08-staging-receipt.json" ".cpanel-release/demian-cpanel.sha256"
+        run: node demian/tools/qa/pr08_stage_receipt.mjs "$RUNNER_TEMP/pr08-staging-receipt.json" ".cpanel-release/demian-cpanel.sha256" "$RUNNER_TEMP/pr08-host-check.json"
       - uses: actions/upload-artifact@v4
         if: inputs.target == 'staging'
         with:
