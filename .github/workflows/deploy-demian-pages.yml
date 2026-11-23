@@ -331,7 +331,7 @@ jobs:
         with:
           name: pr07-lab-${{ github.sha }}
           path: ${{ runner.temp }}/pr07
-      - name: PR07 exact-SHA mobile lab contract: CI pass, real phone + commercial NO-GO
+      - name: PR07 exact-SHA mobile lab contract - CI pass, physical and commercial NO-GO
         run: node demian/tools/qa/pr07_verify_ci.mjs "${RUNNER_TEMP}/pr07/lab-readiness.json"
         env:
           DEMIAN_PR07_BUILD_RESULT: ${{ needs.build.result }}
