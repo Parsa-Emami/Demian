@@ -163,6 +163,12 @@ if ($target === 'staging') {
     if (!str_contains($database, 'staging') || !str_contains($apiHost, 'staging')) {
         preflightFail('Staging must have an isolated staging-named database and HTTPS hostname.');
     }
+    foreach ($origins as $allowed) {
+        $clientHost = strtolower((string) parse_url(trim($allowed), PHP_URL_HOST));
+        if (!str_contains($clientHost, 'staging')) {
+            preflightFail('Staging must not authorize CORS for a production PWA origin.');
+        }
+    }
     $stagingForbidden = array_merge($financial, [
         'DEMIAN_ARCADE_CRITTERS_PRIZES_ENABLED',
         'DEMIAN_ARCADE_COFFEE_PRIZES_ENABLED',
@@ -175,6 +181,13 @@ if ($target === 'staging') {
         if ($enabled($flag)) {
             preflightFail('Staging financial flags must remain disabled: '.$flag);
         }
+    }
+}
+if ($target === 'production') {
+    $productionDb = strtolower((string) ($values['DB_DATABASE'] ?? ''));
+    $productionHost = strtolower((string) parse_url($origin, PHP_URL_HOST));
+    if (str_contains($productionDb, 'staging') || str_contains($productionHost, 'staging')) {
+        preflightFail('Production cannot reuse the staging database or HTTPS hostname.');
     }
 }
 if ($target === 'production' && count(array_filter($financial, $enabled)) > 0) {
