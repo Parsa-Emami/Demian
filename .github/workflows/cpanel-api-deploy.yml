@@ -165,21 +165,24 @@ jobs:
           chmod 600 "$key" "$hosts"
           ssh_flags=(-i "$key" -o IdentitiesOnly=yes -o BatchMode=yes \
             -o StrictHostKeyChecking=yes -o "UserKnownHostsFile=$hosts")
-          ssh "${ssh_flags[@]}" "$CPANEL_USER@$CPANEL_HOST" "mkdir -p '$CPANEL_ROOT/incoming'"
           # Reject a stale or substituted manifest before opening SSH.
+          expected_digest="$(cat .cpanel-release/demian-cpanel.sha256)"
+          [[ "$expected_digest" =~ ^[a-f0-9]{64}$ ]]
           php -r '
             $record = json_decode(file_get_contents($argv[1]), true, 512, JSON_THROW_ON_ERROR);
             exit(
               ($record["schema"] ?? null) === 1
               && ($record["commit"] ?? null) === $argv[2]
+              && ($record["kind"] ?? null) === "demian-cpanel-api-only"
+              && hash_equals((string) ($record["archiveSha256"] ?? ""), $argv[3])
               && ($record["productionAuthorized"] ?? null) === false
+              && ($record["financialFlagsActivated"] ?? null) === false
               && ($record["hostDeployed"] ?? null) === false ? 0 : 1
             );
-          ' .cpanel-release/demian-cpanel.manifest.json "$GITHUB_SHA"
-          expected_digest="$(cat .cpanel-release/demian-cpanel.sha256)"
-          [[ "$expected_digest" =~ ^[a-f0-9]{64}$ ]]
+          ' .cpanel-release/demian-cpanel.manifest.json "$GITHUB_SHA" "$expected_digest"
           printf '%s  %s\n' "$expected_digest" '.cpanel-release/demian-cpanel.tar.gz' |
             sha256sum -c --status || { echo "Downloaded release checksum mismatched"; exit 1; }
+          ssh "${ssh_flags[@]}" "$CPANEL_USER@$CPANEL_HOST" "mkdir -p '$CPANEL_ROOT/incoming'"
           scp "${ssh_flags[@]}" .cpanel-release/demian-cpanel.tar.gz \
             "$CPANEL_USER@$CPANEL_HOST:$CPANEL_ROOT/incoming/$GITHUB_SHA.tar.gz"
           ssh "${ssh_flags[@]}" "$CPANEL_USER@$CPANEL_HOST" \
