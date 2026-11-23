@@ -17,6 +17,7 @@ on:
       - 'demian/tests/js/mobile/Phase10CpanelOps.test.js'
       - 'demian/tests/js/mobile/Phase10LoadAssessment.test.js'
       - 'demian/tests/js/mobile/Phase11*.test.js'
+      - 'demian/tests/js/mobile/Pr06ReleasePackage.test.js'
       - 'demian/tools/qa/phase11_*'
       - 'demian/ops/phase11/**'
       - '.github/workflows/phase11-controlled-go-no-go.yml'
@@ -57,6 +58,8 @@ jobs:
           bash -n demian/ops/cpanel/rollback.sh
           bash -n demian/ops/cpanel/backup_offsite.sh
           bash -n demian/ops/cpanel/restore_drill.sh
+          bash -n demian/ops/cpanel/package_release.sh
+          bash -n demian/ops/cpanel/ci_release_acceptance.sh
           php -l demian/ops/cpanel/host_preflight.php
           php -l demian/ops/cpanel/install_webroot_bridge.php
       - name: Check approved read-only load profile
@@ -73,7 +76,7 @@ jobs:
           node --check demian/tools/qa/phase11_remote_smoke.mjs
       - name: Run release and integrity guard tests
         working-directory: demian
-        run: node --test tests/js/mobile/Mobile11Ops.test.js tests/js/mobile/CpanelHostSmoke.test.js tests/js/mobile/ReleaseRollback.test.js tests/js/mobile/CpanelDeployment.test.js tests/js/mobile/Phase10CpanelOps.test.js tests/js/mobile/Phase10LoadAssessment.test.js tests/js/mobile/Phase11ReleaseAudit.test.js tests/js/mobile/Phase11ReleasePolicy.test.js tests/js/mobile/Phase11CompositeCi.test.js tests/js/mobile/Phase11ProtectedWorkflow.test.js tests/js/mobile/Phase11RemoteSmoke.test.js
+        run: node --test tests/js/mobile/Mobile11Ops.test.js tests/js/mobile/CpanelHostSmoke.test.js tests/js/mobile/ReleaseRollback.test.js tests/js/mobile/CpanelDeployment.test.js tests/js/mobile/Phase10CpanelOps.test.js tests/js/mobile/Phase10LoadAssessment.test.js tests/js/mobile/Phase11ReleaseAudit.test.js tests/js/mobile/Phase11ReleasePolicy.test.js tests/js/mobile/Phase11CompositeCi.test.js tests/js/mobile/Phase11ProtectedWorkflow.test.js tests/js/mobile/Phase11RemoteSmoke.test.js tests/js/mobile/Pr06ReleasePackage.test.js
 
   cpanel-runtime:
     runs-on: ubuntu-24.04
