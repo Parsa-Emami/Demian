@@ -171,6 +171,41 @@ export default class ArcadeLeaderboardService {
         safeWrite(this.storage, this.accountMarkerKey, true);
         return this.identity;
     }
+    async loginWithPassword(contactType, contactValue, password) {
+        if (this.pending && !this.hasRecoveryRequired) {
+            await this.retry();
+            if (this.pending) throw new Error('قبل از تعویض حساب، رکورد ثبت‌نشده را ارسال کن.');
+        }
+        const response = await this.request('/players/login', {
+            method: 'POST', body: { contact_type: contactType, contact_value: contactValue, password },
+        });
+        if (typeof response.token !== 'string' || response.token.length !== 64
+            || typeof response.player_id !== 'string'
+            || typeof response.display_name !== 'string') {
+            throw new Error('پاسخ ورود سرور معتبر نیست.');
+        }
+        this.acceptedLegalVersion = null;
+        this.identity = { token: response.token, player_id: response.player_id,
+            token_expires_at: response.token_expires_at,
+            has_contact: response.has_contact === true };
+        this.profile = { display_name: response.display_name };
+        safeWrite(this.identityStorage, this.identityKey, this.identity);
+        this.accountKnown = true;
+        safeWrite(this.storage, this.accountMarkerKey, true);
+        safeWrite(this.storage, PROFILE_KEY, this.profile);
+        if (this.pending && this.pending.player_id === this.identity.player_id) await this.retry();
+        return { display_name: this.displayName, player_id: this.identity.player_id };
+    }
+    async setAccountPassword(password, passwordConfirmation, currentPassword = '') {
+        if (!this.identity?.token) throw new Error('برای تعیین رمز عبور ابتدا وارد حساب خود شو.');
+        const response = await this.request('/player/password', {
+            method: 'POST', authenticated: true,
+            body: { password, password_confirmation: passwordConfirmation,
+                current_password: currentPassword },
+        });
+        if (response.status !== 'password_updated') throw new Error('ذخیره رمز عبور تأیید نشد.');
+        return true;
+    }
     async ensureRankedPolicy() {
         // A server-side guard on every start remains authoritative. The UI
         // helps existing accounts acknowledge revised terms in an explicit way.

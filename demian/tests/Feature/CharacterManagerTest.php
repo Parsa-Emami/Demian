@@ -17,6 +17,13 @@ class CharacterManagerTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->withoutMiddleware(\App\Http\Middleware\AuthenticateCafeCashier::class);
+        $this->withoutMiddleware(\App\Http\Middleware\RequireCafePermission::class);
+    }
+
     public function test_studio_page_is_available(): void
     {
         $this->withoutExceptionHandling();
