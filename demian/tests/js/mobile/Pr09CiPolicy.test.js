@@ -7,7 +7,7 @@ function fixture(users=100){
   ['complete',users*2],['duplicate',users*2]].map(([name,count])=>
   [name,{count,p95Ms:250,p99Ms:450,maxMs:550}]));
  return {
-  schema:2,phase:'PR09',status:'passed',failures:[],
+  schema:2,phase:'PR09',sourceSha:SHA,status:'passed',failures:[],
   environment:'disposable CI MySQL 8.4 / PHP CLI server / OPcache',
   loadProfile:users+'-inflight-http-clients',users,phpHttpWorkers:users===100?16:8,
   physicalDeviceVerified:false,productionCapacityCertified:false,
