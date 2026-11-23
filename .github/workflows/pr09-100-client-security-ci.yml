@@ -1,16 +1,12 @@
 name: PR09 isolated 100-client load and security acceptance (CI only)
 # Real disposable MySQL 8.4 and PHP 8.4 HTTP workers; NEVER public cPanel.
 on:
+  # Required check must run for ALL PRs/commits, including workflows/docs-only
+  # updates. Otherwise main's load-100 required status could stay pending.
   pull_request:
     branches: [main]
-    paths:
-      - 'demian/**'
-      - '.github/workflows/pr09-100-client-security-ci.yml'
   push:
     branches: [main]
-    paths:
-      - 'demian/**'
-      - '.github/workflows/pr09-100-client-security-ci.yml'
   workflow_dispatch:
 permissions:
   contents: read
