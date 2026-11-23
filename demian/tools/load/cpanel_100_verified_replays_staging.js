@@ -7,9 +7,10 @@
  * DEMIAN_TARGET=staging
  * DEMIAN_LOAD_APPROVED=YES
  * DEMIAN_REPLAY_LOAD_APPROVED=YES
+ * DEMIAN_PROVIDER_100_VU_APPROVED=YES
  * DEMIAN_STAGING_IDENTITIES_FILE=/secure/100-disposable-identities.json
  * DEMIAN_TEST_RUN_ID=8hexchars (rotate for each run)
- * k6 run tools/load/cpanel_50_verified_replays_staging.js
+ * k6 run tools/load/cpanel_100_verified_replays_staging.js
  *
  * Identity file shape: [{"token":"64-hex-characters"}, ... 100 entries].
  * Do not commit the file or pass credentials through command-line output.
@@ -25,7 +26,8 @@ const approved = __ENV.DEMIAN_TARGET === 'staging'
     && __ENV.DEMIAN_LOAD_APPROVED === 'YES'
     && __ENV.DEMIAN_REPLAY_LOAD_APPROVED === 'YES'
     && __ENV.DEMIAN_PROVIDER_100_VU_APPROVED === 'YES'
-    && /^https:\/\/[a-z0-9.-]+(?::[0-9]{2,5})?$/i.test(origin);
+    && /^https:\/\/[a-z0-9.-]+(?::[0-9]{2,5})?$/i.test(origin)
+    && origin.toLowerCase().includes('staging');
 const file = __ENV.DEMIAN_STAGING_IDENTITIES_FILE || '';
 const nonce = __ENV.DEMIAN_TEST_RUN_ID || '';
 if (!approved || !file || !/^[0-9a-f]{8}$/i.test(nonce)) {
@@ -47,7 +49,7 @@ export const options = {
         },
     },
     thresholds: {
-        http_req_failed: ['rate<0.05'],
+        http_req_failed: ['rate<0.01'],
         http_req_duration: ['p(95)<2000', 'p(99)<4000'],
         demian_verified_replay_errors: ['rate<0.01'],
     },
