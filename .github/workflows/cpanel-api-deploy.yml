@@ -143,6 +143,15 @@ jobs:
             }
           fi
           if [[ "$CPANEL_TARGET" == production ]]; then
+            [[ "$CPANEL_ROOT" != *staging* ]] || {
+              echo "Production denied: root points to staging" >&2; exit 1
+            }
+            [[ "$CPANEL_API_ORIGIN" != https://*staging* ]] || {
+              echo "Production denied: API points to staging" >&2; exit 1
+            }
+            [[ "$CPANEL_CLIENT_ORIGIN" != https://*staging* ]] || {
+              echo "Production denied: client origin points to staging" >&2; exit 1
+            }
             [[ "$CPANEL_CONFIRM" == DEPLOY_PRODUCTION_WITH_BACKUP ]]
             [[ "$BACKUP_RECEIPT" =~ ^[a-f0-9]{64}$ ]] || {
               echo "Production requires a SHA-256 off-host backup/restore receipt" >&2
