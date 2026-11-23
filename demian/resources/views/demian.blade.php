@@ -664,7 +664,7 @@
                         </form>
                         <section data-player-identity-panel class="player-identity-panel" dir="rtl"
                             aria-label="تأیید هویت و شماره تلفن">
-                            <h3>هویت بازیکن و تأیید شماره</h3>
+                            <h3>تأیید شماره برای جوایز رسمی (اختیاری و مستقل از ورود)</h3>
                             <p data-player-identity-status role="status" aria-live="polite">
                                 وضعیت هویت از سرور دریافت می‌شود.
                             </p>
@@ -723,6 +723,36 @@
                             <label for="ranking-backup-code">کد پشتیبان (فقط اکنون نمایش داده می‌شود)
                                 <input id="ranking-backup-code" data-ranking-backup-code type="text" readonly autocomplete="off" spellcheck="false">
                             </label>
+                            <form data-ranking-login-form autocomplete="on">
+                                <p>ورود به حساب با رمز عبور، بدون ارسال پیامک</p>
+                                <label>راه ارتباطی
+                                    <select name="contact_type" required>
+                                        <option value="phone">شماره تلفن</option>
+                                        <option value="instagram">اینستاگرام</option>
+                                        <option value="email">ایمیل</option>
+                                    </select>
+                                </label>
+                                <label>شماره یا شناسه تماس
+                                    <input name="contact_value" type="text" maxlength="160" required autocomplete="username">
+                                </label>
+                                <label>رمز عبور
+                                    <input name="password" type="password" minlength="12" maxlength="128" required autocomplete="current-password">
+                                </label>
+                                <button type="submit" class="shell-button">ورود بدون پیامک</button>
+                            </form>
+                            <form data-ranking-password-form autocomplete="on">
+                                <p>تعیین یا تغییر رمز عبور حساب فعلی</p>
+                                <label>رمز فعلی (فقط برای تغییر رمز)
+                                    <input name="current_password" type="password" maxlength="128" autocomplete="current-password">
+                                </label>
+                                <label>رمز عبور جدید
+                                    <input name="password" type="password" minlength="12" maxlength="128" required autocomplete="new-password">
+                                </label>
+                                <label>تکرار رمز جدید
+                                    <input name="password_confirmation" type="password" minlength="12" maxlength="128" required autocomplete="new-password">
+                                </label>
+                                <button type="submit" class="shell-button">ذخیره رمز ورود</button>
+                            </form>
                             <form data-ranking-recover-form>
                                 <label for="ranking-recovery-code">کد بازیابی ذخیره‌شده یا دریافت‌شده از لینک
                                     <input id="ranking-recovery-code" name="recovery_code" type="password" minlength="64" maxlength="64" required autocomplete="off" spellcheck="false">
