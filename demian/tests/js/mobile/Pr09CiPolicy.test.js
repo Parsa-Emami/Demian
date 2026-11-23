@@ -37,7 +37,8 @@ test('PR09 genuine 100-client CI report validates and never certifies production
 });
 test('PR09 rejects forged, stale, incomplete or security-untrusted performance evidence',()=>{
  const attacks=[
-  v=>{v.status='failed';},v=>{v.users=50;},v=>{v.verifiedRuns=99;},
+  v=>{v.status='failed';},v=>{v.sourceSha='b'.repeat(40);},
+  v=>{v.users=50;},v=>{v.verifiedRuns=99;},
   v=>{v.initialReplayAttempts=199;},v=>{v.duplicateReplayAttempts=199;},
   v=>{v.maxInFlightRequests=99;},v=>{v.maxObservedConnections=100;},
   v=>{v.phpHttpWorkers=100;},v=>{v.registrationBatches=[{clients:100,registrationIpLimitPreserved:true}];},
