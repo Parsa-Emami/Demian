@@ -236,6 +236,15 @@ jobs:
           DEMIAN_MOBILE_BENCH_PROFILE: low-mobile
       - name: Step 31 aggregate all QA evidence and enforce cold menu, all games and device caveats
         run: npm run test:step31:collect
+      - name: PR07 full-catalog mobile/PWA/rotated viewport lab evidence (NOT real phone)
+        run: node tools/qa/pr07_collect.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pr07-lab-${{ github.sha }}
+          path: demian/docs/pr07/ci/lab-readiness.json
+          retention-days: 30
+          if-no-files-found: warn
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -318,6 +327,15 @@ jobs:
         env:
           DEMIAN_PHASE11_BUILD_RESULT: ${{ needs.build.result }}
           DEMIAN_PHASE11_BACKEND_RESULT: ${{ needs.backend.result }}
+      - uses: actions/download-artifact@v4
+        with:
+          name: pr07-lab-${{ github.sha }}
+          path: ${{ runner.temp }}/pr07
+      - name: PR07 exact-SHA mobile lab contract: CI pass, real phone + commercial NO-GO
+        run: node demian/tools/qa/pr07_verify_ci.mjs "${RUNNER_TEMP}/pr07/lab-readiness.json"
+        env:
+          DEMIAN_PR07_BUILD_RESULT: ${{ needs.build.result }}
+          DEMIAN_PR07_BACKEND_RESULT: ${{ needs.backend.result }}
   deploy:
     if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
     environment:
