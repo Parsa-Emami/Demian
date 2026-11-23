@@ -54,6 +54,31 @@ jobs:
             echo "Exact main SHA lacks successful PR06 no-host rehearsal" >&2
             exit 1
           }
+      - name: Require exact-main-SHA PR09 100-client isolated security acceptance
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -Eeuo pipefail
+          [[ "$GITHUB_REF" == refs/heads/main ]]
+          runs="$(gh api "/repos/$GITHUB_REPOSITORY/actions/runs?head_sha=$GITHUB_SHA&per_page=100")"
+          qa_run="$(jq -r --arg sha "$GITHUB_SHA" '
+            [.workflow_runs[] |
+              select(.head_sha == $sha and .head_branch == "main"
+                and .name == "PR09 isolated 100-client load and security acceptance (CI only)"
+                and (.event == "push" or .event == "workflow_dispatch")
+                and .conclusion == "success")]
+            | sort_by(.run_number) | last | .id // empty
+          ' <<< "$runs")"
+          [[ "$qa_run" =~ ^[0-9]+$ ]] || {
+            echo "Exact main SHA has no successful PR09 100-client isolated security acceptance" >&2
+            exit 1
+          }
+          checks="$(gh api "/repos/$GITHUB_REPOSITORY/actions/runs/$qa_run/jobs?per_page=100")"
+          jq -e '.jobs | any(.name == "load-100" and .conclusion == "success")'             <<< "$checks" >/dev/null || {
+              echo "PR09 100-client acceptance job did not pass" >&2; exit 1
+            }
+          echo "PR09 exact-SHA 100-client CI passed; this does not certify actual cPanel 100 VUs."
       - name: Install locked PHP production dependencies
         working-directory: demian
         run: composer install --no-interaction --no-dev --prefer-dist --optimize-autoloader
