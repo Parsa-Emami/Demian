@@ -19,7 +19,7 @@ if [[ "$mode" != plan ]]; then
         echo "Authenticate with gh auth login using repository admin permissions" >&2; exit 2
     }
 fi
-required='["release-qa","package","contract","cpanel-runtime","build","backend / replay-and-api (sqlite)","backend / replay-and-api (mysql)"]'
+required='["release-qa","package","contract","cpanel-runtime","build","load-100","backend / replay-and-api (sqlite)","backend / replay-and-api (mysql)"]'
 policy="$(jq -n --argjson contexts "$required" '{
   required_status_checks:{strict:true,contexts:$contexts},
   enforce_admins:true,
