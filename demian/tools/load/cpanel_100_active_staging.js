@@ -1,6 +1,7 @@
 // 100 *active* browser clients, not 100 users/hour.
 // Read-only, staging-only. One virtual client polls three public endpoints.
-// Explicitly set DEMIAN_LOAD_APPROVED=YES and DEMIAN_TARGET=staging.
+// Run manually ONLY with provider permission: DEMIAN_LOAD_APPROVED=YES,
+// DEMIAN_PROVIDER_100_VU_APPROVED=YES and DEMIAN_TARGET=staging.
 import http from 'k6/http';
 import { check, sleep } from 'k6';
 import { Rate } from 'k6/metrics';
@@ -46,7 +47,7 @@ export default function () {
         const ok = check(response, { '200 valid public API body': () => Boolean(valid) });
         bad.add(!ok);
     }
-    // Roughly 100 simultaneous browser sessions polling once per 60 seconds;
+    // 100 simultaneous virtual browser sessions polling about once per 20 seconds;
     // not an authenticated replay-write concurrency certificate.
     sleep(20);
 }
