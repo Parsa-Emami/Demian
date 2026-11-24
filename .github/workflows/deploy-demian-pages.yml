@@ -382,7 +382,7 @@ jobs:
           base="${PAGE_URL%/}/"
           for attempt in $(seq 1 12); do
             if curl -fsSL --max-time 20 -H 'Cache-Control: no-cache' "${base}?verify=${GITHUB_SHA}-${attempt}" -o /tmp/demian-public.html &&
-               grep -Fq 'data-welcome-layout="viewport-v3"' /tmp/demian-public.html &&
+               grep -Fq 'data-welcome-layout="viewport-v4" data-welcome-design="editorial-bento-v1"' /tmp/demian-public.html &&
                curl -fsSL --max-time 20 -H 'Cache-Control: no-cache' "${base}offline-packs.json?verify=${GITHUB_SHA}-${attempt}" -o /tmp/demian-packs.json &&
                jq -e --arg release "$EXPECTED_RELEASE" '.release == $release' /tmp/demian-packs.json >/dev/null &&
                curl -fsSL --max-time 20 -H 'Cache-Control: no-cache' "${base}service-worker.js?verify=${GITHUB_SHA}-${attempt}" -o /tmp/demian-worker.js &&

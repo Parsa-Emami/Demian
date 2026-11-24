@@ -76,7 +76,8 @@ try {
         assert.deepEqual([...((await iconResponse.body()).subarray(0, 8))], [137, 80, 78, 71, 13, 10, 26, 10]);
         const credit = page.locator('[data-creator-link]');
         await page.evaluate(() => document.fonts.ready);
-        await page.locator('style[data-welcome-layout="viewport-v3"]').count().then(count => assert.equal(count, 1));
+        await page.locator('style[data-welcome-layout="viewport-v4"][data-welcome-design="editorial-bento-v1"]').count().then(count => assert.equal(count, 1));
+        await page.waitForFunction(() => document.querySelector('[data-screen="cafe-menu"]')?.dataset.screenState === 'active', null, { timeout: 15000 });
         const geometry = await page.evaluate(() => {
             const link = document.querySelector('[data-creator-link]').getBoundingClientRect();
             const parent = document.querySelector('[data-project-credit]').getBoundingClientRect();
@@ -96,11 +97,17 @@ try {
                 return { label: element.textContent.trim(), x:r.x, y:r.y, width:r.width, height:r.height,
                     screen: { x:frame.x, y:frame.y, width:frame.width, height:frame.height } };
             });
-            return { clipped, paired: Math.abs(reward.top - character.top) < 2 && (reward.right <= character.left + 1 || character.right <= reward.left + 1), creditFullyVisible: parent.bottom <= viewportBottom + 1, verticalOverflow: screen.scrollHeight > screen.clientHeight + 1,
+            const blocked = targets.filter(element => {
+                const r = element.getBoundingClientRect();
+                const hit = document.elementFromPoint(r.left + r.width/2, r.top + r.height/2);
+                return hit !== element && !element.contains(hit);
+            }).map(element => element.textContent.trim());
+            return { blocked, clipped, paired: Math.abs(reward.top - character.top) < 2 && (reward.right <= character.left + 1 || character.right <= reward.left + 1), creditFullyVisible: parent.bottom <= viewportBottom + 1, verticalOverflow: screen.scrollHeight > screen.clientHeight + 1,
                 centered: Math.abs(link.x + link.width / 2 - parent.x - parent.width / 2) < 2,
                 horizontalOverflow: document.documentElement.scrollWidth > innerWidth + 1 };
         });
         assert.deepEqual(geometry.clipped, [], 'Every menu control must be visible and at least 44px high at ' + width + 'x' + height);
+        assert.deepEqual(geometry.blocked, [], 'Every welcome target must receive pointer input');
         assert.equal(geometry.verticalOverflow, false, 'The welcome screen must fit without scrolling');
         assert.equal(geometry.centered, true);
         assert.equal(geometry.paired, true, 'Rewards and character selection must share a row');
@@ -141,7 +148,7 @@ try {
             (await page.locator('[data-screen="pause"]').textContent()) ?? '',
         ), false);
         assert.deepEqual(errors, []);
-        report.profiles.push({ width, height, engine, centeredCredit: 'passed', publicPricingRemoved: 'passed', removedAboutPage: 'passed', newHostSubpath: 'passed', metadata: 'passed', websiteLink: 'passed', horizontalOverflow: false, errors });
+        report.profiles.push({ width, height, engine, geometry, centeredCredit: 'passed', publicPricingRemoved: 'passed', removedAboutPage: 'passed', newHostSubpath: 'passed', metadata: 'passed', websiteLink: 'passed', horizontalOverflow: false, errors });
         console.log(`Demian project identity ${engine} ${width}x${height}: passed`);
         await context.close();
     }
