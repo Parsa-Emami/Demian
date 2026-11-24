@@ -124,100 +124,102 @@
         'resources/js/app.js',
     ])
 @verbatim
-    <style id="demian-cafe-fit" data-welcome-layout="viewport-v4" data-welcome-design="editorial-bento-v1">
-/* Welcome: editorial arcade / compact bento. All decoration stays behind controls. */
+    <style id="demian-cafe-fit" data-welcome-layout="viewport-v6" data-welcome-design="living-cafe-v1">
 @media (orientation:portrait) and (max-width:1000px) {
-  .manager-shell[data-shell-screen="cafe-menu"], .manager-shell[data-shell-screen="cafe-menu"] .manager-stage {
-    min-height:0; height:100vh; height:100svh; height:100dvh; max-height:100dvh;
-  }
+ .manager-shell[data-shell-screen="cafe-menu"], .manager-shell[data-shell-screen="cafe-menu"] .manager-stage { min-height:0; height:100vh; height:100svh; height:100dvh; max-height:100dvh; }
 }
-.manager-shell [data-game-shell] [data-screen="cafe-menu"]:not([hidden]) {
-  --home-gap:clamp(6px,1.25dvh,12px); --home-ink:#f4efde; --home-muted:#b8c7b6;
-  display:block; box-sizing:border-box; min-height:0; max-height:100%; max-height:100dvh;
-  padding:max(8px,env(safe-area-inset-top,0px)) max(12px,env(safe-area-inset-right,0px)) max(8px,env(safe-area-inset-bottom,0px)) max(12px,env(safe-area-inset-left,0px));
-  overflow-x:hidden; overflow-y:auto; scrollbar-gutter:auto; overscroll-behavior:contain; touch-action:pan-y;
-  background:radial-gradient(ellipse at 85% 0%,#364b37 0%,transparent 58%),radial-gradient(ellipse at 0% 90%,#382c21 0%,transparent 44%),#101c18;
-}
-.manager-shell [data-game-shell] [data-screen="cafe-menu"]::before {
-  content:""; position:absolute; inset:0; pointer-events:none;
-  background:repeating-linear-gradient(0deg,transparent 0 23px,#e6ead406 23px 24px),repeating-linear-gradient(90deg,transparent 0 23px,#e6ead406 23px 24px);
-}
+.manager-shell [data-game-shell] [data-screen="cafe-menu"]:not([hidden]) { --home-gap:clamp(5px,1.05dvh,10px); --home-ink:#fff4e1; display:block; box-sizing:border-box; min-height:0; max-height:100%; max-height:100dvh; padding:max(8px,env(safe-area-inset-top,0px)) max(12px,env(safe-area-inset-right,0px)) max(8px,env(safe-area-inset-bottom,0px)) max(12px,env(safe-area-inset-left,0px)); overflow-x:hidden; overflow-y:auto; overscroll-behavior:contain; touch-action:pan-y; background:#111b16; }
+.manager-shell [data-game-shell] [data-screen="cafe-menu"]::before { content:""; position:absolute; inset:0; pointer-events:none; background:linear-gradient(180deg,#120d08c4 0%,#1d1b1070 24%,#15231b22 40%,#111b16 76%),url("assets/environments/cafe-runner-v1/interior.webp") center 42%/cover no-repeat; opacity:1; }
 .manager-shell [data-game-shell] [data-screen="cafe-menu"] :is(.cafe-menu__ambient,.cafe-menu__cabinet) { display:none; pointer-events:none; }
-.manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__content {
-  position:relative; box-sizing:border-box; isolation:isolate; display:grid;
-  grid-template-columns:minmax(0,1fr); grid-template-rows:repeat(5,auto); grid-auto-rows:auto;
-  align-content:center; align-content:safe center; align-items:center; justify-content:stretch; justify-items:stretch;
-  width:min(100%,520px); max-width:100%; min-height:100%; height:auto; padding:0; margin:0 auto;
-  gap:var(--home-gap); background:none; text-align:right; overflow-wrap:normal;
+.manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__content { position:relative; box-sizing:border-box; isolation:isolate; display:grid; grid-template-columns:minmax(0,1fr); grid-template-rows:auto minmax(86px,1fr) auto auto auto; grid-auto-rows:auto; align-content:stretch; align-items:stretch; justify-items:stretch; width:min(100%,560px); max-width:100%; min-width:0; height:auto; min-height:100%; padding:0; margin:0 auto; gap:var(--home-gap); background:none; text-align:right; }
+.manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__content > :first-child { position:relative; margin:0; padding:0 46px; text-align:center; grid-area:auto; align-self:center; }
+.manager-shell [data-game-shell] [data-screen="cafe-menu"] .shell-kicker { margin:0 0 3px; color:#f0d4a0; font-size:clamp(10px,1.5dvh,13px); line-height:1.25; font-weight:700; }
+.manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__title { width:auto; margin:0; color:var(--home-ink); font:900 clamp(32px,min(13vw,8.5dvh),79px)/1 Georgia,"Times New Roman",serif; letter-spacing:-.06em; background:none; filter:none; }
+.manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__title b { color:var(--home-ink); background:none; -webkit-text-fill-color:currentColor; -webkit-text-stroke:0; text-shadow:0 3px 4px #0c0906,0 0 24px #ffcb8055; }
+.manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__showcase { position:relative; isolation:isolate; box-sizing:border-box; display:flex; align-items:flex-end; justify-content:center; grid-area:auto; width:100%; min-width:0; min-height:clamp(132px,36dvh,310px); height:auto; margin:0; padding:0; gap:0; overflow:hidden; border:1px solid #e5c48966; border-radius:24px; color:var(--home-ink); text-align:center; touch-action:manipulation; background:linear-gradient(180deg,#24190e12,#1a1b0d08 40%,#101b15c9 83%,#111b16),url("assets/environments/cafe-runner-v1/interior.webp") center 54%/cover no-repeat,#34291d; box-shadow:0 12px 30px #0005; }
+.manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__showcase::before { content:""; position:absolute; inset:0; z-index:0; pointer-events:none; background:radial-gradient(ellipse at 50% 30%,#ffe2ab5c,transparent 64%),linear-gradient(90deg,#14170e61,transparent 25%,transparent 75%,#14170e61); }
+.manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__showcase-copy { display:flex; flex:0 0 100%; flex-direction:column; justify-content:center; align-items:center; gap:2px; align-self:flex-end; width:100%; min-width:0; position:relative; z-index:2; padding:4px 8px 8px; text-align:center; pointer-events:none; background:linear-gradient(0deg,#101b16 0%,#101b16e8 65%,transparent 100%); }
+.manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__showcase-kicker { color:#f5d695; font-family:inherit; font-weight:700; font-size:clamp(10px,1.5dvh,13px); line-height:1.2; letter-spacing:0; direction:rtl; text-align:center; }
+.manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__showcase-copy strong { color:#fff4df; font-size:clamp(13px,2.5dvh,22px); font-weight:900; line-height:1.25; text-shadow:0 2px 4px #000; }
+.manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__showcase-copy small { color:#e5d9c3; font-size:clamp(10px,1.6dvh,12px); line-height:1.25; }
+.manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__portraits { position:absolute; z-index:1; inset:4% 2% clamp(45px,7dvh,70px); display:flex; align-items:flex-end; justify-content:center; min-width:0; padding:0; gap:0; direction:ltr; pointer-events:none; }
+.manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__portrait { position:relative; display:block; flex:0 1 33%; width:33%; height:76%; min-width:0; max-width:220px; aspect-ratio:auto; overflow:visible; border:0; border-radius:0; background:none; box-shadow:none; z-index:1; transform:none; }
+.manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__portrait + .cafe-menu__portrait { margin-left:-4%; }
+.manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__portrait--negar { flex-basis:44%; width:44%; height:100%; z-index:2; background:none; transform:none; }
+.manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__portrait img { display:block; width:100%; height:100%; object-fit:contain; object-position:center bottom; filter:drop-shadow(0 5px 4px #100b07b3); }
+.manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__portrait--negar img { filter:drop-shadow(0 6px 5px #100b07b3) drop-shadow(0 0 12px #f9d78b40); }
+@keyframes demian-lobby-idle { 0%,100% { transform:translateY(0); } 50% { transform:translateY(-4px); } }
+@keyframes demian-lobby-light { 0%,100% { opacity:.42; transform:translate3d(-2%,0,0); } 50% { opacity:.7; transform:translate3d(2%,0,0); } }
+.manager-shell [data-game-shell] [data-screen="cafe-menu"] .demian-lobby-light { position:absolute; z-index:0; inset:0; pointer-events:none; background:radial-gradient(ellipse at 48% 12%,#ffda913b,transparent 65%); }
+@media (prefers-reduced-motion:no-preference) {
+ .manager-shell [data-game-shell] [data-screen="cafe-menu"][data-screen-state="active"] .cafe-menu__portrait img { animation:demian-lobby-idle 4.8s ease-in-out infinite; }
+ .manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__portrait--negar img { animation-delay:-1.4s; }
+ .manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__portrait--tiam img { animation-delay:-2.7s; }
+ .manager-shell [data-game-shell] [data-screen="cafe-menu"][data-screen-state="active"] .demian-lobby-light { animation:demian-lobby-light 9s ease-in-out infinite; }
 }
-.manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__content > :first-child { margin:0; padding:0; text-align:center; grid-area:auto; }
-.manager-shell [data-game-shell] [data-screen="cafe-menu"] .shell-kicker { margin:0 0 4px; font-size:clamp(10px,1.7dvh,14px); line-height:1.3; font-weight:700; color:#e4cba0; }
-.manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__title { width:auto; margin:0; color:var(--home-ink); font:900 clamp(36px,min(13.7vw,9.8dvh),88px)/.98 Georgia,"Times New Roman",serif; letter-spacing:-.075em; background:none; filter:none; }
-.manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__title b { color:var(--home-ink); background:none; -webkit-text-fill-color:currentColor; -webkit-text-stroke:0; text-shadow:0 3px 20px #e2cf9e26; }
-.manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__showcase {
-  position:relative; box-sizing:border-box; display:flex; align-items:center; justify-content:space-between; grid-area:auto;
-  width:100%; min-width:0; min-height:clamp(76px,18dvh,174px); height:auto; margin:0; padding:clamp(8px,1.8dvh,18px) 12px; gap:8px;
-  overflow:hidden; border:1px solid #91a17a; border-radius:20px; color:var(--home-ink); text-align:right; touch-action:manipulation;
-  background:radial-gradient(ellipse at 8% 15%,#b8b9784d,transparent 63%),linear-gradient(130deg,#3a513b,#243b30 58%,#172b23);
-  box-shadow:inset 0 1px #e4efd225,0 8px 24px #0004;
-}
-.manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__showcase-copy { display:flex; flex:1 1 54%; min-width:0; align-self:center; flex-direction:column; justify-content:center; gap:4px; position:relative; z-index:var(--z-local-raised); }
-.manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__showcase-kicker { color:#e2d4a1; font:700 9px/1.2 ui-monospace,monospace; letter-spacing:.12em; direction:ltr; text-align:right; }
-.manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__showcase-copy strong { font-size:clamp(13px,2.5dvh,20px); font-weight:900; line-height:1.35; }
-.manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__showcase-copy small { color:#d6dfcf; font-size:clamp(10px,1.65dvh,13px); line-height:1.4; }
-.manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__portraits { display:flex; flex:0 0 44%; align-items:center; justify-content:center; min-width:0; padding:0; direction:ltr; }
-.manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__portrait { display:block; position:relative; box-sizing:border-box; flex:0 0 36%; width:36%; max-width:clamp(36px,9.5dvh,82px); aspect-ratio:4/5; overflow:hidden; border:1px solid #e2e6bc; border-radius:12px; background:linear-gradient(145deg,#d3d7aa,#799270); transform:none; box-shadow:0 3px 8px #0004; z-index:var(--z-local-base); }
-.manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__portrait + .cafe-menu__portrait { margin-left:-6px; }
-.manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__portrait--negar { background:linear-gradient(145deg,#ead2b2,#ad8c75); z-index:var(--z-local-raised); }
-.manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__portrait img { display:block; width:100%; height:100%; object-fit:contain; }
-.manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__actions { display:grid; grid-area:auto; grid-template-columns:repeat(2,minmax(0,1fr)); grid-auto-rows:auto; gap:var(--home-gap); width:100%; margin:0; }
-.manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__actions .shell-button { box-sizing:border-box; position:relative; display:flex; align-items:center; justify-content:space-between; grid-column:auto; grid-row:auto; min-width:0; width:100%; min-height:clamp(44px,6.5dvh,62px); height:auto; margin:0; padding:7px 11px; gap:7px; border:1px solid #627862; border-radius:15px; background:linear-gradient(145deg,#2d4437,#1f342b); color:#f1f4e6; font-size:clamp(12px,1.9dvh,16px); font-weight:750; line-height:1.35; text-align:right; white-space:normal; overflow-wrap:anywhere; touch-action:manipulation; box-shadow:inset 0 1px #ffffff10; transition:background-color .16s,border-color .16s,scale .12s; }
-.manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__actions .shell-button > :is(b,span[aria-hidden="true"]) { flex:none; display:grid; place-items:center; width:26px; height:26px; border-radius:9px; background:#ffffff12; }
+.manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__actions { display:grid; grid-area:auto; grid-template-columns:repeat(2,minmax(0,1fr)); grid-auto-rows:auto; gap:var(--home-gap); width:100%; margin:0; min-width:0; align-self:center; }
+.manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__actions .shell-button { box-sizing:border-box; position:relative; display:flex; align-items:center; justify-content:space-between; grid-column:auto; grid-row:auto; width:100%; min-width:0; min-height:clamp(44px,6dvh,58px); height:auto; margin:0; padding:4px 10px; gap:5px; border:1px solid #e7c88b2e; border-radius:13px; background:#263a2f; color:#fff3dc; font-size:clamp(11px,1.8dvh,15px); font-weight:750; line-height:1.25; text-align:right; white-space:normal; overflow-wrap:anywhere; touch-action:manipulation; box-shadow:inset 0 1px #ffffff0c; transition:scale .12s,background-color .15s; }
+.manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__actions .shell-button > :is(b,span[aria-hidden="true"]) { flex:none; display:grid; place-items:center; width:24px; height:24px; border-radius:7px; background:#ffffff0c; }
 .manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__actions .shell-button svg { display:block; width:17px; height:17px; pointer-events:none; }
-.manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__actions .shell-button--primary { grid-column:1 / -1; min-height:clamp(48px,8dvh,76px); border-color:#f0e5b1; background:linear-gradient(112deg,#f2e6bb,#d8e6a9 70%,#b9cf86); color:#1c3227; font-size:clamp(15px,2.3dvh,20px); box-shadow:0 5px 0 #546440,0 8px 20px #0005,inset 0 1px #fff9; }
-.manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__actions [data-shell-action="continue"] { grid-column:1 / -1; border-color:#aa9168; background:linear-gradient(110deg,#594737,#304236); color:#fff0d2; }
+.manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__actions .shell-button--primary { grid-column:1/-1; min-height:clamp(48px,7.6dvh,68px); padding-inline:15px; border-color:#ffe4a5; background:radial-gradient(ellipse at 28% 0%,#fff3c6,transparent 62%),linear-gradient(115deg,#dfae65,#f2d397 65%,#d8ab64); color:#19271c; font-size:clamp(15px,2.6dvh,22px); box-shadow:0 3px 0 #78592e,0 7px 18px #0006; }
+.manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__actions [data-shell-action="continue"] { grid-column:1/-1; background:linear-gradient(90deg,#16281bf0,#16281b94),url("assets/environments/demian-fbx/polished-v1/preview.webp") center 50%/cover no-repeat,#21382d; border-color:#d7ba765c; color:#fff4df; }
 .manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__actions .shell-button:is([data-shell-action="rewards"],.menu-character-button) { grid-column:auto; grid-row:auto; margin:0; }
 .manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__actions .shell-button:not(:active) { transform:none; }
-.manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__actions .shell-button:active { scale:.98; }
-.manager-shell [data-game-shell] [data-screen="cafe-menu"] .demian-legal-links { grid-area:auto; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:3px; margin:0; padding:0; text-align:center; font-size:11px; line-height:1.35; }
-.manager-shell [data-game-shell] [data-screen="cafe-menu"] .demian-legal-links a { box-sizing:border-box; display:flex; align-items:center; justify-content:center; min-height:44px; color:#cadacb; padding:2px; text-underline-offset:3px; }
-.manager-shell [data-game-shell] [data-screen="cafe-menu"] .demian-credit { grid-area:auto; display:grid; justify-items:center; align-content:center; margin:0; padding:0; gap:0; border-top:1px solid #68725a66; color:var(--home-muted); opacity:1; font-size:10px; line-height:1.25; }
-.manager-shell [data-game-shell] [data-screen="cafe-menu"] .demian-credit p { margin:2px 0 0; }
-.manager-shell [data-game-shell] [data-screen="cafe-menu"] .demian-credit a { box-sizing:border-box; display:inline-flex; align-items:center; justify-content:center; min-height:44px; color:#e3ce96; font-size:14px; font-weight:700; padding-inline:16px; line-height:1.3; }
-.manager-shell [data-game-shell] [data-screen="cafe-menu"] [data-instant-menu-status] { grid-column:1 / -1; margin:0; font-size:11px; line-height:1.3; text-align:center; }
-.manager-shell [data-game-shell] [data-screen="cafe-menu"] :is(button,a):focus-visible { outline:2px solid #f5e2ad; outline-offset:2px; }
+.manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__actions .shell-button:active { scale:.97; }
+.manager-shell [data-game-shell] [data-screen="cafe-menu"] .demian-legal-links { grid-area:auto; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:2px; margin:0; padding:0; text-align:center; font-size:clamp(9px,1.4dvh,11px); line-height:1.25; }
+.manager-shell [data-game-shell] [data-screen="cafe-menu"] .demian-legal-links a { box-sizing:border-box; display:flex; align-items:center; justify-content:center; min-height:44px; color:#ded1b8; padding:2px; text-underline-offset:3px; }
+.manager-shell [data-game-shell] [data-screen="cafe-menu"] .demian-credit { grid-area:auto; display:grid; justify-items:center; align-content:center; margin:0; padding:0; gap:0; border-top:1px solid #b39b6e39; color:#d2c4ac; opacity:1; font-size:10px; line-height:1.2; }
+.manager-shell [data-game-shell] [data-screen="cafe-menu"] .demian-credit p { margin:0; }
+.manager-shell [data-game-shell] [data-screen="cafe-menu"] .demian-credit a { box-sizing:border-box; display:inline-flex; align-items:center; justify-content:center; min-height:44px; color:#f0cc88; font-size:13px; font-weight:700; padding-inline:16px; line-height:1.25; }
+.manager-shell [data-game-shell] [data-screen="cafe-menu"] [data-instant-menu-status] { grid-column:1/-1; margin:0; font-size:10px; line-height:1.2; text-align:center; }
+.manager-shell [data-game-shell] [data-screen="cafe-menu"] :is(button,a):focus-visible { outline:2px solid #ffe1a0; outline-offset:2px; }
 .manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__content [data-menu-reveal] { transform:none !important; opacity:1 !important; }
-@media (orientation:portrait) and (max-height:700px) {
-  .manager-shell [data-game-shell] [data-screen="cafe-menu"]:not([hidden]) { --home-gap:6px; }
-  .manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__showcase { min-height:76px; padding-block:6px; }
-  .manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__portrait { max-width:44px; }
-  .manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__title { font-size:clamp(35px,min(12vw,8dvh),56px); }
+@media (orientation:portrait) and (min-height:720px) {
+ .manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__actions { grid-template-columns:repeat(3,minmax(0,1fr)); }
+ .manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__actions .shell-button { justify-content:center; text-align:center; }
+ .manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__actions :is(.shell-button--primary,[data-shell-action="continue"]) { justify-content:space-between; text-align:right; }
+ .manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__actions [data-shell-action="settings"] { position:absolute; inset-block-start:0; inset-inline-end:0; z-index:3; width:44px; height:44px; min-height:44px; border-radius:50%; padding:0; }
+ .manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__actions [data-shell-action="settings"] > span { position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); white-space:nowrap; }
+ .manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__actions [data-shell-action="settings"] > b { width:26px; height:26px; background:none; }
+}
+@media (orientation:portrait) and (max-height:719px) {
+ .manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__content { grid-template-rows:repeat(5,auto); align-content:safe center; }
+ .manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__content > :first-child { padding:0; }
+ .manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__showcase { min-height:clamp(110px,28dvh,200px); }
+ .manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__showcase-copy small { display:none; }
+ .manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__portraits { inset-block-end:33px; }
 }
 @media (orientation:portrait) and (max-height:570px) {
-  .manager-shell [data-game-shell] [data-screen="cafe-menu"]:not([hidden]) { --home-gap:5px; }
-  .manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__actions .shell-button:is(.shell-button--primary,[data-shell-action="continue"]) { grid-column:auto; }
-  .manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__actions .shell-button { min-height:44px; font-size:12px; padding:4px 7px; gap:4px; }
-  .manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__actions .shell-button > :is(b,span[aria-hidden="true"]) { width:22px; height:22px; }
-  .manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__portrait { max-width:35px; }
+ .manager-shell [data-game-shell] [data-screen="cafe-menu"]:not([hidden]) { --home-gap:5px; }
+ .manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__title { font-size:clamp(31px,min(12vw,7dvh),49px); }
+ .manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__showcase { min-height:clamp(88px,24dvh,132px); border-radius:16px; }
+ .manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__showcase-kicker { display:none; }
+ .manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__showcase-copy { padding-block:4px; }
+ .manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__portraits { inset-block-end:24px; }
+ .manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__actions .shell-button:is(.shell-button--primary,[data-shell-action="continue"]) { grid-column:auto; }
+ .manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__actions .shell-button { min-height:44px; font-size:11px; padding:4px 7px; gap:4px; }
+ .manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__actions .shell-button > :is(b,span[aria-hidden="true"]) { width:22px; height:22px; }
+ .manager-shell [data-game-shell] [data-screen="cafe-menu"] .demian-credit { border:0; }
+ .manager-shell [data-game-shell] [data-screen="cafe-menu"] .demian-credit p { position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); white-space:nowrap; }
 }
 @media (orientation:landscape) and (min-width:540px) {
-  .manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__content { width:min(100%,900px); grid-template-columns:minmax(0,1fr) minmax(0,1.08fr); grid-template-rows:repeat(4,auto); gap:var(--home-gap) clamp(14px,3vw,32px); }
-  .manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__content > :first-child { grid-column:1; grid-row:1; }
-  .manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__showcase { grid-column:1; grid-row:2; }
-  .manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__actions { grid-column:2; grid-row:1 / 5; }
-  .manager-shell [data-game-shell] [data-screen="cafe-menu"] .demian-legal-links { grid-column:1; grid-row:3; }
-  .manager-shell [data-game-shell] [data-screen="cafe-menu"] .demian-credit { grid-column:1; grid-row:4; }
+ .manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__content { width:min(100%,1100px); grid-template-columns:minmax(0,1.15fr) minmax(0,1fr); grid-template-rows:auto minmax(86px,1fr) auto auto; gap:var(--home-gap) clamp(12px,3vw,30px); }
+ .manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__content > :first-child { grid-column:1; grid-row:1; padding:0; }
+ .manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__showcase { grid-column:1; grid-row:2/5; }
+ .manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__actions { grid-column:2; grid-row:1/3; }
+ .manager-shell [data-game-shell] [data-screen="cafe-menu"] .demian-legal-links { grid-column:2; grid-row:3; }
+ .manager-shell [data-game-shell] [data-screen="cafe-menu"] .demian-credit { grid-column:2; grid-row:4; }
 }
 @media (orientation:landscape) and (max-height:480px) {
-  .manager-shell [data-game-shell] [data-screen="cafe-menu"]:not([hidden]) { --home-gap:5px; }
-  .manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__showcase { min-height:72px; padding-block:6px; }
-  .manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__portrait { max-width:42px; }
-  .manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__actions .shell-button { min-height:44px; }
+ .manager-shell [data-game-shell] [data-screen="cafe-menu"]:not([hidden]) { --home-gap:5px; }
+ .manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__content { grid-template-rows:auto minmax(60px,1fr) auto auto; align-content:safe center; }
+ .manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__showcase { min-height:100px; }
+ .manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__actions .shell-button { min-height:44px; }
+ .manager-shell [data-game-shell] [data-screen="cafe-menu"] .demian-credit p { position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); }
 }
 @media (prefers-reduced-motion:reduce) {
-  .manager-shell [data-game-shell] [data-screen="cafe-menu"] :is(button,a,[data-menu-reveal]) { animation:none !important; transition:none !important; }
+ .manager-shell [data-game-shell] [data-screen="cafe-menu"] :is(button,a,img,[data-menu-reveal],.demian-lobby-light) { animation:none !important; transition:none !important; }
 }
-/* Natural overflow is retained for zoom, exceptionally short viewports or keyboard access. */
 </style>
 
     <style id="demian-shell-viewport" data-shell-layout="safe-navigation-v1">
@@ -590,14 +592,15 @@
                         </div>
                         <button type="button" data-sidebar-toggle class="cafe-menu__showcase" aria-label="نمایش مجموعه و انتخاب کاراکتر">
                             <span class="cafe-menu__showcase-copy">
-                                <span class="cafe-menu__showcase-kicker">YOUR CAST</span>
-                                <strong>قهرمان این داستان تویی</strong>
-                                <small>شخصیتت را انتخاب کن و وارد کافه شو</small>
+                                <span class="cafe-menu__showcase-kicker" data-lobby-active-name>به کافه خوش آمدی</span>
+                                <strong>شخصیتت را انتخاب کن</strong>
+                                <small>داستان امشب با تو شروع می‌شود</small>
                             </span>
+                            <span class="demian-lobby-light" aria-hidden="true"></span>
                             <span class="cafe-menu__portraits" aria-hidden="true">
-                                <span class="cafe-menu__portrait cafe-menu__portrait--darya"><img src="assets/characters/darya/darya-preview-v14.png" alt="" width="128" height="128" loading="lazy" decoding="async" fetchpriority="low"></span>
-                                <span class="cafe-menu__portrait cafe-menu__portrait--negar"><img src="assets/characters/negar/negar-preview-v14.png" alt="" width="128" height="128" loading="lazy" decoding="async" fetchpriority="low"></span>
-                                <span class="cafe-menu__portrait cafe-menu__portrait--tiam"><img src="assets/characters/tiam/tiam-preview-v14.png" alt="" width="128" height="128" loading="lazy" decoding="async" fetchpriority="low"></span>
+                                <span class="cafe-menu__portrait cafe-menu__portrait--darya"><img data-lobby-support-avatar src="assets/characters/negar/negar-preview-v14.png" alt="" width="128" height="128" loading="lazy" decoding="async" fetchpriority="low"></span>
+                                <span class="cafe-menu__portrait cafe-menu__portrait--negar"><img data-lobby-active-avatar src="assets/characters/darya/darya-preview-v14.png" alt="" width="128" height="128" loading="lazy" decoding="async" fetchpriority="low"></span>
+                                <span class="cafe-menu__portrait cafe-menu__portrait--tiam"><img data-lobby-support-avatar src="assets/characters/tiam/tiam-preview-v14.png" alt="" width="128" height="128" loading="lazy" decoding="async" fetchpriority="low"></span>
                             </span>
                         </button>
                         <div data-menu-reveal class="cafe-menu__actions">
@@ -605,7 +608,7 @@
                                 <span>انتخاب بازی</span><b aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M19 12H5m7-7-7 7 7 7"/></svg></b>
                             </button>
                             <button type="button" data-shell-action="continue" class="shell-button">
-                                <span>ورود سریع به Open World</span><b aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m8 5 12 7-12 7z"/></svg></b>
+                                <span>ورود به دنیای باز</span><b aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m8 5 12 7-12 7z"/></svg></b>
                             </button>
                             <button type="button" data-shell-action="settings" class="shell-button shell-button--ghost">
                                 <span>تنظیمات</span><b aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="3"/><path d="M12 2v3m0 14v3M2 12h3m14 0h3M5 5l2 2m10 10 2 2M5 19l2-2M17 7l2-2"/></svg></b>
