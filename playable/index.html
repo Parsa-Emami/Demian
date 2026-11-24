@@ -225,6 +225,55 @@
         /* Keep overflow available on unusually small or zoomed screens, not hidden. */
 
     </style>
+
+    <style id="demian-shell-viewport" data-shell-layout="safe-navigation-v1">
+        /* One bounded scroll owner per screen. The header remains in the
+           viewport even when long content or focus moves the panel scroll. */
+        .manager-shell [data-game-shell] :is([data-screen="game-selection"],[data-screen="settings"],[data-screen="leaderboard"],[data-screen="coupon-wallet"]):not([hidden]) {
+            box-sizing:border-box; display:grid; grid-template-columns:minmax(0,1fr);
+            grid-template-rows:minmax(0,1fr); place-items:start center;
+            min-width:0; min-height:0; overflow:hidden; overscroll-behavior:contain;
+            padding:var(--demian-nav-safe-top,var(--mobile05-safe-top,max(12px,env(safe-area-inset-top,0px))))
+                var(--demian-nav-safe-right,var(--mobile05-safe-right,max(14px,env(safe-area-inset-right,0px))))
+                var(--demian-nav-safe-bottom,var(--mobile05-safe-bottom,max(16px,env(safe-area-inset-bottom,0px))))
+                var(--demian-nav-safe-left,var(--mobile05-safe-left,max(14px,env(safe-area-inset-left,0px))));
+        }
+        .manager-shell [data-game-shell] :is([data-screen="game-selection"],[data-screen="settings"],[data-screen="leaderboard"],[data-screen="coupon-wallet"]) > :is(.shell-page,.shell-modal) {
+            box-sizing:border-box; min-width:0; min-height:0; max-width:100%; max-height:100%;
+            max-inline-size:100%; max-block-size:100%; overflow-x:hidden; overflow-y:auto;
+            margin:0; padding:0 14px 14px; overscroll-behavior:contain;
+            scroll-padding-block-start:96px; touch-action:pan-y;
+        }
+        .manager-shell [data-game-shell] [data-screen="game-selection"] > .shell-page {
+            width:min(820px,100%); height:100%; align-self:stretch;
+        }
+        .manager-shell [data-game-shell] [data-screen="settings"] > .shell-modal { width:min(650px,100%); }
+        .manager-shell [data-game-shell] [data-screen="leaderboard"] > .shell-modal { width:min(520px,100%); }
+        .manager-shell [data-game-shell] [data-screen="coupon-wallet"] > .shell-modal { width:min(700px,100%); }
+        .manager-shell [data-game-shell] :is([data-screen="game-selection"],[data-screen="settings"],[data-screen="leaderboard"],[data-screen="coupon-wallet"]) [data-shell-nav-header] {
+            box-sizing:border-box; position:sticky; inset-block-start:0; z-index:20;
+            display:flex; align-items:center; justify-content:space-between; flex-wrap:nowrap;
+            gap:10px; min-width:0; margin:0 -14px 12px; padding:10px 14px;
+            background:#182920; border-bottom:1px solid #536b49;
+        }
+        .manager-shell [data-game-shell] [data-shell-nav-header] > div { min-width:0; flex:1 1 auto; }
+        .manager-shell [data-game-shell] [data-shell-nav-header] h2 {
+            margin:2px 0 0; font-size:clamp(18px,4vw,26px); line-height:1.25;
+        }
+        .manager-shell [data-game-shell] [data-shell-nav-header] .shell-kicker { margin:0; font-size:10px; line-height:1.35; }
+        .manager-shell [data-game-shell] [data-shell-nav-header] > div > p:last-child:not(.shell-kicker) {
+            margin:3px 0 0; font-size:12px; line-height:1.35;
+        }
+        .manager-shell [data-game-shell] [data-shell-nav-header] > :is([data-shell-action="back-cafe"],[data-shell-action="close-modal"]) {
+            box-sizing:border-box; flex:0 0 auto; width:auto; min-width:44px; min-height:44px;
+            height:44px; margin:0; padding:4px 10px; touch-action:manipulation;
+        }
+        @media (max-height:480px) and (orientation:landscape) {
+            .manager-shell [data-game-shell] [data-shell-nav-header] { padding-block:6px; margin-bottom:6px; }
+            .manager-shell [data-game-shell] [data-shell-nav-header] h2 { font-size:19px; }
+            .manager-shell [data-game-shell] [data-shell-nav-header] > div > p:last-child:not(.shell-kicker) { font-size:11px; }
+        }
+    </style>
 </head>
 
 <body class="min-h-full bg-[#050610] text-white">
@@ -573,7 +622,7 @@
                     hidden
                 >
                     <div class="shell-page">
-                        <header class="shell-page__header">
+                        <header class="shell-page__header" data-shell-nav-header>
                             <div>
                                 <p class="shell-kicker">CAFÉ DEMIAN / GAME LIBRARY</p>
                                 <h2>یک بازی انتخاب کن</h2>
@@ -662,7 +711,7 @@
                     hidden
                 >
                     <div class="shell-modal settings-panel" role="dialog" aria-modal="true" aria-labelledby="settings-title">
-                        <header class="shell-modal__header">
+                        <header class="shell-modal__header" data-shell-nav-header>
                             <div><p class="shell-kicker">PLATFORM SETTINGS</p><h2 id="settings-title">تنظیمات</h2></div>
                             <button type="button" data-shell-action="close-modal" class="shell-icon-button" aria-label="بستن تنظیمات">×</button>
                         </header>
@@ -766,8 +815,11 @@
 
                 <section data-screen="leaderboard" class="shell-screen shell-screen--modal" role="dialog" aria-modal="true" aria-labelledby="ranking-title" aria-hidden="true" hidden>
                     <div class="shell-modal ranking-panel">
-                        <p class="shell-kicker">DEMIAN · RECORDS</p>
-                        <h2 id="ranking-title">لیدربورد کافه</h2>
+                        <header class="shell-modal__header" data-shell-nav-header>
+                            <div><p class="shell-kicker">DEMIAN · RECORDS</p>
+                        <h2 id="ranking-title">لیدربورد کافه</h2></div>
+                            <button type="button" data-shell-action="close-modal" class="shell-button shell-button--primary" data-screen-autofocus>بستن</button>
+                        </header>
                         <label>انتخاب بازی
                             <select data-ranking-game aria-label="بازی رقابتی">
                                 <option value="all-games">رتبه‌بندی مشترک · همه بازی‌ها</option>
@@ -816,7 +868,7 @@
                             <button type="button" data-ranking-export-account class="shell-button shell-button--ghost">دریافت اطلاعات حساب</button>
                             <button type="button" data-ranking-delete-account class="shell-button shell-button--ghost">حذف کامل حساب و رکوردهای سرور</button>
                         </div>
-                        <button type="button" data-shell-action="close-modal" class="shell-button shell-button--primary" data-screen-autofocus>بستن</button>
+                        
                     </div>
                 </section>
 
@@ -824,8 +876,12 @@
                     role="dialog" aria-modal="true" aria-labelledby="coupon-wallet-title"
                     aria-hidden="true" hidden>
                     <div class="shell-modal coupon-wallet-panel">
-                        <p class="shell-kicker">DEMIAN · MY REWARDS</p>
-                        <h2 id="coupon-wallet-title">کدهای تخفیف من</h2>
+                        <header class="shell-modal__header" data-shell-nav-header>
+                            <div><p class="shell-kicker">DEMIAN · MY REWARDS</p>
+                        <h2 id="coupon-wallet-title">کدهای تخفیف من</h2></div>
+                            <button type="button" data-shell-action="close-modal"
+                                class="shell-button shell-button--primary" data-screen-autofocus>بستن</button>
+                        </header>
                         <p data-wallet-status role="status" aria-live="polite"></p>
                         <div data-wallet-restore-hint hidden>
                             <button type="button" data-shell-action="wallet-to-leaderboard" class="shell-button shell-button--ghost">بازیابی حساب</button>
@@ -834,8 +890,7 @@
                         <div class="shell-modal__actions shell-modal__actions--row">
                             <button type="button" data-wallet-refresh
                                 class="shell-button shell-button--ghost">به‌روزرسانی کدها</button>
-                            <button type="button" data-shell-action="close-modal"
-                                class="shell-button shell-button--primary" data-screen-autofocus>بستن</button>
+                            
                         </div>
                     </div>
                 </section>
