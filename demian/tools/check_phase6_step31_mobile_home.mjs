@@ -78,8 +78,12 @@ try {
             );
             const menu = page.locator('[data-screen="cafe-menu"]');
             assert.equal(await menu.isVisible(), true);
-            const openCharacters = mobile ? menu.locator('.cafe-menu__showcase')
-                : menu.getByRole('button', { name: 'بازکردن مدیریت کاراکترها', exact: true });
+            const actions = menu.locator('.cafe-menu__actions');
+            const characterButton = actions.locator('.menu-character-button[data-sidebar-toggle]');
+            // SidebarController gives every toggle the same accessible name.
+            // Use an exact structural selector, not a multi-match name lookup.
+            const openCharacters = mobile ? menu.locator('.cafe-menu__showcase') : characterButton;
+            assert.equal(await characterButton.count(), 1);
             await openCharacters.waitFor({ state: 'visible' });
             await openCharacters.scrollIntoViewIfNeeded();
             if (mobile) {
@@ -97,14 +101,63 @@ try {
                     contentWidth: content.scrollWidth,
                     scrollable: screen.scrollHeight > screen.clientHeight,
                     actions: [...screen.querySelectorAll('.cafe-menu__actions button')]
-                        .map(button => ({ action: button.dataset.shellAction, width: button.getBoundingClientRect().width,
-                            height: button.getBoundingClientRect().height })),
+                        .map(button => ({ action: button.dataset.shellAction ??
+                            (button.hasAttribute('data-sidebar-toggle') ? 'character' : 'unknown'),
+                            width: button.getBoundingClientRect().width,
+                            height: button.getBoundingClientRect().height,
+                            enabled: !button.disabled && button.getAttribute('aria-disabled') !== 'true' })),
                 };
             });
             assert.ok(geometry.documentWidth <= view.width + 2, JSON.stringify(geometry));
             assert.ok(geometry.contentWidth <= geometry.menuWidth + 2, JSON.stringify(geometry));
-            assert.equal(geometry.actions.length, 5);
-            assert.ok(geometry.actions.every(action => action.width >= 44 && action.height >= 44));
+            const expectedActions = ['play', 'continue', 'settings', 'leaderboard', 'rewards', 'character'];
+            assert.deepEqual(geometry.actions.map(item => item.action), expectedActions,
+                'Six distinct welcome controls must be present in the authored order');
+            assert.ok(geometry.actions.every(action => action.width >= 44 && action.height >= 44 && action.enabled),
+                JSON.stringify(geometry.actions));
+            const actionResults = {};
+            // Use real browser clicks and verify the destination, then close it.
+            for (const [action, screen] of [
+                ['play', 'game-selection'], ['settings', 'settings'],
+                ['leaderboard', 'leaderboard'], ['rewards', 'coupon-wallet'],
+            ]) {
+                await actions.locator(`[data-shell-action="${action}"]`).click();
+                const destination = page.locator(`[data-screen="${screen}"]`);
+                await destination.waitFor({ state: 'visible', timeout: 15000 });
+                assert.equal(await destination.getAttribute('aria-hidden'), 'false');
+                const back = destination.locator(action === 'play'
+                    ? '[data-shell-action="back-cafe"]' : '[data-shell-action="close-modal"]');
+                await back.click();
+                await destination.waitFor({ state: 'hidden', timeout: 15000 });
+                await menu.waitFor({ state: 'visible', timeout: 15000 });
+                actionResults[action] = 'passed';
+            }
+            // A full Open World launch is relatively costly. Exercise it once
+            // on a fresh phone context; geometry is still checked on every view.
+            if (view.width === 390) {
+                assert.equal(await page.evaluate(() => window.demianGameApplication.activeGameId), null);
+                await actions.locator('[data-shell-action="continue"]').click();
+                await page.waitForFunction(() => {
+                    const app = window.demianGameApplication;
+                    return app?.activeGameId === 'open-world' && app.sessionState === 'playing';
+                }, null, { timeout: 45000 });
+                await page.evaluate(() => window.demianGameApplication.showMenu());
+                await page.waitForFunction(() => window.demianGameApplication?.sessionState === 'menu',
+                    null, { timeout: 15000 });
+                await menu.waitFor({ state: 'visible', timeout: 15000 });
+                actionResults.continue = 'passed';
+            }
+            if (mobile) {
+                // Both the new compact button and the original showcase must
+                // open the same real sidebar. Keep the existing artwork checks.
+                await characterButton.click();
+                await page.waitForFunction(() => document.querySelector('[data-manager-shell]')?.dataset.sidebarState === 'expanded',
+                    null, { timeout: 10000 });
+                await page.locator('.character-sheet-close').click();
+                await page.waitForFunction(() => document.querySelector('[data-manager-shell]')?.dataset.sidebarState === 'collapsed',
+                    null, { timeout: 10000 });
+                actionResults.character = 'passed';
+            }
             await page.screenshot({
                 path: resolve(output, `mobile-home-${view.name}.png`),
                 fullPage: false,
@@ -122,6 +175,7 @@ try {
                     .filter(animation => animation instanceof CSSTransition);
                 await Promise.allSettled(transitions.map(transition => transition.finished));
             });
+            actionResults[mobile ? 'showcase' : 'character'] = 'passed';
             const cards = page.locator('[data-character-card]');
             assert.equal(await cards.count(), BUILTIN_CHARACTER_SLUGS.length);
             const portraitGrid = await page.locator('[data-character-list]').evaluate(element => ({
@@ -186,6 +240,7 @@ try {
                 checkedPortraits: limit,
                 portraitGrid,
                 geometry,
+                actionResults,
                 javascriptErrors: pageErrors,
             });
         } finally {
