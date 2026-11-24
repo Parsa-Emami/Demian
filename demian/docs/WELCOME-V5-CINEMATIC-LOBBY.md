@@ -1,0 +1,7 @@
+# Demian V5 — Cinematic café lobby
+
+Cinematic layout using existing café interior art, three original character previews and Open World preview, all already in the offline core. The character scene grows into the available viewport; warm gold primary action, compact secondary dock and portrait settings icon. The landscape layout has two columns and the smallest portrait sizes share a row for the two major actions. The original six action bindings, legal links and creator credit are preserved. CSS-only idle movement honors reduced motion. Scroll is retained only as an accessibility fallback.
+
+The existing Chromium and WebKit 12-profile identity gate checks viewport fit, 44px targets, hit-testing, reward and character pairing, and creator credit. Added checks for scene art and reduced motion. Full browser tests and actual devices are pending. Leaderboard and wallet still open their existing data-backed screens: no invented rank, countdown, reward count or selected avatar is shown. The hero showcases the cast, not the authenticated selected avatar.
+
+Run npm run build:static to generate the atomic PWA export (HTML, offline manifest and service worker). The historical checked-in playable snapshot is intentionally unchanged until a real export can recalculate the full content fingerprint. The Pages release verification expects the new V5 marker. No changes to backend, gameplay, scoring, financial flags or security gates.

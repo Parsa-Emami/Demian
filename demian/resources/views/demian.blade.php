@@ -124,7 +124,7 @@
         'resources/js/app.js',
     ])
 @verbatim
-    <style id="demian-cafe-fit" data-welcome-layout="viewport-v4" data-welcome-design="editorial-bento-v1">
+    <style id="demian-cafe-fit" data-welcome-layout="viewport-v5" data-welcome-design="cinematic-cafe-v1">
 /* Welcome: editorial arcade / compact bento. All decoration stays behind controls. */
 @media (orientation:portrait) and (max-width:1000px) {
   .manager-shell[data-shell-screen="cafe-menu"], .manager-shell[data-shell-screen="cafe-menu"] .manager-stage {
@@ -218,6 +218,76 @@
   .manager-shell [data-game-shell] [data-screen="cafe-menu"] :is(button,a,[data-menu-reveal]) { animation:none !important; transition:none !important; }
 }
 /* Natural overflow is retained for zoom, exceptionally short viewports or keyboard access. */
+
+.manager-shell [data-game-shell] [data-screen="cafe-menu"]:not([hidden]) { --home-gap:clamp(5px,1.05dvh,10px); --home-ink:#fff2dc; --home-muted:#d9c9ad; background:radial-gradient(ellipse at 50% 0%,#56402d,transparent 58%),#101c18; }
+.manager-shell [data-game-shell] [data-screen="cafe-menu"]::before { background:linear-gradient(180deg,#101c1833,#101c18 81%),url("assets/environments/cafe-runner-v1/interior.webp") center/cover no-repeat; opacity:.24; }
+.manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__content { width:min(100%,540px); min-width:0; height:100%; min-height:100%; grid-template-rows:auto minmax(90px,1fr) auto auto auto; align-content:stretch; align-items:stretch; }
+.manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__content > :first-child { padding:0 47px; align-self:center; }
+.manager-shell [data-game-shell] [data-screen="cafe-menu"] .shell-kicker { margin:0 0 3px; color:#f2d8a4; }
+.manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__title { font-size:clamp(32px,min(12vw,8dvh),76px); letter-spacing:-.06em; }
+.manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__title b { text-shadow:0 2px 3px #120b04,0 0 28px #ffc97545; }
+.manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__showcase { isolation:isolate; align-items:flex-end; justify-content:center; min-height:90px; height:auto; padding:0; border:1px solid #b99b6b70; border-radius:22px; text-align:center; background:linear-gradient(180deg,#1b17091a 0%,#13211915 38%,#101a15cc 77%,#101a15 100%),url("assets/environments/cafe-runner-v1/interior.webp") center 53%/cover no-repeat,#30291e; box-shadow:0 10px 26px #0006,inset 0 1px #f3db9c35; }
+.manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__showcase::before { content:""; position:absolute; inset:0; pointer-events:none; z-index:0; background:radial-gradient(ellipse at 50% 30%,#ffd88a38,transparent 65%),linear-gradient(90deg,#0a110c70,transparent 22%,transparent 78%,#0a110c70); }
+.manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__showcase-copy { flex:0 0 100%; align-self:flex-end; z-index:2; width:100%; align-items:center; text-align:center; gap:2px; padding:5px 8px 8px; background:linear-gradient(0deg,#0d1712,#0d1712dd 65%,transparent); pointer-events:none; }
+.manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__showcase-kicker { color:#f4d492; font:750 clamp(9px,1.45dvh,12px)/1.2 inherit; font-family:inherit; letter-spacing:0; direction:rtl; text-align:center; }
+.manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__showcase-copy strong { font-size:clamp(13px,2.55dvh,23px); line-height:1.25; text-shadow:0 2px 5px #000; }
+.manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__showcase-copy small { color:#f0e4d0; line-height:1.25; }
+.manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__portraits { position:absolute; z-index:1; inset:5% 3% clamp(42px,8dvh,70px); display:flex; align-items:flex-end; justify-content:center; gap:0; padding:0; pointer-events:none; }
+.manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__portrait { position:relative; display:block; flex:0 1 33%; width:33%; height:85%; min-width:0; max-width:200px; aspect-ratio:auto; overflow:visible; border:0; border-radius:0; background:none; box-shadow:none; transform:translateY(4%); filter:drop-shadow(0 7px 5px #080d09a0); }
+.manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__portrait + .cafe-menu__portrait { margin-left:0; }
+.manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__portrait--negar { z-index:2; height:100%; flex-basis:41%; width:41%; margin-inline:-4%; transform:none; background:none; }
+.manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__portrait img { width:100%; height:100%; object-fit:contain; object-position:center bottom; }
+@keyframes demian-lobby-breathe { 0%,100% { transform:translateY(0); } 50% { transform:translateY(-3px); } }
+@media (prefers-reduced-motion:no-preference) {
+  .manager-shell [data-game-shell] [data-screen="cafe-menu"][data-screen-state="active"] .cafe-menu__portrait img { animation:demian-lobby-breathe 4.6s ease-in-out infinite; }
+  .manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__portrait--negar img { animation-delay:-1.3s; }
+  .manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__portrait--tiam img { animation-delay:-2.6s; }
+}
+.manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__actions { grid-template-columns:repeat(3,minmax(0,1fr)); align-self:center; }
+.manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__actions .shell-button { justify-content:center; min-height:clamp(44px,6.4dvh,60px); padding:5px 7px; gap:5px; border:1px solid #d9c29538; border-radius:13px; background:#263b30; color:#fff4df; font-size:clamp(10px,1.8dvh,15px); text-align:center; }
+.manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__actions .shell-button > :is(b,span[aria-hidden="true"]) { width:22px; height:22px; border-radius:7px; }
+.manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__actions .shell-button--primary { grid-column:1/-1; min-height:clamp(48px,7.8dvh,72px); border:1px solid #ffedb5; background:linear-gradient(110deg,#e4b56d,#ffe2a3 52%,#e2b96c); color:#18261b; font-size:clamp(17px,2.7dvh,24px); justify-content:space-between; padding-inline:16px; box-shadow:0 4px 0 #75502b,0 8px 22px #0006,inset 0 1px #fff9; }
+.manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__actions [data-shell-action="continue"] { grid-column:1/-1; justify-content:space-between; padding-inline:12px; color:#fff4df; background:linear-gradient(90deg,#17281bf2,#17281b9e),url("assets/environments/demian-fbx/polished-v1/preview.webp") center/cover no-repeat,#21382d; border-color:#d5bb7755; }
+.manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__actions [data-shell-action="settings"] { position:absolute; z-index:3; inset-block-start:0; inset-inline-end:0; width:44px; height:44px; min-width:44px; min-height:44px; border-radius:50%; background:#16291f; padding:0; }
+.manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__actions [data-shell-action="settings"] > span { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip-path:inset(50%); white-space:nowrap; }
+.manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__actions [data-shell-action="settings"] > b { width:28px; height:28px; background:none; }
+.manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__actions [data-shell-action="settings"] svg { width:21px; height:21px; }
+.manager-shell [data-game-shell] [data-screen="cafe-menu"] .demian-legal-links { font-size:clamp(9px,1.5dvh,11px); }
+.manager-shell [data-game-shell] [data-screen="cafe-menu"] .demian-legal-links a { color:#e3d6be; }
+.manager-shell [data-game-shell] [data-screen="cafe-menu"] .demian-credit { border-top-color:#b8a07435; }
+.manager-shell [data-game-shell] [data-screen="cafe-menu"] .demian-credit p { margin:2px 0 -6px; }
+.manager-shell [data-game-shell] [data-screen="cafe-menu"] .demian-credit a { color:#f3d397; }
+@media (orientation:portrait) and (max-height:650px) {
+  .manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__showcase-copy small { display:none; }
+  .manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__portraits { inset-block-end:33px; }
+  .manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__actions .shell-button { min-height:44px; }
+}
+@media (orientation:portrait) and (max-height:570px) {
+  .manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__content { grid-template-rows:auto minmax(85px,1fr) auto auto auto; }
+  .manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__showcase { min-height:85px; }
+  .manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__showcase-kicker { display:none; }
+  .manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__portraits { inset-block-end:22px; }
+  .manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__showcase-copy { padding-block:4px; }
+  .manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__actions { grid-template-columns:repeat(6,minmax(0,1fr)); }
+  .manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__actions :is(.shell-button--primary,[data-shell-action="continue"]) { grid-column:span 3; padding-inline:7px; font-size:12px; }
+  .manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__actions :is([data-shell-action="leaderboard"],[data-shell-action="rewards"],.menu-character-button) { grid-column:span 2; }
+}
+@media (orientation:landscape) and (min-width:540px) {
+  .manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__content { width:min(100%,1040px); grid-template-columns:minmax(0,1.12fr) minmax(0,1fr); grid-template-rows:auto minmax(90px,1fr) auto auto; gap:var(--home-gap) clamp(12px,3vw,30px); }
+  .manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__content > :first-child { grid-column:1; grid-row:1; padding-inline:0; }
+  .manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__showcase { grid-column:1; grid-row:2/5; }
+  .manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__actions { grid-column:2; grid-row:1/3; grid-template-columns:repeat(2,minmax(0,1fr)); align-content:center; }
+  .manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__actions [data-shell-action="settings"] { position:relative; inset:auto; width:100%; height:auto; border-radius:13px; padding:5px 7px; }
+  .manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__actions [data-shell-action="settings"] > span { position:static; width:auto; height:auto; margin:0; overflow:visible; clip-path:none; white-space:normal; }
+  .manager-shell [data-game-shell] [data-screen="cafe-menu"] .demian-legal-links { grid-column:2; grid-row:3; }
+  .manager-shell [data-game-shell] [data-screen="cafe-menu"] .demian-credit { grid-column:2; grid-row:4; }
+}
+@media (orientation:landscape) and (max-height:480px) {
+  .manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__actions .shell-button { min-height:44px; }
+}
+@media (prefers-reduced-motion:reduce) {
+  .manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__portrait img { animation:none !important; transition:none !important; }
+}
 </style>
 
     <style id="demian-shell-viewport" data-shell-layout="safe-navigation-v1">
@@ -590,9 +660,9 @@
                         </div>
                         <button type="button" data-sidebar-toggle class="cafe-menu__showcase" aria-label="نمایش مجموعه و انتخاب کاراکتر">
                             <span class="cafe-menu__showcase-copy">
-                                <span class="cafe-menu__showcase-kicker">YOUR CAST</span>
-                                <strong>قهرمان این داستان تویی</strong>
-                                <small>شخصیتت را انتخاب کن و وارد کافه شو</small>
+                                <span class="cafe-menu__showcase-kicker">شخصیت‌های دمیان</span>
+                                <strong>قصهٔ تو از اینجا شروع می‌شود</strong>
+                                <small>برای انتخاب شخصیت لمس کن</small>
                             </span>
                             <span class="cafe-menu__portraits" aria-hidden="true">
                                 <span class="cafe-menu__portrait cafe-menu__portrait--darya"><img src="assets/characters/darya/darya-preview-v14.png" alt="" width="128" height="128" loading="lazy" decoding="async" fetchpriority="low"></span>
@@ -605,7 +675,7 @@
                                 <span>انتخاب بازی</span><b aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M19 12H5m7-7-7 7 7 7"/></svg></b>
                             </button>
                             <button type="button" data-shell-action="continue" class="shell-button">
-                                <span>ورود سریع به Open World</span><b aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m8 5 12 7-12 7z"/></svg></b>
+                                <span>ورود به دنیای باز</span><b aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m8 5 12 7-12 7z"/></svg></b>
                             </button>
                             <button type="button" data-shell-action="settings" class="shell-button shell-button--ghost">
                                 <span>تنظیمات</span><b aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="3"/><path d="M12 2v3m0 14v3M2 12h3m14 0h3M5 5l2 2m10 10 2 2M5 19l2-2M17 7l2-2"/></svg></b>

@@ -76,8 +76,17 @@ try {
         assert.deepEqual([...((await iconResponse.body()).subarray(0, 8))], [137, 80, 78, 71, 13, 10, 26, 10]);
         const credit = page.locator('[data-creator-link]');
         await page.evaluate(() => document.fonts.ready);
-        await page.locator('style[data-welcome-layout="viewport-v4"][data-welcome-design="editorial-bento-v1"]').count().then(count => assert.equal(count, 1));
+        await page.locator('style[data-welcome-layout="viewport-v5"][data-welcome-design="cinematic-cafe-v1"]').count().then(count => assert.equal(count, 1));
         await page.waitForFunction(() => document.querySelector('[data-screen="cafe-menu"]')?.dataset.screenState === 'active', null, { timeout: 15000 });
+        assert.equal(await menu.locator('.cafe-menu__portrait img').count(), 3);
+        await page.waitForFunction(() => [...document.querySelectorAll('.cafe-menu__portrait img')].every(img => img.complete && img.naturalWidth > 0));
+        const scene = await menu.locator('.cafe-menu__showcase').evaluate(el => getComputedStyle(el).backgroundImage);
+        assert.ok(scene.includes('cafe-runner-v1/interior.webp'));
+        const world = await menu.locator('[data-shell-action="continue"]').evaluate(el => getComputedStyle(el).backgroundImage);
+        assert.ok(world.includes('demian-fbx/polished-v1/preview.webp'));
+        await page.emulateMedia({ reducedMotion: 'reduce' });
+        assert.equal(await menu.locator('.cafe-menu__portrait img').first().evaluate(el => getComputedStyle(el).animationName), 'none');
+        await page.emulateMedia({ reducedMotion: 'no-preference' });
         const geometry = await page.evaluate(() => {
             const link = document.querySelector('[data-creator-link]').getBoundingClientRect();
             const parent = document.querySelector('[data-project-credit]').getBoundingClientRect();
