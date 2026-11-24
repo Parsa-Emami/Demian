@@ -167,6 +167,20 @@
         @media (prefers-reduced-motion:reduce) {
         .manager-shell [data-game-shell] [data-screen="cafe-menu"] :is(button,a,[data-menu-reveal]) { animation:none; transition:none; }
         }
+            @media (orientation:portrait) and (max-height:560px) {
+            .manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__content { gap:4px; }
+            .manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__title { font-size:clamp(34px,11vw,48px); }
+            .manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__showcase { min-height:60px; padding-block:5px; }
+            .manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__portrait { max-width:34px; }
+            .manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__actions .shell-button--primary,
+            .manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__actions .shell-button[data-shell-action="continue"] { grid-column:auto; }
+            .manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__actions .shell-button { min-height:48px; padding:4px 7px; font-size:12px; }
+            .manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__actions .shell-button b { flex:none; }
+        }
+        .manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__actions .shell-button,
+        .manager-shell [data-game-shell] [data-screen="cafe-menu"] .demian-credit a { min-height:48px; box-sizing:border-box; }
+        .manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__content [data-menu-reveal] { transform:none !important; opacity:1 !important; }
+        .manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__actions .shell-button:not(:active) { transform:none; }
     </style>
 @endverbatim
 </head>

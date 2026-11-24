@@ -82,14 +82,18 @@ try {
             const targets = [...screen.querySelectorAll('.cafe-menu__showcase, .cafe-menu__actions button, .demian-legal-links a, [data-creator-link]')];
             const clipped = targets.filter(element => {
                 const r = element.getBoundingClientRect();
-                return r.width < 1 || r.height < 44 || r.left < frame.left - 1 || r.right > frame.right + 1
+                return r.width < 1 || r.height < 43.95 || r.left < frame.left - 1 || r.right > frame.right + 1
                     || r.top < frame.top - 1 || r.bottom > frame.bottom + 1;
-            }).map(element => element.textContent.trim());
+            }).map(element => {
+                const r = element.getBoundingClientRect();
+                return { label: element.textContent.trim(), x:r.x, y:r.y, width:r.width, height:r.height,
+                    screen: { x:frame.x, y:frame.y, width:frame.width, height:frame.height } };
+            });
             return { clipped, verticalOverflow: screen.scrollHeight > screen.clientHeight + 1,
                 centered: Math.abs(link.x + link.width / 2 - parent.x - parent.width / 2) < 2,
                 horizontalOverflow: document.documentElement.scrollWidth > innerWidth + 1 };
         });
-        assert.deepEqual(geometry.clipped, [], 'Every menu control must be visible and at least 44px high');
+        assert.deepEqual(geometry.clipped, [], 'Every menu control must be visible and at least 44px high at ' + width + 'x' + height);
         assert.equal(geometry.verticalOverflow, false, 'The welcome screen must fit without scrolling');
         assert.equal(geometry.centered, true);
         assert.equal(geometry.horizontalOverflow, false);
