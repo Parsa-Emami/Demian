@@ -148,3 +148,16 @@ test('offline game packs include versioned game chunks and their shared dependen
     delete vite['resources/js/game/games/' + names['open-world']];
     assert.throws(() => splitOfflineModules(vite), /Missing offline game chunk/);
 });
+
+test('offline manager is mounted in the library scroll owner, never as an overlapping screen sibling', () => {
+    const manager = readFileSync(new URL('../../../resources/js/game/performance/PwaOfflineManager.js', import.meta.url), 'utf8');
+    assert.match(manager, /const host = screen\?\.querySelector\('\.shell-page'\)/);
+    assert.match(manager, /host\.append\(this\.panel\)/);
+    assert.doesNotMatch(manager, /screen\.append\(this\.panel\)/);
+    for (const path of ['../../../resources/views/demian.blade.php', '../../../../playable/index.html']) {
+        const html = readFileSync(new URL(path, import.meta.url), 'utf8');
+        assert.match(html, /\.shell-page > \.demian-offline-manager\s*\{/);
+        assert.match(html, /grid-template-rows:minmax\(0,1fr\) minmax\(0,30%\)/);
+        assert.match(html, /grid-row:2; align-self:stretch; overflow:auto/);
+    }
+});

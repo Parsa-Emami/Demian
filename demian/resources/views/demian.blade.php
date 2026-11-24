@@ -286,7 +286,32 @@
             .manager-shell [data-game-shell] [data-shell-nav-header] h2 { font-size:19px; }
             .manager-shell [data-game-shell] [data-shell-nav-header] > div > p:last-child:not(.shell-kicker) { font-size:11px; }
         }
-    </style>
+    
+        /* Offline tools are normal flow content, after the complete game grid.
+           Keep the legacy direct-child placement safe during cached rollovers. */
+        .manager-shell [data-game-shell] [data-screen="game-selection"] .demian-offline-manager {
+            box-sizing:border-box; position:static; z-index:auto; inset:auto;
+            width:100%; max-width:100%; min-width:0; min-height:0;
+            margin:16px 0 0; transform:none; pointer-events:auto; overflow-wrap:anywhere;
+        }
+        .manager-shell [data-game-shell] [data-screen="game-selection"] .shell-page > .demian-offline-manager {
+            display:block; overflow:visible; max-height:none; clear:both;
+        }
+        .manager-shell [data-game-shell] [data-screen="game-selection"] .game-grid {
+            position:relative; min-width:0; max-width:100%;
+        }
+        .manager-shell [data-game-shell] [data-screen="game-selection"] :is([data-game-launch],[data-offline-download],[data-offline-remove]) {
+            scroll-margin-block:10px;
+        }
+        .manager-shell [data-game-shell] [data-screen="game-selection"]:has(> .demian-offline-manager):not([hidden]) {
+            grid-template-rows:minmax(0,1fr) minmax(0,30%);
+            gap:8px;
+        }
+        .manager-shell [data-game-shell] [data-screen="game-selection"] > .demian-offline-manager {
+            grid-row:2; align-self:stretch; overflow:auto; margin:0; max-height:100%;
+            overscroll-behavior:contain; touch-action:pan-y;
+        }
+</style>
 @endverbatim
 </head>
 

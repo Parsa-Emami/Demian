@@ -123,6 +123,14 @@ jobs:
           run-id: 44022430672
           github-token: ${{ github.token }}
           path: ${{ runner.temp }}/loading-baseline
+      - name: Offline manager and all seven game controls — early pointer hit-test
+        run: timeout --signal=TERM --kill-after=10s 180s node tools/check_offline_manager_layout.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: offline-manager-layout-${{ github.sha }}
+          path: demian/docs/offline-manager-layout/
+          if-no-files-found: warn
       - name: Three-second loading budget for every game, environment and character
         run: |
           set -euo pipefail
