@@ -455,6 +455,29 @@ export default class CharacterManagerUI {
         const latinName = parts[0] ?? fullName;
         const localizedName = parts[1] ?? latinName;
 
+        const lobby = this.root.querySelector('[data-screen="cafe-menu"]');
+        const avatar = lobby?.querySelector('[data-lobby-active-avatar]');
+        const lobbyName = lobby?.querySelector('[data-lobby-active-name]');
+        const slug = String(record.slug ?? '').trim().toLowerCase();
+        const builtin = BUILTIN_CHARACTER_SLUGS.includes(slug);
+        if (lobbyName) {
+            lobbyName.textContent = builtin ? localizedName : 'شخصیتت را انتخاب کن';
+        }
+        if (avatar && builtin) {
+            const url = builtinCharacterPreviewUrl(slug);
+            if (avatar.src !== url) avatar.src = url;
+            avatar.dataset.lobbyActiveSlug = slug;
+        } else if (avatar) {
+            const url = builtinCharacterPreviewUrl('darya');
+            if (avatar.src !== url) avatar.src = url;
+            delete avatar.dataset.lobbyActiveSlug;
+        }
+        const support = ['negar', 'tiam', 'darya', 'arsal'].filter(value => value !== (builtin ? slug : 'darya'));
+        lobby?.querySelectorAll('[data-lobby-support-avatar]').forEach((image, index) => {
+            const url = builtinCharacterPreviewUrl(support[index]);
+            if (image.src !== url) image.src = url;
+        });
+
         this.activeNameElements.forEach((element) => {
             element.textContent = fullName;
         });
