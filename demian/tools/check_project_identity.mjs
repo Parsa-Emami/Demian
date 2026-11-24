@@ -41,7 +41,7 @@ try {
     const text = await (await fetch(`${base}llms.txt`)).text();
     assert.ok(text.includes('Parsa Emami') && text.includes('https://www.linkedin.com/in/parsaaemm/'));
     assert.equal(/cost|estimate|5,000|10,000/i.test(text), false);
-    for (const [width, height] of [[320, 568], [390, 844], [844, 390], [1440, 900]]) {
+    for (const [width, height] of [[320, 480], [320, 568], [360, 640], [390, 844], [430, 932], [667, 375], [844, 390], [768, 1024], [1440, 900]]) {
         const context = await browser.newContext({ viewport: { width, height }, isMobile: width < 1000, hasTouch: width < 1000 });
         const page = await context.newPage();
         const errors = [];
@@ -73,13 +73,24 @@ try {
         assert.match(iconResponse.headers()['content-type'], /^image\/png/);
         assert.deepEqual([...((await iconResponse.body()).subarray(0, 8))], [137, 80, 78, 71, 13, 10, 26, 10]);
         const credit = page.locator('[data-creator-link]');
-        await credit.scrollIntoViewIfNeeded();
+        await page.evaluate(() => document.fonts.ready);
         const geometry = await page.evaluate(() => {
             const link = document.querySelector('[data-creator-link]').getBoundingClientRect();
             const parent = document.querySelector('[data-project-credit]').getBoundingClientRect();
-            return { centered: Math.abs(link.x + link.width / 2 - parent.x - parent.width / 2) < 2,
+            const screen = document.querySelector('[data-screen="cafe-menu"]');
+            const frame = screen.getBoundingClientRect();
+            const targets = [...screen.querySelectorAll('.cafe-menu__showcase, .cafe-menu__actions button, .demian-legal-links a, [data-creator-link]')];
+            const clipped = targets.filter(element => {
+                const r = element.getBoundingClientRect();
+                return r.width < 1 || r.height < 44 || r.left < frame.left - 1 || r.right > frame.right + 1
+                    || r.top < frame.top - 1 || r.bottom > frame.bottom + 1;
+            }).map(element => element.textContent.trim());
+            return { clipped, verticalOverflow: screen.scrollHeight > screen.clientHeight + 1,
+                centered: Math.abs(link.x + link.width / 2 - parent.x - parent.width / 2) < 2,
                 horizontalOverflow: document.documentElement.scrollWidth > innerWidth + 1 };
         });
+        assert.deepEqual(geometry.clipped, [], 'Every menu control must be visible and at least 44px high');
+        assert.equal(geometry.verticalOverflow, false, 'The welcome screen must fit without scrolling');
         assert.equal(geometry.centered, true);
         assert.equal(geometry.horizontalOverflow, false);
         assert.equal(/برآورد|هزینه|Software Engineer/.test(await page.locator('[data-screen="cafe-menu"]').innerText()), false);
@@ -91,7 +102,7 @@ try {
         // made this identity-only CI check intermittently exceed 180 seconds.
         assert.equal(await credit.getAttribute('target'), '_blank');
         assert.match(await credit.getAttribute('rel'), /noopener/);
-        if (width === 320) {
+        if (width === 320 && height === 568) {
             await context.route('https://parsaaemm.dev/', route => route.fulfill({
                 status: 200, contentType: 'text/html', body: '<title>Portfolio navigation target</title>',
             }));
