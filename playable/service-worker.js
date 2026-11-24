@@ -3,7 +3,7 @@
  * requests. Only same-release *complete* core + game packs serve offline.
  * Do not skipWaiting during gameplay; the menu explicitly accepts updates.
  */
-const RELEASE_ID = '487f6ba200b37475';
+const RELEASE_ID = 'dcab5b3c6c0c78b1';
 const PREFIX = 'demian-offline-v1-';
 const CACHE_NAME = PREFIX + RELEASE_ID;
 const CORE_PREFIX = 'demian-core-v1-';
@@ -119,7 +119,7 @@ async function removeGame(id) {
 
 self.addEventListener('install', event => {
     event.waitUntil(caches.open(CACHE_NAME).then(cache =>
-        cache.addAll([offlineURL, manifestURL, ...iconURLs, ...legalURLs])));
+        cache.addAll([offlineURL, manifestURL, ...iconURLs, ...legalURLs].map(url => new Request(url, { cache: 'no-store', credentials: 'omit' })))));
     // A waiting worker never activates in the middle of a game.
 });
 self.addEventListener('activate', event => {
