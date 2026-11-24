@@ -87,7 +87,7 @@
 }
 .manager-shell [data-game-shell] .shell-network-status:not([hidden]) {
     position: absolute;
-    z-index: var(--layer-shell-toast, 160);
+    z-index: var(--z-shell-toast);
     inset-inline: max(10px, env(safe-area-inset-left)) max(10px, env(safe-area-inset-right));
     inset-block-start: max(62px, calc(env(safe-area-inset-top) + 52px));
     max-inline-size: min(500px, calc(100% - 20px));

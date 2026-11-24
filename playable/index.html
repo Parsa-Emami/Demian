@@ -251,7 +251,7 @@
         .manager-shell [data-game-shell] [data-screen="leaderboard"] > .shell-modal { width:min(520px,100%); }
         .manager-shell [data-game-shell] [data-screen="coupon-wallet"] > .shell-modal { width:min(700px,100%); }
         .manager-shell [data-game-shell] :is([data-screen="game-selection"],[data-screen="settings"],[data-screen="leaderboard"],[data-screen="coupon-wallet"]) [data-shell-nav-header] {
-            box-sizing:border-box; position:sticky; inset-block-start:0; z-index:20;
+            box-sizing:border-box; position:sticky; inset-block-start:0; z-index:var(--z-local-sticky);
             display:flex; align-items:center; justify-content:space-between; flex-wrap:nowrap;
             gap:10px; min-width:0; margin:0 -14px 12px; padding:10px 14px;
             background:#182920; border-bottom:1px solid #536b49;
@@ -298,6 +298,25 @@
             grid-row:2; align-self:stretch; overflow:auto; margin:0; max-height:100%;
             overscroll-behavior:contain; touch-action:pan-y;
         }
+
+        /* Keep old, cached PWA controller bundles safe during version rollover. */
+        [data-pwa-update-host]:empty { display:none; }
+        [data-pwa-update-host] .demian-pwa-update {
+            position:static; inset:auto; z-index:auto; box-sizing:border-box;
+            width:100%; max-width:100%; margin:0 0 12px; flex-wrap:wrap;
+            pointer-events:auto; box-shadow:none;
+        }
+        [data-pwa-update-host] .demian-pwa-update button { min-width:44px; min-height:44px; }
+        [data-pwa-update-ready="true"] { outline:2px solid #f0d38c; outline-offset:-3px; }
+        
+/* Global notice contract: passive status never owns a pointer hit.
+   Actionable notices must be mounted in a screen's natural layout;
+   real modal layers still own focus, inertness and pointer interaction. */
+:is([data-ui-notice="passive"], .shell-toast-host, .shell-toast, .arcade-toast, .shell-network-status),
+:is([data-ui-notice="passive"], .shell-toast-host, .shell-toast, .arcade-toast, .shell-network-status) * {
+    pointer-events: none !important;
+}
+
 </style>
 </head>
 
@@ -535,7 +554,7 @@
 
 
             <div data-game-shell data-ui-layer="shell" class="game-shell absolute inset-0" dir="rtl">
-                <div data-shell-toast-host data-ui-layer="shell-toast" class="shell-toast-host" aria-live="polite" aria-atomic="false"></div>
+                <div data-shell-toast-host data-ui-notice="passive" data-ui-layer="shell-toast" class="shell-toast-host" aria-live="polite" aria-atomic="false"></div>
                  <p data-shell-announcer class="sr-only" role="status" aria-live="polite" aria-atomic="true"></p>
 
                 <section
@@ -655,6 +674,7 @@
                             </div>
                             <button type="button" data-shell-action="back-cafe" class="shell-icon-button" aria-label="بازگشت به منوی کافه">×</button>
                         </header>
+                        <div data-pwa-update-host></div>
                         <div class="game-library-toolbar">
                             <span class="game-library-toolbar__hint" data-game-library-count>۷ بازی برای انتخاب</span>
                             <div class="scroll-rail-controls" aria-label="پیمایش کتابخانه بازی">
@@ -1174,6 +1194,17 @@
             if (document.querySelector('meta[name="demian-static-release"]')
                 ?.getAttribute('content') !== 'true') return;
             const root = document.querySelector('[data-character-manager]');
+            const updateHost = root?.querySelector('[data-pwa-update-host]');
+            if (updateHost && typeof MutationObserver === 'function') {
+                const moveLegacyNotice = () => {
+                    for (const node of document.querySelectorAll('body > .demian-pwa-update')) {
+                        updateHost.append(node);
+                    }
+                };
+                moveLegacyNotice();
+                const observer = new MutationObserver(moveLegacyNotice);
+                observer.observe(document.body, { childList: true });
+            }
             const menu = root?.querySelector('[data-screen="cafe-menu"]');
             const boot = root?.querySelector('[data-screen="boot"]');
             if (!root || !menu || !boot) return;

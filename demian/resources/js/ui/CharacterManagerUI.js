@@ -1,3 +1,4 @@
+import { UI_LAYER, assignUiLayer } from '../game/ui/UiLayer.js';
 import CharacterPreviewRenderer from './CharacterPreviewRenderer.js';
 import release from '../../../package.json' with { type: 'json' };
 import { BUILTIN_CHARACTER_SLUGS, builtinCharacterPreviewUrl } from '../game/characters/CharacterVisualContract.js';
@@ -513,6 +514,9 @@ export default class CharacterManagerUI {
         const toast = document.createElement('div');
         toast.className = danger ? 'arcade-toast is-danger' : 'arcade-toast';
         toast.textContent = message;
+        toast.dataset.uiNotice = 'passive';
+        toast.setAttribute('role', danger ? 'alert' : 'status');
+        assignUiLayer(toast, UI_LAYER.TOAST);
         document.body.appendChild(toast);
 
         requestAnimationFrame(() => toast.classList.add('is-visible'));

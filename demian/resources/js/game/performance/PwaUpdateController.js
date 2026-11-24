@@ -32,27 +32,38 @@ export default function registerDemianPwa({
         const offline = new PwaOfflineManager({ app, registration, documentRef, navigatorRef,
             windowRef: globalThis.window });
         void offline.mount().catch(error => console.warn('Offline pack UI unavailable:', error));
+        // An actionable notice belongs to an explicit, scrollable screen.
+        // It must never be a body-level overlay or a competing grid child.
+        const host = documentRef.querySelector('[data-pwa-update-host]');
+        const entry = documentRef.querySelector('[data-screen="cafe-menu"] [data-shell-action="play"]');
         let toast = null;
-        const cleanToast = () => { toast?.remove(); toast = null; };
+        const cleanToast = () => {
+            toast?.remove(); toast = null;
+            entry?.removeAttribute('data-pwa-update-ready');
+        };
         const showUpdate = () => {
-            if (!registration.waiting || !safeToReload() || toast) return;
+            if (!host || !registration.waiting || !safeToReload() || toast) return;
             toast = documentRef.createElement('aside');
             toast.className = 'demian-pwa-update';
-            toast.setAttribute('role', 'status');
+            toast.dataset.uiNotice = 'inline-action';
+            toast.setAttribute('role', 'group');
             toast.setAttribute('aria-label', 'به‌روزرسانی دمیان');
             const text = documentRef.createElement('span');
+            text.setAttribute('role', 'status');
             text.textContent = 'نسخهٔ جدید دمیان آماده است.';
             const button = documentRef.createElement('button');
             button.type = 'button';
             button.textContent = 'به‌روزرسانی';
             button.addEventListener('click', () => {
-                if (!safeToReload() || !registration.waiting) return;
+                if (!safeToReload() || !registration.waiting || offline.busy || accepted
+                    || toast?.closest('[hidden], [inert], [aria-hidden="true"]')) return;
                 accepted = true;
                 button.disabled = true;
                 registration.waiting.postMessage({ type: 'DEMIAN_ACTIVATE_UPDATE' });
             });
             toast.append(text, button);
-            documentRef.body.append(toast);
+            host.append(toast);
+            entry?.setAttribute('data-pwa-update-ready', 'true');
         };
         const onSession = () => {
             if (reloadPending && safeToReload()) {
