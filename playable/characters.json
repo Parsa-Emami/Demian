@@ -61,36 +61,6 @@
       }
     },
     {
-      "id": "builtin-negar",
-      "name": "NEGAR / نگار",
-      "slug": "negar",
-      "is_builtin": true,
-      "is_active": false,
-      "sprite_url": "assets/characters/negar/negar-spritesheet-v14-mobile.png",
-      "atlas_url": "assets/characters/negar/negar-atlas-v14-mobile.json",
-      "settings": {
-        "scale": 1,
-        "walk_speed": 3.55,
-        "run_speed": 6.9,
-        "jump_force": 6.8
-      }
-    },
-    {
-      "id": "builtin-dandelox",
-      "name": "DANDELOX / دندلاکس",
-      "slug": "dandelox",
-      "is_builtin": true,
-      "is_active": false,
-      "sprite_url": "assets/characters/dandelox/dandelox-spritesheet-v14-mobile.png",
-      "atlas_url": "assets/characters/dandelox/dandelox-atlas-v14-mobile.json",
-      "settings": {
-        "scale": 1,
-        "walk_speed": 3.55,
-        "run_speed": 6.9,
-        "jump_force": 6.8
-      }
-    },
-    {
       "id": "builtin-tiam",
       "name": "TIAM / تیام",
       "slug": "tiam",
@@ -158,6 +128,51 @@
       "is_active": false,
       "sprite_url": "assets/characters/arsal/arsal-spritesheet-v14-mobile.png",
       "atlas_url": "assets/characters/arsal/arsal-atlas-v14-mobile.json",
+      "settings": {
+        "scale": 1,
+        "walk_speed": 3.55,
+        "run_speed": 6.9,
+        "jump_force": 6.8
+      }
+    },
+    {
+      "id": "builtin-mobina",
+      "name": "MOBINA / مبینا",
+      "slug": "mobina",
+      "is_builtin": true,
+      "is_active": false,
+      "sprite_url": "assets/characters/mobina/mobina-spritesheet-v14-mobile.png",
+      "atlas_url": "assets/characters/mobina/mobina-atlas-v14-mobile.json",
+      "settings": {
+        "scale": 1,
+        "walk_speed": 3.55,
+        "run_speed": 6.9,
+        "jump_force": 6.8
+      }
+    },
+    {
+      "id": "builtin-negar",
+      "name": "NEGAR / نگار",
+      "slug": "negar",
+      "is_builtin": true,
+      "is_active": false,
+      "sprite_url": "assets/characters/negar/negar-spritesheet-v14-mobile.png",
+      "atlas_url": "assets/characters/negar/negar-atlas-v14-mobile.json",
+      "settings": {
+        "scale": 1,
+        "walk_speed": 3.55,
+        "run_speed": 6.9,
+        "jump_force": 6.8
+      }
+    },
+    {
+      "id": "builtin-dandelox",
+      "name": "DANDELOX / دندلاکس",
+      "slug": "dandelox",
+      "is_builtin": true,
+      "is_active": false,
+      "sprite_url": "assets/characters/dandelox/dandelox-spritesheet-v14-mobile.png",
+      "atlas_url": "assets/characters/dandelox/dandelox-atlas-v14-mobile.json",
       "settings": {
         "scale": 1,
         "walk_speed": 3.55,

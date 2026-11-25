@@ -6,12 +6,12 @@
       "_rolldown-runtime-B0lUwjiP.js"
     ]
   },
-  "_CafeGameRenderer2D-RPuYYx8h.js": {
-    "file": "assets/CafeGameRenderer2D-RPuYYx8h.js",
+  "_CafeGameRenderer2D-ioVHKrpK.js": {
+    "file": "assets/CafeGameRenderer2D-ioVHKrpK.js",
     "name": "CafeGameRenderer2D",
     "imports": [
       "_rolldown-runtime-B0lUwjiP.js",
-      "_PixelRenderQueue-D4u4rouo.js"
+      "_PixelRenderQueue-B1nxBAxl.js"
     ]
   },
   "_CafeWalkthroughPalette-BVh6XJAO.js": {
@@ -21,15 +21,15 @@
       "_rolldown-runtime-B0lUwjiP.js"
     ]
   },
-  "_CharacterVisualContract-CGKqBLom.js": {
-    "file": "assets/CharacterVisualContract-CGKqBLom.js",
+  "_CharacterVisualContract-CfhrR_e5.js": {
+    "file": "assets/CharacterVisualContract-CfhrR_e5.js",
     "name": "CharacterVisualContract",
     "imports": [
       "_rolldown-runtime-B0lUwjiP.js"
     ]
   },
-  "_PixelRenderQueue-D4u4rouo.js": {
-    "file": "assets/PixelRenderQueue-D4u4rouo.js",
+  "_PixelRenderQueue-B1nxBAxl.js": {
+    "file": "assets/PixelRenderQueue-B1nxBAxl.js",
     "name": "PixelRenderQueue",
     "imports": [
       "_rolldown-runtime-B0lUwjiP.js",
@@ -37,23 +37,23 @@
       "_CafeWalkthroughPalette-BVh6XJAO.js"
     ]
   },
-  "_RankedGameplayChallenge-D52UjOH7.js": {
-    "file": "assets/RankedGameplayChallenge-D52UjOH7.js",
+  "_RankedGameplayChallenge-y5heKD44.js": {
+    "file": "assets/RankedGameplayChallenge-y5heKD44.js",
     "name": "RankedGameplayChallenge",
     "imports": [
       "_rolldown-runtime-B0lUwjiP.js",
       "resources/js/app.js",
-      "_PixelRenderQueue-D4u4rouo.js"
+      "_PixelRenderQueue-B1nxBAxl.js"
     ]
   },
-  "_TouchInteractionLabel-GJSHprH1.js": {
-    "file": "assets/TouchInteractionLabel-GJSHprH1.js",
+  "_TouchInteractionLabel-D7MGxnIU.js": {
+    "file": "assets/TouchInteractionLabel-D7MGxnIU.js",
     "name": "TouchInteractionLabel",
     "imports": [
       "_rolldown-runtime-B0lUwjiP.js",
-      "_CharacterVisualContract-CGKqBLom.js",
+      "_CharacterVisualContract-CfhrR_e5.js",
       "resources/js/app.js",
-      "_PixelRenderQueue-D4u4rouo.js"
+      "_PixelRenderQueue-B1nxBAxl.js"
     ]
   },
   "_rolldown-runtime-B0lUwjiP.js": {
@@ -105,13 +105,13 @@
     "src": "resources/fonts/vazirmatn-latin-900-normal.woff2"
   },
   "resources/js/app.js": {
-    "file": "assets/app-B6jOsJLj.js",
+    "file": "assets/app-D_gQidEQ.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true,
     "imports": [
       "_rolldown-runtime-B0lUwjiP.js",
-      "_CharacterVisualContract-CGKqBLom.js"
+      "_CharacterVisualContract-CfhrR_e5.js"
     ],
     "dynamicImports": [
       "resources/js/game/games/open-world/OpenWorldGame.js",
@@ -124,7 +124,7 @@
       "resources/js/game/performance/PwaUpdateController.js"
     ],
     "css": [
-      "assets/app-DTtQrnuT.css"
+      "assets/app-DBIhNmfP.css"
     ],
     "assets": [
       "assets/vazirmatn-arabic-400-normal-DMZFCm7K.woff2",
@@ -136,7 +136,7 @@
     ]
   },
   "resources/js/game/games/after-hours/AfterHoursGame.js": {
-    "file": "assets/AfterHoursGame-DFa2rg6c.js",
+    "file": "assets/AfterHoursGame-Cz22lkPI.js",
     "name": "AfterHoursGame",
     "src": "resources/js/game/games/after-hours/AfterHoursGame.js",
     "isDynamicEntry": true,
@@ -145,29 +145,29 @@
       "resources/js/app.js",
       "_CafeWalkthroughPalette-BVh6XJAO.js",
       "_CafeCueAudio-CnkMuVoO.js",
-      "_PixelRenderQueue-D4u4rouo.js",
-      "_RankedGameplayChallenge-D52UjOH7.js",
-      "_CafeGameRenderer2D-RPuYYx8h.js",
-      "_TouchInteractionLabel-GJSHprH1.js"
+      "_PixelRenderQueue-B1nxBAxl.js",
+      "_RankedGameplayChallenge-y5heKD44.js",
+      "_CafeGameRenderer2D-ioVHKrpK.js",
+      "_TouchInteractionLabel-D7MGxnIU.js"
     ]
   },
   "resources/js/game/games/cafe-critters/CafeCrittersGame.js": {
-    "file": "assets/CafeCrittersGame-BS2RIeD8.js",
+    "file": "assets/CafeCrittersGame-CKL018C-.js",
     "name": "CafeCrittersGame",
     "src": "resources/js/game/games/cafe-critters/CafeCrittersGame.js",
     "isDynamicEntry": true,
     "imports": [
       "_rolldown-runtime-B0lUwjiP.js",
-      "_CharacterVisualContract-CGKqBLom.js",
+      "_CharacterVisualContract-CfhrR_e5.js",
       "resources/js/app.js",
       "_CafeWalkthroughPalette-BVh6XJAO.js",
       "_CafeCueAudio-CnkMuVoO.js",
-      "_PixelRenderQueue-D4u4rouo.js",
-      "_CafeGameRenderer2D-RPuYYx8h.js"
+      "_PixelRenderQueue-B1nxBAxl.js",
+      "_CafeGameRenderer2D-ioVHKrpK.js"
     ]
   },
   "resources/js/game/games/cafe-drift/CafeDriftGame.js": {
-    "file": "assets/CafeDriftGame-C1JLAnQB.js",
+    "file": "assets/CafeDriftGame-BX54OeDp.js",
     "name": "CafeDriftGame",
     "src": "resources/js/game/games/cafe-drift/CafeDriftGame.js",
     "isDynamicEntry": true,
@@ -182,7 +182,7 @@
     ]
   },
   "resources/js/game/games/cafe-rush/CafeRushGame.js": {
-    "file": "assets/CafeRushGame-ByRUtmow.js",
+    "file": "assets/CafeRushGame-CxwFQGPu.js",
     "name": "CafeRushGame",
     "src": "resources/js/game/games/cafe-rush/CafeRushGame.js",
     "isDynamicEntry": true,
@@ -191,14 +191,14 @@
       "resources/js/app.js",
       "_CafeWalkthroughPalette-BVh6XJAO.js",
       "_CafeCueAudio-CnkMuVoO.js",
-      "_PixelRenderQueue-D4u4rouo.js",
-      "_RankedGameplayChallenge-D52UjOH7.js",
-      "_CafeGameRenderer2D-RPuYYx8h.js",
-      "_TouchInteractionLabel-GJSHprH1.js"
+      "_PixelRenderQueue-B1nxBAxl.js",
+      "_RankedGameplayChallenge-y5heKD44.js",
+      "_CafeGameRenderer2D-ioVHKrpK.js",
+      "_TouchInteractionLabel-D7MGxnIU.js"
     ]
   },
   "resources/js/game/games/coffee-crash/CoffeeCrashGame.js": {
-    "file": "assets/CoffeeCrashGame-B6Bbg7Uo.js",
+    "file": "assets/CoffeeCrashGame-DN9aeqTI.js",
     "name": "CoffeeCrashGame",
     "src": "resources/js/game/games/coffee-crash/CoffeeCrashGame.js",
     "isDynamicEntry": true,
@@ -207,38 +207,38 @@
       "resources/js/app.js",
       "_CafeWalkthroughPalette-BVh6XJAO.js",
       "_CafeCueAudio-CnkMuVoO.js",
-      "_PixelRenderQueue-D4u4rouo.js",
-      "_CafeGameRenderer2D-RPuYYx8h.js"
+      "_PixelRenderQueue-B1nxBAxl.js",
+      "_CafeGameRenderer2D-ioVHKrpK.js"
     ]
   },
   "resources/js/game/games/dino-run/DinoRunGame.js": {
-    "file": "assets/DinoRunGame-BSbM9PBP.js",
+    "file": "assets/DinoRunGame-HrDV2vRL.js",
     "name": "DinoRunGame",
     "src": "resources/js/game/games/dino-run/DinoRunGame.js",
     "isDynamicEntry": true,
     "imports": [
       "_rolldown-runtime-B0lUwjiP.js",
-      "_CharacterVisualContract-CGKqBLom.js",
+      "_CharacterVisualContract-CfhrR_e5.js",
       "resources/js/app.js",
       "_CafeWalkthroughPalette-BVh6XJAO.js"
     ]
   },
   "resources/js/game/games/open-world/OpenWorldGame.js": {
-    "file": "assets/OpenWorldGame-mt28iNAP.js",
+    "file": "assets/OpenWorldGame-DHs1t2-x.js",
     "name": "OpenWorldGame",
     "src": "resources/js/game/games/open-world/OpenWorldGame.js",
     "isDynamicEntry": true,
     "imports": [
       "_rolldown-runtime-B0lUwjiP.js",
-      "_CharacterVisualContract-CGKqBLom.js",
+      "_CharacterVisualContract-CfhrR_e5.js",
       "resources/js/app.js",
       "_CafeWalkthroughPalette-BVh6XJAO.js",
-      "_PixelRenderQueue-D4u4rouo.js",
-      "_TouchInteractionLabel-GJSHprH1.js"
+      "_PixelRenderQueue-B1nxBAxl.js",
+      "_TouchInteractionLabel-D7MGxnIU.js"
     ]
   },
   "resources/js/game/performance/PwaUpdateController.js": {
-    "file": "assets/PwaUpdateController-B29-939B.js",
+    "file": "assets/PwaUpdateController-aqVh2892.js",
     "name": "PwaUpdateController",
     "src": "resources/js/game/performance/PwaUpdateController.js",
     "isDynamicEntry": true,

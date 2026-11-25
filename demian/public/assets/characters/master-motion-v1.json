@@ -146,36 +146,6 @@
       "identityContract": "assets/characters/elaheh/manifests/elaheh_identity_contract.json"
     },
     {
-      "slug": "negar",
-      "displayName": "NEGAR / نگار",
-      "family": "female-base-v1",
-      "packVersion": 14,
-      "defaultActive": false,
-      "skin": "negar",
-      "accessories": [],
-      "identityContract": "assets/characters/negar/manifests/negar_identity_contract.json"
-    },
-    {
-      "slug": "dandelox",
-      "displayName": "DANDELOX / دندلاکس",
-      "family": "female-base-v1",
-      "packVersion": 14,
-      "defaultActive": false,
-      "skin": "dandelox",
-      "accessories": [
-        {
-          "kind": "black-cat",
-          "anchor": "ground",
-          "offset": [
-            -0.3,
-            0
-          ],
-          "collision": "cosmetic"
-        }
-      ],
-      "identityContract": "assets/characters/dandelox/manifests/dandelox_identity_contract.json"
-    },
-    {
       "slug": "tiam",
       "displayName": "TIAM / تیام",
       "family": "female-base-v1",
@@ -242,6 +212,46 @@
       "skin": "arsal",
       "accessories": [],
       "identityContract": "assets/characters/arsal/manifests/arsal_identity_contract.json"
+    },
+    {
+      "slug": "mobina",
+      "displayName": "MOBINA / مبینا",
+      "family": "female-base-v1",
+      "packVersion": 14,
+      "defaultActive": false,
+      "skin": "mobina",
+      "accessories": [],
+      "identityContract": "assets/characters/mobina/manifests/mobina_identity_contract.json"
+    },
+    {
+      "slug": "negar",
+      "displayName": "NEGAR / نگار",
+      "family": "female-base-v1",
+      "packVersion": 14,
+      "defaultActive": false,
+      "skin": "negar",
+      "accessories": [],
+      "identityContract": "assets/characters/negar/manifests/negar_identity_contract.json"
+    },
+    {
+      "slug": "dandelox",
+      "displayName": "DANDELOX / دندلاکس",
+      "family": "female-base-v1",
+      "packVersion": 14,
+      "defaultActive": false,
+      "skin": "dandelox",
+      "accessories": [
+        {
+          "kind": "black-cat",
+          "anchor": "ground",
+          "offset": [
+            -0.3,
+            0
+          ],
+          "collision": "cosmetic"
+        }
+      ],
+      "identityContract": "assets/characters/dandelox/manifests/dandelox_identity_contract.json"
     },
     {
       "slug": "iman",
@@ -324,5 +334,5 @@
       "identityContract": "assets/characters/mahyar/manifests/mahyar_identity_contract.json"
     }
   ],
-  "sourceSha256": "c55ca55fa56b25e1ebc7f8fefbe154a3ba8da179af68821325e7fce1ec21d9bb"
+  "sourceSha256": "9b609f6f2b8d77cdb3d1f949bc8d9b50f0a5f658e17fe64d179026443609c47b"
 }

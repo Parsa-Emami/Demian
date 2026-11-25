@@ -9,7 +9,7 @@ import { BUILTIN_CHARACTER_SLUGS } from '../../resources/js/game/characters/Char
 
 test('runtime characters resolve explicit immutable families and cosmetics', () => {
     assert.deepEqual(MOTION_CHARACTERS.map(entry => entry.slug), BUILTIN_CHARACTER_SLUGS);
-    assert.equal(MOTION_CHARACTERS.filter(entry => entry.family === 'female-base-v1').length, 9);
+    assert.equal(MOTION_CHARACTERS.filter(entry => entry.family === 'female-base-v1').length, 10);
     assert.equal(MOTION_CHARACTERS.filter(entry => entry.family === 'male-base-v1').length, 10);
     assert(Object.isFrozen(MASTER_MOTION.families));
     assert.equal(motionCharacter('TIAM').family, 'female-base-v1');
@@ -17,6 +17,7 @@ test('runtime characters resolve explicit immutable families and cosmetics', () 
     assert.equal(motionCharacter('sorkhi').family, 'male-base-v1');
     assert.equal(motionCharacter('yalda').family, motionCharacter('darya').family);
     assert.equal(motionCharacter('elaheh').family, motionCharacter('darya').family);
+    assert.equal(motionCharacter('mobina').family, motionCharacter('darya').family);
     assert.equal(motionCharacter('dandelox').family, motionCharacter('darya').family);
     assert.equal(motionCharacter('dandelox').accessories[0].collision, 'cosmetic');
     assert.equal(motionCharacter('mori').family, motionCharacter('arsal').family);

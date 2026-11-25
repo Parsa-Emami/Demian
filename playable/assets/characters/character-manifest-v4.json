@@ -70,40 +70,6 @@
       "motion_accessories": []
     },
     {
-      "slug": "negar",
-      "display_name": "NEGAR / نگار",
-      "production_status": "gold_standard_production",
-      "is_default_active": false,
-      "pack_version": 14,
-      "locomotion_style": "ground-runner",
-      "manifest": "negar/manifests/character_manifest_v4.json",
-      "has_shipped_assets": true,
-      "motion_family": "female-base-v1",
-      "motion_accessories": []
-    },
-    {
-      "slug": "dandelox",
-      "display_name": "DANDELOX / دندلاکس",
-      "production_status": "gold_standard_production",
-      "is_default_active": false,
-      "pack_version": 14,
-      "locomotion_style": "ground-runner",
-      "manifest": "dandelox/manifests/character_manifest_v4.json",
-      "has_shipped_assets": true,
-      "motion_family": "female-base-v1",
-      "motion_accessories": [
-        {
-          "kind": "black-cat",
-          "anchor": "ground",
-          "offset": [
-            -0.3,
-            0
-          ],
-          "collision": "cosmetic"
-        }
-      ]
-    },
-    {
       "slug": "tiam",
       "display_name": "TIAM / تیام",
       "production_status": "gold_standard_production",
@@ -180,6 +146,52 @@
       "has_shipped_assets": true,
       "motion_family": "male-base-v1",
       "motion_accessories": []
+    },
+    {
+      "slug": "mobina",
+      "display_name": "MOBINA / مبینا",
+      "production_status": "gold_standard_production",
+      "is_default_active": false,
+      "pack_version": 14,
+      "locomotion_style": "ground-runner",
+      "manifest": "mobina/manifests/character_manifest_v4.json",
+      "has_shipped_assets": true,
+      "motion_family": "female-base-v1",
+      "motion_accessories": []
+    },
+    {
+      "slug": "negar",
+      "display_name": "NEGAR / نگار",
+      "production_status": "gold_standard_production",
+      "is_default_active": false,
+      "pack_version": 14,
+      "locomotion_style": "ground-runner",
+      "manifest": "negar/manifests/character_manifest_v4.json",
+      "has_shipped_assets": true,
+      "motion_family": "female-base-v1",
+      "motion_accessories": []
+    },
+    {
+      "slug": "dandelox",
+      "display_name": "DANDELOX / دندلاکس",
+      "production_status": "gold_standard_production",
+      "is_default_active": false,
+      "pack_version": 14,
+      "locomotion_style": "ground-runner",
+      "manifest": "dandelox/manifests/character_manifest_v4.json",
+      "has_shipped_assets": true,
+      "motion_family": "female-base-v1",
+      "motion_accessories": [
+        {
+          "kind": "black-cat",
+          "anchor": "ground",
+          "offset": [
+            -0.3,
+            0
+          ],
+          "collision": "cosmetic"
+        }
+      ]
     },
     {
       "slug": "iman",
@@ -280,7 +292,7 @@
   ],
   "master_motion": {
     "version": "master-motion-v1",
-    "source_sha256": "c55ca55fa56b25e1ebc7f8fefbe154a3ba8da179af68821325e7fce1ec21d9bb",
+    "source_sha256": "9b609f6f2b8d77cdb3d1f949bc8d9b50f0a5f658e17fe64d179026443609c47b",
     "url": "assets/characters/master-motion-v1.json"
   }
 }

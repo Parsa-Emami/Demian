@@ -6,11 +6,11 @@
     "runtime",
     "detail"
   ],
-  "candidates": 57,
-  "converted": 51,
-  "inputBytes": 122761135,
-  "outputBytes": 98331243,
-  "savedBytes": 24429892,
+  "candidates": 60,
+  "converted": 54,
+  "inputBytes": 124286067,
+  "outputBytes": 99747937,
+  "savedBytes": 24538130,
   "skippedBytes": 1772987,
   "entries": [
     {
@@ -96,48 +96,6 @@
       "format": "webp",
       "inputBytes": 1148699,
       "outputBytes": 1075942
-    },
-    {
-      "slug": "negar",
-      "variant": "lite",
-      "format": "webp",
-      "inputBytes": 859656,
-      "outputBytes": 729890
-    },
-    {
-      "slug": "negar",
-      "variant": "runtime",
-      "format": "webp",
-      "inputBytes": 2268439,
-      "outputBytes": 1906492
-    },
-    {
-      "slug": "negar",
-      "variant": "detail",
-      "format": "webp",
-      "inputBytes": 6101145,
-      "outputBytes": 5052012
-    },
-    {
-      "slug": "dandelox",
-      "variant": "lite",
-      "format": "webp",
-      "inputBytes": 168998,
-      "outputBytes": 156696
-    },
-    {
-      "slug": "dandelox",
-      "variant": "runtime",
-      "format": "webp",
-      "inputBytes": 430226,
-      "outputBytes": 396396
-    },
-    {
-      "slug": "dandelox",
-      "variant": "detail",
-      "format": "webp",
-      "inputBytes": 1095072,
-      "outputBytes": 996522
     },
     {
       "slug": "tiam",
@@ -243,6 +201,69 @@
       "format": "webp",
       "inputBytes": 5004462,
       "outputBytes": 3290800
+    },
+    {
+      "slug": "mobina",
+      "variant": "lite",
+      "format": "webp",
+      "inputBytes": 145427,
+      "outputBytes": 135914
+    },
+    {
+      "slug": "mobina",
+      "variant": "runtime",
+      "format": "webp",
+      "inputBytes": 377511,
+      "outputBytes": 351494
+    },
+    {
+      "slug": "mobina",
+      "variant": "detail",
+      "format": "webp",
+      "inputBytes": 1001994,
+      "outputBytes": 929286
+    },
+    {
+      "slug": "negar",
+      "variant": "lite",
+      "format": "webp",
+      "inputBytes": 859656,
+      "outputBytes": 729890
+    },
+    {
+      "slug": "negar",
+      "variant": "runtime",
+      "format": "webp",
+      "inputBytes": 2268439,
+      "outputBytes": 1906492
+    },
+    {
+      "slug": "negar",
+      "variant": "detail",
+      "format": "webp",
+      "inputBytes": 6101145,
+      "outputBytes": 5052012
+    },
+    {
+      "slug": "dandelox",
+      "variant": "lite",
+      "format": "webp",
+      "inputBytes": 168998,
+      "outputBytes": 156696
+    },
+    {
+      "slug": "dandelox",
+      "variant": "runtime",
+      "format": "webp",
+      "inputBytes": 430226,
+      "outputBytes": 396396
+    },
+    {
+      "slug": "dandelox",
+      "variant": "detail",
+      "format": "webp",
+      "inputBytes": 1095072,
+      "outputBytes": 996522
     },
     {
       "slug": "iman",
@@ -413,5 +434,5 @@
       "outputBytes": 668300
     }
   ],
-  "savingsFraction": 0.199
+  "savingsFraction": 0.19743
 }
