@@ -58,6 +58,18 @@
       ]
     },
     {
+      "slug": "elaheh",
+      "display_name": "ELAHEH / الهه",
+      "production_status": "gold_standard_production",
+      "is_default_active": false,
+      "pack_version": 14,
+      "locomotion_style": "ground-runner",
+      "manifest": "elaheh/manifests/character_manifest_v4.json",
+      "has_shipped_assets": true,
+      "motion_family": "female-base-v1",
+      "motion_accessories": []
+    },
+    {
       "slug": "negar",
       "display_name": "NEGAR / نگار",
       "production_status": "gold_standard_production",
@@ -70,16 +82,26 @@
       "motion_accessories": []
     },
     {
-      "slug": "elaheh",
-      "display_name": "ELAHEH / الهه",
+      "slug": "dandelox",
+      "display_name": "DANDELOX / دندلاکس",
       "production_status": "gold_standard_production",
       "is_default_active": false,
       "pack_version": 14,
       "locomotion_style": "ground-runner",
-      "manifest": "elaheh/manifests/character_manifest_v4.json",
+      "manifest": "dandelox/manifests/character_manifest_v4.json",
       "has_shipped_assets": true,
       "motion_family": "female-base-v1",
-      "motion_accessories": []
+      "motion_accessories": [
+        {
+          "kind": "black-cat",
+          "anchor": "ground",
+          "offset": [
+            -0.3,
+            0
+          ],
+          "collision": "cosmetic"
+        }
+      ]
     },
     {
       "slug": "tiam",
@@ -258,7 +280,7 @@
   ],
   "master_motion": {
     "version": "master-motion-v1",
-    "source_sha256": "b474476f01edd8ff5db1596473c71e10d43ad0cd74e90b70704e547cdd3adc1d",
+    "source_sha256": "c55ca55fa56b25e1ebc7f8fefbe154a3ba8da179af68821325e7fce1ec21d9bb",
     "url": "assets/characters/master-motion-v1.json"
   }
 }

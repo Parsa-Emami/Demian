@@ -165,11 +165,14 @@ def main():
                 assert atlas['movement']['wingPoweredStates'] == ['run', 'sprint', 'takeoff', 'jump', 'fall', 'slide']
                 assert all(atlas['animations'][state]['locomotionStyle'] == expected_style
                     for state in atlas['movement']['wingPoweredStates'])
-            if slug == 'negar':
-                ability = atlas['abilities'][0]
-                assert ability['id'] == 'smile-bloom' and ability['cooldown'] >= ability['duration']
+            if ability := source_layout.get('signatureAbility'):
+                assert atlas['abilities'] == [ability] and ability['cooldown'] >= ability['duration']
                 assert atlas['animations'][ability['animation']]['loop'] is False
                 assert atlas['animations'][ability['animation']]['frames'] == atlas['animations']['celebrate']['frames']
+            if slug == 'dandelox':
+                companion = atlas['companion']
+                assert companion['id'] == 'black-cat' and companion['anchor'] == 'ground'
+                assert companion['bakedIntoEveryFrame'] and companion['collisionIndependent']
             results.append({'character': slug, 'variant': variant, 'frames': 672, 'image': atlas['meta']['image'],
                 'dimensions': list(image.size), 'decodedMiB': round(image.width * image.height * 4 / 2**20, 2),
                 'maxSlideHeight': round(max(slide_heights), 2), 'visibleWorldHeights': gait_heights, 'geometry': 'passed'})

@@ -46,6 +46,21 @@
       }
     },
     {
+      "id": "builtin-elaheh",
+      "name": "ELAHEH / الهه",
+      "slug": "elaheh",
+      "is_builtin": true,
+      "is_active": false,
+      "sprite_url": "assets/characters/elaheh/elaheh-spritesheet-v14-mobile.png",
+      "atlas_url": "assets/characters/elaheh/elaheh-atlas-v14-mobile.json",
+      "settings": {
+        "scale": 1,
+        "walk_speed": 3.55,
+        "run_speed": 6.9,
+        "jump_force": 6.8
+      }
+    },
+    {
       "id": "builtin-negar",
       "name": "NEGAR / نگار",
       "slug": "negar",
@@ -61,13 +76,13 @@
       }
     },
     {
-      "id": "builtin-elaheh",
-      "name": "ELAHEH / الهه",
-      "slug": "elaheh",
+      "id": "builtin-dandelox",
+      "name": "DANDELOX / دندلاکس",
+      "slug": "dandelox",
       "is_builtin": true,
       "is_active": false,
-      "sprite_url": "assets/characters/elaheh/elaheh-spritesheet-v14-mobile.png",
-      "atlas_url": "assets/characters/elaheh/elaheh-atlas-v14-mobile.json",
+      "sprite_url": "assets/characters/dandelox/dandelox-spritesheet-v14-mobile.png",
+      "atlas_url": "assets/characters/dandelox/dandelox-atlas-v14-mobile.json",
       "settings": {
         "scale": 1,
         "walk_speed": 3.55,

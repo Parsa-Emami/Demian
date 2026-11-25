@@ -1150,7 +1150,7 @@
                     <p><b class="text-white" data-action-key="jump">Space</b> jump</p>
                     <p><b class="text-white">↓ / G</b> slide</p>
                     <p><b class="text-white">O / V</b> celebrate / wave</p>
-                    <p data-character-ability-hint hidden><b class="text-white" data-action-key="ability">Q</b> Smile Bloom</p>
+                    <p data-character-ability-hint hidden><b class="text-white" data-action-key="ability">Q</b> <span data-character-ability-name></span></p>
                     <p><b class="text-white" data-action-key="speak">H</b> random speech</p>
                     <p><b class="text-white" data-action-key="interact">Enter</b> interact</p>
                     <p><b class="text-white">F / R</b> camera / focus</p>

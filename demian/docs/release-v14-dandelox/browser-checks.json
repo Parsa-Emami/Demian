@@ -1,0 +1,101 @@
+{
+  "browser": "158.0.8127.0",
+  "rendering": "headless software",
+  "physicalDevices": false,
+  "viewports": [
+    {
+      "width": 390,
+      "height": 844,
+      "mobile": true,
+      "cards": {
+        "consecutive": true,
+        "sameRow": true,
+        "columns": 4,
+        "label": "انتخاب دندلاکس"
+      },
+      "atlas": {
+        "slug": "dandelox",
+        "pack": "lite",
+        "version": 14,
+        "loaded": true,
+        "companion": "black-cat",
+        "hashMatches": true
+      },
+      "selectionSurvivesReload": true,
+      "dinoRun": {
+        "jump": true,
+        "slide": "touch"
+      },
+      "openWorld": {
+        "walk": true,
+        "run": true,
+        "jump": true,
+        "land": true,
+        "focusAura": "touch"
+      }
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "mobile": false,
+      "cards": {
+        "consecutive": true,
+        "sameRow": true,
+        "columns": 4,
+        "label": "انتخاب دندلاکس"
+      },
+      "atlas": {
+        "slug": "dandelox",
+        "pack": "lite",
+        "version": 14,
+        "loaded": true,
+        "companion": "black-cat",
+        "hashMatches": true
+      },
+      "selectionSurvivesReload": true,
+      "dinoRun": {
+        "jump": true,
+        "slide": "keyboard"
+      },
+      "openWorld": {
+        "walk": true,
+        "run": true,
+        "jump": true,
+        "land": true,
+        "focusAura": "keyboard"
+      }
+    },
+    {
+      "width": 360,
+      "height": 780,
+      "mobile": true,
+      "cards": {
+        "consecutive": true,
+        "sameRow": true,
+        "columns": 3,
+        "label": "انتخاب دندلاکس"
+      },
+      "atlas": {
+        "slug": "dandelox",
+        "pack": "lite",
+        "version": 14,
+        "loaded": true,
+        "companion": "black-cat",
+        "hashMatches": true
+      },
+      "selectionSurvivesReload": true,
+      "dinoRun": {
+        "jump": true,
+        "slide": "touch"
+      },
+      "openWorld": {
+        "walk": true,
+        "run": true,
+        "jump": true,
+        "land": true,
+        "focusAura": "touch"
+      }
+    }
+  ],
+  "status": "passed"
+}

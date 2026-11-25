@@ -86,7 +86,7 @@ test('nonfinite timing is bounded and zero real travel reports zero cadence', ()
     assert.ok(Number.isFinite(a.frameProgress()));
 });
 
-test('all 18 shipped lite and runtime atlas upgrades keep phase without changing character identity', () => {
+test('all shipped lite and runtime atlas upgrades keep phase without changing character identity', () => {
     for (const slug of BUILTIN_CHARACTER_SLUGS) {
         const read = variant => JSON.parse(readFileSync(new URL(`../../public/assets/characters/${slug}/${slug}-atlas-v14-${variant}.json`, import.meta.url), 'utf8'));
         const avatar = new CanvasCharacterAvatar({ slug, atlas: read('lite'), image: {} });

@@ -1,23 +1,35 @@
 /** Bounded Canvas presentation; no images, timers or particles allocated per frame. */
-export function drawCharacterAbility(ctx, metrics, state) {
-    if (!state || state.ability.effect !== 'smile-bloom') return;
+export function drawCharacterAbility(ctx, metrics, state, reducedMotion = false) {
+    if (!state) return;
+    const focusAura = state.ability.effect === 'focus-aura';
+    if (!focusAura && state.ability.effect !== 'smile-bloom') return;
     const progress = Math.min(1, Math.max(0, state.progress));
     const alpha = Math.min(1, progress * 8) * Math.min(1, (1 - progress) * 4);
     const size = metrics.bodyHeight;
-    const count = Math.min(18, Math.max(4, Number(state.ability.particleCount) || 14));
+    const still = focusAura && reducedMotion;
+    const count = still ? 4 : Math.min(18, Math.max(4, Number(state.ability.particleCount) || 14));
     ctx.save();
     ctx.globalAlpha *= alpha;
     ctx.translate(metrics.anchorX, metrics.anchorY - size * .58);
     for (let i = 0; i < count; i += 1) {
-        const angle = i * Math.PI * 2 / count + state.elapsed * .9;
-        const radius = size * (.28 + progress * .44);
+        const angle = i * Math.PI * 2 / count + (still ? 0 : state.elapsed * .9);
+        const radius = size * (still ? .45 : .28 + progress * .44);
         const x = Math.cos(angle) * radius;
-        const y = Math.sin(angle) * radius * .65 - progress * size * .28;
+        const y = Math.sin(angle) * radius * .65 - (still ? 0 : progress * size * .28);
         const unit = Math.max(1.5, size * (.027 + (i % 3) * .006));
         ctx.save();
         ctx.translate(x, y);
-        ctx.rotate(Math.sin(i + state.elapsed * 2) * .35);
-        if (i % 3 === 0) {
+        if (!still) ctx.rotate(Math.sin(i + state.elapsed * 2) * .35);
+        if (focusAura) {
+            ctx.fillStyle = i % 3 === 0 ? '#ffe2a1' : '#d8a4fa';
+            ctx.beginPath();
+            ctx.moveTo(0, -unit * 1.8);
+            ctx.lineTo(unit, 0);
+            ctx.lineTo(0, unit * 1.8);
+            ctx.lineTo(-unit, 0);
+            ctx.closePath();
+            ctx.fill();
+        } else if (i % 3 === 0) {
             ctx.fillStyle = '#f48fba';
             ctx.beginPath();
             ctx.moveTo(0, unit * 1.8);

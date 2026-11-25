@@ -127,6 +127,7 @@ export function drawSpriteCharacter(ctx, camera, entity, {
     opacity = 1,
     eliminated = false,
     alpha = 1,
+    reducedMotion = false,
 } = {}) {
     const image = entity?.texture?.image ?? entity?.texture?.source?.data;
     const sample = entity?.animator?.sample?.(alpha);
@@ -194,7 +195,7 @@ export function drawSpriteCharacter(ctx, camera, entity, {
     }
     ctx.restore();
 
-    drawCharacterAbility(ctx, metrics, entity?.abilityController?.visualState?.());
+    drawCharacterAbility(ctx, metrics, entity?.abilityController?.visualState?.(), reducedMotion);
 
     if (label) {
         ctx.save();
