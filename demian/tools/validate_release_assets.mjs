@@ -57,10 +57,14 @@ export function validateReleaseAssets({ root, sourceAssets = null, reportPath = 
         const version = characterPackVersion(slug);
         const rootPath = 'assets/characters/' + slug + '/';
         check(rootPath + slug + '-preview-v' + version + '.png');
-        check('assets/characters/' + row.manifest);
+        const manifestPath = 'assets/characters/' + row.manifest;
+        check(manifestPath);
+        const manifestFile = join(release, manifestPath);
+        const targets = existsSync(manifestFile) ? readJson(manifestFile).runtime?.atlas_targets : null;
         for (const variant of RELEASE_SPRITE_VARIANTS) {
             const prefix = rootPath + slug + '-';
-            const atlas = prefix + 'atlas-v' + version + '-' + variant + '.json';
+            const atlasName = slug + '-atlas-v' + version + '-' + variant + '.json';
+            const atlas = rootPath + atlasName;
             const sprite = prefix + 'spritesheet-v' + version + '-' + variant + '.png';
             check(atlas);
             if (existsSync(join(release, atlas))) {
@@ -80,15 +84,9 @@ export function validateReleaseAssets({ root, sourceAssets = null, reportPath = 
                     if (webp) {
                         transformedPngs.add('characters/' + slug + '/' + expectedPng);
                     }
-                    // The character manifest has an independent image URL for
-                    // variant loaders. Both references must remain identical.
-                    const publicManifest = join(assetsRoot, 'characters', row.manifest);
-                    if (existsSync(publicManifest)) {
-                        const declaredTarget = readJson(publicManifest)
-                            .runtime?.atlas_targets?.[variant];
-                        if (declaredTarget && declaredTarget.image !== '../' + declared) {
-                            errors.push('Character manifest/atlas image mismatch: ' + atlas);
-                        }
+                    const target = targets?.[variant];
+                    if (target?.atlas !== '../' + atlasName || target.image !== '../' + declared) {
+                        errors.push('Character manifest/atlas target mismatch: ' + atlas);
                     }
                 }
                 // The atlas geometry, decoded dimensions and animation metadata

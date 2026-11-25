@@ -49,6 +49,14 @@
       "detail": {
         "atlas": "../setayesh-atlas-v14-detail.json",
         "image": "../setayesh-spritesheet-v14-detail.png"
+      },
+      "runtime": {
+        "atlas": "../setayesh-atlas-v14-runtime.json",
+        "image": "../setayesh-spritesheet-v14-runtime.png"
+      },
+      "lite": {
+        "atlas": "../setayesh-atlas-v14-lite.json",
+        "image": "../setayesh-spritesheet-v14-lite.png"
       }
     }
   }
