@@ -42,20 +42,39 @@ def main():
     assert [c['slug'] for c in roster['characters']] == list(SLUGS)
     assert all(c['pack_version'] == 14 and c['has_shipped_assets'] for c in roster['characters'])
     results = []
-    for slug in SLUGS:
+    for character in roster['characters']:
+        slug = character['slug']
         directory = base / slug
+        manifest_path = directory / 'manifests/character_manifest_v4.json'
+        assert base / character['manifest'] == manifest_path, f'{slug}: incorrect roster manifest path'
+        manifest = json.loads(manifest_path.read_text(encoding='utf-8'))
+        assert manifest.get('character_key') == slug, f'{slug}: incorrect manifest character_key'
+        targets = manifest.get('runtime', {}).get('atlas_targets')
+        assert isinstance(targets, dict), f'{slug}: missing runtime.atlas_targets'
+        missing = VARIANTS.keys() - targets.keys()
+        unexpected = targets.keys() - VARIANTS.keys()
+        assert not (missing or unexpected), (
+            f'{slug}: atlas targets missing={sorted(missing)}, unexpected={sorted(unexpected)}'
+        )
         source_layout = json.loads((directory / 'source-v14/layout.json').read_text())
         authored_turns = 'idleLoopDirections' in source_layout
         animation_manifest = json.loads((directory / f'manifests/{slug}_animation_manifest.json').read_text())
         for variant, cell in VARIANTS.items():
-            atlas = json.loads((directory / f'{slug}-atlas-v14-{variant}.json').read_text())
-            with Image.open(directory / atlas['meta']['image']) as packed:
+            atlas_path = directory / f'{slug}-atlas-v14-{variant}.json'
+            image_path = directory / f'{slug}-spritesheet-v14-{variant}.png'
+            target = targets[variant]
+            assert isinstance(target, dict), f'{slug}/{variant}: invalid atlas target'
+            assert target.get('atlas') == f'../{atlas_path.name}', f'{slug}/{variant}: incorrect manifest atlas path'
+            assert target.get('image') == f'../{image_path.name}', f'{slug}/{variant}: incorrect manifest image path'
+            atlas = json.loads(atlas_path.read_text())
+            assert atlas['meta']['image'] == image_path.name, f'{slug}/{variant}: atlas image differs from manifest'
+            with Image.open(image_path) as packed:
                 if source_layout.get('indexedPalette'):
                     assert packed.mode == 'P' and 'transparency' in packed.info
                 else:
                     assert packed.mode == 'RGBA'
                 image = packed.convert('RGBA')
-            assert atlas['meta']['imageRevision'] == hashlib.sha256((directory / atlas['meta']['image']).read_bytes()).hexdigest()
+            assert atlas['meta']['imageRevision'] == hashlib.sha256(image_path.read_bytes()).hexdigest()
             grid = atlas['meta']['grid']
             assert image.mode == 'RGBA' and image.size == (grid['columns'] * cell, grid['rows'] * cell)
             if variant in ('runtime', 'lite', 'detail'):
@@ -160,7 +179,7 @@ def main():
     out = ROOT / 'docs/release-v14'
     out.mkdir(parents=True, exist_ok=True)
     (out / 'asset-validation.json').write_text(json.dumps({'status': 'passed', 'variants': results}, indent=2) + '\n')
-    print(f'V14 asset validation passed: {len(SLUGS)} characters / {len(results)} atlas variants; 672 animation frame names each (runtime cells share sampled poses).')
+    print(f'V14 asset validation passed: {len(SLUGS)} characters / {len(results)} manifest atlas/image pairs; 672 animation frame names each (runtime cells share sampled poses).')
 
 
 if __name__ == '__main__':

@@ -154,6 +154,27 @@ test('TextureAtlasLoader resolves relative "../" atlas/image paths against the m
     );
 });
 
+test('TextureAtlasLoader resolves shipped runtime and lite variants for every built-in character', async () => {
+    const baseUrl = new URL('../../public/', import.meta.url);
+    const loader = new TextureAtlasLoader(new AtlasRegistry(), {
+        baseUrl: baseUrl.href,
+        fetchImpl: async url => new Response(readFileSync(new URL(url))),
+    });
+
+    for (const slug of BUILTIN_CHARACTER_SLUGS) {
+        for (const variant of ['runtime', 'lite']) {
+            const image = `${slug}-spritesheet-v14-${variant}.png`;
+            const atlas = await loader.loadAtlasVariant(slug, variant);
+            assert.equal(atlas?.meta?.image, image, `${slug}/${variant} atlas`);
+            assert.equal(
+                loader.imageUrlFor(slug, variant),
+                new URL(`assets/characters/${slug}/${image}`, baseUrl).href,
+                `${slug}/${variant} image`,
+            );
+        }
+    }
+});
+
 test('TextureAtlasLoader.loadManifest returns null (never throws) on a 404', async () => {
     const registry = new AtlasRegistry();
     const loader = new TextureAtlasLoader(registry, {
