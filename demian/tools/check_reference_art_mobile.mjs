@@ -195,25 +195,23 @@ async function recordCharacter(browser, url, slug, videoDir) {
     try {
         await page.goto(url, { waitUntil: 'domcontentloaded' });
         await page.waitForFunction(() => window.demianGameApplication?.sessionState === 'menu', null, { timeout: 45000 });
-        const id = await page.evaluate(key => window.demianGameApplication.characterManager
-            .characters.find(character => character.slug === key)?.id, slug);
-        assert.ok(id, slug + ' is missing from the installed roster');
-        await page.locator('.menu-character-button').tap();
-        const card = page.locator('[data-character-card="' + id + '"]');
+        const menu = page.locator('[data-screen="cafe-menu"]');
+        await menu.locator('.menu-character-button').tap();
+        const card = page.locator('[data-character-card="builtin-' + slug + '"]');
         await card.scrollIntoViewIfNeeded();
-        await page.waitForFunction(id => document.querySelector('[data-character-card="' + id +
-            '"] [data-character-preview]')?.dataset.previewState === 'ready', id);
+        await card.locator('[data-character-preview][data-preview-state="ready"]').waitFor();
         await page.screenshot({ path: join(output, slug + '-picker.png') });
-        await card.locator('[data-select-character="' + id + '"]').tap();
-        await page.waitForFunction(slug => window.demianGameApplication.characterManager.activeRecord?.slug === slug, slug);
+        await card.locator('[data-select-character]').tap();
+        await page.waitForFunction(slug => window.demianGameApplication.characterVisuals.activeSlug === slug, slug);
         if (await page.locator('[data-character-manager]').getAttribute('data-sidebar-state') === 'expanded') {
             await page.locator('.character-sheet-close').tap();
         }
         await page.waitForFunction(() => document.querySelector('[data-character-manager]').dataset.sidebarState === 'collapsed');
-        await page.evaluate(() => window.demianGameApplication.launchGame('open-world'));
+        await menu.getByRole('button', { name: 'انتخاب بازی', exact: true }).tap();
+        await page.locator('[data-game-launch="open-world"]').tap();
         await page.waitForFunction(slug => {
             const app = window.demianGameApplication;
-            const actor = app.characterManager.activeEntity;
+            const actor = app.characterManager?.activeEntity;
             return app.activeGameId === 'open-world' && app.sessionState === 'playing' &&
                 actor?.character.slug === slug && actor.grounded && actor.stateLock <= 0 && actor.texture?.image?.width > 0;
         }, slug, { timeout: 45000 });
