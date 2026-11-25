@@ -1,8 +1,8 @@
 {
   "schema": 1,
-  "release": "1f963aa6eab98d7f",
+  "release": "2e9ae55b35a9e23d",
   "maxPackBytes": 100663296,
-  "coreBytes": 13952837,
+  "coreBytes": 13933393,
   "core": [
     {
       "path": "assets/characters/ainaz/ainaz-atlas-v14-lite.json",
@@ -211,29 +211,29 @@
     },
     {
       "path": "assets/characters/sorkhi/sorkhi-atlas-v14-lite.json",
-      "bytes": 101439,
-      "sha256": "08a76374e5cbc27b54556b04dcf9751ea7a591d212d2135878d466fe4dadbea1"
+      "bytes": 101442,
+      "sha256": "7c539cf71220f254e84e3a4cd3ae3f61ac1f137512d141cb1bbf2cb3b0ea3021"
     },
     {
       "path": "assets/characters/sorkhi/sorkhi-preview-v14.png",
       "bytes": 28513
     },
     {
-      "path": "assets/characters/sorkhi/sorkhi-spritesheet-v14-lite.png",
-      "bytes": 148785
+      "path": "assets/characters/sorkhi/sorkhi-spritesheet-v14-lite.webp",
+      "bytes": 142892
     },
     {
       "path": "assets/characters/taher-db/taher-db-atlas-v14-lite.json",
       "bytes": 101450,
-      "sha256": "392acdea6d5fcf4025ea2a18dab6c8de794e7c96da93c95bb531d7cb00435108"
+      "sha256": "067141c5b757b3aa6ffaf01cf34420c1ba65c92d9d0cea783561f044e3e8eaa0"
     },
     {
       "path": "assets/characters/taher-db/taher-db-preview-v14.png",
       "bytes": 26950
     },
     {
-      "path": "assets/characters/taher-db/taher-db-spritesheet-v14-lite.png",
-      "bytes": 163910
+      "path": "assets/characters/taher-db/taher-db-spritesheet-v14-lite.webp",
+      "bytes": 150356
     },
     {
       "path": "assets/characters/tiam/tiam-atlas-v14-lite.json",
@@ -370,7 +370,7 @@
     {
       "id": "open-world",
       "bytes": 1013231,
-      "totalBytes": 14966068,
+      "totalBytes": 14946624,
       "files": [
         {
           "path": "assets/environments/demian-fbx/polished-v1/lod-1024/0-0.webp",
@@ -477,7 +477,7 @@
     {
       "id": "dino-run",
       "bytes": 143170,
-      "totalBytes": 14096007,
+      "totalBytes": 14076563,
       "files": [
         {
           "path": "assets/environments/demian-fbx/floorplan.webp",
@@ -503,7 +503,7 @@
     {
       "id": "after-hours",
       "bytes": 496694,
-      "totalBytes": 14449531,
+      "totalBytes": 14430087,
       "files": [
         {
           "path": "assets/environments/demian-fbx/floorplan-detail.webp",
@@ -554,7 +554,7 @@
     {
       "id": "cafe-rush",
       "bytes": 502306,
-      "totalBytes": 14455143,
+      "totalBytes": 14435699,
       "files": [
         {
           "path": "assets/environments/demian-fbx/floorplan-detail.webp",
@@ -610,7 +610,7 @@
     {
       "id": "cafe-critters",
       "bytes": 283645,
-      "totalBytes": 14236482,
+      "totalBytes": 14217038,
       "files": [
         {
           "path": "assets/environments/demian-fbx/polished-v1/lod-1024/0-0.webp",
@@ -732,7 +732,7 @@
     {
       "id": "coffee-crash",
       "bytes": 168183,
-      "totalBytes": 14121020,
+      "totalBytes": 14101576,
       "files": [
         {
           "path": "assets/environments/demian-fbx/floorplan.webp",
@@ -773,7 +773,7 @@
     {
       "id": "cafe-drift",
       "bytes": 22138,
-      "totalBytes": 13974975,
+      "totalBytes": 13955531,
       "files": [
         {
           "path": "build/assets/CafeCueAudio-CnkMuVoO.js",

@@ -7,11 +7,11 @@
     "detail"
   ],
   "candidates": 60,
-  "converted": 54,
-  "inputBytes": 124286067,
-  "outputBytes": 99747937,
-  "savedBytes": 24538130,
-  "skippedBytes": 1772987,
+  "converted": 57,
+  "inputBytes": 124005471,
+  "outputBytes": 99438976,
+  "savedBytes": 24566495,
+  "skippedBytes": 1019870,
   "entries": [
     {
       "slug": "darya",
@@ -331,44 +331,44 @@
     {
       "slug": "taher-db",
       "variant": "lite",
-      "format": "png",
-      "inputBytes": 163910,
-      "outputBytes": 163910
+      "format": "webp",
+      "inputBytes": 158314,
+      "outputBytes": 150356
     },
     {
       "slug": "taher-db",
       "variant": "runtime",
       "format": "png",
-      "inputBytes": 444957,
-      "outputBytes": 444957
+      "inputBytes": 407444,
+      "outputBytes": 407444
     },
     {
       "slug": "taher-db",
       "variant": "detail",
       "format": "webp",
-      "inputBytes": 1204961,
-      "outputBytes": 1141592
+      "inputBytes": 1040235,
+      "outputBytes": 983006
     },
     {
       "slug": "sorkhi",
       "variant": "lite",
-      "format": "png",
-      "inputBytes": 148785,
-      "outputBytes": 148785
+      "format": "webp",
+      "inputBytes": 151078,
+      "outputBytes": 142892
     },
     {
       "slug": "sorkhi",
       "variant": "runtime",
-      "format": "png",
-      "inputBytes": 402909,
-      "outputBytes": 402909
+      "format": "webp",
+      "inputBytes": 389513,
+      "outputBytes": 366688
     },
     {
       "slug": "sorkhi",
       "variant": "detail",
       "format": "webp",
-      "inputBytes": 1056802,
-      "outputBytes": 992150
+      "inputBytes": 995144,
+      "outputBytes": 934956
     },
     {
       "slug": "yalda",
@@ -434,5 +434,5 @@
       "outputBytes": 668300
     }
   ],
-  "savingsFraction": 0.19743
+  "savingsFraction": 0.19811
 }

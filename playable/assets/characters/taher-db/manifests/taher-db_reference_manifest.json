@@ -20,6 +20,16 @@
       "name": "reference.jpg",
       "role": "supplied-identity-sheet-and-key-poses",
       "sha256": "e424480ff9e09fe130e8e75650ea700385204397b7a31127bd6f1ed108bdd69a"
+    },
+    {
+      "name": "locomotion-v15.png",
+      "role": "arsal-walk-run-jump-and-shared-foot-axis",
+      "sha256": "04cbb37f965051b6b6146a09b8abf4a435da7ad67c9afde6ea1adcac2b446d9d"
+    },
+    {
+      "name": "runner-motion.png",
+      "role": "arsal-contact-compression-and-landing-recovery",
+      "sha256": "ea5a9a025f06bb8291f95eb0481ec43219248118fb4c9edaecdfe12cf44e1195"
     }
   ]
 }

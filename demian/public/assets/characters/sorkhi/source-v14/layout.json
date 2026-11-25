@@ -2,26 +2,26 @@
   "mainStates": [
     "turn",
     "idle",
-    "jump",
     "celebrate"
   ],
   "mainRowBounds": [
     0,
     240,
     480,
-    720,
-    960
+    720
   ],
   "motionColumns": 8,
   "motionRowBounds": [
     0,
     240,
     480,
-    720
+    720,
+    960
   ],
   "motionRowStates": [
     "walk",
     "run",
+    "jump",
     "land"
   ],
   "referenceAsset": "../source-v14/reference.jpg",
@@ -30,6 +30,16 @@
       "name": "reference.jpg",
       "role": "supplied-identity-sheet-and-key-poses",
       "sha256": "771d08215f30a5cbf32b4cce4b6a2176019fcd9641820566865fe85bc3674310"
+    },
+    {
+      "name": "locomotion-v15.png",
+      "role": "arsal-walk-run-jump-and-shared-foot-axis",
+      "sha256": "04cbb37f965051b6b6146a09b8abf4a435da7ad67c9afde6ea1adcac2b446d9d"
+    },
+    {
+      "name": "runner-motion.png",
+      "role": "arsal-contact-compression-and-landing-recovery",
+      "sha256": "ea5a9a025f06bb8291f95eb0481ec43219248118fb4c9edaecdfe12cf44e1195"
     }
   ],
   "identity": [
