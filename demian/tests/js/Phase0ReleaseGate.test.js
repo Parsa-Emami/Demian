@@ -44,6 +44,8 @@ test('Phase 0: GitHub Pages is gated on backend, frontend, release QA and an exa
         assert.ok(workflow.includes(command), `Missing release step: ${command}`);
     }
     assert.match(workflow, /pull_request:\s*\n\s*branches: \[main\]/);
+    assert.match(workflow, /^concurrency:\n  group: demian-pages-\$\{\{ github\.event\.pull_request\.number \|\| github\.ref \}\}\n  cancel-in-progress: \$\{\{ github\.ref != 'refs\/heads\/main' \}\}$/m,
+        'An active main release must finish before the next Pages run starts.');
     assert.match(workflow, /needs: \[build, backend\]/);
     assert.match(workflow, /step31_verify\.mjs/);
     assert.match(workflow, /DEMIAN_QA_BUILD_RESULT: \$\{\{ needs\.build\.result \}\}/);
