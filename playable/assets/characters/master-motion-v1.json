@@ -176,6 +176,16 @@
       "identityContract": "assets/characters/marjan/manifests/marjan_identity_contract.json"
     },
     {
+      "slug": "mohana",
+      "displayName": "MOHANA / مهنا",
+      "family": "female-base-v1",
+      "packVersion": 14,
+      "defaultActive": false,
+      "skin": "mohana",
+      "accessories": [],
+      "identityContract": "assets/characters/mohana/manifests/mohana_identity_contract.json"
+    },
+    {
       "slug": "zohre",
       "displayName": "ZOHRE / زهره",
       "family": "female-base-v1",
@@ -384,5 +394,5 @@
       "identityContract": "assets/characters/mahyar/manifests/mahyar_identity_contract.json"
     }
   ],
-  "sourceSha256": "befd327d0965b6acd7395653757a3c850c34f0f0bc4b8819243ddc024f8d0644"
+  "sourceSha256": "334253397f1b84c70cc74ea336f73614fd65e4d8cb04aa53a036a9b21efb2d7c"
 }

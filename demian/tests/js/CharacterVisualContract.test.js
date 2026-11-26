@@ -18,7 +18,7 @@ test('canonical packs resolve every Demian roster member and Darya uses the refe
         assert.equal(sanitizeCharacterAnimation(name), 'idle');
     });
 
-    assert.deepEqual(BUILTIN_CHARACTER_SLUGS, ['darya', 'setayesh', 'uzudi', 'tiam', 'elaheh', 'marjan', 'zohre', 'kiana', 'amirreza', 'hanna', 'ainaz', 'arsal', 'sadro', 'mojtaba', 'mobina', 'negar', 'dandelox', 'iman', 'amin', 'hossein', 'taher-db', 'sorkhi', 'yalda', 'mori', 'mahyar']);
+    assert.deepEqual(BUILTIN_CHARACTER_SLUGS, ['darya', 'setayesh', 'uzudi', 'tiam', 'elaheh', 'marjan', 'mohana', 'zohre', 'kiana', 'amirreza', 'hanna', 'ainaz', 'arsal', 'sadro', 'mojtaba', 'mobina', 'negar', 'dandelox', 'iman', 'amin', 'hossein', 'taher-db', 'sorkhi', 'yalda', 'mori', 'mahyar']);
     for (const slug of BUILTIN_CHARACTER_SLUGS) {
         const version = slug === 'arsal' ? 15 : 14;
         assert.equal(characterPackVersion(slug), version);

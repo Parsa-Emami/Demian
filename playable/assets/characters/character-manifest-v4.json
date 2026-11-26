@@ -104,6 +104,18 @@
       "motion_accessories": []
     },
     {
+      "slug": "mohana",
+      "display_name": "MOHANA / مهنا",
+      "production_status": "gold_standard_production",
+      "is_default_active": false,
+      "pack_version": 14,
+      "locomotion_style": "ground-runner",
+      "manifest": "mohana/manifests/character_manifest_v4.json",
+      "has_shipped_assets": true,
+      "motion_family": "female-base-v1",
+      "motion_accessories": []
+    },
+    {
       "slug": "zohre",
       "display_name": "ZOHRE / زهره",
       "production_status": "gold_standard_production",
@@ -352,7 +364,7 @@
   ],
   "master_motion": {
     "version": "master-motion-v1",
-    "source_sha256": "befd327d0965b6acd7395653757a3c850c34f0f0bc4b8819243ddc024f8d0644",
+    "source_sha256": "334253397f1b84c70cc74ea336f73614fd65e4d8cb04aa53a036a9b21efb2d7c",
     "url": "assets/characters/master-motion-v1.json"
   }
 }

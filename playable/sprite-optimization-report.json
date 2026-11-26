@@ -6,11 +6,11 @@
     "runtime",
     "detail"
   ],
-  "candidates": 75,
-  "converted": 68,
-  "inputBytes": 128964458,
-  "outputBytes": 105137672,
-  "savedBytes": 23826786,
+  "candidates": 78,
+  "converted": 71,
+  "inputBytes": 130793839,
+  "outputBytes": 106853096,
+  "savedBytes": 23940743,
   "skippedBytes": 2144878,
   "entries": [
     {
@@ -138,6 +138,27 @@
       "format": "webp",
       "inputBytes": 1054435,
       "outputBytes": 966028
+    },
+    {
+      "slug": "mohana",
+      "variant": "lite",
+      "format": "webp",
+      "inputBytes": 176195,
+      "outputBytes": 165424
+    },
+    {
+      "slug": "mohana",
+      "variant": "runtime",
+      "format": "webp",
+      "inputBytes": 455921,
+      "outputBytes": 424980
+    },
+    {
+      "slug": "mohana",
+      "variant": "detail",
+      "format": "webp",
+      "inputBytes": 1197265,
+      "outputBytes": 1125020
     },
     {
       "slug": "zohre",
@@ -539,5 +560,5 @@
       "outputBytes": 668300
     }
   ],
-  "savingsFraction": 0.18475
+  "savingsFraction": 0.18304
 }
