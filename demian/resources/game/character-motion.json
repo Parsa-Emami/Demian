@@ -214,6 +214,16 @@
       "identityContract": "assets/characters/arsal/manifests/arsal_identity_contract.json"
     },
     {
+      "slug": "mojtaba",
+      "displayName": "MOJTABA / مجتبی",
+      "family": "male-base-v1",
+      "packVersion": 14,
+      "defaultActive": false,
+      "skin": "mojtaba",
+      "accessories": [],
+      "identityContract": "assets/characters/mojtaba/manifests/mojtaba_identity_contract.json"
+    },
+    {
       "slug": "mobina",
       "displayName": "MOBINA / مبینا",
       "family": "female-base-v1",

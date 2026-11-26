@@ -6,12 +6,12 @@
     "runtime",
     "detail"
   ],
-  "candidates": 60,
-  "converted": 57,
-  "inputBytes": 124005471,
-  "outputBytes": 99438976,
-  "savedBytes": 24566495,
-  "skippedBytes": 1019870,
+  "candidates": 63,
+  "converted": 58,
+  "inputBytes": 125552106,
+  "outputBytes": 100922508,
+  "savedBytes": 24629598,
+  "skippedBytes": 1549730,
   "entries": [
     {
       "slug": "darya",
@@ -201,6 +201,27 @@
       "format": "webp",
       "inputBytes": 5004462,
       "outputBytes": 3290800
+    },
+    {
+      "slug": "mojtaba",
+      "variant": "lite",
+      "format": "png",
+      "inputBytes": 148552,
+      "outputBytes": 148552
+    },
+    {
+      "slug": "mojtaba",
+      "variant": "runtime",
+      "format": "png",
+      "inputBytes": 381308,
+      "outputBytes": 381308
+    },
+    {
+      "slug": "mojtaba",
+      "variant": "detail",
+      "format": "webp",
+      "inputBytes": 1016775,
+      "outputBytes": 953672
     },
     {
       "slug": "mobina",
@@ -434,5 +455,5 @@
       "outputBytes": 668300
     }
   ],
-  "savingsFraction": 0.19811
+  "savingsFraction": 0.19617
 }

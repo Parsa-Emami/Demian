@@ -148,6 +148,18 @@
       "motion_accessories": []
     },
     {
+      "slug": "mojtaba",
+      "display_name": "MOJTABA / مجتبی",
+      "production_status": "gold_standard_production",
+      "is_default_active": false,
+      "pack_version": 14,
+      "locomotion_style": "ground-runner",
+      "manifest": "mojtaba/manifests/character_manifest_v4.json",
+      "has_shipped_assets": true,
+      "motion_family": "male-base-v1",
+      "motion_accessories": []
+    },
+    {
       "slug": "mobina",
       "display_name": "MOBINA / مبینا",
       "production_status": "gold_standard_production",
@@ -292,7 +304,7 @@
   ],
   "master_motion": {
     "version": "master-motion-v1",
-    "source_sha256": "9b609f6f2b8d77cdb3d1f949bc8d9b50f0a5f658e17fe64d179026443609c47b",
+    "source_sha256": "bbaa11a271cfc0eb821851b90f8bf91bc3b1ef97a9b1aad1388b1dfb7fa794b3",
     "url": "assets/characters/master-motion-v1.json"
   }
 }
