@@ -1,0 +1,5 @@
+# Marjan — V14 onboarding draft
+
+This is a staging contract, not a playable character or a production acceptance claim. The supplied artwork is the identity reference; Darya is the female motion and geometry reference. Marjan has no companion. The target order is `uzudi`, `elaheh`, `marjan`, `tiam`; keep every other character in its existing order. Coffee mug and team boost are concept-only; do not alter ranked physics or implement combat from the reference poster.
+
+Before enabling Marjan, author independent transparent master, runner and slide sheets, retain the uploaded reference, measure the actual row boundaries and generate the six V14 packs. Use the existing motion registry, manifest generation, Laravel arcade allowlist and static playable export. Rebuild rather than manually editing hashed bundles and offline integrity data. Validate every atlas, all frame links, consistent foot pivot and slide clearance; exercise selection next to Elaheh, persistence, all active games, touch and keyboard, mobile and desktop, and physical Android/iOS before production approval. No production roster or generated files are changed by this draft.
