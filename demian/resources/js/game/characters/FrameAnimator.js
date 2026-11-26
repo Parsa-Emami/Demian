@@ -41,8 +41,11 @@ const DEFAULT_ANIMATION_FALLBACKS = Object.freeze({
 });
 
 export default class FrameAnimator {
-    constructor(atlas) {
+    constructor(atlas, { sideView = false } = {}) {
         this.atlas = atlas;
+        this.animations = sideView && atlas.sideViewAnimations
+            ? { ...atlas.animations, ...atlas.sideViewAnimations }
+            : atlas.animations;
         const slug = atlas.meta?.slug ?? atlas.meta?.name?.split('/')[0]?.trim().toLowerCase();
         this.masterMotion = motionCharacter(slug) ? new MasterMotionController(slug) : null;
         this.requestedAnimationName = null;
@@ -63,33 +66,33 @@ export default class FrameAnimator {
 
     has(name) {
         const safeName = sanitizeCharacterAnimation(name);
-        return Boolean(this.atlas.animations?.[safeName]);
+        return Boolean(this.animations?.[safeName]);
     }
 
     resolveName(name) {
         const safeName = sanitizeCharacterAnimation(name);
-        if (this.atlas.animations?.[safeName]) {
+        if (this.animations?.[safeName]) {
             return safeName;
         }
 
         const declaredFallback = this.atlas.fallbacks?.[safeName];
         const manifestFallback = typeof declaredFallback === 'string' && declaredFallback.trim()
             ? sanitizeCharacterAnimation(declaredFallback) : null;
-        if (manifestFallback && this.atlas.animations?.[manifestFallback]) {
+        if (manifestFallback && this.animations?.[manifestFallback]) {
             return manifestFallback;
         }
 
         let fallback = DEFAULT_ANIMATION_FALLBACKS[safeName];
         const visited = new Set([safeName]);
         while (fallback && !visited.has(fallback)) {
-            if (this.atlas.animations?.[fallback]) return fallback;
+            if (this.animations?.[fallback]) return fallback;
             visited.add(fallback);
             fallback = DEFAULT_ANIMATION_FALLBACKS[fallback];
         }
 
-        return this.atlas.animations?.idle
+        return this.animations?.idle
             ? 'idle'
-            : Object.keys(this.atlas.animations ?? {})[0];
+            : Object.keys(this.animations ?? {})[0];
     }
 
     play(name, { restart = false, preservePhase = false } = {}) {
@@ -117,7 +120,7 @@ export default class FrameAnimator {
         this.previousSample = null;
         this.requestedAnimationName = safeRequestedName;
         this.animationName = resolvedName;
-        this.animation = this.atlas.animations[resolvedName];
+        this.animation = this.animations[resolvedName];
         this.frameIndex = 0;
         this.elapsed = 0;
         this.finished = false;
@@ -327,7 +330,7 @@ export default class FrameAnimator {
 
     duration(name) {
         const resolvedName = this.resolveName(name);
-        const animation = this.atlas.animations?.[resolvedName];
+        const animation = this.animations?.[resolvedName];
         if (!animation) return 0;
 
         const frameCount = Math.max(

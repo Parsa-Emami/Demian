@@ -36,6 +36,7 @@ class BuiltinCharacterSeeder extends Seeder
                         'locomotion_style' => $entry['locomotion_style'] ?? 'ground-runner',
                         'companion' => match ($slug) {
                             'darya' => 'pishi',
+                            'dandelox' => 'black-cat',
                             'tiam' => 'homayoun',
                             default => null,
                         },

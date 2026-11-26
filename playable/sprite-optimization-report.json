@@ -6,12 +6,12 @@
     "runtime",
     "detail"
   ],
-  "candidates": 54,
-  "converted": 48,
-  "inputBytes": 121066839,
-  "outputBytes": 96781629,
-  "savedBytes": 24285210,
-  "skippedBytes": 1772987,
+  "candidates": 78,
+  "converted": 71,
+  "inputBytes": 130793839,
+  "outputBytes": 106853096,
+  "savedBytes": 23940743,
+  "skippedBytes": 2144878,
   "entries": [
     {
       "slug": "darya",
@@ -77,25 +77,25 @@
       "outputBytes": 5575466
     },
     {
-      "slug": "negar",
+      "slug": "tiam",
       "variant": "lite",
       "format": "webp",
-      "inputBytes": 859656,
-      "outputBytes": 729890
+      "inputBytes": 869575,
+      "outputBytes": 724968
     },
     {
-      "slug": "negar",
+      "slug": "tiam",
       "variant": "runtime",
       "format": "webp",
-      "inputBytes": 2268439,
-      "outputBytes": 1906492
+      "inputBytes": 2296339,
+      "outputBytes": 1885346
     },
     {
-      "slug": "negar",
+      "slug": "tiam",
       "variant": "detail",
       "format": "webp",
-      "inputBytes": 6101145,
-      "outputBytes": 5052012
+      "inputBytes": 6229442,
+      "outputBytes": 4324042
     },
     {
       "slug": "elaheh",
@@ -119,25 +119,88 @@
       "outputBytes": 1075942
     },
     {
-      "slug": "tiam",
+      "slug": "marjan",
       "variant": "lite",
       "format": "webp",
-      "inputBytes": 869575,
-      "outputBytes": 724968
+      "inputBytes": 158453,
+      "outputBytes": 146762
     },
     {
-      "slug": "tiam",
+      "slug": "marjan",
       "variant": "runtime",
       "format": "webp",
-      "inputBytes": 2296339,
-      "outputBytes": 1885346
+      "inputBytes": 413555,
+      "outputBytes": 376802
     },
     {
-      "slug": "tiam",
+      "slug": "marjan",
       "variant": "detail",
       "format": "webp",
-      "inputBytes": 6229442,
-      "outputBytes": 4324042
+      "inputBytes": 1054435,
+      "outputBytes": 966028
+    },
+    {
+      "slug": "mohana",
+      "variant": "lite",
+      "format": "webp",
+      "inputBytes": 176195,
+      "outputBytes": 165424
+    },
+    {
+      "slug": "mohana",
+      "variant": "runtime",
+      "format": "webp",
+      "inputBytes": 455921,
+      "outputBytes": 424980
+    },
+    {
+      "slug": "mohana",
+      "variant": "detail",
+      "format": "webp",
+      "inputBytes": 1197265,
+      "outputBytes": 1125020
+    },
+    {
+      "slug": "zohre",
+      "variant": "lite",
+      "format": "webp",
+      "inputBytes": 145462,
+      "outputBytes": 135198
+    },
+    {
+      "slug": "zohre",
+      "variant": "runtime",
+      "format": "webp",
+      "inputBytes": 376885,
+      "outputBytes": 348706
+    },
+    {
+      "slug": "zohre",
+      "variant": "detail",
+      "format": "webp",
+      "inputBytes": 983298,
+      "outputBytes": 916566
+    },
+    {
+      "slug": "kiana",
+      "variant": "lite",
+      "format": "webp",
+      "inputBytes": 145109,
+      "outputBytes": 134588
+    },
+    {
+      "slug": "kiana",
+      "variant": "runtime",
+      "format": "webp",
+      "inputBytes": 377432,
+      "outputBytes": 348902
+    },
+    {
+      "slug": "kiana",
+      "variant": "detail",
+      "format": "webp",
+      "inputBytes": 976363,
+      "outputBytes": 909090
     },
     {
       "slug": "amirreza",
@@ -206,22 +269,127 @@
       "slug": "arsal",
       "variant": "lite",
       "format": "webp",
-      "inputBytes": 710335,
-      "outputBytes": 518024
+      "inputBytes": 707930,
+      "outputBytes": 497372
     },
     {
       "slug": "arsal",
       "variant": "runtime",
       "format": "webp",
-      "inputBytes": 1867155,
-      "outputBytes": 1407864
+      "inputBytes": 1501805,
+      "outputBytes": 1164300
     },
     {
       "slug": "arsal",
       "variant": "detail",
       "format": "webp",
-      "inputBytes": 5004462,
-      "outputBytes": 3290800
+      "inputBytes": 2440463,
+      "outputBytes": 1841696
+    },
+    {
+      "slug": "sadro",
+      "variant": "lite",
+      "format": "png",
+      "inputBytes": 166756,
+      "outputBytes": 166756
+    },
+    {
+      "slug": "sadro",
+      "variant": "runtime",
+      "format": "png",
+      "inputBytes": 428392,
+      "outputBytes": 428392
+    },
+    {
+      "slug": "sadro",
+      "variant": "detail",
+      "format": "webp",
+      "inputBytes": 1117966,
+      "outputBytes": 1050694
+    },
+    {
+      "slug": "mojtaba",
+      "variant": "lite",
+      "format": "png",
+      "inputBytes": 148552,
+      "outputBytes": 148552
+    },
+    {
+      "slug": "mojtaba",
+      "variant": "runtime",
+      "format": "png",
+      "inputBytes": 381308,
+      "outputBytes": 381308
+    },
+    {
+      "slug": "mojtaba",
+      "variant": "detail",
+      "format": "webp",
+      "inputBytes": 1016775,
+      "outputBytes": 953672
+    },
+    {
+      "slug": "mobina",
+      "variant": "lite",
+      "format": "webp",
+      "inputBytes": 145427,
+      "outputBytes": 135914
+    },
+    {
+      "slug": "mobina",
+      "variant": "runtime",
+      "format": "webp",
+      "inputBytes": 377511,
+      "outputBytes": 351494
+    },
+    {
+      "slug": "mobina",
+      "variant": "detail",
+      "format": "webp",
+      "inputBytes": 1001994,
+      "outputBytes": 929286
+    },
+    {
+      "slug": "negar",
+      "variant": "lite",
+      "format": "webp",
+      "inputBytes": 859656,
+      "outputBytes": 729890
+    },
+    {
+      "slug": "negar",
+      "variant": "runtime",
+      "format": "webp",
+      "inputBytes": 2268439,
+      "outputBytes": 1906492
+    },
+    {
+      "slug": "negar",
+      "variant": "detail",
+      "format": "webp",
+      "inputBytes": 6101145,
+      "outputBytes": 5052012
+    },
+    {
+      "slug": "dandelox",
+      "variant": "lite",
+      "format": "webp",
+      "inputBytes": 168998,
+      "outputBytes": 156696
+    },
+    {
+      "slug": "dandelox",
+      "variant": "runtime",
+      "format": "webp",
+      "inputBytes": 430226,
+      "outputBytes": 396396
+    },
+    {
+      "slug": "dandelox",
+      "variant": "detail",
+      "format": "webp",
+      "inputBytes": 1095072,
+      "outputBytes": 996522
     },
     {
       "slug": "iman",
@@ -289,44 +457,44 @@
     {
       "slug": "taher-db",
       "variant": "lite",
-      "format": "png",
-      "inputBytes": 163910,
-      "outputBytes": 163910
+      "format": "webp",
+      "inputBytes": 158314,
+      "outputBytes": 150356
     },
     {
       "slug": "taher-db",
       "variant": "runtime",
       "format": "png",
-      "inputBytes": 444957,
-      "outputBytes": 444957
+      "inputBytes": 407444,
+      "outputBytes": 407444
     },
     {
       "slug": "taher-db",
       "variant": "detail",
       "format": "webp",
-      "inputBytes": 1204961,
-      "outputBytes": 1141592
+      "inputBytes": 1040235,
+      "outputBytes": 983006
     },
     {
       "slug": "sorkhi",
       "variant": "lite",
-      "format": "png",
-      "inputBytes": 148785,
-      "outputBytes": 148785
+      "format": "webp",
+      "inputBytes": 151078,
+      "outputBytes": 142892
     },
     {
       "slug": "sorkhi",
       "variant": "runtime",
-      "format": "png",
-      "inputBytes": 402909,
-      "outputBytes": 402909
+      "format": "webp",
+      "inputBytes": 389513,
+      "outputBytes": 366688
     },
     {
       "slug": "sorkhi",
       "variant": "detail",
       "format": "webp",
-      "inputBytes": 1056802,
-      "outputBytes": 992150
+      "inputBytes": 995144,
+      "outputBytes": 934956
     },
     {
       "slug": "yalda",
@@ -392,5 +560,5 @@
       "outputBytes": 668300
     }
   ],
-  "savingsFraction": 0.20059
+  "savingsFraction": 0.18304
 }

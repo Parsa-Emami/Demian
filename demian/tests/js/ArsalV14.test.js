@@ -34,15 +34,16 @@ test('Arsal is selectable through the shared roster with installed subpath-safe 
     assert.equal(entry.packVersion, shipped.pack_version);
     assert.equal(shipped.locomotion_style, 'ground-runner');
     const targets = json('arsal/manifests/character_manifest_v4.json').runtime.atlas_targets;
-    for (const variant of ['desktop', 'mobile', 'compact', 'runtime', 'lite']) {
+    for (const variant of ['desktop', 'mobile', 'compact', 'runtime', 'lite', 'detail']) {
+        const version = shipped.pack_version;
         const pair = builtinCharacterAssetPair('arsal', variant, 'https://demian.test/game/');
-        assert.equal(new URL(pair.spriteUrl).pathname, `/game/assets/characters/arsal/arsal-spritesheet-v14-${variant}.png`);
-        assert.ok(existsSync(resolve(root, `arsal/arsal-spritesheet-v14-${variant}.png`)));
-        assert.ok(existsSync(resolve(root, `arsal/arsal-atlas-v14-${variant}.json`)));
-        assert.equal(targets[variant].atlas, `../arsal-atlas-v14-${variant}.json`);
-        assert.equal(targets[variant].image, `../arsal-spritesheet-v14-${variant}.png`);
+        assert.equal(new URL(pair.spriteUrl).pathname, `/game/assets/characters/arsal/arsal-spritesheet-v${version}-${variant}.png`);
+        assert.ok(existsSync(resolve(root, `arsal/arsal-spritesheet-v${version}-${variant}.png`)));
+        assert.ok(existsSync(resolve(root, `arsal/arsal-atlas-v${version}-${variant}.json`)));
+        assert.equal(targets[variant].atlas, `../arsal-atlas-v${version}-${variant}.json`);
+        assert.equal(targets[variant].image, `../arsal-spritesheet-v${version}-${variant}.png`);
     }
-    assert.ok(builtinCharacterPreviewUrl('arsal', 'https://demian.test/game/').endsWith('/arsal/arsal-preview-v14.png'));
+    assert.ok(builtinCharacterPreviewUrl('arsal', 'https://demian.test/game/').endsWith(`/arsal/arsal-preview-v${shipped.pack_version}.png`));
 });
 
 test('every Arsal variant has complete directional actions, independent low slides and its exact paired image', () => {

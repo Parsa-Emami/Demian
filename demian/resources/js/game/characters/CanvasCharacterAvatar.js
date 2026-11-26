@@ -26,7 +26,7 @@ function damp(current, target, smoothing, deltaTime) {
 }
  
 export default class CanvasCharacterAvatar {
-    constructor({ slug, image, atlas, player = false }) {
+    constructor({ slug, image, atlas, player = false, sideView = false }) {
         this.slug = slug;
         this.texture = { image };
         this.atlas = atlas;
@@ -34,7 +34,8 @@ export default class CanvasCharacterAvatar {
         this.group = { position: this.position };
         this.character = { slug, name: slug, settings: {} };
         this.isPlayerControlled = Boolean(player);
-        this.animator = new FrameAnimator(atlas);
+        this.sideView = sideView;
+        this.animator = new FrameAnimator(atlas, { sideView });
         this.animator.play('idle');
         this.state = 'idle';
         this.previousState = 'idle';
@@ -142,7 +143,7 @@ export default class CanvasCharacterAvatar {
 
     replaceVisualAssets(image, atlas) {
         const previous = this.animator;
-        const next = new FrameAnimator(atlas);
+        const next = new FrameAnimator(atlas, { sideView: this.sideView });
         next.adoptPlaybackFrom(previous);
         this.texture = { image };
         this.atlas = atlas;

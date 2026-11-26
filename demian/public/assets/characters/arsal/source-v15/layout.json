@@ -1,0 +1,111 @@
+{
+  "character": "arsal",
+  "version": 15,
+  "source": "poses.webp",
+  "source_sha256": "5898ed5d37b449e053d8abe815276d7538b7344f21811ef47e0842008e505a2a",
+  "cell": 160,
+  "pivot": {
+    "x": 0.5,
+    "y": 0.94
+  },
+  "directions": [
+    "s",
+    "sw",
+    "w",
+    "nw",
+    "n",
+    "ne",
+    "e",
+    "se"
+  ],
+  "poses": [
+    "walk-a",
+    "walk-pass-a",
+    "walk-b",
+    "walk-pass-b",
+    "idle",
+    "run-a",
+    "run-float-a",
+    "impact",
+    "launch",
+    "tuck",
+    "descend",
+    "greet",
+    "run-b",
+    "run-float-b"
+  ],
+  "provenance": {
+    "generated_with": "OpenAI ImageGen",
+    "reference_asset": "../source-v14/master.png",
+    "identity_reference": "../arsal-preview-v14.png",
+    "inputs": {
+      "walk-cardinal": {
+        "sha256": "665d309204d25663cd5b75dc3ee54d68b02e161938a8ad9d36c858904b723a28",
+        "size": [
+          1271,
+          1237
+        ]
+      },
+      "walk-diagonal": {
+        "sha256": "bf88a3d5e133ff55cc9330b0c6bf5dd35845604470bcf527138152284a1ea15c",
+        "size": [
+          1312,
+          1199
+        ]
+      },
+      "ground-cardinal": {
+        "sha256": "1c37e2a62cf6b2077e9de1f755b44efc120535c5d9a73c5b94f5df48793c1662",
+        "size": [
+          1247,
+          1261
+        ]
+      },
+      "ground-diagonal": {
+        "sha256": "7081cd27aff1ddbf67184420029fa5b0c7ab13e0400d118861c62599bd5cbc11",
+        "size": [
+          1261,
+          1247
+        ]
+      },
+      "air-cardinal": {
+        "sha256": "fafd13e9187c8e6eb3f4dbaedaeceab54a3cbb5a641a5558c6f7cfb4c844d023",
+        "size": [
+          1312,
+          1199
+        ]
+      },
+      "air-diagonal": {
+        "sha256": "d9c6cd531d85b9a271fa6291114d985274f20e6461c0f505c0cf3d1f6cbdd8da",
+        "size": [
+          1312,
+          1199
+        ]
+      },
+      "run-cardinal": {
+        "sha256": "4bceb496e25b93ec360187a7a4526c55d87cc3a5628d170df6b845e7aee166a4",
+        "size": [
+          1774,
+          887
+        ]
+      },
+      "run-diagonal": {
+        "sha256": "591d114794912db880f2c8f37a5088e8c95368303a8ef29f3e479dc8d3f09c6b",
+        "size": [
+          1774,
+          887
+        ]
+      }
+    },
+    "uniform_scale_by_input": {
+      "walk-cardinal": 0.387792,
+      "walk-diagonal": 0.389568,
+      "ground-cardinal": 0.369028,
+      "ground-diagonal": 0.35443,
+      "air-cardinal": 0.383255,
+      "air-diagonal": 0.365772,
+      "run-cardinal": 0.238839,
+      "run-diagonal": 0.240373
+    },
+    "normalization": "Per-sheet uniform scale from idle head landmarks, torso/feet horizontal anchor, grounded shoe baseline, alpha and colored matte cleanup."
+  }
+}

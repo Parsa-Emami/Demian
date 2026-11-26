@@ -1,0 +1,43 @@
+{
+  "character_key": "sadro",
+  "pack_version": 14,
+  "reference": "../source-v14/reference.png",
+  "master": "../source-v14/master.png",
+  "runner_motion": "../source-v14/runner-motion.png",
+  "slide_master": "../source-v14/slides.png",
+  "locomotion_reference": {
+    "character": "arsal",
+    "states": [
+      "turn",
+      "idle",
+      "walk",
+      "run",
+      "sprint",
+      "jump",
+      "land",
+      "slide"
+    ]
+  },
+  "inputs": [
+    {
+      "name": "42818.png",
+      "role": "supplied-sadro-identity-costume-and-turnaround",
+      "sha256": "686f4a33bcca338fc85779373ca6c2bb00f7c2ecbeffbd262aa368944df54a14"
+    },
+    {
+      "name": "arsal/source-v14/master.png",
+      "role": "arsal-turnaround-idle-walk-jump-and-celebration",
+      "sha256": "0c0ca4d78d8e088c3845a2a541356de5ec9c38c9f50ed3c6647f0b61d64883e1"
+    },
+    {
+      "name": "arsal/source-v14/locomotion-v15.png",
+      "role": "arsal-running-stride-and-landing-recovery",
+      "sha256": "04cbb37f965051b6b6146a09b8abf4a435da7ad67c9afde6ea1adcac2b446d9d"
+    },
+    {
+      "name": "arsal/source-v14/slides.png",
+      "role": "arsal-low-slide-and-shoe-contact",
+      "sha256": "5745c6d8af94d996e66273d5b17cd850571a00fa83fb7418804fd43c9d09578a"
+    }
+  ]
+}

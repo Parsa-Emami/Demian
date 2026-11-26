@@ -18,6 +18,7 @@ roster.master_motion = { version: MASTER_MOTION.version, source_sha256: hash, ur
 for (const definition of MOTION_CHARACTERS) {
     const entry = roster.characters.find(item => item.slug === definition.slug);
     assert(entry, `Missing roster entry: ${definition.slug}`);
+    entry.pack_version = definition.packVersion;
     entry.motion_family = definition.family;
     entry.motion_accessories = definition.accessories;
     const path = `public/assets/characters/${definition.slug}/manifests/${definition.slug}_motion_profile.json`;

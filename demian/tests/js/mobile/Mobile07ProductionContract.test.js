@@ -38,9 +38,32 @@ test('PWA validation rejects missing deployment files without accepting a local 
         /PWA hosting validation failed/);
 });
 
-test('PWA update notice never blocks unrelated menu targets', () => {
+test('actionable PWA update belongs to a bounded scroll host, not a body overlay', () => {
     const css = read('../../../resources/css/pwa-update.css');
-    assert.match(css, /pointer-events:\s*none/);
+    const controller = read('../../../resources/js/game/performance/PwaUpdateController.js');
+    assert.match(css, /position:\s*static/);
+    assert.match(css, /z-index:\s*auto/);
+    assert.doesNotMatch(css, /position:\s*(fixed|absolute)/);
     assert.match(css, /\.demian-pwa-update button\s*\{[^}]*pointer-events:\s*auto/s);
-    assert.match(css, /top:\s*max\(/);
+    assert.match(controller, /host\.append\(toast\)/);
+    assert.doesNotMatch(controller, /documentRef\.body\.append\(toast\)/);
+    assert.match(controller, /offline\.busy \|\| accepted/);
+    assert.match(controller, /closest\('\[hidden\], \[inert\], \[aria-hidden="true"\]'\)/);
+    assert.match(controller, /registration\.waiting\.postMessage\(\{ type: 'DEMIAN_ACTIVATE_UPDATE' \}\)/);
+    assert.match(controller, /app\?\.sessionState === 'menu'/);
+    for (const path of ['../../../resources/views/demian.blade.php', '../../../../playable/index.html']) {
+        const html = read(path);
+        assert.match(html, /<div data-pwa-update-host><\/div>/);
+        assert.match(html, /updateHost\.append\(node\)/);
+        assert.match(html, /z-index:var\(--z-local-sticky\)/);
+    }
+});
+
+test('global passive notification contract cannot capture clicks through descendants', () => {
+    const layers = read('../../../resources/css/layers.css');
+    assert.match(layers, /\[data-ui-notice="passive"\][^\n]*\.arcade-toast[^\n]*\.shell-network-status\) \*/);
+    assert.match(layers, /pointer-events: none !important/);
+    const character = read('../../../resources/js/ui/CharacterManagerUI.js');
+    assert.match(character, /assignUiLayer\(toast, UI_LAYER\.TOAST\)/);
+    assert.match(character, /toast\.dataset\.uiNotice = 'passive'/);
 });

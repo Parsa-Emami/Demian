@@ -357,7 +357,8 @@ def build_character(slug):
             'atlas_targets': {v: {'atlas': f'../{slug}-atlas-v14-{v}.json', 'image': f'../{slug}-spritesheet-v14-{v}.png'} for v in VARIANTS}},
     }
     md = directory / 'manifests'
-    write_json(md / 'character_manifest_v4.json', manifest)
+    if ACTIVE_CHARACTER_DEFINITIONS[slug]['pack_version'] == VERSION:
+        write_json(md / 'character_manifest_v4.json', manifest)
     write_json(md / f'{slug}_animation_manifest.json', animation_manifest)
     reference = layout.get('referenceAsset', '../source-v14/reference.jpg')
     write_json(md / f'{slug}_identity_contract.json', {'character_key': slug, 'reference': reference,
@@ -387,7 +388,7 @@ def main():
     write_json(CHARACTERS / 'character-manifest-v4.json', {'manifest_version': 'v4',
         'production_character': 'darya', 'release': 'mobile-runner-v14',
         'characters': [{'slug': slug, 'display_name': label, 'production_status': 'gold_standard_production',
-            'is_default_active': slug == 'darya', 'pack_version': VERSION,
+            'is_default_active': slug == 'darya', 'pack_version': ACTIVE_CHARACTER_DEFINITIONS[slug]['pack_version'],
             'locomotion_style': ACTIVE_CHARACTER_DEFINITIONS[slug]['locomotion_style'],
             'manifest': f'{slug}/manifests/character_manifest_v4.json', 'has_shipped_assets': True}
             for slug, label in LABELS.items()]})

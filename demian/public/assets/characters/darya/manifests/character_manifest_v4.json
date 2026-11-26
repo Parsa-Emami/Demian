@@ -50,6 +50,14 @@
       "detail": {
         "atlas": "../darya-atlas-v14-detail.json",
         "image": "../darya-spritesheet-v14-detail.png"
+      },
+      "runtime": {
+        "atlas": "../darya-atlas-v14-runtime.json",
+        "image": "../darya-spritesheet-v14-runtime.png"
+      },
+      "lite": {
+        "atlas": "../darya-atlas-v14-lite.json",
+        "image": "../darya-spritesheet-v14-lite.png"
       }
     }
   }

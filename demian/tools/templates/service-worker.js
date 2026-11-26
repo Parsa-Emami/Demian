@@ -170,7 +170,7 @@ async function removeGame(id) {
 
 self.addEventListener('install', event => {
     event.waitUntil(caches.open(CACHE_NAME).then(cache =>
-        cache.addAll([offlineURL, manifestURL, ...iconURLs, ...legalURLs])));
+        cache.addAll([offlineURL, manifestURL, ...iconURLs, ...legalURLs].map(url => new Request(url, { cache: 'no-store', credentials: 'omit' })))));
     // A waiting worker never activates in the middle of a game.
 });
 self.addEventListener('activate', event => {

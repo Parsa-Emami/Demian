@@ -69,7 +69,11 @@ export default class PwaOfflineManager {
     get worker() { return this.registration?.active; }
     async mount() {
         const screen = this.document.querySelector('[data-screen="game-selection"]');
-        if (!screen) return this;
+        // Keep offline controls in the same scroll flow as the library.
+        // A sibling of .shell-page becomes a competing grid item and can
+        // cover the actual game-launch buttons on short or desktop viewports.
+        const host = screen?.querySelector('.shell-page');
+        if (!host || this.destroyed || this.panel) return this;
         this.panel = this.document.createElement('section');
         this.panel.className = 'demian-offline-manager';
         this.panel.setAttribute('aria-label', 'بازی‌های آفلاین');
@@ -107,7 +111,7 @@ export default class PwaOfflineManager {
         this.refreshButton = this.button('بررسی فضا', () => this.refresh());
         toolbar.append(this.installButton, this.refreshButton);
         this.panel.append(title, hint, this.rows, toolbar, this.status);
-        screen.append(this.panel);
+        host.append(this.panel);
         this.window.addEventListener('online', this.onOnline);
         this.window.addEventListener('beforeinstallprompt', this.onInstall);
         this.installed = this.window.matchMedia?.('(display-mode: standalone)')?.matches

@@ -1,0 +1,45 @@
+{
+  "character_key": "kiana",
+  "pack_version": 14,
+  "reference": "../source-v14/reference.jpg",
+  "master": "../source-v14/master.png",
+  "runner_motion": "../source-v14/runner-motion.png",
+  "slide_master": "../source-v14/slides.png",
+  "locomotion_reference": {
+    "character": "darya",
+    "states": [
+      "walk",
+      "run",
+      "jump",
+      "land",
+      "slide"
+    ]
+  },
+  "inputs": [
+    {
+      "name": "42850.png",
+      "role": "supplied-identity-costume-and-turnaround",
+      "sha256": "a41d21bf9ea0d04b537f7de2869b4d4ec8e00f69c7e356b1a28a9b0d4ecec8fc"
+    },
+    {
+      "name": "kiana-turnaround-and-gestures.png",
+      "role": "generated-direction-idle-and-victory-key-poses",
+      "sha256": "b91c24a0a10fde402499a4b267d2d29e92a0b4ded73a5c1a0d656a65283f7559"
+    },
+    {
+      "name": "kiana-locomotion.png",
+      "role": "generated-run-jump-and-land-key-poses",
+      "sha256": "2a351bd47f5a5b3d662088a0bfc300ba37c30276d29e14f9002f26e549015bcd"
+    },
+    {
+      "name": "kiana-walk.png",
+      "role": "generated-walk-with-matched-three-quarter-face",
+      "sha256": "a5c03a5321937e13176fe7fb0f0eeca320fa68be3b494d5f6c037580b380028f"
+    },
+    {
+      "name": "kiana-slide.png",
+      "role": "generated-low-slide-key-poses",
+      "sha256": "ee9ec2b07b6cb54780bb6e526ccfeb4fd2dba7b02d7d2adce57a41713c071b54"
+    }
+  ]
+}
