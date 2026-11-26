@@ -59,7 +59,10 @@ final class RewardCampaignService
             'max_discount_minor' => $maximum, 'valid_days' => $days,
         ];
         $economics = app(CampaignEconomics::class)->fromInput($data, $terms, $capacity);
-        if ($economics !== null) $terms['economics'] = $economics;
+        if ($economics !== null) {
+            $terms['economics'] = $economics;
+            if (app(WeeklyAllocationService::class)->required()) $terms['allocation'] = DynamicWinnerAllocation::policy();
+        }
         return $terms;
     }
 
@@ -90,6 +93,9 @@ final class RewardCampaignService
 
         if (array_key_exists('economics', $terms)) {
             $canonical['economics'] = app(CampaignEconomics::class)->canonical($terms['economics']);
+        }
+        if (array_key_exists('allocation', $terms)) {
+            $canonical['allocation'] = DynamicWinnerAllocation::canonical($terms['allocation']);
         }
         return hash('sha256', json_encode($canonical, JSON_THROW_ON_ERROR));
     }
@@ -453,6 +459,7 @@ final class RewardCampaignService
                         ])->all(),
                     'terms' => json_decode($campaign->terms, true, 512, JSON_THROW_ON_ERROR),
                     'finance' => app(CampaignEconomics::class)->report($campaign),
+                    'allocation' => app(WeeklyAllocationService::class)->preview($campaign),
                 ];
             })->all();
     }

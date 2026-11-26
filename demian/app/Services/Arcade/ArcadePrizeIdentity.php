@@ -43,14 +43,24 @@ final class ArcadePrizeIdentity
         if (config('demian-arcade.prize_identity_required') !== true) {
             return;
         }
-        $verified = DB::table('arcade_players')
-            ->where('id', $playerId)
-            ->where('contact_type', 'phone')
-            ->whereNotNull('contact_hash')
-            ->whereNotNull('phone_verified_at')
-            ->exists();
-        if (! $verified) {
+        if ($this->verifiedRecipientIds([$playerId]) === []) {
             throw new RuntimeException('Award recipient must verify their phone before issuance.');
         }
+    }
+
+    public function verifiedRecipientIds(array $playerIds): array
+    {
+        $verified = [];
+        foreach (array_chunk($playerIds, 500) as $ids) {
+            $matches = DB::table('arcade_players')
+                ->whereIn('id', $ids)
+                ->where('contact_type', 'phone')
+                ->whereNotNull('contact_hash')
+                ->whereNotNull('phone_verified_at')
+                ->pluck('id')->all();
+            array_push($verified, ...$matches);
+        }
+
+        return $verified;
     }
 }

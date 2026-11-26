@@ -106,7 +106,7 @@ final class RewardCampaignStep14Test extends TestCase
         return $id;
     }
 
-    private function seal(int $count = 2): array
+    private function seal(int $count = 2, bool $finalize = true): array
     {
         $players = [];
         $this->travelTo(CarbonImmutable::parse('2026-11-14T02:00:00Z'));
@@ -135,7 +135,7 @@ final class RewardCampaignStep14Test extends TestCase
                 'score' => 1000 - $i * 10, 'achieved_at' => $started,
             ]);
         }
-        app(WeeklySettlementService::class)->seal('2026-11-07');
+        if ($finalize) app(WeeklySettlementService::class)->seal('2026-11-07');
 
         return $players;
     }
@@ -254,6 +254,113 @@ final class RewardCampaignStep14Test extends TestCase
         $this->assertSame(1000, $read()['measurement']['net_incremental_minor']);
         $this->assertEqualsWithDelta(33.33, $read()['measurement']['roi_percent'], .01);
         $this->loginAs($root)->get('/cashier/admin/campaigns')->assertOk()->assertSee('AUDIT-2026-01')->assertDontSee($code);
+    }
+
+    public function test_dynamic_campaign_preview_seal_and_issue_agree_and_detect_tampering(): void
+    {
+        config()->set('demian-coupons.dynamic_allocation_required', true);
+        $root = $this->staff();
+        $id = $this->campaign($root, $this->economicData());
+        $this->import($root, $id, [$this->code(1), $this->code(2)]);
+        app(RewardCampaignService::class)->transition($root, 1, $id, 'activate');
+        $campaign = DB::table('arcade_reward_campaigns')->where('id', $id)->first();
+        $preview = app(\App\Services\Arcade\WeeklyAllocationService::class)->preview($campaign);
+        $this->assertSame('provisional', $preview['status']);
+        $this->assertSame(0, $preview['winner_count']);
+        $this->assertDatabaseCount('arcade_weekly_winners', 0);
+        $this->seal(20, false);
+        $preview = app(\App\Services\Arcade\WeeklyAllocationService::class)->preview($campaign);
+        $this->assertSame(2, $preview['winner_count']);
+        $this->assertSame(20, $preview['participants']);
+        $this->assertDatabaseCount('arcade_weekly_winners', 0);
+        app(WeeklySettlementService::class)->seal('2026-11-07');
+        $this->assertDatabaseCount('arcade_weekly_results', 20);
+        $this->assertDatabaseCount('arcade_weekly_winners', 2);
+        $preview = app(\App\Services\Arcade\WeeklyAllocationService::class)->preview($campaign);
+        $this->assertSame('sealed', $preview['status']);
+        $this->assertSame(1000, $preview['award_rate_bps']);
+        $this->assertSame(10000, $preview['maximum_commitment_minor']);
+        DB::table('arcade_weekly_winners')->where('prize_rank', 1)->update(['previous_winner' => true]);
+        try {
+            app(CouponIssuanceService::class)->issueWeek(self::WEEK);
+            $this->fail('Altered award proof was accepted.');
+        } catch (RuntimeException $expected) {
+            $this->assertStringContainsString('proof mismatch', $expected->getMessage());
+        }
+        $this->assertDatabaseCount('arcade_coupons', 0);
+        DB::table('arcade_weekly_winners')->where('prize_rank', 1)->update(['previous_winner' => false]);
+        $this->assertSame(2, app(CouponIssuanceService::class)->issueWeek(self::WEEK)['created']);
+        $this->assertSame(0, app(CouponIssuanceService::class)->issueWeek(self::WEEK)['created']);
+        $this->loginAs($root)->get('/cashier/admin/campaigns')->assertOk()->assertSee('سهمیه پویای برندگان');
+    }
+
+    public function test_dynamic_allocation_preserves_technical_ranks_and_requires_verified_recipients(): void
+    {
+        config()->set('demian-coupons.dynamic_allocation_required', true);
+        config()->set('demian-arcade.prize_identity_required', true);
+        $root = $this->staff();
+        $id = $this->campaign($root, $this->economicData());
+        $this->import($root, $id, [$this->code(1), $this->code(2)]);
+        app(RewardCampaignService::class)->transition($root, 1, $id, 'activate');
+        $players = $this->seal(20, false);
+        foreach ([$players[3], $players[19]] as $player) {
+            DB::table('arcade_players')->where('id', $player['player_id'])->update([
+                'contact_type' => 'phone',
+                'contact_hash' => hash('sha256', $player['player_id']),
+                'phone_verified_at' => now(),
+            ]);
+        }
+
+        $campaign = DB::table('arcade_reward_campaigns')->where('id', $id)->first();
+        $preview = app(\App\Services\Arcade\WeeklyAllocationService::class)->preview($campaign);
+        $this->assertSame(20, $preview['participants']);
+        $this->assertSame(2, $preview['eligible']);
+        $this->assertSame(2, $preview['winner_count']);
+
+        app(WeeklySettlementService::class)->seal('2026-11-07');
+        $this->assertDatabaseCount('arcade_weekly_results', 20);
+        $this->assertDatabaseHas('arcade_weekly_winners', [
+            'player_id' => $players[3]['player_id'], 'technical_rank' => 4, 'prize_rank' => 1,
+        ]);
+        $this->assertDatabaseHas('arcade_weekly_winners', [
+            'player_id' => $players[19]['player_id'], 'technical_rank' => 20, 'prize_rank' => 2,
+        ]);
+        $this->assertSame(2, app(CouponIssuanceService::class)->issueWeek(self::WEEK)['created']);
+        $this->assertDatabaseMissing('arcade_coupons', ['player_id' => $players[0]['player_id']]);
+    }
+
+    public function test_dynamic_paused_campaign_never_silently_discards_qualified_awards(): void
+    {
+        config()->set('demian-coupons.dynamic_allocation_required', true);
+        $root = $this->staff();
+        $id = $this->campaign($root, $this->economicData());
+        $this->import($root, $id, [$this->code(1), $this->code(2)]);
+        $service = app(RewardCampaignService::class);
+        $service->transition($root, 1, $id, 'activate');
+        $service->transition($root, 1, $id, 'pause');
+        $this->seal(20, false);
+        try {
+            app(WeeklySettlementService::class)->seal('2026-11-07');
+            $this->fail('Paused dynamic awards were finalized.');
+        } catch (RuntimeException $expected) {
+            $this->assertStringContainsString('not active', $expected->getMessage());
+        }
+        $this->assertDatabaseCount('arcade_weekly_results', 0);
+        $this->assertDatabaseCount('arcade_weekly_winners', 0);
+        $this->assertDatabaseCount('arcade_coupons', 0);
+    }
+
+    public function test_dynamic_campaign_below_minimum_keeps_technical_results_without_awards(): void
+    {
+        config()->set('demian-coupons.dynamic_allocation_required', true);
+        $root = $this->staff();
+        $id = $this->campaign($root, $this->economicData());
+        $this->import($root, $id, [$this->code(1), $this->code(2)]);
+        app(RewardCampaignService::class)->transition($root, 1, $id, 'activate');
+        $this->seal(19);
+        $this->assertDatabaseCount('arcade_weekly_results', 19);
+        $this->assertDatabaseCount('arcade_weekly_winners', 0);
+        $this->assertDatabaseCount('arcade_coupons', 0);
     }
 
     public function test_default_off_and_all_non_superadmin_roles_are_rejected(): void
