@@ -152,7 +152,7 @@
       "display_name": "ARSAL / ارسل",
       "production_status": "gold_standard_production",
       "is_default_active": false,
-      "pack_version": 14,
+      "pack_version": 15,
       "locomotion_style": "ground-runner",
       "manifest": "arsal/manifests/character_manifest_v4.json",
       "has_shipped_assets": true,
@@ -328,7 +328,7 @@
   ],
   "master_motion": {
     "version": "master-motion-v1",
-    "source_sha256": "c8009aa3b03d4c6c5f8c0c2c7cb024b74c296ab3eac6da6b7649a8c075c7a06a",
+    "source_sha256": "c7777516cb123070225cc157593d438c22aaed9446dbe7908a85d23e261e74f0",
     "url": "assets/characters/master-motion-v1.json"
   }
 }

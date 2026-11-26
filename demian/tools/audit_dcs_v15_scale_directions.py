@@ -38,9 +38,9 @@ def measure_frame(image, rect, pivot, ratio, world_height):
     }
 
 
-def inspect(slug, variant):
+def inspect(slug, variant, version):
     directory = ASSETS / slug
-    atlas = json.loads((directory / f"{slug}-atlas-v14-{variant}.json").read_text(encoding="utf-8"))
+    atlas = json.loads((directory / f"{slug}-atlas-v{version}-{variant}.json").read_text(encoding="utf-8"))
     ratio = float(atlas["render"]["referenceBodyHeightRatio"])
     height = float(atlas["display"]["worldHeight"])
     pivot = float(atlas["pivot"]["y"])
@@ -81,10 +81,11 @@ def inspect(slug, variant):
             "distinct_direction_sequences": len({tuple(directions[d]) for d in DIRECTIONS if directions.get(d)}),
             "directions": directional_samples,
         }
-    front = atlas["animations"]["turn"]["frames"][0]
+    turn = atlas["animations"]["turn"]
+    front = turn.get("framesByDirection", {}).get("s", turn["frames"])[0]
     front_metrics = measure(front)
     return {
-        "slug": slug, "variant": variant, "declared_ratio": ratio,
+        "slug": slug, "version": version, "variant": variant, "declared_ratio": ratio,
         "declared_world_height": height, "foot_pivot": pivot,
         "front_standing_silhouette": front_metrics,
         "states": states,
@@ -93,11 +94,13 @@ def inspect(slug, variant):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--characters", nargs="+", default=list(TARGETS))
+    parser.add_argument("--characters", nargs="+")
     parser.add_argument("--variants", nargs="+", choices=VARIANTS, default=list(VARIANTS))
+    parser.add_argument("--version", type=int, choices=(14, 15), default=14)
     parser.add_argument("--report", type=Path)
     args = parser.parse_args()
-    results = [inspect(slug, variant) for slug in args.characters for variant in args.variants]
+    slugs = args.characters or (["arsal"] if args.version == 15 else TARGETS)
+    results = [inspect(slug, variant, args.version) for slug in slugs for variant in args.variants]
     report = {
         "status": "measurement_only",
         "limitations": [

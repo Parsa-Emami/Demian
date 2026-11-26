@@ -40,7 +40,8 @@ def main():
     base = ROOT / 'public/assets/characters'
     roster = json.loads((base / 'character-manifest-v4.json').read_text())
     assert [c['slug'] for c in roster['characters']] == list(SLUGS)
-    assert all(c['pack_version'] == 14 and c['has_shipped_assets'] for c in roster['characters'])
+    assert all(c['pack_version'] == ACTIVE_CHARACTER_DEFINITIONS[c['slug']]['pack_version']
+               and c['has_shipped_assets'] for c in roster['characters'])
     results = []
     for character in roster['characters']:
         slug = character['slug']
@@ -49,6 +50,7 @@ def main():
         assert base / character['manifest'] == manifest_path, f'{slug}: incorrect roster manifest path'
         manifest = json.loads(manifest_path.read_text(encoding='utf-8'))
         assert manifest.get('character_key') == slug, f'{slug}: incorrect manifest character_key'
+        assert manifest.get('pack_version') == character['pack_version'], f'{slug}: incorrect active pack'
         targets = manifest.get('runtime', {}).get('atlas_targets')
         assert isinstance(targets, dict), f'{slug}: missing runtime.atlas_targets'
         missing = VARIANTS.keys() - targets.keys()
@@ -64,8 +66,9 @@ def main():
             image_path = directory / f'{slug}-spritesheet-v14-{variant}.png'
             target = targets[variant]
             assert isinstance(target, dict), f'{slug}/{variant}: invalid atlas target'
-            assert target.get('atlas') == f'../{atlas_path.name}', f'{slug}/{variant}: incorrect manifest atlas path'
-            assert target.get('image') == f'../{image_path.name}', f'{slug}/{variant}: incorrect manifest image path'
+            if manifest['pack_version'] == 14:
+                assert target.get('atlas') == f'../{atlas_path.name}', f'{slug}/{variant}: incorrect manifest atlas path'
+                assert target.get('image') == f'../{image_path.name}', f'{slug}/{variant}: incorrect manifest image path'
             atlas = json.loads(atlas_path.read_text())
             assert atlas['meta']['image'] == image_path.name, f'{slug}/{variant}: atlas image differs from manifest'
             with Image.open(image_path) as packed:

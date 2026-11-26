@@ -94,7 +94,8 @@ export function advanceCharacterAnimation(animator, {
         return;
     }
     const profile = animator.atlas.motion?.locomotionProfile;
-    if (profile && Number.isFinite(movementSpeed) && ['walk', 'tiptoe', 'run', 'sprint', 'skid'].includes(state)) {
+    if (profile && animator.animation?.loop !== false && Number.isFinite(movementSpeed)
+        && ['walk', 'tiptoe', 'run', 'sprint', 'skid'].includes(state)) {
         // One phase follows travelled distance, surviving walk/run/sprint changes
         // and the two authored cycles in Tiam's run. Stopped feet do not flutter.
         if (previousState && !sharesLocomotionPhase(previousState, state) && previousState !== 'skid') {

@@ -1,0 +1,137 @@
+{
+  "schemaVersion": 1,
+  "scope": "visual reference for the Demian character redesign",
+  "decision": "approved",
+  "reviewedOn": "2026-11-25",
+  "test": {
+    "pullRequest": 132,
+    "headSha": "c81acf4e76b6bfcde26cc97704bc8ee6ac8c1830",
+    "testedSha": "817d1d21796a8cc2ec27776b7f8c559b8854e0be",
+    "release": "b242200f678d75dc",
+    "workflowRunId": 45606548129,
+    "artifactId": 15019100120,
+    "reportSha256": "587d677e4e305214d3c063e66f0b6c61bbbf93a524956fee8f363c1b9d5f59cb",
+    "browser": "Chromium 151.0.7922.34",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "deviceScaleFactor": 2,
+    "physicalDevice": false,
+    "mode": "Open World practice, emulated mobile touch",
+    "limits": {
+      "visibleBodyRatio": [
+        0.84,
+        1.16
+      ],
+      "airborneBodyRatio": [
+        0.65,
+        1.16
+      ],
+      "footGapCssPx": 6,
+      "minimumTravelWorldUnits": 0.4
+    }
+  },
+  "characters": {
+    "darya": {
+      "decision": "approved",
+      "visualReview": "Hair, face profile, shoes and Pishi remain identifiable through direction changes and the aerial-to-ground transition.",
+      "phases": {
+        "walk": {
+          "draws": 74,
+          "poses": 19,
+          "bodyRatioMedian": 0.9821428571428572,
+          "visibleHeightCssPxMedian": 88.39285714285715,
+          "footGapCssPxMax": 1.6875000000000142,
+          "peakElevation": 0,
+          "travel": 2.3733738372186926
+        },
+        "run": {
+          "draws": 55,
+          "poses": 23,
+          "bodyRatioMedian": 1.0044642857142858,
+          "visibleHeightCssPxMedian": 90.40178571428572,
+          "footGapCssPxMax": 1.6875000000000142,
+          "peakElevation": 0,
+          "travel": 5.099607914770635
+        },
+        "jump": {
+          "draws": 8,
+          "poses": 3,
+          "bodyRatioMedian": 1.049107142857143,
+          "visibleHeightCssPxMedian": 94.41964285714286,
+          "footGapCssPxMax": null,
+          "peakElevation": 1.2681798022909363,
+          "travel": null
+        },
+        "land": {
+          "draws": 11,
+          "poses": 8,
+          "bodyRatioMedian": 1.049107142857143,
+          "visibleHeightCssPxMedian": 94.41964285714286,
+          "footGapCssPxMax": 1.6875000000000142,
+          "peakElevation": 0,
+          "travel": null
+        }
+      },
+      "packs": [
+        {
+          "image": "darya-spritesheet-v14-lite.webp",
+          "imageRevision": "7d1a578875f9d732d899818d16e7e5424ca49158ce1032f3585e5770cc7840ea",
+          "variant": "lite"
+        }
+      ],
+      "videoSha256": "9b3e7b2e36a56629fd6a0b9cc30bc184617ecabe95d6e63e25556e48e3aaab21"
+    },
+    "arsal": {
+      "decision": "approved",
+      "visualReview": "Hairline, facial profile and outfit read consistently. The airborne knee tuck is visible and the silhouette returns to standing height on landing.",
+      "phases": {
+        "walk": {
+          "draws": 75,
+          "poses": 19,
+          "bodyRatioMedian": 1.0044642857142858,
+          "visibleHeightCssPxMedian": 90.40178571428572,
+          "footGapCssPxMax": 2.330357142857139,
+          "peakElevation": 0,
+          "travel": 2.3733738372186926
+        },
+        "run": {
+          "draws": 55,
+          "poses": 13,
+          "bodyRatioMedian": 1.0044642857142858,
+          "visibleHeightCssPxMedian": 90.40178571428572,
+          "footGapCssPxMax": 2.330357142857139,
+          "peakElevation": 0,
+          "travel": 5.193907917353869
+        },
+        "jump": {
+          "draws": 8,
+          "poses": 3,
+          "bodyRatioMedian": 0.8258928571428572,
+          "visibleHeightCssPxMedian": 74.33035714285715,
+          "footGapCssPxMax": null,
+          "peakElevation": 1.2681798022909363,
+          "travel": null
+        },
+        "land": {
+          "draws": 11,
+          "poses": 8,
+          "bodyRatioMedian": 1.0267857142857144,
+          "visibleHeightCssPxMedian": 92.41071428571429,
+          "footGapCssPxMax": 1.6875000000000142,
+          "peakElevation": 0,
+          "travel": null
+        }
+      },
+      "packs": [
+        {
+          "image": "arsal-spritesheet-v14-lite.webp",
+          "imageRevision": "3d4563d02f5deec6a9d971355e54aa582e40c6ae9ed675066a918b01ce4a0bae",
+          "variant": "lite"
+        }
+      ],
+      "videoSha256": "d45b85349152fc69e880fc45b93ef328ce04efe1d5a8da75fd7fbe9a145a1042"
+    }
+  }
+}

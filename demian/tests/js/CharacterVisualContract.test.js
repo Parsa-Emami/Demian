@@ -20,10 +20,11 @@ test('canonical packs resolve every Demian roster member and Darya uses the refe
 
     assert.deepEqual(BUILTIN_CHARACTER_SLUGS, ['darya', 'setayesh', 'uzudi', 'tiam', 'elaheh', 'marjan', 'amirreza', 'hanna', 'ainaz', 'arsal', 'sadro', 'mojtaba', 'mobina', 'negar', 'dandelox', 'iman', 'amin', 'hossein', 'taher-db', 'sorkhi', 'yalda', 'mori', 'mahyar']);
     for (const slug of BUILTIN_CHARACTER_SLUGS) {
-        assert.equal(characterPackVersion(slug), 14);
+        const version = slug === 'arsal' ? 15 : 14;
+        assert.equal(characterPackVersion(slug), version);
         const pair = builtinCharacterAssetPair(slug, 'mobile', 'https://example.test/game/');
-        assert.ok(pair.spriteUrl.endsWith(`${slug}-spritesheet-v14-mobile.png`));
-        assert.ok(pair.atlasUrl.endsWith(`${slug}-atlas-v14-mobile.json`));
+        assert.ok(pair.spriteUrl.endsWith(`${slug}-spritesheet-v${version}-mobile.png`));
+        assert.ok(pair.atlasUrl.endsWith(`${slug}-atlas-v${version}-mobile.json`));
     }
     assert.equal(CHARACTER_PACK_VERSION_OVERRIDES.darya, 14);
 

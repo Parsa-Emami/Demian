@@ -44,6 +44,7 @@ jobs:
       - run: npm run validate:final
       - run: npm run validate:ui-layers
       - run: npm run validate:characters:v14
+      - run: npm run validate:characters:v15
       - name: Restore previous hashed modules before a main release
         if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
         run: node tools/restore_previous_build.mjs

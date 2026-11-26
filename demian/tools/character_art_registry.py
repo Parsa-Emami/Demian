@@ -22,6 +22,7 @@ ACTIVE_CHARACTER_DEFINITIONS = {
         'display_name': entry['displayName'],
         'locomotion_style': 'wing-assisted' if any(item['kind'] == 'wings' for item in entry['accessories']) else 'ground-runner',
         'motion_family': entry['family'],
+        'pack_version': entry['packVersion'],
     }
     for entry in MOTION_CONTRACT['characters']
 }

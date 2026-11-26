@@ -217,7 +217,7 @@
       "slug": "arsal",
       "displayName": "ARSAL / ارسل",
       "family": "male-base-v1",
-      "packVersion": 14,
+      "packVersion": 15,
       "defaultActive": false,
       "skin": "arsal",
       "accessories": [],
@@ -364,5 +364,5 @@
       "identityContract": "assets/characters/mahyar/manifests/mahyar_identity_contract.json"
     }
   ],
-  "sourceSha256": "c8009aa3b03d4c6c5f8c0c2c7cb024b74c296ab3eac6da6b7649a8c075c7a06a"
+  "sourceSha256": "c7777516cb123070225cc157593d438c22aaed9446dbe7908a85d23e261e74f0"
 }
