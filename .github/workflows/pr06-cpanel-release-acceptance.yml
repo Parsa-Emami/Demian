@@ -1,20 +1,11 @@
 name: PR06 cPanel release acceptance (CI only)
+# Required package check must run for all PRs and main commits (including docs-only).
 # Builds and boots an actual no-dev API-only archive. NEVER deploys to a host.
 on:
   pull_request:
     branches: [main]
-    paths:
-      - 'demian/**'
-      - '.github/workflows/pr06-cpanel-release-acceptance.yml'
-      - '.github/workflows/cpanel-api-deploy.yml'
-      - '.github/workflows/mobile11-ops-ci.yml'
   push:
     branches: [main]
-    paths:
-      - 'demian/**'
-      - '.github/workflows/pr06-cpanel-release-acceptance.yml'
-      - '.github/workflows/cpanel-api-deploy.yml'
-      - '.github/workflows/mobile11-ops-ci.yml'
   workflow_dispatch:
 permissions:
   contents: read
