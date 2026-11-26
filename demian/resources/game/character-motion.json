@@ -136,16 +136,6 @@
       "identityContract": "assets/characters/uzudi/manifests/uzudi_identity_contract.json"
     },
     {
-      "slug": "elaheh",
-      "displayName": "ELAHEH / الهه",
-      "family": "female-base-v1",
-      "packVersion": 14,
-      "defaultActive": false,
-      "skin": "elaheh",
-      "accessories": [],
-      "identityContract": "assets/characters/elaheh/manifests/elaheh_identity_contract.json"
-    },
-    {
       "slug": "tiam",
       "displayName": "TIAM / تیام",
       "family": "female-base-v1",
@@ -164,6 +154,26 @@
         }
       ],
       "identityContract": "assets/characters/tiam/manifests/tiam_identity_contract.json"
+    },
+    {
+      "slug": "elaheh",
+      "displayName": "ELAHEH / الهه",
+      "family": "female-base-v1",
+      "packVersion": 14,
+      "defaultActive": false,
+      "skin": "elaheh",
+      "accessories": [],
+      "identityContract": "assets/characters/elaheh/manifests/elaheh_identity_contract.json"
+    },
+    {
+      "slug": "marjan",
+      "displayName": "MARJAN / مرجان",
+      "family": "female-base-v1",
+      "packVersion": 14,
+      "defaultActive": false,
+      "skin": "marjan",
+      "accessories": [],
+      "identityContract": "assets/characters/marjan/manifests/marjan_identity_contract.json"
     },
     {
       "slug": "amirreza",

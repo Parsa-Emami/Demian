@@ -1,0 +1,94 @@
+{
+  "mainStates": [
+    "turn",
+    "idle",
+    "jump",
+    "celebrate"
+  ],
+  "mainRowBounds": [
+    0,
+    192,
+    384,
+    576,
+    768
+  ],
+  "motionColumns": 8,
+  "motionRowBounds": [
+    0,
+    192,
+    384,
+    576
+  ],
+  "motionRowStates": [
+    "walk",
+    "run",
+    "land"
+  ],
+  "referenceAsset": "../source-v14/reference.jpg",
+  "referenceInputs": [
+    {
+      "name": "42828.png",
+      "role": "identity-costume-and-turnaround",
+      "sha256": "4b0963f82762172aa25e6ac4f568320e938127fbc3f4e27c61df04448fb7f068"
+    },
+    {
+      "name": "a_clean_high_resolution_sprite_sheet_on_a_transpa.png",
+      "role": "generated-motion-key-poses",
+      "sha256": "c96355e3e521a327837486bf9393a0dbc2b569acdcdd5b9c1fcdf2c4e0141f5f"
+    }
+  ],
+  "identity": [
+    "long wavy chestnut-brown hair and brown eyes",
+    "black rolled-sleeve button-front shirt",
+    "loose charcoal trousers and black cream sneakers",
+    "no companion"
+  ],
+  "locomotionReference": {
+    "character": "darya",
+    "states": [
+      "walk",
+      "run",
+      "jump",
+      "land",
+      "slide"
+    ]
+  },
+  "bodyScaleReferencePoses": {
+    "walk": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "run": [
+      0,
+      2,
+      3,
+      6,
+      7
+    ],
+    "jump": [
+      7
+    ],
+    "land": [
+      5,
+      6,
+      7
+    ]
+  },
+  "locomotionCycleCounts": {
+    "walk": 1,
+    "run": 1
+  },
+  "idleLoopDirections": [
+    "s"
+  ],
+  "slideSharesIdleScale": true,
+  "faceSampleHeightRatio": 0.54,
+  "faceSkinRedGreenRatio": 1.1,
+  "indexedPalette": true
+}

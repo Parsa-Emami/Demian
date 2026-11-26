@@ -46,6 +46,21 @@
       }
     },
     {
+      "id": "builtin-tiam",
+      "name": "TIAM / تیام",
+      "slug": "tiam",
+      "is_builtin": true,
+      "is_active": false,
+      "sprite_url": "assets/characters/tiam/tiam-spritesheet-v14-mobile.png",
+      "atlas_url": "assets/characters/tiam/tiam-atlas-v14-mobile.json",
+      "settings": {
+        "scale": 1,
+        "walk_speed": 3.55,
+        "run_speed": 6.9,
+        "jump_force": 6.8
+      }
+    },
+    {
       "id": "builtin-elaheh",
       "name": "ELAHEH / الهه",
       "slug": "elaheh",
@@ -61,13 +76,13 @@
       }
     },
     {
-      "id": "builtin-tiam",
-      "name": "TIAM / تیام",
-      "slug": "tiam",
+      "id": "builtin-marjan",
+      "name": "MARJAN / مرجان",
+      "slug": "marjan",
       "is_builtin": true,
       "is_active": false,
-      "sprite_url": "assets/characters/tiam/tiam-spritesheet-v14-mobile.png",
-      "atlas_url": "assets/characters/tiam/tiam-atlas-v14-mobile.json",
+      "sprite_url": "assets/characters/marjan/marjan-spritesheet-v14-mobile.png",
+      "atlas_url": "assets/characters/marjan/marjan-atlas-v14-mobile.json",
       "settings": {
         "scale": 1,
         "walk_speed": 3.55,

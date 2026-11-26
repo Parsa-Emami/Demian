@@ -6,11 +6,11 @@
     "runtime",
     "detail"
   ],
-  "candidates": 63,
-  "converted": 58,
-  "inputBytes": 125552106,
-  "outputBytes": 100922508,
-  "savedBytes": 24629598,
+  "candidates": 66,
+  "converted": 61,
+  "inputBytes": 127178549,
+  "outputBytes": 102412100,
+  "savedBytes": 24766449,
   "skippedBytes": 1549730,
   "entries": [
     {
@@ -77,6 +77,27 @@
       "outputBytes": 5575466
     },
     {
+      "slug": "tiam",
+      "variant": "lite",
+      "format": "webp",
+      "inputBytes": 869575,
+      "outputBytes": 724968
+    },
+    {
+      "slug": "tiam",
+      "variant": "runtime",
+      "format": "webp",
+      "inputBytes": 2296339,
+      "outputBytes": 1885346
+    },
+    {
+      "slug": "tiam",
+      "variant": "detail",
+      "format": "webp",
+      "inputBytes": 6229442,
+      "outputBytes": 4324042
+    },
+    {
       "slug": "elaheh",
       "variant": "lite",
       "format": "png",
@@ -98,25 +119,25 @@
       "outputBytes": 1075942
     },
     {
-      "slug": "tiam",
+      "slug": "marjan",
       "variant": "lite",
       "format": "webp",
-      "inputBytes": 869575,
-      "outputBytes": 724968
+      "inputBytes": 158453,
+      "outputBytes": 146762
     },
     {
-      "slug": "tiam",
+      "slug": "marjan",
       "variant": "runtime",
       "format": "webp",
-      "inputBytes": 2296339,
-      "outputBytes": 1885346
+      "inputBytes": 413555,
+      "outputBytes": 376802
     },
     {
-      "slug": "tiam",
+      "slug": "marjan",
       "variant": "detail",
       "format": "webp",
-      "inputBytes": 6229442,
-      "outputBytes": 4324042
+      "inputBytes": 1054435,
+      "outputBytes": 966028
     },
     {
       "slug": "amirreza",
@@ -455,5 +476,5 @@
       "outputBytes": 668300
     }
   ],
-  "savingsFraction": 0.19617
+  "savingsFraction": 0.19474
 }

@@ -58,18 +58,6 @@
       ]
     },
     {
-      "slug": "elaheh",
-      "display_name": "ELAHEH / الهه",
-      "production_status": "gold_standard_production",
-      "is_default_active": false,
-      "pack_version": 14,
-      "locomotion_style": "ground-runner",
-      "manifest": "elaheh/manifests/character_manifest_v4.json",
-      "has_shipped_assets": true,
-      "motion_family": "female-base-v1",
-      "motion_accessories": []
-    },
-    {
       "slug": "tiam",
       "display_name": "TIAM / تیام",
       "production_status": "gold_standard_production",
@@ -90,6 +78,30 @@
           "collision": "cosmetic"
         }
       ]
+    },
+    {
+      "slug": "elaheh",
+      "display_name": "ELAHEH / الهه",
+      "production_status": "gold_standard_production",
+      "is_default_active": false,
+      "pack_version": 14,
+      "locomotion_style": "ground-runner",
+      "manifest": "elaheh/manifests/character_manifest_v4.json",
+      "has_shipped_assets": true,
+      "motion_family": "female-base-v1",
+      "motion_accessories": []
+    },
+    {
+      "slug": "marjan",
+      "display_name": "MARJAN / مرجان",
+      "production_status": "gold_standard_production",
+      "is_default_active": false,
+      "pack_version": 14,
+      "locomotion_style": "ground-runner",
+      "manifest": "marjan/manifests/character_manifest_v4.json",
+      "has_shipped_assets": true,
+      "motion_family": "female-base-v1",
+      "motion_accessories": []
     },
     {
       "slug": "amirreza",
@@ -304,7 +316,7 @@
   ],
   "master_motion": {
     "version": "master-motion-v1",
-    "source_sha256": "bbaa11a271cfc0eb821851b90f8bf91bc3b1ef97a9b1aad1388b1dfb7fa794b3",
+    "source_sha256": "af7ca31341a04e42cd3d56d194555448825faee743954aea59d10f29729e12d0",
     "url": "assets/characters/master-motion-v1.json"
   }
 }
