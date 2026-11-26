@@ -34,7 +34,7 @@
     "version": "master-motion-v1",
     "rig_version": 1,
     "family": "male-base-v1",
-    "source_sha256": "04939b6cba4340c8b8a529b7a0906029ff313715d594a264d909316559a579aa",
+    "source_sha256": "befd327d0965b6acd7395653757a3c850c34f0f0bc4b8819243ddc024f8d0644",
     "art_status": "authored-atlas",
     "accessories": [
       {

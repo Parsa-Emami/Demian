@@ -5,18 +5,18 @@ import MenuCharacterRoster from '../../resources/js/game/characters/MenuCharacte
 import CharacterPreviewRenderer, {
     resolvePreviewFrameName,
 } from '../../resources/js/ui/CharacterPreviewRenderer.js';
-import { BUILTIN_CHARACTER_SLUGS } from '../../resources/js/game/characters/CharacterVisualContract.js';
+import { BUILTIN_CHARACTER_SLUGS, characterPackVersion } from '../../resources/js/game/characters/CharacterVisualContract.js';
 
 test('all shipped roster portraits and paired atlases are present for phone and desktop presentation', () => {
     const base = new URL('../../public/assets/characters/', import.meta.url);
     const manifest = JSON.parse(readFileSync(new URL('character-manifest-v4.json', base), 'utf8'));
     assert.deepEqual(manifest.characters.map(item => item.slug), [...BUILTIN_CHARACTER_SLUGS]);
     for (const { slug, pack_version: version } of manifest.characters) {
-        assert.equal(version, 14, slug);
+        assert.equal(version, characterPackVersion(slug), slug);
         for (const path of [
-            `${slug}/${slug}-preview-v14.png`,
-            `${slug}/${slug}-atlas-v14-lite.json`,
-            `${slug}/${slug}-atlas-v14-runtime.json`,
+            `${slug}/${slug}-preview-v${version}.png`,
+            `${slug}/${slug}-atlas-v${version}-lite.json`,
+            `${slug}/${slug}-atlas-v${version}-runtime.json`,
         ]) {
             assert.ok(existsSync(new URL(path, base)), `Missing ${path}`);
         }

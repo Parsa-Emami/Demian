@@ -203,9 +203,6 @@ async function recordCharacter(browser, url, slug, videoDir) {
         await page.screenshot({ path: join(output, slug + '-picker.png') });
         await card.locator('[data-select-character]').tap();
         await page.waitForFunction(slug => window.demianGameApplication.characterVisuals.activeSlug === slug, slug);
-        if (await page.locator('[data-character-manager]').getAttribute('data-sidebar-state') === 'expanded') {
-            await page.locator('.character-sheet-close').tap();
-        }
         await page.waitForFunction(() => document.querySelector('[data-character-manager]').dataset.sidebarState === 'collapsed');
         await menu.getByRole('button', { name: 'انتخاب بازی', exact: true }).tap();
         await page.locator('[data-game-launch="open-world"]').tap();
@@ -260,7 +257,11 @@ const report = { release, sourceSha: values.sha ?? null, status: 'running', view
 let browser;
 try {
     await new Promise((accept, reject) => server.once('error', reject).listen(0, '127.0.0.1', accept));
-    browser = await chromium.launch({ headless: true, args: ['--no-sandbox', '--disable-dev-shm-usage', '--disable-gpu'] });
+    browser = await chromium.launch({
+        headless: true,
+        executablePath: process.env.DEMIAN_BROWSER_EXECUTABLE,
+        args: ['--no-sandbox', '--disable-dev-shm-usage', '--disable-gpu'],
+    });
     report.browser = 'Chromium ' + browser.version();
     const url = 'http://127.0.0.1:' + server.address().port + '/';
     for (const slug of characters) report.characters[slug] = await recordCharacter(browser, url, slug, videoDir);

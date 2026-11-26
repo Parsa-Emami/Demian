@@ -33,7 +33,7 @@ export default class DinoRunGame extends BaseGame {
     async preload(context) {
         // Only the player is on the first-playable-frame path. Two additional
         // attacker atlases previously blocked the entire runner launch.
-        this.avatar = await context.services.characterVisuals.createCanvasAvatar('player', { player: true });
+        this.avatar = await context.services.characterVisuals.createCanvasAvatar('player', { player: true, sideView: true });
         this.attackAvatars = new Map();
     }
     hydrateAttackers(context, attackers) {
@@ -50,7 +50,7 @@ export default class DinoRunGame extends BaseGame {
                     if (this.context !== context || this.disposed || generation !== this.attackerGeneration) return;
                     for (const response of ['jump', 'duck']) {
                         this.attackAvatars.set(`${slug}:${response}`, new CanvasCharacterAvatar({
-                            slug, image: base.texture.image, atlas: base.atlas,
+                            slug, image: base.texture.image, atlas: base.atlas, sideView: true,
                         }));
                     }
                 }).catch(() => {
@@ -154,7 +154,7 @@ export default class DinoRunGame extends BaseGame {
         if (!BUILTIN_CHARACTER_SLUGS.includes(slug) || this.selecting) return;
         this.selecting = true;
         try {
-            const avatar = await this.context.services.characterVisuals.createCanvasAvatar(slug, { player: true });
+            const avatar = await this.context.services.characterVisuals.createCanvasAvatar(slug, { player: true, sideView: true });
             this.avatar = avatar; avatar.sync(this.actor, 0);
             this.context.services.characterVisuals.setActiveSlug(slug);
             this.refreshRoster();

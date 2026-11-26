@@ -87,11 +87,12 @@ def build(slug, variant, cell, stride):
     manifest_path = directory / 'manifests/character_manifest_v4.json'
     if manifest_path.is_file():
         manifest = json.loads(manifest_path.read_text())
-        manifest['runtime']['atlas_targets'][variant] = {
-            'atlas': f'../{slug}-atlas-v14-{variant}.json',
-            'image': f'../{filename}',
-        }
-        manifest_path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + '\n')
+        if manifest['pack_version'] == source['meta']['version']:
+            manifest['runtime']['atlas_targets'][variant] = {
+                'atlas': f'../{slug}-atlas-v14-{variant}.json',
+                'image': f'../{filename}',
+            }
+            manifest_path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + '\n')
     return {'slug': slug, 'variant': variant, 'physicalFrames': len(selected),
         'animationFrameNames': len(aliases), 'decodedBytes': sheet.width * sheet.height * 4,
         'downloadBytes': (directory / filename).stat().st_size,

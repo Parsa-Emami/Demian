@@ -18,7 +18,7 @@ import { AtlasRegistry } from '../../resources/js/game/assets/AtlasRegistry.ts';
 import { TextureAtlasLoader } from '../../resources/js/game/assets/TextureAtlasLoader.ts';
 import { CharacterSystem } from '../../resources/js/game/characters/CharacterSystem.ts';
 import { PhaserGameCore } from '../../resources/js/game/core/PhaserGameCore.ts';
-import { BUILTIN_CHARACTER_SLUGS } from '../../resources/js/game/characters/CharacterVisualContract.js';
+import { BUILTIN_CHARACTER_SLUGS, characterPackVersion } from '../../resources/js/game/characters/CharacterVisualContract.js';
 
 const projectRoot = resolve(import.meta.dirname, '../..');
 
@@ -163,7 +163,7 @@ test('TextureAtlasLoader resolves shipped runtime and lite variants for every bu
 
     for (const slug of BUILTIN_CHARACTER_SLUGS) {
         for (const variant of ['runtime', 'lite']) {
-            const image = `${slug}-spritesheet-v14-${variant}.png`;
+            const image = `${slug}-spritesheet-v${characterPackVersion(slug)}-${variant}.png`;
             const atlas = await loader.loadAtlasVariant(slug, variant);
             assert.equal(atlas?.meta?.image, image, `${slug}/${variant} atlas`);
             assert.equal(

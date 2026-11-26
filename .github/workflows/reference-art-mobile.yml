@@ -35,7 +35,7 @@ jobs:
           python-version: '3.12'
       - run: pip install Pillow
       - run: npm ci
-      - run: npm run validate:characters:v14
+      - run: npm run validate:character-art
       - run: npm run build:static
       - run: npm run validate:build
       - run: npm run validate:static-assets
@@ -43,6 +43,13 @@ jobs:
       - name: Record Darya and Arsal in Open World
         timeout-minutes: 4
         run: node tools/check_reference_art_mobile.mjs --site _site --out "$RUNNER_TEMP/reference-art-mobile" --sha "$GITHUB_SHA"
+      - name: Verify Arsal V15 in the games
+        timeout-minutes: 4
+        run: npm run test:arsal:browser
+        env:
+          DEMIAN_QA_SITE: _site
+          DEMIAN_QA_REPORT_DIR: ${{ runner.temp }}/reference-art-mobile
+          DEMIAN_QA_SCREENSHOT_DIR: ${{ runner.temp }}/reference-art-mobile/arsal-v15
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
         with:

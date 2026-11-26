@@ -8,9 +8,9 @@
   ],
   "candidates": 75,
   "converted": 68,
-  "inputBytes": 131896212,
-  "outputBytes": 106850992,
-  "savedBytes": 25045220,
+  "inputBytes": 128964458,
+  "outputBytes": 105137672,
+  "savedBytes": 23826786,
   "skippedBytes": 2144878,
   "entries": [
     {
@@ -248,22 +248,22 @@
       "slug": "arsal",
       "variant": "lite",
       "format": "webp",
-      "inputBytes": 710335,
-      "outputBytes": 518024
+      "inputBytes": 707930,
+      "outputBytes": 497372
     },
     {
       "slug": "arsal",
       "variant": "runtime",
       "format": "webp",
-      "inputBytes": 1867155,
-      "outputBytes": 1407864
+      "inputBytes": 1501805,
+      "outputBytes": 1164300
     },
     {
       "slug": "arsal",
       "variant": "detail",
       "format": "webp",
-      "inputBytes": 5004462,
-      "outputBytes": 3290800
+      "inputBytes": 2440463,
+      "outputBytes": 1841696
     },
     {
       "slug": "sadro",
@@ -539,5 +539,5 @@
       "outputBytes": 668300
     }
   ],
-  "savingsFraction": 0.18989
+  "savingsFraction": 0.18475
 }
