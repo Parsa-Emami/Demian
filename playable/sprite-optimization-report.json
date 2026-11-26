@@ -6,12 +6,12 @@
     "runtime",
     "detail"
   ],
-  "candidates": 66,
-  "converted": 61,
-  "inputBytes": 127178549,
-  "outputBytes": 102412100,
-  "savedBytes": 24766449,
-  "skippedBytes": 1549730,
+  "candidates": 69,
+  "converted": 62,
+  "inputBytes": 128891663,
+  "outputBytes": 104057942,
+  "savedBytes": 24833721,
+  "skippedBytes": 2144878,
   "entries": [
     {
       "slug": "darya",
@@ -222,6 +222,27 @@
       "format": "webp",
       "inputBytes": 5004462,
       "outputBytes": 3290800
+    },
+    {
+      "slug": "sadro",
+      "variant": "lite",
+      "format": "png",
+      "inputBytes": 166756,
+      "outputBytes": 166756
+    },
+    {
+      "slug": "sadro",
+      "variant": "runtime",
+      "format": "png",
+      "inputBytes": 428392,
+      "outputBytes": 428392
+    },
+    {
+      "slug": "sadro",
+      "variant": "detail",
+      "format": "webp",
+      "inputBytes": 1117966,
+      "outputBytes": 1050694
     },
     {
       "slug": "mojtaba",
@@ -476,5 +497,5 @@
       "outputBytes": 668300
     }
   ],
-  "savingsFraction": 0.19474
+  "savingsFraction": 0.19267
 }

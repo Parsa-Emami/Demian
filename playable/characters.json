@@ -151,6 +151,21 @@
       }
     },
     {
+      "id": "builtin-sadro",
+      "name": "SADRO / صدرو",
+      "slug": "sadro",
+      "is_builtin": true,
+      "is_active": false,
+      "sprite_url": "assets/characters/sadro/sadro-spritesheet-v14-mobile.png",
+      "atlas_url": "assets/characters/sadro/sadro-atlas-v14-mobile.json",
+      "settings": {
+        "scale": 1,
+        "walk_speed": 3.55,
+        "run_speed": 6.9,
+        "jump_force": 6.8
+      }
+    },
+    {
       "id": "builtin-mojtaba",
       "name": "MOJTABA / مجتبی",
       "slug": "mojtaba",

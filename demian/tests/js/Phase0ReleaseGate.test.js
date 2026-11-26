@@ -24,7 +24,7 @@ test('Phase 0: the seven published games are unique, playable and reflected by t
     assert.deepEqual(new Set(Object.keys(GAME_DEFINITIONS)), new Set(GAME_CATALOG.map(game => game.id)));
     assert.deepEqual(characterManifest.characters.map(item => item.slug), BUILTIN_CHARACTER_SLUGS);
     assert.deepEqual(motionContract.characters.map(item => item.slug), BUILTIN_CHARACTER_SLUGS);
-    assert.equal(BUILTIN_CHARACTER_SLUGS.length, 22, 'Roster changes require art/source review.');
+    assert.equal(BUILTIN_CHARACTER_SLUGS.length, 23, 'Roster changes require art/source review.');
     assert.match(readmeFa, /۷ بازی/);
     assert.match(readmeEn, /seven games/);
     for (const game of GAME_CATALOG) assert.ok(readmeEn.toLocaleLowerCase('en-US').includes(game.title.toLocaleLowerCase('en-US')), `README missing ${game.title}`);

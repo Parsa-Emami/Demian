@@ -224,6 +224,16 @@
       "identityContract": "assets/characters/arsal/manifests/arsal_identity_contract.json"
     },
     {
+      "slug": "sadro",
+      "displayName": "SADRO / صدرو",
+      "family": "male-base-v1",
+      "packVersion": 14,
+      "defaultActive": false,
+      "skin": "sadro",
+      "accessories": [],
+      "identityContract": "assets/characters/sadro/manifests/sadro_identity_contract.json"
+    },
+    {
       "slug": "mojtaba",
       "displayName": "MOJTABA / مجتبی",
       "family": "male-base-v1",
