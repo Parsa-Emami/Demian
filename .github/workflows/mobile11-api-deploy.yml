@@ -25,7 +25,9 @@ jobs:
     uses: ./.github/workflows/arcade-backend.yml
   package:
     needs: verify
-    if: github.ref == 'refs/heads/main'
+    # PR08: this deprecated PHP 8.3 /srv pipeline bypassed canonical cPanel gates.
+    # Never package or upload; use cpanel-api-deploy.yml (PHP 8.4) instead.
+    if: github.ref == 'refs/heads/main' && false
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
@@ -58,7 +60,8 @@ jobs:
           retention-days: 2
   deploy:
     needs: package
-    if: github.ref == 'refs/heads/main'
+    # Permanently disabled legacy route: no alternative SSH deploy without PR06/08.
+    if: github.ref == 'refs/heads/main' && false
     runs-on: ubuntu-24.04
     environment:
       name: ${{ inputs.target }}

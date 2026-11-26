@@ -1,0 +1,72 @@
+name: PR06 cPanel release acceptance (CI only)
+# Required package check must run for all PRs and main commits (including docs-only).
+# Builds and boots an actual no-dev API-only archive. NEVER deploys to a host.
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: demian-pr06-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  package:
+    timeout-minutes: 30
+    runs-on: ubuntu-24.04
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: disposable-root
+          MYSQL_DATABASE: demian_release_staging_ci
+          MYSQL_USER: demian_ci
+          MYSQL_PASSWORD: disposable-ci-only
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -pdisposable-root"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: mbstring, dom, xml, pdo_mysql, curl, fileinfo
+          coverage: none
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Lint release scripts and exercise negative archive contracts
+        run: |
+          set -Eeuo pipefail
+          bash -n demian/ops/cpanel/package_release.sh
+          bash -n demian/ops/cpanel/ci_release_acceptance.sh
+          bash -n demian/ops/cpanel/deploy.sh
+          bash -n demian/ops/cpanel/rollback.sh
+          node --test demian/tests/js/mobile/Pr06ReleasePackage.test.js
+      - name: Install locked production dependencies, no dev packages
+        working-directory: demian
+        run: composer install --no-interaction --no-dev --prefer-dist --optimize-autoloader
+      - name: Construct the same cPanel API archive used by manual releases
+        working-directory: demian
+        run: bash ops/cpanel/package_release.sh "$RUNNER_TEMP" "$GITHUB_SHA"
+      - name: Exact-archive Laravel 8.4 + disposable MySQL 8.4 acceptance
+        run: bash demian/ops/cpanel/ci_release_acceptance.sh
+      - name: Upload non-production release evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: pr06-cpanel-candidate-${{ github.sha }}
+          path: |
+            ${{ runner.temp }}/demian-cpanel.tar.gz
+            ${{ runner.temp }}/demian-cpanel.sha256
+            ${{ runner.temp }}/demian-cpanel.manifest.json
+            ${{ runner.temp }}/phase1-api-evidence.json
+          retention-days: 7
+          if-no-files-found: error

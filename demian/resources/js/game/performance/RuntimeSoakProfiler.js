@@ -32,7 +32,7 @@ function percentile(h, share) {
 }
 function distribution(h) {
     return { samples:h.count, meanMs:h.count?digits(h.total/h.count):null,
-        p50Ms:percentile(h,.50), p95Ms:percentile(h,.95),
+        p50Ms:percentile(h,.50), p95Ms:percentile(h,.95), p99Ms:percentile(h,.99),
         maxMs:h.count?digits(h.max):null };
 }
 function memory() {
@@ -44,7 +44,9 @@ function addMemory(row, value) {
     row.lastBytes = value; row.peakBytes = Math.max(value,row.peakBytes??0);
 }
 function snapshotMemory(row) {
-    return { ...row, deltaBytes:row.firstBytes != null ? row.lastBytes-row.firstBytes : null };
+    return { ...row, deltaBytes:row.firstBytes != null ? row.lastBytes-row.firstBytes : null,
+        growthPercent:row.firstBytes > 0
+            ? Math.round((row.lastBytes-row.firstBytes)/row.firstBytes*10000)/100 : null };
 }
 function bucket(game, fromMs) {
     return { game, fromMs, frames:histogram(), work:histogram(),

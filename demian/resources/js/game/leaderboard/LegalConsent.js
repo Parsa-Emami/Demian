@@ -22,6 +22,8 @@ export function requestLegalAcknowledgement(doc = globalThis.document, { contact
             '<p>برای ذخیرهٔ رکورد آنلاین، نام نمایشی و شواهد بازی طبق سیاست حریم خصوصی پردازش می‌شوند. ' +
             'می‌توانید بدون حساب آنلاین در حالت تمرینی بازی کنید.</p>' +
             (newProfile ? '<label>نام نمایشی<input name="display_name" required minlength="2" maxlength="32" autocomplete="nickname"></label>' : '') +
+            (newProfile ? '<label>رمز عبور (حداقل ۱۲ نویسه)<input name="password" type="password" required minlength="12" maxlength="128" autocomplete="new-password"></label>' +
+                '<label>تکرار رمز عبور<input name="password_confirmation" type="password" required minlength="12" maxlength="128" autocomplete="new-password"></label>' : '') +
             (contact ? '<label>راه ارتباطی<select name="contact_type"><option value="phone">شماره تلفن</option><option value="instagram">اینستاگرام</option><option value="email">ایمیل</option></select></label>' +
                 '<label>شماره یا شناسهٔ تماس<input name="contact_value" required maxlength="160" autocomplete="off"></label>' : '') +
             '<p><a href="privacy/" target="_blank" rel="noopener noreferrer">سیاست حریم خصوصی</a> · ' +
@@ -47,12 +49,13 @@ export function requestLegalAcknowledgement(doc = globalThis.document, { contact
                 policy_version: LEGAL_VERSION,
                 accept_terms: true,
                 privacy_acknowledged: true,
-                ...(newProfile ? { display_name: form.elements.display_name.value.trim() } : {}),
+                ...(newProfile ? { display_name: form.elements.display_name.value.trim(), password: form.elements.password.value } : {}),
                 ...(contact ? { contact_type: form.elements.contact_type.value,
                     contact_value: form.elements.contact_value.value.trim() } : {}),
             } : null);
         };
         dialog.querySelector('[data-legal-cancel]').addEventListener('click', () => finish(false));
+        form.elements.password_confirmation?.addEventListener('input', () => form.elements.password_confirmation.setCustomValidity(''));
         dialog.addEventListener('cancel', event => {
             event.preventDefault();
             finish(false);
@@ -63,6 +66,11 @@ export function requestLegalAcknowledgement(doc = globalThis.document, { contact
             const terms = dialog.querySelector('[data-legal-terms]');
             const privacy = dialog.querySelector('[data-legal-privacy]');
             if (!terms?.checked || !privacy?.checked) return;
+            if (newProfile && form.elements.password.value !== form.elements.password_confirmation.value) {
+                form.elements.password_confirmation.setCustomValidity('رمزهای عبور یکسان نیستند.');
+                form.elements.password_confirmation.reportValidity();
+                return;
+            }
             finish(true);
         });
         try {

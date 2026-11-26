@@ -3,6 +3,7 @@ import { RECORD_GAMES, deviceMetric } from './GameRecord.js';
 import { weeklyVersion, WEEKLY_VERSIONS } from '../content/WeeklyContent.js';
 import rules from '../../../game/runner-rules.json' with { type: 'json' };
 import { validRunnerSession } from './RunnerSessionContract.js';
+import { isBeginnerProfile, PRACTICE_VERSION, PRACTICE_RECORDS_KEY, PRACTICE_BEST_KEY } from '../games/dino-run/RunnerPracticeProfile.js';
 import { requestLegalAcknowledgement, LEGAL_VERSION } from './LegalConsent.js';
 
 const PROFILE_KEY = 'demian.arcade.profile.v1';
@@ -171,6 +172,48 @@ export default class ArcadeLeaderboardService {
         safeWrite(this.storage, this.accountMarkerKey, true);
         return this.identity;
     }
+    async loginWithPassword(contactType, contactValue, password) {
+        if (this.pending && !this.hasRecoveryRequired) {
+            await this.retry();
+            if (this.pending) throw new Error('قبل از تعویض حساب، رکورد ثبت‌نشده را ارسال کن.');
+        }
+        const response = await this.request('/players/login', {
+            method: 'POST', body: { contact_type: contactType, contact_value: contactValue, password },
+        });
+        if (typeof response.token !== 'string' || response.token.length !== 64
+            || typeof response.player_id !== 'string'
+            || typeof response.display_name !== 'string') {
+            throw new Error('پاسخ ورود سرور معتبر نیست.');
+        }
+        this.acceptedLegalVersion = null;
+        this.identity = { token: response.token, player_id: response.player_id,
+            token_expires_at: response.token_expires_at,
+            has_contact: response.has_contact === true };
+        this.profile = { display_name: response.display_name };
+        safeWrite(this.identityStorage, this.identityKey, this.identity);
+        this.accountKnown = true;
+        safeWrite(this.storage, this.accountMarkerKey, true);
+        safeWrite(this.storage, PROFILE_KEY, this.profile);
+        if (this.pending && this.pending.player_id === this.identity.player_id) await this.retry();
+        return { display_name: this.displayName, player_id: this.identity.player_id };
+    }
+    async setAccountPassword(password, passwordConfirmation, currentPassword = '') {
+        if (!this.identity?.token) throw new Error('برای تعیین رمز عبور ابتدا وارد حساب خود شو.');
+        const response = await this.request('/player/password', {
+            method: 'POST', authenticated: true,
+            body: { password, password_confirmation: passwordConfirmation,
+                current_password: currentPassword },
+        });
+        if (response.status !== 'password_updated'
+            || typeof response.token !== 'string' || response.token.length !== 64
+            || response.player_id !== this.identity.player_id) {
+            throw new Error('پاسخ امنیتی تغییر رمز معتبر نیست.');
+        }
+        this.identity = { ...this.identity, token: response.token,
+            token_expires_at: response.token_expires_at };
+        safeWrite(this.identityStorage, this.identityKey, this.identity);
+        return true;
+    }
     async ensureRankedPolicy() {
         // A server-side guard on every start remains authoritative. The UI
         // helps existing accounts acknowledge revised terms in an explicit way.
@@ -263,7 +306,7 @@ export default class ArcadeLeaderboardService {
         this.backupExpiresAt = result.backup_expires_at;
         return result.backup_code;
     }
-    async recoverAccount(code) {
+    async recoverAccount(code, newPassword = null) {
         const value = String(code ?? '').trim();
         if (!/^[A-Za-z0-9]{64}$/.test(value)) {
             throw new Error('کد بازیابی ۶۴ نویسهٔ معتبر لازم دارد.');
@@ -273,7 +316,9 @@ export default class ArcadeLeaderboardService {
             if (this.pending) throw new Error('ابتدا ارسال رکورد قبلی را تکمیل کن؛ رکورد تأییدنشده نباید حذف شود.');
         }
         const response = await this.request('/players/recover', {
-            method: 'POST', body: { recovery_code: value },
+            method: 'POST', body: { recovery_code: value,
+                ...(newPassword ? { new_password: newPassword,
+                    new_password_confirmation: newPassword } : {}) },
         });
         if (typeof response.token !== 'string' || response.token.length !== 64
             || typeof response.player_id !== 'string'
@@ -300,8 +345,8 @@ export default class ArcadeLeaderboardService {
         if (this.connected) { await this.ensureIdentity(); await this.request('/player', { method: 'PATCH', authenticated: true, body: { display_name: value } }); }
         this.profile = { display_name: value }; safeWrite(this.storage, PROFILE_KEY, this.profile);
     }
-    async start({ width, character, seed } = {}) {
-        if (!this.connected || seed !== undefined) return { mode: 'practice', seed: seed ?? Date.now(), track_width: width };
+    async start({ width, character, seed, practice = false } = {}) {
+        if (practice || !this.connected || seed !== undefined) return { mode: 'practice', seed: seed ?? Date.now(), track_width: width };
         if (this.needsAccountRestore) return { mode: 'practice', seed: Date.now(), track_width: width,
             reason: 'مدرک امتیاز قبلی محفوظ است؛ برای ارسال آن باید حساب اصلی را بازیابی کنی.' };
         // Do not overwrite a failed ranked run before its replay is accepted/rejected.
@@ -406,7 +451,20 @@ export default class ArcadeLeaderboardService {
         const rows = [...this.localScores(), row].sort((a, b) => b.score - a.score || a.achieved_at.localeCompare(b.achieved_at)).slice(0, 20);
         safeWrite(this.storage, LOCAL_KEY, rows); return row;
     }
+    practiceScores() {
+        const rows = safeRead(this.storage, PRACTICE_RECORDS_KEY, []);
+        return Array.isArray(rows) ? rows.filter(row => Number.isSafeInteger(row?.score) && row.score >= 0
+            && typeof row.achieved_at === 'string' && typeof row.display_name === 'string') : [];
+    }
     async finish(run, model, replay, character) {
+        if (isBeginnerProfile(model?.profile)) {
+            const row = { score: model.score, display_name: this.displayName, character_slug: character, achieved_at: new Date().toISOString() };
+            if (Number.isSafeInteger(row.score) && row.score >= 0) {
+                const rows = [...this.practiceScores(), row].sort((a, b) => b.score - a.score || a.achieved_at.localeCompare(b.achieved_at)).slice(0, 20);
+                safeWrite(this.storage, PRACTICE_RECORDS_KEY, rows);
+            }
+            return { status: 'beginner-practice', score: model.score };
+        }
         this.recordLocal(model, character);
         if (run?.mode !== 'ranked' || !replay?.valid) return { status: 'practice', score: model.score };
         const durable = this.savePending({ id: run.run_id, body: replay.payload(),
@@ -571,6 +629,8 @@ export default class ArcadeLeaderboardService {
         try { this.storage?.removeItem?.(this.identityKey); } catch {}
         safeWrite(this.storage, PROFILE_KEY, this.profile);
         safeWrite(this.storage, LOCAL_KEY, []);
+        safeWrite(this.storage, PRACTICE_RECORDS_KEY, []);
+        safeWrite(this.storage, PRACTICE_BEST_KEY, 0);
         for (const game of RECORD_GAMES) safeWrite(this.storage, DEVICE_PREFIX + game, []);
         return { status: 'deleted' };
     }
@@ -590,6 +650,10 @@ export default class ArcadeLeaderboardService {
     }
     async list(period = 'weekly', gameId = 'dino-run', week = '') {
         if (!RECORD_GAMES.includes(gameId)) throw new Error('Unknown ranked game.');
+        if (period === 'practice') {
+            if (gameId !== 'dino-run') throw new Error('Practice records are only available for Dino Run.');
+            return { mode: 'practice', rules_version: PRACTICE_VERSION, data: this.practiceScores().map((row, index) => ({ ...row, rank: index + 1 })) };
+        }
         if (this.connected && period !== 'device') {
             const query = new URLSearchParams({ period, limit: '20' });
             if (week) query.set('week', week);

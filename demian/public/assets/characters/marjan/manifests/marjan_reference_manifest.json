@@ -1,0 +1,30 @@
+{
+  "character_key": "marjan",
+  "pack_version": 14,
+  "reference": "../source-v14/reference.jpg",
+  "master": "../source-v14/master.png",
+  "runner_motion": "../source-v14/runner-motion.png",
+  "slide_master": "../source-v14/slides.png",
+  "locomotion_reference": {
+    "character": "darya",
+    "states": [
+      "walk",
+      "run",
+      "jump",
+      "land",
+      "slide"
+    ]
+  },
+  "inputs": [
+    {
+      "name": "42828.png",
+      "role": "identity-costume-and-turnaround",
+      "sha256": "4b0963f82762172aa25e6ac4f568320e938127fbc3f4e27c61df04448fb7f068"
+    },
+    {
+      "name": "a_clean_high_resolution_sprite_sheet_on_a_transpa.png",
+      "role": "generated-motion-key-poses",
+      "sha256": "c96355e3e521a327837486bf9393a0dbc2b569acdcdd5b9c1fcdf2c4e0141f5f"
+    }
+  ]
+}

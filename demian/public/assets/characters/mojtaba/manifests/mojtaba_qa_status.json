@@ -1,0 +1,26 @@
+{
+  "character_key": "mojtaba",
+  "pack_version": 14,
+  "date": "2026-11-26",
+  "status": "validated_in_emulated_browser",
+  "motion_reference": "arsal",
+  "evidence": "../../../../../docs/release-v14-mojtaba/README.fa.md",
+  "checks": {
+    "atlas_variants": 6,
+    "foot_pivot": {
+      "x": 0.5,
+      "y": 0.94
+    },
+    "picker_persistence": "passed",
+    "desktop_viewport": "1440x900",
+    "mobile_viewport": "390x844",
+    "open_world_dino_run_after_hours_cafe_rush": "passed",
+    "walk_run_jump_land_slide_rendered": "passed",
+    "dino_run_slide_clearance": "passed",
+    "release": "e01ed929120f4421"
+  },
+  "physical_device_qa": {
+    "status": "pending",
+    "issue": "https://github.com/Parsa-Emami/Demian/issues/117"
+  }
+}

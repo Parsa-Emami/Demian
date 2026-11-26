@@ -15,6 +15,11 @@ const KIND_ALIASES = Object.freeze({
     cascade: 'score',
     passed: 'score',
     pickup: 'discover',
+    jumped: 'jump',
+    hit: 'collision',
+    collision: 'collision',
+    interact: 'interaction',
+    combo: 'combo',
 });
 
 export default class GameFeedbackDirector {
@@ -80,8 +85,12 @@ export default class GameFeedbackDirector {
             this.eventBus.on('feedback:cue', ({ gameId, kind } = {}) => {
                 if (this.sessionState !== 'playing' || gameId !== this.activeGameId) return;
                 const resolved = KIND_ALIASES[kind] ?? kind;
-                if (resolved === 'score' || resolved === 'discover'
-                    || resolved === 'error' || resolved === 'lose') this.cue(resolved, { visualOnly: gameId !== 'dino-run' });
+                if (['score', 'discover', 'error', 'lose', 'jump',
+                    'collision', 'interaction', 'combo'].includes(resolved)) {
+                    // Title-specific game audio already owns its local effects
+                    // except the shared Dino Run runner cues. Do not double-play.
+                    this.cue(resolved, { visualOnly: gameId !== 'dino-run' });
+                }
             }),
             this.eventBus.on('world:chunk-discovered', () => {
                 if (this.activeGameId === 'open-world' && this.sessionState === 'playing') {

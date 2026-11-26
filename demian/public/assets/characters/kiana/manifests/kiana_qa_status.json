@@ -1,0 +1,29 @@
+{
+  "character_key": "kiana",
+  "pack_version": 14,
+  "date": "2026-11-26",
+  "status": "validated_in_emulated_browser",
+  "motion_reference": "darya",
+  "evidence": "../../../../../docs/release-v14-kiana/README.fa.md",
+  "checks": {
+    "atlas_variants": 6,
+    "standing_directions": 8,
+    "foot_pivot": {
+      "x": 0.5,
+      "y": 0.94
+    },
+    "maximum_slide_height_px": 44.54,
+    "picker_after_zohre": "passed",
+    "picker_persistence": "passed",
+    "desktop_viewport": "1440x900",
+    "mobile_viewport": "390x844",
+    "open_world_dino_run_after_hours_cafe_rush": "passed",
+    "dino_run_bird_clearance": "passed",
+    "open_world_touch_walk_run_jump_land": "passed",
+    "open_world_grounded_foot_gap_css_px_max": 2.3
+  },
+  "physical_device_qa": {
+    "status": "pending",
+    "issue": "https://github.com/Parsa-Emami/Demian/issues/117"
+  }
+}

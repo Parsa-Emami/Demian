@@ -1,0 +1,122 @@
+name: PR08 protected cPanel staging read-only acceptance
+# Manual ONLY. No deployments, migrations, writes, load or prizes.
+on:
+  workflow_dispatch:
+    inputs:
+      staging_deploy_run_id:
+        description: "Successful exact-main-SHA cPanel staging deployment workflow run ID"
+        type: string
+        required: true
+      pwa_release_id:
+        description: "Actual 16-character PWA release ID for the same SHA"
+        type: string
+        required: true
+      acknowledgement:
+        description: "Type READ_ONLY_STAGING_ACCEPTANCE"
+        type: string
+        required: true
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: demian-pr08-staging-read-only
+  cancel-in-progress: false
+jobs:
+  read-only-audit:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    environment:
+      name: cpanel-staging
+    env:
+      PR08_STAGING_RUN_ID: ${{ inputs.staging_deploy_run_id }}
+      PR08_PWA_RELEASE_ID: ${{ inputs.pwa_release_id }}
+      PR08_API_ORIGIN: ${{ vars.CPANEL_API_ORIGIN }}
+      PR08_PWA_ORIGIN: ${{ vars.CPANEL_CLIENT_ORIGIN }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Require protected main and authentic exact-SHA staging and PWA workflow runs
+        id: source
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ACCEPT: ${{ inputs.acknowledgement }}
+        run: |
+          set -Eeuo pipefail
+          [[ "$GITHUB_REF" == refs/heads/main && "$GITHUB_REF_PROTECTED" == true ]] || {
+            echo "PR08 abort: protect main before accepting staging" >&2
+            exit 1
+          }
+          [[ "$ACCEPT" == READ_ONLY_STAGING_ACCEPTANCE ]]
+          [[ "$PR08_STAGING_RUN_ID" =~ ^[0-9]{5,14}$ ]]
+          [[ "$PR08_PWA_RELEASE_ID" =~ ^[a-f0-9]{16}$ ]]
+          stage="$(gh api "/repos/$GITHUB_REPOSITORY/actions/runs/$PR08_STAGING_RUN_ID")"
+          jq -e --arg sha "$GITHUB_SHA" '
+            .head_sha == $sha and .head_branch == "main"
+            and .name == "Demian cPanel Laravel API (manual and gated)"
+            and .event == "workflow_dispatch" and .conclusion == "success"
+          ' <<< "$stage" >/dev/null
+          stage_jobs="$(gh api "/repos/$GITHUB_REPOSITORY/actions/runs/$PR08_STAGING_RUN_ID/jobs?per_page=100")"
+          jq -e '.jobs | any(.name == "deploy" and .conclusion == "success")' \
+            <<< "$stage_jobs" >/dev/null || {
+              echo "Stage deploy job failed or is not present" >&2; exit 1
+            }
+          runs="$(gh api "/repos/$GITHUB_REPOSITORY/actions/runs?head_sha=$GITHUB_SHA&per_page=100")"
+          pwa_run="$(jq -r --arg sha "$GITHUB_SHA" '
+            [.workflow_runs[] |
+              select(.head_sha == $sha and .head_branch == "main"
+                and .name == "Deploy Demian mobile release"
+                and .event == "push" and .conclusion == "success")]
+            | sort_by(.run_number) | last | .id // empty
+          ' <<< "$runs")"
+          [[ "$pwa_run" =~ ^[0-9]+$ ]] || exit 1
+          pwa_jobs="$(gh api "/repos/$GITHUB_REPOSITORY/actions/runs/$pwa_run/jobs?per_page=100")"
+          jq -e '.jobs | any(.name == "release-qa" and .conclusion == "success")' \
+            <<< "$pwa_jobs" >/dev/null || exit 1
+          echo "pwa_run_id=$pwa_run" >> "$GITHUB_OUTPUT"
+          echo "Only a successful staging run and exact-SHA PWA release accepted."
+      - uses: actions/download-artifact@v4
+        with:
+          name: cpanel-staging-receipt-${{ github.sha }}
+          run-id: ${{ inputs.staging_deploy_run_id }}
+          github-token: ${{ github.token }}
+          path: ${{ runner.temp }}/pr08-staging
+      - uses: actions/download-artifact@v4
+        with:
+          name: phase11-pwa-bundle-${{ github.sha }}
+          run-id: ${{ steps.source.outputs.pwa_run_id }}
+          github-token: ${{ github.token }}
+          path: ${{ runner.temp }}/pr08-pwa
+      - name: Read-only live HTTPS and private API path smoke with no player writes
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          node demian/tools/qa/phase11_remote_smoke.mjs \
+            --target=staging \
+            --pwa-origin="$PR08_PWA_ORIGIN" \
+            --api-origin="$PR08_API_ORIGIN" \
+            --sha="$GITHUB_SHA" \
+            --pwa-release="$PR08_PWA_RELEASE_ID" \
+            --approval=READ_ONLY_STAGING_SMOKE_APPROVED \
+            --output="$RUNNER_TEMP/pr08-live-readonly.json"
+      - name: Verify archive receipt and live PWA/API protected commit provenance
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          node demian/tools/qa/pr08_verify_staging.mjs \
+            "$RUNNER_TEMP/pr08-staging/pr08-staging-receipt.json" \
+            "$RUNNER_TEMP/pr08-live-readonly.json" \
+            "$RUNNER_TEMP/pr08-pwa/bundle-audit.json" \
+            "$RUNNER_TEMP/pr08-staging-readonly-attestation.json"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pr08-staging-http-parity-${{ github.sha }}
+          path: ${{ runner.temp }}/pr08-staging-readonly-attestation.json
+          retention-days: 30
+          if-no-files-found: warn

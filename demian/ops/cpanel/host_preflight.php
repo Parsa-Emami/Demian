@@ -145,4 +145,81 @@ if (isset($values['LOG_LEVEL'])
         ['warning', 'error', 'critical', 'alert', 'emergency'], true)) {
     preflightFail('A sensitive production API must not log at debug/verbose level.');
 }
+// Financial feature flags are separate human approvals, NOT deployment
+// permissions. Refuse accidental production payouts on an unverified account.
+$enabled = static fn (string $name): bool =>
+    in_array(strtolower((string) ($values[$name] ?? 'false')), ['true', '1'], true);
+$financial = [
+    'DEMIAN_COUPONS_ISSUE_ENABLED', 'DEMIAN_COUPONS_AUTO_ISSUE_ENABLED',
+    'DEMIAN_COUPONS_MANUAL_GIFTS_ENABLED', 'DEMIAN_COUPONS_CAFE_ENABLED',
+    'DEMIAN_COUPONS_CAMPAIGNS_ENABLED', 'DEMIAN_COUPONS_DELIVERY_SUPPORT_ENABLED',
+    'DEMIAN_ARCADE_DRIFT_PRIZES_ENABLED',
+    'DEMIAN_WEEKLY_AUTO_AWARDS_ENABLED',
+];
+// Staging is a strict non-financial rehearsal, never an alias for the real
+// cashier or a production database. Financial UAT requires a separately
+// authorized disposable sandbox, not these shared-host deployment flags.
+if ($target === 'staging') {
+    $database = strtolower((string) ($values['DB_DATABASE'] ?? ''));
+    $apiHost = strtolower((string) parse_url($origin, PHP_URL_HOST));
+    if (!str_contains($database, 'staging') || !str_contains($apiHost, 'staging')) {
+        preflightFail('Staging must have an isolated staging-named database and HTTPS hostname.');
+    }
+    foreach ($origins as $allowed) {
+        $clientHost = strtolower((string) parse_url(trim($allowed), PHP_URL_HOST));
+        if (!str_contains($clientHost, 'staging')) {
+            preflightFail('Staging must not authorize CORS for a production PWA origin.');
+        }
+    }
+    $stagingForbidden = array_merge($financial, [
+        'DEMIAN_ARCADE_CRITTERS_PRIZES_ENABLED',
+        'DEMIAN_ARCADE_COFFEE_PRIZES_ENABLED',
+        'DEMIAN_AFTER_HOURS_ROUTE_PRIZES',
+        'DEMIAN_CAFE_RUSH_ROUTE_PRIZES',
+        'DEMIAN_OPEN_WORLD_ROUTE_PRIZES',
+        'DEMIAN_WEEKLY_SETTLEMENT_ENABLED',
+    ]);
+    foreach ($stagingForbidden as $flag) {
+        if ($enabled($flag)) {
+            preflightFail('Staging financial flags must remain disabled: '.$flag);
+        }
+    }
+}
+if ($target === 'production') {
+    $productionDb = strtolower((string) ($values['DB_DATABASE'] ?? ''));
+    $productionHost = strtolower((string) parse_url($origin, PHP_URL_HOST));
+    if (str_contains($productionDb, 'staging') || str_contains($productionHost, 'staging')) {
+        preflightFail('Production cannot reuse the staging database or HTTPS hostname.');
+    }
+}
+if ($target === 'production' && count(array_filter($financial, $enabled)) > 0) {
+    foreach ([
+        'DEMIAN_PRIZE_VERIFIED_PHONE_REQUIRED',
+        'DEMIAN_PHONE_OTP_ENABLED', 'DEMIAN_COUPONS_POLICY_APPROVED',
+        'DEMIAN_LEGAL_PUBLICATION_APPROVED',
+        'DEMIAN_LEGAL_REQUIRE_ACCEPTANCE', 'DEMIAN_OPS_ENABLED',
+    ] as $flag) {
+        if (!$enabled($flag)) preflightFail('Financial rollout gate not approved: '.$flag);
+    }
+    $gatewayUrl = (string) ($values['DEMIAN_PHONE_OTP_GATEWAY_URL'] ?? '');
+    $gateway = parse_url($gatewayUrl);
+    if (!is_array($gateway) || ($gateway['scheme'] ?? '') !== 'https'
+        || !filter_var($gateway['host'] ?? '', FILTER_VALIDATE_DOMAIN, FILTER_FLAG_HOSTNAME)
+        || isset($gateway['user']) || isset($gateway['pass'])
+        || isset($gateway['query']) || isset($gateway['fragment'])
+        || strlen((string) ($values['DEMIAN_PHONE_OTP_GATEWAY_KEY'] ?? '')) < 24) {
+        preflightFail('Verified prize rollout requires a secure configured SMS gateway.');
+    }
+    if ($enabled('DEMIAN_COUPONS_AUTO_ISSUE_ENABLED')
+        || $enabled('DEMIAN_WEEKLY_AUTO_AWARDS_ENABLED')) {
+        foreach (['DEMIAN_COUPONS_ISSUE_ENABLED', 'DEMIAN_WEEKLY_MANAGEMENT_ENABLED',
+            'DEMIAN_WEEKLY_SETTLEMENT_ENABLED'] as $flag) {
+            if (!$enabled($flag)) preflightFail('Automatic awards require manual approval: '.$flag);
+        }
+    }
+}
+$free = @disk_free_space($storage);
+if ($free === false || $free < 536870912) {
+    preflightFail('Less than 512 MiB of writable storage remains for logs and migrations.');
+}
 fwrite(STDOUT, "[cPanel Step 29] PASS: PHP runtime, private env, persistent storage, database and HTTPS contract.\n");

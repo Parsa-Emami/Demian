@@ -27,7 +27,7 @@ export function sendPwaMessage(worker, data, { onProgress = () => {}, timeoutMs 
             const row = event.data ?? {};
             if (row.type === 'PROGRESS') {
                 arm();
-                onProgress(row);
+                try { onProgress(row); } catch (error) { cleanup(); reject(error); }
             } else if (row.type === 'DONE') {
                 cleanup(); resolve(row);
             } else if (row.type === 'ERROR') {
@@ -35,7 +35,8 @@ export function sendPwaMessage(worker, data, { onProgress = () => {}, timeoutMs 
             }
         };
         arm();
-        worker.postMessage(data, [channel.port2]);
+        try { worker.postMessage(data, [channel.port2]); }
+        catch (error) { cleanup(); reject(error); }
     });
 }
 
@@ -48,6 +49,7 @@ export default class PwaOfflineManager {
         this.navigator = navigatorRef;
         this.window = windowRef;
         this.manifest = null;
+        this.manifestRelease = null;
         this.state = null;
         this.busy = false;
         this.deferredInstall = null;
@@ -67,7 +69,11 @@ export default class PwaOfflineManager {
     get worker() { return this.registration?.active; }
     async mount() {
         const screen = this.document.querySelector('[data-screen="game-selection"]');
-        if (!screen) return this;
+        // Keep offline controls in the same scroll flow as the library.
+        // A sibling of .shell-page becomes a competing grid item and can
+        // cover the actual game-launch buttons on short or desktop viewports.
+        const host = screen?.querySelector('.shell-page');
+        if (!host || this.destroyed || this.panel) return this;
         this.panel = this.document.createElement('section');
         this.panel.className = 'demian-offline-manager';
         this.panel.setAttribute('aria-label', 'بازی‌های آفلاین');
@@ -105,7 +111,7 @@ export default class PwaOfflineManager {
         this.refreshButton = this.button('بررسی فضا', () => this.refresh());
         toolbar.append(this.installButton, this.refreshButton);
         this.panel.append(title, hint, this.rows, toolbar, this.status);
-        screen.append(this.panel);
+        host.append(this.panel);
         this.window.addEventListener('online', this.onOnline);
         this.window.addEventListener('beforeinstallprompt', this.onInstall);
         this.installed = this.window.matchMedia?.('(display-mode: standalone)')?.matches
@@ -127,6 +133,12 @@ export default class PwaOfflineManager {
         if (this.destroyed || this.busy) return;
         try {
             const state = await sendPwaMessage(this.worker, { type: 'DEMIAN_PACK_STATUS' });
+            if (this.manifestRelease && state.release !== this.manifestRelease) {
+                // A waiting SW may have activated while the menu was open.
+                // Never reuse a stale pack budget or an old version manifest.
+                this.manifest = null;
+                this.manifestRelease = null;
+            }
             this.state = state;
             const estimate = await this.navigator.storage?.estimate?.().catch(() => null);
             const space = estimate?.usage != null && estimate?.quota != null
@@ -150,17 +162,21 @@ export default class PwaOfflineManager {
         this.refreshButton.disabled = this.busy;
     }
     async manifestForDownload() {
-        if (this.manifest) return this.manifest;
+        if (this.manifest && this.manifest.release === this.state?.release) return this.manifest;
+        this.manifest = null;
         const resource = new URL('offline-packs.json', this.document.baseURI);
         const response = await this.window.fetch(resource.href, {
             cache: 'no-store', credentials: 'omit',
         });
         if (!response.ok) throw new Error('فهرست فایل‌های آفلاین در دسترس نیست.');
         const manifest = await response.json();
-        if (manifest.schema !== 1 || !Array.isArray(manifest.games)) {
+        if (manifest.schema !== 1 || !Array.isArray(manifest.games)
+            || !/^[a-f0-9]{16}$/.test(manifest.release)
+            || (this.state?.release && this.state.release !== manifest.release)) {
             throw new Error('فهرست بازی‌های آفلاین نامعتبر است.');
         }
         this.manifest = manifest;
+        this.manifestRelease = manifest.release;
         return manifest;
     }
     async download(id) {

@@ -43,9 +43,13 @@ final class AuthenticateCafeCashier
         $response->headers->set('Pragma', 'no-cache');
         $response->headers->set('X-Content-Type-Options', 'nosniff');
         $response->headers->set('X-Frame-Options', 'DENY');
-        $response->headers->set('Content-Security-Policy',
-            "default-src 'none'; style-src 'unsafe-inline'; form-action 'self'; "
-            ."base-uri 'none'; frame-ancestors 'none'");
+        if (! $request->routeIs('studio') && ! $request->routeIs('characters.*')) {
+            $response->headers->set('Content-Security-Policy',
+                "default-src 'none'; style-src 'unsafe-inline'; form-action 'self'; "
+                ."base-uri 'none'; frame-ancestors 'none'");
+        } else {
+            $response->headers->set('Referrer-Policy', 'no-referrer');
+        }
 
         return $response;
     }

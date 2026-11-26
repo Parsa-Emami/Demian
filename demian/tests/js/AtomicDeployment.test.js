@@ -61,11 +61,13 @@ test('GitHub Pages retention and release QA gate the published build', () => {
     assert.match(workflow, /test:versioned-rollover:browser/);
     assert.match(workflow, /actions\/deploy-pages@v4/);
 });
-test('stale dynamic imports retain guarded reload and no infinite loop', () => {
+test('stale imports provide manual recovery without automatic ranked reload', () => {
     const blade = source('resources/views/demian.blade.php');
     assert.match(blade, /vite:preloadError/);
     assert.match(blade, /unhandledrejection/);
-    assert.match(blade, /__demian_refresh/);
+    assert.match(blade, /data-demian-chunk-recovery/);
+    assert.match(blade, /reload\.addEventListener\('click'/);
+    assert.doesNotMatch(blade, /location\.replace\(/);
     assert.match(blade, /data-deployment-mode="versioned-chunks"/);
 });
 test('missing character art still renders the safe pixel fallback', () => {

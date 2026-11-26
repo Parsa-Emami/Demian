@@ -1,9 +1,10 @@
 import { clamp, DRIFT } from './CafeDriftModel.js';
+import { CAFE_MATERIALS as M } from '../../rendering2d/CafeWalkthroughPalette.js';
 
 const MAX_X = DRIFT.targetMax * DRIFT.targetUnit;
 const LOOKAHEAD = 112;
 const TAU = Math.PI * 2;
-const COLORS = ['#ca8965', '#72b6a0', '#e2ae6d'];
+const COLORS = [M.coral, M.greenTileLight, M.woodLight];
 
 function ellipse(ctx, x, y, w, h, color) {
     ctx.beginPath();
@@ -52,19 +53,21 @@ export default class CafeDriftRenderer {
     backdrop(ctx, time) {
         const { width: w, height: h, center: cx, halfRoad: road, horizon: y } = this;
         const wall = ctx.createLinearGradient(0, 0, 0, h);
-        wall.addColorStop(0, '#24191a');
-        wall.addColorStop(.47, '#3a2929');
-        wall.addColorStop(1, '#1b2022');
+        wall.addColorStop(0, M.black);
+        wall.addColorStop(.47, M.wallTrim);
+        wall.addColorStop(1, M.wallShade);
         ctx.fillStyle = wall;
         ctx.fillRect(0, 0, w, h);
 
         for (const side of [-1, 1]) {
             const lampX = cx + side * Math.min(w * .38, road * .9);
-            const glow = ctx.createRadialGradient(lampX, y * .58, 5, lampX, y * .58, road * .53);
-            glow.addColorStop(0, '#e2a45735');
-            glow.addColorStop(1, '#e2a45700');
-            ctx.fillStyle = glow;
-            ctx.fillRect(0, 0, w, h * .66);
+            if (this.surface.quality?.quality !== 'performance') {
+                const glow = ctx.createRadialGradient(lampX, y * .58, 5, lampX, y * .58, road * .53);
+                glow.addColorStop(0, '#e2a45735');
+                glow.addColorStop(1, '#e2a45700');
+                ctx.fillStyle = glow;
+                ctx.fillRect(0, 0, w, h * .66);
+            }
             ctx.fillStyle = '#6a4b3e';
             ctx.fillRect(lampX - 1, 0, 2, y * .52);
             roundBox(ctx, lampX - 13, y * .49, 26, 9, 5, '#bb825b');
@@ -80,8 +83,8 @@ export default class CafeDriftRenderer {
         ctx.lineTo(floor.x, floor.y);
         ctx.closePath();
         const wood = ctx.createLinearGradient(0, far.y, 0, h);
-        wood.addColorStop(0, '#795044');
-        wood.addColorStop(1, '#443132');
+        wood.addColorStop(0, M.wood);
+        wood.addColorStop(1, M.woodDark);
         ctx.fillStyle = wood;
         ctx.fill();
         ctx.strokeStyle = '#d99f746e';
@@ -97,8 +100,9 @@ export default class CafeDriftRenderer {
             ctx.lineTo(bottom.x, bottom.y);
             ctx.stroke();
         }
-        for (let i = 0; i < 15; i++) {
-            const p = ((i + time / 14) % 15) / 13;
+        const lines = this.surface.quality?.quality === 'performance' ? 7 : 15;
+        for (let i = 0; i < lines; i++) {
+            const p = ((i + time / 14) % lines) / Math.max(1, lines - 2);
             const line = this.project(-MAX_X * 1.14, p ** 1.4);
             ctx.beginPath();
             ctx.moveTo(line.x, line.y);

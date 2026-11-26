@@ -1,0 +1,94 @@
+/*
+ * Phase 1 — seven-game learning affordances, presentation only.
+ * Do not adjust physics, input semantics, scoring or prize switches here.
+ */
+.manager-shell [data-game-shell] .game-card__guide {
+    position: relative;
+    display: grid;
+    gap: 8px;
+    margin-block: 12px;
+    min-width: 0;
+    color: #e0e9da;
+    font-size: clamp(11px, 1vw, 13px);
+    line-height: 1.75;
+}
+.manager-shell [data-game-shell] .game-card__goal {
+    margin: 0;
+    color: #f1f6e7;
+    line-height: 1.7;
+}
+.manager-shell [data-game-shell] .game-card__guide-details {
+    max-width: 100%;
+    min-width: 0;
+}
+.manager-shell [data-game-shell] .game-card__guide-details > summary {
+    display: flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 8px 11px;
+    border: 1px solid rgba(224, 239, 206, 0.4);
+    border-radius: 11px;
+    color: #f4f6e8;
+    font: inherit;
+    font-weight: 750;
+    cursor: pointer;
+    touch-action: manipulation;
+}
+.manager-shell [data-game-shell] .game-card__guide-details > summary:focus-visible {
+    outline: 3px solid #ffe097;
+    outline-offset: 2px;
+}
+.manager-shell [data-game-shell] .game-card__guide-body {
+    max-block-size: min(220px, 45dvh);
+    overflow: auto;
+    padding: 10px;
+    border: 1px solid rgba(224, 239, 206, 0.2);
+    border-radius: 11px;
+    background: rgba(0, 0, 0, 0.15);
+    color: #e7efdf;
+    overscroll-behavior: contain;
+}
+.manager-shell [data-game-shell] .game-card__guide-body p {
+    margin-block: 6px;
+}
+.manager-shell [data-game-shell] .game-card__learning-steps {
+    margin: 0 0 8px;
+    padding-inline-start: 22px;
+    list-style: decimal;
+}
+.manager-shell [data-game-shell] .game-card__learning-steps > li {
+    margin-block: 5px;
+}
+.manager-shell [data-game-shell] .game-card__mode-note {
+    border-inline-start: 2px solid currentColor;
+    padding-inline-start: 8px;
+}
+.manager-shell [data-game-shell] .results-learning-tip {
+    margin: 10px auto;
+    max-width: 50ch;
+    color: #e1ebd1;
+    font-size: 0.85rem;
+    line-height: 1.8;
+}
+@media (max-width: 360px) {
+    .manager-shell [data-game-shell] .game-card__guide {
+        font-size: 11px;
+    }
+    .manager-shell [data-game-shell] .game-card__guide-body {
+        max-block-size: min(160px, 35dvh);
+    }
+}
+@media (prefers-reduced-motion: reduce) {
+    .manager-shell [data-game-shell] .game-card__guide,
+    .manager-shell [data-game-shell] .game-card__guide-details {
+        scroll-behavior: auto;
+        transition: none;
+    }
+}
+@media (forced-colors: active) {
+    .manager-shell [data-game-shell] .game-card__guide-details > summary,
+    .manager-shell [data-game-shell] .game-card__guide-body {
+        border: 1px solid CanvasText;
+        color: CanvasText;
+    }
+}

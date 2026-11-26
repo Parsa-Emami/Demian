@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import CharacterAbilityController from '../../resources/js/game/characters/abilities/CharacterAbilityController.js';
 import CharacterAbilityHud from '../../resources/js/game/characters/abilities/CharacterAbilityHud.js';
@@ -48,13 +49,23 @@ test('characters without an authored animation never gain an ability', () => {
 });
 
 test('the touch button shows cooldown, respects grounded state and hides after changing character', () => {
-    const button = { hidden: true, textContent: '', setAttribute() {} }, hint = { hidden: true };
+    const button = { hidden: true, textContent: '', setAttribute() {} };
+    const hintLabel = { textContent: '' };
+    const hint = { hidden: true, querySelector: () => hintLabel };
     const hud = new CharacterAbilityHud({ querySelector: (selector) => selector.includes('-hint') ? hint : button });
     const controller = new CharacterAbilityController(atlas);
     const entity = { abilityController: controller, grounded: true, stateLock: 0 };
     hud.update(entity); assert.equal(button.hidden, false); assert.equal(button.disabled, false);
+    assert.equal(hintLabel.textContent, ability.label);
     controller.activate(); hud.update(entity); assert.equal(button.disabled, true); assert.match(button.textContent, /6/);
     controller.update(6); entity.grounded = false; hud.update(entity); assert.equal(button.disabled, true);
+    const mobinaAtlasUrl = new URL('../../public/assets/characters/mobina/mobina-atlas-v14-lite.json', import.meta.url);
+    const mobina = new CharacterAbilityController(JSON.parse(readFileSync(mobinaAtlasUrl, 'utf8')));
+    assert.equal(mobina.primary?.id, 'meow-mode');
+    assert.equal(mobina.primary?.cosmetic, true);
+    hud.update({ abilityController: mobina, grounded: true, stateLock: 0 });
+    assert.equal(hintLabel.textContent, 'حالت میو');
+    assert.equal(button.textContent, 'حالت میو');
     hud.update({ abilityController: new CharacterAbilityController({}) });
     assert.equal(button.hidden, true); assert.equal(hint.hidden, true);
 });

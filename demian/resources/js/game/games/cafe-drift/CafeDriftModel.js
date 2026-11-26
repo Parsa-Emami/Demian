@@ -52,7 +52,11 @@ export default class CafeDriftModel {
 
     step(target) {
         if (this.done) return null;
-        const wanted = clamp(target * DRIFT.targetUnit - this.x, -DRIFT.maxSpeed, DRIFT.maxSpeed);
+        // Canonical finite target only. Ordinary replay inputs are unchanged;
+        // malformed/dead touch coordinates cannot poison position or score.
+        const steering = Number.isFinite(target)
+            ? clamp(Math.round(target), -DRIFT.targetMax, DRIFT.targetMax) : 0;
+        const wanted = clamp(steering * DRIFT.targetUnit - this.x, -DRIFT.maxSpeed, DRIFT.maxSpeed);
         this.velocity += clamp(wanted - this.velocity, -DRIFT.accel, DRIFT.accel);
         this.previousX = this.x;
         this.x = clamp(this.x + this.velocity, -bound, bound);

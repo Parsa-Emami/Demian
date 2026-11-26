@@ -6,6 +6,13 @@ use Tests\TestCase;
 
 class DemianViewTest extends TestCase
 {
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->withoutMiddleware(\App\Http\Middleware\AuthenticateCafeCashier::class);
+        $this->withoutMiddleware(\App\Http\Middleware\RequireCafePermission::class);
+    }
+
     public function test_homepage_renders_json_ld_without_interpreting_schema_keys_as_blade(): void
     {
         $response = $this->get('/')->assertOk()->assertViewIs('demian');

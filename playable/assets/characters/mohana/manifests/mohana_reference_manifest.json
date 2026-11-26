@@ -1,0 +1,35 @@
+{
+  "character_key": "mohana",
+  "pack_version": 14,
+  "reference": "../source-v14/reference.jpg",
+  "master": "../source-v14/master.png",
+  "runner_motion": "../source-v14/runner-motion.png",
+  "slide_master": "../source-v14/slides.png",
+  "locomotion_reference": {
+    "character": "darya",
+    "states": [
+      "walk",
+      "run",
+      "jump",
+      "land",
+      "slide"
+    ]
+  },
+  "inputs": [
+    {
+      "name": "Mohana's 16-Pose Chibi Sprite Sheet.png",
+      "role": "generated-identity-turnarounds-idle-and-victory",
+      "sha256": "487497640d044707974b74ec884964c35686b4f1feed0e1617184b5f31fba7e3"
+    },
+    {
+      "name": "Mohana's walk-run-jump-land sprite sheet.png",
+      "role": "generated-walk-run-jump-and-land-key-poses",
+      "sha256": "3c4573129dd0614eb2a9371316b599389dc4ab3b1f178af058efbbde172c2e24"
+    },
+    {
+      "name": "Mohana’s Chibi Slide Sprite Sheet.png",
+      "role": "generated-low-slide-key-poses",
+      "sha256": "460854a0c97eee46bc3ca63eec26b2aef4a208ec22c48a3f750bfa5303155d60"
+    }
+  ]
+}

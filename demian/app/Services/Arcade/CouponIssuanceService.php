@@ -20,6 +20,7 @@ final class CouponIssuanceService
         if (config('demian-coupons.issue_enabled') !== true) {
             throw new RuntimeException('Coupon issuance is disabled.');
         }
+        app(ArcadePrizeIdentity::class)->assertRolloutReady();
         $terms = $this->policy->approved();
         if (! preg_match('/^weekly:tehran:\d{4}-\d{2}-\d{2}$/D', $periodKey)) {
             throw new \InvalidArgumentException('Invalid weekly period key.');
@@ -95,6 +96,10 @@ final class CouponIssuanceService
                     $existing++;
                     continue;
                 }
+                // Verified rank is NOT proof of phone ownership or right to a
+                // cash-equivalent voucher. Enforce this under the same issuer
+                // transaction before reserving sponsor inventory or codes.
+                app(ArcadePrizeIdentity::class)->assertVerifiedRecipient($winner->player_id);
                 if ($winner->game_id === CafeDriftReplayVerifier::GAME_ID
                     && (! $campaign || ! app(RankedGameCatalog::class)->supportsPrizes($winner->game_id)
                         || ! DB::table('arcade_weekly_rule_locks')->where('period_key', $periodKey)

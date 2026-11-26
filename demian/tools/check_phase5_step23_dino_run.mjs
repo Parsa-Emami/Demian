@@ -70,7 +70,7 @@ try {
                         return { x: r.x, y: r.y, width: r.width, height: r.height };
                     });
                 return {
-                    mode: g.run.mode, score: g.model.score, time: g.timeNode.textContent,
+                    mode: g.run.mode, profile: g.model.profile.version, difficulty: g.model.difficulty.level, score: g.model.score, time: g.timeNode.textContent,
                     passed: g.passedNode.textContent, trackWidth: g.model.width,
                     screenOverflow: document.documentElement.scrollWidth > innerWidth + 2,
                     hud: { x: score.x, y: score.y, width: score.width, height: score.height },
@@ -79,6 +79,8 @@ try {
                 };
             });
             assert.equal(initial.mode, 'practice');
+            assert.equal(initial.profile, 'cafe-runner-practice-v1');
+            assert.equal(initial.difficulty, 2);
             assert.equal(initial.score, 0);
             assert.equal(initial.inputContext, 'DINO_RUN');
             assert.equal(initial.controlLayout, 'dino-run');

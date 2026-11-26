@@ -1,0 +1,116 @@
+{
+  "schemaVersion": 1,
+  "phase": 6,
+  "artId": "demian-cafe-environment-v1",
+  "purpose": "Procedural 2D presentation over verified baked FBX café layout; no gameplay authority.",
+  "visualApproval": "pending-on-site-reference-review",
+  "visualClaims": "Reference photos and palette are repository inputs; screenshots and physical-device signoff are separate gates.",
+  "sources": {
+    "referenceRoot": "assets/reference/cafe/",
+    "referenceFiles": [
+      "01-lounge-entry-view.jpg",
+      "02-lounge-seating-view.jpg",
+      "03-lounge-to-counter-view.jpg",
+      "04-counter-close-view.jpg",
+      "05-main-hall-wide-view.jpg",
+      "06-front-glass-and-communal-table.jpg",
+      "07-rug-table-and-mirror.jpg",
+      "08-merchandise-shelf.jpg",
+      "09-counter-service-side.jpg",
+      "10-bookshelf-and-communal-table.jpg"
+    ],
+    "layout": "shared/cafe/CafeWalkthroughScene.js",
+    "collision": "shared/cafe/CafeReferenceLayout.js",
+    "artManifest": "resources/game/cafe-art.json",
+    "floorplan": "assets/environments/demian-fbx/polished-v1/preview.webp",
+    "materialPalette": "resources/js/game/rendering2d/CafeWalkthroughPalette.js"
+  },
+  "materials": {
+    "wall": "wall",
+    "trim": "wallTrim",
+    "floor": "stone",
+    "woodFurniture": "wood",
+    "woodHighlights": "woodLight",
+    "cushion": "cushion",
+    "accentTile": "greenTile",
+    "glass": "glass",
+    "plants": "plant",
+    "metal": "metal",
+    "warmLamp": "light",
+    "shadow": "shadow"
+  },
+  "palettes": {
+    "day": {
+      "light": "rgba(248,222,174,.035)",
+      "glow": "rgba(255,208,146,.17)"
+    },
+    "night": {
+      "light": "rgba(19,30,41,.17)",
+      "glow": "rgba(255,204,136,.29)"
+    }
+  },
+  "layering": [
+    "environment floorplan and FBX tiles",
+    "environment lighting wash",
+    "decorative dust",
+    "floor collectibles and feedback",
+    "moving character feet sorted by world Z",
+    "foreground interaction hints and speech",
+    "HUD and shell DOM"
+  ],
+  "quality": {
+    "performance": {
+      "glowSources": 0,
+      "dust": 0,
+      "shadowPasses": 1
+    },
+    "balanced": {
+      "glowSources": 2,
+      "dust": 6,
+      "shadowPasses": 2
+    },
+    "high": {
+      "glowSources": 3,
+      "dust": 12,
+      "shadowPasses": 2
+    }
+  },
+  "deviceViewportMatrix": [
+    {
+      "w": 320,
+      "h": 568
+    },
+    {
+      "w": 390,
+      "h": 844
+    },
+    {
+      "w": 768,
+      "h": 1024
+    },
+    {
+      "w": 1440,
+      "h": 900
+    }
+  ],
+  "atmosphereMatrix": [
+    "day",
+    "night"
+  ],
+  "affectedGameIds": [
+    "open-world",
+    "dino-run",
+    "after-hours",
+    "cafe-rush",
+    "cafe-critters",
+    "coffee-crash",
+    "cafe-drift"
+  ],
+  "restrictions": [
+    "no new WebGL shader or 3D gameplay camera",
+    "no sprite/art asset replacement",
+    "no collision/replay/score/seed mutations",
+    "effects disabled for reduced-motion or performance tier",
+    "FBX collision remains ground truth"
+  ]
+}

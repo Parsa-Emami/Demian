@@ -1,0 +1,34 @@
+{
+  "character_key": "mojtaba",
+  "pack_version": 14,
+  "physics_owns_jump_height": true,
+  "dedicated_slide": true,
+  "uniform_body_scale": true,
+  "style": "ground-runner",
+  "wing_powered_states": [],
+  "locomotion_profile": {
+    "id": "shared-ground-v2",
+    "referenceCharacter": null,
+    "phaseDriver": "travelled-distance",
+    "strideLengths": {
+      "walk": 3.4,
+      "run": 6,
+      "sprint": 6.4
+    },
+    "maxStrideHz": 1.55,
+    "landingSeconds": 0.16,
+    "jumpBufferSeconds": 0.14,
+    "coyoteSeconds": 0.11,
+    "heldApexGravity": 0.65,
+    "releasedRiseGravity": 1.65,
+    "recoveryInterruptible": true
+  },
+  "master_motion": {
+    "version": "master-motion-v1",
+    "rig_version": 1,
+    "family": "male-base-v1",
+    "source_sha256": "334253397f1b84c70cc74ea336f73614fd65e4d8cb04aa53a036a9b21efb2d7c",
+    "art_status": "authored-atlas",
+    "accessories": []
+  }
+}

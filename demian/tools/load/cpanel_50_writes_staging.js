@@ -1,10 +1,17 @@
 // Authorized staging ONLY. Exercises 50 simultaneous account-create,
 // run-start and account-erasure operations. DOES NOT verify 50 scored replays.
+// DEMIAN_TEST_RUN_ID must be a fresh 8-hex value per test run.
+// This profile assumes staging has DEMIAN_LEGAL_REQUIRE_ACCEPTANCE=false;
+// never silently accept legal terms for synthetic test accounts.
 import http from 'k6/http';
 import { check } from 'k6';
 import { Rate } from 'k6/metrics';
 
 const origin = __ENV.DEMIAN_BASE_URL || '';
+const nonce = __ENV.DEMIAN_TEST_RUN_ID || '';
+if (!/^[a-f0-9]{8}$/i.test(nonce)) {
+    throw Error('A unique 8-hex staging load run ID is required.');
+}
 if (__ENV.DEMIAN_LOAD_APPROVED !== 'YES' ||
     __ENV.DEMIAN_WRITE_LOAD_APPROVED !== 'YES' ||
     __ENV.DEMIAN_TARGET !== 'staging' ||
@@ -54,12 +61,21 @@ export default function () {
         const version = rules?.rules?.version;
         if (typeof version !== 'string') throw new Error('rules version unavailable');
 
-        const registration = post(api + '/players',
-            { display_name: 'Load User ' + __VU });
+        // Real staging defaults require a unique contact and browser key.
+        // Test-only .invalid email is never proof of phone ownership and cannot
+        // qualify for a real financial prize.
+        const registrationKey = nonce.toLowerCase() + '-0000-4000-8000-'
+            + String(__VU).padStart(12, '0');
+        const registration = post(api + '/players', {
+            display_name: 'Load User ' + __VU,
+            contact_type: 'email',
+            contact_value: 'load-' + nonce.toLowerCase() + '-' + __VU + '@example.invalid',
+            registration_key: registrationKey,
+        });
         if (!valid(registration, 201)) throw new Error('registration failed');
         token = registration.json('token');
         if (typeof token !== 'string' || token.length !== 64) throw new Error('bad token');
-        const requestId = '00000000-0000-4000-8000-' + String(__VU).padStart(12, '0');
+        const requestId = nonce.toLowerCase() + '-4321-4000-8000-' + String(__VU).padStart(12, '0');
 
         const started = post(api + '/runs', {
             request_id: requestId,

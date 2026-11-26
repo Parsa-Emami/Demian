@@ -42,7 +42,34 @@
 @endforelse
 </tbody></table>
 </section>
+<section class="panel">
+<h2>اعتراض‌های بازیکنان (۳۰ مورد اخیر)</h2>
+<p class="muted">متن اعتراض در پایگاه داده رمزگذاری می‌شود و فقط برای بررسی انسانی نمایش داده می‌شود.</p>
+<table><thead><tr><th>شناسه اعتراض</th><th>پرونده</th><th>دلیل</th><th>توضیح محرمانه</th><th>وضعیت / تاریخ</th></tr></thead>
+<tbody>
+@forelse($appeals as $appeal)
+<tr><td>#{{ $appeal['id'] }}</td><td>#{{ $appeal['report_id'] }}</td>
+<td>{{ $appeal['reason_code'] }}</td><td>{{ $appeal['statement'] }}</td>
+<td>{{ $appeal['status'] }} · {{ $appeal['created_at'] }}</td></tr>
+@empty
+<tr><td colspan="5">اعتراض ثبت‌شده‌ای وجود ندارد.</td></tr>
+@endforelse
+</tbody></table>
+</section>
 @if($canReview)
+<section class="panel">
+<h2>پاسخ به اعتراض (فقط سوپرادمین)</h2>
+<p class="muted">پذیرش اعتراض تا رفع محدودیت دستی معتبر امکان‌پذیر نیست. رمز عبور، CSRF و دلیل مستند الزامی است.</p>
+<form method="post" action="{{ route('cashier.anticheat.appeal') }}" autocomplete="off">
+@csrf
+<label>شناسه اعتراض<input type="number" name="appeal_id" min="1" required></label>
+<label>تصمیم<select name="decision"><option value="accept">پذیرش و رفع هشدار</option><option value="reject">رد اعتراض</option></select></label>
+<label>دلیل تصمیم<textarea name="note" minlength="12" maxlength="500" required></textarea></label>
+<label>رمز سوپرادمین<input type="password" name="password" autocomplete="current-password" required></label>
+<label class="check"><input type="checkbox" name="confirmed" value="1" required> ثبت تصمیم را تأیید می‌کنم.</label>
+<button type="submit">ثبت پاسخ قابل ممیزی</button>
+</form>
+</section>
 <section class="panel">
 <h2>ثبت تصمیم انسانی (فقط سوپرادمین)</h2>
 <p class="muted">برای هر تصمیم توضیح واقعی، رمز عبور فعلی و تأیید مجدد لازم است. تصمیم تأیید تخلف خودش امتیاز یا جایزه را حذف نمی‌کند.</p>
