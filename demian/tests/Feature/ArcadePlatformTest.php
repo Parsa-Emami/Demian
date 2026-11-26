@@ -39,6 +39,20 @@ final class ArcadePlatformTest extends TestCase
         return $response;
     }
 
+    public function test_beginner_rules_cannot_start_a_financial_ranked_run(): void
+    {
+        $player = $this->identity();
+        $this->withToken($player['token'])->postJson('/api/v1/arcade/runs', [
+            'request_id' => (string) Str::uuid(),
+            'game_id' => 'dino-run',
+            'rules_version' => 'cafe-runner-practice-v1',
+            'character_slug' => 'darya',
+            'track_width' => 420,
+        ])->assertConflict();
+        $this->assertDatabaseCount('arcade_runs', 0);
+        $this->assertDatabaseCount('arcade_leaderboard_entries', 0);
+    }
+
     public function test_php_replays_match_javascript_fixtures_exactly(): void
     {
         foreach ($this->fixtures() as $fixture) {

@@ -6,6 +6,7 @@ import { BUILTIN_CHARACTER_SLUGS, builtinCharacterAssetPair } from '../../charac
 import { arcadeCharacterLabel } from '../arcade/ArcadeCharacterRoster.js';
 import { UI_LAYER, assignUiLayer } from '../../ui/UiLayer.js';
 import RunnerReplay from './RunnerReplay.js';
+import { beginnerProfileForWeek, PRACTICE_BEST_KEY, isBeginnerProfile } from './RunnerPracticeProfile.js';
 import CanvasCharacterAvatar from '../../characters/CanvasCharacterAvatar.js';
 
 const BEST_KEY = `demian.dino-run.best.${RUNNER_CONFIG.version}`;
@@ -18,8 +19,8 @@ const OBSTACLE_LABELS = Object.freeze({
     pendant: 'چراغ آویز', 'hanging-sign': 'تابلو آویز', 'serving-tray': 'سینی', pipe: 'لوله',
 });
 const ATTACKER_LABELS = Object.freeze(Object.fromEntries(BUILTIN_CHARACTER_SLUGS.map(slug => [slug, arcadeCharacterLabel(slug)])));
-function readBest() { try { return Math.max(0, Number(localStorage.getItem(BEST_KEY)) || 0); } catch { return 0; } }
-function saveBest(value) { try { localStorage.setItem(BEST_KEY, String(value)); } catch {} }
+function readBest(key = BEST_KEY) { try { return Math.max(0, Number(localStorage.getItem(key)) || 0); } catch { return 0; } }
+function saveBest(value, key = BEST_KEY) { try { localStorage.setItem(key, String(value)); } catch {} }
 
 function collisionGuide(model) {
     if (!model.hitObstacle) return 'زمان این دور تمام شد.';
@@ -73,7 +74,7 @@ export default class DinoRunGame extends BaseGame {
         this.refreshRoster();
         this.hud = assignUiLayer(document.createElement('section'), UI_LAYER.LOCAL_BASE);
         this.hud.className = 'runner-hud'; this.hud.dir = 'rtl';
-        this.hud.innerHTML = '<div class="runner-hud__title"><small>DEMIAN / CAFÉ RUN</small><strong>DINO RUN</strong></div><div class="runner-hud__score"><span><small>امتیاز</small><b data-run-score>۰۰۰۰۰</b></span><span><small>رکورد دستگاه</small><b data-run-best>۰۰۰۰۰</b></span><div class="runner-hud__session" aria-label="آمار جاری"><span>زمان: <b data-run-time>۰</b> ثانیه</span><span>موانع: <b data-run-passed>۰</b></span></div></div><button type="button" data-shell-action="leaderboard" aria-label="نمایش لیدربورد">♛</button>';
+        this.hud.innerHTML = '<div class="runner-hud__title"><small>DEMIAN / CAFÉ RUN</small><strong>DINO RUN</strong></div><div class="runner-hud__score"><span><small>امتیاز</small><b data-run-score>۰۰۰۰۰</b></span><span><small data-run-best-label>رکورد تمرینی</small><b data-run-best>۰۰۰۰۰</b></span><div class="runner-hud__session" aria-label="آمار جاری"><span>زمان: <b data-run-time>۰</b> ثانیه</span><span>موانع: <b data-run-passed>۰</b></span></div></div><button type="button" data-shell-action="leaderboard" aria-label="نمایش لیدربورد">♛</button>';
         this.threat = document.createElement('div');
         this.threat.className = 'runner-threat';
         this.threat.setAttribute('role', 'status');
@@ -83,10 +84,23 @@ export default class DinoRunGame extends BaseGame {
         context.root.querySelector('[data-game-hud-host]')?.append(this.hud);
         this.ready = assignUiLayer(document.createElement('div'), UI_LAYER.LOCAL_BASE);
         this.ready.className = 'runner-ready'; this.ready.dir = 'rtl';
-        this.ready.innerHTML = '<span>DEMIAN · CAFÉ RUN</span><h2>این بار، توی کافه بدو.</h2><p>از موانع و حمله‌های زمینی اوزودی و امیررضا بپر؛ زیر موانع و حمله‌های هوایی اسلاید برو. هر برخورد یعنی پایان دور!</p><button type="button" data-input-press="jump" data-input-hold="jumpHeld">شروع و پرش <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20V4m-6 6 6-6 6 6"/></svg></button><small data-runner-keyboard-guide>نگه‌دار: پرش بلندتر · Space / ↑ · ↓ برای اسلاید</small><small data-runner-touch-guide>برای پرش بلندتر، دکمهٔ پرش را نگه دار.</small><p data-run-ranking-mode role="status"></p>';
+        this.ready.innerHTML = '<span>DEMIAN · CAFÉ RUN</span><h2>این بار، توی کافه بدو.</h2><p>از موانع زمینی بپر و از زیر موانع هوایی اسلاید برو. تمرین آرام شروع می‌شود و به‌تدریج سخت‌تر خواهد شد.</p><button type="button" data-input-press="jump" data-input-hold="jumpHeld">شروع و پرش <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20V4m-6 6 6-6 6 6"/></svg></button><small data-runner-keyboard-guide>نگه‌دار: پرش بلندتر · Space / ↑ · ↓ برای اسلاید</small><small data-runner-touch-guide>برای پرش بلندتر، دکمهٔ پرش را نگه دار.</small><p data-run-ranking-mode role="status"></p>';
+        this.modeButton = document.createElement('button');
+        this.modeButton.type = 'button';
+        this.modeButton.className = 'runner-ready__lesson runner-ready__mode';
+        this.modeButton.dataset.runnerMode = 'ranked';
+        this.modeButton.textContent = 'مسابقه رسمی · لیدربورد آنلاین';
+        this.modeButton.addEventListener('click', () => {
+            if (this.starting || this.selecting || this.model.status !== 'ready' || this.lessonStep) return;
+            const mode = this.run?.mode === 'ranked' ? 'practice' : 'ranked';
+            this.context.input.clearTouch();
+            void this.startSession({ mode }).catch(() => this.context?.app.shell.toast('شروع دور انجام نشد. دوباره تلاش کن.', 'error'));
+        });
+        this.ready.querySelector('[data-runner-keyboard-guide]').before(this.modeButton);
         const lesson = document.createElement('button');
         lesson.type = 'button';
         lesson.className = 'runner-ready__lesson';
+        lesson.dataset.runnerLesson = 'true';
         try { this.lessonLearned = localStorage.getItem(LESSON_KEY) === 'done'; } catch {}
         lesson.textContent = this.lessonLearned ? 'مرور پرش و اسلاید' : 'تمرین پیشنهادی · پرش و اسلاید';
         lesson.addEventListener('click', () => this.showLesson('jump'));
@@ -107,6 +121,7 @@ export default class DinoRunGame extends BaseGame {
         this.ready.prepend(wordmark);
         context.root.querySelector('[data-game-hud-host]')?.append(this.ready, this.lessonPanel);
         this.scoreNode = this.hud.querySelector('[data-run-score]'); this.bestNode = this.hud.querySelector('[data-run-best]');
+        this.bestLabel = this.hud.querySelector('[data-run-best-label]');
         this.timeNode = this.hud.querySelector('[data-run-time]');
         this.passedNode = this.hud.querySelector('[data-run-passed]');
         this.resize();
@@ -129,7 +144,7 @@ export default class DinoRunGame extends BaseGame {
         start.focus();
         if (done) {
             try { localStorage.setItem(LESSON_KEY, 'done'); } catch {}
-            this.ready.querySelector('.runner-ready__lesson').textContent = 'مرور پرش و اسلاید';
+            this.ready.querySelector('[data-runner-lesson]').textContent = 'مرور پرش و اسلاید';
         }
     }
     startLesson() {
@@ -151,7 +166,11 @@ export default class DinoRunGame extends BaseGame {
         this.characterManager.activeRecord = this.characterManager.characters.find((r) => r.is_active);
     }
     async selectCharacter(slug) {
-        if (!BUILTIN_CHARACTER_SLUGS.includes(slug) || this.selecting) return;
+        if (!BUILTIN_CHARACTER_SLUGS.includes(slug) || this.selecting || this.starting) return;
+        if (this.run?.mode === 'ranked' && this.model.status === 'running') {
+            this.context.app.shell.toast('کاراکتر مسابقه تا پایان دور ثابت است.');
+            return;
+        }
         this.selecting = true;
         try {
             const avatar = await this.context.services.characterVisuals.createCanvasAvatar(slug, { player: true, sideView: true });
@@ -160,29 +179,54 @@ export default class DinoRunGame extends BaseGame {
             this.refreshRoster();
             this.context.eventBus.emit('characters:changed', this.characterManager.characters);
             this.context.eventBus.emit('character:selected', { record: this.characterManager.activeRecord });
-            if (this.model.status === 'ready' && !this.lessonStep) await this.startSession();
+            if (this.model.status === 'ready' && !this.lessonStep) await this.startSession({ mode: this.run?.mode });
             else if (this.run?.mode === 'ranked') this.run.mode = 'practice';
         } finally { this.selecting = false; }
     }
-    async startSession({ seed } = {}) {
+    async startSession({ seed, restart = false, mode = restart ? this.run?.mode : 'practice' } = {}) {
+        if (this.starting) return;
+        const context = this.context;
+        const ranked = mode === 'ranked' && seed === undefined;
         this.starting = true; this.finished = false;
+        this.ready.hidden = true;
         this.lessonStep = null; this.lessonActive = false;
         this.lessonPanel.hidden = true;
         this.run = null; this.replay = new RunnerReplay();
         const width = Math.round(Math.min(RUNNER_CONFIG.maxWidth, Math.max(RUNNER_CONFIG.minWidth, this.trackWidth)));
-        this.run = this.context.services.leaderboards
-            ? await this.context.services.leaderboards.start({ width, character: this.avatar.slug, seed })
-            : { mode: 'practice', seed: seed ?? Date.now(), track_width: width };
-        if (!this.context) return;
-        const profile = this.run.mode === 'ranked' && this.run.rules_version !== WEEKLY_VERSIONS['dino-run']
-            ? RUNNER_CONFIG : runnerWeek(RUNNER_CONFIG, this.run.content_week ?? weeklyIndex(), this.avatar.slug);
+        try {
+            const run = context.services.leaderboards
+                ? await context.services.leaderboards.start({ width, character: this.avatar.slug, seed, practice: !ranked })
+                : { mode: 'practice', seed: seed ?? Date.now(), track_width: width };
+            if (this.disposed || this.context !== context) return;
+            this.run = ranked && run.mode === 'ranked' ? run
+                : { mode: 'practice', seed: run.seed ?? seed ?? Date.now(), track_width: width, reason: run.reason };
+        } catch {
+            if (this.disposed || this.context !== context) return;
+            this.run = { mode: 'practice', seed: seed ?? Date.now(), track_width: width,
+                reason: 'اتصال برقرار نشد؛ حالت تمرینی بدون جایزه فعال است.' };
+        }
+        const profile = this.run.mode === 'ranked'
+            ? (this.run.rules_version === WEEKLY_VERSIONS['dino-run']
+                ? runnerWeek(RUNNER_CONFIG, this.run.content_week, this.avatar.slug) : RUNNER_CONFIG)
+            : beginnerProfileForWeek(weeklyIndex(), this.avatar.slug);
+        this.bestKey = isBeginnerProfile(profile) ? PRACTICE_BEST_KEY : BEST_KEY;
+        this.best = readBest(this.bestKey);
         this.model.reset({ seed: this.run.seed, width: this.run.track_width, profile });
         this.hydrateAttackers(this.context, profile.attackers);
         this.actor.speed = 0; this.actor.airborne = false; this.actor.grounded = true; this.actor.motionState = 'idle';
         this.avatar.sync(this.actor, 0);
         const status = this.ready.querySelector('[data-run-ranking-mode]');
-        if (status) status.textContent = this.run.mode === 'ranked' ? 'این دور برای لیدربورد آنلاین ثبت می‌شود.'
-            : this.run.reason ?? 'رکورد این دور روی همین دستگاه ذخیره می‌شود.';
+        if (status) status.textContent = this.run.mode === 'ranked'
+            ? 'مسابقه رسمی · سختی ۶ تا ۱۰ · ثبت رکورد پس از تأیید سرور.'
+            : [this.run.reason, 'تمرین · سختی ۲ تا ۶ · رکورد جداگانه روی دستگاه؛ بدون جایزه.'].filter(Boolean).join(' ');
+        if (this.modeButton) {
+            this.modeButton.dataset.runnerMode = this.run.mode === 'ranked' ? 'practice' : 'ranked';
+            this.modeButton.textContent = this.run.mode === 'ranked' ? 'بازگشت به تمرین'
+                : context.services.leaderboards?.connected ? 'مسابقه رسمی · لیدربورد آنلاین' : 'مسابقه رسمی · نیازمند اتصال API';
+            this.modeButton.disabled = this.run.mode !== 'ranked' && !context.services.leaderboards?.connected;
+        }
+        if (this.bestLabel) this.bestLabel.textContent = this.run.mode === 'ranked' ? 'رکورد قواعد رسمی' : 'رکورد تمرینی';
+        this.ready.querySelector('[data-input-press="jump"]').firstChild.textContent = this.run.mode === 'ranked' ? 'شروع مسابقه ' : 'شروع تمرین ';
         this.starting = false; this.ready.hidden = false; this.updateHud();
     }
     fixedUpdate(dt, input = {}) {
@@ -239,12 +283,12 @@ export default class DinoRunGame extends BaseGame {
     finish() {
         if (this.finished) return;
         this.finished = true;
-        const previousBest = this.best; this.best = Math.max(this.best, this.model.score); saveBest(this.best);
+        const previousBest = this.best; this.best = Math.max(this.best, this.model.score); saveBest(this.best, this.bestKey);
         this.updateHud();
         this.context.app.completeGame({ title: this.model.score > previousBest ? 'رکورد تازه!' : 'یک بار دیگر؟',
             subtitle: collisionGuide(this.model), score: this.model.score, won: false,
             ranking: this.context.services?.leaderboards?.finish(this.run, this.model, this.replay, this.avatar.slug),
-            stats: { 'رکورد': statDigits.format(this.best), 'موانع ردشده': statDigits.format(this.model.passed), 'زمان': `${statDigits.format(Math.floor(this.model.time))} ثانیه`,
+            stats: { 'حالت': isBeginnerProfile(this.model.profile) ? 'تمرینی · بدون جایزه' : this.run?.mode === 'ranked' ? 'مسابقه رسمی' : 'دور غیررقابتی', 'رکورد': statDigits.format(this.best), 'موانع ردشده': statDigits.format(this.model.passed), 'زمان': `${statDigits.format(Math.floor(this.model.time))} ثانیه`,
                 'کاراکتر': arcadeCharacterLabel(this.avatar.slug) } });
     }
     resize() {

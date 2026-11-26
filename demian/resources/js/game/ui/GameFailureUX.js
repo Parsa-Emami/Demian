@@ -44,5 +44,6 @@ const RANKING_MESSAGES = Object.freeze({
     }),
 });
 export function rankingResultUX(status) {
-    return RANKING_MESSAGES[status] ?? RANKING_MESSAGES.unknown;
+    const key = status === 'beginner-practice' ? 'practice' : status;
+    return RANKING_MESSAGES[key] ?? RANKING_MESSAGES.unknown;
 }
