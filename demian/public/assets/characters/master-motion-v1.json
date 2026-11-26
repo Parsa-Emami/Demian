@@ -176,6 +176,26 @@
       "identityContract": "assets/characters/marjan/manifests/marjan_identity_contract.json"
     },
     {
+      "slug": "zohre",
+      "displayName": "ZOHRE / زهره",
+      "family": "female-base-v1",
+      "packVersion": 14,
+      "defaultActive": false,
+      "skin": "zohre",
+      "accessories": [],
+      "identityContract": "assets/characters/zohre/manifests/zohre_identity_contract.json"
+    },
+    {
+      "slug": "kiana",
+      "displayName": "KIANA / کیانا",
+      "family": "female-base-v1",
+      "packVersion": 14,
+      "defaultActive": false,
+      "skin": "kiana",
+      "accessories": [],
+      "identityContract": "assets/characters/kiana/manifests/kiana_identity_contract.json"
+    },
+    {
       "slug": "amirreza",
       "displayName": "AMIRREZA / امیررضا",
       "family": "male-base-v1",
@@ -364,5 +384,5 @@
       "identityContract": "assets/characters/mahyar/manifests/mahyar_identity_contract.json"
     }
   ],
-  "sourceSha256": "c7777516cb123070225cc157593d438c22aaed9446dbe7908a85d23e261e74f0"
+  "sourceSha256": "befd327d0965b6acd7395653757a3c850c34f0f0bc4b8819243ddc024f8d0644"
 }

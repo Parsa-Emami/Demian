@@ -6,11 +6,11 @@
     "runtime",
     "detail"
   ],
-  "candidates": 69,
-  "converted": 62,
-  "inputBytes": 125959909,
-  "outputBytes": 102344622,
-  "savedBytes": 23615287,
+  "candidates": 75,
+  "converted": 68,
+  "inputBytes": 128964458,
+  "outputBytes": 105137672,
+  "savedBytes": 23826786,
   "skippedBytes": 2144878,
   "entries": [
     {
@@ -138,6 +138,48 @@
       "format": "webp",
       "inputBytes": 1054435,
       "outputBytes": 966028
+    },
+    {
+      "slug": "zohre",
+      "variant": "lite",
+      "format": "webp",
+      "inputBytes": 145462,
+      "outputBytes": 135198
+    },
+    {
+      "slug": "zohre",
+      "variant": "runtime",
+      "format": "webp",
+      "inputBytes": 376885,
+      "outputBytes": 348706
+    },
+    {
+      "slug": "zohre",
+      "variant": "detail",
+      "format": "webp",
+      "inputBytes": 983298,
+      "outputBytes": 916566
+    },
+    {
+      "slug": "kiana",
+      "variant": "lite",
+      "format": "webp",
+      "inputBytes": 145109,
+      "outputBytes": 134588
+    },
+    {
+      "slug": "kiana",
+      "variant": "runtime",
+      "format": "webp",
+      "inputBytes": 377432,
+      "outputBytes": 348902
+    },
+    {
+      "slug": "kiana",
+      "variant": "detail",
+      "format": "webp",
+      "inputBytes": 976363,
+      "outputBytes": 909090
     },
     {
       "slug": "amirreza",
@@ -497,5 +539,5 @@
       "outputBytes": 668300
     }
   ],
-  "savingsFraction": 0.18748
+  "savingsFraction": 0.18475
 }

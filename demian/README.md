@@ -2,7 +2,7 @@
 
 The active mobile-first catalog contains **seven games**: Open World, Dino Run, After Hours, Café Rush, Café Critters, Coffee Crash and Café Drift. Sessions are single-player; competitive leaderboards are asynchronous, not shared live multiplayer.
 
-The authoritative sources are [GameCatalog.js](resources/js/game/catalog/GameCatalog.js), [GameDefinitions.js](resources/js/game/registry/GameDefinitions.js), and the [23-character manifest](public/assets/characters/character-manifest-v4.json). Final visual acceptance is tracked in the [character art backlog](docs/technical-debt/TD-ART-001-ART-REBUILD.fa.md).
+The authoritative sources are [GameCatalog.js](resources/js/game/catalog/GameCatalog.js), [GameDefinitions.js](resources/js/game/registry/GameDefinitions.js), and the [25-character manifest](public/assets/characters/character-manifest-v4.json). Final visual acceptance is tracked in the [character art backlog](docs/technical-debt/TD-ART-001-ART-REBUILD.fa.md).
 
 ## Build and validate
 

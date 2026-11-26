@@ -1,0 +1,106 @@
+{
+  "mainStates": [
+    "turn",
+    "idle",
+    "jump",
+    "celebrate"
+  ],
+  "mainRowBounds": [
+    0,
+    192,
+    384,
+    576,
+    768
+  ],
+  "motionColumns": 8,
+  "motionRowBounds": [
+    0,
+    192,
+    384,
+    576
+  ],
+  "motionRowStates": [
+    "walk",
+    "run",
+    "land"
+  ],
+  "referenceAsset": "../source-v14/reference.jpg",
+  "referenceInputs": [
+    {
+      "name": "42846.png",
+      "role": "supplied-identity-costume-and-turnaround",
+      "sha256": "865bf6b4aea3026b541ebae7d113ff68313e1cdeb32a1e1c7099a119283ff128"
+    },
+    {
+      "name": "zohre-turnaround-and-gestures.png",
+      "role": "generated-direction-idle-and-victory-key-poses",
+      "sha256": "c81bb83f4140e6bf029004fde5467a54e90029e9f825ceba1343ed65519440a1"
+    },
+    {
+      "name": "zohre-locomotion.png",
+      "role": "generated-walk-run-jump-and-land-key-poses",
+      "sha256": "86f5500c9b26a20e3292b2c111cd4d7f291e60d635c21c0369cb95acc04ae3d8"
+    },
+    {
+      "name": "zohre-slide.png",
+      "role": "generated-low-slide-key-poses",
+      "sha256": "454fe82075ecc0d19595a8bf744498f79e152ed669a71ad97f1bacfad013ff81"
+    }
+  ],
+  "identity": [
+    "shoulder-length dark espresso hair with center fringe and flipped ends",
+    "warm brown eyes",
+    "red rib-knit V-neck sweater over a white pointed collar",
+    "charcoal trousers and black chunky shoes",
+    "no companion"
+  ],
+  "locomotionReference": {
+    "character": "darya",
+    "states": [
+      "walk",
+      "run",
+      "jump",
+      "land",
+      "slide"
+    ]
+  },
+  "bodyScaleReferencePoses": {
+    "walk": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "run": [
+      0,
+      1,
+      2,
+      4,
+      5,
+      6
+    ],
+    "jump": [
+      7
+    ],
+    "land": [
+      5,
+      6,
+      7
+    ]
+  },
+  "locomotionCycleCounts": {
+    "walk": 1,
+    "run": 1
+  },
+  "idleLoopDirections": [
+    "s"
+  ],
+  "slideSharesIdleScale": true,
+  "faceSampleHeightRatio": 0.54,
+  "faceSkinRedGreenRatio": 1.1,
+  "indexedPalette": true
+}
