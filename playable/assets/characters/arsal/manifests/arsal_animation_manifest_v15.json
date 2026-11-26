@@ -65,9 +65,9 @@
       "frames": 3
     },
     "land": {
-      "fps": 18.75,
+      "fps": 25,
       "loop": false,
-      "frames": 3
+      "frames": 4
     },
     "crouch": {
       "fps": 1,

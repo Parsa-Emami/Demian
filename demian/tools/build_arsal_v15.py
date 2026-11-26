@@ -96,7 +96,7 @@ def world_animations(directions):
         'takeoff': clip(('impact', 'launch'), 12),
         'jump': clip(('launch', 'tuck', 'tuck'), 12),
         'fall': clip(('tuck', 'descend', 'descend'), 12),
-        'land': clip(('impact', 'walk-pass-a', 'idle'), 18.75),
+        'land': clip(('impact', 'walk-pass-a', 'breath', 'idle'), 25),
         'crouch': clip(('impact',), 1),
         'slide': clip(('impact', 'impact', 'impact', 'walk-pass-a'), 9),
         'wave': wave,

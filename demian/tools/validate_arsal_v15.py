@@ -80,6 +80,11 @@ def validate(variant, cell, target):
                 assert len({pixels[rect(name)] for name in chain}) >= (6 if variant == 'lite' else 8)
                 for index in clip['contactFrames']:
                     assert abs(measured[index]['ground_offset_cell']) <= .025, (variant, state, index)
+            if state == 'land':
+                assert len(chain) / clip['fps'] == atlas['motion']['locomotionProfile']['landingSeconds']
+                heights = [frame['height_cell_ratio'] / ratio for frame in measured]
+                assert .72 <= heights[0] < .87, (variant, state, heights)
+                assert min(heights[1:]) >= .88 and min(heights[-2:]) >= .95, (variant, state, heights)
 
     for state in ('idle', 'walk', 'run', 'takeoff', 'jump', 'fall', 'land', 'slide'):
         assert set(side[state]['framesByDirection']) == {'e', 'w'}

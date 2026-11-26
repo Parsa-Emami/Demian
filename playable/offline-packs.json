@@ -1,8 +1,8 @@
 {
   "schema": 1,
-  "release": "c77baaeaa4471d1f",
+  "release": "7b7ea8fea182d54e",
   "maxPackBytes": 100663296,
-  "coreBytes": 14705737,
+  "coreBytes": 14705891,
   "core": [
     {
       "path": "assets/characters/ainaz/ainaz-atlas-v14-lite.json",
@@ -45,8 +45,8 @@
     },
     {
       "path": "assets/characters/arsal/arsal-atlas-v15-lite.json",
-      "bytes": 48350,
-      "sha256": "f923b97799d58ef12c94025e729769b89b21fd6b9e52443f1f1cdf71ecfad7f3"
+      "bytes": 48504,
+      "sha256": "c26e141f4aa05b1d5426a4270f16e7ef6f07b3326df5403fee477eb316410f52"
     },
     {
       "path": "assets/characters/arsal/arsal-preview-v15.png",
@@ -409,7 +409,7 @@
     {
       "id": "open-world",
       "bytes": 1013231,
-      "totalBytes": 15718968,
+      "totalBytes": 15719122,
       "files": [
         {
           "path": "assets/environments/demian-fbx/polished-v1/lod-1024/0-0.webp",
@@ -516,7 +516,7 @@
     {
       "id": "dino-run",
       "bytes": 143206,
-      "totalBytes": 14848943,
+      "totalBytes": 14849097,
       "files": [
         {
           "path": "assets/environments/demian-fbx/floorplan.webp",
@@ -542,7 +542,7 @@
     {
       "id": "after-hours",
       "bytes": 496694,
-      "totalBytes": 15202431,
+      "totalBytes": 15202585,
       "files": [
         {
           "path": "assets/environments/demian-fbx/floorplan-detail.webp",
@@ -593,7 +593,7 @@
     {
       "id": "cafe-rush",
       "bytes": 502306,
-      "totalBytes": 15208043,
+      "totalBytes": 15208197,
       "files": [
         {
           "path": "assets/environments/demian-fbx/floorplan-detail.webp",
@@ -649,7 +649,7 @@
     {
       "id": "cafe-critters",
       "bytes": 283645,
-      "totalBytes": 14989382,
+      "totalBytes": 14989536,
       "files": [
         {
           "path": "assets/environments/demian-fbx/polished-v1/lod-1024/0-0.webp",
@@ -771,7 +771,7 @@
     {
       "id": "coffee-crash",
       "bytes": 168183,
-      "totalBytes": 14873920,
+      "totalBytes": 14874074,
       "files": [
         {
           "path": "assets/environments/demian-fbx/floorplan.webp",
@@ -812,7 +812,7 @@
     {
       "id": "cafe-drift",
       "bytes": 22138,
-      "totalBytes": 14727875,
+      "totalBytes": 14728029,
       "files": [
         {
           "path": "build/assets/CafeCueAudio-CnkMuVoO.js",
