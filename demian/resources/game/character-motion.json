@@ -186,6 +186,16 @@
       "identityContract": "assets/characters/zohre/manifests/zohre_identity_contract.json"
     },
     {
+      "slug": "kiana",
+      "displayName": "KIANA / کیانا",
+      "family": "female-base-v1",
+      "packVersion": 14,
+      "defaultActive": false,
+      "skin": "kiana",
+      "accessories": [],
+      "identityContract": "assets/characters/kiana/manifests/kiana_identity_contract.json"
+    },
+    {
       "slug": "amirreza",
       "displayName": "AMIRREZA / امیررضا",
       "family": "male-base-v1",

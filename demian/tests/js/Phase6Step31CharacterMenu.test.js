@@ -38,6 +38,8 @@ test('menu roster shows all characters and persists a valid selection without bo
     const elahehPosition = menu.characters.findIndex(record => record.slug === 'elaheh');
     assert.equal(menu.characters[elahehPosition + 1]?.slug, 'marjan');
     assert.equal(menu.characters[elahehPosition + 2]?.slug, 'zohre');
+    const zohrePosition = menu.characters.findIndex(record => record.slug === 'zohre');
+    assert.equal(menu.characters[zohrePosition + 1]?.slug, 'kiana');
     const arsalPosition = menu.characters.findIndex(record => record.slug === 'arsal');
     assert.equal(menu.characters[arsalPosition + 1]?.slug, 'sadro');
     const negarPosition = menu.characters.findIndex(record => record.slug === 'negar');
@@ -51,7 +53,7 @@ test('menu roster shows all characters and persists a valid selection without bo
     assert.equal(events[1][0], 'character:selected');
     await assert.rejects(menu.select('builtin-fake'), /وجود ندارد/);
     assert.equal(visuals.activeSlug, 'negar');
-    for (const slug of ['sadro', 'mojtaba', 'mobina', 'elaheh', 'marjan', 'zohre', 'taher-db', 'sorkhi', 'yalda', 'mori', 'mahyar']) {
+    for (const slug of ['sadro', 'mojtaba', 'mobina', 'elaheh', 'marjan', 'zohre', 'kiana', 'taher-db', 'sorkhi', 'yalda', 'mori', 'mahyar']) {
         assert.equal((await menu.select(`builtin-${slug}`)).slug, slug);
         assert.equal(menu.activeRecord.slug, slug);
         assert.equal(visuals.activeSlug, slug);

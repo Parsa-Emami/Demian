@@ -6,11 +6,11 @@
     "runtime",
     "detail"
   ],
-  "candidates": 72,
-  "converted": 65,
-  "inputBytes": 130397308,
-  "outputBytes": 105458412,
-  "savedBytes": 24938896,
+  "candidates": 75,
+  "converted": 68,
+  "inputBytes": 131896212,
+  "outputBytes": 106850992,
+  "savedBytes": 25045220,
   "skippedBytes": 2144878,
   "entries": [
     {
@@ -159,6 +159,27 @@
       "format": "webp",
       "inputBytes": 983298,
       "outputBytes": 916566
+    },
+    {
+      "slug": "kiana",
+      "variant": "lite",
+      "format": "webp",
+      "inputBytes": 145109,
+      "outputBytes": 134588
+    },
+    {
+      "slug": "kiana",
+      "variant": "runtime",
+      "format": "webp",
+      "inputBytes": 377432,
+      "outputBytes": 348902
+    },
+    {
+      "slug": "kiana",
+      "variant": "detail",
+      "format": "webp",
+      "inputBytes": 976363,
+      "outputBytes": 909090
     },
     {
       "slug": "amirreza",
@@ -518,5 +539,5 @@
       "outputBytes": 668300
     }
   ],
-  "savingsFraction": 0.19125
+  "savingsFraction": 0.18989
 }
