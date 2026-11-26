@@ -79,6 +79,10 @@ Route::prefix('cashier')->name('cashier.')->group(function (): void {
             ->whereNumber('campaignId')
             ->middleware(['throttle:arcade-cashier-admin',
                 RequireCafePermission::class.':coupon.revoke'])->name('campaigns.import');
+        Route::post('/admin/campaigns/{campaignId}/measure', [CafeRewardCampaignController::class, 'measure'])
+            ->whereNumber('campaignId')
+            ->middleware(['throttle:arcade-cashier-admin', RequireCafePermission::class.':coupon.revoke'])
+            ->name('campaigns.measure');
         Route::post('/admin/campaigns/{campaignId}/{action}',
             [CafeRewardCampaignController::class, 'transition'])
             ->whereNumber('campaignId')->whereIn('action', ['activate', 'pause', 'close'])
