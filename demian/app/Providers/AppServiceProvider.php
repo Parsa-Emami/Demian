@@ -45,6 +45,19 @@ class AppServiceProvider extends ServiceProvider
             Limit::perMinute(60)->by('arcade:registration:minute:'.$request->ip()),
             Limit::perHour(180)->by('arcade:registration:hour:'.$request->ip()),
         ]);
+        RateLimiter::for('arcade-password-login', static function (Request $request): array {
+            $contactDigest = app(\App\Services\Arcade\PlayerContact::class)
+                ->rateLimitDigest($request);
+            return [
+                Limit::perMinute(120)->by('arcade:password:ip:'.$request->ip()),
+                Limit::perHour(300)->by('arcade:password:hour:'.$request->ip()),
+                Limit::perMinute(5)->by('arcade:password:contact:'.$contactDigest),
+            ];
+        });
+        RateLimiter::for('arcade-password-change', static fn (Request $request): array => [
+            Limit::perMinute(3)->by('arcade:password:change:'.self::arcadeTokenBucket($request)),
+            Limit::perHour(12)->by('arcade:password:change:hour:'.self::arcadeTokenBucket($request)),
+        ]);
         RateLimiter::for('arcade-run-start', static fn (Request $request): array => [
             Limit::perMinute(10)->by('arcade:start:player:'.self::arcadeTokenBucket($request)),
             Limit::perMinute(500)->by('arcade:start:ip:'.$request->ip()),

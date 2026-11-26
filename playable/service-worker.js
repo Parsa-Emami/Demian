@@ -3,11 +3,13 @@
  * requests. Only same-release *complete* core + game packs serve offline.
  * Do not skipWaiting during gameplay; the menu explicitly accepts updates.
  */
-const RELEASE_ID = '600f41e416def000';
+const RELEASE_ID = '596093347fba05ac';
 const PREFIX = 'demian-offline-v1-';
 const CACHE_NAME = PREFIX + RELEASE_ID;
 const CORE_PREFIX = 'demian-core-v1-';
 const GAME_PREFIX = 'demian-game-v1-';
+const MAX_INTEGRITY_BYTES = 2 * 1024 * 1024;
+const FETCH_TIMEOUT_MS = 30000;
 const CORE_CACHE = CORE_PREFIX + RELEASE_ID;
 const scope = new URL(self.registration.scope);
 const offlineURL = new URL('offline.html', scope).href;
@@ -33,7 +35,7 @@ async function installedGames(manifest) {
     for (const game of manifest.games) {
         games[game.id] = coreReady && await isReady(gameCache(game.id), game.id);
     }
-    return { coreReady, games };
+    return { release: RELEASE_ID, coreReady, games };
 }
 async function readManifest() {
     const cache = await caches.open(CACHE_NAME);
@@ -63,6 +65,51 @@ function localAsset(record) {
     }
     return url.href;
 }
+async function fetchOfflineResource(url) {
+    // A single transient outage must not leave a half-ready game. Never retry
+    // missing assets (404), malformed releases, quota errors or auth requests.
+    for (let attempt = 0; attempt < 2; attempt++) {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+        try {
+            const response = await fetch(url, {
+                cache: 'no-store', credentials: 'omit', redirect: 'error',
+                signal: controller.signal,
+            });
+            if (response.ok && response.type !== 'opaque') {
+                // Lifetime of the fetch must include body consumption. Caller
+                // clears the timer after the body is cached and/or checked.
+                return { response, cancel: () => clearTimeout(timer) };
+            }
+            clearTimeout(timer);
+            if (![408, 429, 500, 502, 503, 504].includes(response.status) || attempt === 1) {
+                throw new Error('Offline asset unavailable (HTTP ' + response.status + ')');
+            }
+        } catch (error) {
+            clearTimeout(timer);
+            if (attempt === 1 || (!['AbortError', 'TypeError'].includes(error?.name)
+                && ![408, 429, 500, 502, 503, 504].includes(error?.status))) throw error;
+        }
+        await new Promise(done => setTimeout(done, 200 * (attempt + 1)));
+    }
+    throw new Error('Offline asset retry exhausted.');
+}
+
+async function verifyOfflineResource(response, record) {
+    if (!record.sha256) return;
+    if (!/^[a-f0-9]{64}$/.test(record.sha256) || !Number.isSafeInteger(record.bytes)
+        || record.bytes < 0 || record.bytes > MAX_INTEGRITY_BYTES) {
+        throw new Error('Invalid release integrity metadata.');
+    }
+    // The clone's decoded bytes are capped at 2 MiB. Large textures remain
+    // on the normal sequential CacheStorage path, not duplicated in JS heap.
+    const bytes = await response.clone().arrayBuffer();
+    if (bytes.byteLength !== record.bytes) throw new Error('Offline asset size mismatch: ' + record.path);
+    const hash = Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', bytes)),
+        byte => byte.toString(16).padStart(2, '0')).join('');
+    if (hash !== record.sha256) throw new Error('Offline asset checksum mismatch: ' + record.path);
+}
+
 async function downloadFiles(cacheName, key, files, notify, initial = 0, total = files.length) {
     const existing = await isReady(cacheName, key);
     if (existing) return initial + files.length;
@@ -74,9 +121,13 @@ async function downloadFiles(cacheName, key, files, notify, initial = 0, total =
     try {
         for (const record of files) {
             const url = localAsset(record);
-            const response = await fetch(url, { cache: 'no-store', credentials: 'omit', redirect: 'error' });
-            if (!response.ok || response.type === 'opaque') throw new Error('Offline asset request failed: ' + record.path);
-            await cache.put(url, response);
+            const { response, cancel } = await fetchOfflineResource(url);
+            try {
+                await verifyOfflineResource(response, record);
+                await cache.put(url, response);
+            } finally {
+                cancel();
+            }
             done++;
             notify({ type: 'PROGRESS', done, total, path: record.path });
         }
@@ -119,7 +170,7 @@ async function removeGame(id) {
 
 self.addEventListener('install', event => {
     event.waitUntil(caches.open(CACHE_NAME).then(cache =>
-        cache.addAll([offlineURL, manifestURL, ...iconURLs, ...legalURLs])));
+        cache.addAll([offlineURL, manifestURL, ...iconURLs, ...legalURLs].map(url => new Request(url, { cache: 'no-store', credentials: 'omit' })))));
     // A waiting worker never activates in the middle of a game.
 });
 self.addEventListener('activate', event => {

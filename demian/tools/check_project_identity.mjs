@@ -7,7 +7,7 @@ import { pathToFileURL } from 'node:url';
 const project = resolve(import.meta.dirname, '..');
 const release = resolve(process.env.DEMIAN_QA_RELEASE_DIR ?? resolve(project, '_site'));
 const out = resolve(process.env.DEMIAN_QA_REPORT_DIR ?? resolve(project, 'docs/project-identity/browser'));
-const { chromium } = await import(process.env.DEMIAN_PLAYWRIGHT_MODULE ? pathToFileURL(process.env.DEMIAN_PLAYWRIGHT_MODULE).href : 'playwright');
+const { chromium, webkit } = await import(process.env.DEMIAN_PLAYWRIGHT_MODULE ? pathToFileURL(process.env.DEMIAN_PLAYWRIGHT_MODULE).href : 'playwright');
 const mime = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json; charset=utf-8', '.txt': 'text/plain; charset=utf-8', '.png': 'image/png', '.webp': 'image/webp', '.woff2': 'font/woff2' };
 const prefix = '/relocated/demian/';
 await mkdir(out, { recursive: true });
@@ -24,9 +24,11 @@ const server = createServer(async (request, response) => {
 });
 await new Promise(done => server.listen(0, '127.0.0.1', done));
 let browser;
-const report = { physicalPhoneMeasured: false, mode: 'Headless Chromium; emulated phone dimensions; software rendering', profiles: [] };
+const engine = process.env.DEMIAN_QA_ENGINE ?? 'chromium';
+assert.ok(['chromium', 'webkit'].includes(engine));
+const report = { physicalPhoneMeasured: false, mode: `Headless ${engine}; emulated phone dimensions; software rendering`, engine, profiles: [] };
 try {
-    browser = await chromium.launch({ headless: true, ...(process.env.DEMIAN_BROWSER_EXECUTABLE ? { executablePath: process.env.DEMIAN_BROWSER_EXECUTABLE } : {}), args: ['--no-sandbox', '--disable-dev-shm-usage', '--disable-gpu'] });
+    browser = await (engine === 'webkit' ? webkit : chromium).launch({ headless: true, ...(engine === 'chromium' ? { ...(process.env.DEMIAN_BROWSER_EXECUTABLE ? { executablePath: process.env.DEMIAN_BROWSER_EXECUTABLE } : {}), args: ['--no-sandbox', '--disable-dev-shm-usage', '--disable-gpu'] } : {}) });
     report.browser = browser.version();
     const base = `http://127.0.0.1:${server.address().port}${prefix}`;
     const infoResponse = await fetch(`${base}game-info.json`);
@@ -41,7 +43,7 @@ try {
     const text = await (await fetch(`${base}llms.txt`)).text();
     assert.ok(text.includes('Parsa Emami') && text.includes('https://www.linkedin.com/in/parsaaemm/'));
     assert.equal(/cost|estimate|5,000|10,000/i.test(text), false);
-    for (const [width, height] of [[320, 568], [390, 844], [844, 390], [1440, 900]]) {
+    for (const [width, height] of [[320, 480], [320, 568], [360, 640], [360, 740], [375, 667], [390, 844], [393, 873], [430, 932], [667, 375], [844, 390], [768, 1024], [1440, 900]]) {
         const context = await browser.newContext({ viewport: { width, height }, isMobile: width < 1000, hasTouch: width < 1000 });
         const page = await context.newPage();
         const errors = [];
@@ -73,14 +75,50 @@ try {
         assert.match(iconResponse.headers()['content-type'], /^image\/png/);
         assert.deepEqual([...((await iconResponse.body()).subarray(0, 8))], [137, 80, 78, 71, 13, 10, 26, 10]);
         const credit = page.locator('[data-creator-link]');
-        await credit.scrollIntoViewIfNeeded();
+        await page.evaluate(() => document.fonts.ready);
+        await page.locator('style[data-welcome-layout="viewport-v6"][data-welcome-design="living-cafe-v1"]').count().then(count => assert.equal(count, 1));
+        await page.waitForFunction(() => document.querySelector('[data-screen="cafe-menu"]')?.dataset.screenState === 'active', null, { timeout: 15000 });
+        assert.equal(await menu.locator('.cafe-menu__portrait img').count(), 3);
+        await page.waitForFunction(() => [...document.querySelectorAll('.cafe-menu__portrait img')].every(img => img.complete && img.naturalWidth > 0));
+        assert.match(await menu.locator('.cafe-menu__showcase').evaluate(el => getComputedStyle(el).backgroundImage), /cafe-runner-v1\/interior\.webp/);
+        assert.match(await menu.locator('[data-shell-action="continue"]').evaluate(el => getComputedStyle(el).backgroundImage), /demian-fbx\/polished-v1\/preview\.webp/);
+        await page.emulateMedia({ reducedMotion: 'reduce' });
+        assert.equal(await menu.locator('[data-lobby-active-avatar]').evaluate(el => getComputedStyle(el).animationName), 'none');
+        await page.emulateMedia({ reducedMotion: 'no-preference' });
         const geometry = await page.evaluate(() => {
             const link = document.querySelector('[data-creator-link]').getBoundingClientRect();
             const parent = document.querySelector('[data-project-credit]').getBoundingClientRect();
-            return { centered: Math.abs(link.x + link.width / 2 - parent.x - parent.width / 2) < 2,
+            const screen = document.querySelector('[data-screen="cafe-menu"]');
+            const frame = screen.getBoundingClientRect();
+            const viewport = window.visualViewport;
+            const viewportBottom = viewport ? viewport.offsetTop + viewport.height : innerHeight;
+            const reward = screen.querySelector('[data-shell-action="rewards"]').getBoundingClientRect();
+            const character = screen.querySelector('.menu-character-button').getBoundingClientRect();
+            const targets = [...screen.querySelectorAll('.cafe-menu__showcase, .cafe-menu__actions button, .demian-legal-links a, [data-creator-link]')];
+            const clipped = targets.filter(element => {
+                const r = element.getBoundingClientRect();
+                return r.width < 43.95 || r.height < 43.95 || r.left < frame.left - 1 || r.right > frame.right + 1
+                    || r.top < frame.top - 1 || r.bottom > Math.min(frame.bottom, viewportBottom) + 1;
+            }).map(element => {
+                const r = element.getBoundingClientRect();
+                return { label: element.textContent.trim(), x:r.x, y:r.y, width:r.width, height:r.height,
+                    screen: { x:frame.x, y:frame.y, width:frame.width, height:frame.height } };
+            });
+            const blocked = targets.filter(element => {
+                const r = element.getBoundingClientRect();
+                const hit = document.elementFromPoint(r.left + r.width/2, r.top + r.height/2);
+                return hit !== element && !element.contains(hit);
+            }).map(element => element.textContent.trim());
+            return { blocked, clipped, paired: Math.abs(reward.top - character.top) < 2 && (reward.right <= character.left + 1 || character.right <= reward.left + 1), creditFullyVisible: parent.bottom <= viewportBottom + 1, verticalOverflow: screen.scrollHeight > screen.clientHeight + 1,
+                centered: Math.abs(link.x + link.width / 2 - parent.x - parent.width / 2) < 2,
                 horizontalOverflow: document.documentElement.scrollWidth > innerWidth + 1 };
         });
+        assert.deepEqual(geometry.clipped, [], 'Every menu control must be visible and at least 44px high at ' + width + 'x' + height);
+        assert.deepEqual(geometry.blocked, [], 'Every welcome target must receive pointer input');
+        assert.equal(geometry.verticalOverflow, false, 'The welcome screen must fit without scrolling');
         assert.equal(geometry.centered, true);
+        assert.equal(geometry.paired, true, 'Rewards and character selection must share a row');
+        assert.equal(geometry.creditFullyVisible, true, 'Creator credit must fit in visual viewport');
         assert.equal(geometry.horizontalOverflow, false);
         assert.equal(/برآورد|هزینه|Software Engineer/.test(await page.locator('[data-screen="cafe-menu"]').innerText()), false);
         await page.screenshot({ path: resolve(out, `credit-${width}x${height}.png`) });
@@ -91,7 +129,7 @@ try {
         // made this identity-only CI check intermittently exceed 180 seconds.
         assert.equal(await credit.getAttribute('target'), '_blank');
         assert.match(await credit.getAttribute('rel'), /noopener/);
-        if (width === 320) {
+        if (engine === 'chromium' && width === 320 && height === 568) {
             await context.route('https://parsaaemm.dev/', route => route.fulfill({
                 status: 200, contentType: 'text/html', body: '<title>Portfolio navigation target</title>',
             }));
@@ -117,8 +155,8 @@ try {
             (await page.locator('[data-screen="pause"]').textContent()) ?? '',
         ), false);
         assert.deepEqual(errors, []);
-        report.profiles.push({ width, height, centeredCredit: 'passed', publicPricingRemoved: 'passed', removedAboutPage: 'passed', newHostSubpath: 'passed', metadata: 'passed', websiteLink: 'passed', horizontalOverflow: false, errors });
-        console.log(`Demian project identity ${width}x${height}: passed`);
+        report.profiles.push({ width, height, engine, geometry, centeredCredit: 'passed', publicPricingRemoved: 'passed', removedAboutPage: 'passed', newHostSubpath: 'passed', metadata: 'passed', websiteLink: 'passed', horizontalOverflow: false, errors });
+        console.log(`Demian project identity ${engine} ${width}x${height}: passed`);
         await context.close();
     }
     report.status = 'passed';

@@ -6,12 +6,16 @@ export default class CharacterAbilityHud {
         this.input = input;
         this.button = root?.querySelector('[data-character-ability]') ?? null;
         this.hint = root?.querySelector('[data-character-ability-hint]') ?? null;
+        this.hintLabel = this.hint?.querySelector?.('[data-character-ability-name]') ?? null;
     }
 
     update(entity) {
         const controller = entity?.abilityController;
         const ability = controller?.primary;
         if (this.hint) this.hint.hidden = !ability;
+        if (ability && this.hintLabel && this.hintLabel.textContent !== ability.label) {
+            this.hintLabel.textContent = ability.label;
+        }
         if (!this.button) return;
         this.button.hidden = !ability;
         if (!ability) return;
@@ -27,6 +31,6 @@ export default class CharacterAbilityHud {
     dispose() {
         if (this.button) this.button.hidden = true;
         if (this.hint) this.hint.hidden = true;
-        this.button = null; this.hint = null;
+        this.button = null; this.hint = null; this.hintLabel = null;
     }
 }

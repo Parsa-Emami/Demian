@@ -1,0 +1,24 @@
+{
+  "character_key": "mobina",
+  "pack_version": 14,
+  "runner_physics": "shared",
+  "combat": false,
+  "companion_collision_independent": false,
+  "abilities": [
+    {
+      "id": "meow-mode",
+      "label": "حالت میو",
+      "name": "Meow Mode",
+      "animation": "meow_mode",
+      "duration": 1.6,
+      "cooldown": 6,
+      "effect": "meow-mode",
+      "particleCount": 10,
+      "contexts": [
+        "OPEN_WORLD"
+      ],
+      "cosmetic": true,
+      "description": "A playful victory sign surrounded by pink and gold paw prints."
+    }
+  ]
+}

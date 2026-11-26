@@ -5,18 +5,18 @@ import MenuCharacterRoster from '../../resources/js/game/characters/MenuCharacte
 import CharacterPreviewRenderer, {
     resolvePreviewFrameName,
 } from '../../resources/js/ui/CharacterPreviewRenderer.js';
-import { BUILTIN_CHARACTER_SLUGS } from '../../resources/js/game/characters/CharacterVisualContract.js';
+import { BUILTIN_CHARACTER_SLUGS, characterPackVersion } from '../../resources/js/game/characters/CharacterVisualContract.js';
 
 test('all shipped roster portraits and paired atlases are present for phone and desktop presentation', () => {
     const base = new URL('../../public/assets/characters/', import.meta.url);
     const manifest = JSON.parse(readFileSync(new URL('character-manifest-v4.json', base), 'utf8'));
     assert.deepEqual(manifest.characters.map(item => item.slug), [...BUILTIN_CHARACTER_SLUGS]);
     for (const { slug, pack_version: version } of manifest.characters) {
-        assert.equal(version, 14, slug);
+        assert.equal(version, characterPackVersion(slug), slug);
         for (const path of [
-            `${slug}/${slug}-preview-v14.png`,
-            `${slug}/${slug}-atlas-v14-lite.json`,
-            `${slug}/${slug}-atlas-v14-runtime.json`,
+            `${slug}/${slug}-preview-v${version}.png`,
+            `${slug}/${slug}-atlas-v${version}-lite.json`,
+            `${slug}/${slug}-atlas-v${version}-runtime.json`,
         ]) {
             assert.ok(existsSync(new URL(path, base)), `Missing ${path}`);
         }
@@ -35,6 +35,16 @@ test('menu roster shows all characters and persists a valid selection without bo
     });
     assert.equal(menu.characters.length, BUILTIN_CHARACTER_SLUGS.length);
     assert.equal(menu.activeRecord.slug, 'darya');
+    const elahehPosition = menu.characters.findIndex(record => record.slug === 'elaheh');
+    assert.equal(menu.characters[elahehPosition + 1]?.slug, 'marjan');
+    const zohrePosition = menu.characters.findIndex(record => record.slug === 'zohre');
+    assert.equal(menu.characters[zohrePosition - 1]?.slug, 'mohana');
+    assert.equal(menu.characters[zohrePosition + 1]?.slug, 'kiana');
+    const arsalPosition = menu.characters.findIndex(record => record.slug === 'arsal');
+    assert.equal(menu.characters[arsalPosition + 1]?.slug, 'sadro');
+    const negarPosition = menu.characters.findIndex(record => record.slug === 'negar');
+    assert.equal(menu.characters[negarPosition - 1]?.slug, 'mobina');
+    assert.equal(menu.characters[negarPosition + 1]?.slug, 'dandelox');
     const chosen = await menu.select('builtin-negar');
     assert.equal(chosen.slug, 'negar');
     assert.equal(menu.activeRecord.slug, 'negar');
@@ -43,7 +53,7 @@ test('menu roster shows all characters and persists a valid selection without bo
     assert.equal(events[1][0], 'character:selected');
     await assert.rejects(menu.select('builtin-fake'), /وجود ندارد/);
     assert.equal(visuals.activeSlug, 'negar');
-    for (const slug of ['elaheh', 'taher-db', 'sorkhi', 'yalda', 'mori', 'mahyar']) {
+    for (const slug of ['sadro', 'mojtaba', 'mobina', 'elaheh', 'marjan', 'mohana', 'zohre', 'kiana', 'taher-db', 'sorkhi', 'yalda', 'mori', 'mahyar']) {
         assert.equal((await menu.select(`builtin-${slug}`)).slug, slug);
         assert.equal(menu.activeRecord.slug, slug);
         assert.equal(visuals.activeSlug, slug);

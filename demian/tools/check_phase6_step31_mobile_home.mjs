@@ -78,8 +78,12 @@ try {
             );
             const menu = page.locator('[data-screen="cafe-menu"]');
             assert.equal(await menu.isVisible(), true);
-            const openCharacters = mobile ? menu.locator('.cafe-menu__showcase')
-                : menu.getByRole('button', { name: 'بازکردن مدیریت کاراکترها', exact: true });
+            const actions = menu.locator('.cafe-menu__actions');
+            const characterButton = actions.locator('.menu-character-button[data-sidebar-toggle]');
+            // SidebarController gives every toggle the same accessible name.
+            // Use an exact structural selector, not a multi-match name lookup.
+            const openCharacters = mobile ? menu.locator('.cafe-menu__showcase') : characterButton;
+            assert.equal(await characterButton.count(), 1);
             await openCharacters.waitFor({ state: 'visible' });
             await openCharacters.scrollIntoViewIfNeeded();
             if (mobile) {
@@ -97,14 +101,109 @@ try {
                     contentWidth: content.scrollWidth,
                     scrollable: screen.scrollHeight > screen.clientHeight,
                     actions: [...screen.querySelectorAll('.cafe-menu__actions button')]
-                        .map(button => ({ action: button.dataset.shellAction, width: button.getBoundingClientRect().width,
-                            height: button.getBoundingClientRect().height })),
+                        .map(button => ({ action: button.dataset.shellAction ??
+                            (button.hasAttribute('data-sidebar-toggle') ? 'character' : 'unknown'),
+                            width: button.getBoundingClientRect().width,
+                            height: button.getBoundingClientRect().height,
+                            enabled: !button.disabled && button.getAttribute('aria-disabled') !== 'true' })),
                 };
             });
             assert.ok(geometry.documentWidth <= view.width + 2, JSON.stringify(geometry));
             assert.ok(geometry.contentWidth <= geometry.menuWidth + 2, JSON.stringify(geometry));
-            assert.equal(geometry.actions.length, 5);
-            assert.ok(geometry.actions.every(action => action.width >= 44 && action.height >= 44));
+            const expectedActions = ['play', 'continue', 'settings', 'leaderboard', 'rewards', 'character'];
+            assert.deepEqual(geometry.actions.map(item => item.action), expectedActions,
+                'Six distinct welcome controls must be present in the authored order');
+            assert.ok(geometry.actions.every(action => action.width >= 44 && action.height >= 44 && action.enabled),
+                JSON.stringify(geometry.actions));
+            const actionResults = {};
+            const navigationGeometry = {};
+            // Use real browser clicks and verify the destination, then close it.
+            for (const [action, screen] of [
+                ['play', 'game-selection'], ['settings', 'settings'],
+                ['leaderboard', 'leaderboard'], ['rewards', 'coupon-wallet'],
+            ]) {
+                await actions.locator(`[data-shell-action="${action}"]`).click();
+                const destination = page.locator(`[data-screen="${screen}"]`);
+                await destination.waitFor({ state: 'visible', timeout: 15000 });
+                assert.equal(await destination.getAttribute('aria-hidden'), 'false');
+                const back = destination.locator(action === 'play'
+                    ? '[data-shell-action="back-cafe"]' : '[data-shell-action="close-modal"]');
+                await destination.waitFor({ state: 'visible' });
+                await page.waitForFunction(id => document.querySelector(`[data-screen="${id}"]`)?.dataset.screenState === 'active', screen, { timeout: 15000 });
+                assert.equal(await back.count(), 1);
+                // Inject a representative notch on the actual landscape profile.
+                // This is a CSS safe-area simulation, not physical device proof.
+                if (view.width === 844) {
+                    await destination.evaluate(node => {
+                        for (const [edge, value] of Object.entries({top:20,right:32,bottom:20,left:32})) {
+                            node.style.setProperty('--demian-nav-safe-' + edge, value + 'px');
+                        }
+                    });
+                }
+                const panel = destination.locator(':scope > :is(.shell-page,.shell-modal)');
+                const measure = () => back.evaluate(button => {
+                    const screen = button.closest('[data-screen]');
+                    const panel = button.closest('.shell-page,.shell-modal');
+                    const r = button.getBoundingClientRect(), s = screen.getBoundingClientRect();
+                    const p = panel.getBoundingClientRect(), css = getComputedStyle(screen);
+                    const safe = {left:s.left+parseFloat(css.paddingLeft), right:s.right-parseFloat(css.paddingRight),
+                        top:s.top+parseFloat(css.paddingTop), bottom:s.bottom-parseFloat(css.paddingBottom)};
+                    const hit = document.elementFromPoint(r.left+r.width/2,r.top+r.height/2);
+                    return { width:r.width,height:r.height, left:r.left,right:r.right,top:r.top,bottom:r.bottom,
+                        viewport:{width:innerWidth,height:innerHeight}, safe, panel:{left:p.left,right:p.right,top:p.top,bottom:p.bottom},
+                        scrollTop:panel.scrollTop, scrollHeight:panel.scrollHeight, clientHeight:panel.clientHeight,
+                        outerScroll:screen.scrollTop, hit:hit===button||button.contains(hit) };
+                });
+                const check = data => {
+                    assert.ok(data.width >= 43.95 && data.height >= 43.95, JSON.stringify(data));
+                    assert.ok(data.left >= Math.max(0,data.safe.left)-1 && data.right <= Math.min(data.viewport.width,data.safe.right)+1
+                        && data.top >= Math.max(0,data.safe.top)-1 && data.bottom <= Math.min(data.viewport.height,data.safe.bottom)+1, JSON.stringify(data));
+                    assert.ok(data.panel.top >= data.safe.top-1 && data.panel.bottom <= data.safe.bottom+1
+                        && data.panel.left >= data.safe.left-1 && data.panel.right <= data.safe.right+1, JSON.stringify(data));
+                    assert.equal(data.outerScroll, 0, 'Only the inner panel may scroll');
+                    assert.equal(data.hit,true, 'Back/close must receive actual pointer input: '+JSON.stringify(data));
+                };
+                await panel.evaluate(node => { node.scrollTop=0; });
+                const before = await measure(); check(before);
+                await panel.evaluate(node => { node.scrollTop=node.scrollHeight; });
+                const after = await measure(); check(after);
+                if (before.scrollHeight > before.clientHeight + 2) assert.ok(after.scrollTop > 0);
+                assert.ok(Math.abs(after.top-before.top)<=2, 'Header moved during scrolling: '+JSON.stringify({before,after}));
+                navigationGeometry[screen]={before,after};
+                await back.click({ timeout: 10000 });
+                await destination.evaluate(node => {
+                    for (const edge of ['top','right','bottom','left']) node.style.removeProperty('--demian-nav-safe-'+edge);
+                });
+                await destination.waitFor({ state: 'hidden', timeout: 15000 });
+                await menu.waitFor({ state: 'visible', timeout: 15000 });
+                actionResults[action] = 'passed';
+            }
+            // A full Open World launch is relatively costly. Exercise it once
+            // on a fresh phone context; geometry is still checked on every view.
+            if (view.width === 390) {
+                assert.equal(await page.evaluate(() => window.demianGameApplication.activeGameId), null);
+                await actions.locator('[data-shell-action="continue"]').click();
+                await page.waitForFunction(() => {
+                    const app = window.demianGameApplication;
+                    return app?.activeGameId === 'open-world' && app.sessionState === 'playing';
+                }, null, { timeout: 45000 });
+                await page.evaluate(() => window.demianGameApplication.showMenu());
+                await page.waitForFunction(() => window.demianGameApplication?.sessionState === 'menu',
+                    null, { timeout: 15000 });
+                await menu.waitFor({ state: 'visible', timeout: 15000 });
+                actionResults.continue = 'passed';
+            }
+            if (mobile) {
+                // Both the new compact button and the original showcase must
+                // open the same real sidebar. Keep the existing artwork checks.
+                await characterButton.click();
+                await page.waitForFunction(() => document.querySelector('[data-manager-shell]')?.dataset.sidebarState === 'expanded',
+                    null, { timeout: 10000 });
+                await page.locator('.character-sheet-close').click();
+                await page.waitForFunction(() => document.querySelector('[data-manager-shell]')?.dataset.sidebarState === 'collapsed',
+                    null, { timeout: 10000 });
+                actionResults.character = 'passed';
+            }
             await page.screenshot({
                 path: resolve(output, `mobile-home-${view.name}.png`),
                 fullPage: false,
@@ -122,6 +221,7 @@ try {
                     .filter(animation => animation instanceof CSSTransition);
                 await Promise.allSettled(transitions.map(transition => transition.finished));
             });
+            actionResults[mobile ? 'showcase' : 'character'] = 'passed';
             const cards = page.locator('[data-character-card]');
             assert.equal(await cards.count(), BUILTIN_CHARACTER_SLUGS.length);
             const portraitGrid = await page.locator('[data-character-list]').evaluate(element => ({
@@ -186,6 +286,8 @@ try {
                 checkedPortraits: limit,
                 portraitGrid,
                 geometry,
+                actionResults,
+                navigationGeometry,
                 javascriptErrors: pageErrors,
             });
         } finally {

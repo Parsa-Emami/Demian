@@ -1,0 +1,24 @@
+{
+  "character_key": "marjan",
+  "pack_version": 14,
+  "date": "2026-11-26",
+  "status": "validated_in_emulated_browser",
+  "motion_reference": "darya",
+  "evidence": "../../../../../docs/release-v14-marjan/README.fa.md",
+  "checks": {
+    "atlas_variants": 6,
+    "foot_pivot": {
+      "x": 0.5,
+      "y": 0.94
+    },
+    "picker_after_elaheh": "passed",
+    "picker_persistence": "passed",
+    "desktop_viewport": "1440x900",
+    "mobile_viewport": "390x844",
+    "open_world_dino_run_after_hours_cafe_rush": "passed"
+  },
+  "physical_device_qa": {
+    "status": "pending",
+    "issue": "https://github.com/Parsa-Emami/Demian/issues/117"
+  }
+}

@@ -1,42 +1,11 @@
 name: Mobile-11 operations contracts
+# Required checks cannot be path-filtered, or unrelated PRs remain pending forever.
 on:
   pull_request:
-    paths:
-      - '.github/workflows/mobile11-**'
-      - '.github/workflows/deploy-demian-pages.yml'
-      - 'demian/ops/mobile-11/**'
-      - 'demian/ops/cpanel/**'
-      - '.github/workflows/cpanel-api-deploy.yml'
-      - 'demian/tools/load/cpanel_50_active.js'
-      - 'demian/tests/js/mobile/Mobile11Ops.test.js'
-      - 'demian/tests/js/mobile/ReleaseRollback.test.js'
-      - 'demian/tests/js/mobile/CpanelDeployment.test.js'
-      - 'demian/tests/js/mobile/CpanelHostSmoke.test.js'
-      - 'demian/tests/ops/CpanelHostPreflightTest.php'
-      - 'demian/tests/ops/CpanelBridgeInstallTest.php'
-      - 'demian/tests/js/mobile/Phase10CpanelOps.test.js'
-      - 'demian/tests/js/mobile/Phase10LoadAssessment.test.js'
-      - 'demian/tests/js/mobile/Phase11*.test.js'
-      - 'demian/tools/qa/phase11_*'
-      - 'demian/ops/phase11/**'
-      - '.github/workflows/phase11-controlled-go-no-go.yml'
-      - 'demian/tools/load/assess_phase10_k6.mjs'
-      - 'demian/tools/verify_cpanel_host.mjs'
-      - 'demian/tools/smoke_arcade_api.mjs'
-      - 'demian/tools/load/**'
-      - 'demian/tools/check_phase6_step30_startup.mjs'
-      - 'demian/tests/js/mobile/Step30Load.test.js'
+    branches: [main]
   push:
-    branches-ignore: [main]
-    paths:
-      - '.github/workflows/mobile11-**'
-      - 'demian/ops/mobile-11/**'
-      - 'demian/ops/cpanel/**'
-      - '.github/workflows/cpanel-api-deploy.yml'
-      - 'demian/tests/js/mobile/Mobile11Ops.test.js'
-      - 'demian/tests/js/mobile/ReleaseRollback.test.js'
-      - 'demian/tests/js/mobile/CpanelDeployment.test.js'
-      - 'demian/tools/load/**'
+    branches: [main]
+  workflow_dispatch:
 permissions:
   contents: read
 jobs:
@@ -50,6 +19,7 @@ jobs:
       - name: Validate release shell syntax
         run: |
           bash -n demian/ops/mobile-11/release.sh
+          bash -n demian/ops/github/main_branch_protection.sh
           bash -n demian/ops/mobile-11/backup_mysql.sh
           bash -n demian/ops/mobile-11/ci_mysql_restore.sh
           bash -n demian/ops/cpanel/deploy.sh
@@ -57,6 +27,8 @@ jobs:
           bash -n demian/ops/cpanel/rollback.sh
           bash -n demian/ops/cpanel/backup_offsite.sh
           bash -n demian/ops/cpanel/restore_drill.sh
+          bash -n demian/ops/cpanel/package_release.sh
+          bash -n demian/ops/cpanel/ci_release_acceptance.sh
           php -l demian/ops/cpanel/host_preflight.php
           php -l demian/ops/cpanel/install_webroot_bridge.php
       - name: Check approved read-only load profile
@@ -71,9 +43,11 @@ jobs:
           node --check demian/tools/qa/phase11_release_audit.mjs
           node --check demian/tools/qa/phase11_verify_ci.mjs
           node --check demian/tools/qa/phase11_remote_smoke.mjs
+      - name: Verify main protection policy, all-check triggers and safe admin enforcement
+        run: node --test demian/tests/js/mobile/BranchProtectionPolicy.test.js
       - name: Run release and integrity guard tests
         working-directory: demian
-        run: node --test tests/js/mobile/Mobile11Ops.test.js tests/js/mobile/CpanelHostSmoke.test.js tests/js/mobile/ReleaseRollback.test.js tests/js/mobile/CpanelDeployment.test.js tests/js/mobile/Phase10CpanelOps.test.js tests/js/mobile/Phase10LoadAssessment.test.js tests/js/mobile/Phase11ReleaseAudit.test.js tests/js/mobile/Phase11ReleasePolicy.test.js tests/js/mobile/Phase11CompositeCi.test.js tests/js/mobile/Phase11ProtectedWorkflow.test.js tests/js/mobile/Phase11RemoteSmoke.test.js
+        run: node --test tests/js/mobile/Mobile11Ops.test.js tests/js/mobile/CpanelHostSmoke.test.js tests/js/mobile/ReleaseRollback.test.js tests/js/mobile/CpanelDeployment.test.js tests/js/mobile/Phase10CpanelOps.test.js tests/js/mobile/Phase10LoadAssessment.test.js tests/js/mobile/Phase11ReleaseAudit.test.js tests/js/mobile/Phase11ReleasePolicy.test.js tests/js/mobile/Phase11CompositeCi.test.js tests/js/mobile/Phase11ProtectedWorkflow.test.js tests/js/mobile/Phase11RemoteSmoke.test.js tests/js/mobile/Pr06ReleasePackage.test.js
 
   cpanel-runtime:
     runs-on: ubuntu-24.04

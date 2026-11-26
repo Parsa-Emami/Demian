@@ -21,6 +21,8 @@ export default class LeaderboardScreen extends BaseScreen {
         this.form = this.element.querySelector('[data-ranking-name-form]');
         this.recovery = this.element.querySelector('[data-ranking-recovery]');
         this.recoveryForm = this.element.querySelector('[data-ranking-recover-form]');
+        this.loginForm = this.element.querySelector('[data-ranking-login-form]');
+        this.passwordForm = this.element.querySelector('[data-ranking-password-form]');
         this.issueRecovery = this.element.querySelector('[data-ranking-issue-recovery]');
         this.recoveryLink = this.element.querySelector('[data-ranking-recovery-link]');
         this.recoveryStatus = this.element.querySelector('[data-ranking-recovery-status]');
@@ -77,15 +79,65 @@ export default class LeaderboardScreen extends BaseScreen {
             button.disabled = true;
             try {
                 const code = this.recoveryForm.elements.recovery_code.value;
-                const recovered = await this.service.recoverAccount(code);
+                const newPassword = this.recoveryForm.elements.new_password?.value ?? '';
+                const confirmation = this.recoveryForm.elements.new_password_confirmation?.value ?? '';
+                if (newPassword && newPassword !== confirmation) {
+                    throw new Error('رمز جدید و تکرار آن یکسان نیستند.');
+                }
+                const recovered = await this.service.recoverAccount(code,
+                    newPassword || null);
                 this.recoveryForm.reset();
                 this.form.elements.display_name.value = recovered.display_name;
                 await this.load();
                 this.backupCode.value = '';
-                this.recoveryStatus.textContent = 'حساب بازیابی شد؛ نشست قبلی، لینک کوتاه‌مدت و کد پشتیبان مصرف شدند. برای بازیابی بعدی کد تازه بساز.';
+                this.recoveryStatus.textContent = 'حساب بازیابی شد؛ نشست قبلی، لینک کوتاه‌مدت و کد پشتیبان مصرف شدند. ' +
+                    'اگر رمز تازه تعیین کردی، کد پشتیبان جدید بساز.';
             } catch (error) {
                 this.recoveryStatus.textContent = error.message;
             } finally {
+                button.disabled = false;
+            }
+        };
+        this.onLogin = async event => {
+            event.preventDefault();
+            const button = this.loginForm.querySelector('button[type="submit"]');
+            button.disabled = true;
+            try {
+                const fields = this.loginForm.elements;
+                const result = await this.service.loginWithPassword(
+                    fields.contact_type.value, fields.contact_value.value, fields.password.value);
+                this.form.elements.display_name.value = result.display_name;
+                this.loginForm.reset();
+                this.recoveryStatus.textContent = 'ورود بدون پیامک انجام شد؛ نشست قبلی این حساب منقضی شد.';
+                await this.load();
+            } catch (error) {
+                this.recoveryStatus.textContent = error.status === 401
+                    ? 'اطلاعات ورود معتبر نیست.' : error.status === 429
+                        ? 'تلاش‌های ورود بیش از حد مجاز است؛ بعداً امتحان کن.'
+                        : error.message;
+            } finally {
+                this.loginForm.elements.password.value = '';
+                button.disabled = false;
+            }
+        };
+        this.onSetPassword = async event => {
+            event.preventDefault();
+            const button = this.passwordForm.querySelector('button[type="submit"]');
+            button.disabled = true;
+            try {
+                const fields = this.passwordForm.elements;
+                if (fields.password.value !== fields.password_confirmation.value) {
+                    throw new Error('رمز عبور و تکرار آن باید یکسان باشند.');
+                }
+                await this.service.setAccountPassword(fields.password.value,
+                    fields.password_confirmation.value, fields.current_password.value);
+                this.passwordForm.reset();
+                this.recoveryStatus.textContent = 'رمز عبور ذخیره شد. از این پس ورود بدون پیامک امکان‌پذیر است.';
+            } catch (error) {
+                this.recoveryStatus.textContent = error.status === 403
+                    ? 'رمز عبور فعلی معتبر نیست.' : error.message;
+            } finally {
+                this.passwordForm.reset();
                 button.disabled = false;
             }
         };
@@ -156,6 +208,8 @@ export default class LeaderboardScreen extends BaseScreen {
         this.deleteAccount?.addEventListener('click', this.onDeleteAccount);
         this.issueRecovery.addEventListener('click', this.onIssueRecovery);
         this.recoveryForm.addEventListener('submit', this.onRecover);
+        this.loginForm?.addEventListener('submit', this.onLogin);
+        this.passwordForm?.addEventListener('submit', this.onSetPassword);
         this.period.addEventListener('change', this.onPeriod);
         this.game?.addEventListener('change', this.onGame);
         this.week?.addEventListener('change', this.onWeek);
@@ -170,6 +224,8 @@ export default class LeaderboardScreen extends BaseScreen {
         this.deleteAccount.disabled = !this.service.connected;
         if (this.exportAccount) this.exportAccount.disabled = !this.service.connected || !this.service.identity?.token;
         for (const control of this.recoveryForm.elements) control.disabled = !this.service.connected;
+        for (const control of this.loginForm?.elements ?? []) control.disabled = !this.service.connected;
+        for (const control of this.passwordForm?.elements ?? []) control.disabled = !this.service.connected || !this.service.identity?.token;
         this.recoveryForm.elements.recovery_code.value = this.service.recoveryOffer ?? '';
         this.recoveryLink.value = '';
         this.recoveryStatus.textContent = this.service.recoveryOffer
@@ -410,6 +466,8 @@ export default class LeaderboardScreen extends BaseScreen {
         this.snapshot = null;
         this.recoveryLink.value = '';
         this.backupCode.value = '';
+        this.loginForm?.reset();
+        this.passwordForm?.reset();
         if (this.timer != null) clearInterval(this.timer);
         this.timer = null;
     }
@@ -422,6 +480,8 @@ export default class LeaderboardScreen extends BaseScreen {
         this.deleteAccount?.removeEventListener('click', this.onDeleteAccount);
         this.issueRecovery.removeEventListener('click', this.onIssueRecovery);
         this.recoveryForm.removeEventListener('submit', this.onRecover);
+        this.loginForm?.removeEventListener('submit', this.onLogin);
+        this.passwordForm?.removeEventListener('submit', this.onSetPassword);
         this.period.removeEventListener('change', this.onPeriod);
         this.game?.removeEventListener('change', this.onGame);
         this.form.removeEventListener('submit', this.onSubmit);

@@ -50,6 +50,14 @@
       "detail": {
         "atlas": "../negar-atlas-v14-detail.json",
         "image": "../negar-spritesheet-v14-detail.png"
+      },
+      "runtime": {
+        "atlas": "../negar-atlas-v14-runtime.json",
+        "image": "../negar-spritesheet-v14-runtime.png"
+      },
+      "lite": {
+        "atlas": "../negar-atlas-v14-lite.json",
+        "image": "../negar-spritesheet-v14-lite.png"
       }
     }
   }

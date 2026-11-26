@@ -4,7 +4,7 @@
 
 Reference: https://60fps.design/ — a curated library of interaction and motion patterns, not a reusable product theme. The Demian design language is **original**: deep olive/forest, restrained warm champagne, tactile controls, minimal compositing-only motion, anchored typography and clear loading states. No external fonts, animation packages, photos or design-site source assets were imported.
 
-The UI styles cover the cafe home, six-game selection rail/cards, selected-character roster, settings, pause, results, reward panels and the shared HUD. Game renderers, deterministic ticks, score calculations and cashier authorization remain untouched.
+The UI styles cover the cafe home, seven-game selection rail and cards, selected-character roster, settings, pause, results, reward panels and the shared HUD.
 
 ## What actually delayed loading before this change?
 

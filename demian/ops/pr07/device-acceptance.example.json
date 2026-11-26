@@ -1,0 +1,22 @@
+{
+  "schema": 1,
+  "kind": "pr07-private-device-field-review",
+  "environment": "staging",
+  "releaseSha": "0000000000000000000000000000000000000000",
+  "pwaReleaseId": "0000000000000000",
+  "recordedAt": null,
+  "devices": [],
+  "instructions": {
+    "note": "Template only. Do not commit real device recordings, private QA exports, player data or secrets.",
+    "requiredDeviceClasses": [
+      "android/budget",
+      "android/midrange",
+      "ios/safari"
+    ],
+    "perDevice": "See tools/qa/pr07_field_policy.mjs and docs/production/PR07_REAL_DEVICE_QA.fa.md.",
+    "minimumGameplayMinutes": 15,
+    "gameCount": 7,
+    "physicalHardwareNotCertifiedByJson": true,
+    "decision": "NO_GO until real hardware verified and reviewed independently."
+  }
+}

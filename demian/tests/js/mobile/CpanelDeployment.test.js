@@ -12,6 +12,9 @@ const oldSha = 'b'.repeat(40);
 const origin = 'https://api.example.invalid';
 const php = `#!/usr/bin/env bash
 set -eu
+# The test mock models a PHP 8.4 cPanel CLI even if the GitHub runner's
+# default php binary differs. Actual deployment checks real PHP_VERSION_ID.
+if [[ "$1" == -r && "$2" == *"PHP_VERSION_ID >= 80400"* ]]; then exit 0; fi
 if [[ "$1" == -r ]]; then exec php "$@"; fi
 if [[ "$1" == */host_preflight.php ]]; then
     echo preflight >> "$TRACE"

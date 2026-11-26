@@ -65,14 +65,10 @@ export default class LoadingScreen extends BaseScreen {
     }
 
     async afterClose() {
-        // BaseScreen's zero-duration exit uses Web Animations with fill:'both'.
-        // Finished, fill-mode animations may survive display:none; cancel them
-        // only after this loading screen has fully left. This also releases
-        // decorative compositor work without disturbing in-game animations.
-        this.stopFinishedMotion();
+        this.cancelMotion();
     }
 
-    stopFinishedMotion() {
+    cancelMotion() {
         this.element.getAnimations?.({ subtree: true }).forEach(animation => animation.cancel());
     }
 
@@ -120,7 +116,7 @@ export default class LoadingScreen extends BaseScreen {
 
     dispose() {
         this.clearTimer();
-        this.stopFinishedMotion();
+        this.cancelMotion();
         this.tipButton?.removeEventListener('click', this.onNextTip);
         super.dispose();
     }

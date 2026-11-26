@@ -98,7 +98,8 @@ final class CafePhase10AuthorizationTest extends TestCase
         DB::table('arcade_coupon_events')->insert([
             'coupon_id' => $id, 'event_type' => 'issued',
             'shop_event_id' => null, 'order_hash' => null,
-            'details' => json_encode(['origin' => 'phase10-fixture'], JSON_THROW_ON_ERROR),
+            'details' => json_encode(['origin' => 'phase10-fixture',
+                'winner_id' => $winner], JSON_THROW_ON_ERROR),
             'created_at' => now(),
         ]);
 

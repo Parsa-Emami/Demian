@@ -1,0 +1,134 @@
+{
+  "mainStates": [
+    "turn",
+    "idle",
+    "jump",
+    "celebrate"
+  ],
+  "mainRowBounds": [
+    0,
+    208,
+    416,
+    624,
+    832
+  ],
+  "motionColumns": 4,
+  "motionRowBounds": [
+    0,
+    208,
+    416,
+    624
+  ],
+  "motionRowStates": [
+    "walk",
+    "run",
+    "land"
+  ],
+  "referenceAsset": "../source-v14/reference.jpg",
+  "referenceInputs": [
+    {
+      "name": "image(20261125-120620).png",
+      "role": "identity-costume-and-companion",
+      "sha256": "561e33d532fe68c981faf5d669f687c1945a4675f30fa83189d4b30932cb1165"
+    },
+    {
+      "name": "exec-4e2438d6-c709-4dd3-8d8d-220be1b8cdb2.png",
+      "role": "generated-movement-and-turnaround",
+      "sha256": "185c13ebe2b590dc981bed265724f2c039e59193697b737026c25eb93bc18dfc"
+    },
+    {
+      "name": "exec-98c7b53b-51c9-4640-adb4-843f980f7542.png",
+      "role": "generated-idle-slide-land-and-celebration",
+      "sha256": "e99d20b83149da532d267222b2b65c9d17c54c5df91c520525b57cf3231c7cda"
+    },
+    {
+      "name": "exec-a3def39b-16d1-4445-9ae2-34f2940bfe21.png",
+      "role": "generated-companion-poses",
+      "sha256": "2de6b55f75ac25d6f3a213c66c73875878746e88334f664b887a4d261157e8d3"
+    },
+    {
+      "name": "exec-6de041a9-360e-4c8e-b8c8-e175b0927936.png",
+      "role": "generated-rear-quarter-pose",
+      "sha256": "cc77d42604f8cf2f5a045766121f5b59b8c02b5c7bdcbbc932bdabd8e181a014"
+    },
+    {
+      "name": "darya-master.png",
+      "role": "in-game-style-and-proportions",
+      "sha256": "39d87e68eb8615f8d9e81fff5d736bb4b3a58faafdc7a9739ad97b93ab5fa85f"
+    }
+  ],
+  "identity": [
+    "warm brown eyes and loose curls around the face",
+    "center-parted dark hair in a low braided bun",
+    "black mock neck, fitted charcoal damask jacket, pleated skirt and black boots",
+    "small black cat with amber eyes, plum collar and gold charm"
+  ],
+  "bodyScaleReferencePoses": {
+    "walk": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "run": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "jump": [
+      7
+    ],
+    "land": [
+      3
+    ],
+    "celebrate": [
+      0,
+      7
+    ]
+  },
+  "locomotionCycleCounts": {
+    "walk": 1,
+    "run": 1
+  },
+  "locomotionReference": {
+    "character": "darya",
+    "states": [
+      "walk",
+      "run",
+      "jump",
+      "land",
+      "slide"
+    ]
+  },
+  "idleLoopDirections": [
+    "e"
+  ],
+  "slideRows": [
+    0
+  ],
+  "slideSharesIdleScale": true,
+  "faceSampleHeightRatio": 0.54,
+  "faceSkinRedGreenRatio": 1.12,
+  "indexedPalette": true,
+  "companion": {
+    "id": "black-cat",
+    "anchor": "ground",
+    "label": "گربهٔ سیاه"
+  },
+  "signatureAbility": {
+    "id": "focus-aura",
+    "label": "هالهٔ تمرکز",
+    "name": "Focus Aura",
+    "animation": "focus_aura",
+    "duration": 1.6,
+    "cooldown": 6,
+    "effect": "focus-aura",
+    "particleCount": 10,
+    "contexts": [
+      "OPEN_WORLD"
+    ],
+    "cosmetic": true,
+    "description": "A quiet hands-together pose with lavender and gold sparks."
+  }
+}

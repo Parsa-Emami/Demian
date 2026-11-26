@@ -1,0 +1,171 @@
+{
+  "release": "2e9ae55b35a9e23d",
+  "physicalDevices": false,
+  "cast": {
+    "browser": "158.0.8127.0",
+    "headless": true,
+    "physicalPhone": false,
+    "results": [
+      {
+        "slug": "taher-db",
+        "width": 390,
+        "height": 844,
+        "mobile": true,
+        "checked": [
+          "dino-run",
+          "after-hours",
+          "cafe-rush",
+          "open-world"
+        ]
+      },
+      {
+        "slug": "sorkhi",
+        "width": 390,
+        "height": 844,
+        "mobile": true,
+        "checked": [
+          "dino-run",
+          "after-hours",
+          "cafe-rush",
+          "open-world"
+        ]
+      },
+      {
+        "slug": "taher-db",
+        "width": 1440,
+        "height": 900,
+        "mobile": false,
+        "checked": [
+          "dino-run",
+          "after-hours",
+          "cafe-rush",
+          "open-world"
+        ]
+      },
+      {
+        "slug": "sorkhi",
+        "width": 1440,
+        "height": 900,
+        "mobile": false,
+        "checked": [
+          "dino-run",
+          "after-hours",
+          "cafe-rush",
+          "open-world"
+        ]
+      }
+    ]
+  },
+  "renderedFourMovements": [
+    {
+      "character": "arsal",
+      "browser": "158.0.8127.0",
+      "width": 390,
+      "height": 844,
+      "input": "emulated touch",
+      "graphics": "software rendering",
+      "frames": {
+        "walk": [
+          "walk_e_000",
+          "walk_e_001",
+          "walk_e_002",
+          "walk_e_003",
+          "walk_e_004",
+          "walk_e_005"
+        ],
+        "run": [
+          "run_e_003",
+          "run_e_005",
+          "run_e_006",
+          "run_e_007"
+        ],
+        "jump": [
+          "jump_e_024",
+          "jump_e_025",
+          "jump_e_027",
+          "jump_e_028",
+          "jump_e_029",
+          "jump_e_030"
+        ],
+        "land": [
+          "land_e_000",
+          "land_e_002",
+          "land_e_004",
+          "land_e_007"
+        ]
+      }
+    },
+    {
+      "character": "taher-db",
+      "browser": "158.0.8127.0",
+      "width": 390,
+      "height": 844,
+      "input": "emulated touch",
+      "graphics": "software rendering",
+      "frames": {
+        "walk": [
+          "walk_e_000",
+          "walk_e_001",
+          "walk_e_002",
+          "walk_e_003",
+          "walk_e_004"
+        ],
+        "run": [
+          "run_e_007",
+          "run_e_008",
+          "run_e_009",
+          "run_e_011"
+        ],
+        "jump": [
+          "jump_e_024",
+          "jump_e_025",
+          "jump_e_027",
+          "jump_e_028",
+          "jump_e_029",
+          "jump_e_030"
+        ],
+        "land": [
+          "land_e_000",
+          "land_e_002",
+          "land_e_004",
+          "land_e_007"
+        ]
+      }
+    },
+    {
+      "character": "sorkhi",
+      "browser": "158.0.8127.0",
+      "width": 390,
+      "height": 844,
+      "input": "emulated touch",
+      "graphics": "software rendering",
+      "frames": {
+        "walk": [
+          "walk_e_000",
+          "walk_e_001",
+          "walk_e_002",
+          "walk_e_003"
+        ],
+        "run": [
+          "run_e_007",
+          "run_e_009",
+          "run_e_011"
+        ],
+        "jump": [
+          "jump_e_024",
+          "jump_e_025",
+          "jump_e_027",
+          "jump_e_028",
+          "jump_e_029",
+          "jump_e_030"
+        ],
+        "land": [
+          "land_e_000",
+          "land_e_002",
+          "land_e_004",
+          "land_e_007"
+        ]
+      }
+    }
+  ]
+}

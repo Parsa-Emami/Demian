@@ -114,7 +114,7 @@ try {
                     root.dataset.renderQuality = 'high';
                     app.settings.update({motion:'reduced'});
                     const reduced = {orbit:getComputedStyle(ring).animationName,
-                        beat:getComputedStyle(beat).animationName, fill:getComputedStyle(fill).transitionDuration,
+                        beat:getComputedStyle(beat).animationName, fill:getComputedStyle(fill).transitionProperty,
                         root:root.dataset.motion};
                     return {full, economy, reduced};
                 } finally {
@@ -125,7 +125,7 @@ try {
             });
             assert.deepEqual(motion.full, {orbit:'1s', beat:'0.72s', spark:'none', fill:'0.12s', property:'transform'});
             assert.deepEqual(motion.economy, {orbit:'demian-loader-orbit', beat:'none'});
-            assert.deepEqual(motion.reduced, {orbit:'none', beat:'none', fill:'0s', root:'reduced'});
+            assert.deepEqual(motion.reduced, {orbit:'none', beat:'none', fill:'none', root:'reduced'});
             const rect = await loader.evaluate(element => {
                 const panel = element.querySelector('.loading-experience').getBoundingClientRect();
                 const screen = element.getBoundingClientRect();
@@ -196,9 +196,9 @@ try {
         const styles = await page.evaluate(() => ({
             orbit:getComputedStyle(document.querySelector('.loading-experience__orb-ring')).animationName,
             beat:getComputedStyle(document.querySelector('.loading-experience__heartbeat i')).animationName,
-            fill:getComputedStyle(document.querySelector('[data-loading-progress-bar] span')).transitionDuration,
+            fill:getComputedStyle(document.querySelector('[data-loading-progress-bar] span')).transitionProperty,
         }));
-        assert.deepEqual(styles, {orbit:'none', beat:'none', fill:'0s'});
+        assert.deepEqual(styles, {orbit:'none', beat:'none', fill:'none'});
         await page.waitForFunction(() => typeof window.__releaseReducedModule === 'function');
         await page.evaluate(() => window.__releaseReducedModule());
         await page.waitForFunction(() => window.demianGameApplication.firstPlayableFrame.last?.gameId === 'coffee-crash');

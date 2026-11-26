@@ -26,6 +26,7 @@ final class ArcadeAntiCheat
         'statistical_score_outlier' => ['risk' => 40, 'severity' => 'medium'],
         'short_high_score' => ['risk' => 45, 'severity' => 'medium'],
         'dense_control_trace' => ['risk' => 25, 'severity' => 'low'],
+        'overlapping_verified_runs' => ['risk' => 65, 'severity' => 'high'],
     ];
 
     public function enabled(): bool
@@ -104,7 +105,8 @@ final class ArcadeAntiCheat
 
     public function assertStartAllowed(string $playerId): void
     {
-        if (! $this->enabled()) return;
+        // A manually confirmed hold is an authorization decision, not a
+        // heuristic. A temporary detection outage must never bypass it.
         abort_unless(! DB::table('arcade_anticheat_holds')
             ->where('player_id', $playerId)
             ->where('expires_at', '>', now())->exists(),
@@ -157,6 +159,26 @@ final class ArcadeAntiCheat
         if (! $this->enabled()) return;
         $this->observe('verified', $run->player_id, $run->id,
             $run->game_id, (int) $run->score, null, $ip);
+        // Two server-verified ranked runs for the same player cannot be
+        // actively played simultaneously on one device. This is a review
+        // signal only: shared devices or parallel sessions merit human review,
+        // never automatic score deletion or suspension.
+        $overlapping = DB::table('arcade_runs')
+            ->where('player_id', $run->player_id)
+            ->where('id', '<>', $run->id)
+            ->where('status', 'verified')
+            ->whereNotNull('completed_at')
+            ->where('started_at', '<', $run->completed_at?->toDateTimeString() ?? now()->toDateTimeString())
+            ->where('completed_at', '>', $run->started_at->toDateTimeString())
+            ->exists();
+        if ($overlapping) {
+            $this->signal('overlapping_verified_runs', $run->player_id,
+                $run->id, 'server-timestamps-v1', [
+                    'game' => $run->game_id,
+                    'rules_version' => $run->rules_version,
+                    'overlap_confirmed' => true,
+                ]);
+        }
         $previous = DB::table('arcade_runs')
             ->where('game_id', $run->game_id)
             ->where('rules_version', $run->rules_version)

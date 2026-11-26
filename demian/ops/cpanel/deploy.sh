@@ -37,8 +37,8 @@ if [[ "$target" == production && "$receipt" == "-" ]]; then
     exit 2
 fi
 command -v "$php_bin" >/dev/null || { echo "PHP CLI not available" >&2; exit 2; }
-"$php_bin" -r 'exit(PHP_VERSION_ID >= 80300 ? 0 : 1);' ||
-    { echo "PHP CLI >= 8.3 required" >&2; exit 2; }
+"$php_bin" -r 'exit(PHP_VERSION_ID >= 80400 ? 0 : 1);' ||
+    { echo "PHP CLI >= 8.4 required" >&2; exit 2; }
 command -v flock >/dev/null
 command -v tar >/dev/null
 command -v curl >/dev/null
