@@ -10,6 +10,6 @@ test('archived arcade games cannot be selected or launched', () => {
     }
 });
 test('shared character deck contains only installed art, without broken reference images', () => {
-    assert.deepEqual(ARCADE_CHARACTER_ROSTER.map((c) => c.slug), ['darya', 'setayesh', 'uzudi', 'tiam', 'elaheh', 'marjan', 'amirreza', 'hanna', 'ainaz', 'arsal', 'sadro', 'mojtaba', 'mobina', 'negar', 'dandelox', 'iman', 'amin', 'hossein', 'taher-db', 'sorkhi', 'yalda', 'mori', 'mahyar']);
+    assert.deepEqual(ARCADE_CHARACTER_ROSTER.map((c) => c.slug), ['darya', 'setayesh', 'uzudi', 'tiam', 'elaheh', 'marjan', 'zohre', 'amirreza', 'hanna', 'ainaz', 'arsal', 'sadro', 'mojtaba', 'mobina', 'negar', 'dandelox', 'iman', 'amin', 'hossein', 'taher-db', 'sorkhi', 'yalda', 'mori', 'mahyar']);
     assert.ok(ARCADE_CHARACTER_ROSTER.every((c) => c.referenceCard === null));
 });

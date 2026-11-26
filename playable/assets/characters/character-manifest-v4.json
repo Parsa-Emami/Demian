@@ -104,6 +104,18 @@
       "motion_accessories": []
     },
     {
+      "slug": "zohre",
+      "display_name": "ZOHRE / زهره",
+      "production_status": "gold_standard_production",
+      "is_default_active": false,
+      "pack_version": 14,
+      "locomotion_style": "ground-runner",
+      "manifest": "zohre/manifests/character_manifest_v4.json",
+      "has_shipped_assets": true,
+      "motion_family": "female-base-v1",
+      "motion_accessories": []
+    },
+    {
       "slug": "amirreza",
       "display_name": "AMIRREZA / امیررضا",
       "production_status": "gold_standard_production",
@@ -328,7 +340,7 @@
   ],
   "master_motion": {
     "version": "master-motion-v1",
-    "source_sha256": "c8009aa3b03d4c6c5f8c0c2c7cb024b74c296ab3eac6da6b7649a8c075c7a06a",
+    "source_sha256": "7068a0e18a9ab49851665d36d04aea1bbc3b1709753fea02892480e94eea5ae8",
     "url": "assets/characters/master-motion-v1.json"
   }
 }

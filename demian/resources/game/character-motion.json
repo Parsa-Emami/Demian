@@ -176,6 +176,16 @@
       "identityContract": "assets/characters/marjan/manifests/marjan_identity_contract.json"
     },
     {
+      "slug": "zohre",
+      "displayName": "ZOHRE / زهره",
+      "family": "female-base-v1",
+      "packVersion": 14,
+      "defaultActive": false,
+      "skin": "zohre",
+      "accessories": [],
+      "identityContract": "assets/characters/zohre/manifests/zohre_identity_contract.json"
+    },
+    {
       "slug": "amirreza",
       "displayName": "AMIRREZA / امیررضا",
       "family": "male-base-v1",
