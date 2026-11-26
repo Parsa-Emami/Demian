@@ -45,6 +45,19 @@ class AppServiceProvider extends ServiceProvider
             Limit::perMinute(60)->by('arcade:registration:minute:'.$request->ip()),
             Limit::perHour(180)->by('arcade:registration:hour:'.$request->ip()),
         ]);
+        RateLimiter::for('arcade-password-login', static function (Request $request): array {
+            $contactDigest = app(\App\Services\Arcade\PlayerContact::class)
+                ->rateLimitDigest($request);
+            return [
+                Limit::perMinute(120)->by('arcade:password:ip:'.$request->ip()),
+                Limit::perHour(300)->by('arcade:password:hour:'.$request->ip()),
+                Limit::perMinute(5)->by('arcade:password:contact:'.$contactDigest),
+            ];
+        });
+        RateLimiter::for('arcade-password-change', static fn (Request $request): array => [
+            Limit::perMinute(3)->by('arcade:password:change:'.self::arcadeTokenBucket($request)),
+            Limit::perHour(12)->by('arcade:password:change:hour:'.self::arcadeTokenBucket($request)),
+        ]);
         RateLimiter::for('arcade-run-start', static fn (Request $request): array => [
             Limit::perMinute(10)->by('arcade:start:player:'.self::arcadeTokenBucket($request)),
             Limit::perMinute(500)->by('arcade:start:ip:'.$request->ip()),
@@ -53,6 +66,21 @@ class AppServiceProvider extends ServiceProvider
             Limit::perMinute(20)->by('arcade:complete:player:'.self::arcadeTokenBucket($request)),
             Limit::perMinute(500)->by('arcade:complete:ip:'.$request->ip()),
         ]);
+        RateLimiter::for('arcade-fraud-appeal', static fn (Request $request): array => [
+            Limit::perHour(2)->by('arcade:fraud-appeal:player:'.self::arcadeTokenBucket($request)),
+            Limit::perHour(50)->by('arcade:fraud-appeal:ip:'.$request->ip()),
+        ]);
+        RateLimiter::for('arcade-otp-send', static fn (Request $request): array => [
+            Limit::perMinute(2)->by('arcade:otp:send:player:'.self::arcadeTokenBucket($request)),
+            Limit::perHour(5)->by('arcade:otp:send:hour:'.self::arcadeTokenBucket($request)),
+            Limit::perMinute(40)->by('arcade:otp:send:ip:'.$request->ip()),
+        ]);
+        RateLimiter::for('arcade-otp-verify', static fn (Request $request): array => [
+            Limit::perMinute(8)->by('arcade:otp:verify:player:'.self::arcadeTokenBucket($request)),
+            Limit::perMinute(150)->by('arcade:otp:verify:ip:'.$request->ip()),
+        ]);
+        RateLimiter::for('arcade-session-change', static fn (Request $request): Limit =>
+            Limit::perMinute(3)->by('arcade:session:change:'.self::arcadeTokenBucket($request)));
         RateLimiter::for('arcade-recovery-issue', static fn (Request $request): array => [
             Limit::perMinute(3)->by('arcade:short-recovery:'.self::arcadeTokenBucket($request)),
             Limit::perMinute(300)->by('arcade:short-recovery:ip:'.$request->ip()),

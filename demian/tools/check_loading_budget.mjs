@@ -3,7 +3,7 @@ import { GAME_CATALOG } from '../resources/js/game/catalog/GameCatalog.js';
 import { createReadStream, mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { createServer } from 'node:http';
 import { extname, resolve, sep } from 'node:path';
-import { chromium } from 'playwright';
+import { chromium, errors as playwrightErrors } from 'playwright';
 import { BUILTIN_CHARACTER_SLUGS } from '../resources/js/game/characters/CharacterVisualContract.js';
 
 const root = resolve(import.meta.dirname, '../_site');
@@ -38,50 +38,72 @@ function serve(directory) {
 }
 
 async function session(browser, origin, profile, initialSlug, operation) {
-    const context = await browser.newContext({ viewport: { width: profile.width, height: profile.height },
+    const url = origin + '/?startupQa=1';
+    const contextOptions = { viewport: { width: profile.width, height: profile.height },
         isMobile: profile.mobile, hasTouch: profile.mobile, deviceScaleFactor: profile.mobile ? 2 : 1,
-        serviceWorkers: 'block' });
-    try {
-        const page = await context.newPage();
-        const errors = [];
-        page.on('pageerror', error => errors.push(error.message));
-        const cdp = await context.newCDPSession(page);
-        await cdp.send('Network.enable');
-        await cdp.send('Network.emulateNetworkConditions', { offline: false, latency: 80,
-            downloadThroughput: 8 * 1024 * 1024 / 8, uploadThroughput: 2 * 1024 * 1024 / 8 });
-        await cdp.send('Emulation.setCPUThrottlingRate', { rate: 2 });
-        await page.addInitScript(slug => {
-            localStorage.setItem('demian.character.slug.v1', slug);
-            window.__budgetImages = new Map();
-            const draw = CanvasRenderingContext2D.prototype.drawImage;
-            CanvasRenderingContext2D.prototype.drawImage = function (image, ...args) {
-                const result = draw.call(this, image, ...args);
-                if (image instanceof HTMLImageElement && image.naturalWidth) {
-                    const path = new URL(image.src, document.baseURI).pathname;
-                    if (!window.__budgetImages.has(path)) window.__budgetImages.set(path, performance.now());
-                }
-                return result;
+        serviceWorkers: 'block' };
+    for (let navigationAttempts = 1; ; navigationAttempts++) {
+        const context = await browser.newContext(contextOptions);
+        try {
+            const page = await context.newPage();
+            const errors = [];
+            page.on('pageerror', error => errors.push(error.message));
+            const cdp = await context.newCDPSession(page);
+            await cdp.send('Network.enable');
+            await cdp.send('Network.emulateNetworkConditions', { offline: false, latency: 80,
+                downloadThroughput: 8 * 1024 * 1024 / 8, uploadThroughput: 2 * 1024 * 1024 / 8 });
+            await cdp.send('Emulation.setCPUThrottlingRate', { rate: 2 });
+            await page.addInitScript(slug => {
+                localStorage.setItem('demian.character.slug.v1', slug);
+                window.__budgetImages = new Map();
+                const draw = CanvasRenderingContext2D.prototype.drawImage;
+                CanvasRenderingContext2D.prototype.drawImage = function (image, ...args) {
+                    const result = draw.call(this, image, ...args);
+                    if (image instanceof HTMLImageElement && image.naturalWidth) {
+                        const path = new URL(image.src, document.baseURI).pathname;
+                        if (!window.__budgetImages.has(path)) window.__budgetImages.set(path, performance.now());
+                    }
+                    return result;
+                };
+            }, initialSlug);
+            let receivedDocument = false;
+            const observeDocument = response => {
+                if (response.url() === url && response.request().isNavigationRequest()) receivedDocument = true;
             };
-        }, initialSlug);
-        await page.goto(origin + '/?startupQa=1', { waitUntil: 'domcontentloaded', timeout: 30000 });
-        await page.waitForFunction(() => window.demianGameApplication?.sessionState === 'menu');
-        const menuMs = await page.evaluate(() => window.demianGameApplication.startupDiagnostics.report().page.menuReadyAtMs);
-        await page.evaluate(mobile => {
-            const app = window.demianGameApplication;
-            if (app.leaderboards.connected) throw Error('Production API must be disabled');
-            if (!mobile) app.performanceProfile.tier = 'high';
-            window.__budgetFrames = 0;
-            const present = app.rendererService.present.bind(app.rendererService);
-            app.rendererService.present = (...args) => {
-                const result = present(...args);
-                if (result === true) window.__budgetFrames++;
-                return result;
-            };
-        }, profile.mobile);
-        const rows = await operation(page);
-        assert.deepEqual(errors, [], 'Browser errors');
-        return { menuMs, ...rows };
-    } finally { await context.close(); }
+            page.on('response', observeDocument);
+            let documentResponse;
+            try {
+                documentResponse = await page.goto(url, { waitUntil: 'commit', timeout: 30000 });
+            } catch (error) {
+                const retry = navigationAttempts === 1 && error instanceof playwrightErrors.TimeoutError
+                    && !receivedDocument && errors.length === 0;
+                if (!retry) throw error;
+                console.warn('[Loading budget] Startup document did not respond. Retrying in a fresh context.',
+                    { profile: profile.name, initialSlug });
+                continue;
+            } finally {
+                page.off('response', observeDocument);
+            }
+            assert.ok(documentResponse?.ok(), 'Startup document returned HTTP ' + (documentResponse?.status() ?? 'no response'));
+            await page.waitForFunction(() => window.demianGameApplication?.sessionState === 'menu', null, { timeout: 30000 });
+            const menuMs = await page.evaluate(() => window.demianGameApplication.startupDiagnostics.report().page.menuReadyAtMs);
+            await page.evaluate(mobile => {
+                const app = window.demianGameApplication;
+                if (app.leaderboards.connected) throw Error('Production API must be disabled');
+                if (!mobile) app.performanceProfile.tier = 'high';
+                window.__budgetFrames = 0;
+                const present = app.rendererService.present.bind(app.rendererService);
+                app.rendererService.present = (...args) => {
+                    const result = present(...args);
+                    if (result === true) window.__budgetFrames++;
+                    return result;
+                };
+            }, profile.mobile);
+            const rows = await operation(page);
+            assert.deepEqual(errors, [], 'Browser errors');
+            return { menuMs, navigationAttempts, ...rows };
+        } finally { await context.close(); }
+    }
 }
 
 async function launch(page, game, profile, mode) {

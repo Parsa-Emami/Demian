@@ -1,0 +1,131 @@
+{
+  "mainStates": [
+    "turn",
+    "idle",
+    "celebrate"
+  ],
+  "mainRowBounds": [
+    0,
+    288,
+    576,
+    864
+  ],
+  "motionColumns": 8,
+  "motionRowBounds": [
+    0,
+    256,
+    512,
+    768,
+    1024
+  ],
+  "motionRowStates": [
+    "walk",
+    "run",
+    "jump",
+    "land"
+  ],
+  "referenceAsset": "../source-v14/reference.jpg",
+  "referenceInputs": [
+    {
+      "name": "mojtaba/source-v14/reference.jpg",
+      "role": "supplied-mojtaba-identity-and-outfit",
+      "sha256": "27d0bedf41d76bc37d6bb2bd7376774c7dc84bdeee9bf3c06a72bf3eda7b7e05"
+    },
+    {
+      "name": "arsal/source-v14/master.png",
+      "role": "arsal-turnaround-idle-walk-jump-and-celebration",
+      "sha256": "0c0ca4d78d8e088c3845a2a541356de5ec9c38c9f50ed3c6647f0b61d64883e1"
+    },
+    {
+      "name": "arsal/source-v14/locomotion-v15.png",
+      "role": "arsal-running-stride-and-foot-axis",
+      "sha256": "04cbb37f965051b6b6146a09b8abf4a435da7ad67c9afde6ea1adcac2b446d9d"
+    },
+    {
+      "name": "arsal/source-v14/runner-motion.png",
+      "role": "arsal-land-compression-and-recovery",
+      "sha256": "ea5a9a025f06bb8291f95eb0481ec43219248118fb4c9edaecdfe12cf44e1195"
+    },
+    {
+      "name": "arsal/source-v14/slides.png",
+      "role": "arsal-slide-and-shoe-contact",
+      "sha256": "5745c6d8af94d996e66273d5b17cd850571a00fa83fb7418804fd43c9d09578a"
+    }
+  ],
+  "identity": [
+    "short dense black curls, round black glasses, and warm tan skin",
+    "full black beard and mustache",
+    "plain charcoal short-sleeved T-shirt, black trousers, and dark wristwatch",
+    "black laced sneakers with off-white soles",
+    "peace sign while celebrating"
+  ],
+  "locomotionReference": {
+    "character": "arsal",
+    "states": [
+      "walk",
+      "run",
+      "jump",
+      "land",
+      "slide"
+    ]
+  },
+  "bodyScaleReferencePoses": {
+    "walk": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "run": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "jump": [
+      7
+    ],
+    "land": [
+      0,
+      6,
+      7
+    ],
+    "celebrate": [
+      0,
+      7
+    ]
+  },
+  "locomotionCycleCounts": {
+    "walk": 1,
+    "run": 1
+  },
+  "idleLoopDirections": [
+    "e"
+  ],
+  "poseSelections": {
+    "slide": [
+      0,
+      1,
+      2,
+      3,
+      5,
+      7,
+      6,
+      4
+    ]
+  },
+  "turnMirrorFrom": {
+    "sw": "se"
+  },
+  "faceSampleHeightRatio": 0.5,
+  "faceSkinRedGreenRatio": 1.1,
+  "indexedPalette": true
+}

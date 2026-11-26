@@ -26,7 +26,7 @@ function damp(current, target, smoothing, deltaTime) {
 }
  
 export default class CanvasCharacterAvatar {
-    constructor({ slug, image, atlas, player = false }) {
+    constructor({ slug, image, atlas, player = false, sideView = false }) {
         this.slug = slug;
         this.texture = { image };
         this.atlas = atlas;
@@ -34,7 +34,8 @@ export default class CanvasCharacterAvatar {
         this.group = { position: this.position };
         this.character = { slug, name: slug, settings: {} };
         this.isPlayerControlled = Boolean(player);
-        this.animator = new FrameAnimator(atlas);
+        this.sideView = sideView;
+        this.animator = new FrameAnimator(atlas, { sideView });
         this.animator.play('idle');
         this.state = 'idle';
         this.previousState = 'idle';
@@ -62,10 +63,10 @@ export default class CanvasCharacterAvatar {
     sync(actor, deltaTime = 0) {
         if (!actor) return this;
         captureCharacterStep(this);
-        const dt = Math.max(0, Number(deltaTime) || 0);
+        const dt = Number.isFinite(Number(deltaTime)) ? Math.min(.25, Math.max(0, Number(deltaTime))) : 0;
         const nextPosition = actor.position ?? actor.group?.position ?? actor;
-        const x = Number(nextPosition?.x) || 0;
-        const z = Number(nextPosition?.z) || 0;
+        const x = Number.isFinite(Number(nextPosition?.x)) ? Number(nextPosition.x) : this.position.x;
+        const z = Number.isFinite(Number(nextPosition?.z)) ? Number(nextPosition.z) : this.position.z;
         this.position = { x, z };
         this.group.position = this.position;
 
@@ -77,7 +78,8 @@ export default class CanvasCharacterAvatar {
             speed = Math.hypot(vx, vz);
         }
         if (!explicitSpeed && (!Number.isFinite(speed) || speed <= 0) && this.lastPosition && dt > 0.0001) {
-            speed = Math.hypot(x - this.lastPosition.x, z - this.lastPosition.z) / dt;
+            const displacement = Math.hypot(x - this.lastPosition.x, z - this.lastPosition.z);
+            speed = displacement <= 4 ? displacement / dt : 0;
         }
         this.speedValue = Number.isFinite(speed) ? speed : 0;
         this.lastPosition = { x, z };
@@ -141,12 +143,8 @@ export default class CanvasCharacterAvatar {
 
     replaceVisualAssets(image, atlas) {
         const previous = this.animator;
-        const next = new FrameAnimator(atlas);
-        next.setDirection(previous.direction);
-        next.setFacing(previous.facing);
-        next.setPlaybackRate(previous.playbackRate);
-        next.play(previous.requestedAnimationName ?? previous.animationName ?? 'idle');
-        next.seek(previous.progress());
+        const next = new FrameAnimator(atlas, { sideView: this.sideView });
+        next.adoptPlaybackFrom(previous);
         this.texture = { image };
         this.atlas = atlas;
         this.animator = next;

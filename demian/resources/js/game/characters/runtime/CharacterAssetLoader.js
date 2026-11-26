@@ -58,6 +58,7 @@ export default class CharacterAssetLoader {
             uzudi: '#8b5cf6',
             setayesh: '#f43f5e',
             negar: '#e6bc45',
+            mobina: '#ad3450',
             hanna: '#d6ab67',
         }[record.slug] ?? '#a78bfa';
 

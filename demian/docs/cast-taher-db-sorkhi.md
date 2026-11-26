@@ -1,5 +1,7 @@
 # Original Taher DB and Sorkhi release
 
+The [current motion release](release-v14-taher-sorkhi/README.fa.md) includes the Arsal-based redraw and browser comparison.
+
 The original reference sheets supplied with the character request are recorded in each character’s reference manifest with their SHA-256 hashes. The playable release uses cropped artwork from these sheets. Source maps isolate the front, three-quarter, side and rear poses and the motion silhouettes. The V14 tools build directional clips and pack the device variants around the shared foot anchors.
 
 The pose sets use the supplied idle, walk, run, jump and victory art. The low slide comes from the leaned pose with its torso rotated around the hip. The upper body keeps its facing during stride changes. North diagonals share the authored rear view. Both characters use the existing ground runner physics.

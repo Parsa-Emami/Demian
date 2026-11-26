@@ -6,6 +6,7 @@ import PixelRenderQueue from '../../../rendering2d/PixelRenderQueue.js';
 import { drawSpriteCharacter, drawCharacterSpeech } from '../../../rendering2d/PixelActorRenderer.js';
 import { PIXEL_PALETTE as P } from '../../../rendering2d/PixelPalette.js';
 import { drawPixelSceneEffects } from '../../../rendering2d/PixelSceneEffects.js';
+import { drawCafeAmbientMotes } from '../../../rendering2d/CafeAtmosphere2D.js';
 import { CAFE_STATIC_COLLIDERS } from '../../../shared/cafe/CafeReferenceLayout.js';
 import { CAFE_RENDER_BOUNDS } from '../../../shared/cafe/CafeWalkthroughScene.js';
 import { characterRenderPose } from '../../../characters/CharacterRenderState.js';
@@ -31,6 +32,7 @@ export default class OpenWorldPixelRenderer {
         this.sceneCache = new StaticSceneCache((ctx, camera) => this.cafe.draw(ctx, camera, { prepared: true }),
             { maxPixels: tier === 'high' ? 2200000 : tier === 'performance' ? 950000 : 1600000 });
         this.queue = new PixelRenderQueue();
+        this.visualElapsed = 0;
         this.followRig = new CharacterFollowRig();
         this.followEntity = null;
         this.mode = 'OVERVIEW';
@@ -145,6 +147,11 @@ export default class OpenWorldPixelRenderer {
         const ctx = this.context.renderer.beginFrame(P.voidBlue);
         this.cafe.prepare(this.camera, 96);
         this.sceneCache.draw(ctx, this.camera, `day:${this.cafe.revision}`);
+        this.visualElapsed += Number.isFinite(deltaTime) ? Math.min(.05, Math.max(0, deltaTime)) : 0;
+        drawCafeAmbientMotes(ctx, this.camera, {
+            time: this.visualElapsed, quality: this.cafe.stream.profile.quality,
+            reducedMotion: this.context.settings?.resolvedReducedMotion?.() ?? false,
+        });
         if (this.context.app?.options?.debug) this.drawChunks(ctx, loadedChunks, activeChunkIds);
         this.drawWorldFinds(ctx, loadedChunks, finds);
         this.drawSavePoints(ctx, discovery);
@@ -161,6 +168,7 @@ export default class OpenWorldPixelRenderer {
                 draw: () => drawSpriteCharacter(ctx, this.camera, entity, {
                     player: entity === characterManager.activeEntity,
                     alpha,
+                    reducedMotion,
                     label: entity === characterManager.activeEntity ? '' : (entity.character?.name ?? entity.character?.slug ?? id),
                 }),
             });

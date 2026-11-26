@@ -2,6 +2,14 @@
 
 Scope: the 60 commits ending at `a94643d3a41f7c38b3ba59dbe9edcbb53d737753`, all six shipped games and all twelve built-in characters. History review is a source/diff audit, not a benchmark of all 60 builds. Paired browser measurement uses the exact prior-main static artifact from Actions run `44022430672`.
 
+## November 26 loading gate follow-up
+
+The release measured 69 of 70 cases within budget. The second cold phone Open World sample hit the 30-second navigation watchdog before it recorded a menu or frame time. Switching to Mojtaba took 527.3 ms on the phone profile and 490.2 ms on desktop. [GitHub Actions run](https://github.com/Parsa-Emami/Demian/actions/runs/45745853310)
+
+The gate now checks the main document response, then waits for the game menu. A navigation timeout before a document response gets one fresh browser context with the same emulation. The report records the number of navigation attempts. An HTTP error, a menu that fails to start, and a measured game or character load of 3,000 ms or more fail the sample.
+
+Five Chromium fixture cases covered a single missing document response, two consecutive timeouts, an HTTP 503, a measured menu delay above 3,000 ms, and a document that never initializes the game. All 908 JavaScript regressions passed. The diagnosis followed the repository's performance optimization and scene setup guidance.
+
 ## Findings
 
 | Evidence | Effect | Change |

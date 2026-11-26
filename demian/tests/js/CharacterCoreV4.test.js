@@ -18,7 +18,7 @@ import { AtlasRegistry } from '../../resources/js/game/assets/AtlasRegistry.ts';
 import { TextureAtlasLoader } from '../../resources/js/game/assets/TextureAtlasLoader.ts';
 import { CharacterSystem } from '../../resources/js/game/characters/CharacterSystem.ts';
 import { PhaserGameCore } from '../../resources/js/game/core/PhaserGameCore.ts';
-import { BUILTIN_CHARACTER_SLUGS } from '../../resources/js/game/characters/CharacterVisualContract.js';
+import { BUILTIN_CHARACTER_SLUGS, characterPackVersion } from '../../resources/js/game/characters/CharacterVisualContract.js';
 
 const projectRoot = resolve(import.meta.dirname, '../..');
 
@@ -27,7 +27,7 @@ function readJson(relativePath) {
 }
 
 test('all installed reference-driven characters are production-ready', () => {
-    assert.deepEqual(PRODUCTION_CHARACTER_SLUGS, ['darya', 'setayesh', 'uzudi', 'negar', 'elaheh', 'tiam', 'amirreza', 'hanna', 'ainaz', 'arsal', 'iman', 'amin', 'hossein', 'taher-db', 'sorkhi', 'yalda', 'mori', 'mahyar']);
+    assert.deepEqual(PRODUCTION_CHARACTER_SLUGS, ['darya', 'setayesh', 'uzudi', 'tiam', 'elaheh', 'marjan', 'mohana', 'zohre', 'kiana', 'amirreza', 'hanna', 'ainaz', 'arsal', 'sadro', 'mojtaba', 'mobina', 'negar', 'dandelox', 'iman', 'amin', 'hossein', 'taher-db', 'sorkhi', 'yalda', 'mori', 'mahyar']);
     assert.equal(DEFAULT_ACTIVE_SLUG, 'darya');
     assert.equal(isProductionReady('darya'), true);
     assert.equal(characterProductionStatus('darya'), PRODUCTION_STATUS.GOLD_STANDARD);
@@ -152,6 +152,27 @@ test('TextureAtlasLoader resolves relative "../" atlas/image paths against the m
         loader.imageUrlFor('darya', 'mobile'),
         'http://example.test/assets/characters/darya/darya-spritesheet-v12-mobile.png'
     );
+});
+
+test('TextureAtlasLoader resolves shipped runtime and lite variants for every built-in character', async () => {
+    const baseUrl = new URL('../../public/', import.meta.url);
+    const loader = new TextureAtlasLoader(new AtlasRegistry(), {
+        baseUrl: baseUrl.href,
+        fetchImpl: async url => new Response(readFileSync(new URL(url))),
+    });
+
+    for (const slug of BUILTIN_CHARACTER_SLUGS) {
+        for (const variant of ['runtime', 'lite']) {
+            const image = `${slug}-spritesheet-v${characterPackVersion(slug)}-${variant}.png`;
+            const atlas = await loader.loadAtlasVariant(slug, variant);
+            assert.equal(atlas?.meta?.image, image, `${slug}/${variant} atlas`);
+            assert.equal(
+                loader.imageUrlFor(slug, variant),
+                new URL(`assets/characters/${slug}/${image}`, baseUrl).href,
+                `${slug}/${variant} image`,
+            );
+        }
+    }
 });
 
 test('TextureAtlasLoader.loadManifest returns null (never throws) on a 404', async () => {

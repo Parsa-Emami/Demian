@@ -71,8 +71,15 @@ export default class AfterHoursRenderer {
             if (!target.collected) this.drawMarker(ctx, camera, target, model);
         }
         const shadow = model.shadow;
-        if (distance(player, shadow.position) < 45) this.drawShadow(ctx, camera, shadow, alpha);
-        drawSpriteCharacter(ctx, camera, avatar, { alpha, player: false });
+        // Both figures are sorted by the same world-Z depth used by the
+        // Canvas camera; a shadow cannot always cover the player from behind.
+        if (distance(player, shadow.position) < 45) this.scene.queue.add({
+            layer: 20, y: shadow.position.z,
+            draw: () => this.drawShadow(ctx, camera, shadow, alpha),
+        });
+        this.scene.queue.add({ layer: 20, y: player.z,
+            draw: () => drawSpriteCharacter(ctx, camera, avatar, { alpha, player: false }),
+        });
         this.scene.end(ctx);
     }
 

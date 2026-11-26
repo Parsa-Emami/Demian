@@ -1,6 +1,7 @@
 import { CHARACTER_JUMP_TUNING, characterGravity } from '../../characters/CharacterLocomotionModel.js';
 import rules from '../../../../game/runner-rules.json' with { type: 'json' };
 import { arcadeDifficulty } from '../../difficulty/ArcadeDifficulty.js';
+import { beginnerDifficulty, isBeginnerProfile } from './RunnerPracticeProfile.js';
 export const RUNNER_CONFIG = Object.freeze(rules);
 export function seededRandom(seed = 1) {
     let value = Number(seed) >>> 0;
@@ -15,9 +16,9 @@ export default class DinoRunModel {
         this.profile = profile;
         this.seed = seed; this.random = seededRandom(seed); this.width = Math.min(rules.maxWidth, Math.max(rules.minWidth, Math.round(width)));
         this.status = 'ready'; this.time = 0; this.distance = 0; this.score = 0;
-        this.speed = RUNNER_CONFIG.startSpeed; this.y = 0; this.vy = 0; this.duck = false;
-        this.jumpBuffer = 0; this.landingTime = 0; this.spawnIn = rules.firstSpawnSeconds; this.obstacles = [];
-        this.tick = 0; this.difficulty = arcadeDifficulty(0); this.endReason = null; this.hitBy = null;
+        this.speed = profile.startSpeed; this.y = 0; this.vy = 0; this.duck = false;
+        this.jumpBuffer = 0; this.landingTime = 0; this.spawnIn = profile.firstSpawnSeconds; this.obstacles = [];
+        this.tick = 0; this.difficulty = isBeginnerProfile(profile) ? beginnerDifficulty(0) : arcadeDifficulty(0); this.endReason = null; this.hitBy = null;
         this.previous = { y: 0, distance: 0 }; this.nextId = 0; this.passed = 0;
         this.lastAppearance = null;
         this.lesson = lesson;
@@ -42,16 +43,18 @@ export default class DinoRunModel {
         const edge = this.width + 65;
         let x = this.nextId === 0 ? Math.min(edge, rules.playerX + this.speed * rules.firstEncounterSeconds) : edge;
         for (;;) {
-            const attack = this.random() < rules.attackChance;
+            const beginner = isBeginnerProfile(rules);
+            const attack = this.random() < rules.attackChance && (!beginner || this.time >= 20 && this.nextId >= 4);
             let definition, attacker = null;
             if (attack) {
                 attacker = rules.attackers[Math.floor(this.random() * rules.attackers.length)];
                 const overhead = this.random() < rules.overheadChance;
                 definition = { appearance: overhead ? 'pounce' : 'charge', w: 40, h: rules.bodyHeight, y: overhead ? 44 : 0 };
             } else {
-                let index = Math.floor(this.random() * rules.obstacleCatalog.length);
-                if (rules.obstacleCatalog[index].appearance === this.lastAppearance) index = (index + 1) % rules.obstacleCatalog.length;
-                definition = rules.obstacleCatalog[index];
+                const catalog = beginner && this.nextId < 2 ? rules.obstacleCatalog.filter(o => o.y === 0) : rules.obstacleCatalog;
+                let index = Math.floor(this.random() * catalog.length);
+                if (catalog[index].appearance === this.lastAppearance) index = (index + 1) % catalog.length;
+                definition = catalog[index];
             }
             const scale = attack ? 1 : rules.obstacleScaleMinimum + this.random() * rules.obstacleScaleSpread;
             this.lastAppearance = definition.appearance;
@@ -93,8 +96,8 @@ export default class DinoRunModel {
             }
         }
         this.time += dt;
-        this.tick += 1; this.difficulty = arcadeDifficulty(this.time);
-        if (!this.lesson) this.speed = Math.min(RUNNER_CONFIG.maxSpeed, RUNNER_CONFIG.startSpeed + this.time * rules.speedRamp);
+        this.tick += 1; this.difficulty = isBeginnerProfile(this.profile) ? beginnerDifficulty(this.time) : arcadeDifficulty(this.time);
+        if (!this.lesson) this.speed = Math.min(this.profile.maxSpeed, this.profile.startSpeed + this.time * this.profile.speedRamp);
         this.distance += this.speed * dt; this.score = Math.floor(this.distance / 10);
         this.spawnIn -= dt;
         if (this.spawnIn <= 0) this.spawn();

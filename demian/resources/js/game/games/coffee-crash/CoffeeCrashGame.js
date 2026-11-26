@@ -12,6 +12,7 @@ import { digits, LEVELS, weeklyCoffeeLevels } from './CoffeeCrashData.js';
 export default class CoffeeCrashGame extends BaseGame {
     constructor() {
         super();
+        this.supportsInPlaceRestart = true;
         this.contentWeek = weeklyIndex();
         this.levels = weeklyCoffeeLevels(this.contentWeek);
         this.store = new CoffeeCrashStore(undefined, { week: this.contentWeek, levels: this.levels });
@@ -39,6 +40,10 @@ export default class CoffeeCrashGame extends BaseGame {
             select: index => this.select(index), swap: (a, b) => this.swap(a, b),
             action: action => this.action(action), dialog: action => this.dialogAction(action),
         }, this.levels);
+    }
+    canReuseForRestart() {
+        // A new weekly puzzle epoch requires new level definitions and store.
+        return this.contentWeek === weeklyIndex();
     }
     startSession() {
         this.startNonce++;

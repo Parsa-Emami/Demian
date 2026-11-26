@@ -1,0 +1,7 @@
+{
+  "character_key": "mojtaba",
+  "pack_version": 14,
+  "runner_physics": "shared",
+  "combat": false,
+  "companion_collision_independent": false
+}

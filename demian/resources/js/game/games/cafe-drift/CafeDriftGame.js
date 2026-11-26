@@ -19,6 +19,7 @@ export default class CafeDriftGame extends BaseGame {
             hit: [230, 110, .20, .09, 'triangle'],
             win: [440, 880, .28, .09, 'sine'],
         });
+        this.supportsInPlaceRestart = true;
         this.listeners = new AbortController();
         this.generation = 0;
     }
@@ -71,26 +72,57 @@ export default class CafeDriftGame extends BaseGame {
         nodes.pointer.addEventListener('pointermove', event => this.steer(event), { signal });
         for (const event of ['pointerup', 'pointercancel', 'lostpointercapture']) {
             nodes.pointer.addEventListener(event, e => {
-                if (e.pointerId === this.pointerId) this.pointerId = null;
+                if (e.pointerId !== this.pointerId) return;
+                this.pointerId = null;
+                // A canceled OS gesture must not leave a stale steering command.
+                if (event !== 'pointerup') this.pointerTarget = null;
             }, { signal });
         }
         document.addEventListener('visibilitychange', () => {
-            if (document.hidden) this.invalidateRanking();
+            if (document.hidden) {
+                this.resetPointer();
+                this.invalidateRanking();
+            }
         }, { signal });
     }
 
     startSession() {
+        // Soft retries need the same clean entry state as a fresh instance.
+        this.generation++;
+        this.resetPointer();
         this.active = false;
+        this.starting = false;
         this.rankRun = null;
+        this.frames = [];
+        this.effect = null;
+        this.target = 0;
+        this.model = new CafeDriftModel(driftSeed());
         this.nodes.pointer.hidden = true;
+        this.nodes.cue.hidden = true;
         this.nodes.mode.hidden = true;
+        this.nodes.entry.hidden = false;
+        this.nodes.start.disabled = this.nodes.practice.disabled = false;
+        this.nodes.status.textContent = 'توقف یا ترک صفحه، دور رقابتی را به تمرین تبدیل می‌کند.';
+        this.updateHud();
+    }
+
+    resetPointer() {
+        const id = this.pointerId;
+        this.pointerId = null;
+        this.pointerTarget = null;
+        if (id === null || id === undefined) return;
+        try {
+            const node = this.nodes?.pointer;
+            if (node?.hasPointerCapture?.(id)) node.releasePointerCapture(id);
+        } catch { /* A detached/hidden control may have already lost capture. */ }
     }
 
     steer(event) {
         if (!this.active || this.context.app.sessionState !== 'playing' || event.button > 0) return;
         if (event.type === 'pointerdown' && this.pointerId === null) {
             this.pointerId = event.pointerId;
-            this.nodes.pointer.setPointerCapture(event.pointerId);
+            try { this.nodes.pointer.setPointerCapture?.(event.pointerId); }
+            catch { /* Capture is optional; pointer cancel still clears control. */ }
         }
         if (this.pointerId !== event.pointerId) return;
         const rect = this.nodes.pointer.getBoundingClientRect();
@@ -118,8 +150,7 @@ export default class CafeDriftGame extends BaseGame {
         this.model = new CafeDriftModel(this.rankRun?.seed ?? driftSeed());
         this.active = true;
         this.target = 0;
-        this.pointerTarget = null;
-        this.pointerId = null;
+        this.resetPointer();
         this.frames = [];
         this.effect = null;
         this.starting = false;
@@ -208,7 +239,7 @@ export default class CafeDriftGame extends BaseGame {
     }
 
     pause() {
-        this.pointerId = null;
+        this.resetPointer();
         this.invalidateRanking();
     }
 
@@ -223,6 +254,7 @@ export default class CafeDriftGame extends BaseGame {
 
     dispose() {
         this.generation++;
+        this.resetPointer();
         this.listeners.abort();
         this.hud?.remove();
         this.audio.dispose();

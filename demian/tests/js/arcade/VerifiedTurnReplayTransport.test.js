@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import ArcadeLeaderboardService from '../../../resources/js/game/leaderboard/ArcadeLeaderboardService.js';
 import CafeCrittersModel from '../../../resources/js/game/games/cafe-critters/CafeCrittersModel.js';
 import { CRITTERS } from '../../../resources/js/game/games/cafe-critters/CafeCrittersData.js';
+import { weeklyVersion, weeklyIndex, WEEKLY_VERSIONS } from '../../../resources/js/game/content/WeeklyContent.js';
 
 function memoryStorage() {
     const entries = new Map();
@@ -12,6 +13,14 @@ function memoryStorage() {
         removeItem: key => entries.delete(key),
         entries: () => [...entries.entries()],
     };
+}
+
+// Fixtures must simulate the version and content week the authoritative server
+// issues, without weakening the production response validation.
+function currentRunVersion(gameId, legacy) {
+    const version = weeklyVersion(gameId, legacy);
+    return { rules_version: version,
+        ...(version === WEEKLY_VERSIONS[gameId] ? { content_week: weeklyIndex() } : {}) };
 }
 
 const auth = { player_id: '10000000-0000-4000-a000-000000000001',
@@ -28,7 +37,7 @@ test('ranked Critters challenge uses authenticated HTTPS and server issued rotat
                 run_id: '11111111-2222-4333-8444-555555555555',
                 game_id: 'cafe-critters',
                 seed: 113,
-                rules_version: 'cafe-critters-replay-v1',
+                ...currentRunVersion('cafe-critters', 'cafe-critters-replay-v1'),
             }) };
         },
     });
@@ -52,9 +61,11 @@ test('Coffee Crash challenge requires exact scoring version', async () => {
         fetcher: async (url, options) => {
             const input = JSON.parse(options.body);
             assert.equal(input.game_id, 'coffee-crash');
-            assert.equal(input.rules_version, 'coffee-crash-replay-v1');
+            assert.equal(input.rules_version,
+                weeklyVersion('coffee-crash', 'coffee-crash-replay-v1'));
             return { ok: true, json: async () => ({
-                game_id: 'coffee-crash', seed: 4301, rules_version: input.rules_version,
+                game_id: 'coffee-crash', seed: 4301,
+                ...currentRunVersion('coffee-crash', 'coffee-crash-replay-v1'),
                 run_id: '22222222-2222-4222-8222-222222222222',
             }) };
         },
@@ -88,6 +99,13 @@ test('turn run stores evidence without bearer and submits its own endpoint', asy
     assert.equal(service.pending, null);
     assert.equal(seen[0].options.cache, 'no-store');
     assert.ok(!storage.entries().some(([, value]) => value.includes(auth.token)));
+});
+
+test('weekly content versions activate at the Tehran Saturday epoch', () => {
+    const boundary = Date.parse('2026-11-20T20:30:00Z');
+    const legacy = 'coffee-crash-replay-v1';
+    assert.equal(weeklyVersion('coffee-crash', legacy, boundary - 1), legacy);
+    assert.equal(weeklyVersion('coffee-crash', legacy, boundary), WEEKLY_VERSIONS['coffee-crash']);
 });
 
 test('offline API never promises unverified scores', async () => {

@@ -1,0 +1,21 @@
+{
+  "character_key": "dandelox",
+  "pack_version": 14,
+  "status": "validated_in_emulated_browser",
+  "checks": {
+    "asset_geometry": "passed",
+    "atlas_variants": 6,
+    "frame_names_per_variant": 672,
+    "roster_adjacency_with_negar": "passed",
+    "selection_persistence": "passed",
+    "dino_run_jump_and_slide": "passed",
+    "open_world_walk_run_jump_land": "passed",
+    "focus_aura_touch_and_keyboard": "passed",
+    "js_tests_passed": 908,
+    "phpunit_sqlite_tests_passed": 353,
+    "static_release": "passed"
+  },
+  "evidence": "../../../../../docs/release-v14-dandelox/browser-checks.json",
+  "date": "2026-11-25",
+  "physical_devices_verified": false
+}

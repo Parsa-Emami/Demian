@@ -1,0 +1,24 @@
+{
+  "character_key": "mobina",
+  "pack_version": 14,
+  "status": "validated_in_emulated_browser",
+  "date": "2026-11-25",
+  "motion_version": "natural-locomotion-v2",
+  "evidence": "../../../../../docs/release-v14-mobina/README.fa.md",
+  "checks": {
+    "all_variants": true,
+    "packed_frames_per_variant": 672,
+    "asset_geometry": "passed",
+    "runtime_physical_cells": 316,
+    "lite_physical_cells": 239,
+    "picker_viewports": ["320x640", "390x844", "1440x900"],
+    "adjacent_to_negar": "passed",
+    "selection_survives_reload": "passed",
+    "open_world_locomotion_and_meow_mode": "keyboard_and_emulated_touch_passed",
+    "dino_run_touch_slide": "passed"
+  },
+  "physical_device_qa": {
+    "status": "pending",
+    "issue": "https://github.com/Parsa-Emami/Demian/issues/117"
+  }
+}

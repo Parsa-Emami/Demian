@@ -31,6 +31,12 @@ final class WeeklyAllocationService
         if (! $economics) throw new RuntimeException('Dynamic allocation needs a budgeted campaign.');
         $cap = (int) $terms['max_discount_minor'];
         $capacity = min((int) $campaign->max_awards, intdiv($economics['budget_minor'], $cap));
+        if (config('demian-arcade.prize_identity_required') === true) {
+            $participants = array_merge(...array_values($rankings));
+            $playerIds = array_unique(array_column($participants, 'player_id'));
+            $verified = app(ArcadePrizeIdentity::class)->verifiedRecipientIds($playerIds);
+            $excluded = array_merge($excluded, array_diff($playerIds, $verified));
+        }
         $plan = app(DynamicWinnerAllocation::class)->allocate($rankings, $historical, $excluded, $capacity, $policy);
         $available = DB::table('arcade_reward_inventory')->where('campaign_id', $campaign->id)
             ->where('status', 'available')->count();

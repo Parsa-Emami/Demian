@@ -8,6 +8,10 @@ export default class LeaderboardScreen extends BaseScreen {
         this.service = service;
         this.generation = 0;
         this.period = this.element.querySelector('[data-ranking-period]');
+        this.practiceOption = document.createElement('option');
+        this.practiceOption.value = 'practice';
+        this.practiceOption.textContent = 'تمرین Dino Run (بدون جایزه)';
+        this.period.append(this.practiceOption);
         this.game = this.element.querySelector('[data-ranking-game]');
         this.week = this.element.querySelector('[data-ranking-week]');
         this.weekWrap = this.element.querySelector('[data-ranking-week-wrap]');
@@ -21,6 +25,8 @@ export default class LeaderboardScreen extends BaseScreen {
         this.form = this.element.querySelector('[data-ranking-name-form]');
         this.recovery = this.element.querySelector('[data-ranking-recovery]');
         this.recoveryForm = this.element.querySelector('[data-ranking-recover-form]');
+        this.loginForm = this.element.querySelector('[data-ranking-login-form]');
+        this.passwordForm = this.element.querySelector('[data-ranking-password-form]');
         this.issueRecovery = this.element.querySelector('[data-ranking-issue-recovery]');
         this.recoveryLink = this.element.querySelector('[data-ranking-recovery-link]');
         this.recoveryStatus = this.element.querySelector('[data-ranking-recovery-status]');
@@ -77,15 +83,65 @@ export default class LeaderboardScreen extends BaseScreen {
             button.disabled = true;
             try {
                 const code = this.recoveryForm.elements.recovery_code.value;
-                const recovered = await this.service.recoverAccount(code);
+                const newPassword = this.recoveryForm.elements.new_password?.value ?? '';
+                const confirmation = this.recoveryForm.elements.new_password_confirmation?.value ?? '';
+                if (newPassword && newPassword !== confirmation) {
+                    throw new Error('رمز جدید و تکرار آن یکسان نیستند.');
+                }
+                const recovered = await this.service.recoverAccount(code,
+                    newPassword || null);
                 this.recoveryForm.reset();
                 this.form.elements.display_name.value = recovered.display_name;
                 await this.load();
                 this.backupCode.value = '';
-                this.recoveryStatus.textContent = 'حساب بازیابی شد؛ نشست قبلی، لینک کوتاه‌مدت و کد پشتیبان مصرف شدند. برای بازیابی بعدی کد تازه بساز.';
+                this.recoveryStatus.textContent = 'حساب بازیابی شد؛ نشست قبلی، لینک کوتاه‌مدت و کد پشتیبان مصرف شدند. ' +
+                    'اگر رمز تازه تعیین کردی، کد پشتیبان جدید بساز.';
             } catch (error) {
                 this.recoveryStatus.textContent = error.message;
             } finally {
+                button.disabled = false;
+            }
+        };
+        this.onLogin = async event => {
+            event.preventDefault();
+            const button = this.loginForm.querySelector('button[type="submit"]');
+            button.disabled = true;
+            try {
+                const fields = this.loginForm.elements;
+                const result = await this.service.loginWithPassword(
+                    fields.contact_type.value, fields.contact_value.value, fields.password.value);
+                this.form.elements.display_name.value = result.display_name;
+                this.loginForm.reset();
+                this.recoveryStatus.textContent = 'ورود بدون پیامک انجام شد؛ نشست قبلی این حساب منقضی شد.';
+                await this.load();
+            } catch (error) {
+                this.recoveryStatus.textContent = error.status === 401
+                    ? 'اطلاعات ورود معتبر نیست.' : error.status === 429
+                        ? 'تلاش‌های ورود بیش از حد مجاز است؛ بعداً امتحان کن.'
+                        : error.message;
+            } finally {
+                this.loginForm.elements.password.value = '';
+                button.disabled = false;
+            }
+        };
+        this.onSetPassword = async event => {
+            event.preventDefault();
+            const button = this.passwordForm.querySelector('button[type="submit"]');
+            button.disabled = true;
+            try {
+                const fields = this.passwordForm.elements;
+                if (fields.password.value !== fields.password_confirmation.value) {
+                    throw new Error('رمز عبور و تکرار آن باید یکسان باشند.');
+                }
+                await this.service.setAccountPassword(fields.password.value,
+                    fields.password_confirmation.value, fields.current_password.value);
+                this.passwordForm.reset();
+                this.recoveryStatus.textContent = 'رمز عبور ذخیره شد. از این پس ورود بدون پیامک امکان‌پذیر است.';
+            } catch (error) {
+                this.recoveryStatus.textContent = error.status === 403
+                    ? 'رمز عبور فعلی معتبر نیست.' : error.message;
+            } finally {
+                this.passwordForm.reset();
                 button.disabled = false;
             }
         };
@@ -156,6 +212,8 @@ export default class LeaderboardScreen extends BaseScreen {
         this.deleteAccount?.addEventListener('click', this.onDeleteAccount);
         this.issueRecovery.addEventListener('click', this.onIssueRecovery);
         this.recoveryForm.addEventListener('submit', this.onRecover);
+        this.loginForm?.addEventListener('submit', this.onLogin);
+        this.passwordForm?.addEventListener('submit', this.onSetPassword);
         this.period.addEventListener('change', this.onPeriod);
         this.game?.addEventListener('change', this.onGame);
         this.week?.addEventListener('change', this.onWeek);
@@ -170,6 +228,8 @@ export default class LeaderboardScreen extends BaseScreen {
         this.deleteAccount.disabled = !this.service.connected;
         if (this.exportAccount) this.exportAccount.disabled = !this.service.connected || !this.service.identity?.token;
         for (const control of this.recoveryForm.elements) control.disabled = !this.service.connected;
+        for (const control of this.loginForm?.elements ?? []) control.disabled = !this.service.connected;
+        for (const control of this.passwordForm?.elements ?? []) control.disabled = !this.service.connected || !this.service.identity?.token;
         this.recoveryForm.elements.recovery_code.value = this.service.recoveryOffer ?? '';
         this.recoveryLink.value = '';
         this.recoveryStatus.textContent = this.service.recoveryOffer
@@ -208,9 +268,11 @@ export default class LeaderboardScreen extends BaseScreen {
         const game = this.game?.value ?? 'dino-run';
         const shared = this.service.connected && game === 'all-games';
         const deviceOnly = !shared && !this.onlineGames?.has(game);
-        for (const option of this.period.options) option.disabled = deviceOnly && option.value !== 'device';
-        if (deviceOnly) this.period.value = 'device';
-        else if (this.deviceOnly) this.period.value = 'weekly';
+        for (const option of this.period.options) option.disabled = option.value === 'practice'
+            ? game !== 'dino-run' : deviceOnly && option.value !== 'device';
+        if (this.practiceOption) this.practiceOption.hidden = game !== 'dino-run';
+        if (deviceOnly && (this.period.value !== 'practice' || game !== 'dino-run')) this.period.value = 'device';
+        else if (!deviceOnly && (this.deviceOnly || (this.period.value === 'practice' && game !== 'dino-run'))) this.period.value = 'weekly';
         this.deviceOnly = deviceOnly;
         const supportsHistory = shared || (!deviceOnly && game === 'cafe-drift' && this.period.value === 'weekly');
         this.weekWrap.hidden = !supportsHistory;
@@ -302,7 +364,7 @@ export default class LeaderboardScreen extends BaseScreen {
             const chosenWeek = !this.week.disabled ? this.week.value : '';
             const ownScore = shared
                 ? this.service.myWeeklyRanking(chosenWeek)
-                : this.period.value !== 'device' && ['dino-run', 'cafe-drift'].includes(activeGame)
+                : !['device', 'practice'].includes(this.period.value) && ['dino-run', 'cafe-drift'].includes(activeGame)
                     ? this.service.personalBest(this.period.value, activeGame, chosenWeek) : Promise.resolve(null);
             const result = shared
                 ? await this.service.weeklyRanking(chosenWeek)
@@ -321,7 +383,9 @@ export default class LeaderboardScreen extends BaseScreen {
                     this.status.textContent += ' هنوز امتیازی ثبت نشده است.';
                 }
             } else {
-                this.status.textContent = result.mode === 'device'
+                this.status.textContent = result.mode === 'practice'
+                    ? 'رکوردهای تمرینی Dino Run روی این دستگاه؛ بدون رتبه جهانی یا جایزه.'
+                    : result.mode === 'device'
                     ? 'رکوردهای همین مرورگر؛ ثبت جهانی نشده‌اند.'
                     : result.status === 'finalized'
                         ? 'نتیجهٔ نهایی این هفته · ثبت‌شده در آرشیو دمیان'
@@ -410,6 +474,8 @@ export default class LeaderboardScreen extends BaseScreen {
         this.snapshot = null;
         this.recoveryLink.value = '';
         this.backupCode.value = '';
+        this.loginForm?.reset();
+        this.passwordForm?.reset();
         if (this.timer != null) clearInterval(this.timer);
         this.timer = null;
     }
@@ -422,6 +488,8 @@ export default class LeaderboardScreen extends BaseScreen {
         this.deleteAccount?.removeEventListener('click', this.onDeleteAccount);
         this.issueRecovery.removeEventListener('click', this.onIssueRecovery);
         this.recoveryForm.removeEventListener('submit', this.onRecover);
+        this.loginForm?.removeEventListener('submit', this.onLogin);
+        this.passwordForm?.removeEventListener('submit', this.onSetPassword);
         this.period.removeEventListener('change', this.onPeriod);
         this.game?.removeEventListener('change', this.onGame);
         this.form.removeEventListener('submit', this.onSubmit);

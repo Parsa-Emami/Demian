@@ -294,6 +294,41 @@ final class RewardCampaignStep14Test extends TestCase
         $this->loginAs($root)->get('/cashier/admin/campaigns')->assertOk()->assertSee('سهمیه پویای برندگان');
     }
 
+    public function test_dynamic_allocation_preserves_technical_ranks_and_requires_verified_recipients(): void
+    {
+        config()->set('demian-coupons.dynamic_allocation_required', true);
+        config()->set('demian-arcade.prize_identity_required', true);
+        $root = $this->staff();
+        $id = $this->campaign($root, $this->economicData());
+        $this->import($root, $id, [$this->code(1), $this->code(2)]);
+        app(RewardCampaignService::class)->transition($root, 1, $id, 'activate');
+        $players = $this->seal(20, false);
+        foreach ([$players[3], $players[19]] as $player) {
+            DB::table('arcade_players')->where('id', $player['player_id'])->update([
+                'contact_type' => 'phone',
+                'contact_hash' => hash('sha256', $player['player_id']),
+                'phone_verified_at' => now(),
+            ]);
+        }
+
+        $campaign = DB::table('arcade_reward_campaigns')->where('id', $id)->first();
+        $preview = app(\App\Services\Arcade\WeeklyAllocationService::class)->preview($campaign);
+        $this->assertSame(20, $preview['participants']);
+        $this->assertSame(2, $preview['eligible']);
+        $this->assertSame(2, $preview['winner_count']);
+
+        app(WeeklySettlementService::class)->seal('2026-11-07');
+        $this->assertDatabaseCount('arcade_weekly_results', 20);
+        $this->assertDatabaseHas('arcade_weekly_winners', [
+            'player_id' => $players[3]['player_id'], 'technical_rank' => 4, 'prize_rank' => 1,
+        ]);
+        $this->assertDatabaseHas('arcade_weekly_winners', [
+            'player_id' => $players[19]['player_id'], 'technical_rank' => 20, 'prize_rank' => 2,
+        ]);
+        $this->assertSame(2, app(CouponIssuanceService::class)->issueWeek(self::WEEK)['created']);
+        $this->assertDatabaseMissing('arcade_coupons', ['player_id' => $players[0]['player_id']]);
+    }
+
     public function test_dynamic_paused_campaign_never_silently_discards_qualified_awards(): void
     {
         config()->set('demian-coupons.dynamic_allocation_required', true);

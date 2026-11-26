@@ -136,26 +136,6 @@
       "identityContract": "assets/characters/uzudi/manifests/uzudi_identity_contract.json"
     },
     {
-      "slug": "negar",
-      "displayName": "NEGAR / نگار",
-      "family": "female-base-v1",
-      "packVersion": 14,
-      "defaultActive": false,
-      "skin": "negar",
-      "accessories": [],
-      "identityContract": "assets/characters/negar/manifests/negar_identity_contract.json"
-    },
-    {
-      "slug": "elaheh",
-      "displayName": "ELAHEH / الهه",
-      "family": "female-base-v1",
-      "packVersion": 14,
-      "defaultActive": false,
-      "skin": "elaheh",
-      "accessories": [],
-      "identityContract": "assets/characters/elaheh/manifests/elaheh_identity_contract.json"
-    },
-    {
       "slug": "tiam",
       "displayName": "TIAM / تیام",
       "family": "female-base-v1",
@@ -174,6 +154,56 @@
         }
       ],
       "identityContract": "assets/characters/tiam/manifests/tiam_identity_contract.json"
+    },
+    {
+      "slug": "elaheh",
+      "displayName": "ELAHEH / الهه",
+      "family": "female-base-v1",
+      "packVersion": 14,
+      "defaultActive": false,
+      "skin": "elaheh",
+      "accessories": [],
+      "identityContract": "assets/characters/elaheh/manifests/elaheh_identity_contract.json"
+    },
+    {
+      "slug": "marjan",
+      "displayName": "MARJAN / مرجان",
+      "family": "female-base-v1",
+      "packVersion": 14,
+      "defaultActive": false,
+      "skin": "marjan",
+      "accessories": [],
+      "identityContract": "assets/characters/marjan/manifests/marjan_identity_contract.json"
+    },
+    {
+      "slug": "mohana",
+      "displayName": "MOHANA / مهنا",
+      "family": "female-base-v1",
+      "packVersion": 14,
+      "defaultActive": false,
+      "skin": "mohana",
+      "accessories": [],
+      "identityContract": "assets/characters/mohana/manifests/mohana_identity_contract.json"
+    },
+    {
+      "slug": "zohre",
+      "displayName": "ZOHRE / زهره",
+      "family": "female-base-v1",
+      "packVersion": 14,
+      "defaultActive": false,
+      "skin": "zohre",
+      "accessories": [],
+      "identityContract": "assets/characters/zohre/manifests/zohre_identity_contract.json"
+    },
+    {
+      "slug": "kiana",
+      "displayName": "KIANA / کیانا",
+      "family": "female-base-v1",
+      "packVersion": 14,
+      "defaultActive": false,
+      "skin": "kiana",
+      "accessories": [],
+      "identityContract": "assets/characters/kiana/manifests/kiana_identity_contract.json"
     },
     {
       "slug": "amirreza",
@@ -217,11 +247,71 @@
       "slug": "arsal",
       "displayName": "ARSAL / ارسل",
       "family": "male-base-v1",
-      "packVersion": 14,
+      "packVersion": 15,
       "defaultActive": false,
       "skin": "arsal",
       "accessories": [],
       "identityContract": "assets/characters/arsal/manifests/arsal_identity_contract.json"
+    },
+    {
+      "slug": "sadro",
+      "displayName": "SADRO / صدرو",
+      "family": "male-base-v1",
+      "packVersion": 14,
+      "defaultActive": false,
+      "skin": "sadro",
+      "accessories": [],
+      "identityContract": "assets/characters/sadro/manifests/sadro_identity_contract.json"
+    },
+    {
+      "slug": "mojtaba",
+      "displayName": "MOJTABA / مجتبی",
+      "family": "male-base-v1",
+      "packVersion": 14,
+      "defaultActive": false,
+      "skin": "mojtaba",
+      "accessories": [],
+      "identityContract": "assets/characters/mojtaba/manifests/mojtaba_identity_contract.json"
+    },
+    {
+      "slug": "mobina",
+      "displayName": "MOBINA / مبینا",
+      "family": "female-base-v1",
+      "packVersion": 14,
+      "defaultActive": false,
+      "skin": "mobina",
+      "accessories": [],
+      "identityContract": "assets/characters/mobina/manifests/mobina_identity_contract.json"
+    },
+    {
+      "slug": "negar",
+      "displayName": "NEGAR / نگار",
+      "family": "female-base-v1",
+      "packVersion": 14,
+      "defaultActive": false,
+      "skin": "negar",
+      "accessories": [],
+      "identityContract": "assets/characters/negar/manifests/negar_identity_contract.json"
+    },
+    {
+      "slug": "dandelox",
+      "displayName": "DANDELOX / دندلاکس",
+      "family": "female-base-v1",
+      "packVersion": 14,
+      "defaultActive": false,
+      "skin": "dandelox",
+      "accessories": [
+        {
+          "kind": "black-cat",
+          "anchor": "ground",
+          "offset": [
+            -0.3,
+            0
+          ],
+          "collision": "cosmetic"
+        }
+      ],
+      "identityContract": "assets/characters/dandelox/manifests/dandelox_identity_contract.json"
     },
     {
       "slug": "iman",

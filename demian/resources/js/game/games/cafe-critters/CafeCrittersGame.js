@@ -20,6 +20,7 @@ const rotation = 0;
 export default class CafeCrittersGame extends BaseGame {
     constructor() {
         super();
+        this.supportsInPlaceRestart = true;
         this.model = new CafeCrittersModel();
         this.audio = new CafeCueAudio(CUES);
         this.rankRun = null;

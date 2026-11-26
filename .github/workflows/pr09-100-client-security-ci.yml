@@ -1,0 +1,83 @@
+name: PR09 isolated 100-client load and security acceptance (CI only)
+# Real disposable MySQL 8.4 and PHP 8.4 HTTP workers; NEVER public cPanel.
+on:
+  # Required check must run for ALL PRs/commits, including workflows/docs-only
+  # updates. Otherwise main's load-100 required status could stay pending.
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: demian-pr09-100-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  load-100:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: pr09-disposable-root
+          MYSQL_DATABASE: demian_test
+        ports: ['3306:3306']
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -ppr09-disposable-root"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=12
+    defaults:
+      run:
+        working-directory: demian
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: mbstring, dom, xml, pdo_mysql, curl, fileinfo, opcache
+          ini-values: "opcache.enable_cli=1"
+          coverage: none
+      - name: Ensure disposable MySQL and fail-closed PR09 evidence contract
+        run: |
+          set -Eeuo pipefail
+          node --test tests/js/mobile/Pr09CiPolicy.test.js
+          php -r 'exit(PHP_VERSION_ID >= 80400 ? 0 : 1);'
+      - name: Install PHP dependencies matching checked composer lock
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader
+      - name: One hundred real HTTP clients on isolated MySQL - anti-cheat, rate, replay, ownership and duplicate race
+        run: node tools/load/ci_http_acceptance.mjs
+        env:
+          CI: 'true'
+          APP_ENV: testing
+          APP_DEBUG: 'false'
+          APP_KEY: base64:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
+          DB_CONNECTION: mysql
+          DB_HOST: 127.0.0.1
+          DB_PORT: '3306'
+          DB_DATABASE: demian_test
+          DB_USERNAME: root
+          DB_PASSWORD: pr09-disposable-root
+          CACHE_STORE: file
+          SESSION_DRIVER: file
+          DEMIAN_CI_LOAD_USERS: '100'
+      - name: Verify 100-client security result, latency budget and non-production claims
+        run: node tools/load/pr09_ci_verify.mjs docs/acceptance-lab/http-100.json docs/acceptance-lab/pr09-ci-decision.json
+        env:
+          DEMIAN_CI_LOAD_USERS: '100'
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pr09-100-security-${{ github.sha }}
+          path: |
+            demian/docs/acceptance-lab/http-100.json
+            demian/docs/acceptance-lab/pr09-ci-decision.json
+          if-no-files-found: warn
+          retention-days: 30

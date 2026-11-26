@@ -1,5 +1,9 @@
 # Demian: cPanel production architecture and 50-concurrent-player gate
 
+**Final Phase 11 acceptance and controlled commercial launch:** [Full F11-01 through F11-14 runbook](../gameplay/PHASE_11_FINAL_QA_GO_NO_GO.fa.md). cPanel code readiness is NOT equivalent to real host and physical device approval.
+
+**Consolidated Phase 10 operational runbook (Persian):** [Deployment, fixed API bridge, 50-user capacity gate, encrypted backup and incident response](../gameplay/PHASE_10_CPANEL_PRODUCTION_ARCHITECTURE.fa.md). Source and CI readiness do not certify a paid cPanel deployment.
+
 ## Canonical domain for live deployment
 
 **Game and PWA:** `https://demiancafe.ir/`. **Laravel API:** `https://api.demiancafe.ir/api/v1/arcade`. **Optional isolated staging:** `https://staging.demiancafe.ir/` with `https://api-staging.demiancafe.ir` and a separate database and APP_KEY.

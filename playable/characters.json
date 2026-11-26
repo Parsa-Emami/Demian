@@ -46,13 +46,13 @@
       }
     },
     {
-      "id": "builtin-negar",
-      "name": "NEGAR / نگار",
-      "slug": "negar",
+      "id": "builtin-tiam",
+      "name": "TIAM / تیام",
+      "slug": "tiam",
       "is_builtin": true,
       "is_active": false,
-      "sprite_url": "assets/characters/negar/negar-spritesheet-v14-mobile.png",
-      "atlas_url": "assets/characters/negar/negar-atlas-v14-mobile.json",
+      "sprite_url": "assets/characters/tiam/tiam-spritesheet-v14-mobile.png",
+      "atlas_url": "assets/characters/tiam/tiam-atlas-v14-mobile.json",
       "settings": {
         "scale": 1,
         "walk_speed": 3.55,
@@ -76,13 +76,58 @@
       }
     },
     {
-      "id": "builtin-tiam",
-      "name": "TIAM / تیام",
-      "slug": "tiam",
+      "id": "builtin-marjan",
+      "name": "MARJAN / مرجان",
+      "slug": "marjan",
       "is_builtin": true,
       "is_active": false,
-      "sprite_url": "assets/characters/tiam/tiam-spritesheet-v14-mobile.png",
-      "atlas_url": "assets/characters/tiam/tiam-atlas-v14-mobile.json",
+      "sprite_url": "assets/characters/marjan/marjan-spritesheet-v14-mobile.png",
+      "atlas_url": "assets/characters/marjan/marjan-atlas-v14-mobile.json",
+      "settings": {
+        "scale": 1,
+        "walk_speed": 3.55,
+        "run_speed": 6.9,
+        "jump_force": 6.8
+      }
+    },
+    {
+      "id": "builtin-mohana",
+      "name": "MOHANA / مهنا",
+      "slug": "mohana",
+      "is_builtin": true,
+      "is_active": false,
+      "sprite_url": "assets/characters/mohana/mohana-spritesheet-v14-mobile.png",
+      "atlas_url": "assets/characters/mohana/mohana-atlas-v14-mobile.json",
+      "settings": {
+        "scale": 1,
+        "walk_speed": 3.55,
+        "run_speed": 6.9,
+        "jump_force": 6.8
+      }
+    },
+    {
+      "id": "builtin-zohre",
+      "name": "ZOHRE / زهره",
+      "slug": "zohre",
+      "is_builtin": true,
+      "is_active": false,
+      "sprite_url": "assets/characters/zohre/zohre-spritesheet-v14-mobile.png",
+      "atlas_url": "assets/characters/zohre/zohre-atlas-v14-mobile.json",
+      "settings": {
+        "scale": 1,
+        "walk_speed": 3.55,
+        "run_speed": 6.9,
+        "jump_force": 6.8
+      }
+    },
+    {
+      "id": "builtin-kiana",
+      "name": "KIANA / کیانا",
+      "slug": "kiana",
+      "is_builtin": true,
+      "is_active": false,
+      "sprite_url": "assets/characters/kiana/kiana-spritesheet-v14-mobile.png",
+      "atlas_url": "assets/characters/kiana/kiana-atlas-v14-mobile.json",
       "settings": {
         "scale": 1,
         "walk_speed": 3.55,
@@ -141,8 +186,83 @@
       "slug": "arsal",
       "is_builtin": true,
       "is_active": false,
-      "sprite_url": "assets/characters/arsal/arsal-spritesheet-v14-mobile.png",
-      "atlas_url": "assets/characters/arsal/arsal-atlas-v14-mobile.json",
+      "sprite_url": "assets/characters/arsal/arsal-spritesheet-v15-mobile.png",
+      "atlas_url": "assets/characters/arsal/arsal-atlas-v15-mobile.json",
+      "settings": {
+        "scale": 1,
+        "walk_speed": 3.55,
+        "run_speed": 6.9,
+        "jump_force": 6.8
+      }
+    },
+    {
+      "id": "builtin-sadro",
+      "name": "SADRO / صدرو",
+      "slug": "sadro",
+      "is_builtin": true,
+      "is_active": false,
+      "sprite_url": "assets/characters/sadro/sadro-spritesheet-v14-mobile.png",
+      "atlas_url": "assets/characters/sadro/sadro-atlas-v14-mobile.json",
+      "settings": {
+        "scale": 1,
+        "walk_speed": 3.55,
+        "run_speed": 6.9,
+        "jump_force": 6.8
+      }
+    },
+    {
+      "id": "builtin-mojtaba",
+      "name": "MOJTABA / مجتبی",
+      "slug": "mojtaba",
+      "is_builtin": true,
+      "is_active": false,
+      "sprite_url": "assets/characters/mojtaba/mojtaba-spritesheet-v14-mobile.png",
+      "atlas_url": "assets/characters/mojtaba/mojtaba-atlas-v14-mobile.json",
+      "settings": {
+        "scale": 1,
+        "walk_speed": 3.55,
+        "run_speed": 6.9,
+        "jump_force": 6.8
+      }
+    },
+    {
+      "id": "builtin-mobina",
+      "name": "MOBINA / مبینا",
+      "slug": "mobina",
+      "is_builtin": true,
+      "is_active": false,
+      "sprite_url": "assets/characters/mobina/mobina-spritesheet-v14-mobile.png",
+      "atlas_url": "assets/characters/mobina/mobina-atlas-v14-mobile.json",
+      "settings": {
+        "scale": 1,
+        "walk_speed": 3.55,
+        "run_speed": 6.9,
+        "jump_force": 6.8
+      }
+    },
+    {
+      "id": "builtin-negar",
+      "name": "NEGAR / نگار",
+      "slug": "negar",
+      "is_builtin": true,
+      "is_active": false,
+      "sprite_url": "assets/characters/negar/negar-spritesheet-v14-mobile.png",
+      "atlas_url": "assets/characters/negar/negar-atlas-v14-mobile.json",
+      "settings": {
+        "scale": 1,
+        "walk_speed": 3.55,
+        "run_speed": 6.9,
+        "jump_force": 6.8
+      }
+    },
+    {
+      "id": "builtin-dandelox",
+      "name": "DANDELOX / دندلاکس",
+      "slug": "dandelox",
+      "is_builtin": true,
+      "is_active": false,
+      "sprite_url": "assets/characters/dandelox/dandelox-spritesheet-v14-mobile.png",
+      "atlas_url": "assets/characters/dandelox/dandelox-atlas-v14-mobile.json",
       "settings": {
         "scale": 1,
         "walk_speed": 3.55,
