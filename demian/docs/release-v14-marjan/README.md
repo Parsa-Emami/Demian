@@ -1,0 +1,7 @@
+# Marjan V14 integration recovery
+
+Marjan was absent because the previous commit was a draft on this branch, not a playable pack on main. The current main deployment is successful. This branch is based on the reviewed main commit ec07e2d78a816be634b83d2432f6c9ee780625fb.
+
+A separate source archive, `Marjan-V14-source.zip`, was prepared from the authored image, with 32 master, 24 runner and 8 slide source cells. Some cells reuse authored poses for recovery and sliding; they are not 64 independent drawings. The archive has not been transferred into GitHub. It must be obtained from the accompanying chat. Its SHA-256 is `dc1d7eab84f02572a76c7c69a98e86e3f6d68f57dbf018472563bd1d4d2ea649`.
+
+On a clean checkout of this branch, install the project's Python art requirements, Node dependencies and PHP dependencies. Run `python demian/tools/integrate_marjan_v14.py /absolute/path/Marjan-V14-source.zip` from repository root. The script stops on an unexpected baseline or a failing gate. Review generated changes, inspect portrait and motion, run Laravel and browser tests, and verify physical-device behavior before publishing. It does not commit or deploy automatically. The script has not been executed against the complete repository in this session. If a build fails, retain the branch for diagnosis; do not publish incomplete assets. The intended order remains Elaheh, Marjan, Tiam, with shared ranked physics and no companion.

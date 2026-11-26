@@ -1,0 +1,85 @@
+{
+  "character_key": "marjan",
+  "display_name": "MARJAN / مرجان",
+  "pack_version": 14,
+  "status": "source_archive_prepared_not_committed",
+  "activate": false,
+  "insert_after": "elaheh",
+  "motion_family": "female-base-v1",
+  "locomotion_style": "ground-runner",
+  "reference": {
+    "filename": "42828.png",
+    "sha256": "4b0963f82762172aa25e6ac4f568320e938127fbc3f4e27c61df04448fb7f068",
+    "binary_committed": false
+  },
+  "identity": [
+    "long layered wavy chestnut-brown hair",
+    "large brown eyes",
+    "black button-front shirt with rolled sleeves",
+    "loose charcoal trousers",
+    "black and cream sneakers",
+    "no companion"
+  ],
+  "art_reference": {
+    "master": "darya/source-v14/master.png",
+    "runner": "darya/source-v14/runner-motion.png",
+    "slide": "darya/source-v14/slides.png"
+  },
+  "physics": {
+    "shared": true,
+    "pivot": [
+      0.5,
+      0.94
+    ],
+    "cosmetic_only": true
+  },
+  "required_sources": [
+    "reference.jpg",
+    "master.png",
+    "runner-motion.png",
+    "slides.png",
+    "layout.json"
+  ],
+  "required_variants": [
+    "desktop",
+    "mobile",
+    "compact",
+    "runtime",
+    "lite",
+    "detail"
+  ],
+  "required_states": [
+    "idle",
+    "breathe",
+    "blink",
+    "ready",
+    "walk",
+    "run",
+    "sprint",
+    "takeoff",
+    "jump",
+    "fall",
+    "land",
+    "slide",
+    "crouch",
+    "turn",
+    "wave",
+    "celebrate",
+    "win"
+  ],
+  "qa": {
+    "asset_geometry": "pending_runtime_build",
+    "roster_adjacency": "pending",
+    "browser": "pending",
+    "physical_device": "pending",
+    "production": "not_approved",
+    "source_cell_count": "passed_locally"
+  },
+  "source_archive": {
+    "name": "Marjan-V14-source.zip",
+    "sha256": "dc1d7eab84f02572a76c7c69a98e86e3f6d68f57dbf018472563bd1d4d2ea649",
+    "files": 5,
+    "source_cells": 64,
+    "committed": false
+  }
+}
