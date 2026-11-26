@@ -1,9 +1,9 @@
 import BaseScreen from './BaseScreen';
 import ScrollSnapRail from '../../../ui/ScrollSnapRail.js';
+import { gameExperience } from '../../design/GameExperience.js';
 import { preloadFbxCafeArt } from '../../rendering2d/FbxCafeAssets.js';
 import { optionalAssetPolicy } from '../../characters/runtime/MobileNetworkPolicy.js';
 import { prewarmCriticalGameSprite } from '../../performance/GameAssetWarmup.js';
-import { BUILTIN_CHARACTER_SLUGS } from '../../characters/CharacterVisualContract.js';
 
 export const shouldWarmOpenWorldPreview = policy =>
     policy?.deferBackground === false && policy.reason === 'normal';
@@ -15,6 +15,33 @@ function escape(value) {
         .replaceAll('>', '&gt;')
         .replaceAll('"', '&quot;')
         .replaceAll("'", '&#039;');
+}
+
+
+// Guide copy comes from an authored, reviewed contract. Escape every value:
+// these cards contain no dynamic HTML sourced from players or the backend.
+function renderGameGuide(game) {
+    const guide = gameExperience(game.id);
+    if (!guide) return '';
+    const steps = guide.tutorialFa.map(step => `<li>${escape(step)}</li>`).join('');
+    return `
+        <div class="game-card__guide" data-game-design-guide="${escape(game.id)}">
+            <p class="game-card__goal"><strong>هدف:</strong> ${escape(guide.goalFa)}</p>
+            <details class="game-card__guide-details">
+                <summary>راهنمای بازی، سختی و رقابت</summary>
+                <div class="game-card__guide-body">
+                    <ol class="game-card__learning-steps" aria-label="سه گام شروع بازی">${steps}</ol>
+                    <p><strong>لمس:</strong> ${escape(guide.controls.touchFa)}</p>
+                    <p><strong>کیبورد:</strong> ${escape(guide.controls.keyboardFa)}</p>
+                    <p><strong>شروع:</strong> ${escape(guide.difficultyFa.intro)}</p>
+                    <p><strong>تمرین:</strong> ${escape(guide.difficultyFa.practice)}</p>
+                    <p><strong>مهارت:</strong> ${escape(guide.difficultyFa.mastery)}</p>
+                    <p class="game-card__mode-note"><strong>تمرینی:</strong> ${escape(guide.modes.practiceFa)}</p>
+                    <p class="game-card__mode-note"><strong>رقابتی:</strong> ${escape(guide.modes.rankedFa)}</p>
+                </div>
+            </details>
+        </div>
+    `;
 }
 
 export default class GameSelectionScreen extends BaseScreen {
@@ -49,21 +76,27 @@ export default class GameSelectionScreen extends BaseScreen {
         const playableCount = this.catalog.filter(game => game.available).length;
         const count = this.element.querySelector('[data-game-library-count]');
         if (count) count.textContent = `${playableCount.toLocaleString('fa-IR')} بازی آمادهٔ اجرا`;
-        const summary = this.element.closest('[data-character-manager]')
-            ?.querySelector('[data-game-library-summary]');
-        if (summary) summary.textContent = `${playableCount.toLocaleString('fa-IR')} بازی · ${BUILTIN_CHARACTER_SLUGS.length.toLocaleString('fa-IR')} کاراکتر`;
         this.grid.innerHTML = this.catalog.map((game) => `
             <article class="game-card game-card--${escape(game.accent)} ${game.available ? 'is-available' : 'is-locked'}" data-game-card="${escape(game.id)}" data-scroll-rail-item="${escape(game.id)}" role="listitem" dir="rtl">
                 <div class="game-card__glow" aria-hidden="true"></div>
+                <div class="game-card__scene-preview" aria-hidden="true">
+                    <img loading="lazy" decoding="async"
+                        src="${game.id === 'dino-run'
+                            ? 'assets/environments/cafe-runner-v1/interior.webp'
+                            : 'assets/environments/demian-fbx/polished-v1/preview.webp'}"
+                        alt="" width="320" height="180">
+                    <span>نمای محیط کافه</span>
+                </div>
                 <div class="game-card__topline">
                     <span class="game-card__icon" aria-hidden="true">${escape(game.icon)}</span>
-                    <span class="game-card__status">${game.available ? 'آمادهٔ بازی' : `فاز ${game.phase}`}</span>
+                    <span class="game-card__status" aria-label="${game.available ? 'قابل اجرا' : 'در دست ساخت'}">${game.available ? 'آمادهٔ بازی' : `فاز ${game.phase}`}</span>
                 </div>
                 <div>
                     <h3>${escape(game.title)}</h3>
                     <p class="game-card__subtitle">${escape(game.subtitle)}</p>
                     <p class="game-card__description">${escape(game.description)}</p>
                 </div>
+                ${renderGameGuide(game)}
                 <button
                     type="button"
                     class="game-card__action"

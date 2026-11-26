@@ -172,6 +172,47 @@ final class InCafeRedemptionTest extends TestCase
         $this->assertSame(1, DB::table('arcade_coupon_events')->where('event_type', 'issued')->count());
     }
 
+    public function test_corrupt_coupon_terms_fail_closed_before_financial_redemption(): void
+    {
+        $coupon = $this->voucher();
+        $staff = $this->staff();
+        $service = app(InCafeCouponService::class);
+        DB::table('arcade_coupons')->where('id', $coupon['id'])
+            ->update(['discount_percent' => 150, 'max_discount_minor' => 500000]);
+
+        $this->assertSame('unavailable', $service->inspect($coupon['code'])['state']);
+        try {
+            $service->redeem($staff, $coupon['code'], 'ticket-00991',
+                10000, (string) Str::uuid());
+            $this->fail('Corrupt discount terms were accepted as a real spend.');
+        } catch (HttpException $expected) {
+            $this->assertSame(409, $expected->getStatusCode());
+        }
+        $this->assertDatabaseCount('arcade_coupon_redemptions', 0);
+        $this->assertDatabaseHas('arcade_coupons', [
+            'id' => $coupon['id'], 'status' => 'issued',
+        ]);
+    }
+
+    public function test_missing_issuance_event_prevents_spending_even_with_correct_code(): void
+    {
+        $coupon = $this->voucher();
+        $staff = $this->staff();
+        DB::table('arcade_coupon_events')->where('coupon_id', $coupon['id'])
+            ->where('event_type', 'issued')->delete();
+        $service = app(InCafeCouponService::class);
+        $this->assertSame('unavailable', $service->inspect($coupon['code'])['state']);
+        try {
+            $service->redeem($staff, $coupon['code'], 'ticket-00992',
+                10000, (string) Str::uuid());
+            $this->fail('An unproven coupon code was accepted.');
+        } catch (HttpException $expected) {
+            $this->assertSame(409, $expected->getStatusCode());
+        }
+        $this->assertDatabaseCount('arcade_coupon_redemptions', 0);
+        $this->assertDatabaseCount('arcade_cashier_requests', 0);
+    }
+
     public function test_authorized_cashier_records_one_irreversible_consumption(): void
     {
         $coupon = $this->voucher();

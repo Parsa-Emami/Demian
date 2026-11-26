@@ -12,12 +12,14 @@ permissions:
   id-token: write
 concurrency:
   group: demian-pages-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 jobs:
   backend:
     uses: ./.github/workflows/arcade-backend.yml
   build:
     runs-on: ubuntu-24.04
+    outputs:
+      welcome-release: ${{ steps.welcome_release.outputs.release }}
     defaults:
       run:
         working-directory: demian
@@ -42,11 +44,31 @@ jobs:
       - run: npm run validate:final
       - run: npm run validate:ui-layers
       - run: npm run validate:characters:v14
+      - run: npm run validate:characters:v15
       - name: Restore previous hashed modules before a main release
         if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
         run: node tools/restore_previous_build.mjs
         env:
           GH_TOKEN: ${{ github.token }}
+      - name: Ranked main release requires protected Phase 11 decision on exact SHA
+        if: github.ref == 'refs/heads/main' && vars.DEMIAN_ARCADE_ENABLE_RANKED == 'true'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PHASE11_APPROVAL_RUN_ID: ${{ vars.DEMIAN_PHASE11_APPROVAL_RUN_ID || '' }}
+        run: |
+          set -Eeuo pipefail
+          [[ "$PHASE11_APPROVAL_RUN_ID" =~ ^[0-9]{5,14}$ ]] || {
+            echo "Ranked remains blocked until a real protected Phase 11 review run is supplied" >&2
+            exit 1
+          }
+          run="$(gh api "/repos/${GITHUB_REPOSITORY}/actions/runs/${PHASE11_APPROVAL_RUN_ID}")"
+          jq -e --arg sha "$GITHUB_SHA" \
+            '.head_sha == $sha and .head_branch == "main" and .name == "Phase 11 protected GO / NO-GO candidate audit" and .event == "workflow_dispatch" and .conclusion == "success"' \
+            <<< "$run" >/dev/null
+          jobs="$(gh api "/repos/${GITHUB_REPOSITORY}/actions/runs/${PHASE11_APPROVAL_RUN_ID}/jobs?per_page=100")"
+          jq -e '.jobs | any(.name == "protected-review" and .conclusion == "success")' <<< "$jobs" >/dev/null
+          echo "Phase 11 protected same-SHA review verified; ranked frontend build authorized by repository owner."
       - name: Build static release (API opt-in only after provisioning)
         run: npm run build:static
         env:
@@ -54,8 +76,19 @@ jobs:
           # Set only after domain DNS and GitHub Pages verification.
           DEMIAN_PAGES_CUSTOM_DOMAIN: ${{ vars.DEMIAN_PAGES_CUSTOM_DOMAIN || '' }}
           DEMIAN_ARCADE_API_URL: ${{ github.ref == 'refs/heads/main' && vars.DEMIAN_ARCADE_ENABLE_RANKED == 'true' && vars.DEMIAN_ARCADE_API_URL || '' }}
+      - name: Record exact static release for public verification
+        id: welcome_release
+        run: node -e 'const r=require("./_site/offline-packs.json").release; if(!/^[a-f0-9]{16}$/.test(r)) process.exit(1); console.log("release="+r)' >> "$GITHUB_OUTPUT"
       - name: Validate optimized production assets
         run: npm run validate:static-assets
+      - name: Phase 11 exact-SHA immutable static release audit (CI evidence only)
+        run: node tools/qa/phase11_release_audit.mjs --site=_site --source=. --sha="$GITHUB_SHA" --output=docs/phase11/ci/bundle-audit.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: phase11-pwa-bundle-${{ github.sha }}
+          path: demian/docs/phase11/ci/bundle-audit.json
+          if-no-files-found: error
+          retention-days: 30
       - name: Archive compatible hashed chunks for next main deployment
         if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
         uses: actions/upload-artifact@v4
@@ -78,6 +111,8 @@ jobs:
           if-no-files-found: error
       # Versioned chunks, bounded integrity-verified compatibility generations.
       - run: npm run validate:build
+      - name: Startup/PWA selective chunk and offline CSS release gate
+        run: node tools/check_lazy_pwa_manifest.mjs
       - run: npx playwright install chromium --only-shell
       - name: Install Firefox and WebKit for Phase 6 Step 31 engine compatibility
         run: npx playwright install --with-deps firefox webkit
@@ -89,6 +124,14 @@ jobs:
           run-id: 44022430672
           github-token: ${{ github.token }}
           path: ${{ runner.temp }}/loading-baseline
+      - name: Offline manager and all seven game controls — early pointer hit-test
+        run: timeout --signal=TERM --kill-after=10s 180s node tools/check_offline_manager_layout.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: offline-manager-layout-${{ github.sha }}
+          path: demian/docs/offline-manager-layout/
+          if-no-files-found: warn
       - name: Three-second loading budget for every game, environment and character
         run: |
           set -euo pipefail
@@ -112,11 +155,38 @@ jobs:
       - run: npm run test:coffee-crash:browser
       - name: Phase 3 Step 13 dedicated wallet and weekly leaderboard Chromium acceptance
         run: timeout --signal=TERM --kill-after=10s 180s npm run test:weekly13:browser
-      - name: Project identity browser QA (bounded)
-        run: timeout --signal=TERM --kill-after=10s 180s npm run test:identity:browser
+      - name: Welcome viewport QA — Chromium / 12 profiles (emulated)
+        run: timeout --signal=TERM --kill-after=10s 300s npm run test:identity:browser
+      - name: Welcome viewport QA — WebKit / 12 profiles (emulated, not physical Safari)
+        run: timeout --signal=TERM --kill-after=10s 300s npm run test:identity:browser
+        env:
+          DEMIAN_QA_ENGINE: webkit
+          DEMIAN_QA_REPORT_DIR: docs/project-identity/webkit
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: welcome-viewport-${{ github.sha }}
+          path: demian/docs/project-identity/
+          if-no-files-found: warn
       - run: npm run test:device-qa:browser
       - name: Phase 4 Step 20 fast menu, all games and delayed decorative assets
         run: timeout --signal=TERM --kill-after=10s 240s npm run test:fast-loading:browser
+      - name: Quality roadmap Phase 6 - 4 viewport day/night Cafe Canvas2D and seven-game screenshot evidence
+        run: timeout --signal=TERM --kill-after=10s 240s npm run test:phase6:visual
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: phase6-cafe-visual-${{ github.sha }}
+          path: demian/docs/phase06-environment/qa/
+          if-no-files-found: warn
+      - name: Quality roadmap Phase 7 - two mobile viewports, audio mute, pause, retry, practice/verified, offline
+        run: timeout --signal=TERM --kill-after=10s 240s npm run test:phase7:ux
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: phase7-ux-qa-${{ github.sha }}
+          path: demian/docs/phase07-ux/qa/
+          if-no-files-found: warn
       - name: Phase 6 Step 30 fast cold startup, buffered menu click and all games under 4G
         run: timeout --signal=TERM --kill-after=10s 240s npm run test:step30:startup
       - name: Retrieve exact pre-change static artifact for paired startup comparison
@@ -173,6 +243,14 @@ jobs:
         run: npm run test:mobile-pwa:browser
       - name: Mobile-09 selective offline game downloads, reload and cleanup
         run: npm run test:mobile-09:browser
+      - name: Quality roadmap Phase 8 - corrupted release integrity, recovery and offline practice in Chromium
+        run: timeout --signal=TERM --kill-after=10s 300s npm run test:phase8:pwa
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: phase8-pwa-integrity-${{ github.sha }}
+          path: demian/docs/phase08-mobile/qa/
+          if-no-files-found: warn
       - name: Mobile-01 mid-tier phone laboratory baseline
         run: npm run benchmark:mobile:ci
         env:
@@ -183,6 +261,15 @@ jobs:
           DEMIAN_MOBILE_BENCH_PROFILE: low-mobile
       - name: Step 31 aggregate all QA evidence and enforce cold menu, all games and device caveats
         run: npm run test:step31:collect
+      - name: PR07 full-catalog mobile/PWA/rotated viewport lab evidence (NOT real phone)
+        run: node tools/qa/pr07_collect.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pr07-lab-${{ github.sha }}
+          path: demian/docs/pr07/ci/lab-readiness.json
+          retention-days: 30
+          if-no-files-found: warn
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -256,15 +343,56 @@ jobs:
         env:
           DEMIAN_QA_BUILD_RESULT: ${{ needs.build.result }}
           DEMIAN_QA_BACKEND_RESULT: ${{ needs.backend.result }}
+      - uses: actions/download-artifact@v4
+        with:
+          name: phase11-pwa-bundle-${{ github.sha }}
+          path: ${{ runner.temp }}/phase11
+      - name: Phase 11 composite CI audit (NOT a commercial release approval)
+        run: node demian/tools/qa/phase11_verify_ci.mjs "${RUNNER_TEMP}/phase11/bundle-audit.json"
+        env:
+          DEMIAN_PHASE11_BUILD_RESULT: ${{ needs.build.result }}
+          DEMIAN_PHASE11_BACKEND_RESULT: ${{ needs.backend.result }}
+      - uses: actions/download-artifact@v4
+        with:
+          name: pr07-lab-${{ github.sha }}
+          path: ${{ runner.temp }}/pr07
+      - name: PR07 exact-SHA mobile lab contract - CI pass, physical and commercial NO-GO
+        run: node demian/tools/qa/pr07_verify_ci.mjs "${RUNNER_TEMP}/pr07/lab-readiness.json"
+        env:
+          DEMIAN_PR07_BUILD_RESULT: ${{ needs.build.result }}
+          DEMIAN_PR07_BACKEND_RESULT: ${{ needs.backend.result }}
   deploy:
     if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
-    needs: [release-qa]
+    needs: [release-qa, build]
     steps:
       - name: Publish
         id: deployment
         uses: actions/deploy-pages@v4
+      - name: Verify public Pages HTML and exact offline release
+        env:
+          PAGE_URL: ${{ steps.deployment.outputs.page_url }}
+          EXPECTED_RELEASE: ${{ needs.build.outputs.welcome-release }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$EXPECTED_RELEASE" =~ ^[a-f0-9]{16}$ ]]
+          base="${PAGE_URL%/}/"
+          for attempt in $(seq 1 12); do
+            if curl -fsSL --max-time 20 -H 'Cache-Control: no-cache' "${base}?verify=${GITHUB_SHA}-${attempt}" -o /tmp/demian-public.html &&
+               grep -Fq 'data-welcome-layout="viewport-v6" data-welcome-design="living-cafe-v1"' /tmp/demian-public.html &&
+               curl -fsSL --max-time 20 -H 'Cache-Control: no-cache' "${base}offline-packs.json?verify=${GITHUB_SHA}-${attempt}" -o /tmp/demian-packs.json &&
+               jq -e --arg release "$EXPECTED_RELEASE" '.release == $release' /tmp/demian-packs.json >/dev/null &&
+               curl -fsSL --max-time 20 -H 'Cache-Control: no-cache' "${base}service-worker.js?verify=${GITHUB_SHA}-${attempt}" -o /tmp/demian-worker.js &&
+               grep -Fq "const RELEASE_ID = '$EXPECTED_RELEASE';" /tmp/demian-worker.js; then
+              echo "Public Pages HTML, manifest and worker match release $EXPECTED_RELEASE"
+              exit 0
+            fi
+            sleep 10
+          done
+          echo 'Public Pages has not converged to the expected release' >&2
+          exit 1
 

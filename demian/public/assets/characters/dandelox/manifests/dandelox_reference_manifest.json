@@ -1,0 +1,50 @@
+{
+  "character_key": "dandelox",
+  "pack_version": 14,
+  "reference": "../source-v14/reference.jpg",
+  "master": "../source-v14/master.png",
+  "runner_motion": "../source-v14/runner-motion.png",
+  "slide_master": "../source-v14/slides.png",
+  "locomotion_reference": {
+    "character": "darya",
+    "states": [
+      "walk",
+      "run",
+      "jump",
+      "land",
+      "slide"
+    ]
+  },
+  "inputs": [
+    {
+      "name": "image(20261125-120620).png",
+      "role": "identity-costume-and-companion",
+      "sha256": "561e33d532fe68c981faf5d669f687c1945a4675f30fa83189d4b30932cb1165"
+    },
+    {
+      "name": "exec-4e2438d6-c709-4dd3-8d8d-220be1b8cdb2.png",
+      "role": "generated-movement-and-turnaround",
+      "sha256": "185c13ebe2b590dc981bed265724f2c039e59193697b737026c25eb93bc18dfc"
+    },
+    {
+      "name": "exec-98c7b53b-51c9-4640-adb4-843f980f7542.png",
+      "role": "generated-idle-slide-land-and-celebration",
+      "sha256": "e99d20b83149da532d267222b2b65c9d17c54c5df91c520525b57cf3231c7cda"
+    },
+    {
+      "name": "exec-a3def39b-16d1-4445-9ae2-34f2940bfe21.png",
+      "role": "generated-companion-poses",
+      "sha256": "2de6b55f75ac25d6f3a213c66c73875878746e88334f664b887a4d261157e8d3"
+    },
+    {
+      "name": "exec-6de041a9-360e-4c8e-b8c8-e175b0927936.png",
+      "role": "generated-rear-quarter-pose",
+      "sha256": "cc77d42604f8cf2f5a045766121f5b59b8c02b5c7bdcbbc932bdabd8e181a014"
+    },
+    {
+      "name": "darya-master.png",
+      "role": "in-game-style-and-proportions",
+      "sha256": "39d87e68eb8615f8d9e81fff5d736bb4b3a58faafdc7a9739ad97b93ab5fa85f"
+    }
+  ]
+}

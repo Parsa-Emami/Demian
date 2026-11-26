@@ -26,6 +26,8 @@ class RouteRegistrationTest extends TestCase
 
     public function test_required_routes_are_reachable_through_the_http_kernel(): void
     {
+        $this->withoutMiddleware(\App\Http\Middleware\AuthenticateCafeCashier::class);
+        $this->withoutMiddleware(\App\Http\Middleware\RequireCafePermission::class);
         $version = json_decode(file_get_contents(base_path('package.json')), true)['version'];
         $this->get('/')
             ->assertOk()

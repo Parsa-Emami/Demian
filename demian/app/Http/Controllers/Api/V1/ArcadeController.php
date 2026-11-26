@@ -11,12 +11,14 @@ use App\Services\Arcade\ArcadeRunService;
 use App\Services\Arcade\LeaderboardService;
 use App\Services\Arcade\CompetitionClock;
 use App\Services\Arcade\PlayerContact;
+use App\Services\Arcade\ArcadePrizeIdentity;
 use Illuminate\Database\UniqueConstraintViolationException;
 use App\Services\Arcade\RankedGameCatalog;
 use App\Services\Arcade\RunnerReplayVerifier;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
@@ -152,20 +154,95 @@ final class ArcadeController extends Controller
         $accepted = ($legal['policy_version'] ?? null) === config('demian-legal.version')
             && $request->boolean('accept_terms') && $request->boolean('privacy_acknowledged');
         $contact = $contacts->fields($request, config('demian-arcade.require_contact'), true);
+        $password = $request->validate([
+            'password' => ['sometimes', 'required', 'string', 'min:12', 'max:128'],
+        ]);
         $token = Str::random(64);
         $expires = now()->addDays((int) config('demian-arcade.player_session_days'));
         try {
             $player = ArcadePlayer::query()->create(['display_name' => $name,
                 'token_hash' => hash('sha256', $token), 'token_expires_at' => $expires,
                 'legal_policy_version' => $accepted ? config('demian-legal.version') : null,
-                'legal_accepted_at' => $accepted ? now() : null, ...$contact]);
+                'legal_accepted_at' => $accepted ? now() : null, ...$contact,
+                ...(isset($password['password']) ? ['password_hash' => Hash::make($password['password'])] : [])]);
         } catch (UniqueConstraintViolationException) {
             abort(409, 'برای این مشخصات حسابی وجود دارد. حساب قبلی را بازیابی کنید.');
         }
 
         return response()->json(['player_id' => $player->id, 'display_name' => $player->display_name,
             'token' => $token, 'token_expires_at' => $expires->toIso8601String(),
-            'has_contact' => $player->contact_hash !== null], 201);
+            'has_contact' => $player->contact_hash !== null,
+            'identity' => app(ArcadePrizeIdentity::class)->status($player)], 201)
+            ->header('Cache-Control', 'no-store, private');
+    }
+
+    public function login(Request $request, PlayerContact $contacts): JsonResponse
+    {
+        $credentials = $request->validate([
+            'password' => ['required', 'string', 'max:128'],
+        ]);
+        $contact = $contacts->fields($request, true);
+        $player = ArcadePlayer::query()->where('contact_hash', $contact['contact_hash'])->first();
+        $storedHash = $player?->password_hash;
+        $candidateHash = is_string($storedHash) && $storedHash !== ''
+            ? $storedHash : Hash::make(Str::random(32));
+        $matches = Hash::check($credentials['password'], $candidateHash);
+        abort_unless($player && is_string($storedHash) && $matches, 401,
+            'نام کاربری یا رمز عبور معتبر نیست.');
+
+        $session = DB::transaction(function () use ($player, $storedHash): array {
+            $locked = ArcadePlayer::query()->whereKey($player->id)->lockForUpdate()->firstOrFail();
+            abort_unless(hash_equals((string) $storedHash, (string) $locked->password_hash), 401,
+                'نام کاربری یا رمز عبور معتبر نیست.');
+            $token = Str::random(64);
+            $expires = now()->addDays((int) config('demian-arcade.player_session_days'));
+            $locked->forceFill(['token_hash' => hash('sha256', $token),
+                'token_expires_at' => $expires])->save();
+
+            return [
+                'player_id' => $locked->id,
+                'display_name' => $locked->display_name,
+                'token' => $token,
+                'token_expires_at' => $expires->toIso8601String(),
+                'has_contact' => $locked->contact_hash !== null,
+                'identity' => app(ArcadePrizeIdentity::class)->status($locked),
+            ];
+        }, 3);
+
+        return response()->json($session)->header('Cache-Control', 'no-store, private');
+    }
+
+    public function setPassword(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'password' => ['required', 'string', 'min:12', 'max:128', 'confirmed'],
+            'current_password' => ['nullable', 'string', 'max:128'],
+        ]);
+        $player = $request->attributes->get('arcade_player');
+        $oldTokenHash = hash('sha256', (string) $request->bearerToken());
+        $token = Str::random(64);
+        $expires = now()->addDays((int) config('demian-arcade.player_session_days'));
+        DB::transaction(function () use ($player, $data, $oldTokenHash, $token, $expires): void {
+            $locked = ArcadePlayer::query()->whereKey($player->id)->lockForUpdate()->firstOrFail();
+            abort_unless(hash_equals((string) $locked->token_hash, $oldTokenHash)
+                && $locked->token_expires_at?->isFuture(), 401,
+                'Session expired or rotated.');
+            if ($locked->password_hash !== null) {
+                abort_unless(Hash::check($data['current_password'] ?? '', $locked->password_hash), 403,
+                    'رمز عبور فعلی معتبر نیست.');
+            }
+            // Revoke a stolen bearer atomically with the password update.
+            $locked->forceFill([
+                'password_hash' => Hash::make($data['password']),
+                'token_hash' => hash('sha256', $token),
+                'token_expires_at' => $expires,
+            ])->save();
+        }, 3);
+
+        return response()->json(['status' => 'password_updated',
+            'player_id' => $player->id,
+            'token' => $token, 'token_expires_at' => $expires->toIso8601String()])
+            ->header('Cache-Control', 'no-store, private');
     }
 
     public function issueRecoveryLink(Request $request): JsonResponse
@@ -206,10 +283,11 @@ final class ArcadeController extends Controller
     {
         $validated = $request->validate([
             'recovery_code' => ['required', 'string', 'size:64', 'regex:/^[A-Za-z0-9]{64}$/'],
+            'new_password' => ['sometimes', 'required', 'string', 'min:12', 'max:128', 'confirmed'],
         ]);
         $secretHash = hash('sha256', $validated['recovery_code']);
 
-        $session = DB::transaction(function () use ($secretHash): array {
+        $session = DB::transaction(function () use ($secretHash, $validated): array {
             $player = ArcadePlayer::query()->where(function ($query) use ($secretHash): void {
                 $query->where('recovery_hash', $secretHash)->orWhere('backup_hash', $secretHash);
             })->lockForUpdate()->first();
@@ -219,13 +297,23 @@ final class ArcadeController extends Controller
                 && $player->backup_expires_at?->isFuture();
             abort_unless($linkValid || $backupValid, 422,
                 'Recovery code expired or already used.');
+            // Password reset is a stronger action than restoring an existing
+            // session. Only the separately stored long-lived, one-time backup
+            // capability authorizes it; a shared recovery link never does.
+            if (array_key_exists('new_password', $validated)) {
+                abort_unless($backupValid, 403,
+                    'Password reset requires a saved one-time backup code.');
+            }
             $token = Str::random(64);
             // Rotate the active token, consume the one-time recovery secret,
             // and leave all prior verified scores and run history untouched.
             $expires = now()->addDays((int) config('demian-arcade.player_session_days'));
             $player->update(['token_hash' => hash('sha256', $token),
                 'token_expires_at' => $expires, 'recovery_hash' => null, 'recovery_expires_at' => null,
-                'backup_hash' => null, 'backup_expires_at' => null]);
+                'backup_hash' => null, 'backup_expires_at' => null,
+                ...(isset($validated['new_password']) ? [
+                    'password_hash' => Hash::make($validated['new_password']),
+                ] : [])]);
 
             return ['player_id' => $player->id, 'display_name' => $player->display_name,
                 'token' => $token, 'token_expires_at' => $expires->toIso8601String()];
@@ -267,7 +355,9 @@ final class ArcadeController extends Controller
 
         return response()->json(['player_id' => $player->id, 'display_name' => $player->display_name,
             'token_expires_at' => $player->token_expires_at?->toIso8601String(),
-            'legal_policy_version' => $player->legal_policy_version, 'has_contact' => $player->contact_hash !== null]);
+            'legal_policy_version' => $player->legal_policy_version,
+            'has_contact' => $player->contact_hash !== null,
+            'identity' => app(ArcadePrizeIdentity::class)->status($player)]);
     }
 
     public function updateContact(Request $request, PlayerContact $contacts): JsonResponse

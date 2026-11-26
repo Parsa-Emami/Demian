@@ -1,0 +1,64 @@
+{
+  "mainStates": ["turn", "idle", "walk", "jump", "celebrate"],
+  "mainRowBounds": [0, 232, 459, 666, 853, 1024],
+  "motionColumns": 8,
+  "motionRowBounds": [0, 342, 683, 1024],
+  "motionRowStates": ["run", "run", "land"],
+  "referenceAsset": "../source-v14/reference.png",
+  "referenceInputs": [
+    {
+      "name": "42818.png",
+      "role": "supplied-sadro-identity-costume-and-turnaround",
+      "sha256": "686f4a33bcca338fc85779373ca6c2bb00f7c2ecbeffbd262aa368944df54a14"
+    },
+    {
+      "name": "arsal/source-v14/master.png",
+      "role": "arsal-turnaround-idle-walk-jump-and-celebration",
+      "sha256": "0c0ca4d78d8e088c3845a2a541356de5ec9c38c9f50ed3c6647f0b61d64883e1"
+    },
+    {
+      "name": "arsal/source-v14/locomotion-v15.png",
+      "role": "arsal-running-stride-and-landing-recovery",
+      "sha256": "04cbb37f965051b6b6146a09b8abf4a435da7ad67c9afde6ea1adcac2b446d9d"
+    },
+    {
+      "name": "arsal/source-v14/slides.png",
+      "role": "arsal-low-slide-and-shoe-contact",
+      "sha256": "5745c6d8af94d996e66273d5b17cd850571a00fa83fb7418804fd43c9d09578a"
+    }
+  ],
+  "identity": [
+    "espresso-brown curls with a forehead ringlet, dark eyes and thick brows",
+    "warm tan complexion and silver hoop earrings",
+    "charcoal collared sweatshirt and loose charcoal trousers",
+    "small silver cross pendant and black sneakers with ivory soles",
+    "raised peace sign when celebrating"
+  ],
+  "locomotionReference": {
+    "character": "arsal",
+    "states": ["turn", "idle", "walk", "run", "sprint", "jump", "land", "slide"]
+  },
+  "locomotionCycleCounts": {"walk": 1, "run": 2, "sprint": 2},
+  "bodyScaleReferencePoses": {
+    "walk": [0, 1, 2, 3, 4, 5, 6, 7],
+    "run": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
+    "jump": [7],
+    "land": [2],
+    "celebrate": [0, 7]
+  },
+  "animationAliases": {
+    "tiptoe": "walk",
+    "hop": "jump",
+    "hover": "jump",
+    "skid": "run",
+    "dash": "run",
+    "dodge": "slide",
+    "salute": "wave"
+  },
+  "idleLoopDirections": ["e"],
+  "slideRows": [1],
+  "poseSelections": {"land": [5, 6, 7], "slide": [1, 2, 3]},
+  "faceSampleHeightRatio": 0.5,
+  "faceSkinRedGreenRatio": 1.1,
+  "indexedPalette": true
+}

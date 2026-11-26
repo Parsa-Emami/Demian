@@ -93,6 +93,10 @@ Route::prefix('cashier')->name('cashier.')->group(function (): void {
         Route::get('/admin/anti-cheat', [CafeAntiCheatController::class, 'index'])
             ->middleware(RequireCafePermission::class.':audit.ledger')
             ->name('anticheat');
+        Route::post('/admin/anti-cheat/appeal',
+            [CafeAntiCheatController::class, 'appeal'])
+            ->middleware([RequireCafePermission::class.':audit.ledger',
+                'throttle:arcade-cashier-admin'])->name('anticheat.appeal');
         Route::post('/admin/anti-cheat/review',
             [CafeAntiCheatController::class, 'review'])
             ->middleware([RequireCafePermission::class.':audit.ledger',
@@ -116,7 +120,8 @@ Route::prefix('cashier')->name('cashier.')->group(function (): void {
 // web routes belong to a different trust zone and must not be exposed there.
 if (config('demian-arcade.api_only', false)) return;
 
-Route::get('/', [CharacterStudioController::class, 'index'])->name('studio');
+Route::middleware([AuthenticateCafeCashier::class, RequireCafePermission::class.':operations.readiness'])->group(function (): void {
+    Route::get('/', [CharacterStudioController::class, 'index'])->name('studio');
 
 Route::prefix('characters')
     ->name('characters.')
@@ -131,3 +136,4 @@ Route::prefix('characters')
         Route::delete('/{character}', [CharacterController::class, 'destroy'])
             ->name('destroy');
     });
+});

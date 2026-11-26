@@ -258,3 +258,7 @@
     .manager-shell [data-game-shell] .cafe-menu__showcase,
     .manager-shell [data-game-shell] .cafe-menu__portrait { transition: none; animation: none; }
 }
+
+/* Game cards paint before optional game CSS has downloaded. */
+.game-card--sage { --game-accent: #b5d1a6; }
+.game-card--coffee { --game-accent: #dbb77b; }

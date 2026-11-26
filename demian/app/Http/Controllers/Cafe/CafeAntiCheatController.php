@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Cafe;
 
 use App\Http\Controllers\Controller;
 use App\Services\Arcade\ArcadeAntiCheat;
+use App\Services\Arcade\ArcadeFraudAppeals;
 use App\Services\Arcade\CafeAccess;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -17,7 +18,8 @@ use Illuminate\View\View;
  */
 final class CafeAntiCheatController extends Controller
 {
-    public function index(Request $request, ArcadeAntiCheat $antiCheat): View
+    public function index(Request $request, ArcadeAntiCheat $antiCheat,
+        ArcadeFraudAppeals $appeals): View
     {
         $staff = $request->attributes->get('cafe_staff');
         CafeAccess::authorize($staff, 'audit.ledger');
@@ -40,6 +42,7 @@ final class CafeAntiCheatController extends Controller
             'activeHolds' => DB::table('arcade_anticheat_holds')
                 ->where('expires_at','>',now())->count(),
             'canReview' => $staff->role === 'super_admin',
+            'appeals' => $appeals->adminQueue(),
         ]);
     }
 
@@ -55,6 +58,22 @@ final class CafeAntiCheatController extends Controller
         abort_unless(Hash::check($data['password'],$staff->password_hash),403,
             'Human anti-cheat review requires fresh superadministrator password.');
         return $staff;
+    }
+
+    public function appeal(Request $request,
+        ArcadeFraudAppeals $appeals): RedirectResponse
+    {
+        $staff = $this->stepUp($request);
+        $data = $request->validate([
+            'appeal_id' => ['required', 'integer', 'min:1'],
+            'decision' => ['required', 'in:accept,reject'],
+            'note' => ['required', 'string', 'min:12', 'max:500'],
+        ]);
+        $appeals->resolve((int) $data['appeal_id'], (int) $staff->id,
+            (int) $request->session()->get('cafe_staff_version'),
+            $data['decision'], $data['note']);
+        return redirect()->route('cashier.anticheat')->with('notice',
+            'پاسخ اعتراض با امضای سوپرادمین و ثبت ممیزی انجام شد.');
     }
 
     public function review(Request $request,

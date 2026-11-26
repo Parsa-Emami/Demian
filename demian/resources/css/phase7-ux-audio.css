@@ -1,0 +1,165 @@
+/* Phase 7: shared shell typography, imagery, readable scores and safe-area UX.
+   Presentation only: no score, replay, anti-cheat or reward authority. */
+.manager-shell [data-game-shell] .game-card__scene-preview {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+    width: 100%;
+    block-size: clamp(82px, 15vh, 148px);
+    background: linear-gradient(120deg, #3b433e, #756149);
+    border: 1px solid rgba(235, 220, 183, .36);
+    border-radius: 12px;
+    margin-block: 4px 10px;
+}
+.manager-shell [data-game-shell] .game-card__scene-preview img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center 17%;
+    opacity: .9;
+}
+.manager-shell [data-game-shell] .game-card--amber .game-card__scene-preview img {
+    object-position: center 48%;
+}
+.manager-shell [data-game-shell] .game-card__scene-preview::after {
+    content: "";
+    position: absolute;
+    inset: 45% 0 0;
+    background: linear-gradient(transparent, rgba(10, 22, 19, .75));
+    pointer-events: none;
+}
+.manager-shell [data-game-shell] .game-card__scene-preview > span {
+    position: absolute;
+    inset-inline-start: 10px;
+    inset-block-end: 7px;
+    color: #fff5df;
+    font: 700 11px/1.6 Vazirmatn, system-ui, sans-serif;
+    z-index: 1;
+    text-shadow: 0 1px 4px #151c17;
+}
+.manager-shell [data-game-shell] .game-card__status {
+    display: inline-flex;
+    align-items: center;
+    min-height: 24px;
+    font-weight: 800;
+    letter-spacing: 0;
+}
+.manager-shell [data-game-shell] :is(.game-card__guide-details > summary,
+ .game-card__action, .shell-button, .shell-icon-button,
+ [data-results-ranking-retry], .scroll-rail-button) {
+    touch-action: manipulation;
+    min-height: 48px;
+    min-width: 44px;
+}
+.manager-shell [data-game-shell] .game-card__guide-details > summary {
+    display: flex;
+    align-items: center;
+    line-height: 1.55;
+    padding-block: 9px;
+}
+.manager-shell [data-game-shell] .game-card__mode-note {
+    line-height: 1.75;
+    overflow-wrap: anywhere;
+}
+.manager-shell [data-game-shell] :is(.results-panel, .shell-modal) {
+    -webkit-overflow-scrolling: touch;
+    overflow-wrap: anywhere;
+}
+.manager-shell [data-game-shell] .results-record-note,
+.manager-shell [data-game-shell] .results-reward-note {
+    color: #f8eccf;
+    font: 700 clamp(12px, 2.9vw, 14px)/1.75 Vazirmatn, system-ui, sans-serif;
+    margin-block: 8px;
+    padding: 9px 12px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 223, 160, .46);
+    background: rgba(22, 38, 30, .96);
+}
+.manager-shell [data-game-shell] .results-reward-note {
+    color: #d9e5d3;
+    border-color: rgba(208, 233, 190, .4);
+}
+.manager-shell [data-game-shell] [data-results-ranking]:not(:empty) {
+    font-weight: 700;
+    line-height: 1.8;
+    overflow-wrap: anywhere;
+}
+.manager-shell [data-game-shell] .shell-network-status:not([hidden]) {
+    position: absolute;
+    z-index: var(--z-shell-toast);
+    inset-inline: max(10px, env(safe-area-inset-left)) max(10px, env(safe-area-inset-right));
+    inset-block-start: max(62px, calc(env(safe-area-inset-top) + 52px));
+    max-inline-size: min(500px, calc(100% - 20px));
+    margin-inline: auto;
+    border: 2px solid #f6d38a;
+    border-radius: 12px;
+    background: #172821;
+    color: #fff2ce;
+    padding: 10px 13px;
+    box-sizing: border-box;
+    text-align: center;
+    font: 700 12px/1.65 Vazirmatn, system-ui, sans-serif;
+    pointer-events: none;
+}
+.manager-shell [data-game-shell] .shell-network-status[hidden] { display: none !important; }
+.manager-shell [data-game-shell] .settings-audio-explainer {
+    color: #e5dbc3;
+    font: 600 12px/1.8 Vazirmatn, system-ui, sans-serif;
+    margin-block: 8px 10px;
+}
+.manager-shell[data-hud-contrast="high"] .game-readout__stats,
+.manager-shell[data-hud-contrast="high"] .game-readout__state,
+.manager-shell[data-hud-contrast="high"] .runner-hud__score {
+    border-width: 2px;
+    border-color: #fff;
+    color: #fff;
+    background: #0a0f0d;
+}
+.manager-shell [data-game-shell] :is(button, summary, a[href], select, input):focus-visible,
+.manager-shell :is(.character-card--portrait button, .touch-action, .runner-controls button):focus-visible {
+    outline: 3px solid #ffdf9b;
+    outline-offset: 3px;
+}
+/* Avoid 2-column 320px menus with clipped labels and adjacent touch targets. */
+@media (max-width: 370px) {
+    .manager-shell [data-game-shell] .game-grid {
+        grid-template-columns: minmax(0, 1fr) !important;
+        gap: 12px;
+    }
+    .manager-shell [data-game-shell] .game-card {
+        min-height: 0;
+        padding: 14px;
+    }
+    .manager-shell [data-game-shell] .game-card__scene-preview { block-size: 102px; }
+    .manager-shell [data-game-shell] .shell-modal__actions {
+        gap: 9px;
+        flex-wrap: wrap;
+    }
+    .manager-shell [data-game-shell] .shell-modal__actions > button {
+        min-width: min(140px, 100%);
+        flex: 1 1 128px;
+    }
+    .manager-shell .game-readout__rail { gap: 3px; font-variant-numeric: tabular-nums; }
+}
+@media (max-height: 530px) and (orientation: landscape) {
+    .manager-shell [data-game-shell] .game-card__scene-preview { block-size: 80px; }
+    .manager-shell [data-game-shell] .shell-network-status:not([hidden]) {
+        inset-block-start: max(46px, calc(env(safe-area-inset-top) + 36px));
+    }
+}
+@media (prefers-reduced-motion: reduce) {
+    .manager-shell [data-game-shell] .game-card__scene-preview img {
+        transition: none !important;
+        animation: none !important;
+    }
+}
+@media (forced-colors: active) {
+    .manager-shell [data-game-shell] :is(.results-record-note, .results-reward-note,
+     .shell-network-status:not([hidden])) {
+        forced-color-adjust: auto;
+        border: 2px solid CanvasText;
+        color: CanvasText;
+        background: Canvas;
+    }
+}

@@ -1,7 +1,8 @@
 import { CHARACTER_STRIDE_LENGTHS } from './CharacterLocomotionModel.js';
 
 function clamp(value, min, max) {
-    return Math.min(max, Math.max(min, Number(value) || 0));
+    const number = Number(value);
+    return Math.min(max, Math.max(min, Number.isFinite(number) ? number : 0));
 }
 
 function directionDepth(direction) {
@@ -67,7 +68,7 @@ export function characterJumpPose(jumpVelocity = 0, jumpForce = 6.5) {
 }
 
 function syncMasterMotion(animator, state, deltaTime) {
-    animator.masterMotion?.sync({ state, phase: animator.locomotionPhase, progress: animator.progress(),
+    animator.masterMotion?.sync({ state, phase: animator.locomotionPhase, progress: animator.continuousProgress?.() ?? animator.progress(),
         facing: animator.facing, deltaTime });
 }
 
@@ -93,7 +94,8 @@ export function advanceCharacterAnimation(animator, {
         return;
     }
     const profile = animator.atlas.motion?.locomotionProfile;
-    if (profile && Number.isFinite(movementSpeed) && ['walk', 'tiptoe', 'run', 'sprint', 'skid'].includes(state)) {
+    if (profile && animator.animation?.loop !== false && Number.isFinite(movementSpeed)
+        && ['walk', 'tiptoe', 'run', 'sprint', 'skid'].includes(state)) {
         // One phase follows travelled distance, surviving walk/run/sprint changes
         // and the two authored cycles in Tiam's run. Stopped feet do not flutter.
         if (previousState && !sharesLocomotionPhase(previousState, state) && previousState !== 'skid') {
@@ -103,8 +105,8 @@ export function advanceCharacterAnimation(animator, {
         const stride = profile.strideLengths?.[family] ?? CHARACTER_STRIDE_LENGTHS[family];
         const dt = clamp(deltaTime, 0, .25), maximum = profile.maxStrideHz ?? 1.55;
         const speed = Math.max(0, movementSpeed);
-        const frequency = Math.min(maximum, speed / stride);
         const distance = Number.isFinite(travelledDistance) ? Math.max(0, travelledDistance) : speed * dt;
+        const frequency = Math.min(maximum, (dt > 0 ? distance / dt : speed) / stride);
         animator.locomotionPhase = (animator.locomotionPhase + Math.min(distance / stride, maximum * dt)) % 8;
         animator.locomotionFrequency = frequency;
         const cycles = Math.max(1, Number(animator.animation.cycleCount) || 1);

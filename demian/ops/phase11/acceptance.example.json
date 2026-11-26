@@ -1,0 +1,159 @@
+{
+  "schema": 1,
+  "environment": "production",
+  "releaseSha": "0000000000000000000000000000000000000000",
+  "pwaReleaseId": "0000000000000000",
+  "recordedAt": null,
+  "risks": {
+    "unresolvedP0": null,
+    "blockingP1": null,
+    "criticalSecurity": null,
+    "characterArtDebtAccepted": false,
+    "financialActivationDuringQa": false
+  },
+  "checks": [
+    {
+      "id": "F11-01",
+      "description": "seven games/critical routes/menus",
+      "releaseSha": null,
+      "status": "blocked",
+      "checkedAt": null,
+      "reviewedBy": null,
+      "evidence": []
+    },
+    {
+      "id": "F11-02",
+      "description": "all active character art and poses",
+      "releaseSha": null,
+      "status": "blocked",
+      "checkedAt": null,
+      "reviewedBy": null,
+      "evidence": []
+    },
+    {
+      "id": "F11-03",
+      "description": "Chromium Firefox WebKit and real mobile browsers",
+      "releaseSha": null,
+      "status": "blocked",
+      "checkedAt": null,
+      "reviewedBy": null,
+      "evidence": []
+    },
+    {
+      "id": "F11-04",
+      "description": "budget and midrange Android physical",
+      "releaseSha": null,
+      "status": "blocked",
+      "checkedAt": null,
+      "reviewedBy": null,
+      "evidence": []
+    },
+    {
+      "id": "F11-05",
+      "description": "iOS Safari Safe Area",
+      "releaseSha": null,
+      "status": "blocked",
+      "checkedAt": null,
+      "reviewedBy": null,
+      "evidence": []
+    },
+    {
+      "id": "F11-06",
+      "description": "offline poor network reconnect PWA updates",
+      "releaseSha": null,
+      "status": "blocked",
+      "checkedAt": null,
+      "reviewedBy": null,
+      "evidence": []
+    },
+    {
+      "id": "F11-07",
+      "description": "independent security/fraud/replay/API",
+      "releaseSha": null,
+      "status": "blocked",
+      "checkedAt": null,
+      "reviewedBy": null,
+      "evidence": []
+    },
+    {
+      "id": "F11-08",
+      "description": "winner to atomic single-use cashier coupon",
+      "releaseSha": null,
+      "status": "blocked",
+      "checkedAt": null,
+      "reviewedBy": null,
+      "evidence": []
+    },
+    {
+      "id": "F11-09",
+      "description": "50 users verified staging k6",
+      "releaseSha": null,
+      "status": "blocked",
+      "checkedAt": null,
+      "reviewedBy": null,
+      "evidence": []
+    },
+    {
+      "id": "F11-10",
+      "description": "real customer playtests",
+      "releaseSha": null,
+      "status": "blocked",
+      "checkedAt": null,
+      "reviewedBy": null,
+      "evidence": []
+    },
+    {
+      "id": "F11-11",
+      "description": "RTL accessibility keyboard touch contrast reduced-motion",
+      "releaseSha": null,
+      "status": "blocked",
+      "checkedAt": null,
+      "reviewedBy": null,
+      "evidence": []
+    },
+    {
+      "id": "F11-12",
+      "description": "full regression exact SHA",
+      "releaseSha": null,
+      "status": "blocked",
+      "checkedAt": null,
+      "reviewedBy": null,
+      "evidence": []
+    },
+    {
+      "id": "F11-13",
+      "description": "PWA/API/rules/release hash and code rollback audit",
+      "releaseSha": null,
+      "status": "blocked",
+      "checkedAt": null,
+      "reviewedBy": null,
+      "evidence": []
+    }
+  ],
+  "devices": [],
+  "loadRuns": [],
+  "reviewers": {
+    "engineering": null,
+    "security": null,
+    "operations": null,
+    "cafeOwner": null
+  },
+  "cafePilot": {
+    "actualPlayers": false,
+    "playerCount": 0,
+    "criticalProblemsClosed": false,
+    "evidence": null
+  },
+  "operations": {
+    "realCpanelStaging": false,
+    "webAndCliPhp84": false,
+    "publicTlsAndCorsVerified": false,
+    "encryptedOffsiteBackupRestored": false,
+    "cronHeartbeatObserved": false,
+    "liveApiReleaseMatchesSha": false,
+    "rollbackRehearsedAgainstCompatibleSchema": false,
+    "realSmsVerified": false,
+    "cashierSingleUseVoucherTested": false,
+    "evidence": null
+  }
+}

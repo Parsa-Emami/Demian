@@ -1,0 +1,9 @@
+{
+  "character_key": "sadro",
+  "pack_version": 14,
+  "status": "atlas_validated",
+  "motion_reference": "arsal",
+  "atlas_variants": 6,
+  "foot_pivot": {"x": 0.5, "y": 0.94},
+  "physical_device_qa": "pending"
+}

@@ -1,0 +1,43 @@
+{
+  "release": "e01ed929120f4421",
+  "graphics": "software rendering",
+  "browser": "156.0.8078.108",
+  "headless": true,
+  "physicalPhone": false,
+  "results": [
+    {
+      "slug": "mojtaba",
+      "width": 390,
+      "height": 844,
+      "mobile": true,
+      "checked": [
+        "dino-run",
+        "after-hours",
+        "cafe-rush",
+        "open-world"
+      ],
+      "selectedViaUi": true,
+      "persistedAfterReload": true,
+      "renderedWalkRunJumpLandSlide": true,
+      "slideClearedBird": true,
+      "input": "emulated touch for Dino Run, keyboard for Open World"
+    },
+    {
+      "slug": "mojtaba",
+      "width": 1440,
+      "height": 900,
+      "mobile": false,
+      "checked": [
+        "dino-run",
+        "after-hours",
+        "cafe-rush",
+        "open-world"
+      ],
+      "selectedViaUi": true,
+      "persistedAfterReload": true,
+      "renderedWalkRunJumpLandSlide": true,
+      "slideClearedBird": true,
+      "input": "keyboard"
+    }
+  ]
+}

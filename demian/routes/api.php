@@ -7,6 +7,8 @@ use App\Http\Controllers\Api\V1\ArcadeController;
 use App\Http\Controllers\Api\V1\ArcadeHealthController;
 use App\Http\Controllers\Api\V1\ArcadeTelemetryController;
 use App\Http\Controllers\Api\V1\ArcadePrivacyController;
+use App\Http\Controllers\Api\V1\ArcadeIdentityController;
+use App\Http\Controllers\Api\V1\ArcadeFraudAppealController;
 use App\Http\Controllers\Api\V1\ArcadeTurnRunController;
 use App\Http\Controllers\Api\V1\CouponController;
 use App\Http\Controllers\Api\V1\CouponDeliveryController;
@@ -35,6 +37,7 @@ Route::prefix('v1/arcade')->middleware([ObserveArcadeRequest::class,
     Route::get('/leaderboards/{gameId}', [ArcadeTurnRunController::class, 'gameLeaderboard'])
         ->whereIn('gameId', ['after-hours', 'cafe-rush', 'open-world', 'cafe-drift']);
     Route::post('/players', [ArcadeController::class, 'register'])->middleware('throttle:arcade-registration');
+    Route::post('/players/login', [ArcadeController::class, 'login'])->middleware('throttle:arcade-password-login');
     Route::post('/players/recover', [ArcadeController::class, 'recover'])->middleware('throttle:arcade-account-recover');
     // Online checkout routes intentionally retired. Only authenticated
     // in-cafe staff may redeem coupons through CSRF-protected web routes.
@@ -48,6 +51,21 @@ Route::prefix('v1/arcade')->middleware([ObserveArcadeRequest::class,
             [CouponDeliveryController::class, 'openCase'])
             ->whereNumber('couponId')->middleware('throttle:arcade-coupon-support');
         Route::get('/player', [ArcadeController::class, 'me']);
+        Route::get('/player/identity', [ArcadeIdentityController::class, 'status']);
+        Route::post('/player/password', [ArcadeController::class, 'setPassword'])
+            ->middleware('throttle:arcade-password-change');
+        Route::get('/player/fraud/appeals', [ArcadeFraudAppealController::class, 'index'])
+            ->middleware('throttle:arcade-coupon-wallet');
+        Route::post('/player/fraud/appeals', [ArcadeFraudAppealController::class, 'submit'])
+            ->middleware('throttle:arcade-fraud-appeal');
+        Route::post('/player/phone/otp', [ArcadeIdentityController::class, 'sendOtp'])
+            ->middleware('throttle:arcade-otp-send');
+        Route::post('/player/phone/verify', [ArcadeIdentityController::class, 'verifyOtp'])
+            ->middleware('throttle:arcade-otp-verify');
+        Route::post('/player/session/rotate', [ArcadeIdentityController::class, 'rotate'])
+            ->middleware('throttle:arcade-session-change');
+        Route::post('/player/session/revoke', [ArcadeIdentityController::class, 'revoke'])
+            ->middleware('throttle:arcade-session-change');
         Route::patch('/player/contact', [ArcadeController::class, 'updateContact'])
             ->middleware('throttle:arcade-player-rename');
         Route::post('/player/legal', [ArcadeController::class, 'acknowledgeLegal'])

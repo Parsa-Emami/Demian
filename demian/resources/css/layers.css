@@ -78,3 +78,11 @@
 .game-shell {
     isolation: isolate;
 }
+
+/* Global notice contract: passive status never owns a pointer hit.
+   Actionable notices must be mounted in a screen's natural layout;
+   real modal layers still own focus, inertness and pointer interaction. */
+:is([data-ui-notice="passive"], .shell-toast-host, .shell-toast, .arcade-toast, .shell-network-status),
+:is([data-ui-notice="passive"], .shell-toast-host, .shell-toast, .arcade-toast, .shell-network-status) * {
+    pointer-events: none !important;
+}

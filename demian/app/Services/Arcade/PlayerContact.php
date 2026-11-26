@@ -47,6 +47,22 @@ final class PlayerContact
         ];
     }
 
+    /**
+     * Pre-authentication rate limiting must use the same canonical identity
+     * as registration, without storing or logging the submitted contact.
+     */
+    public function rateLimitDigest(Request $request): string
+    {
+        $rawType = $request->input('contact_type');
+        $rawValue = $request->input('contact_value');
+        $type = is_string($rawType) ? strtolower(trim($rawType)) : '';
+        $value = is_string($rawValue) ? mb_strtolower(trim(mb_substr($rawValue, 0, 160))) : '';
+        if ($type === 'phone') $value = $this->phone($value);
+        if ($type === 'instagram') $value = ltrim($value, '@');
+
+        return hash('sha256', $type.'|'.$value);
+    }
+
     private function phone(string $value): string
     {
         $value = strtr($value, array_combine(

@@ -366,7 +366,7 @@ export default class CharacterVisualService {
         });
     }
 
-    async createCanvasAvatar(actorId, { player = false, index = 0, variant = null, background = false } = {}) {
+    async createCanvasAvatar(actorId, { player = false, index = 0, variant = null, background = false, sideView = false } = {}) {
         const slug = this.resolveSlug(actorId, { player, index });
         const target = variant ?? this.runtimeVariant({ player });
         const pack = await this.loadPack(slug, variant ?? (player ? 'lite' : target), { background });
@@ -375,6 +375,7 @@ export default class CharacterVisualService {
             image: pack.image,
             atlas: pack.atlas,
             player,
+            sideView,
         });
         if (player && variant === null && target !== pack.variant) this.canvasHydrator.stage(avatar, target);
         return avatar;

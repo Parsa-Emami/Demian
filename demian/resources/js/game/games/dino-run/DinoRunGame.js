@@ -30,11 +30,11 @@ function collisionGuide(model) {
 }
 
 export default class DinoRunGame extends BaseGame {
-    constructor() { super(); this.model = new DinoRunModel(); this.best = readBest(); this.finished = false; this.uiTime = 0; }
+    constructor() { super(); this.supportsInPlaceRestart = true; this.model = new DinoRunModel(); this.best = readBest(); this.finished = false; this.uiTime = 0; }
     async preload(context) {
         // Only the player is on the first-playable-frame path. Two additional
         // attacker atlases previously blocked the entire runner launch.
-        this.avatar = await context.services.characterVisuals.createCanvasAvatar('player', { player: true });
+        this.avatar = await context.services.characterVisuals.createCanvasAvatar('player', { player: true, sideView: true });
         this.attackAvatars = new Map();
     }
     hydrateAttackers(context, attackers) {
@@ -51,7 +51,7 @@ export default class DinoRunGame extends BaseGame {
                     if (this.context !== context || this.disposed || generation !== this.attackerGeneration) return;
                     for (const response of ['jump', 'duck']) {
                         this.attackAvatars.set(`${slug}:${response}`, new CanvasCharacterAvatar({
-                            slug, image: base.texture.image, atlas: base.atlas,
+                            slug, image: base.texture.image, atlas: base.atlas, sideView: true,
                         }));
                     }
                 }).catch(() => {
@@ -173,7 +173,7 @@ export default class DinoRunGame extends BaseGame {
         }
         this.selecting = true;
         try {
-            const avatar = await this.context.services.characterVisuals.createCanvasAvatar(slug, { player: true });
+            const avatar = await this.context.services.characterVisuals.createCanvasAvatar(slug, { player: true, sideView: true });
             this.avatar = avatar; avatar.sync(this.actor, 0);
             this.context.services.characterVisuals.setActiveSlug(slug);
             this.refreshRoster();
@@ -183,7 +183,7 @@ export default class DinoRunGame extends BaseGame {
             else if (this.run?.mode === 'ranked') this.run.mode = 'practice';
         } finally { this.selecting = false; }
     }
-    async startSession({ seed, mode = 'practice' } = {}) {
+    async startSession({ seed, restart = false, mode = restart ? this.run?.mode : 'practice' } = {}) {
         if (this.starting) return;
         const context = this.context;
         const ranked = mode === 'ranked' && seed === undefined;

@@ -1,0 +1,31 @@
+{
+  "character_key": "mobina",
+  "pack_version": 14,
+  "reference": "../source-v14/reference.jpg",
+  "master": "../source-v14/master.png",
+  "runner_motion": "../source-v14/runner-motion.png",
+  "slide_master": "../source-v14/slides.png",
+  "locomotion_reference": "../../darya/source-v14/master.png",
+  "inputs": [
+    {
+      "name": "MOBINA_ Meow Mode On.png",
+      "role": "mobina-identity-and-outfit",
+      "sha256": "ae905dad774b8aff9d2cdb5db62e1ae36d3455d9856e37e6ed16a8da6b28685e"
+    },
+    {
+      "name": "master.png",
+      "role": "darya-proportion-jump-and-landing-reference",
+      "sha256": "39d87e68eb8615f8d9e81fff5d736bb4b3a58faafdc7a9739ad97b93ab5fa85f"
+    },
+    {
+      "name": "runner-motion.png",
+      "role": "darya-gait-reference",
+      "sha256": "99cc876b0226a3499bf679b99f7174273233f12e3133b45829c24793fed66cf0"
+    },
+    {
+      "name": "slides.png",
+      "role": "darya-slide-reference",
+      "sha256": "eeefd8ebfb5869b167965fb124fc788f336e6aadaca00a76d08c14926de4a93f"
+    }
+  ]
+}

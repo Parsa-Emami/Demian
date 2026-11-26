@@ -19,9 +19,22 @@ const mock = (change = {}) => {
                 { 'cache-control': change.cache ?? 'no-store, private' });
         }
         if (path === '/up') return response(200);
+        if (path === '/api/v1/arcade/runs' && options.method === 'OPTIONS') {
+            return response(204, null, change.badPreflight ? {} : {
+                'access-control-allow-origin': options.headers.Origin,
+                'access-control-allow-methods': 'GET, POST, PATCH, DELETE, OPTIONS',
+                'access-control-allow-headers': 'authorization, content-type',
+            });
+        }
         if (path === '/api/v1/arcade/rules') {
+            const from = options.headers.Origin;
             return response(200, {version: 'test'},
-                change.untrustedCors ? { 'access-control-allow-origin': change.untrustedCors } : {});
+                change.untrustedCors ? { 'access-control-allow-origin': change.untrustedCors }
+                    : from === 'https://game.example.test'
+                        ? { 'access-control-allow-origin': from } : {});
+        }
+        if (path.startsWith('/api/v1/arcade/player')) {
+            return response(change.exposedPlayer === path ? 200 : 401);
         }
         return response(change.exposedPath === path ? 200 : 404);
     };
@@ -58,4 +71,23 @@ test('Step 29 host smoke rejects insecure origin, wrong release, exposed secret,
     for (const options of cases) {
         await assert.rejects(auditCpanelHost(options));
     }
+});
+
+test('Phase 10 host probe validates the actual frontend CORS and protects all bearer endpoints', async () => {
+    const { fetcher, requests } = mock();
+    const report = await auditCpanelHost({origin,expectedSha:sha,
+        allowedOrigin:'https://game.example.test',fetcher});
+    assert.equal(report.corsPreflights,1);
+    assert.equal(report.writeRequests,0);
+    assert.equal(report.status,'passed');
+    assert.ok(requests.some(row => row.options.method==='OPTIONS'));
+    assert.ok(requests.some(row => row.url.endsWith('/api/v1/arcade/player/identity')));
+    assert.ok(requests.some(row => row.url.endsWith('/api/v1/arcade/player/coupons')));
+    await assert.rejects(auditCpanelHost({origin,expectedSha:sha,
+        allowedOrigin:'http://game.example.test',fetcher}));
+    await assert.rejects(auditCpanelHost({origin,expectedSha:sha,
+        allowedOrigin:'https://game.example.test',fetcher:mock({badPreflight:true}).fetcher}));
+    await assert.rejects(auditCpanelHost({origin,expectedSha:sha,
+        allowedOrigin:'https://game.example.test',fetcher:mock({
+            exposedPlayer:'/api/v1/arcade/player'}).fetcher}));
 });

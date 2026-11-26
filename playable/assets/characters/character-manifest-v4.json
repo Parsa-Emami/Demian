@@ -58,30 +58,6 @@
       ]
     },
     {
-      "slug": "negar",
-      "display_name": "NEGAR / نگار",
-      "production_status": "gold_standard_production",
-      "is_default_active": false,
-      "pack_version": 14,
-      "locomotion_style": "ground-runner",
-      "manifest": "negar/manifests/character_manifest_v4.json",
-      "has_shipped_assets": true,
-      "motion_family": "female-base-v1",
-      "motion_accessories": []
-    },
-    {
-      "slug": "elaheh",
-      "display_name": "ELAHEH / الهه",
-      "production_status": "gold_standard_production",
-      "is_default_active": false,
-      "pack_version": 14,
-      "locomotion_style": "ground-runner",
-      "manifest": "elaheh/manifests/character_manifest_v4.json",
-      "has_shipped_assets": true,
-      "motion_family": "female-base-v1",
-      "motion_accessories": []
-    },
-    {
       "slug": "tiam",
       "display_name": "TIAM / تیام",
       "production_status": "gold_standard_production",
@@ -102,6 +78,66 @@
           "collision": "cosmetic"
         }
       ]
+    },
+    {
+      "slug": "elaheh",
+      "display_name": "ELAHEH / الهه",
+      "production_status": "gold_standard_production",
+      "is_default_active": false,
+      "pack_version": 14,
+      "locomotion_style": "ground-runner",
+      "manifest": "elaheh/manifests/character_manifest_v4.json",
+      "has_shipped_assets": true,
+      "motion_family": "female-base-v1",
+      "motion_accessories": []
+    },
+    {
+      "slug": "marjan",
+      "display_name": "MARJAN / مرجان",
+      "production_status": "gold_standard_production",
+      "is_default_active": false,
+      "pack_version": 14,
+      "locomotion_style": "ground-runner",
+      "manifest": "marjan/manifests/character_manifest_v4.json",
+      "has_shipped_assets": true,
+      "motion_family": "female-base-v1",
+      "motion_accessories": []
+    },
+    {
+      "slug": "mohana",
+      "display_name": "MOHANA / مهنا",
+      "production_status": "gold_standard_production",
+      "is_default_active": false,
+      "pack_version": 14,
+      "locomotion_style": "ground-runner",
+      "manifest": "mohana/manifests/character_manifest_v4.json",
+      "has_shipped_assets": true,
+      "motion_family": "female-base-v1",
+      "motion_accessories": []
+    },
+    {
+      "slug": "zohre",
+      "display_name": "ZOHRE / زهره",
+      "production_status": "gold_standard_production",
+      "is_default_active": false,
+      "pack_version": 14,
+      "locomotion_style": "ground-runner",
+      "manifest": "zohre/manifests/character_manifest_v4.json",
+      "has_shipped_assets": true,
+      "motion_family": "female-base-v1",
+      "motion_accessories": []
+    },
+    {
+      "slug": "kiana",
+      "display_name": "KIANA / کیانا",
+      "production_status": "gold_standard_production",
+      "is_default_active": false,
+      "pack_version": 14,
+      "locomotion_style": "ground-runner",
+      "manifest": "kiana/manifests/character_manifest_v4.json",
+      "has_shipped_assets": true,
+      "motion_family": "female-base-v1",
+      "motion_accessories": []
     },
     {
       "slug": "amirreza",
@@ -152,12 +188,82 @@
       "display_name": "ARSAL / ارسل",
       "production_status": "gold_standard_production",
       "is_default_active": false,
-      "pack_version": 14,
+      "pack_version": 15,
       "locomotion_style": "ground-runner",
       "manifest": "arsal/manifests/character_manifest_v4.json",
       "has_shipped_assets": true,
       "motion_family": "male-base-v1",
       "motion_accessories": []
+    },
+    {
+      "slug": "sadro",
+      "display_name": "SADRO / صدرو",
+      "production_status": "gold_standard_production",
+      "is_default_active": false,
+      "pack_version": 14,
+      "locomotion_style": "ground-runner",
+      "manifest": "sadro/manifests/character_manifest_v4.json",
+      "has_shipped_assets": true,
+      "motion_family": "male-base-v1",
+      "motion_accessories": []
+    },
+    {
+      "slug": "mojtaba",
+      "display_name": "MOJTABA / مجتبی",
+      "production_status": "gold_standard_production",
+      "is_default_active": false,
+      "pack_version": 14,
+      "locomotion_style": "ground-runner",
+      "manifest": "mojtaba/manifests/character_manifest_v4.json",
+      "has_shipped_assets": true,
+      "motion_family": "male-base-v1",
+      "motion_accessories": []
+    },
+    {
+      "slug": "mobina",
+      "display_name": "MOBINA / مبینا",
+      "production_status": "gold_standard_production",
+      "is_default_active": false,
+      "pack_version": 14,
+      "locomotion_style": "ground-runner",
+      "manifest": "mobina/manifests/character_manifest_v4.json",
+      "has_shipped_assets": true,
+      "motion_family": "female-base-v1",
+      "motion_accessories": []
+    },
+    {
+      "slug": "negar",
+      "display_name": "NEGAR / نگار",
+      "production_status": "gold_standard_production",
+      "is_default_active": false,
+      "pack_version": 14,
+      "locomotion_style": "ground-runner",
+      "manifest": "negar/manifests/character_manifest_v4.json",
+      "has_shipped_assets": true,
+      "motion_family": "female-base-v1",
+      "motion_accessories": []
+    },
+    {
+      "slug": "dandelox",
+      "display_name": "DANDELOX / دندلاکس",
+      "production_status": "gold_standard_production",
+      "is_default_active": false,
+      "pack_version": 14,
+      "locomotion_style": "ground-runner",
+      "manifest": "dandelox/manifests/character_manifest_v4.json",
+      "has_shipped_assets": true,
+      "motion_family": "female-base-v1",
+      "motion_accessories": [
+        {
+          "kind": "black-cat",
+          "anchor": "ground",
+          "offset": [
+            -0.3,
+            0
+          ],
+          "collision": "cosmetic"
+        }
+      ]
     },
     {
       "slug": "iman",
@@ -258,7 +364,7 @@
   ],
   "master_motion": {
     "version": "master-motion-v1",
-    "source_sha256": "b474476f01edd8ff5db1596473c71e10d43ad0cd74e90b70704e547cdd3adc1d",
+    "source_sha256": "334253397f1b84c70cc74ea336f73614fd65e4d8cb04aa53a036a9b21efb2d7c",
     "url": "assets/characters/master-motion-v1.json"
   }
 }

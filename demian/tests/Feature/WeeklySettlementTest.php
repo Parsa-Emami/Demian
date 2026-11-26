@@ -93,6 +93,45 @@ final class WeeklySettlementTest extends TestCase
         $this->assertDatabaseCount('arcade_weekly_settlement_events', 1);
     }
 
+    public function test_already_sealed_week_rejects_tampered_snapshot_without_resettling(): void
+    {
+        $this->travelTo(CarbonImmutable::parse('2026-11-14T01:00:00Z'));
+        $this->verified($this->player(), 450, '2026-11-10T10:00:00Z');
+        $settlement = app(WeeklySettlementService::class);
+        $this->assertSame('sealed', $settlement->seal('2026-11-07')['status']);
+        $this->assertSame('already_sealed', $settlement->seal('2026-11-07')['status']);
+        $key = 'weekly:tehran:2026-11-07';
+        DB::table('arcade_weekly_results')->where('period_key', $key)
+            ->update(['score' => 999999]);
+
+        try {
+            $settlement->seal('2026-11-07');
+            $this->fail('The corrupted sealed snapshot was reported as valid.');
+        } catch (\RuntimeException $expected) {
+            $this->assertStringContainsString('snapshot', $expected->getMessage());
+        }
+        $this->assertDatabaseCount('arcade_weekly_settlement_events', 1);
+        $this->assertDatabaseCount('arcade_coupons', 0);
+    }
+
+    public function test_already_sealed_week_rejects_swapped_or_duplicate_winner(): void
+    {
+        $this->travelTo(CarbonImmutable::parse('2026-11-14T01:00:00Z'));
+        $this->verified($this->player(), 450, '2026-11-10T10:00:00Z');
+        $settlement = app(WeeklySettlementService::class);
+        $settlement->seal('2026-11-07');
+        $key = 'weekly:tehran:2026-11-07';
+        DB::table('arcade_weekly_winners')->where('period_key', $key)
+            ->update(['score' => 500000]);
+        try {
+            $settlement->seal('2026-11-07');
+            $this->fail('The tampered winner was accepted.');
+        } catch (\RuntimeException $expected) {
+            $this->assertStringContainsString('winner', $expected->getMessage());
+        }
+        $this->assertDatabaseCount('arcade_coupons', 0);
+    }
+
     public function test_new_players_take_priority_over_previous_week_winners(): void
     {
         $this->travelTo(CarbonImmutable::parse('2026-11-21T01:00:00Z'));

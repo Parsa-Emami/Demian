@@ -11,6 +11,7 @@ const load = read('../../../tools/load/mobile11_read_only.js');
 const pages = read('../../../../.github/workflows/deploy-demian-pages.yml');
 const nginx = read('../../../ops/mobile-11/nginx.conf.example');
 const cpanelRelease = read('../../../ops/cpanel/deploy.sh');
+const cpanelPackage = read('../../../ops/cpanel/package_release.sh');
 const cpanelPreflight = read('../../../ops/cpanel/host_preflight.php');
 const cpanelOps = read('../../../../.github/workflows/mobile11-ops-ci.yml');
 const cpanelWorkflow = read('../../../../.github/workflows/cpanel-api-deploy.yml');
@@ -134,7 +135,8 @@ test('cPanel CI deployment is manual, approved, pinned to known hosts and packag
     assert.match(cpanelWorkflow, /StrictHostKeyChecking=yes/);
     assert.match(cpanelWorkflow, /DEPLOY_PRODUCTION_WITH_BACKUP/);
     assert.match(cpanelWorkflow, /--no-dev/);
-    assert.match(cpanelWorkflow, /public\/index.php public\/\.htaccess/);
+    assert.match(cpanelWorkflow, /package_release\.sh/);
+    assert.match(cpanelPackage, /public\/index.php public\/\.htaccess/);
     assert.match(webRoutes, /demian-arcade\.api_only/);
 });
 test('50 concurrent VUs remain staging-only and read-only', () => {

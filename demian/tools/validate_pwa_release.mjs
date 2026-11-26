@@ -1,6 +1,7 @@
 /** Mobile-07: fail production builds with broken PWA or root-relative font URLs. */
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join, resolve } from 'node:path';
+import { createHash } from 'node:crypto';
 import { OFFLINE_GAME_IDS } from './offline_pack_manifest.mjs';
 
 export function validatePwaRelease(release) {
@@ -45,7 +46,12 @@ export function validatePwaRelease(release) {
                 if (!/^[a-zA-Z0-9][a-zA-Z0-9/_.-]*$/.test(item.path ?? '') ||
                     item.path.includes('..') || /(^|\/)api(\/|$)/.test(item.path) ||
                     !existsSync(join(root, item.path)) ||
-                    !Number.isSafeInteger(item.bytes) || item.bytes < 0) {
+                    !Number.isSafeInteger(item.bytes) || item.bytes < 0
+                    || (item.sha256 && (!/^[a-f0-9]{64}$/.test(item.sha256)
+                        || item.bytes > 2 * 1048576
+                        || createHash('sha256').update(readFileSync(join(root, item.path))).digest('hex') !== item.sha256))
+                    || ((/\.(?:js|css|json|html|webmanifest)$/.test(item.path)
+                        && item.bytes <= 2 * 1048576) && !item.sha256)) {
                     failures.push('Unsafe or missing offline pack asset: ' + String(item.path));
                     continue;
                 }

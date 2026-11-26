@@ -1,6 +1,7 @@
 import { characterFrameWorldSize } from '../characters/CharacterVisualContract.js';
 import { cssColor, PIXEL_PALETTE as P } from './PixelPalette.js';
 import { drawCharacterAbility } from '../characters/abilities/CharacterAbilityRenderer.js';
+import { drawCafeGroundShadow } from './CafeAtmosphere2D.js';
 import { characterRenderPose } from '../characters/CharacterRenderState.js';
 
 function actorPosition(actor) {
@@ -126,6 +127,7 @@ export function drawSpriteCharacter(ctx, camera, entity, {
     opacity = 1,
     eliminated = false,
     alpha = 1,
+    reducedMotion = false,
 } = {}) {
     const image = entity?.texture?.image ?? entity?.texture?.source?.data;
     const sample = entity?.animator?.sample?.(alpha);
@@ -153,14 +155,9 @@ export function drawSpriteCharacter(ctx, camera, entity, {
     ctx.imageSmoothingQuality = 'high';
     ctx.globalAlpha = Math.min(1, Math.max(0.08, Number(opacity) || 0));
     if (eliminated) ctx.globalAlpha *= 0.48;
-    ctx.fillStyle = `rgba(20,14,12,${0.18 * (1 - elevation * 0.65)})`;
-    ctx.beginPath();
-    ctx.ellipse(metrics.screen.x, metrics.screen.y + 1, shadowWidth * 0.58, shadowHeight * 0.7, 0, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = `rgba(20,14,12,${0.25 * (1 - elevation * 0.9)})`;
-    ctx.beginPath();
-    ctx.ellipse(metrics.screen.x, metrics.screen.y + 1, shadowWidth * 0.38, shadowHeight * 0.32, 0, 0, Math.PI * 2);
-    ctx.fill();
+    drawCafeGroundShadow(ctx, { x: metrics.screen.x, y: metrics.screen.y,
+        bodyWidth: Math.max(12, metrics.bodyWidth * .68), bodyHeight: metrics.frameHeight,
+        elevation: metrics.jumpHeight });
 
     if (player) {
         ctx.strokeStyle = P.cyan;
@@ -198,7 +195,7 @@ export function drawSpriteCharacter(ctx, camera, entity, {
     }
     ctx.restore();
 
-    drawCharacterAbility(ctx, metrics, entity?.abilityController?.visualState?.());
+    drawCharacterAbility(ctx, metrics, entity?.abilityController?.visualState?.(), reducedMotion);
 
     if (label) {
         ctx.save();

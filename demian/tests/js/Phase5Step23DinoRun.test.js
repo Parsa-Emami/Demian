@@ -5,12 +5,20 @@ import DinoRunModel, { RUNNER_CONFIG } from '../../resources/js/game/games/dino-
 import RunnerReplay, { runnerInputFromMask } from '../../resources/js/game/games/dino-run/RunnerReplay.js';
 import ArcadeLeaderboardService from '../../resources/js/game/leaderboard/ArcadeLeaderboardService.js';
 import { validRunnerSession } from '../../resources/js/game/leaderboard/RunnerSessionContract.js';
+import { weeklyVersion, weeklyIndex, WEEKLY_VERSIONS } from '../../resources/js/game/content/WeeklyContent.js';
 
 const UUID = 'ff21ba26-46bc-437f-b6be-bb9bb5530c73';
 const good = (width = 420) => ({
     run_id: UUID, seed: 4294967295, track_width: width,
     rules_version: RUNNER_CONFIG.version, expires_at: '2026-11-16T10:00:00Z',
 });
+// The weekly content contract activated on 2026-11-21 (Tehran). Keep
+// legacy validation fixtures separate from a currently issued ranked round.
+const liveRound = (width = 420) => {
+    const version = weeklyVersion('dino-run', RUNNER_CONFIG.version);
+    return { ...good(width), rules_version: version,
+        ...(version === WEEKLY_VERSIONS['dino-run'] ? { content_week: weeklyIndex() } : {}) };
+};
 const memory = () => {
     const data = new Map();
     return { getItem: key => data.get(key) ?? null, setItem: (key, value) => data.set(key, value) };
@@ -18,6 +26,8 @@ const memory = () => {
 
 test('Step 23 rejects every invalid field of a ranked runner response before using it', () => {
     assert.equal(validRunnerSession(good(), 420), true);
+    assert.equal(validRunnerSession(liveRound(), 420,
+        weeklyVersion('dino-run', RUNNER_CONFIG.version)), true);
     assert.equal(validRunnerSession(good(2560), 2560), true);
     const invalid = [
         null, {}, { ...good(), run_id: 'not-a-uuid' },
@@ -36,7 +46,7 @@ test('Step 23 rejects every invalid field of a ranked runner response before usi
 });
 
 test('Step 23 online handshake only promotes fully validated server-issued rounds', async () => {
-    let response = good();
+    let response = liveRound();
     let requests = 0;
     const leaderboard = new ArcadeLeaderboardService({
         baseUrl: 'https://api.test/api/v1/arcade', storage: memory(),
@@ -49,7 +59,7 @@ test('Step 23 online handshake only promotes fully validated server-issued round
     const valid = await leaderboard.start({ width: 420, character: 'darya' });
     assert.equal(valid.mode, 'ranked');
     assert.equal(valid.run_id, UUID);
-    response = { ...good(), seed: '4294967295' };
+    response = { ...liveRound(), seed: '4294967295' };
     const rejected = await leaderboard.start({ width: 420, character: 'darya' });
     assert.equal(rejected.mode, 'practice');
     assert.equal(rejected.track_width, 420);

@@ -65,8 +65,17 @@ return [
     'weekly_auto_award_from' => env('DEMIAN_WEEKLY_AUTO_AWARD_FROM', ''),
     // An absolute limit on bearer capabilities, not a refresh-token grant.
     'player_session_days' => 30,
+    // Real financial rewards require verified phone identity in production.
+    // Legacy/testing rollouts can be staged; production issuance rejects
+    // an unset gate, even when a coupon policy is otherwise approved.
+    'prize_identity_required' => (bool) env('DEMIAN_PRIZE_VERIFIED_PHONE_REQUIRED', false),
+    'otp' => [
+        'enabled' => (bool) env('DEMIAN_PHONE_OTP_ENABLED', false),
+        'gateway_url' => env('DEMIAN_PHONE_OTP_GATEWAY_URL', ''),
+        'gateway_key' => env('DEMIAN_PHONE_OTP_GATEWAY_KEY', ''),
+    ],
     'recovery_link_minutes' => 20,
     // Manually saved, single-use long-term backup capability for anonymous accounts.
     'backup_code_days' => 180,
-    'characters' => ['darya', 'setayesh', 'uzudi', 'negar', 'elaheh', 'tiam', 'amirreza', 'hanna', 'ainaz', 'arsal', 'iman', 'amin', 'hossein', 'taher-db', 'sorkhi', 'yalda', 'mori', 'mahyar'],
+    'characters' => ['darya', 'setayesh', 'uzudi', 'tiam', 'elaheh', 'marjan', 'mohana', 'zohre', 'kiana', 'amirreza', 'hanna', 'ainaz', 'arsal', 'sadro', 'mojtaba', 'mobina', 'negar', 'dandelox', 'iman', 'amin', 'hossein', 'taher-db', 'sorkhi', 'yalda', 'mori', 'mahyar'],
 ];
