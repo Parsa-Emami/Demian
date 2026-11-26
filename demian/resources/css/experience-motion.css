@@ -147,6 +147,9 @@
         #0b1613;
 }
 .manager-shell [data-game-shell] .loading-experience {
+    --loading-orbit-duration: 1000ms;
+    --loading-beat-duration: 720ms;
+    --loading-fill-duration: 120ms;
     position: relative;
     isolation: isolate;
     display: flex;
@@ -192,7 +195,7 @@
     border-top-color: #ebd6a5;
     border-left-color: #c0e1b1;
     border-radius: 50%;
-    animation: demian-loader-orbit 2200ms linear infinite;
+    animation: demian-loader-orbit var(--loading-orbit-duration) linear infinite;
 }
 .manager-shell [data-game-shell] .loading-experience__orb-core {
     color: #f8f3d8;
@@ -206,7 +209,7 @@
     border-radius: 50%;
     background: #f9e8b8;
     box-shadow: 0 0 22px #e8d6a3;
-    animation: demian-loader-spark 2200ms linear infinite;
+    transform: translateX(-50%);
 }
 .manager-shell [data-game-shell] .loading-experience__eyebrow {
     color: #c7dcaf;
@@ -259,7 +262,10 @@
 .manager-shell [data-game-shell] .loading-experience .shell-progress span {
     box-shadow: none;
     background: linear-gradient(90deg, #abcba3, #efdda8);
-    transition: width 250ms var(--demian-ease);
+    width: 100%;
+    transform: scaleX(var(--loading-progress-scale, 0));
+    transform-origin: right center;
+    transition: transform var(--loading-fill-duration) var(--demian-ease);
 }
 .manager-shell [data-game-shell] .loading-experience__heartbeat {
     width: 70px;
@@ -274,11 +280,11 @@
     width: 4px; height: 6px;
     border-radius: 3px;
     background: #a8d7ae;
-    animation: demian-loader-beat 1050ms ease-in-out infinite;
+    animation: demian-loader-beat var(--loading-beat-duration) ease-in-out infinite;
 }
-.manager-shell [data-game-shell] .loading-experience__heartbeat i:nth-child(2) { animation-delay: -780ms; }
-.manager-shell [data-game-shell] .loading-experience__heartbeat i:nth-child(3) { animation-delay: -520ms; }
-.manager-shell [data-game-shell] .loading-experience__heartbeat i:nth-child(4) { animation-delay: -260ms; }
+.manager-shell [data-game-shell] .loading-experience__heartbeat i:nth-child(2) { animation-delay: -540ms; }
+.manager-shell [data-game-shell] .loading-experience__heartbeat i:nth-child(3) { animation-delay: -360ms; }
+.manager-shell [data-game-shell] .loading-experience__heartbeat i:nth-child(4) { animation-delay: -180ms; }
 .manager-shell [data-game-shell] .loading-experience__statusline {
     color: #afc0b2;
     min-height: 38px;
@@ -336,7 +342,6 @@
     outline-offset: 3px;
 }
 @keyframes demian-loader-orbit { to { transform: rotate(360deg); } }
-@keyframes demian-loader-spark { to { transform: rotate(360deg); } }
 @keyframes demian-loader-beat {
     0%, 100% { transform: scaleY(.75); opacity: .45; }
     50% { transform: scaleY(2.5); opacity: 1; }
@@ -365,11 +370,29 @@
     .manager-shell [data-game-shell] .loading-experience__tip { padding: 8px 12px; margin-top: 3px; }
     .manager-shell [data-game-shell] .loading-experience__tip p { min-height: 0; }
 }
+.manager-shell [data-game-shell] .shell-screen--loading:is([hidden], [data-screen-state="leaving"]) :is(.loading-experience__orb-ring, .loading-experience__heartbeat i),
+.manager-shell[data-motion="reduced"] [data-game-shell] .shell-screen--loading :is(.loading-experience__orb-ring, .loading-experience__heartbeat i),
+.manager-shell:is([data-performance-tier="performance"], [data-render-quality="economy"]) [data-game-shell] .loading-experience__heartbeat i {
+    animation: none;
+}
+.manager-shell [data-game-shell] .shell-screen--loading:is([hidden], [data-screen-state="leaving"]) .loading-experience .shell-progress span,
+.manager-shell[data-motion="reduced"] [data-game-shell] .loading-experience .shell-progress span,
+.manager-shell[data-motion="reduced"] [data-game-shell] .loading-experience__tip button {
+    transition: none;
+}
+.manager-shell[data-motion="reduced"] [data-game-shell] .loading-experience__tip button:active {
+    transform: none;
+}
 @media (prefers-reduced-motion: reduce) {
     .manager-shell [data-game-shell] .loading-experience__orb-ring,
-    .manager-shell [data-game-shell] .loading-experience__orb-spark,
     .manager-shell [data-game-shell] .loading-experience__heartbeat i {
         animation: none;
+    }
+    .manager-shell [data-game-shell] .loading-experience__tip button {
+        transition: none;
+    }
+    .manager-shell [data-game-shell] .loading-experience__tip button:active {
+        transform: none;
     }
     .manager-shell [data-game-shell] .game-card,
     .manager-shell [data-game-shell] .game-card__action,
