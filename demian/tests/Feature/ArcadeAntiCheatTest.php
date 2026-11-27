@@ -73,11 +73,11 @@ final class ArcadeAntiCheatTest extends TestCase
         ]);
     }
 
-    private function flaggedPlayer(): array
+    private function flaggedPlayer(string $network = '203.0.113.42'): array
     {
         $player=$this->player();$anti=app(ArcadeAntiCheat::class);
         for($i=0;$i<4;$i++) {
-            $anti->rejected($player,null,422,'203.0.113.42');
+            $anti->rejected($player,null,422,$network);
         }
         $report=DB::table('arcade_cheat_reports')
             ->where('player_id', $player->id)->first();
@@ -223,6 +223,108 @@ final class ArcadeAntiCheatTest extends TestCase
         $evidence=json_decode($outlier->evidence,true);
         $this->assertSame(20,$evidence['sample_size']);
         $this->assertSame(100,$evidence['baseline_median']);
+    }
+
+    public function test_shared_network_needs_repeated_rejections_on_each_account_for_multi_account_review(): void
+    {
+        $anti = app(ArcadeAntiCheat::class);
+        $first = $this->player();
+        $second = $this->player();
+        $network = '203.0.113.67';
+        for ($i = 0; $i < 4; $i++) {
+            $anti->rejected($first, null, 422, $network);
+        }
+        for ($i = 0; $i < 3; $i++) {
+            $anti->rejected($second, null, 422, $network);
+        }
+        $this->assertDatabaseMissing('arcade_cheat_reports', ['signal' => 'shared_network_rejections']);
+
+        $anti->rejected($second, null, 422, '203.0.113.68');
+        $this->assertDatabaseMissing('arcade_cheat_reports', ['signal' => 'shared_network_rejections']);
+        $anti->rejected($second, null, 422, $network);
+        $anti->rejected($second, null, 422, $network);
+
+        $report = DB::table('arcade_cheat_reports')->where('signal', 'shared_network_rejections')->sole();
+        $this->assertSame($second->id, $report->player_id);
+        $this->assertSame('low', $report->severity);
+        $this->assertSame(2, (int) $report->hits);
+        $this->assertSame(2, json_decode($report->evidence, true)['accounts']);
+        $this->assertStringNotContainsString($network, $report->evidence);
+        $this->assertSame(1, $anti->dashboard()['multi_account_open']);
+        $queue = array_column($anti->riskQueue(), null, 'player_id');
+        $this->assertSame(60, $queue[$second->id]['risk']);
+        $this->assertSame(1, $queue[$second->id]['families']);
+
+        $staff = $this->staff('super_admin');
+        $anti->review($report->id, $staff, 1, 'confirmed', 'Reviewed the network context and case history');
+        try {
+            $anti->setHold($report->id, $staff, 1, 1, 'Reviewed the network context and case history');
+            $this->fail('Shared network evidence alone caused a restriction.');
+        } catch (HttpException $exception) {
+            $this->assertSame(409, $exception->getStatusCode());
+        }
+        $anti->assertStartAllowed($second->id);
+        $this->assertDatabaseCount('arcade_anticheat_holds', 0);
+    }
+
+    public function test_outlier_baseline_counts_distinct_other_players_in_the_same_week(): void
+    {
+        config()->set('demian-arcade.anticheat.score_outlier_min_history', 3);
+        $anti = app(ArcadeAntiCheat::class);
+        $frequent = $this->player();
+        $target = $this->player();
+        $this->newRun($frequent, 'verified', 'dino-run', 150, hash('sha256', 'frequent-best'));
+        for ($i = 0; $i < 4; $i++) {
+            $this->newRun($frequent, 'verified', 'dino-run', 10, hash('sha256', 'frequent-'.$i));
+        }
+        $this->newRun($this->player(), 'verified', 'dino-run', 90, hash('sha256', 'second-best'));
+        $previousWeek = $this->newRun($this->player(), 'verified', 'dino-run', 240, hash('sha256', 'prior-week'));
+        $previousWeek->update(['started_at' => now()->subDays(2), 'completed_at' => now()->subDays(2)]);
+        $first = $this->newRun($target, 'verified', 'dino-run', 900, hash('sha256', 'candidate-a'));
+        $anti->verified($first, 100);
+        $this->assertDatabaseMissing('arcade_cheat_reports', [
+            'player_id' => $target->id, 'signal' => 'statistical_score_outlier',
+        ]);
+
+        $this->newRun($this->player(), 'verified', 'dino-run', 100, hash('sha256', 'third-best'));
+        $second = $this->newRun($target, 'verified', 'dino-run', 1500, hash('sha256', 'candidate-b'));
+        $anti->verified($second, 100);
+        $report = DB::table('arcade_cheat_reports')->where('signal', 'statistical_score_outlier')->sole();
+        $evidence = json_decode($report->evidence, true);
+        $this->assertSame($second->id, $report->run_id);
+        $this->assertSame(3, $evidence['sample_size']);
+        $this->assertSame(100, $evidence['baseline_median']);
+    }
+
+    public function test_superadmin_can_filter_and_inspect_related_replays_without_exposing_digests(): void
+    {
+        $anti = app(ArcadeAntiCheat::class);
+        $related = $this->player();
+        $subject = $this->player();
+        $digest = hash('sha256', 'same-verified-proof');
+        $this->newRun($related, 'verified', 'cafe-rush', 100, $digest);
+        $this->newRun($related, 'verified', 'cafe-rush', 100, $digest);
+        $run = $this->newRun($subject, 'verified', 'cafe-rush', 100, $digest);
+        $anti->verified($run, 100, '203.0.113.88');
+        $report = DB::table('arcade_cheat_reports')->where('signal', 'cross_account_replay')->sole();
+        $this->assertSame(1, json_decode($report->evidence, true)['related_accounts']);
+        $this->flaggedPlayer();
+        $url = route('cashier.anticheat', [
+            'signal' => 'multi_account', 'status' => 'open', 'player' => $subject->id, 'report' => $report->id,
+        ]);
+        $this->asStaff($this->staff('admin'))->get($url)->assertForbidden();
+        $response = $this->asStaff($this->staff('super_admin'))->get($url)->assertOk();
+        $response->assertSee('پایش تقلب و چندحسابی')->assertSee($related->id)
+            ->assertSee('2026-11-14 15:30')->assertDontSee($digest)->assertDontSee('203.0.113.88');
+        $response->assertViewHas('reports', fn ($reports) => $reports->total() === 1);
+        $response->assertViewHas('relatedAccounts', fn ($accounts) =>
+            $accounts->count() === 1 && (int) $accounts->first()->matching_runs === 2);
+        $this->assertStringContainsString('no-store', $response->headers->get('Cache-Control'));
+
+        $related->delete();
+        $this->get($url)->assertOk()->assertDontSee($related->id);
+        $this->getJson(route('cashier.anticheat', ['signal' => 'unknown']))->assertUnprocessable();
+        $this->assertDatabaseCount('arcade_anticheat_holds', 0);
     }
 
     public function test_only_stepup_superadmin_can_review_confirm_and_temporarily_hold_new_starts(): void
@@ -441,7 +543,7 @@ final class ArcadeAntiCheatTest extends TestCase
         DB::table('arcade_cheat_reports')->where('id',$cleared->id)->update([
             'last_seen'=>now()->subDays(370),
         ]);
-        [$openPlayer,$open]=$this->flaggedPlayer();
+        [$openPlayer,$open]=$this->flaggedPlayer('203.0.113.43');
         DB::table('arcade_cheat_reports')->where('id',$open->id)->update([
             'last_seen'=>now()->subDays(370),
         ]);

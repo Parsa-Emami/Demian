@@ -10,6 +10,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 /**
@@ -18,30 +19,73 @@ use Illuminate\View\View;
  */
 final class CafeAntiCheatController extends Controller
 {
+    private const SIGNAL_LABELS = [
+        'multi_account' => 'همهٔ نشانه‌های چندحسابی',
+        'cross_account_replay' => 'بازپخش یکسان بین حساب‌ها',
+        'shared_network_rejections' => 'رد مکرر بازپخش در حساب‌های یک شبکه',
+        'shared_network_cohort' => 'حساب‌های فعال در شبکهٔ مشترک',
+        'overlapping_verified_runs' => 'دورهای تأییدشدهٔ هم‌زمان',
+        'invalid_replay_velocity' => 'رد مکرر بازپخش یک حساب',
+        'start_velocity' => 'شروع‌های پرتعداد مسابقه',
+        'statistical_score_outlier' => 'امتیاز دور از سطح بازیکنان هم‌هفته',
+        'short_high_score' => 'امتیاز بالا در دور کوتاه',
+        'dense_control_trace' => 'ورودی‌های متراکم',
+        'periodic_jump_cadence' => 'الگوی بسیار منظم پرش',
+    ];
+
     public function index(Request $request, ArcadeAntiCheat $antiCheat,
         ArcadeFraudAppeals $appeals): View
     {
         $staff = $request->attributes->get('cafe_staff');
         CafeAccess::authorize($staff, 'audit.ledger');
+        abort_unless($staff->role === 'super_admin', 403);
         $filters = $request->validate([
-            'status' => ['sometimes', 'in:open,investigating,cleared,confirmed'],
+            'status' => ['nullable', 'in:active,open,investigating,cleared,confirmed'],
+            'signal' => ['nullable', Rule::in(array_keys(self::SIGNAL_LABELS))],
+            'player' => ['nullable', 'uuid'],
+            'report' => ['sometimes', 'integer', 'min:1'],
         ]);
-        $query = DB::table('arcade_cheat_reports')->orderByDesc('id');
-        if (isset($filters['status'])) $query->where('status', $filters['status']);
+        $fields = ['id', 'player_id', 'run_id', 'signal', 'severity', 'risk_score', 'status',
+            'hits', 'first_seen', 'last_seen', 'reviewed_at', 'evidence'];
+        $query = DB::table('arcade_cheat_reports')->orderByDesc('last_seen')->orderByDesc('id');
+        if (($filters['status'] ?? null) === 'active') {
+            $query->whereIn('status', ['open', 'investigating']);
+        } elseif (isset($filters['status'])) {
+            $query->where('status', $filters['status']);
+        }
+        if (isset($filters['player'])) {
+            $query->where('player_id', $filters['player']);
+        }
+        $signal = $filters['signal'] ?? null;
+        if ($signal === 'multi_account') {
+            $query->whereIn('signal', ArcadeAntiCheat::MULTI_ACCOUNT_SIGNALS);
+        } elseif ($signal !== null) {
+            $query->where('signal', $signal);
+        }
+        $selected = isset($filters['report'])
+            ? DB::table('arcade_cheat_reports')->where('id', $filters['report'])->first($fields)
+            : null;
+        abort_if(isset($filters['report']) && ! $selected, 404);
+        $reviewQuery = DB::table('arcade_cheat_review_events')->orderByDesc('id')->limit(50);
+        if ($selected) {
+            $reviewQuery->where('report_id', $selected->id);
+        }
+        $selectedRun = $selected?->run_id
+            ? DB::table('arcade_runs')->where('id', $selected->run_id)
+                ->where('player_id', $selected->player_id)->first(['game_id', 'rules_version'])
+            : null;
+
         return view('cashier.anticheat', [
             'staff' => $staff, 'summary' => $antiCheat->dashboard(),
-            'reports' => $query->limit(100)->get([
-                'id','player_id','run_id','signal','severity','risk_score',
-                'status','hits','first_seen','last_seen','reviewed_at',
-                'evidence',
-            ]),
-            'reviews' => DB::table('arcade_cheat_review_events')
-                ->orderByDesc('id')->limit(50)
-                ->get(['id','report_id','actor_id','action','previous_status',
-                    'next_status','created_at','note']),
-            'activeHolds' => DB::table('arcade_anticheat_holds')
-                ->where('expires_at','>',now())->count(),
-            'canReview' => $staff->role === 'super_admin',
+            'filters' => $filters,
+            'signalLabels' => self::SIGNAL_LABELS,
+            'reports' => $query->paginate(30, $fields)->appends($filters),
+            'selected' => $selected,
+            'selectedRun' => $selectedRun,
+            'relatedAccounts' => $selected ? $antiCheat->relatedReplayAccounts($selected) : collect(),
+            'riskQueue' => $antiCheat->riskQueue(),
+            'reviews' => $reviewQuery->get(['id', 'report_id', 'actor_id', 'action',
+                'previous_status', 'next_status', 'created_at', 'note']),
             'appeals' => $appeals->adminQueue(),
         ]);
     }
