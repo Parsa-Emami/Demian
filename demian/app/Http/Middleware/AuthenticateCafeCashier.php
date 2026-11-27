@@ -13,7 +13,12 @@ final class AuthenticateCafeCashier
 {
     public function handle(Request $request, Closure $next): Response
     {
-        abort_unless(config('demian-coupons.cafe_enabled') === true, 503);
+        $couponPortal = config('demian-coupons.cafe_enabled') === true;
+        $managementOnly = ! $couponPortal && CafeAccess::portalAvailable() && $request->routeIs(
+            'cashier.index', 'cashier.logout', 'cashier.browser-push', 'cashier.browser-push.publish',
+            'cashier.business-analytics', 'cashier.referrals', 'cashier.referrals.cost', 'cashier.referrals.review',
+        );
+        abort_unless($couponPortal || $managementOnly, 503);
         abort_unless(! app()->environment('production') || $request->isSecure(),
             403, 'Cashier portal requires HTTPS.');
 
@@ -29,6 +34,7 @@ final class AuthenticateCafeCashier
         }
         $staff = DB::table('arcade_cashier_staff')->where('id', $id)->first();
         if (! $staff || ! $staff->is_active || ! CafeAccess::knownRole($staff->role)
+            || ($managementOnly && $staff->role !== 'super_admin')
             || (int) $staff->session_version !== $version) {
             $request->session()->invalidate();
             $request->session()->regenerateToken();
@@ -45,7 +51,7 @@ final class AuthenticateCafeCashier
         $response->headers->set('X-Frame-Options', 'DENY');
         if (! $request->routeIs('studio') && ! $request->routeIs('characters.*')) {
             $response->headers->set('Content-Security-Policy',
-                "default-src 'none'; style-src 'unsafe-inline'; form-action 'self'; "
+                "default-src 'none'; img-src 'self'; style-src 'unsafe-inline'; form-action 'self'; "
                 ."base-uri 'none'; frame-ancestors 'none'");
         } else {
             $response->headers->set('Referrer-Policy', 'no-referrer');

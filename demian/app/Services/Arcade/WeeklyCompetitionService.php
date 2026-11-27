@@ -183,7 +183,7 @@ final class WeeklyCompetitionService
                 'period_key' => $window['period_key'], 'game_id' => $gameId,
                 'rules_version' => $rulesVersion,
                 'ranked_enabled' => app(RankedGameCatalog::class)->supportsRanked($gameId),
-                'prize_eligible' => app(RankedGameCatalog::class)->supportsPrizes($gameId),
+                'prize_eligible' => app(RankedGameCatalog::class)->supportsPrizes($gameId, $rulesVersion),
                 'locked_at' => $now->toDateTimeString(),
             ]);
         }

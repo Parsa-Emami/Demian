@@ -1,10 +1,11 @@
 import PersonalProgressPanel from './PersonalProgressPanel.js';
 import LoyaltyXpPanel from './LoyaltyXpPanel.js';
 import MissionPanel from './MissionPanel.js';
+import ReferralPanel from './ReferralPanel.js';
 
 export function mountPlayerProgressPanels(service, anchor) {
     const progress = new PersonalProgressPanel(service, anchor);
     const loyalty = new LoyaltyXpPanel(service, progress.root);
     const missions = new MissionPanel(service, loyalty.root);
-    return [progress, loyalty, missions];
+    return [progress, loyalty, missions, new ReferralPanel(service, missions.root)];
 }

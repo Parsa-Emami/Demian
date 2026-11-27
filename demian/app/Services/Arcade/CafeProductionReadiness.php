@@ -80,6 +80,11 @@ final class CafeProductionReadiness
                 $add('legal_publication_approved', config('demian-legal.publication_approved') === true);
                 $add('legal_acceptance_enforced', config('demian-legal.require_acceptance') === true);
             }
+            $multi=app(MultiGamePrizeReadiness::class);
+            foreach (array_keys(MultiGamePrizeReadiness::GAMES) as $game) {
+                if (!$multi->requested($game)) continue;
+                foreach ($multi->inspect($game)['checks'] as $check=>$passed) $add($game.'_'.$check,$passed);
+            }
             $add('cafe_enabled', config('demian-coupons.cafe_enabled') === true);
             $add('discount_policy_approved',
                 config('demian-coupons.policy_approved') === true);

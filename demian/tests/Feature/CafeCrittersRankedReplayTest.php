@@ -295,10 +295,10 @@ final class CafeCrittersRankedReplayTest extends TestCase
         $this->assertDatabaseCount('arcade_weekly_winners', 0);
     }
 
-    public function test_financial_awards_require_explicit_opt_in_even_after_ranked_verification(): void
+    public function test_prize_flag_alone_does_not_authorize_a_verified_critters_run(): void
     {
         config()->set('demian-arcade.critters_prizes_enabled', true);
-        $this->assertTrue(app(RankedGameCatalog::class)->supportsPrizes('cafe-critters'));
+        $this->assertFalse(app(RankedGameCatalog::class)->supportsPrizes('cafe-critters'));
         $player = $this->player();
         $run = $this->started($player);
         $this->travel(7)->seconds();
@@ -309,11 +309,8 @@ final class CafeCrittersRankedReplayTest extends TestCase
         $this->travelTo(CarbonImmutable::parse('2026-11-21T12:00:00Z'));
         $result = app(\App\Services\Arcade\WeeklySettlementService::class)->seal('2026-11-14');
         $this->assertSame(1, $result['participants']);
-        $this->assertSame(1, $result['winners']);
-        $this->assertDatabaseHas('arcade_weekly_winners', [
-            'game_id' => 'cafe-critters', 'prize_rank' => 1,
-            'player_id' => $player['player_id'],
-        ]);
+        $this->assertSame(0, $result['winners']);
+        $this->assertDatabaseCount('arcade_weekly_winners', 0);
     }
 
 

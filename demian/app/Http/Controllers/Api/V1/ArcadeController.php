@@ -154,6 +154,9 @@ final class ArcadeController extends Controller
         ]);
         $accepted = ($legal['policy_version'] ?? null) === config('demian-legal.version')
             && $request->boolean('accept_terms') && $request->boolean('privacy_acknowledged');
+        $referral = $request->validate([
+            'referral_code' => ['sometimes', 'string', 'regex:/^[A-Fa-f0-9]{16}$/D'],
+        ])['referral_code'] ?? null;
         $requiresPhone = (bool) config('demian-arcade.require_contact');
         $contact = $contacts->fields($request, $requiresPhone, true);
         if ($requiresPhone && $contact['contact_type'] !== 'phone') {
@@ -167,7 +170,7 @@ final class ArcadeController extends Controller
         $token = Str::random(64);
         $expires = now()->addDays((int) config('demian-arcade.player_session_days'));
         try {
-            $player = DB::transaction(function () use ($name, $token, $expires, $accepted, $contact, $password, $request): ArcadePlayer {
+            $player = DB::transaction(function () use ($name, $token, $expires, $accepted, $contact, $password, $request, $referral): ArcadePlayer {
                 $player = ArcadePlayer::query()->create(['display_name' => $name,
                     'token_hash' => hash('sha256', $token), 'token_expires_at' => $expires,
                     'legal_policy_version' => $accepted ? config('demian-legal.version') : null,
@@ -175,6 +178,10 @@ final class ArcadeController extends Controller
                     ...(isset($password['password']) ? ['password_hash' => Hash::make($password['password'])] : [])]);
                 if ($player->contact_type === 'phone') {
                     app(ArcadeAntiCheat::class)->phoneRegistration($player, $request->ip());
+                }
+
+                if ($referral !== null) {
+                    app(\App\Services\Arcade\ReferralService::class)->attribute($player->id, $referral);
                 }
 
                 return $player;

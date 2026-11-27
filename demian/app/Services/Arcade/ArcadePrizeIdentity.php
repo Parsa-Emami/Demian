@@ -30,6 +30,18 @@ final class ArcadePrizeIdentity
      * required before real financial awards if rollout is enabled.
      * Production issuance cannot silently opt out of the gate.
      */
+    public function verifiedPhone(string $playerId): ?object
+    {
+        return DB::table('arcade_players')->where('id', $playerId)->where('contact_type', 'phone')
+            ->whereNotNull('contact_hash')->whereNotNull('phone_verified_at')
+            ->first(['contact_hash', 'phone_verified_at', 'registration_key_hash']);
+    }
+
+    public function eligibilityDigest(string $scope, string ...$parts): string
+    {
+        return hash_hmac('sha256', implode('|', [$scope, ...$parts]), (string) config('app.key'));
+    }
+
     public function assertRolloutReady(): void
     {
         if (app()->environment('production')

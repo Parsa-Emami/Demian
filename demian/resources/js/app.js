@@ -36,6 +36,21 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
     }
 
+    let noticeAction = /^#demian-notice=(rewards|leaderboard)$/.exec(location.hash)?.[1] ?? null;
+    if (noticeAction) history.replaceState(history.state, '', location.pathname + location.search);
+    let menusReady = false;
+    const openNotice = () => {
+        if (!menusReady || !noticeAction) return;
+        managerRoot.querySelector('[data-screen="cafe-menu"] [data-shell-action="' + noticeAction + '"]')?.click();
+        noticeAction = null;
+    };
+    navigator.serviceWorker?.addEventListener('message', event => {
+        if (event.source !== navigator.serviceWorker.controller || event.data?.type !== 'DEMIAN_PUSH_OPEN'
+            || !['rewards', 'leaderboard'].includes(event.data.target)) return;
+        noticeAction = event.data.target;
+        openNotice();
+    });
+
     const sidebar = new SidebarController({ root: managerRoot });
     const mobileUI = new MobileGameUI({ root: managerRoot });
     const application = new GameApplication(sceneContainer, {
@@ -78,6 +93,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (['play', 'continue', 'settings', 'leaderboard', 'rewards'].includes(pending)) {
             managerRoot.querySelector('[data-screen="cafe-menu"] [data-shell-action="' + pending + '"]')?.click();
         }
+        menusReady = true;
+        openNotice();
         // Static hosting/PWA is optional. Never block gameplay startup.
         void import('./game/performance/PwaUpdateController.js')
             .then(({ default: registerDemianPwa }) => registerDemianPwa({ app: application }))

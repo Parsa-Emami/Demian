@@ -5,6 +5,7 @@ import rules from '../../../game/runner-rules.json' with { type: 'json' };
 import { validRunnerSession } from './RunnerSessionContract.js';
 import { isBeginnerProfile, PRACTICE_VERSION, PRACTICE_RECORDS_KEY, PRACTICE_BEST_KEY } from '../games/dino-run/RunnerPracticeProfile.js';
 import { requestLegalAcknowledgement, LEGAL_VERSION } from './LegalConsent.js';
+import { clearGamePush } from '../ui/BrowserPushPanel.js';
 import { SKILL_LEAGUES } from './SkillLeaguePresentation.js';
 
 const PROFILE_KEY = 'demian.arcade.profile.v1';
@@ -62,8 +63,9 @@ export default class ArcadeLeaderboardService {
         // redeem a bearer recovery capability without an explicit UI action.
         const fragment = globalThis.location?.hash ?? '';
         const match = /^#demian-recover=([A-Za-z0-9]{64})$/.exec(fragment);
+        this.invitation = /^#ref=([a-f0-9]{16})$/i.exec(fragment)?.[1] ?? null;
         this.recoveryOffer = match?.[1] ?? null;
-        if (match && globalThis.history?.replaceState) {
+        if ((match || this.invitation) && globalThis.history?.replaceState) {
             globalThis.history.replaceState(globalThis.history.state, '',
                 globalThis.location.pathname + globalThis.location.search);
         }
@@ -136,7 +138,7 @@ export default class ArcadeLeaderboardService {
                     ...(authenticated ? { Authorization: `Bearer ${this.identity?.token ?? ''}` } : {}) },
                 ...(body ? { body: JSON.stringify(body) } : {}), signal: controller.signal });
             if (!response.ok) { const error = new Error(`ارتباط با لیدربورد ناموفق بود (${response.status}).`); error.status = response.status; throw error; }
-            return await response.json();
+            return response.status === 204 ? null : await response.json();
         } finally { clearTimeout(timer); }
     }
     async ensureIdentity() {
@@ -154,8 +156,11 @@ export default class ArcadeLeaderboardService {
         if (globalThis.document?.body) {
             const policy = await this.request('/legal');
             const requiresContact = policy.require_contact === true;
-            acceptance = await requestLegalAcknowledgement(document, { contact: requiresContact, newProfile: requiresContact });
-            if (acceptance && requiresContact) {
+            acceptance = await requestLegalAcknowledgement(document, {
+                contact: requiresContact, newProfile: requiresContact,
+                referral: policy.referrals_available ? this.invitation : null,
+            });
+            if (acceptance && (requiresContact || acceptance.referral_code) && globalThis.crypto?.randomUUID) {
                 const key = `demian.arcade.registration:${this.baseUrl}`;
                 acceptance.registration_key = safeRead(this.storage, key, null) ?? crypto.randomUUID();
                 safeWrite(this.storage, key, acceptance.registration_key);
@@ -171,11 +176,14 @@ export default class ArcadeLeaderboardService {
                 error.message = 'این شماره یا این مرورگر حساب دارد. از بخش حساب در جدول رتبه‌بندی وارد شو یا حساب را بازیابی کن.';
             }
             if (error.status === 422) {
-                error.message = 'نام نمایشی و شمارهٔ تلفن را بررسی کن و دوباره ثبت‌نام کن.';
+                error.message = acceptance?.referral_code
+                    ? 'اطلاعات حساب یا کد دعوت معتبر نیست. می‌توانی دعوت را برداری و دوباره ثبت‌نام کنی.'
+                    : 'نام نمایشی و شمارهٔ تلفن را بررسی کن و دوباره ثبت‌نام کن.';
             }
             throw error;
         }
         this.acceptedLegalVersion = acceptance?.policy_version ?? null;
+        this.invitation = null;
         this.profile = { display_name: this.identity.display_name ?? this.profile.display_name };
         safeWrite(this.storage, PROFILE_KEY, this.profile);
         safeWrite(this.identityStorage, this.identityKey, this.identity);
@@ -195,6 +203,9 @@ export default class ArcadeLeaderboardService {
             || typeof response.player_id !== 'string'
             || typeof response.display_name !== 'string') {
             throw new Error('پاسخ ورود سرور معتبر نیست.');
+        }
+        if (this.identity?.player_id && this.identity.player_id !== response.player_id) {
+            await clearGamePush(this, response.player_id);
         }
         this.acceptedLegalVersion = null;
         this.identity = { token: response.token, player_id: response.player_id,
@@ -280,7 +291,7 @@ export default class ArcadeLeaderboardService {
             throw new Error('برای دریافت سوابق باید حساب آنلاین را بازیابی کنی.');
         }
         const allowed = ['runs', 'best_scores', 'weekly_results', 'weekly_wins', 'skill_leagues', 'personal_progress', 'loyalty_xp', 'missions',
-            'coupons', 'anticheat_observations'];
+            'coupons', 'referral_attribution', 'quiet_hours_claims', 'browser_push', 'anticheat_observations'];
         if (!allowed.includes(type)) throw new Error('نوع داده معتبر نیست.');
         return this.request('/player/data/records?type=' + encodeURIComponent(type) +
             (cursor ? '&cursor=' + encodeURIComponent(cursor) : ''), { authenticated: true });
@@ -337,6 +348,9 @@ export default class ArcadeLeaderboardService {
             throw new Error('پاسخ بازیابی سرور نامعتبر بود.');
         }
         // Never put the recovery code or the complete raw response in storage.
+        if (this.identity?.player_id && this.identity.player_id !== response.player_id) {
+            await clearGamePush(this, response.player_id);
+        }
         this.acceptedLegalVersion = null;
         this.identity = { token: response.token, player_id: response.player_id,
             token_expires_at: response.token_expires_at };
@@ -621,6 +635,16 @@ export default class ArcadeLeaderboardService {
         return response.data;
     }
 
+    async quietHours() {
+        if (!this.connected || !this.identity?.token) return { available: false, eligible: false, data: [] };
+        return this.request('/player/quiet-hours', { authenticated: true });
+    }
+
+    async claimQuietHours(id) {
+        if (!this.connected || !this.identity?.token || !Number.isSafeInteger(id) || id < 1) throw new Error('Invalid offer');
+        return this.request('/player/quiet-hours/' + id + '/claim', { method: 'POST', authenticated: true });
+    }
+
     async myCoupons() {
         if (!this.connected || !this.identity?.token) return [];
         try {
@@ -661,6 +685,7 @@ export default class ArcadeLeaderboardService {
             await this.request('/player', { method: 'DELETE', authenticated: true });
         }
         this.identity = null;
+        await clearGamePush(this);
         this.savePending(null);
         this.rejected = [];
         safeWrite(this.storage, this.rejectedKey, []);

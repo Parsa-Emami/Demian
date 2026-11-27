@@ -153,7 +153,9 @@ $financial = [
     'DEMIAN_COUPONS_ISSUE_ENABLED', 'DEMIAN_COUPONS_AUTO_ISSUE_ENABLED',
     'DEMIAN_COUPONS_MANUAL_GIFTS_ENABLED', 'DEMIAN_COUPONS_CAFE_ENABLED',
     'DEMIAN_COUPONS_CAMPAIGNS_ENABLED', 'DEMIAN_COUPONS_DELIVERY_SUPPORT_ENABLED',
-    'DEMIAN_ARCADE_DRIFT_PRIZES_ENABLED',
+    'DEMIAN_ARCADE_DRIFT_PRIZES_ENABLED', 'DEMIAN_ARCADE_CRITTERS_PRIZES_ENABLED',
+    'DEMIAN_ARCADE_COFFEE_PRIZES_ENABLED', 'DEMIAN_ARCADE_AFTER_HOURS_PRIZES_ENABLED',
+    'DEMIAN_ARCADE_CAFE_RUSH_PRIZES_ENABLED', 'DEMIAN_QUIET_HOURS_ENABLED',
     'DEMIAN_WEEKLY_AUTO_AWARDS_ENABLED',
 ];
 // Staging is a strict non-financial rehearsal, never an alias for the real
@@ -172,8 +174,6 @@ if ($target === 'staging') {
         }
     }
     $stagingForbidden = array_merge($financial, [
-        'DEMIAN_ARCADE_CRITTERS_PRIZES_ENABLED',
-        'DEMIAN_ARCADE_COFFEE_PRIZES_ENABLED',
         'DEMIAN_AFTER_HOURS_ROUTE_PRIZES',
         'DEMIAN_CAFE_RUSH_ROUTE_PRIZES',
         'DEMIAN_OPEN_WORLD_ROUTE_PRIZES',
@@ -216,6 +216,16 @@ if ($target === 'production' && count(array_filter($financial, $enabled)) > 0) {
             'DEMIAN_WEEKLY_SETTLEMENT_ENABLED'] as $flag) {
             if (!$enabled($flag)) preflightFail('Automatic awards require manual approval: '.$flag);
         }
+    }
+}
+if ($enabled('DEMIAN_WEB_PUSH_ENABLED')) {
+    $subject = (string) ($values['DEMIAN_WEB_PUSH_SUBJECT'] ?? '');
+    $validSubject = str_starts_with($subject, 'mailto:')
+        ? filter_var(substr($subject, 7), FILTER_VALIDATE_EMAIL) !== false
+        : str_starts_with($subject, 'https://') && filter_var($subject, FILTER_VALIDATE_URL) !== false;
+    if (! $validSubject || ! preg_match('/^[A-Za-z0-9_-]{87}$/D', $values['DEMIAN_WEB_PUSH_PUBLIC_KEY'] ?? '')
+        || ! preg_match('/^[A-Za-z0-9_-]{43}$/D', $values['DEMIAN_WEB_PUSH_PRIVATE_KEY'] ?? '')) {
+        preflightFail('An enabled browser notification service requires a valid contact and both private environment keys.');
     }
 }
 $free = @disk_free_space($storage);

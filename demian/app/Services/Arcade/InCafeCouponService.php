@@ -42,7 +42,7 @@ final class InCafeCouponService
     private function validIssuance(object $coupon): bool
     {
         $source = (string) $coupon->source;
-        if (! in_array($source, ['weekly', 'gift'], true)
+        if (! in_array($source, ['weekly', 'gift', 'quiet_hours'], true)
             || ! $coupon->player_id
             || ($source === 'weekly' && ! $coupon->winner_id)
             || ($source === 'gift' && ! $coupon->gift_id)
@@ -62,10 +62,14 @@ final class InCafeCouponService
         $details = json_decode((string) $events[0]->details, true);
         if (! is_array($details)) return false;
 
-        return $source === 'gift'
-            ? ($details['source'] ?? null) === 'gift'
-                && (int) ($details['gift_id'] ?? 0) === (int) $coupon->gift_id
-            : (int) ($details['winner_id'] ?? 0) === (int) $coupon->winner_id;
+        return match ($source) {
+            'gift' => ($details['source'] ?? null) === 'gift'
+                && (int) ($details['gift_id'] ?? 0) === (int) $coupon->gift_id,
+            'quiet_hours' => ($details['source'] ?? null) === 'quiet_hours'
+                && DB::table('arcade_quiet_claims')->where('coupon_id', $coupon->id)
+                    ->where('player_id', $coupon->player_id)->where('offer_id', $details['offer_id'] ?? 0)->exists(),
+            'weekly' => (int) ($details['winner_id'] ?? 0) === (int) $coupon->winner_id,
+        };
     }
 
     private function state(object $coupon): string
@@ -86,6 +90,8 @@ final class InCafeCouponService
         abort_unless($coupon, 422, 'Code not found.');
         return [
             'state' => $this->state($coupon),
+            'quiet_branch' => $coupon->source === 'quiet_hours'
+                ? app(QuietHoursService::class)->offerForCoupon((int) $coupon->id)?->branch_id : null,
             'owner_name' => $coupon->player_id
                 ? DB::table('arcade_players')->where('id', $coupon->player_id)->value('display_name') : null,
             'percent' => (int) $coupon->discount_percent,
@@ -158,6 +164,9 @@ final class InCafeCouponService
             $discount = $this->discount($coupon, $subtotal);
             abort_unless($discount > 0, 422, 'Discount amount is zero.');
             app(CampaignEconomics::class)->assertRedemption($coupon, $subtotal, $discount);
+            if ($coupon->source === 'quiet_hours') {
+                app(QuietHoursService::class)->assertRedemption($coupon, $cashier->branch_id, $subtotal, $discount);
+            }
             // Same physical bill can never claim another coupon, irrespective
             // of cashier identity. Unique SQL order_hash enforces this.
             abort_if(DB::table('arcade_coupon_redemptions')->where('order_hash', $ticketHash)

@@ -20,10 +20,53 @@ const legalURLs = ['privacy/index.html', 'terms/index.html', 'competition-rules/
 const iconURLs = [
     new URL('icons/demian-192.png', scope).href,
     new URL('icons/demian-512.png', scope).href,
+    new URL('icons/demian-notification-badge.png', scope).href,
+    new URL('icons/demian-notification.png', scope).href,
 ];
+const notificationTargets = new Set(['home', 'leaderboard', 'rewards']);
 const marker = key => new URL('__offline_ready/' + key, scope).href;
 const gameCache = id => GAME_PREFIX + RELEASE_ID + '-' + id;
 let busy = false;
+
+self.addEventListener('push', event => {
+    let payload;
+    try { payload = event.data?.json(); } catch { return; }
+    if (!payload || !/^[0-9a-f-]{36}$/i.test(payload.id ?? '')
+        || typeof payload.title !== 'string' || typeof payload.body !== 'string'
+        || !notificationTargets.has(payload.target)) return;
+    event.waitUntil(self.registration.showNotification(payload.title.slice(0, 60), {
+        body: payload.body.slice(0, 180),
+        icon: iconURLs[0],
+        badge: iconURLs[2],
+        image: iconURLs[3],
+        tag: 'demian-' + payload.id,
+        data: { target: payload.target },
+        lang: 'fa',
+        dir: 'rtl',
+    }));
+});
+
+self.addEventListener('notificationclick', event => {
+    event.notification.close();
+    const candidate = event.notification.data?.target;
+    const target = notificationTargets.has(candidate) ? candidate : 'home';
+    event.waitUntil((async () => {
+        const windows = await self.clients.matchAll({ type: 'window' });
+        for (const client of windows) {
+            const url = new URL(client.url);
+            if (url.origin !== scope.origin
+                || ![scope.pathname, new URL('index.html', scope).pathname].includes(url.pathname)) continue;
+            try {
+                await client.focus();
+                client.postMessage({ type: 'DEMIAN_PUSH_OPEN', target });
+                return;
+            } catch {}
+        }
+        const landing = new URL('./', scope);
+        if (target !== 'home') landing.hash = 'demian-notice=' + target;
+        await self.clients.openWindow(landing.href);
+    })());
+});
 
 async function isReady(cacheName, key) {
     if (!(await caches.has(cacheName))) return false;

@@ -24,6 +24,7 @@ use App\Http\Middleware\RequireArcadeLegalAcceptance;
 Route::prefix('v1/arcade')->middleware([ObserveArcadeRequest::class,
     LimitArcadePayload::class, 'throttle:arcade-public-ip'])->group(function (): void {
     Route::get('/health', ArcadeHealthController::class);
+    Route::get('/push/config', [\App\Http\Controllers\Api\V1\BrowserPushController::class, 'config']);
     Route::post('/telemetry', ArcadeTelemetryController::class)
         ->middleware('throttle:arcade-telemetry');
     Route::get('/legal', [ArcadePrivacyController::class, 'policy']);
@@ -46,6 +47,18 @@ Route::prefix('v1/arcade')->middleware([ObserveArcadeRequest::class,
     // Online checkout routes intentionally retired. Only authenticated
     // in-cafe staff may redeem coupons through CSRF-protected web routes.
     Route::middleware(AuthenticateArcadePlayer::class)->group(function (): void {
+        Route::get('/player/referrals', [\App\Http\Controllers\Api\V1\ReferralController::class, 'show'])
+            ->middleware('throttle:arcade-coupon-wallet');
+        Route::post('/player/referrals/code', [\App\Http\Controllers\Api\V1\ReferralController::class, 'code'])
+            ->middleware(['throttle:arcade-coupon-wallet', RequireArcadeLegalAcceptance::class]);
+        Route::get('/player/quiet-hours', [\App\Http\Controllers\Api\V1\QuietHoursController::class, 'index'])
+            ->middleware('throttle:arcade-coupon-wallet');
+        Route::post('/player/quiet-hours/{offerId}/claim', [\App\Http\Controllers\Api\V1\QuietHoursController::class, 'claim'])
+            ->whereNumber('offerId')->middleware(['throttle:arcade-coupon-wallet', RequireArcadeLegalAcceptance::class]);
+        Route::post('/player/push/subscription', [\App\Http\Controllers\Api\V1\BrowserPushController::class, 'subscribe'])
+            ->middleware('throttle:arcade-coupon-wallet');
+        Route::delete('/player/push/subscription', [\App\Http\Controllers\Api\V1\BrowserPushController::class, 'unsubscribe'])
+            ->middleware('throttle:arcade-coupon-wallet');
         Route::get('/player/progress', [PersonalProgressController::class, 'show'])->middleware('throttle:arcade-coupon-wallet');
         Route::get('/player/loyalty', [LoyaltyXpController::class, 'show'])->middleware('throttle:arcade-coupon-wallet');
         Route::get('/player/missions', [MissionController::class, 'show'])->middleware('throttle:arcade-coupon-wallet');

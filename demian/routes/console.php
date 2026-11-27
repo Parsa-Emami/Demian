@@ -2,10 +2,44 @@
 
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Schedule;
+use App\Services\Arcade\BrowserPushService;
+use App\Services\Arcade\BrowserPushTransport;
+use App\Services\Arcade\QuietHoursService;
+use App\Services\Arcade\ReferralService;
+use Minishlink\WebPush\VAPID;
 
 Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
+
+Artisan::command('arcade:referrals:sweep', function (ReferralService $referrals): void {
+    $this->line((string) $referrals->sweep());
+})->purpose('Evaluate a bounded batch of pending referrals and expire old deduplication entries.');
+Schedule::command('arcade:referrals:sweep')->hourly()->withoutOverlapping(15)->onOneServer();
+
+Artisan::command('arcade:quiet-hours:prune', function (QuietHoursService $offers): void {
+    $offers->prune();
+})->purpose('Prune expired quiet-hours identity deduplication digests.');
+Schedule::command('arcade:quiet-hours:prune')->dailyAt('04:30')->timezone('Asia/Tehran')
+    ->withoutOverlapping(10)->onOneServer();
+
+Artisan::command('arcade:push:keys', function (): void {
+    $keys = VAPID::createVapidKeys();
+    $this->line('DEMIAN_WEB_PUSH_PUBLIC_KEY='.$keys['publicKey']);
+    $this->line('DEMIAN_WEB_PUSH_PRIVATE_KEY='.$keys['privateKey']);
+})->purpose('Generate VAPID keys for a private server environment file.');
+
+Artisan::command('arcade:push:drain', function (BrowserPushService $push, BrowserPushTransport $transport): void {
+    $this->line(json_encode($push->drain($transport), JSON_THROW_ON_ERROR));
+})->purpose('Dispatch a bounded batch of opted-in browser notifications.');
+Schedule::command('arcade:push:drain')->everyMinute()->withoutOverlapping(3)->onOneServer()
+    ->when(fn (): bool => config('demian-push.enabled') === true);
+
+Artisan::command('arcade:push:prune', function (BrowserPushService $push): void {
+    $this->line((string) $push->prune());
+})->purpose('Remove expired browser notification messages and their delivery history.');
+Schedule::command('arcade:push:prune')->dailyAt('04:40')->timezone('Asia/Tehran')->withoutOverlapping(10)->onOneServer();
 
 \Illuminate\Support\Facades\Artisan::command('arcade:prune', function (): void {
     $expired = \Illuminate\Support\Facades\DB::table('arcade_runs')->where('status', 'started')->where('expires_at', '<', now())->update(['status' => 'expired', 'updated_at' => now()]);

@@ -12,12 +12,15 @@ import { createHash } from 'node:crypto';
 const script = new URL('../../../ops/cpanel/package_release.sh', import.meta.url).pathname;
 const release = 'c'.repeat(40);
 const runtimeFiles = [
-  'artisan', 'public/index.php', 'public/.htaccess',
+  'artisan', 'public/index.php', 'public/.htaccess', 'public/favicon.ico',
   'vendor/autoload.php', 'resources/legal/policy.json',
   'resources/js/game/games/cafe-drift/CafeDriftModel.js',
   'resources/js/game/games/cafe-drift/CafeDriftGame.js',
   'resources/js/game/games/cafe-drift/CafeDriftRenderer.js',
   'resources/css/cafe-drift.css',
+  'resources/css/cafe-critters.css', 'resources/css/coffee-crash.css', 'resources/css/after-hours.css', 'resources/css/cafe-rush.css',
+  'resources/js/game/content/WeeklyContent.js', 'resources/js/game/core/InputController.js',
+  'resources/js/game/leaderboard/ArcadeLeaderboardService.js', 'resources/js/game/leaderboard/RankedGameplayChallenge.js',
   'ops/cpanel/host_preflight.php', 'ops/cpanel/cron.sh',
   'ops/cpanel/rollback.sh', 'ops/cpanel/backup_offsite.sh',
   'ops/cpanel/restore_drill.sh', 'ops/cpanel/staging_acceptance.sh', 'ops/cpanel/install_webroot_bridge.php',
@@ -26,6 +29,9 @@ const runtimeFiles = [
 const dirs = [
   'app', 'bootstrap/cache', 'config', 'database', 'routes',
   'resources/game', 'resources/legal', 'resources/views', 'src', 'vendor',
+  'resources/js/game/games/cafe-critters', 'resources/js/game/games/coffee-crash',
+  'resources/js/game/games/after-hours', 'resources/js/game/games/cafe-rush',
+  'resources/js/game/input', 'resources/js/game/shared/collision', 'resources/js/game/shared/navigation',
 ];
 function fixture() {
   const home = mkdtempSync(join(tmpdir(), 'demian-pr06-'));

@@ -22,7 +22,7 @@ final class WeeklyAllocationService
         $catalog = app(RankedGameCatalog::class);
         foreach ($policy['game_caps'] as $game => $limit) {
             $lock = $locks->get($game);
-            if ($catalog->supportsPrizes($game) && ($lock ? $lock->ranked_enabled && $lock->prize_eligible : $game !== CafeDriftReplayVerifier::GAME_ID)) {
+            if ($catalog->prizeEligibleForLock($game,$lock)) {
                 $rankings[$game] ??= [];
             }
         }
@@ -83,9 +83,7 @@ final class WeeklyAllocationService
         $rankings = []; $versions = [];
         foreach ($rows as $row) {
             $lock = $locks->get($row->game_id);
-            if (! $catalog->supportsPrizes($row->game_id)
-                || ($lock ? (! $lock->ranked_enabled || ! $lock->prize_eligible || $lock->rules_version !== $row->rules_version)
-                    : $row->game_id === CafeDriftReplayVerifier::GAME_ID)) continue;
+            if (!$catalog->prizeEligibleForLock($row->game_id,$lock,$row->rules_version)) continue;
             $versions[$row->game_id][$row->rules_version] = true;
             $rankings[$row->game_id][] = ['player_id' => $row->player_id, 'score' => (int) $row->score,
                 'achieved_at' => $row->achieved_at, 'verified' => true];

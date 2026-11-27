@@ -91,6 +91,8 @@ const resourcePaths = [...new Set([
     ...provisional.games.flatMap(game => game.files.map(row => row.path)),
 ])].sort();
 const fingerprint = createHash('sha256');
+const workerTemplate = readFileSync(join(root, 'tools/templates/service-worker.js'), 'utf8');
+fingerprint.update(workerTemplate);
 for (const path of resourcePaths) {
     fingerprint.update(path);
     fingerprint.update(createHash('sha256').update(readFileSync(join(out, path))).digest());
@@ -105,7 +107,6 @@ const compat = mergeCompatibleAssets({
 console.log('Versioned build compatibility: ' + compat.generations + ' generations, ' +
     compat.retainedAssets + ' retained assets.');
 writeFileSync(join(out, 'offline-packs.json'), JSON.stringify(offlinePacks, null, 2) + '\n');
-const workerTemplate = readFileSync(join(root, 'tools/templates/service-worker.js'), 'utf8');
 if (!workerTemplate.includes('__DEMIAN_RELEASE_ID__')) throw new Error('PWA worker version placeholder missing.');
 writeFileSync(join(out, 'service-worker.js'),
     workerTemplate.replaceAll('__DEMIAN_RELEASE_ID__', releaseId));

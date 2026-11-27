@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="robots" content="noindex,nofollow,noarchive">
   <meta name="referrer" content="no-referrer">
+  <link rel="icon" href="{{ asset('favicon.ico') }}" sizes="any">
   <title>@yield('title', 'پنل صندوق‌دار دمیان')</title>
   <style>
     :root{font-family:Tahoma,'Segoe UI',sans-serif;color-scheme:dark;background:#101519;color:#f5f4ed}
