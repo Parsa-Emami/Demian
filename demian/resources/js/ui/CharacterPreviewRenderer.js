@@ -79,6 +79,7 @@ export default class CharacterPreviewRenderer {
 
         const renderId = String(++this.renderSerial);
         canvas.dataset.previewRenderId = renderId;
+        delete canvas.dataset.portraitStandard;
         canvas.setAttribute('role', 'img');
         canvas.setAttribute('aria-label', character.name ?? character.slug ?? 'Character preview');
         this.prepareCanvas(canvas);
@@ -93,8 +94,9 @@ export default class CharacterPreviewRenderer {
                     const height = Number(image.naturalHeight || image.height);
                     if (!(width > 0 && height > 0)) throw new Error('Character poster has no decoded dimensions.');
                     this.prepareCanvas(canvas);
-                    const frame = (character.portrait && resolvePortraitFrame(character.slug, width, height))
-                        || { x: 0, y: 0, w: width, h: height };
+                    const crop = character.portrait && resolvePortraitFrame(character.slug, width, height);
+                    const frame = crop || { x: 0, y: 0, w: width, h: height };
+                    if (character.portrait) canvas.dataset.portraitStandard = crop ? 'v2' : 'uncalibrated';
                     this.drawFrame(canvas, image, frame);
                     canvas.dataset.previewState = 'ready';
                     return;
@@ -126,6 +128,7 @@ export default class CharacterPreviewRenderer {
 
             this.prepareCanvas(canvas);
             this.drawFrame(canvas, image, frame);
+            if (character.portrait) canvas.dataset.portraitStandard = 'atlas-fallback';
             canvas.dataset.previewState = 'ready';
         } catch (error) {
             if (canvas.dataset.previewRenderId !== renderId) return;

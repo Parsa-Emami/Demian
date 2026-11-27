@@ -25,7 +25,7 @@ test('all crops preserve head bounds, aspect ratio, face scale and common eye al
         assert.ok(left >= f.x && right <= f.x + f.w && top >= f.y && chin <= f.y + f.h, slug);
         assert.ok(Math.abs((ex - f.x) / f.w - PORTRAIT_STANDARD.eyeX) <= .01, slug);
         assert.ok(Math.abs((ey - f.y) / f.h - PORTRAIT_STANDARD.eyeY) <= .01, slug);
-        assert.ok((chin - ey) / f.h >= .15 && (chin - ey) / f.h <= .21, slug);
+        assert.ok((chin - ey) / f.h >= .15 && (chin - ey) / f.h <= PORTRAIT_STANDARD.eyeToChin, slug);
         const double = resolvePortraitFrame(slug, 448, 448);
         assert.deepEqual(double, { x: f.x * 2, y: f.y * 2, w: f.w * 2, h: f.h * 2 }, slug);
     }
@@ -49,9 +49,12 @@ test('renderer applies calibrated crops only to portrait cards, not regular prev
     const f = resolvePortraitFrame('darya', 224, 224);
     assert.deepEqual(calls[0].slice(1, 5), [f.x, f.y, f.w, f.h]);
     assert.equal(canvas.dataset.previewState, 'ready');
+    assert.equal(canvas.dataset.portraitStandard, 'v2');
     assert.equal(ctx.imageSmoothingEnabled, false);
     await renderer.render(canvas, record);
+    assert.equal(canvas.dataset.portraitStandard, undefined);
     assert.deepEqual(calls[1].slice(1, 5), [0, 0, 224, 224]);
     await renderer.render(canvas, { ...record, slug: 'unknown', portrait: true });
+    assert.equal(canvas.dataset.portraitStandard, 'uncalibrated');
     assert.deepEqual(calls[2].slice(1, 5), [0, 0, 224, 224]);
 });
