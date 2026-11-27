@@ -46,6 +46,8 @@ jobs:
       - run: npm run validate:characters:v14
       - name: Audit V2 portrait framing and raster proportions
         run: python3 tools/audit_character_visual_v2.py --output "$RUNNER_TEMP/character-visual-v2"
+      - name: Audit all directional frames and quality variants
+        run: python3 tools/audit_sprite_animation_v2.py --output "$RUNNER_TEMP/character-visual-v2"
       - uses: actions/upload-artifact@v4
         if: always()
         with:
