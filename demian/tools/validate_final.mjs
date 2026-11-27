@@ -18,7 +18,9 @@ for (const entry of entries) {
     assert.equal(entry.pack_version, embedded.packVersion);
     assert.equal(entry.locomotion_style, embedded.locomotionStyle ?? 'ground-runner');
 }
-assert.equal(entries.find(c=>c.slug==='darya').pack_version,14);
+for (const slug of ['darya', 'arsal']) {
+    assert.equal(entries.find(c => c.slug === slug).pack_version, 15);
+}
 assert.equal(JSON.parse(read('package.json')).version,'14.0.0');
 assert.equal(read('FINAL-VERSION.txt').trim(),'14.0.0');
 assert(read('resources/views/demian.blade.php').includes('data-runtime-version="14.0.0-mobile-runner"'));

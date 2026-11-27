@@ -6,8 +6,8 @@
       "slug": "darya",
       "is_builtin": true,
       "is_active": true,
-      "sprite_url": "assets/characters/darya/darya-spritesheet-v14-mobile.png",
-      "atlas_url": "assets/characters/darya/darya-atlas-v14-mobile.json",
+      "sprite_url": "assets/characters/darya/darya-spritesheet-v15-mobile.png",
+      "atlas_url": "assets/characters/darya/darya-atlas-v15-mobile.json",
       "settings": {
         "scale": 1,
         "walk_speed": 3.55,

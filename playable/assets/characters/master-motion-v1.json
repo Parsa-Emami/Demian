@@ -91,7 +91,7 @@
       "slug": "darya",
       "displayName": "DARYA / دریا",
       "family": "female-base-v1",
-      "packVersion": 14,
+      "packVersion": 15,
       "defaultActive": true,
       "skin": "darya",
       "accessories": [
@@ -394,5 +394,5 @@
       "identityContract": "assets/characters/mahyar/manifests/mahyar_identity_contract.json"
     }
   ],
-  "sourceSha256": "334253397f1b84c70cc74ea336f73614fd65e4d8cb04aa53a036a9b21efb2d7c"
+  "sourceSha256": "a44db02ea9d35631cc3b01c2af580763c7db994586908cc620d18d944f29d058"
 }

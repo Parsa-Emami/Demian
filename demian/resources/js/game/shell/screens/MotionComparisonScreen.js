@@ -2,6 +2,7 @@ import BaseScreen from './BaseScreen.js';
 import MasterMotionController from '../../characters/motion/MasterMotionController.js';
 import { MASTER_MOTION, MOTION_CHARACTERS, MOTION_SAMPLES, motionCharacter, motionFamily, normalizedPhase } from '../../characters/motion/MasterMotionLibrary.js';
 import { drawMasterRig } from '../../characters/motion/MasterMotionRenderer.js';
+import { characterReferenceBodyHeightRatio } from '../../characters/CharacterVisualContract.js';
 
 export default class MotionComparisonScreen extends BaseScreen {
     constructor({ visuals, settings, ...options }) {
@@ -166,7 +167,7 @@ export default class MotionComparisonScreen extends BaseScreen {
                 else animator.seek(phase);
                 const f = avatar.atlas.frames[animator.currentFrameName()];
                 if (f) {
-                    const size = 244 / (avatar.atlas.render?.referenceBodyHeightRatio ?? .7);
+                    const size = 244 / characterReferenceBodyHeightRatio(avatar.atlas, { fallback: .7 });
                     const pivot = avatar.atlas.pivot ?? { x: .5, y: .94 };
                     ctx.imageSmoothingEnabled = true;
                     ctx.drawImage(avatar.texture.image, f.x, f.y, f.w, f.h, 141 - size * pivot.x, 302 - size * pivot.y, size, size);

@@ -28,29 +28,29 @@ function runAssetPairTest(image, revision = 'a'.repeat(64)) {
 test('Step 18: release policy accepts only declared runtime/detail WebP alongside original source PNG', () => {
     for (const variant of ['lite', 'runtime', 'detail']) {
         for (const ext of ['png', 'webp']) {
-            assert.equal(assetDecision('characters/darya/darya-spritesheet-v14-' + variant + '.' + ext).keep, true);
+            assert.equal(assetDecision('characters/darya/darya-spritesheet-v15-' + variant + '.' + ext).keep, true);
         }
     }
-    assert.equal(assetDecision('characters/darya/darya-spritesheet-v14-lite.webp').keep, true);
-    assert.equal(assetDecision('characters/darya/darya-spritesheet-v14-mobile.webp').keep, false);
-    assert.equal(assetDecision('characters/darya/darya-spritesheet-v14-desktop.webp').keep, false);
+    assert.equal(assetDecision('characters/darya/darya-spritesheet-v15-lite.webp').keep, true);
+    assert.equal(assetDecision('characters/darya/darya-spritesheet-v15-mobile.webp').keep, false);
+    assert.equal(assetDecision('characters/darya/darya-spritesheet-v15-desktop.webp').keep, false);
     assert.equal(assetDecision('characters/darya/darya-spritesheet-v13-runtime.webp').keep, false);
     assert.equal(assetDecision('characters/darya/source-v14/master.png').keep, false);
-    assert.equal(assetDecision('characters/darya/darya-atlas-v14-runtime.webp').keep, false);
+    assert.equal(assetDecision('characters/darya/darya-atlas-v15-runtime.webp').keep, false);
 });
 
 test('Step 18: runtime honors only pixel-exact atlas WebP sibling and retains revision cache key', async () => {
-    const h = runAssetPairTest('darya-spritesheet-v14-runtime.webp');
+    const h = runAssetPairTest('darya-spritesheet-v15-runtime.webp');
     const pack = await h.go();
-    assert.match(h.loaded[0], /darya-spritesheet-v14-runtime\.webp\?sprite_rev=a{64}$/i);
+    assert.match(h.loaded[0], /darya-spritesheet-v15-runtime\.webp\?sprite_rev=a{64}$/i);
     assert.equal(pack.variant, 'runtime');
-    assert.equal(pack.atlas.meta.image, 'darya-spritesheet-v14-runtime.webp');
+    assert.equal(pack.atlas.meta.image, 'darya-spritesheet-v15-runtime.webp');
 });
 
 test('Step 18: unoptimized PNG release and Laravel development continue to use original image', async () => {
-    const h = runAssetPairTest('darya-spritesheet-v14-runtime.png');
+    const h = runAssetPairTest('darya-spritesheet-v15-runtime.png');
     const pack = await h.go();
-    assert.match(h.loaded[0], /darya-spritesheet-v14-runtime\.png\?sprite_rev=a{64}$/i);
+    assert.match(h.loaded[0], /darya-spritesheet-v15-runtime\.png\?sprite_rev=a{64}$/i);
     assert.equal(pack.variant, 'runtime');
 });
 
@@ -58,8 +58,8 @@ test('Step 18: atlas metadata cannot redirect sprite fetches or cross-link chara
     for (const attack of [
         '../negar/negar-spritesheet-v14-runtime.webp',
         'https://other.example.com/tracking.webp',
-        'darya-spritesheet-v14-mobile.webp',
-        'darya-spritesheet-v14-runtime.svg',
+        'darya-spritesheet-v15-mobile.webp',
+        'darya-spritesheet-v15-runtime.svg',
     ]) {
         const h = runAssetPairTest(attack);
         await assert.rejects(h.go(), /Atlas sprite path mismatch/);

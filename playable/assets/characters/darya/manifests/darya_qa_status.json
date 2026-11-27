@@ -1,34 +1,34 @@
 {
   "character_key": "darya",
-  "pack_version": 14,
+  "pack_version": 15,
   "status": "validated_in_emulated_browser",
   "checks": {
-    "asset_geometry": "passed",
+    "source_key_poses": 112,
+    "direction_count": 8,
     "all_variants": true,
-    "packed_frames_per_variant": 672,
-    "runtime_selection": "passed",
-    "touch_slide_under_bird": "passed",
-    "keyboard_jump": "passed",
-    "shared_game_selection": "passed",
-    "runtime_physical_cells": 316,
-    "lite_physical_cells": 239,
-    "natural_locomotion": "passed",
-    "same_gait_phase_at_30_60_120_hz": "passed",
-    "buffered_jump_on_landing_tick": "passed",
-    "held_jump_height": "passed",
-    "neutral_jump_no_forced_drift": "passed",
-    "js_tests_passed": 290,
-    "php_tests_passed": 14,
-    "php_assertions": 109,
-    "locomotion_profile": "shared-ground-v2",
-    "atlas_image_revision_matches_loaded_png": "passed",
-    "runtime_decoded_mib": 11.25,
-    "lite_decoded_mib": 3.75
+    "asset_geometry": "passed",
+    "directional_motion": "passed",
+    "ground_anchor": "passed",
+    "standing_height_parity": "passed",
+    "runner_jump_and_slide": "passed",
+    "games_started_per_viewport": 7
   },
-  "evidence": "../../../../../docs/release-v14-smooth-motion/README.fa.md",
+  "browser": {
+    "name": "Chromium",
+    "version": "158.0.8127.0",
+    "viewports": [
+      [
+        390,
+        844
+      ],
+      [
+        1440,
+        900
+      ]
+    ]
+  },
+  "evidence": "../../../../../docs/dcs-v15/darya-v15.fa.md",
   "limitations": [
-    "Physical phone GPU/FPS/battery not measured"
-  ],
-  "date": "2026-10-13",
-  "motion_version": "natural-locomotion-v2"
+    "Mobile viewport and touch were emulated. Physical-device GPU, FPS and battery were not measured."
+  ]
 }

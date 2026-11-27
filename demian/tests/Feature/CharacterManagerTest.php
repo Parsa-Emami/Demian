@@ -83,7 +83,7 @@ class CharacterManagerTest extends TestCase
         }
 
         // Updated asset pack versions
-        $packVersions = ['darya' => 14, 'setayesh' => 14, 'uzudi' => 14, 'tiam' => 14, 'elaheh' => 14, 'marjan' => 14, 'mohana' => 14, 'zohre' => 14, 'kiana' => 14, 'amirreza' => 14, 'hanna' => 14, 'ainaz' => 14, 'arsal' => 15, 'sadro' => 14, 'mojtaba' => 14, 'mobina' => 14, 'negar' => 14, 'dandelox' => 14, 'iman' => 14, 'amin' => 14, 'hossein' => 14, 'taher-db' => 14, 'sorkhi' => 14, 'yalda' => 14, 'mori' => 14, 'mahyar' => 14];
+        $packVersions = ['darya' => 15, 'setayesh' => 14, 'uzudi' => 14, 'tiam' => 14, 'elaheh' => 14, 'marjan' => 14, 'mohana' => 14, 'zohre' => 14, 'kiana' => 14, 'amirreza' => 14, 'hanna' => 14, 'ainaz' => 14, 'arsal' => 15, 'sadro' => 14, 'mojtaba' => 14, 'mobina' => 14, 'negar' => 14, 'dandelox' => 14, 'iman' => 14, 'amin' => 14, 'hossein' => 14, 'taher-db' => 14, 'sorkhi' => 14, 'yalda' => 14, 'mori' => 14, 'mahyar' => 14];
         $this->assertSame(array_keys($packVersions), config('demian-arcade.characters'));
 
         foreach ($packVersions as $slug => $version) {

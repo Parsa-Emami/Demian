@@ -8,7 +8,7 @@
       "display_name": "DARYA / دریا",
       "production_status": "gold_standard_production",
       "is_default_active": true,
-      "pack_version": 14,
+      "pack_version": 15,
       "locomotion_style": "ground-runner",
       "manifest": "darya/manifests/character_manifest_v4.json",
       "has_shipped_assets": true,
@@ -364,7 +364,7 @@
   ],
   "master_motion": {
     "version": "master-motion-v1",
-    "source_sha256": "334253397f1b84c70cc74ea336f73614fd65e4d8cb04aa53a036a9b21efb2d7c",
+    "source_sha256": "a44db02ea9d35631cc3b01c2af580763c7db994586908cc620d18d944f29d058",
     "url": "assets/characters/master-motion-v1.json"
   }
 }

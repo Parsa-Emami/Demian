@@ -2,10 +2,12 @@
   "version": "demian-character-standard-v2",
   "families": {
     "female-base-v1": {
-      "reference": "darya"
+      "reference": "darya",
+      "referencePackVersion": 15
     },
     "male-base-v1": {
-      "reference": "arsal"
+      "reference": "arsal",
+      "referencePackVersion": 15
     }
   },
   "canonicalRig": {
@@ -73,15 +75,19 @@
       "family": "female-base-v1",
       "landmarks": [
         112,
-        106,
-        124,
-        60,
-        52,
+        104,
+        122,
+        63,
+        53,
         161
       ],
       "accessories": [
         "pishi"
-      ]
+      ],
+      "standingHeightRatios": {
+        "world": 0.70139,
+        "sideView": 0.70139
+      }
     },
     "setayesh": {
       "family": "female-base-v1",
@@ -93,7 +99,11 @@
         56,
         169
       ],
-      "accessories": []
+      "accessories": [],
+      "standingHeightRatios": {
+        "world": 0.69444,
+        "sideView": 0.70139
+      }
     },
     "uzudi": {
       "family": "male-base-v1",
@@ -107,7 +117,11 @@
       ],
       "accessories": [
         "wings"
-      ]
+      ],
+      "standingHeightRatios": {
+        "world": 0.74653,
+        "sideView": 0.70139
+      }
     },
     "tiam": {
       "family": "female-base-v1",
@@ -121,7 +135,11 @@
       ],
       "accessories": [
         "homayoun"
-      ]
+      ],
+      "standingHeightRatios": {
+        "world": 0.70139,
+        "sideView": 0.70139
+      }
     },
     "elaheh": {
       "family": "female-base-v1",
@@ -133,7 +151,11 @@
         47,
         158
       ],
-      "accessories": []
+      "accessories": [],
+      "standingHeightRatios": {
+        "world": 0.72917,
+        "sideView": 0.70833
+      }
     },
     "marjan": {
       "family": "female-base-v1",
@@ -145,7 +167,11 @@
         55,
         145
       ],
-      "accessories": []
+      "accessories": [],
+      "standingHeightRatios": {
+        "world": 0.69444,
+        "sideView": 0.69444
+      }
     },
     "mohana": {
       "family": "female-base-v1",
@@ -157,7 +183,11 @@
         55,
         149
       ],
-      "accessories": []
+      "accessories": [],
+      "standingHeightRatios": {
+        "world": 0.70833,
+        "sideView": 0.70486
+      }
     },
     "zohre": {
       "family": "female-base-v1",
@@ -169,7 +199,11 @@
         57,
         149
       ],
-      "accessories": []
+      "accessories": [],
+      "standingHeightRatios": {
+        "world": 0.70139,
+        "sideView": 0.70139
+      }
     },
     "kiana": {
       "family": "female-base-v1",
@@ -181,7 +215,11 @@
         53,
         142
       ],
-      "accessories": []
+      "accessories": [],
+      "standingHeightRatios": {
+        "world": 0.71528,
+        "sideView": 0.71875
+      }
     },
     "amirreza": {
       "family": "male-base-v1",
@@ -195,7 +233,11 @@
       ],
       "accessories": [
         "wings"
-      ]
+      ],
+      "standingHeightRatios": {
+        "world": 0.68056,
+        "sideView": 0.70139
+      }
     },
     "hanna": {
       "family": "female-base-v1",
@@ -207,7 +249,11 @@
         55,
         149
       ],
-      "accessories": []
+      "accessories": [],
+      "standingHeightRatios": {
+        "world": 0.69444,
+        "sideView": 0.70139
+      }
     },
     "ainaz": {
       "family": "female-base-v1",
@@ -219,7 +265,11 @@
         50,
         150
       ],
-      "accessories": []
+      "accessories": [],
+      "standingHeightRatios": {
+        "world": 0.72917,
+        "sideView": 0.70139
+      }
     },
     "arsal": {
       "family": "male-base-v1",
@@ -231,7 +281,11 @@
         52,
         145
       ],
-      "accessories": []
+      "accessories": [],
+      "standingHeightRatios": {
+        "world": 0.70139,
+        "sideView": 0.70139
+      }
     },
     "sadro": {
       "family": "male-base-v1",
@@ -243,7 +297,11 @@
         50,
         149
       ],
-      "accessories": []
+      "accessories": [],
+      "standingHeightRatios": {
+        "world": 0.72222,
+        "sideView": 0.70833
+      }
     },
     "mojtaba": {
       "family": "male-base-v1",
@@ -255,7 +313,11 @@
         56,
         146
       ],
-      "accessories": []
+      "accessories": [],
+      "standingHeightRatios": {
+        "world": 0.69792,
+        "sideView": 0.70139
+      }
     },
     "mobina": {
       "family": "female-base-v1",
@@ -267,7 +329,11 @@
         52,
         153
       ],
-      "accessories": []
+      "accessories": [],
+      "standingHeightRatios": {
+        "world": 0.70833,
+        "sideView": 0.70833
+      }
     },
     "negar": {
       "family": "female-base-v1",
@@ -279,7 +345,11 @@
         52,
         153
       ],
-      "accessories": []
+      "accessories": [],
+      "standingHeightRatios": {
+        "world": 0.71528,
+        "sideView": 0.70833
+      }
     },
     "dandelox": {
       "family": "female-base-v1",
@@ -293,7 +363,11 @@
       ],
       "accessories": [
         "black-cat"
-      ]
+      ],
+      "standingHeightRatios": {
+        "world": 0.70833,
+        "sideView": 0.70833
+      }
     },
     "iman": {
       "family": "male-base-v1",
@@ -305,7 +379,11 @@
         55,
         146
       ],
-      "accessories": []
+      "accessories": [],
+      "standingHeightRatios": {
+        "world": 0.70486,
+        "sideView": 0.70139
+      }
     },
     "amin": {
       "family": "male-base-v1",
@@ -317,7 +395,11 @@
         61,
         145
       ],
-      "accessories": []
+      "accessories": [],
+      "standingHeightRatios": {
+        "world": 0.67708,
+        "sideView": 0.70139
+      }
     },
     "hossein": {
       "family": "male-base-v1",
@@ -329,7 +411,11 @@
         60,
         146
       ],
-      "accessories": []
+      "accessories": [],
+      "standingHeightRatios": {
+        "world": 0.68056,
+        "sideView": 0.70139
+      }
     },
     "taher-db": {
       "family": "male-base-v1",
@@ -341,7 +427,11 @@
         53,
         151
       ],
-      "accessories": []
+      "accessories": [],
+      "standingHeightRatios": {
+        "world": 0.70139,
+        "sideView": 0.69444
+      }
     },
     "sorkhi": {
       "family": "male-base-v1",
@@ -353,7 +443,11 @@
         45,
         148
       ],
-      "accessories": []
+      "accessories": [],
+      "standingHeightRatios": {
+        "world": 0.73264,
+        "sideView": 0.69444
+      }
     },
     "yalda": {
       "family": "female-base-v1",
@@ -365,7 +459,11 @@
         42,
         151
       ],
-      "accessories": []
+      "accessories": [],
+      "standingHeightRatios": {
+        "world": 0.74653,
+        "sideView": 0.74653
+      }
     },
     "mori": {
       "family": "male-base-v1",
@@ -377,7 +475,11 @@
         54,
         144
       ],
-      "accessories": []
+      "accessories": [],
+      "standingHeightRatios": {
+        "world": 0.70833,
+        "sideView": 0.70833
+      }
     },
     "mahyar": {
       "family": "male-base-v1",
@@ -389,7 +491,11 @@
         53,
         139
       ],
-      "accessories": []
+      "accessories": [],
+      "standingHeightRatios": {
+        "world": 0.70833,
+        "sideView": 0.70486
+      }
     }
   },
   "packVersions": [

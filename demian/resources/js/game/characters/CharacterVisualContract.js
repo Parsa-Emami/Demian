@@ -8,6 +8,7 @@ import {
     ALL_MANIFEST_SLUGS,
     characterManifestEntry,
 } from './manifests/CharacterManifestRegistry.js';
+import visualStandard from '../../../game/character-visual-standard-v2.json' with { type: 'json' };
 
 // Character Core V4 re-exports. See manifests/CharacterManifestRegistry.js
 // for the single source of truth this data comes from. Re-exported here so
@@ -35,7 +36,6 @@ export const CHARACTER_PACK_VERSION_OVERRIDES = Object.freeze({
     ainaz: 14,
     amirreza: 14,
     amin: 14,
-    darya: 14,
     hanna: 14,
     hossein: 14,
     iman: 14,
@@ -71,8 +71,8 @@ export const CHARACTER_SPRITE_VARIANTS = Object.freeze([
 ]);
 
 export const CHARACTER_CANONICAL_BODY = Object.freeze({
-    worldWidth: 3.75,
-    worldHeight: 3.75,
+    worldWidth: visualStandard.atlas.worldSize,
+    worldHeight: visualStandard.atlas.worldSize,
     minReferenceWidthRatio: 0.42,
     maxReferenceWidthRatio: 0.98,
     minReferenceHeightRatio: 0.62,
@@ -165,6 +165,20 @@ function clamp(value, min, max, fallback) {
     return Math.min(max, Math.max(min, number));
 }
 
+export function characterReferenceBodyHeightRatio(atlas, { sideView = false, fallback = 0.86 } = {}) {
+    const { slug, version } = atlas?.meta ?? {};
+    const standing = Object.hasOwn(visualStandard.characters, slug)
+        && version === characterPackVersion(slug)
+        ? visualStandard.characters[slug].standingHeightRatios : undefined;
+    const render = atlas?.render ?? {};
+    return clamp(
+        standing?.[sideView ? 'sideView' : 'world'] ?? render.referenceBodyHeightRatio ?? render.normalizedBodyHeightRatio,
+        CHARACTER_CANONICAL_BODY.minReferenceHeightRatio,
+        CHARACTER_CANONICAL_BODY.maxReferenceHeightRatio,
+        fallback
+    );
+}
+
 export function characterFrameWorldSize(atlas, display = CHARACTER_CANONICAL_BODY) {
     const canonicalBodyWidth = Math.max(0.1, Number(display?.worldWidth) || CHARACTER_CANONICAL_BODY.worldWidth);
     const canonicalBodyHeight = Math.max(0.1, Number(display?.worldHeight) || CHARACTER_CANONICAL_BODY.worldHeight);
@@ -176,12 +190,7 @@ export function characterFrameWorldSize(atlas, display = CHARACTER_CANONICAL_BOD
         CHARACTER_CANONICAL_BODY.maxReferenceWidthRatio,
         0.72
     );
-    const referenceHeightRatio = clamp(
-        render.referenceBodyHeightRatio ?? render.normalizedBodyHeightRatio,
-        CHARACTER_CANONICAL_BODY.minReferenceHeightRatio,
-        CHARACTER_CANONICAL_BODY.maxReferenceHeightRatio,
-        0.86
-    );
+    const referenceHeightRatio = characterReferenceBodyHeightRatio(atlas);
 
     // Sprite cells are square. Use one uniform world scale for X/Y so body and
     // facial proportions never get stretched merely to equalize character size.

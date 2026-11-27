@@ -1,0 +1,132 @@
+{
+  "character": "darya",
+  "version": 15,
+  "source": "poses.webp",
+  "source_sha256": "f2e8401484fd6628d4e6c8fc4562105a2841dd2c1cc58ae5631bb6ce23f15d52",
+  "cell": 160,
+  "pivot": {
+    "x": 0.5,
+    "y": 0.94
+  },
+  "directions": [
+    "s",
+    "sw",
+    "w",
+    "nw",
+    "n",
+    "ne",
+    "e",
+    "se"
+  ],
+  "poses": [
+    "walk-a",
+    "walk-pass-a",
+    "walk-b",
+    "walk-pass-b",
+    "idle",
+    "run-a",
+    "run-float-a",
+    "impact",
+    "launch",
+    "tuck",
+    "descend",
+    "greet",
+    "run-b",
+    "run-float-b"
+  ],
+  "provenance": {
+    "generated_with": "OpenAI ImageGen",
+    "reference_asset": "../source-v14/master.png",
+    "identity_reference": "../darya-preview-v14.png",
+    "inputs": {
+      "ground-cardinal": {
+        "sha256": "310dbe7bd9bf815df9cbf8724cca9482057c0ad4701fb478ada1f943dd02264a",
+        "size": [
+          1254,
+          1254
+        ]
+      },
+      "ground-diagonal": {
+        "sha256": "7c6a24d09816b4142d484da6882be2085fe30ee09b5aca78404bcd81d089ae09",
+        "size": [
+          1254,
+          1254
+        ]
+      },
+      "walk-cardinal": {
+        "sha256": "ff7bfbee9fef6fbdcdac3740959ff17fd0bbddfaf778d71275b062d2f6a9220f",
+        "size": [
+          1254,
+          1254
+        ]
+      },
+      "walk-diagonal": {
+        "sha256": "ee192d7cde08e5c10d18aad8c19319db23db3ea0ccd112b49b8f0a2b03ea86c1",
+        "size": [
+          1254,
+          1254
+        ]
+      },
+      "run-cardinal": {
+        "sha256": "1547f21b5ff57def0a4f7f1c3caff957983dddaecb8d7191e8697d12e4a021a7",
+        "size": [
+          1254,
+          1254
+        ]
+      },
+      "run-diagonal": {
+        "sha256": "6fda451e3fffb2027dbb59a15d9b21a061886e2f577dbede00a046e792aa2303",
+        "size": [
+          1254,
+          1254
+        ]
+      },
+      "air-cardinal": {
+        "sha256": "7854d4ef3af765f1202dbf2c505d20e9863d6a22c433c695ec4fa7c8a91bfbe9",
+        "size": [
+          1254,
+          1254
+        ]
+      },
+      "air-diagonal": {
+        "sha256": "572fcfdbc7f1f6e8bdc8e6e910c66c2113876beb3e5a7b5cbefd457e360046b1",
+        "size": [
+          1254,
+          1254
+        ]
+      }
+    },
+    "uniform_scale_by_input": {
+      "ground-cardinal": 0.421053,
+      "ground-diagonal": 0.414815,
+      "walk-cardinal": 0.409867,
+      "walk-diagonal": 0.411429,
+      "run-cardinal": 0.419608,
+      "run-diagonal": 0.418787,
+      "air-cardinal": 0.429423,
+      "air-diagonal": 0.432
+    },
+    "mirrored_source_directions": {
+      "ground-cardinal": [
+        "w"
+      ],
+      "ground-diagonal": [],
+      "walk-cardinal": [
+        "w"
+      ],
+      "walk-diagonal": [],
+      "run-cardinal": [
+        "w"
+      ],
+      "run-diagonal": [
+        "nw",
+        "sw"
+      ],
+      "air-cardinal": [
+        "w"
+      ],
+      "air-diagonal": []
+    },
+    "normalization": "Uniform art scale taken from upright or contact poses per source strip, with one torso anchor and grounded foot line. The companion stays on its screen side for each facing and follows the shared feet pivot in the air."
+  }
+}

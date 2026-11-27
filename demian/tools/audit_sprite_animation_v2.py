@@ -3,6 +3,7 @@ import argparse
 import hashlib
 import json
 from pathlib import Path
+from statistics import median
 from PIL import Image
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -35,12 +36,29 @@ def delta(a,b):
             abs((a[0]+a[2]-b[0]-b[2])/2))
 
 
+def standing_height_ratios(atlas, boxes):
+    def height(frame):
+        return boxes[frame][3] - boxes[frame][1]
+
+    idle = atlas['animations']['idle']
+    side_idle = atlas.get('sideViewAnimations', atlas['animations'])['idle']
+    side_frames = dict.fromkeys(frame for direction in ('e', 'w')
+                                for frame in side_idle['framesByDirection'][direction])
+    return {
+        'world': median(height(sequence[0]) for sequence in idle['framesByDirection'].values()),
+        'sideView': median(height(frame) for frame in side_frames),
+    }
+
+
 def audit(output):
     output.mkdir(parents=True,exist_ok=True)
     report = {'schema':2,'version':STANDARD['version'],'status':'pending',
               'art_review':'pending','source_redraw_verified':False,'characters':[]}
     roster = read(ASSETS/'character-manifest-v4.json')['characters']
     assert {c['slug'] for c in roster} == set(VISUAL['characters'])
+    shipped = {c['slug']: c['pack_version'] for c in roster}
+    for family in VISUAL['families'].values():
+        assert shipped[family['reference']] == family['referencePackVersion']
     for character in roster:
         slug, version = character['slug'], character['pack_version']
         definition = VISUAL['characters'][slug]
@@ -65,6 +83,10 @@ def audit(output):
             with Image.open(p) as img:
                 image = img.convert('RGBA')
             boxes, physical = geometry(atlas,image)
+            standing = standing_height_ratios(atlas, boxes)
+            for view, height in standing.items():
+                calibrated = definition['standingHeightRatios'][view]
+                assert abs(height / calibrated - 1) <= .035, (slug, variant, view, height, calibrated)
             for side in atlas.get('sideViewAnimations', {}).values():
                 assert all(frame in boxes for direction in ('frames', 'framesLeft', 'framesRight')
                            for frame in side.get(direction, []))
@@ -101,7 +123,8 @@ def audit(output):
                                  'max_foot_delta':round(max(feet,default=0),5),
                                  'transition_review_count':len(jumps),'transition_review_examples':jumps[:8],
                                  'foot_review':max(feet,default=0)>STANDARD['frameReview']['maxFootDriftRatio']}
-            row['variants'].append({'variant':variant,'logical_frames':len(boxes),'physical_frames':physical,'states':states})
+            row['variants'].append({'variant':variant,'logical_frames':len(boxes),'physical_frames':physical,
+                                    'standingHeightRatios': standing, 'states':states})
         report['characters'].append(row)
         print(slug, f"{len(STANDARD['variants'])} variants / {len(STANDARD['variants'])*pack['logicalFrames']} logical frames audited",flush=True)
     report['status']='passed'

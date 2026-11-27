@@ -10,9 +10,9 @@ const root = new URL('../../public/assets/characters/arsal/', import.meta.url);
 const read = (variant, version = 15) =>
     JSON.parse(readFileSync(new URL(`arsal-atlas-v${version}-${variant}.json`, root), 'utf8'));
 
-test('Arsal alone resolves through the V15 character pack', () => {
+test('Arsal and Darya resolve through V15 independently of the V14 roster', () => {
     assert.equal(characterPackVersion('arsal'), 15);
-    assert.equal(characterPackVersion('darya'), 14);
+    assert.equal(characterPackVersion('darya'), 15);
     assert.equal(characterPackVersion('sadro'), 14);
 });
 

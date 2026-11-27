@@ -218,9 +218,10 @@ test("shipped darya animation manifest's frame counts match the real v14 mobile 
     }
 });
 
-test('darya character_manifest_v4.json lists every state present in the animation manifest', () => {
+test('darya character_manifest_v4.json lists every state in the active V15 animation manifest', () => {
     const characterManifest = readJson('public/assets/characters/darya/manifests/character_manifest_v4.json');
-    const animationManifest = readJson('public/assets/characters/darya/manifests/darya_animation_manifest.json');
+    const animationManifest = readJson('public/assets/characters/darya/manifests/' + characterManifest.runtime.animation_manifest);
+    assert.equal(animationManifest.pack_version, 15);
     const declaredStates = Object.keys(animationManifest.states).sort();
     const listedAnimations = [...characterManifest.animations].sort();
     assert.deepEqual(listedAnimations, declaredStates);

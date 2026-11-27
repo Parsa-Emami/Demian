@@ -99,7 +99,7 @@ def main():
     parser.add_argument("--version", type=int, choices=(14, 15), default=14)
     parser.add_argument("--report", type=Path)
     args = parser.parse_args()
-    slugs = args.characters or (["arsal"] if args.version == 15 else TARGETS)
+    slugs = args.characters or (["darya", "arsal"] if args.version == 15 else TARGETS)
     results = [inspect(slug, variant, args.version) for slug in slugs for variant in args.variants]
     report = {
         "status": "measurement_only",

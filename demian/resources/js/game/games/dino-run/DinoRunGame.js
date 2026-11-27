@@ -2,7 +2,7 @@ import { runnerWeek, weeklyIndex, WEEKLY_VERSIONS } from '../../content/WeeklyCo
 import BaseGame from '../../contracts/BaseGame.js';
 import DinoRunModel, { RUNNER_CONFIG } from './DinoRunModel.js';
 import DinoRunEnvironment from './DinoRunEnvironment.js';
-import { BUILTIN_CHARACTER_SLUGS, builtinCharacterAssetPair } from '../../characters/CharacterVisualContract.js';
+import { BUILTIN_CHARACTER_SLUGS, builtinCharacterAssetPair, characterReferenceBodyHeightRatio } from '../../characters/CharacterVisualContract.js';
 import { arcadeCharacterLabel } from '../arcade/ArcadeCharacterRoster.js';
 import { UI_LAYER, assignUiLayer } from '../../ui/UiLayer.js';
 import RunnerReplay from './RunnerReplay.js';
@@ -316,7 +316,7 @@ export default class DinoRunGame extends BaseGame {
         const avatar = this.avatar, sample = avatar.animator.sample(alpha);
         const sprite = avatar.atlas.frames[sample.frameName];
         if (sprite) {
-            const ratio = avatar.atlas.render?.referenceBodyHeightRatio ?? .9;
+            const ratio = characterReferenceBodyHeightRatio(avatar.atlas, { sideView: true, fallback: .9 });
             const spriteSize = RUNNER_CONFIG.bodyHeight / ratio * s;
             const x = RUNNER_CONFIG.playerX * s, y = ground - frame.y * s;
             const lift = Math.min(1, frame.y / 120);
@@ -354,7 +354,8 @@ export default class DinoRunGame extends BaseGame {
                 ctx.restore();
                 continue;
             }
-            const size = RUNNER_CONFIG.bodyHeight / (avatar.atlas.render?.referenceBodyHeightRatio ?? .9) * s;
+            const ratio = characterReferenceBodyHeightRatio(avatar.atlas, { sideView: true, fallback: .9 });
+            const size = RUNNER_CONFIG.bodyHeight / ratio * s;
             const x = (obstacle.x + obstacle.w / 2) * s, y = this.ground - obstacle.y * s;
             ctx.save();
             ctx.fillStyle = 'rgba(55,20,15,.25)'; ctx.beginPath();
