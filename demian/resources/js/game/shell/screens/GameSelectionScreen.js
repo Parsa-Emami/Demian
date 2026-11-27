@@ -1,5 +1,4 @@
 import BaseScreen from './BaseScreen';
-import ScrollSnapRail from '../../../ui/ScrollSnapRail.js';
 import { gameExperience } from '../../design/GameExperience.js';
 import { preloadFbxCafeArt } from '../../rendering2d/FbxCafeAssets.js';
 import { optionalAssetPolicy } from '../../characters/runtime/MobileNetworkPolicy.js';
@@ -17,19 +16,19 @@ function escape(value) {
         .replaceAll("'", '&#039;');
 }
 
-
-// Guide copy comes from an authored, reviewed contract. Escape every value:
-// these cards contain no dynamic HTML sourced from players or the backend.
 function renderGameGuide(game) {
     const guide = gameExperience(game.id);
     if (!guide) return '';
     const steps = guide.tutorialFa.map(step => `<li>${escape(step)}</li>`).join('');
     return `
         <div class="game-card__guide" data-game-design-guide="${escape(game.id)}">
-            <p class="game-card__goal"><strong>هدف:</strong> ${escape(guide.goalFa)}</p>
-            <details class="game-card__guide-details">
-                <summary>راهنمای بازی، سختی و رقابت</summary>
+            <details class="game-card__guide-details" name="demian-library-guide">
+                <summary aria-label="راهنمای ${escape(game.title)}" title="راهنمای بازی">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.7 9a2.4 2.4 0 1 1 4.7 1c-.7 1-2.4 1.3-2.4 3m0 3h.01"/></svg>
+                </summary>
                 <div class="game-card__guide-body">
+                    <p class="game-card__goal"><strong>هدف:</strong> ${escape(guide.goalFa)}</p>
+                    <p>${escape(game.description)}</p>
                     <ol class="game-card__learning-steps" aria-label="سه گام شروع بازی">${steps}</ol>
                     <p><strong>لمس:</strong> ${escape(guide.controls.touchFa)}</p>
                     <p><strong>کیبورد:</strong> ${escape(guide.controls.keyboardFa)}</p>
@@ -41,6 +40,34 @@ function renderGameGuide(game) {
                 </div>
             </details>
         </div>
+    `;
+}
+
+function renderGameCard(game, featured) {
+    const label = game.available ? `اجرای ${game.title}، ${game.subtitle}` : `${game.title} هنوز فعال نیست`;
+    return `
+        <article class="demian-game${featured ? ' demian-game--featured' : ''}" data-game-card="${escape(game.id)}" role="listitem">
+            <button type="button" class="demian-game__launch" data-game-launch="${escape(game.id)}"
+                aria-label="${escape(label)}" ${game.available ? '' : 'aria-disabled="true"'}>
+                <span class="demian-game__art game-card__scene-preview" aria-hidden="true">
+                    <img src="${escape(game.cover ?? 'assets/environments/cafe-runner-v1/interior.webp')}" alt=""
+                        width="${featured ? '960' : '400'}" height="${featured ? '600' : '250'}"
+                        loading="${featured ? 'eager' : 'lazy'}" decoding="async">
+                    ${featured ? '<span class="demian-game__capture-label">نمای داخل بازی</span>' : ''}
+                    <span class="demian-game__play">
+                        ${game.available
+                            ? '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M9 6v12l9-6z"/></svg>'
+                            : 'به‌زودی'}
+                    </span>
+                </span>
+                <span class="demian-game__caption">
+                    ${featured
+                        ? `<strong lang="en" dir="ltr">${escape(game.title)}</strong><span>${escape(game.subtitle)}</span>`
+                        : `<strong>${escape(game.subtitle)}</strong><span lang="en" dir="ltr">${escape(game.title)}</span>`}
+                </span>
+            </button>
+            ${renderGameGuide(game)}
+        </article>
     `;
 }
 
@@ -65,10 +92,6 @@ export default class GameSelectionScreen extends BaseScreen {
         this.rendered = false;
         this.warmupHandle = null;
         this.warmupType = null;
-        this.rail = null;
-        this.previousButton = this.element.querySelector('[data-game-scroll-previous]');
-        this.nextButton = this.element.querySelector('[data-game-scroll-next]');
-        this.statusElement = this.element.querySelector('[data-game-scroll-status]');
     }
 
     render() {
@@ -76,39 +99,9 @@ export default class GameSelectionScreen extends BaseScreen {
         const playableCount = this.catalog.filter(game => game.available).length;
         const count = this.element.querySelector('[data-game-library-count]');
         if (count) count.textContent = `${playableCount.toLocaleString('fa-IR')} بازی آمادهٔ اجرا`;
-        this.grid.innerHTML = this.catalog.map((game) => `
-            <article class="game-card game-card--${escape(game.accent)} ${game.available ? 'is-available' : 'is-locked'}" data-game-card="${escape(game.id)}" data-scroll-rail-item="${escape(game.id)}" role="listitem" dir="rtl">
-                <div class="game-card__glow" aria-hidden="true"></div>
-                <div class="game-card__scene-preview" aria-hidden="true">
-                    <img loading="lazy" decoding="async"
-                        src="${game.id === 'dino-run'
-                            ? 'assets/environments/cafe-runner-v1/interior.webp'
-                            : 'assets/environments/demian-fbx/polished-v1/preview.webp'}"
-                        alt="" width="320" height="180">
-                    <span>نمای محیط کافه</span>
-                </div>
-                <div class="game-card__topline">
-                    <span class="game-card__icon" aria-hidden="true">${escape(game.icon)}</span>
-                    <span class="game-card__status" aria-label="${game.available ? 'قابل اجرا' : 'در دست ساخت'}">${game.available ? 'آمادهٔ بازی' : `فاز ${game.phase}`}</span>
-                </div>
-                <div>
-                    <h3>${escape(game.title)}</h3>
-                    <p class="game-card__subtitle">${escape(game.subtitle)}</p>
-                    <p class="game-card__description">${escape(game.description)}</p>
-                </div>
-                ${renderGameGuide(game)}
-                <button
-                    type="button"
-                    class="game-card__action"
-                    data-game-launch="${escape(game.id)}"
-                    aria-label="${game.available ? `اجرای ${escape(game.title)}، ${escape(game.subtitle)}` : `${escape(game.title)} هنوز فعال نیست`}"
-                    ${game.available ? '' : 'aria-disabled="true"'}
-                >
-                    ${game.available ? 'ورود به بازی' : 'به‌زودی'}
-                    <span aria-hidden="true">←</span>
-                </button>
-            </article>
-        `).join('');
+        const featured = this.catalog.find(game => game.id === 'dino-run' && game.available);
+        const games = featured ? [featured, ...this.catalog.filter(game => game !== featured)] : this.catalog;
+        this.grid.innerHTML = games.map(game => renderGameCard(game, game === featured)).join('');
         this.rendered = true;
         // Fetch only an explicitly hovered or keyboard-focused module; do not
         // fan out into all six downloads on mobile, Save-Data or 3G.
@@ -116,14 +109,6 @@ export default class GameSelectionScreen extends BaseScreen {
         this.grid.addEventListener('pointerdown', this.onPressIntent);
         this.grid.addEventListener('focusin', this.onPrefetchIntent);
         this.grid.addEventListener('pointerout', this.onPrefetchExit);
-        this.rail = new ScrollSnapRail({
-            viewport: this.grid,
-            itemSelector: '[data-game-card]',
-            previousButton: this.previousButton,
-            nextButton: this.nextButton,
-            statusElement: this.statusElement,
-            focusSelector: '[data-game-launch]',
-        }).boot();
     }
 
     clearPrefetchTimer() {
@@ -155,7 +140,6 @@ export default class GameSelectionScreen extends BaseScreen {
 
     async beforeOpen() {
         this.render();
-        this.rail?.refresh({ preserveIndex: true });
         if (this.warmupHandle !== null || !shouldWarmOpenWorldPreview(optionalAssetPolicy())) return;
         // Begin idle warmup without blocking the visible game-selection menu.
         const warm = () => {
@@ -173,14 +157,6 @@ export default class GameSelectionScreen extends BaseScreen {
             this.warmupType = 'timer';
             this.warmupHandle = globalThis.setTimeout(warm, 250);
         }
-    }
-
-    async afterOpen() {
-        this.rail?.updateFromGeometry({ emit: false });
-        this.animation?.revealItems(this.element.querySelectorAll('[data-game-card]'), {
-            duration: 360,
-            delay: 65,
-        });
     }
 
     cancelWarmup() {
@@ -202,8 +178,6 @@ export default class GameSelectionScreen extends BaseScreen {
         this.grid?.removeEventListener('focusin', this.onPrefetchIntent);
         this.grid?.removeEventListener('pointerout', this.onPrefetchExit);
         this.cancelWarmup();
-        this.rail?.dispose();
-        this.rail = null;
         super.dispose();
     }
 }

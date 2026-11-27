@@ -139,8 +139,12 @@ test('F7-01/02/03/04/05/06/09: shared shell and character controls remain semant
         assert.ok(html.includes(key),key);
     }
     assert.match(cards,/game-card__scene-preview/);
-    for(const suffix of ['interior.webp','preview.webp'])
-        assert.ok(cards.includes(suffix));
+    assert.match(cards,/game\.cover/);
+    assert.equal(new Set(GAME_CATALOG.map(game=>game.cover)).size,GAME_CATALOG.length);
+    for(const game of GAME_CATALOG) {
+        assert.ok(game.cover?.startsWith('assets/lobby/'));
+        assert.ok(existsSync(new URL('../../public/'+game.cover,import.meta.url)),game.id);
+    }
     assert.match(cards,/data-game-design-guide/);
     assert.match(results,/renderRanking/);
     assert.match(results,/gameOutcomeHint/);

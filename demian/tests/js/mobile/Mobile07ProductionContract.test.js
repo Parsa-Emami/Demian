@@ -47,7 +47,7 @@ test('actionable PWA update belongs to a bounded scroll host, not a body overlay
     assert.match(css, /\.demian-pwa-update button\s*\{[^}]*pointer-events:\s*auto/s);
     assert.match(controller, /host\.append\(toast\)/);
     assert.doesNotMatch(controller, /documentRef\.body\.append\(toast\)/);
-    assert.match(controller, /offline\.busy \|\| accepted/);
+    assert.match(controller, /!safeToReload\(\) \|\| !registration\.waiting \|\| accepted/);
     assert.match(controller, /closest\('\[hidden\], \[inert\], \[aria-hidden="true"\]'\)/);
     assert.match(controller, /registration\.waiting\.postMessage\(\{ type: 'DEMIAN_ACTIVATE_UPDATE' \}\)/);
     assert.match(controller, /app\?\.sessionState === 'menu'/);

@@ -139,7 +139,7 @@ test('Step 20 UX: game counts and menu affordances reflect the real catalog', ()
     assert.doesNotMatch(catalog, /data-game-library-summary/);
     assert.match(catalog, /count\.textContent = `\$\{playableCount/);
     assert.match(catalog, /this\.catalog\.filter\(game => game\.available\)/);
-    assert.match(catalog, /aria-label="\$\{game\.available/);
+    assert.match(catalog, /aria-label="\$\{escape\(label\)\}/);
 });
 
 test('Step 20 UX: shell overrides load last and preserve motion, contrast and touch targets', () => {

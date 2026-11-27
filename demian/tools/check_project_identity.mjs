@@ -65,7 +65,7 @@ try {
         assert.equal(await menu.locator('.cafe-menu__footer, [data-game-library-summary]').count(), 0);
         assert.equal((await menu.innerText()).includes('بازی‌های کوچک، ماجراجویی‌های بزرگ'), false);
         assert.equal(await menu.locator('.demian-legal-links a').count(), 3);
-        assert.equal(await menu.locator('h1').innerText(), 'DEMIAN');
+        assert.match(await menu.locator('h1').innerText(), /شبِ بازی\s+در دمیان/);
         assert.equal(await menu.locator('[data-shell-action="play"]').count(), 1);
         const favicon = page.locator('head link[rel="icon"]');
         assert.equal(await favicon.count(), 1);
@@ -76,12 +76,13 @@ try {
         assert.deepEqual([...((await iconResponse.body()).subarray(0, 8))], [137, 80, 78, 71, 13, 10, 26, 10]);
         const credit = page.locator('[data-creator-link]');
         await page.evaluate(() => document.fonts.ready);
-        await page.locator('style[data-welcome-layout="viewport-v6"][data-welcome-design="living-cafe-v1"]').count().then(count => assert.equal(count, 1));
+        assert.equal(await menu.getAttribute('data-welcome-design'), 'demian-game-room');
         await page.waitForFunction(() => document.querySelector('[data-screen="cafe-menu"]')?.dataset.screenState === 'active', null, { timeout: 15000 });
-        assert.equal(await menu.locator('.cafe-menu__portrait img').count(), 3);
-        await page.waitForFunction(() => [...document.querySelectorAll('.cafe-menu__portrait img')].every(img => img.complete && img.naturalWidth > 0));
-        assert.match(await menu.locator('.cafe-menu__showcase').evaluate(el => getComputedStyle(el).backgroundImage), /cafe-runner-v1\/interior\.webp/);
-        assert.match(await menu.locator('[data-shell-action="continue"]').evaluate(el => getComputedStyle(el).backgroundImage), /demian-fbx\/polished-v1\/preview\.webp/);
+        assert.equal(await menu.locator('.lobby-tile__portraits img').count(), 3);
+        await page.waitForFunction(() => [...document.querySelectorAll('.lobby__art, .lobby-tile__portraits img')]
+            .every(img => img.complete && img.naturalWidth > 0));
+        assert.equal(await menu.locator('.lobby__art').getAttribute('src'), 'assets/lobby/demian-at-dusk.webp');
+        assert.equal(await menu.locator('.lobby__wordmark').getAttribute('src'), 'assets/environments/cafe-runner-v1/wordmark.png');
         await page.emulateMedia({ reducedMotion: 'reduce' });
         assert.equal(await menu.locator('[data-lobby-active-avatar]').evaluate(el => getComputedStyle(el).animationName), 'none');
         await page.emulateMedia({ reducedMotion: 'no-preference' });
@@ -94,7 +95,7 @@ try {
             const viewportBottom = viewport ? viewport.offsetTop + viewport.height : innerHeight;
             const reward = screen.querySelector('[data-shell-action="rewards"]').getBoundingClientRect();
             const character = screen.querySelector('.menu-character-button').getBoundingClientRect();
-            const targets = [...screen.querySelectorAll('.cafe-menu__showcase, .cafe-menu__actions button, .demian-legal-links a, [data-creator-link]')];
+            const targets = [...screen.querySelectorAll('button, .demian-legal-links a, [data-creator-link]')];
             const clipped = targets.filter(element => {
                 const r = element.getBoundingClientRect();
                 return r.width < 43.95 || r.height < 43.95 || r.left < frame.left - 1 || r.right > frame.right + 1

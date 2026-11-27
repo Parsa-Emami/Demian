@@ -7,6 +7,7 @@ import { createReadStream, existsSync, mkdirSync, statSync, writeFileSync } from
 import { createServer } from 'node:http';
 import { extname, resolve, sep } from 'node:path';
 import { pathToFileURL } from 'node:url';
+import { requestWorkerFromPage } from '../tests/js/helpers/PwaWorkerClient.js';
 
 const root=resolve(import.meta.dirname,'../_site');
 if(!existsSync(resolve(root,'offline-packs.json'))) throw Error('Build the static PWA first');
@@ -61,29 +62,19 @@ try{
     await page.goto(base,{waitUntil:'domcontentloaded'});
     await page.waitForFunction(()=>window.demianGameApplication?.sessionState==='menu');
     await page.waitForFunction(()=>navigator.serviceWorker?.controller!==null);
-    await page.locator('[data-screen="cafe-menu"] [data-shell-action="play"]').click();
-    const download=page.locator('[data-offline-download="dino-run"]');
-    await download.waitFor({state:'visible',timeout:30000});
     sabotage=true;
-    await download.click();
-    await page.waitForFunction(()=>
-        document.querySelector('.demian-offline-manager [role="status"]')
-            ?.textContent?.includes('دانلود کامل نشد'),null,{timeout:120000});
+    await assert.rejects(requestWorkerFromPage(page,'DEMIAN_PACK_DOWNLOAD','dino-run'), /integrity|mismatch/i);
     sabotage=false;
     assert.ok(corruptResponses>0,'actual corrupted resource was never requested');
     const afterBad=await page.evaluate(async()=>{
         const keys=await caches.keys();
-        return {keys,coreReady:keys.some(k=>k.startsWith('demian-core-v1-')),
-            downloadLabel:document.querySelector('[data-offline-game="dino-run"] small')?.textContent};
+        return {keys,coreReady:keys.some(k=>k.startsWith('demian-core-v1-'))};
     });
     assert.equal(afterBad.coreReady,false,'incomplete core must be deleted, never marked ready');
-    assert.match(afterBad.downloadLabel,/دریافت نشده/);
+    assert.equal((await requestWorkerFromPage(page,'DEMIAN_PACK_STATUS')).games['dino-run'],false);
     report.corruptResponses=corruptResponses;
     report.corruptCoreDeleted=true;
-    await download.click();
-    await page.waitForFunction(()=>
-        document.querySelector('[data-offline-game="dino-run"] small')
-            ?.textContent?.includes('آمادهٔ اجرای آفلاین'),null,{timeout:150000});
+    assert.equal((await requestWorkerFromPage(page,'DEMIAN_PACK_DOWNLOAD','dino-run')).games['dino-run'],true);
     const afterGood=await page.evaluate(async()=>{
         const keys=await caches.keys();
         return {keys,coreReady:keys.some(k=>k.startsWith('demian-core-v1-')),

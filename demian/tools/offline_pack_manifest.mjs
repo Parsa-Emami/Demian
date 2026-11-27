@@ -3,6 +3,7 @@ import { existsSync, readdirSync, statSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { createHash } from 'node:crypto';
 import { BUILTIN_CHARACTER_SLUGS, characterPackVersion } from '../resources/js/game/characters/CharacterVisualContract.js';
+import { GAME_CATALOG } from '../resources/js/game/catalog/GameCatalog.js';
 
 export const OFFLINE_GAME_IDS = Object.freeze([
     'open-world', 'dino-run', 'after-hours', 'cafe-rush', 'cafe-critters', 'coffee-crash', 'cafe-drift',
@@ -123,6 +124,8 @@ export function buildOfflinePackManifest({ release, entry, releaseId, viteManife
         'assets/environments/cafe-runner-v1/wordmark.png',
         'assets/environments/cafe-runner-v1/interior.webp',
         'assets/environments/demian-fbx/polished-v1/preview.webp',
+        'assets/lobby/demian-at-dusk.webp',
+        ...GAME_CATALOG.map(game => game.cover).filter(Boolean),
     ];
     // Offline mode uses the small lite character variants for every NPC and
     // player. Never silently pull the much larger mobile/detail/desktop atlases.

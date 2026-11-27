@@ -6,7 +6,7 @@ import { chromium } from 'playwright';
 import { GAME_CATALOG } from '../resources/js/game/catalog/GameCatalog.js';
 
 const root = resolve(import.meta.dirname, '../_site');
-const output = resolve(import.meta.dirname, '../docs/offline-manager-layout');
+const output = resolve(process.env.DEMIAN_QA_REPORT_DIR ?? resolve(import.meta.dirname, '../docs/lobby-layout'));
 mkdirSync(output, {recursive:true});
 const mime = {'.html':'text/html; charset=utf-8','.js':'text/javascript','.css':'text/css',
     '.json':'application/json','.webmanifest':'application/manifest+json','.png':'image/png',
@@ -22,13 +22,15 @@ const server = createServer((req,res) => {
     } catch { res.writeHead(404); res.end(); }
 });
 const report = {status:'pending', physicalDeviceVerified:false, profiles:[], errors:[],
-    scope:'Real Playwright actionability and geometry; download integrity and gameplay remain separate required CI gates.'};
+    scope:'Game lobby and selection actionability, responsive geometry and explicit PWA update.'};
 let browser;
 try {
     await new Promise(done=>server.listen(0,'127.0.0.1',done));
-    browser = await chromium.launch({headless:true,args:['--no-sandbox','--disable-dev-shm-usage','--disable-gpu']});
+    browser = await chromium.launch({headless:true,
+        ...(process.env.DEMIAN_BROWSER_EXECUTABLE ? { executablePath: process.env.DEMIAN_BROWSER_EXECUTABLE } : {}),
+        args:['--no-sandbox','--disable-dev-shm-usage','--disable-gpu']});
     const url = 'http://127.0.0.1:'+server.address().port;
-    for (const [width,height,mobile] of [[320,568,true],[390,844,true],[844,390,true],[1366,768,false]]) {
+    for (const [width,height,mobile] of [[320,480,true],[390,844,true],[844,390,true],[1366,768,false]]) {
         const context=await browser.newContext({viewport:{width,height},isMobile:mobile,hasTouch:mobile,
             serviceWorkers:'allow'});
         try {
@@ -72,21 +74,25 @@ try {
             }
             await page.locator('[data-screen="cafe-menu"] [data-shell-action="play"]').click();
             const screen=page.locator('[data-screen="game-selection"]');
-            const panel=screen.locator('.shell-page > .demian-offline-manager');
-            await panel.waitFor({state:'visible',timeout:30000});
-            assert.equal(await screen.locator(':scope > .demian-offline-manager').count(),0);
-            assert.equal(await panel.count(),1);
+            await screen.waitFor({state:'visible',timeout:30000});
+            assert.equal(await screen.locator('.demian-offline-manager, [data-offline-download], [data-offline-remove]').count(),0);
+            assert.doesNotMatch(await screen.innerText(), /بازی بدون اینترنت/);
             await update.waitFor({state:'visible',timeout:10000});
             assert.equal(await update.evaluate(node=>getComputedStyle(node).position),'static');
             await update.locator('button').click({trial:true,timeout:10000});
-            const geometry=await panel.evaluate(node=>{
-                const grid=node.parentElement.querySelector('.game-grid');
-                const p=node.getBoundingClientRect(),g=grid.getBoundingClientRect();
-                return {panelTop:p.top,gridBottom:g.bottom,position:getComputedStyle(node).position,
-                    width:p.width,gridWidth:g.width};
+            const geometry=await screen.locator('.shell-page').evaluate(node=>{
+                const grid=node.querySelector('[data-game-grid]');
+                const featured=grid.querySelector('.demian-game--featured');
+                const card=grid.querySelector('[data-game-card="open-world"]');
+                return {height:node.clientHeight,scrollHeight:node.scrollHeight,
+                    horizontalOverflow:node.scrollWidth>node.clientWidth+1,
+                    featuredWidth:featured.getBoundingClientRect().width,
+                    regularWidth:card.getBoundingClientRect().width};
             });
-            assert.equal(geometry.position,'static');
-            assert.ok(geometry.panelTop>=geometry.gridBottom-1,JSON.stringify(geometry));
+            assert.equal(geometry.horizontalOverflow,false);
+            assert.ok(geometry.featuredWidth>geometry.regularWidth*1.9,JSON.stringify(geometry));
+            assert.ok(geometry.scrollHeight-geometry.height<260,JSON.stringify(geometry));
+            if (height>=768) assert.ok(geometry.scrollHeight<=geometry.height+1,JSON.stringify(geometry));
             const games=[];
             for (const game of GAME_CATALOG.filter(g=>g.available)) {
                 const action=screen.locator('[data-game-launch="'+game.id+'"]');
@@ -94,10 +100,14 @@ try {
                 // Playwright trial runs full scroll, visibility, stability and
                 // hit testing, never force-clicks or dispatches fake DOM events.
                 await action.click({trial:true,timeout:10000});
+                assert.equal(await action.locator('img').evaluate(image=>image.decode().then(()=>image.naturalWidth>0)),true);
                 games.push(game.id);
             }
-            const download=panel.locator('[data-offline-download="dino-run"]');
-            await download.click({trial:true,timeout:10000});
+            const guide=screen.locator('[data-game-design-guide="coffee-crash"] details');
+            await guide.locator('summary').click({timeout:10000});
+            assert.equal(await guide.evaluate(node=>node.open),true);
+            await page.keyboard.press('Enter');
+            assert.equal(await guide.evaluate(node=>node.open),false);
             await screen.locator('[data-shell-action="back-cafe"]').click({timeout:10000});
             await screen.waitFor({state:'hidden',timeout:10000});
             assert.equal(await page.evaluate(()=>window.__qaUpdateMessages.length),0);
@@ -105,7 +115,7 @@ try {
             await page.locator('[data-screen="cafe-menu"] [data-shell-action="play"]').click();
             await update.locator('button').click({timeout:10000});
             assert.deepEqual(await page.evaluate(()=>window.__qaUpdateMessages),[{type:'DEMIAN_ACTIVATE_UPDATE'}]);
-            report.profiles.push({width,height,mobile,games,geometry,passive,downloadActionable:true,
+            report.profiles.push({width,height,mobile,games,geometry,passive,offlinePanelAbsent:true,
                 backActionable:true,modalCloseActionable:true,explicitUpdateMessage:true});
         } finally { await context.close(); }
     }

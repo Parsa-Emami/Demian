@@ -134,13 +134,13 @@ jobs:
           run-id: 44022430672
           github-token: ${{ github.token }}
           path: ${{ runner.temp }}/loading-baseline
-      - name: Offline manager and all seven game controls — early pointer hit-test
-        run: timeout --signal=TERM --kill-after=10s 180s node tools/check_offline_manager_layout.mjs
+      - name: Lobby and all seven game controls — viewport and pointer checks
+        run: timeout --signal=TERM --kill-after=10s 180s node tools/check_lobby_layout.mjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: offline-manager-layout-${{ github.sha }}
-          path: demian/docs/offline-manager-layout/
+          name: lobby-layout-${{ github.sha }}
+          path: demian/docs/lobby-layout/
           if-no-files-found: warn
       - name: Three-second loading budget for every game, environment and character
         run: |
@@ -253,7 +253,7 @@ jobs:
         run: npm run test:mobile-pwa:browser
       - name: Demian Web Push consent, scoped worker and notification destination
         run: timeout --signal=TERM --kill-after=10s 120s node tools/check_browser_push.mjs
-      - name: Mobile-09 selective offline game downloads, reload and cleanup
+      - name: Mobile-09 worker pack protocol, cached reload and cleanup
         run: npm run test:mobile-09:browser
       - name: Quality roadmap Phase 8 - corrupted release integrity, recovery and offline practice in Chromium
         run: timeout --signal=TERM --kill-after=10s 300s npm run test:phase8:pwa
@@ -395,7 +395,7 @@ jobs:
           base="${PAGE_URL%/}/"
           for attempt in $(seq 1 12); do
             if curl -fsSL --max-time 20 -H 'Cache-Control: no-cache' "${base}?verify=${GITHUB_SHA}-${attempt}" -o /tmp/demian-public.html &&
-               grep -Fq 'data-welcome-layout="viewport-v6" data-welcome-design="living-cafe-v1"' /tmp/demian-public.html &&
+               grep -Fq 'data-welcome-design="demian-game-room"' /tmp/demian-public.html &&
                curl -fsSL --max-time 20 -H 'Cache-Control: no-cache' "${base}offline-packs.json?verify=${GITHUB_SHA}-${attempt}" -o /tmp/demian-packs.json &&
                jq -e --arg release "$EXPECTED_RELEASE" '.release == $release' /tmp/demian-packs.json >/dev/null &&
                curl -fsSL --max-time 20 -H 'Cache-Control: no-cache' "${base}service-worker.js?verify=${GITHUB_SHA}-${attempt}" -o /tmp/demian-worker.js &&
