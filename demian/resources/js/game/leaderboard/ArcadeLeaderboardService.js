@@ -5,6 +5,7 @@ import rules from '../../../game/runner-rules.json' with { type: 'json' };
 import { validRunnerSession } from './RunnerSessionContract.js';
 import { isBeginnerProfile, PRACTICE_VERSION, PRACTICE_RECORDS_KEY, PRACTICE_BEST_KEY } from '../games/dino-run/RunnerPracticeProfile.js';
 import { requestLegalAcknowledgement, LEGAL_VERSION } from './LegalConsent.js';
+import { SKILL_LEAGUES } from './SkillLeaguePresentation.js';
 
 const PROFILE_KEY = 'demian.arcade.profile.v1';
 const DEVICE_PREFIX = 'demian.arcade.records.v1.';
@@ -161,9 +162,19 @@ export default class ArcadeLeaderboardService {
             }
             if (!acceptance) throw new Error('برای حساب آنلاین، مطالعه و پذیرش قوانین لازم است؛ حالت تمرینی همچنان فعال است.');
         }
-        this.identity = await this.request('/players', {
-            method: 'POST', body: { display_name: this.displayName, ...(acceptance ?? {}) },
-        });
+        try {
+            this.identity = await this.request('/players', {
+                method: 'POST', body: { display_name: this.displayName, ...(acceptance ?? {}) },
+            });
+        } catch (error) {
+            if (error.status === 409) {
+                error.message = 'این شماره یا این مرورگر حساب دارد. از بخش حساب در جدول رتبه‌بندی وارد شو یا حساب را بازیابی کن.';
+            }
+            if (error.status === 422) {
+                error.message = 'نام نمایشی و شمارهٔ تلفن را بررسی کن و دوباره ثبت‌نام کن.';
+            }
+            throw error;
+        }
         this.acceptedLegalVersion = acceptance?.policy_version ?? null;
         this.profile = { display_name: this.identity.display_name ?? this.profile.display_name };
         safeWrite(this.storage, PROFILE_KEY, this.profile);
@@ -268,7 +279,7 @@ export default class ArcadeLeaderboardService {
         if (!this.connected || !this.identity?.token) {
             throw new Error('برای دریافت سوابق باید حساب آنلاین را بازیابی کنی.');
         }
-        const allowed = ['runs', 'best_scores', 'weekly_results', 'weekly_wins',
+        const allowed = ['runs', 'best_scores', 'weekly_results', 'weekly_wins', 'skill_leagues',
             'coupons', 'anticheat_observations'];
         if (!allowed.includes(type)) throw new Error('نوع داده معتبر نیست.');
         return this.request('/player/data/records?type=' + encodeURIComponent(type) +
@@ -517,6 +528,19 @@ export default class ArcadeLeaderboardService {
         return this.request('/player', { authenticated: true });
     }
     /** Step 13: public verified preview / immutable archived comparative ranks. */
+    async skillLeague(league = 'bronze', week = '') {
+        if (!SKILL_LEAGUES.includes(league)) throw new Error('لیگ مهارت معتبر نیست.');
+        if (week && !/^\d{4}-\d{2}-\d{2}$/.test(week)) throw new Error('تاریخ هفته معتبر نیست.');
+        const query = new URLSearchParams({ league });
+        if (week) query.set('week', week);
+        return this.request('/competition/leagues?' + query);
+    }
+
+    async mySkillLeague() {
+        if (!this.connected || !this.identity?.token) return null;
+        return this.request('/player/competition/league', { authenticated: true });
+    }
+
     async weeklyRanking(week = '') {
         if (!this.connected) throw new Error('لیدربورد مشترک به سرور آنلاین نیاز دارد.');
         if (week && !/^\d{4}-\d{2}-\d{2}$/.test(week)) {

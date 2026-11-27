@@ -23,7 +23,8 @@ export function requestLegalAcknowledgement(doc = globalThis.document, { contact
             'می‌توانید بدون حساب آنلاین در حالت تمرینی بازی کنید.</p>' +
             (newProfile ? '<label>نام نمایشی بازی<input name="display_name" required minlength="2" maxlength="32" autocomplete="nickname"></label>' +
                 '<input name="contact_type" type="hidden" value="phone">' +
-                '<label>شماره تلفن<input name="contact_value" type="tel" inputmode="tel" dir="ltr" required maxlength="32" autocomplete="tel"></label>' : '') +
+                '<label>شماره تلفن<input name="contact_value" type="tel" inputmode="tel" dir="ltr" required maxlength="32" autocomplete="tel"></label>' +
+                '<p>برای ورود بعدی، پس از ساخت حساب از بخش حساب در جدول رتبه‌بندی رمز عبور تعیین کن یا کد پشتیبان بگیر.</p>' : '') +
             (contact && !newProfile ? '<label>راه ارتباطی<select name="contact_type"><option value="phone">شماره تلفن</option><option value="instagram">اینستاگرام</option><option value="email">ایمیل</option></select></label>' +
                 '<label>شماره یا شناسهٔ تماس<input name="contact_value" required maxlength="160" autocomplete="off"></label>' : '') +
             '<p><a href="privacy/" target="_blank" rel="noopener noreferrer">سیاست حریم خصوصی</a> · ' +

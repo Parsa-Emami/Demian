@@ -1,0 +1,8 @@
+const NAMES = Object.freeze({
+    bronze: 'برنز', silver: 'نقره', gold: 'طلا', legend: 'افسانه‌ای', placement: 'در انتظار تعیین سطح',
+});
+export const SKILL_LEAGUES = Object.freeze(Object.keys(NAMES));
+
+export function formatLeagueName(tier) {
+    return Object.hasOwn(NAMES, tier) ? NAMES[tier] : 'نامشخص';
+}

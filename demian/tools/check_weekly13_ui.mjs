@@ -7,6 +7,7 @@ import { createReadStream, existsSync, statSync } from 'node:fs';
 import { createServer } from 'node:http';
 import { extname, resolve, sep } from 'node:path';
 import { pathToFileURL } from 'node:url';
+import policy from '../resources/legal/policy.json' with { type: 'json' };
 
 const root = resolve(import.meta.dirname, '../_site');
 if (!existsSync(resolve(root, 'index.html'))) throw Error('Run npm run build:static first');
@@ -50,12 +51,46 @@ try {
         const headers = {
             'Access-Control-Allow-Origin': '*',
             'Access-Control-Allow-Headers': 'Authorization, Content-Type',
-            'Access-Control-Allow-Methods': 'GET, OPTIONS',
+            'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
             'Content-Type': 'application/json',
             'Cache-Control': 'no-store',
         };
         if (req.method() === 'OPTIONS') {
             await route.fulfill({ status: 204, headers });
+            return;
+        }
+        if (url.pathname.endsWith('/legal')) {
+            await route.fulfill({ headers, json: { version: policy.version, require_contact: true } });
+            return;
+        }
+        if (url.pathname.endsWith('/players') && req.method() === 'POST') {
+            const body = req.postDataJSON();
+            assert.equal(body.display_name, 'Browser Signup');
+            assert.equal(body.contact_type, 'phone');
+            assert.equal(body.contact_value, '۰۹۱۲۱۲۳۴۵۶۷');
+            assert.equal(body.policy_version, policy.version);
+            assert.ok(body.registration_key && body.accept_terms && body.privacy_acknowledged);
+            assert.equal(Object.hasOwn(body, 'password'), false);
+            await route.fulfill({ status: 201, headers, json: {
+                player_id: 'new-browser-player', display_name: body.display_name, token: 'N'.repeat(64), has_contact: true,
+            } });
+            return;
+        }
+        if (url.pathname.endsWith('/competition/leagues')) {
+            assert.equal(req.headers().authorization, undefined);
+            assert.equal(url.searchParams.get('week'), '2026-11-07');
+            const league = url.searchParams.get('league');
+            await route.fulfill({ headers, json: {
+                status: 'finalized', period_key: 'weekly:tehran:2026-11-07', participants: 1,
+                data: [{ rank: 1, qualified: true, points: 900, display_name: 'League Player', recognition: league === 'gold' }],
+            } });
+            return;
+        }
+        if (url.pathname.endsWith('/player/competition/league')) {
+            assert.equal(req.headers().authorization, 'Bearer ' + 'T'.repeat(64));
+            await route.fulfill({ headers, json: {
+                verified: true, current_league: 'gold', last_result: { league: 'gold', qualified: true, points: 900 },
+            } });
             return;
         }
         if (url.pathname.endsWith('/player/coupons')) {
@@ -169,10 +204,30 @@ try {
     assert.match(await leaderboard.locator('[data-ranking-personal-best]').innerText(), /۳۲۰/);
     assert.equal(await leaderboard.locator('[data-ranking-countdown]').isHidden(), true);
 
+    const leagues = leaderboard.locator('[data-skill-league]');
+    await leagues.locator('summary').click();
+    await leagues.locator('li').first().waitFor();
+    await leagues.locator('select').selectOption('gold');
+    await leagues.getByText(/نشان افتخار/).waitFor();
+    assert.match(await leagues.innerText(), /سطح شروع هفته.*طلا/);
+
     await page.setViewportSize({ width: 320, height: 568 });
     assert.equal(await page.evaluate(() =>
         document.documentElement.scrollWidth <= window.innerWidth + 1), true,
     'narrow viewport must not create horizontal page overflow');
+    await page.evaluate(() => {
+        const service = window.demianGameApplication.leaderboards;
+        service.identity = null;
+        service.accountKnown = false;
+        window.testSignup = service.ensureIdentity().then(result => result.player_id);
+    });
+    const signup = page.locator('[data-demian-legal-consent]');
+    await signup.locator('input[name="display_name"]').fill('Browser Signup');
+    await signup.locator('input[type="tel"]').fill('۰۹۱۲۱۲۳۴۵۶۷');
+    await signup.locator('[data-legal-terms]').check();
+    await signup.locator('[data-legal-privacy]').check();
+    await signup.locator('[data-legal-confirm]').click();
+    assert.equal(await page.evaluate(() => window.testSignup), 'new-browser-player');
     assert.deepEqual(pageErrors, []);
     assert.equal(requests.filter(item => /mail|email|send-message/i.test(item.path)).length, 0);
     assert.ok(requests.some(item => item.path.endsWith('/player/coupons')
@@ -181,7 +236,7 @@ try {
         && !item.auth));
     assert.ok(requests.some(item => item.path.endsWith('/player/competition/leaderboard')
         && item.auth === 'Bearer ' + 'T'.repeat(64)));
-    console.log('Step 13 browser UI: private in-app wallet, no email, 320px RTL, live and archived standings passed');
+    console.log('Browser UI: private wallet, live and archived standings, skill leagues, and phone signup passed at 390px and 320px.');
 } finally {
     await context?.close();
     await browser.close();
