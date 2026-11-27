@@ -1,8 +1,8 @@
 {
   "schema": 1,
-  "release": "e4ad82b5a2563bda",
+  "release": "620fb3a3e255246a",
   "maxPackBytes": 100663296,
-  "coreBytes": 15536943,
+  "coreBytes": 15546002,
   "core": [
     {
       "path": "assets/characters/ainaz/ainaz-atlas-v14-lite.json",
@@ -365,24 +365,24 @@
       "bytes": 69412
     },
     {
-      "path": "build/assets/CharacterVisualContract-BgB87RRA.js",
-      "bytes": 14138,
-      "sha256": "dc02a88c3fb37d2bc5be74a7ef5efe0b28e6e38a5da59584b48f4774076df3a8"
+      "path": "build/assets/CharacterVisualContract-D0jAqgJo.js",
+      "bytes": 14152,
+      "sha256": "b29eb8ff7640126720550deea7dfd837a20409027def36cca2abec564a799d04"
     },
     {
-      "path": "build/assets/PwaUpdateController-BHhkqlXG.js",
+      "path": "build/assets/PwaUpdateController-DnZz5e80.js",
       "bytes": 9855,
-      "sha256": "3f4a02a4dc0e786ba254db826616bf2a19b39233d92a933be904cccdbcd9df91"
+      "sha256": "d208332662870b03f04d65ffb3395334d090ef032470009e2b8c1f594159c396"
     },
     {
-      "path": "build/assets/app-Bl65_803.css",
-      "bytes": 250767,
-      "sha256": "40d6f943acc9035109e0efed16d4a2409c80b84c00946f492f74ccb7714fb8bd"
+      "path": "build/assets/app-BlswPDPx.js",
+      "bytes": 463309,
+      "sha256": "941381061710367f41ab4fbcbad1dec1db1fb0558ed5feb0d636398c2d78c068"
     },
     {
-      "path": "build/assets/app-D_zTsmFs.js",
-      "bytes": 454422,
-      "sha256": "b48301b7caebe58fe41d3d2e58408ec42c7e0e572f91d6182e41770bc4439b5b"
+      "path": "build/assets/app-C6iEIGwI.css",
+      "bytes": 250925,
+      "sha256": "8f1fe97c8fd87f99c1d88413c9589213396b605c094998b063b32f54b9919f94"
     },
     {
       "path": "build/assets/rolldown-runtime-B0lUwjiP.js",
@@ -426,7 +426,7 @@
     {
       "path": "index.html",
       "bytes": 102643,
-      "sha256": "5ece9cd26be8c3ebb8f576233c73e611ea27f7a69863c2f90fb7c3eef100a12a"
+      "sha256": "e81a755b9bd925e181317c3fc1d0992fd8c504bd754a3b8e5e6e6fc4e99657c7"
     },
     {
       "path": "manifest.webmanifest",
@@ -448,7 +448,7 @@
     {
       "id": "open-world",
       "bytes": 1013226,
-      "totalBytes": 16550169,
+      "totalBytes": 16559228,
       "files": [
         {
           "path": "assets/environments/demian-fbx/polished-v1/lod-1024/0-0.webp",
@@ -536,26 +536,26 @@
           "sha256": "b572c5b1fad77ff4d7ce4e3ca56e3e698747bef410f9c5abbabbad72d84d00a7"
         },
         {
-          "path": "build/assets/OpenWorldGame-B87B7kVe.js",
+          "path": "build/assets/OpenWorldGame-DzQ3_eiY.js",
           "bytes": 789195,
-          "sha256": "e844c9af0000a226ee3c8c8360fad6a2df0b422de1f92ae12645b562027c256e"
+          "sha256": "8e0c8a41f08298a15b8f3959e574783444e1e2b8bc7f1999ef4ef9db19b3b68b"
         },
         {
-          "path": "build/assets/PixelRenderQueue-DZ97zTZt.js",
+          "path": "build/assets/PixelRenderQueue-BVTHTgq1.js",
           "bytes": 16100,
-          "sha256": "c66df2fdd6328bca67ef9bf1d3c732bde922655951492b4789dcd232c393f548"
+          "sha256": "3f3ebad885362425ef6dccdd285e8fe3e4ece0ac6f6fb1c26bf0c8bfc70f97fd"
         },
         {
-          "path": "build/assets/TouchInteractionLabel-BotoqueW.js",
+          "path": "build/assets/TouchInteractionLabel-D6jEvb92.js",
           "bytes": 7901,
-          "sha256": "ef7d207f756e78005af59f12cc5d8d977797f371f0a158440f1c6174255ee441"
+          "sha256": "e014b77e16c4438871a1d5087f7cfb69f774b251dea771e1d1d4febc4e3dfe97"
         }
       ]
     },
     {
       "id": "dino-run",
       "bytes": 146073,
-      "totalBytes": 15683016,
+      "totalBytes": 15692075,
       "files": [
         {
           "path": "assets/environments/demian-fbx/floorplan.webp",
@@ -567,9 +567,9 @@
           "sha256": "b572c5b1fad77ff4d7ce4e3ca56e3e698747bef410f9c5abbabbad72d84d00a7"
         },
         {
-          "path": "build/assets/DinoRunGame-Bb9KenV9.js",
+          "path": "build/assets/DinoRunGame-Cgq9hsCD.js",
           "bytes": 31555,
-          "sha256": "a8186164473f1347a274d78f8465bdaa889da909e30275702f6ba8f4616c2b29"
+          "sha256": "f636eb34a69570c0d86d9857763234d810db3ca37a3b56cd5b153efbed36851f"
         },
         {
           "path": "build/assets/phase5-step23-dino-run-DTtEaZGn.css",
@@ -581,16 +581,16 @@
     {
       "id": "after-hours",
       "bytes": 496696,
-      "totalBytes": 16033639,
+      "totalBytes": 16042698,
       "files": [
         {
           "path": "assets/environments/demian-fbx/floorplan-detail.webp",
           "bytes": 423068
         },
         {
-          "path": "build/assets/AfterHoursGame-BRsH6bp2.js",
+          "path": "build/assets/AfterHoursGame-CJyiciAf.js",
           "bytes": 30839,
-          "sha256": "b71ab126732afafd49fd9ba89abf6e08366e97ad34f78197f040e0007f3d8889"
+          "sha256": "3f76551f09de4dc817840699ebf31d28fc1d389912591181e80bb03f1921bb1d"
         },
         {
           "path": "build/assets/CafeCueAudio-CnkMuVoO.js",
@@ -598,9 +598,9 @@
           "sha256": "5cd7964b66142415864a2d53aa194b8680e3e08e41238ddb92387adf706dd195"
         },
         {
-          "path": "build/assets/CafeGameRenderer2D-CvXYc9he.js",
+          "path": "build/assets/CafeGameRenderer2D-dgiyyDNX.js",
           "bytes": 1763,
-          "sha256": "6d2ea995ac2a8b7af3b66adaad09b4fa371afb9279ccb645a8f9908efff81d89"
+          "sha256": "c86504c986d8345d29dab499db9ec3d1a51b1dc075dce5528a5f72f8aca5c68b"
         },
         {
           "path": "build/assets/CafeWalkthroughPalette-BVh6XJAO.js",
@@ -608,19 +608,19 @@
           "sha256": "b572c5b1fad77ff4d7ce4e3ca56e3e698747bef410f9c5abbabbad72d84d00a7"
         },
         {
-          "path": "build/assets/PixelRenderQueue-DZ97zTZt.js",
+          "path": "build/assets/PixelRenderQueue-BVTHTgq1.js",
           "bytes": 16100,
-          "sha256": "c66df2fdd6328bca67ef9bf1d3c732bde922655951492b4789dcd232c393f548"
+          "sha256": "3f3ebad885362425ef6dccdd285e8fe3e4ece0ac6f6fb1c26bf0c8bfc70f97fd"
         },
         {
-          "path": "build/assets/RankedGameplayChallenge-bd6-BKB0.js",
+          "path": "build/assets/RankedGameplayChallenge-B3LIb6xZ.js",
           "bytes": 7178,
-          "sha256": "36191e21e579df72f2dc3d7bbda9ea29e6597f671889fde7c9c75cde2f02335a"
+          "sha256": "dc7fdacfbe61bd681f8a2cf2145281341f00999e2aa385585c2feeaef4022e2c"
         },
         {
-          "path": "build/assets/TouchInteractionLabel-BotoqueW.js",
+          "path": "build/assets/TouchInteractionLabel-D6jEvb92.js",
           "bytes": 7901,
-          "sha256": "ef7d207f756e78005af59f12cc5d8d977797f371f0a158440f1c6174255ee441"
+          "sha256": "e014b77e16c4438871a1d5087f7cfb69f774b251dea771e1d1d4febc4e3dfe97"
         },
         {
           "path": "build/assets/after-hours-DiDDeeN7.css",
@@ -632,7 +632,7 @@
     {
       "id": "cafe-rush",
       "bytes": 502308,
-      "totalBytes": 16039251,
+      "totalBytes": 16048310,
       "files": [
         {
           "path": "assets/environments/demian-fbx/floorplan-detail.webp",
@@ -644,14 +644,14 @@
           "sha256": "5cd7964b66142415864a2d53aa194b8680e3e08e41238ddb92387adf706dd195"
         },
         {
-          "path": "build/assets/CafeGameRenderer2D-CvXYc9he.js",
+          "path": "build/assets/CafeGameRenderer2D-dgiyyDNX.js",
           "bytes": 1763,
-          "sha256": "6d2ea995ac2a8b7af3b66adaad09b4fa371afb9279ccb645a8f9908efff81d89"
+          "sha256": "c86504c986d8345d29dab499db9ec3d1a51b1dc075dce5528a5f72f8aca5c68b"
         },
         {
-          "path": "build/assets/CafeRushGame-D93DxydI.js",
+          "path": "build/assets/CafeRushGame-CQmffqPy.js",
           "bytes": 31152,
-          "sha256": "bcd765113b4403550151398d841f83f513d0a22fa33833ebcc72d45ba028040e"
+          "sha256": "27ebaa346fcfd9d2d568e0b42a72fcf4a33398680dabe60bba4258a69d17d281"
         },
         {
           "path": "build/assets/CafeWalkthroughPalette-BVh6XJAO.js",
@@ -659,19 +659,19 @@
           "sha256": "b572c5b1fad77ff4d7ce4e3ca56e3e698747bef410f9c5abbabbad72d84d00a7"
         },
         {
-          "path": "build/assets/PixelRenderQueue-DZ97zTZt.js",
+          "path": "build/assets/PixelRenderQueue-BVTHTgq1.js",
           "bytes": 16100,
-          "sha256": "c66df2fdd6328bca67ef9bf1d3c732bde922655951492b4789dcd232c393f548"
+          "sha256": "3f3ebad885362425ef6dccdd285e8fe3e4ece0ac6f6fb1c26bf0c8bfc70f97fd"
         },
         {
-          "path": "build/assets/RankedGameplayChallenge-bd6-BKB0.js",
+          "path": "build/assets/RankedGameplayChallenge-B3LIb6xZ.js",
           "bytes": 7178,
-          "sha256": "36191e21e579df72f2dc3d7bbda9ea29e6597f671889fde7c9c75cde2f02335a"
+          "sha256": "dc7fdacfbe61bd681f8a2cf2145281341f00999e2aa385585c2feeaef4022e2c"
         },
         {
-          "path": "build/assets/TouchInteractionLabel-BotoqueW.js",
+          "path": "build/assets/TouchInteractionLabel-D6jEvb92.js",
           "bytes": 7901,
-          "sha256": "ef7d207f756e78005af59f12cc5d8d977797f371f0a158440f1c6174255ee441"
+          "sha256": "e014b77e16c4438871a1d5087f7cfb69f774b251dea771e1d1d4febc4e3dfe97"
         },
         {
           "path": "build/assets/after-hours-DiDDeeN7.css",
@@ -688,7 +688,7 @@
     {
       "id": "cafe-critters",
       "bytes": 283650,
-      "totalBytes": 15820593,
+      "totalBytes": 15829652,
       "files": [
         {
           "path": "assets/environments/demian-fbx/polished-v1/lod-1024/0-0.webp",
@@ -771,9 +771,9 @@
           "bytes": 2074
         },
         {
-          "path": "build/assets/CafeCrittersGame-Dud82bbH.js",
+          "path": "build/assets/CafeCrittersGame-DX5JlgT-.js",
           "bytes": 44943,
-          "sha256": "c120658309d594117c73181c507a3b0a6a60ecdac6be5ceaa49be7a1ddd83364"
+          "sha256": "b0ca9ae01d986199d5911fe06e164b05650232d3200acef7fbe4a98dbfbf6eac"
         },
         {
           "path": "build/assets/CafeCueAudio-CnkMuVoO.js",
@@ -781,9 +781,9 @@
           "sha256": "5cd7964b66142415864a2d53aa194b8680e3e08e41238ddb92387adf706dd195"
         },
         {
-          "path": "build/assets/CafeGameRenderer2D-CvXYc9he.js",
+          "path": "build/assets/CafeGameRenderer2D-dgiyyDNX.js",
           "bytes": 1763,
-          "sha256": "6d2ea995ac2a8b7af3b66adaad09b4fa371afb9279ccb645a8f9908efff81d89"
+          "sha256": "c86504c986d8345d29dab499db9ec3d1a51b1dc075dce5528a5f72f8aca5c68b"
         },
         {
           "path": "build/assets/CafeWalkthroughPalette-BVh6XJAO.js",
@@ -791,9 +791,9 @@
           "sha256": "b572c5b1fad77ff4d7ce4e3ca56e3e698747bef410f9c5abbabbad72d84d00a7"
         },
         {
-          "path": "build/assets/PixelRenderQueue-DZ97zTZt.js",
+          "path": "build/assets/PixelRenderQueue-BVTHTgq1.js",
           "bytes": 16100,
-          "sha256": "c66df2fdd6328bca67ef9bf1d3c732bde922655951492b4789dcd232c393f548"
+          "sha256": "3f3ebad885362425ef6dccdd285e8fe3e4ece0ac6f6fb1c26bf0c8bfc70f97fd"
         },
         {
           "path": "build/assets/after-hours-DiDDeeN7.css",
@@ -810,7 +810,7 @@
     {
       "id": "coffee-crash",
       "bytes": 168188,
-      "totalBytes": 15705131,
+      "totalBytes": 15714190,
       "files": [
         {
           "path": "assets/environments/demian-fbx/floorplan.webp",
@@ -822,9 +822,9 @@
           "sha256": "5cd7964b66142415864a2d53aa194b8680e3e08e41238ddb92387adf706dd195"
         },
         {
-          "path": "build/assets/CafeGameRenderer2D-CvXYc9he.js",
+          "path": "build/assets/CafeGameRenderer2D-dgiyyDNX.js",
           "bytes": 1763,
-          "sha256": "6d2ea995ac2a8b7af3b66adaad09b4fa371afb9279ccb645a8f9908efff81d89"
+          "sha256": "c86504c986d8345d29dab499db9ec3d1a51b1dc075dce5528a5f72f8aca5c68b"
         },
         {
           "path": "build/assets/CafeWalkthroughPalette-BVh6XJAO.js",
@@ -832,14 +832,14 @@
           "sha256": "b572c5b1fad77ff4d7ce4e3ca56e3e698747bef410f9c5abbabbad72d84d00a7"
         },
         {
-          "path": "build/assets/CoffeeCrashGame-Cu24Z3Is.js",
+          "path": "build/assets/CoffeeCrashGame-72Z_76Gc.js",
           "bytes": 28066,
-          "sha256": "73078f334c273a1c78721ee0fb75a610bbe25090a2cc62fff62059a3613a1c34"
+          "sha256": "7582eb86b9f20e4141e28a3bbae0de9240ce3015b667901bf335a0036d195858"
         },
         {
-          "path": "build/assets/PixelRenderQueue-DZ97zTZt.js",
+          "path": "build/assets/PixelRenderQueue-BVTHTgq1.js",
           "bytes": 16100,
-          "sha256": "c66df2fdd6328bca67ef9bf1d3c732bde922655951492b4789dcd232c393f548"
+          "sha256": "3f3ebad885362425ef6dccdd285e8fe3e4ece0ac6f6fb1c26bf0c8bfc70f97fd"
         },
         {
           "path": "build/assets/coffee-crash-B5svyo7j.css",
@@ -851,7 +851,7 @@
     {
       "id": "cafe-drift",
       "bytes": 22138,
-      "totalBytes": 15559081,
+      "totalBytes": 15568140,
       "files": [
         {
           "path": "build/assets/CafeCueAudio-CnkMuVoO.js",
@@ -859,9 +859,9 @@
           "sha256": "5cd7964b66142415864a2d53aa194b8680e3e08e41238ddb92387adf706dd195"
         },
         {
-          "path": "build/assets/CafeDriftGame-CotO2y-6.js",
+          "path": "build/assets/CafeDriftGame-Bhw3pDa_.js",
           "bytes": 15495,
-          "sha256": "1965f496f1b9bb785a279db0d805c8b6a41ba5ee6f34f2f7d70afa0200babe45"
+          "sha256": "50808c2cd5ce5ca6ae885598f11343a4cd0df85bb3d0f6290b7e6a3f403e68b4"
         },
         {
           "path": "build/assets/CafeDriftGame-DLn2R-NB.css",
