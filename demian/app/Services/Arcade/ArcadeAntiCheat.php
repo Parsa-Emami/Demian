@@ -4,6 +4,9 @@ namespace App\Services\Arcade;
 
 use App\Models\ArcadePlayer;
 use App\Models\ArcadeRun;
+use Carbon\CarbonImmutable;
+use Illuminate\Database\Query\Builder;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
 
@@ -18,15 +21,23 @@ use RuntimeException;
  */
 final class ArcadeAntiCheat
 {
+    public const MULTI_ACCOUNT_SIGNALS = ['cross_account_replay', 'shared_network_rejections'];
+
     private const SIGNALS = [
         'start_velocity' => ['risk' => 45, 'severity' => 'medium'],
         'invalid_replay_velocity' => ['risk' => 60, 'severity' => 'high'],
         'shared_network_cohort' => ['risk' => 35, 'severity' => 'medium'],
+        'shared_network_rejections' => ['risk' => 30, 'severity' => 'low'],
         'cross_account_replay' => ['risk' => 75, 'severity' => 'high'],
         'statistical_score_outlier' => ['risk' => 40, 'severity' => 'medium'],
         'short_high_score' => ['risk' => 45, 'severity' => 'medium'],
         'dense_control_trace' => ['risk' => 25, 'severity' => 'low'],
         'overlapping_verified_runs' => ['risk' => 65, 'severity' => 'high'],
+        'periodic_jump_cadence' => ['risk' => 30, 'severity' => 'low'],
+    ];
+
+    private const REVIEW_ONLY_SIGNALS = [
+        'shared_network_cohort', 'shared_network_rejections', 'periodic_jump_cadence',
     ];
 
     public function enabled(): bool
@@ -154,7 +165,7 @@ final class ArcadeAntiCheat
      * Server-computed score/seed only; client score is never an input.
      * Called in the same transaction as immutable replay persistence.
      */
-    public function verified(ArcadeRun $run, int $inputCount, ?string $ip = null): void
+    public function verified(ArcadeRun $run, int $inputCount, ?string $ip = null, array $evidence = []): void
     {
         if (! $this->enabled()) return;
         $this->observe('verified', $run->player_id, $run->id,
@@ -179,25 +190,29 @@ final class ArcadeAntiCheat
                     'overlap_confirmed' => true,
                 ]);
         }
-        $previous = DB::table('arcade_runs')
-            ->where('game_id', $run->game_id)
-            ->where('rules_version', $run->rules_version)
-            ->where('status', 'verified')->where('id', '<>', $run->id)
-            ->where('completed_at', '>=', now()->subDays(
-                $this->setting('replay_clone_days', 7)));
-        $clone = (clone $previous)->where('replay_hash', $run->replay_hash)
-            ->where('player_id', '<>', $run->player_id)->exists();
-        if ($clone) {
+        $days = $this->setting('replay_clone_days', 7);
+        $seenAt = now('UTC');
+        $previous = $this->otherVerifiedRuns($run)
+            ->whereBetween('completed_at', [$seenAt->copy()->subDays($days), $seenAt]);
+        $relatedAccounts = $run->replay_hash
+            ? (clone $previous)->where('replay_hash', $run->replay_hash)->distinct()->count('player_id')
+            : 0;
+        if ($relatedAccounts > 0) {
             $this->signal('cross_account_replay', $run->player_id, $run->id,
                 'immutable-v1', ['game' => $run->game_id,
                     'rules_version' => $run->rules_version,
-                    'same_input_digest' => true]);
+                    'same_input_digest' => true, 'related_accounts' => $relatedAccounts,
+                    'window_days' => $days]);
         }
 
         // A single excellent score is not intrinsically fraud. Require a
         // representative history and use only coarse, deterministic limits.
-        $history = (clone $previous)->orderByDesc('completed_at')->limit(300)
-            ->pluck('score')->map(static fn ($n): int => (int) $n)->all();
+        $week = app(WeeklyCompetitionService::class)->window($run->started_at);
+        $history = (clone $previous)->where('started_at', '>=', $week['starts_at'])
+            ->where('started_at', '<', $week['ends_at'])
+            ->selectRaw('player_id, MAX(score) AS best_score, MAX(completed_at) AS last_play')
+            ->groupBy('player_id')->orderByDesc('last_play')->orderBy('player_id')->limit(300)
+            ->pluck('best_score')->map(static fn ($n): int => (int) $n)->all();
         sort($history, SORT_NUMERIC);
         if (count($history) >= $this->setting('score_outlier_min_history', 20)) {
             $median = $history[intdiv(count($history), 2)];
@@ -221,6 +236,40 @@ final class ArcadeAntiCheat
                 'rules-v1', ['input_events' => $inputCount,
                     'ticks' => (int) $run->ticks]);
         }
+        if ($run->game_id === 'dino-run') {
+            $cadence = ReplayRiskAnalysis::cadence($evidence, (int) $run->ticks);
+            if ($cadence !== null) {
+                $this->signal('periodic_jump_cadence', $run->player_id, $run->id, 'cadence-v1', $cadence);
+            }
+        }
+    }
+
+    private function otherVerifiedRuns(ArcadeRun $run): Builder
+    {
+        return DB::table('arcade_runs')->where('game_id', $run->game_id)
+            ->where('rules_version', $run->rules_version)
+            ->where('status', 'verified')->whereNotNull('replay_hash')
+            ->where('player_id', '<>', $run->player_id);
+    }
+
+    public function relatedReplayAccounts(object $report): Collection
+    {
+        if ($report->signal !== 'cross_account_replay' || ! $report->run_id) {
+            return collect();
+        }
+        $run = ArcadeRun::query()->whereKey($report->run_id)
+            ->where('player_id', $report->player_id)->where('status', 'verified')->first();
+        if (! $run || ! $run->replay_hash) {
+            return collect();
+        }
+
+        $evidence = json_decode($report->evidence, true);
+        $days = (int) ($evidence['window_days'] ?? $this->setting('replay_clone_days', 7));
+        $seenAt = CarbonImmutable::parse($report->first_seen, 'UTC');
+        return $this->otherVerifiedRuns($run)->where('replay_hash', $run->replay_hash)
+            ->whereBetween('completed_at', [$seenAt->subDays($days), $seenAt])
+            ->selectRaw('player_id, COUNT(*) AS matching_runs, MAX(completed_at) AS last_match')
+            ->groupBy('player_id')->orderByDesc('last_match')->orderBy('player_id')->limit(20)->get();
     }
 
     /** Run only after the HTTP response has a final 409/410/422 outcome. */
@@ -230,18 +279,42 @@ final class ArcadeAntiCheat
         if (! $this->enabled() || ! in_array($status, [409, 410, 422], true)) return;
         $runId = $run?->player_id === $player->id ? $run?->id : null;
         $game = $runId ? $run->game_id : null;
-        $this->observe('rejected', $player->id, $runId,
+        $digest = $this->observe('rejected', $player->id, $runId,
             $game, null, $status, $ip);
         $minutes = $this->setting('rejection_burst_minutes', 15);
+        $minimum = $this->setting('rejection_burst_count', 4);
         $count = DB::table('arcade_anticheat_observations')
             ->where('player_id', $player->id)
             ->where('event_code', 'rejected')
             ->where('created_at', '>=', now()->subMinutes($minutes))->count();
-        if ($count >= $this->setting('rejection_burst_count', 4)) {
+        if ($count >= $minimum) {
             $this->signal('invalid_replay_velocity', $player->id, null,
                 now('UTC')->format('Y-m-d-H'), [
                     'rejections' => $count, 'window_minutes' => $minutes,
                     'http_status' => $status,
+                ]);
+            if ($digest !== null) {
+                $this->reportSharedRejections($player->id, $digest, $minutes, $minimum);
+            }
+        }
+    }
+
+    private function reportSharedRejections(string $playerId, string $digest, int $minutes, int $minimum): void
+    {
+        $candidates = DB::table('arcade_anticheat_observations')
+            ->where('ip_digest', $digest)->where('event_code', 'rejected')
+            ->whereNotNull('player_id')->where('created_at', '>=', now()->subMinutes($minutes));
+        if ((clone $candidates)->where('player_id', $playerId)->count() < $minimum) {
+            return;
+        }
+        $repeated = $candidates->select('player_id')->groupBy('player_id')
+            ->havingRaw('COUNT(*) >= ?', [$minimum]);
+        $accounts = DB::query()->fromSub($repeated, 'rejected_accounts')->count();
+        if ($accounts >= 2) {
+            $this->signal('shared_network_rejections', $playerId, null,
+                now('UTC')->format('Y-m-d-H'), [
+                    'accounts' => $accounts, 'window_minutes' => $minutes,
+                    'rejections_per_account' => $minimum,
                 ]);
         }
     }
@@ -317,6 +390,8 @@ final class ArcadeAntiCheat
                 ->where('id', $reportId)->lockForUpdate()->first();
             abort_unless($report && $report->player_id, 404);
             if ($hours !== null) {
+                abort_if(in_array($report->signal, self::REVIEW_ONLY_SIGNALS, true), 409,
+                    'Shared-network and control-cadence reports are review-only.');
                 abort_unless($report->status === 'confirmed', 409,
                     'A reviewer must confirm the report before restricting starts.');
             }
@@ -370,6 +445,8 @@ final class ArcadeAntiCheat
             'enabled' => $this->enabled(),
             'unresolved' => (clone $total)->whereIn('status',
                 ['open','investigating'])->count(),
+            'multi_account_open' => (clone $total)->whereIn('status', ['open', 'investigating'])
+                ->whereIn('signal', self::MULTI_ACCOUNT_SIGNALS)->count(),
             'high_priority' => (clone $total)->whereIn('status',
                 ['open','investigating'])->where('severity', 'high')->count(),
             'confirmed' => (clone $total)->where('status', 'confirmed')->count(),
@@ -381,6 +458,27 @@ final class ArcadeAntiCheat
             'active_holds' => DB::table('arcade_anticheat_holds')
                 ->where('expires_at','>',now())->count(),
         ];
+    }
+
+    public function riskQueue(): array
+    {
+        $active = DB::table('arcade_cheat_reports')->whereIn('status', ['open', 'investigating'])
+            ->whereNotNull('arcade_cheat_reports.player_id')->where('last_seen', '>=', now()->subDays(7));
+        $latestAccounts = (clone $active)->select('arcade_cheat_reports.player_id')
+            ->selectRaw('MAX(last_seen) AS last_activity')->groupBy('arcade_cheat_reports.player_id')
+            ->orderByDesc('last_activity')->orderBy('arcade_cheat_reports.player_id')->limit(100);
+        $rows = $active->joinSub($latestAccounts, 'latest', 'arcade_cheat_reports.player_id', '=', 'latest.player_id')
+            ->select('arcade_cheat_reports.player_id', 'signal')
+            ->selectRaw('MAX(risk_score) AS risk_score, MAX(last_seen) AS last_seen, COUNT(*) AS case_count')
+            ->groupBy('arcade_cheat_reports.player_id', 'signal')->get();
+        $queue = [];
+        foreach ($rows->groupBy('player_id') as $playerId => $reports) {
+            $queue[] = ['player_id' => $playerId, 'cases' => (int) $reports->sum('case_count'),
+                'last_seen' => $reports->max('last_seen'), ...ReplayRiskAnalysis::priority($reports)];
+        }
+        usort($queue, static fn (array $a, array $b): int => ($b['risk'] <=> $a['risk'])
+            ?: strcmp($b['last_seen'], $a['last_seen']) ?: strcmp($a['player_id'], $b['player_id']));
+        return $queue;
     }
 
     public function prune(): array

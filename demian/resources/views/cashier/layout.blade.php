@@ -30,6 +30,7 @@
     .logout{margin:0}small{line-height:1.7}
     @media(max-width:520px){main{margin:20px auto}.panel{padding:18px}.big{font-size:2.4rem}}
   </style>
+  @stack('styles')
 </head>
 <body>
 <header><div class="wrap"><span class="brand">دمیان | پنل کافه</span>

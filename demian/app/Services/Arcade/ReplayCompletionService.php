@@ -38,7 +38,7 @@ final class ReplayCompletionService
                 if ($better) DB::table('arcade_leaderboard_entries')->updateOrInsert($key,
                     ['run_id' => $run->id, 'score' => $run->score, 'achieved_at' => $run->started_at]);
             }
-            app(ArcadeAntiCheat::class)->verified($run, count($proof->evidence), request()->ip());
+            app(ArcadeAntiCheat::class)->verified($run, count($proof->evidence), request()->ip(), $proof->evidence);
             return $run;
         }, 3);
     }
