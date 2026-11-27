@@ -484,7 +484,7 @@
                             </div>
                         </div>
                         <div class="lobby__shortcuts">
-                            <button type="button" data-sidebar-toggle class="lobby-tile menu-character-button">
+                            <button type="button" data-sidebar-toggle class="lobby-tile cafe-menu__showcase menu-character-button">
                                 <span class="lobby-tile__portraits" aria-hidden="true">
                                     <span><img data-lobby-support-avatar src="assets/characters/negar/negar-preview-v14.png" alt="" width="128" height="128" decoding="async" fetchpriority="low"></span>
                                     <span><img data-lobby-active-avatar src="assets/characters/darya/darya-preview-v14.png" alt="" width="128" height="128" decoding="async" fetchpriority="low"></span>

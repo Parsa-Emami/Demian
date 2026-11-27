@@ -9,8 +9,10 @@
     box-sizing: border-box;
     min-width: 0;
     min-height: 0;
-    padding: max(8px, env(safe-area-inset-top)) max(var(--lobby-gutter), env(safe-area-inset-right))
-        max(8px, env(safe-area-inset-bottom)) max(var(--lobby-gutter), env(safe-area-inset-left));
+    padding: var(--demian-nav-safe-top, max(8px, env(safe-area-inset-top)))
+        var(--demian-nav-safe-right, max(var(--lobby-gutter), env(safe-area-inset-right)))
+        var(--demian-nav-safe-bottom, max(8px, env(safe-area-inset-bottom)))
+        var(--demian-nav-safe-left, max(var(--lobby-gutter), env(safe-area-inset-left)));
     background: radial-gradient(ellipse at 20% 0, #24352b, transparent 58%), #101914;
     color: var(--lobby-ink);
     font-family: Vazirmatn, system-ui, sans-serif;
