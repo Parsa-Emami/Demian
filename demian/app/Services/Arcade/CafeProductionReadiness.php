@@ -83,6 +83,11 @@ final class CafeProductionReadiness
             $add('cafe_enabled', config('demian-coupons.cafe_enabled') === true);
             $add('discount_policy_approved',
                 config('demian-coupons.policy_approved') === true);
+            if (config('demian-arcade.drift_prizes_enabled') === true) {
+                foreach (app(DriftPrizeReadiness::class)->inspect()['checks'] as $check => $passed) {
+                    $add('drift_'.$check, $passed);
+                }
+            }
             if (app(CampaignEconomics::class)->required()
                 && (config('demian-coupons.issue_enabled') === true || config('demian-coupons.campaigns_enabled') === true)) {
                 try {

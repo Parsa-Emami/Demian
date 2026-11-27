@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Services\Arcade\CafeDriftReplayVerifier;
+use App\Services\Arcade\DriftPrizeReadiness;
 use App\Services\Arcade\InCafeCouponService;
 use App\Services\Arcade\RewardCampaignService;
 use App\Services\Arcade\WeeklyAwardFinalizationService;
@@ -55,6 +56,32 @@ final class CafeDriftReplayTest extends TestCase
         $this->assertTrue(collect($cases)->contains(fn (array $case): bool => $case['cups'] === 0));
         $this->assertTrue(collect($cases)->contains(fn (array $case): bool => $case['cups'] > 0));
         $this->assertTrue(collect($cases)->contains(fn (array $case): bool => $case['nearMisses'] > 0 && $case['beans'] > 0));
+    }
+
+    public function test_drift_financial_gate_defaults_to_pending_even_with_prize_switch_enabled(): void
+    {
+        $this->rewardConfig();
+        $this->assertTrue(app(RankedGameCatalog::class)->supportsRanked('cafe-drift'));
+        $this->assertFalse(app(RankedGameCatalog::class)->supportsPrizes('cafe-drift'));
+        $readiness = app(DriftPrizeReadiness::class);
+        $this->assertFalse($readiness->inspect()['checks']['version_bound_manual_acceptance']);
+        $this->assertCount(count($readiness::FILES), $readiness->sourceHashes());
+        $this->travelTo(CarbonImmutable::parse('2026-11-21T12:00:00Z'));
+        $player=$this->player();
+        $run=$this->start($player);
+        $this->complete($player,$run,1);
+        $this->assertDatabaseHas('arcade_weekly_rule_locks',['game_id'=>'cafe-drift','ranked_enabled'=>true,'prize_eligible'=>false]);
+        $this->assertDatabaseCount('arcade_coupons',0);
+    }
+
+    public function test_additional_weekly_seed_differential_replays(): void
+    {
+        $cases=$this->fixtures(...range(4170,4193));
+        $this->assertCount(96,$cases);
+        $verifier=app(CafeDriftReplayVerifier::class);
+        foreach($cases as $case) {
+            $this->assertSame($case['expected'],$verifier->verify($case['seed'],$case['ticks'],$case['frames']));
+        }
     }
 
     public function test_accepted_score_is_server_computed_and_retries_are_atomic_and_immutable(): void
@@ -131,6 +158,17 @@ final class CafeDriftReplayTest extends TestCase
             ->assertOk()->json('score');
     }
 
+    private function acceptPhysicalPilotForFixture(): void
+    {
+        $this->app->instance(DriftPrizeReadiness::class, new class
+        {
+            public function approved(): bool
+            {
+                return true;
+            }
+        });
+    }
+
     private function rewardConfig(): void
     {
         foreach (['drift_prizes_enabled', 'weekly_management_enabled', 'weekly_settlement_enabled', 'weekly_auto_awards_enabled'] as $flag) {
@@ -151,6 +189,7 @@ final class CafeDriftReplayTest extends TestCase
     public function test_ranked_drift_closes_into_an_audited_campaign_coupon_and_cashier_redemption(): void
     {
         $this->rewardConfig();
+        $this->acceptPhysicalPilotForFixture();
         $this->travelTo(CarbonImmutable::parse('2026-11-20T12:00:00Z'));
         app(WeeklyCompetitionService::class)->ensure(CarbonImmutable::parse('2026-11-21T12:00:00Z'));
         $staff = DB::table('arcade_cashier_staff')->insertGetId([
@@ -221,6 +260,7 @@ DMC-22222222222222222222222222222222");
     public function test_a_practice_only_prize_week_cannot_be_retroactively_enabled_and_production_requires_approved_terms(): void
     {
         $this->rewardConfig();
+        $this->acceptPhysicalPilotForFixture();
         config()->set('demian-arcade.drift_prizes_enabled', false);
         $this->travelTo(CarbonImmutable::parse('2026-11-21T12:00:00Z'));
         $player = $this->player();

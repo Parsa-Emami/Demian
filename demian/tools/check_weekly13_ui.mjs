@@ -93,6 +93,38 @@ try {
             } });
             return;
         }
+        if (url.pathname.endsWith('/player/progress')) {
+            assert.equal(req.headers().authorization, 'Bearer ' + 'T'.repeat(64));
+            const game = url.searchParams.get('game');
+            assert.ok(['dino-run', 'cafe-drift'].includes(game));
+            await route.fulfill({ headers, json: {
+                verified: true, status: 'active', weeks: 4, personal_best: game === 'cafe-drift' ? 840 : 1050,
+                next_goal: 1103, badges: 1, rules_version: game === 'cafe-drift' ? 'cafe-drift-replay-v1' : 'cafe-runner-v2',
+                history: [{ period_key: 'weekly:tehran:2026-11-07', score: 1050, badge: 'personal-breakthrough' }],
+            } });
+            return;
+        }
+        if (url.pathname.endsWith('/player/loyalty')) {
+            assert.equal(req.headers().authorization, 'Bearer ' + 'T'.repeat(64));
+            await route.fulfill({ headers, json: {
+                verified: true, status: 'active', total_xp: 820, level: 4, tier: 'regular', active_weeks: 6,
+                next_tier: 'loyal', next_tier_xp: 1500, level_step_xp: 250, level_progress_xp: 70,
+                history: [{ period_key: 'weekly:tehran:2026-11-07', total_xp: 130, participation_xp: 100,
+                    variety_xp: 0, progress_xp: 0, continuity_xp: 0, mission_xp: 30 }],
+            } });
+            return;
+        }
+        if (url.pathname.endsWith('/player/missions')) {
+            assert.equal(req.headers().authorization, 'Bearer ' + 'T'.repeat(64));
+            await route.fulfill({ headers, json: {
+                verified: true, status: 'provisional', today_complete: true,
+                progress: { active_days: 3, distinct_games: 1, total_xp: 30 },
+                played_games: ['cafe-drift'], last_finalized: { total_xp: 20 },
+                server_now: '2026-11-15T10:00:00Z', day_ends_at: '2026-11-15T20:30:00Z', week_ends_at: '2026-11-20T20:30:00Z',
+                targets: [{ game_id: 'cafe-drift', score: 840, target: 825, provisional_met: true }],
+            } });
+            return;
+        }
         if (url.pathname.endsWith('/player/coupons')) {
             assert.equal(req.headers().authorization, 'Bearer ' + 'T'.repeat(64));
             await route.fulfill({ headers, json: { data: [
@@ -211,6 +243,21 @@ try {
     await leagues.getByText(/نشان افتخار/).waitFor();
     assert.match(await leagues.innerText(), /سطح شروع هفته.*طلا/);
 
+    assert.equal(requests.some(({ path }) => /\/player\/(progress|loyalty|missions)$/.test(path)), false);
+    const progress = leaderboard.locator('[data-personal-progress]');
+    await progress.locator('summary').click();
+    await progress.locator('meter').waitFor();
+    assert.equal(await progress.locator('meter').evaluate(meter => meter.value), 1050);
+    await progress.locator('select').selectOption('cafe-drift');
+    await progress.getByText(/cafe-drift-replay-v1/).waitFor();
+    const loyalty = leaderboard.locator('[data-loyalty-xp]');
+    await loyalty.locator('summary').click();
+    await loyalty.getByText(/مأموریت ۳۰/).waitFor();
+    const missions = leaderboard.locator('[data-missions]');
+    await missions.locator('summary').click();
+    await missions.getByText(/موقتاً محقق شده/).waitFor();
+    assert.match(await missions.innerText(), /تا پایان روز/);
+
     await page.setViewportSize({ width: 320, height: 568 });
     assert.equal(await page.evaluate(() =>
         document.documentElement.scrollWidth <= window.innerWidth + 1), true,
@@ -228,6 +275,9 @@ try {
     await signup.locator('[data-legal-privacy]').check();
     await signup.locator('[data-legal-confirm]').click();
     assert.equal(await page.evaluate(() => window.testSignup), 'new-browser-player');
+    await leaderboard.locator('[data-shell-action="close-modal"]').click();
+    await leaderboard.waitFor({ state: 'hidden' });
+    assert.equal(await leaderboard.locator('[data-personal-progress] meter, [data-loyalty-xp] li, [data-missions] li').count(), 0);
     assert.deepEqual(pageErrors, []);
     assert.equal(requests.filter(item => /mail|email|send-message/i.test(item.path)).length, 0);
     assert.ok(requests.some(item => item.path.endsWith('/player/coupons')
@@ -236,7 +286,7 @@ try {
         && !item.auth));
     assert.ok(requests.some(item => item.path.endsWith('/player/competition/leaderboard')
         && item.auth === 'Bearer ' + 'T'.repeat(64)));
-    console.log('Browser UI: private wallet, live and archived standings, skill leagues, and phone signup passed at 390px and 320px.');
+    console.log('Browser UI: phone signup, private wallet, leagues, progress, XP, and missions passed at 390px and 320px.');
 } finally {
     await context?.close();
     await browser.close();

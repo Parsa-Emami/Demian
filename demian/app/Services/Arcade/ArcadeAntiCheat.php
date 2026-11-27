@@ -37,7 +37,7 @@ final class ArcadeAntiCheat
     ];
 
     private const REVIEW_ONLY_SIGNALS = [
-        'shared_network_cohort', 'shared_network_rejections', 'periodic_jump_cadence',
+        'shared_network_cohort', 'shared_network_rejections', 'periodic_jump_cadence', 'cross_account_replay',
     ];
 
     public function enabled(): bool
@@ -432,7 +432,7 @@ final class ArcadeAntiCheat
             abort_unless($report && $report->player_id, 404);
             if ($hours !== null) {
                 abort_if(in_array($report->signal, self::REVIEW_ONLY_SIGNALS, true), 409,
-                    'Shared-network and control-cadence reports are review-only.');
+                    'This signal requires corroborating gameplay evidence for a ranked-play hold.');
                 abort_unless($report->status === 'confirmed', 409,
                     'A reviewer must confirm the report before restricting starts.');
             }

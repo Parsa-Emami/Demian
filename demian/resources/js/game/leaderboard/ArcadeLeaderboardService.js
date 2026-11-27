@@ -279,7 +279,7 @@ export default class ArcadeLeaderboardService {
         if (!this.connected || !this.identity?.token) {
             throw new Error('برای دریافت سوابق باید حساب آنلاین را بازیابی کنی.');
         }
-        const allowed = ['runs', 'best_scores', 'weekly_results', 'weekly_wins', 'skill_leagues',
+        const allowed = ['runs', 'best_scores', 'weekly_results', 'weekly_wins', 'skill_leagues', 'personal_progress', 'loyalty_xp', 'missions',
             'coupons', 'anticheat_observations'];
         if (!allowed.includes(type)) throw new Error('نوع داده معتبر نیست.');
         return this.request('/player/data/records?type=' + encodeURIComponent(type) +
@@ -534,6 +534,24 @@ export default class ArcadeLeaderboardService {
         const query = new URLSearchParams({ league });
         if (week) query.set('week', week);
         return this.request('/competition/leagues?' + query);
+    }
+
+    async myMissions() {
+        if (!this.connected || !this.identity?.token) return null;
+        return this.request('/player/missions', { authenticated: true });
+    }
+
+    async myLoyalty() {
+        if (!this.connected || !this.identity?.token) return null;
+        return this.request('/player/loyalty', { authenticated: true });
+    }
+
+    async myPersonalProgress(game = 'dino-run') {
+        if (!this.connected || !this.identity?.token) return null;
+        if (!['dino-run','cafe-critters','coffee-crash','cafe-drift','after-hours','cafe-rush','open-world'].includes(game)) {
+            throw new Error('بازی معتبر نیست.');
+        }
+        return this.request('/player/progress?' + new URLSearchParams({game}), { authenticated: true });
     }
 
     async mySkillLeague() {

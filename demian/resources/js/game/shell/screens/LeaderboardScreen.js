@@ -22,6 +22,7 @@ export default class LeaderboardScreen extends BaseScreen {
         this.body = this.element.querySelector('[data-ranking-rows]');
         this.status = this.element.querySelector('[data-ranking-status]');
         this.skillLeagues = new SkillLeaguePanel(this.service, this.status, this.week);
+        this.progressPanels = [];
         this.countdown = this.element.querySelector('[data-ranking-countdown]');
         this.personalBest = this.element.querySelector('[data-ranking-personal-best]');
         this.form = this.element.querySelector('[data-ranking-name-form]');
@@ -94,7 +95,7 @@ export default class LeaderboardScreen extends BaseScreen {
                     newPassword || null);
                 this.recoveryForm.reset();
                 this.form.elements.display_name.value = recovered.display_name;
-                this.skillLeagues.reset();
+                this.resetPlayerPanels();
                 await this.load();
                 this.backupCode.value = '';
                 this.recoveryStatus.textContent = 'حساب بازیابی شد؛ نشست قبلی، لینک کوتاه‌مدت و کد پشتیبان مصرف شدند. ' +
@@ -114,7 +115,7 @@ export default class LeaderboardScreen extends BaseScreen {
                 const result = await this.service.loginWithPassword(
                     fields.contact_type.value, fields.contact_value.value, fields.password.value);
                 this.form.elements.display_name.value = result.display_name;
-                this.skillLeagues.reset();
+                this.resetPlayerPanels();
                 this.loginForm.reset();
                 this.recoveryStatus.textContent = 'ورود بدون پیامک انجام شد؛ نشست قبلی این حساب منقضی شد.';
                 await this.load();
@@ -159,7 +160,7 @@ export default class LeaderboardScreen extends BaseScreen {
                 this.recoveryForm.reset();
                 this.recoveryStatus.textContent = 'حساب و داده‌های آن پس از تأیید سرور حذف شدند.';
                 this.form.elements.display_name.value = this.service.displayName;
-                this.skillLeagues.reset();
+                this.resetPlayerPanels();
                 await this.load();
             } catch (error) {
                 this.recoveryStatus.textContent = error.message;
@@ -225,8 +226,30 @@ export default class LeaderboardScreen extends BaseScreen {
         this.form.addEventListener('submit', this.onSubmit);
     }
 
+    async openProgressPanels() {
+        if (this.service.connected && this.progressPanels.length === 0) {
+            const generation = this.generation;
+            try {
+                const { mountPlayerProgressPanels } = await import('../../leaderboard/PlayerProgressPanels.js');
+                if (generation !== this.generation) return;
+                if (this.progressPanels.length === 0) {
+                    this.progressPanels = mountPlayerProgressPanels(this.service, this.skillLeagues.root);
+                }
+            } catch {
+                return;
+            }
+        }
+        for (const panel of this.progressPanels) panel.open();
+    }
+
+    resetPlayerPanels() {
+        this.skillLeagues.reset();
+        for (const panel of this.progressPanels) panel.reset();
+    }
+
     async beforeOpen() {
         this.skillLeagues.open();
+        await this.openProgressPanels();
         this.form.elements.display_name.value = this.service.displayName;
         this.issueRecovery.disabled = !this.service.connected;
         this.issueBackup.disabled = !this.service.connected;
@@ -475,7 +498,7 @@ export default class LeaderboardScreen extends BaseScreen {
     }
 
     async beforeClose() {
-        this.skillLeagues.reset();
+        this.resetPlayerPanels();
         this.generation++;
         this.loading = false;
         this.snapshot = null;
@@ -489,6 +512,7 @@ export default class LeaderboardScreen extends BaseScreen {
 
     dispose() {
         this.skillLeagues.dispose();
+        for (const panel of this.progressPanels) panel.dispose();
         this.generation++;
         if (this.timer != null) clearInterval(this.timer);
         this.timer = null;

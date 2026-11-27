@@ -18,6 +18,10 @@ command -v php >/dev/null
 entries=(
     artisan app bootstrap config database routes
     resources/game resources/legal resources/views src
+    resources/js/game/games/cafe-drift/CafeDriftModel.js
+    resources/js/game/games/cafe-drift/CafeDriftGame.js
+    resources/js/game/games/cafe-drift/CafeDriftRenderer.js
+    resources/css/cafe-drift.css
     public/index.php public/.htaccess
     ops/cpanel/host_preflight.php ops/cpanel/cron.sh
     ops/cpanel/rollback.sh ops/cpanel/backup_offsite.sh
