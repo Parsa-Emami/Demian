@@ -39,9 +39,8 @@ async function play({ width, height, touch = false, ranked = false }) {
             const profile = page.locator('[data-demian-legal-consent] input[name="display_name"]');
             if (await profile.count()) {
                 await profile.fill('Drift QA Player');
-                await page.locator('[data-demian-legal-consent] select[name="contact_type"]').selectOption('email');
                 await page.locator('[data-demian-legal-consent] input[name="contact_value"]')
-                    .fill(`drift-qa-${Date.now()}@example.test`);
+                    .fill(`+1202${String(Date.now()).slice(-7)}`);
             }
             await page.locator('[data-legal-terms]').check();
             await page.locator('[data-legal-privacy]').check();
