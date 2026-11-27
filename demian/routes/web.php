@@ -43,6 +43,26 @@ Route::prefix('cashier')->name('cashier.')->group(function (): void {
             [CafeAdminController::class, 'setStaffActive'])
             ->whereNumber('subjectId')->whereIn('operation', ['enable', 'disable'])
             ->middleware('throttle:arcade-cashier-admin')->name('staff.action');
+        Route::get('/admin/quiet-hours', [\App\Http\Controllers\Cafe\CafeQuietHoursController::class, 'index'])
+            ->middleware(RequireCafePermission::class.':coupon.revoke')->name('quiet-hours');
+        Route::post('/admin/quiet-hours', [\App\Http\Controllers\Cafe\CafeQuietHoursController::class, 'create'])
+            ->middleware([RequireCafePermission::class.':coupon.revoke', 'throttle:arcade-cashier-admin'])->name('quiet-hours.create');
+        Route::post('/admin/quiet-hours/{offerId}/pause', [\App\Http\Controllers\Cafe\CafeQuietHoursController::class, 'pause'])
+            ->whereNumber('offerId')->middleware([RequireCafePermission::class.':coupon.revoke', 'throttle:arcade-cashier-admin'])
+            ->name('quiet-hours.pause');
+        Route::get('/admin/browser-push', [\App\Http\Controllers\Cafe\CafeBrowserPushController::class, 'index'])
+            ->middleware(RequireCafePermission::class.':operations.readiness')->name('browser-push');
+        Route::post('/admin/browser-push', [\App\Http\Controllers\Cafe\CafeBrowserPushController::class, 'publish'])
+            ->middleware([RequireCafePermission::class.':operations.readiness', 'throttle:arcade-cashier-admin'])
+            ->name('browser-push.publish');
+        Route::get('/admin/analytics', \App\Http\Controllers\Cafe\CafeBusinessAnalyticsController::class)
+            ->middleware([RequireCafePermission::class.':report.global','throttle:6,1'])->name('business-analytics');
+        Route::get('/admin/referrals', \App\Http\Controllers\Cafe\CafeReferralController::class)
+            ->middleware(RequireCafePermission::class.':report.global')->name('referrals');
+        Route::post('/admin/referrals/cost', [\App\Http\Controllers\Cafe\CafeReferralController::class,'cost'])
+            ->middleware([RequireCafePermission::class.':report.global','throttle:arcade-cashier-admin'])->name('referrals.cost');
+        Route::post('/admin/referrals/review', [\App\Http\Controllers\Cafe\CafeReferralController::class,'review'])
+            ->middleware([RequireCafePermission::class.':report.global','throttle:arcade-cashier-admin'])->name('referrals.review');
         Route::get('/admin/reports/global', [CafeAdminController::class, 'globalReport'])
             ->middleware(RequireCafePermission::class.':report.global')->name('report.global');
         Route::post('/admin/coupons/revoke', [CafeAdminController::class, 'revoke'])

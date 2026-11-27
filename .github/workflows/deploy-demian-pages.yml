@@ -251,6 +251,8 @@ jobs:
         run: npm run test:mobile-touch:browser
       - name: Mobile-07 root/subpath fonts, PWA offline and reconnect
         run: npm run test:mobile-pwa:browser
+      - name: Demian Web Push consent, scoped worker and notification destination
+        run: timeout --signal=TERM --kill-after=10s 120s node tools/check_browser_push.mjs
       - name: Mobile-09 selective offline game downloads, reload and cleanup
         run: npm run test:mobile-09:browser
       - name: Quality roadmap Phase 8 - corrupted release integrity, recovery and offline practice in Chromium

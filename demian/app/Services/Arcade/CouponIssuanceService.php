@@ -101,12 +101,12 @@ final class CouponIssuanceService
                 // cash-equivalent voucher. Enforce this under the same issuer
                 // transaction before reserving sponsor inventory or codes.
                 app(ArcadePrizeIdentity::class)->assertVerifiedRecipient($winner->player_id);
-                if ($winner->game_id === CafeDriftReplayVerifier::GAME_ID
-                    && (! $campaign || ! app(RankedGameCatalog::class)->supportsPrizes($winner->game_id)
-                        || ! DB::table('arcade_weekly_rule_locks')->where('period_key', $periodKey)
-                            ->where('game_id', $winner->game_id)->where('rules_version', $winner->rules_version)
-                            ->where('ranked_enabled', true)->where('prize_eligible', true)->exists())) {
-                    throw new RuntimeException('Café Drift prizes require an eligible season and an active sponsor campaign.');
+                $catalog = app(RankedGameCatalog::class);
+                $ruleLock = DB::table('arcade_weekly_rule_locks')->where('period_key', $periodKey)
+                    ->where('game_id', $winner->game_id)->first();
+                if (! $catalog->prizeEligibleForLock($winner->game_id, $ruleLock, $winner->rules_version)
+                    || ($catalog->requiresPrizeLock($winner->game_id) && ! $campaign)) {
+                    throw new RuntimeException('Game prizes require current acceptance, a matching rule lock and an active campaign.');
                 }
                 $item = $campaign ? $campaignService->claim($campaign) : null;
                 $code = $item ? Crypt::decryptString($item->code_ciphertext)
@@ -162,6 +162,7 @@ final class CouponIssuanceService
                 return [
                     'coupon_id' => $coupon->id,
                     'source' => $coupon->source,
+                    ...($coupon->source==='quiet_hours' ? ['quiet_branch'=>app(QuietHoursService::class)->offerForCoupon((int)$coupon->id)?->branch_id] : []),
                     'gift_reason' => $coupon->source === 'gift' ? $coupon->gift_reason : null,
                     'period_key' => $coupon->period_key, 'game_id' => $coupon->game_id,
                     'prize_rank' => $coupon->prize_rank === null

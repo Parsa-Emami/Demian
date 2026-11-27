@@ -172,10 +172,7 @@ final class WeeklySettlementService
                 ->pluck('player_id')->all();
             $prizeRankings = array_filter($rankings,
                 fn (array $entries, string $gameId): bool =>
-                    ($seasonRules->has($gameId)
-                        ? (bool) $seasonRules->get($gameId)->prize_eligible
-                        : $gameId !== CafeDriftReplayVerifier::GAME_ID)
-                    && $rankable->supportsPrizes($gameId),
+                    $rankable->prizeEligibleForLock($gameId, $seasonRules->get($gameId)),
                 ARRAY_FILTER_USE_BOTH);
             $activeRecipients = DB::table('arcade_coupons')
                 ->where('source', 'weekly')->whereNotNull('player_id')

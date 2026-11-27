@@ -2,6 +2,7 @@ import BaseScreen from './BaseScreen';
 import { applyTouchControlLayout, readTouchControls } from '../../input/TouchControlPreferences.js';
 import ControlBindingPanel from '../../input/ControlBindingPanel.js';
 import PlayerIdentityPanel from '../../ui/PlayerIdentityPanel.js';
+import BrowserPushPanel from '../../ui/BrowserPushPanel.js';
 
 export default class SettingsScreen extends BaseScreen {
     constructor({ settings, input, leaderboards, ...options }) {
@@ -16,6 +17,7 @@ export default class SettingsScreen extends BaseScreen {
         this.identityPanel = new PlayerIdentityPanel({
             root: this.element.querySelector('[data-player-identity-panel]'), leaderboards,
         });
+        this.pushPanel = new BrowserPushPanel(this.element.querySelector('[data-browser-push]'), leaderboards);
     }
 
     async beforeOpen() {
@@ -30,6 +32,7 @@ export default class SettingsScreen extends BaseScreen {
         this.refreshTouchPreview();
         // Network-dependent account status must not delay opening settings.
         void this.identityPanel.refresh();
+        void this.pushPanel.refresh();
     }
 
     refreshTouchPreview() {
@@ -49,6 +52,7 @@ export default class SettingsScreen extends BaseScreen {
         this.form?.removeEventListener('change', this.onTouchPreview);
         this.controls.dispose();
         this.identityPanel.dispose();
+        this.pushPanel.dispose();
         super.dispose();
     }
 

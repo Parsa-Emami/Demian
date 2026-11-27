@@ -22,7 +22,13 @@ entries=(
     resources/js/game/games/cafe-drift/CafeDriftGame.js
     resources/js/game/games/cafe-drift/CafeDriftRenderer.js
     resources/css/cafe-drift.css
-    public/index.php public/.htaccess
+    resources/css/cafe-critters.css resources/css/coffee-crash.css resources/css/after-hours.css resources/css/cafe-rush.css
+    resources/js/game/content/WeeklyContent.js resources/js/game/core/InputController.js
+    resources/js/game/leaderboard/ArcadeLeaderboardService.js resources/js/game/leaderboard/RankedGameplayChallenge.js
+    resources/js/game/games/cafe-critters resources/js/game/games/coffee-crash
+    resources/js/game/games/after-hours resources/js/game/games/cafe-rush
+    resources/js/game/input resources/js/game/shared/collision resources/js/game/shared/navigation
+    public/index.php public/.htaccess public/favicon.ico
     ops/cpanel/host_preflight.php ops/cpanel/cron.sh
     ops/cpanel/rollback.sh ops/cpanel/backup_offsite.sh
     ops/cpanel/restore_drill.sh ops/cpanel/staging_acceptance.sh ops/cpanel/install_webroot_bridge.php

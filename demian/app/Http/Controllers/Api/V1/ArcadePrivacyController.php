@@ -13,6 +13,9 @@ final class ArcadePrivacyController extends Controller
     // Allowlisted personal-data fields; never export bearer/recovery hashes,
     // plaintext coupon secrets, payment references or anti-cheat evidence.
     private const RECORDS = [
+        'referral_attribution' => ['arcade_referrals', ['id', 'status', 'created_at', 'expires_at', 'qualified_at']],
+        'quiet_hours_claims' => ['arcade_quiet_claims', ['id', 'offer_id', 'coupon_id', 'local_day', 'created_at']],
+        'browser_push' => ['arcade_push_subscriptions', ['id', 'created_at', 'updated_at']],
         'personal_progress' => ['arcade_personal_progress', [
             'id', 'period_key', 'game_id', 'rules_version', 'policy_version', 'score', 'previous_best',
             'previous_weeks', 'target_score', 'personal_record', 'badge', 'status', 'achieved_at',
@@ -45,6 +48,7 @@ final class ArcadePrivacyController extends Controller
             'status' => config('demian-legal.publication_approved') ? 'approved' : 'draft-pending-legal-review',
             'require_acceptance' => config('demian-legal.require_acceptance'),
             'require_contact' => config('demian-arcade.require_contact'),
+            'referrals_available' => app(\App\Services\Arcade\ReferralService::class)->available(),
             'pages' => config('demian-legal.pages'),
         ])->header('Cache-Control', 'public, max-age=60');
     }

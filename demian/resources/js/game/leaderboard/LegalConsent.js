@@ -7,7 +7,7 @@ export const LEGAL_VERSION = policy.version;
  * is created. The dialog is never shown for local/offline practice or for an
  * existing authenticated account. No choice is inferred from page navigation.
  */
-export function requestLegalAcknowledgement(doc = globalThis.document, { contact = false, newProfile = false } = {}) {
+export function requestLegalAcknowledgement(doc = globalThis.document, { contact = false, newProfile = false, referral = null } = {}) {
     if (!doc?.body || typeof doc.createElement !== 'function') {
         return Promise.resolve(null);
     }
@@ -27,6 +27,7 @@ export function requestLegalAcknowledgement(doc = globalThis.document, { contact
                 '<p>برای ورود بعدی، پس از ساخت حساب از بخش حساب در جدول رتبه‌بندی رمز عبور تعیین کن یا کد پشتیبان بگیر.</p>' : '') +
             (contact && !newProfile ? '<label>راه ارتباطی<select name="contact_type"><option value="phone">شماره تلفن</option><option value="instagram">اینستاگرام</option><option value="email">ایمیل</option></select></label>' +
                 '<label>شماره یا شناسهٔ تماس<input name="contact_value" required maxlength="160" autocomplete="off"></label>' : '') +
+            (referral ? '<label><input type="checkbox" name="use_referral"><span>این ثبت‌نام را با دعوت دوستم ثبت کن.</span></label>' : '') +
             '<p><a href="privacy/" target="_blank" rel="noopener noreferrer">سیاست حریم خصوصی</a> · ' +
             '<a href="terms/" target="_blank" rel="noopener noreferrer">شرایط استفاده</a> · ' +
             '<a href="competition-rules/" target="_blank" rel="noopener noreferrer">قوانین رقابت</a></p>' +
@@ -50,6 +51,7 @@ export function requestLegalAcknowledgement(doc = globalThis.document, { contact
                 policy_version: LEGAL_VERSION,
                 accept_terms: true,
                 privacy_acknowledged: true,
+                ...(form.elements.use_referral?.checked ? { referral_code: referral } : {}),
                 ...(newProfile ? { display_name: form.elements.display_name.value.trim() } : {}),
                 ...(contact || newProfile ? { contact_type: form.elements.contact_type.value,
                     contact_value: form.elements.contact_value.value.trim() } : {}),

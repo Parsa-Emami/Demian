@@ -16,14 +16,14 @@ final class CashierController extends Controller
 {
     public function loginForm(): View
     {
-        abort_unless(config('demian-coupons.cafe_enabled') === true, 503);
+        abort_unless(CafeAccess::portalAvailable(), 503);
         abort_unless(! app()->environment('production') || request()->isSecure(), 403);
         return view('cashier.login');
     }
 
     public function login(Request $request): RedirectResponse
     {
-        abort_unless(config('demian-coupons.cafe_enabled') === true, 503);
+        abort_unless(CafeAccess::portalAvailable(), 503);
         abort_unless(! app()->environment('production') || $request->isSecure(), 403);
         $data = $request->validate([
             'username' => ['required', 'string', 'min:3', 'max:64',
@@ -33,7 +33,9 @@ final class CashierController extends Controller
         $username = Str::lower($data['username']);
         $staff = DB::table('arcade_cashier_staff')->where('username', $username)->first();
 
-        if (! $staff || ! $staff->is_active || ! CafeAccess::knownRole($staff->role) || ! Hash::check($data['password'], $staff->password_hash)) {
+        if (! $staff || ! $staff->is_active || ! CafeAccess::knownRole($staff->role)
+            || (config('demian-coupons.cafe_enabled') !== true && $staff->role !== 'super_admin')
+            || ! Hash::check($data['password'], $staff->password_hash)) {
             return back()->withErrors([
                 'username' => 'نام کاربری یا رمز عبور معتبر نیست.',
             ])->onlyInput('username');

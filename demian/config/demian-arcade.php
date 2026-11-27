@@ -10,6 +10,8 @@ return [
     'critters_ranked_enabled' => (bool) env('DEMIAN_ARCADE_CRITTERS_RANKED_ENABLED', false),
     'coffee_ranked_enabled' => (bool) env('DEMIAN_ARCADE_COFFEE_RANKED_ENABLED', false),
     // Financial prize acceptance is independent from public verified rankings.
+    'after_hours_prizes_enabled' => (bool) env('DEMIAN_ARCADE_AFTER_HOURS_PRIZES_ENABLED', false),
+    'cafe_rush_prizes_enabled' => (bool) env('DEMIAN_ARCADE_CAFE_RUSH_PRIZES_ENABLED', false),
     'critters_prizes_enabled' => (bool) env('DEMIAN_ARCADE_CRITTERS_PRIZES_ENABLED', false),
     'coffee_prizes_enabled' => (bool) env('DEMIAN_ARCADE_COFFEE_PRIZES_ENABLED', false),
     // Original-game input-frame replay gates. OFF until differential UAT and

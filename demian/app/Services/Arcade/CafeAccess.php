@@ -36,6 +36,13 @@ final class CafeAccess
         return array_key_exists($role, self::ROLES);
     }
 
+    public static function portalAvailable(): bool
+    {
+        return config('demian-coupons.cafe_enabled') === true
+            || config('demian-push.enabled') === true
+            || config('demian-referrals.enabled') === true;
+    }
+
     public static function abilities(string $role): array
     {
         return self::ROLES[$role] ?? [];

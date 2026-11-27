@@ -19,6 +19,8 @@ function fixture() {
     };
     for (const path of [
         'index.html', 'characters.json', 'manifest.webmanifest',
+        'favicon.ico', 'icons/demian-192.png', 'icons/demian-512.png',
+        'icons/demian-notification-badge.png', 'icons/demian-notification.png',
         'privacy/index.html', 'terms/index.html', 'competition-rules/index.html',
         'build/assets/app-test.js', 'build/assets/app-test.css',
         'build/assets/font.woff2',

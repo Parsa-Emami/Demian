@@ -363,7 +363,7 @@
 
             <div class="manager-sidebar__scroll">
                 <div class="sidebar-compact" aria-hidden="true">
-                    <div class="sidebar-compact__logo">D</div>
+                    <div class="sidebar-compact__logo"><img src="icons/demian-192.png" width="32" height="32" alt="دمیان"></div>
                     <span class="sidebar-compact__active-dot"></span>
                     <span class="sidebar-compact__name">DEMIAN</span>
                     <span class="sidebar-compact__hint">M</span>
@@ -856,6 +856,12 @@
                                 <button type="button" data-shell-action="reset-settings" class="shell-button shell-button--ghost">پیش‌فرض</button>
                             </div>
                         </form>
+                        <section data-browser-push class="player-identity-panel" aria-labelledby="browser-push-title" dir="rtl">
+                            <h3 id="browser-push-title">اعلان مرورگر</h3>
+                            <p data-browser-push-status role="status">در حال بررسی دسترسی اعلان…</p>
+                            <button type="button" data-browser-push-enable class="shell-button shell-button--primary" hidden>فعال‌کردن اعلان</button>
+                            <button type="button" data-browser-push-disable class="shell-button shell-button--ghost" hidden>خاموش‌کردن اعلان</button>
+                        </section>
                         <section data-player-identity-panel class="player-identity-panel" dir="rtl"
                             aria-label="تأیید هویت و شماره تلفن">
                             <h3>تأیید شماره برای جوایز رسمی (اختیاری و مستقل از ورود)</h3>

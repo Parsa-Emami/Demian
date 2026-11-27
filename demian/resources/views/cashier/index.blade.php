@@ -4,6 +4,14 @@
 <h1>داشبورد کافه</h1>
 <p class="pill">نقش: {{ $staff->role }} · {{ count($permissions) }} از ۱۰ مجوز</p>
 @if (session('notice'))<div class="ok" role="status">{{ session('notice') }}</div>@endif
+@if (in_array('report.global', $permissions, true))
+<div class="row">
+  <a class="button secondary" href="{{ route('cashier.business-analytics') }}">تحلیل کسب‌وکار</a>
+  <a class="button secondary" href="{{ route('cashier.referrals') }}">دعوت دوستان و جذب مشتری</a>
+  <a class="button secondary" href="{{ route('cashier.browser-push') }}">اعلان مرورگر</a>
+</div>
+@endif
+@if (config('demian-coupons.cafe_enabled'))
 <div class="row">
 @if (in_array('report.branch', $permissions, true))
   <a class="button secondary" href="{{ route('cashier.report') }}">گزارش شعبه</a>
@@ -16,6 +24,7 @@
   <a class="button secondary" href="{{ route('cashier.report.global') }}">گزارش همه شعب</a>
 @endif
 @if ($staff->role === 'super_admin')
+  <a class="button secondary" href="{{ route('cashier.quiet-hours') }}">تخفیف ساعات خلوت</a>
   <a class="button secondary" href="{{ route('cashier.gifts') }}">اهدای کد تخفیف به بازیکن</a>
   @if(config('demian-coupons.delivery_support_enabled'))
   <a class="button secondary" href="{{ route('cashier.coupon-support') }}">درخواست‌های رسیدگی به جوایز</a>
@@ -75,5 +84,6 @@
 <button type="submit">ابطال کد</button>
 </form>
 </section>
+@endif
 @endif
 @endsection
