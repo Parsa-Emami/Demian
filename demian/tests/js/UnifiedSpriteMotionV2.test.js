@@ -30,6 +30,9 @@ test('the shared crawl and dodge visual fallbacks work across all shipped direct
     const custom = new FrameAnimator({ meta: { version: 14, slug: 'custom' },
         animations: { idle: { frames: ['idle'] }, crouch: { frames: ['crouch'] } } });
     assert.equal(custom.has('crawl'), false);
+    const legacy = new FrameAnimator({ meta: { version: 12, slug: 'darya' },
+        animations: { idle: { frames: ['idle'] }, crouch: { frames: ['crouch'] } } });
+    assert.equal(legacy.has('crawl'), false);
 });
 
 test('character quality swaps preserve fractional stride and a finished landing across pack versions', () => {
