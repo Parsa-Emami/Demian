@@ -6,6 +6,7 @@ import { createReadStream, existsSync, mkdirSync, statSync, writeFileSync } from
 import { createServer } from 'node:http';
 import { resolve, sep, extname } from 'node:path';
 import { pathToFileURL } from 'node:url';
+import { requestWorkerFromPage } from '../tests/js/helpers/PwaWorkerClient.js';
 
 const root = resolve(import.meta.dirname, '../_site');
 if (!existsSync(resolve(root, 'offline-packs.json'))) throw new Error('Build the static PWA first.');
@@ -55,19 +56,9 @@ try {
     assert.equal(manifest.games.length, 7);
     assert.ok(manifest.coreBytes > 0 && manifest.maxPackBytes <= 96 * 1048576);
     assert.ok(manifest.games.every(game => game.totalBytes <= manifest.maxPackBytes));
-    await page.locator('[data-screen="cafe-menu"] [data-shell-action="play"]').click();
-    const download = page.locator('[data-offline-download="dino-run"]');
-    await download.waitFor({ state: 'visible', timeout: 30000 });
-    await download.click();
-    await page.waitForFunction(() =>
-        document.querySelector('[data-offline-game="dino-run"] small')?.textContent.includes('آمادهٔ اجرای آفلاین'),
-        null, { timeout: 120000 });
     for (const game of manifest.games) {
-        if (game.id === 'dino-run') continue;
-        await page.locator('[data-offline-download="' + game.id + '"]').click();
-        await page.waitForFunction(id =>
-            document.querySelector('[data-offline-game="' + id + '"] small')?.textContent.includes('آمادهٔ اجرای آفلاین'),
-            game.id, { timeout: 120000 });
+        const reply = await requestWorkerFromPage(page, 'DEMIAN_PACK_DOWNLOAD', game.id);
+        assert.equal(reply.games[game.id], true);
     }
     const saved = await page.evaluate(async () => {
         const keys = await caches.keys();
@@ -94,14 +85,9 @@ try {
     }
     report.offlineGameplay = 'passed';
     await context.setOffline(false);
-    await page.locator('[data-screen="cafe-menu"] [data-shell-action="play"]').click();
     for (const game of manifest.games) {
-        const remove = page.locator('[data-offline-remove="' + game.id + '"]');
-        await remove.waitFor({ state: 'visible', timeout: 25000 });
-        await remove.click();
-        await page.waitForFunction(id =>
-            document.querySelector('[data-offline-game="' + id + '"] small')?.textContent.includes('دریافت نشده'),
-            game.id, { timeout: 30000 });
+        const reply = await requestWorkerFromPage(page, 'DEMIAN_PACK_REMOVE', game.id);
+        assert.equal(reply.games[game.id], false);
     }
     const keysAfter = await page.evaluate(() => caches.keys());
     assert.ok(keysAfter.every(key => !key.startsWith('demian-core-v1-') &&
@@ -128,5 +114,5 @@ if (report.status !== 'passed') {
     console.error('Mobile-09 offline PWA browser QA failed:', report.errors);
     process.exitCode = 1;
 } else {
-    console.log('Mobile-09 six selectable offline modes + real practice + cleanup: passed');
+    console.log('Mobile-09 worker packs, cached practice and cleanup: passed');
 }

@@ -1,4 +1,3 @@
-import PwaOfflineManager from './PwaOfflineManager.js';
 /**
  * Mobile-07: install/update the small, scoped offline-fallback worker.
  * Never force a reload while a ranked run is in progress. Players explicitly
@@ -29,9 +28,13 @@ export default function registerDemianPwa({
         let disposed = false;
         const safeToReload = () => !disposed && app?.sessionState === 'menu'
             && !app?.leaderboards?.pending && !app?.runtime?.faulted;
-        const offline = new PwaOfflineManager({ app, registration, documentRef, navigatorRef,
-            windowRef: globalThis.window });
-        void offline.mount().catch(error => console.warn('Offline pack UI unavailable:', error));
+        const view = documentRef.defaultView;
+        const onOnline = () => {
+            if (app?.sessionState === 'menu' && app?.leaderboards?.pending) {
+                void app.leaderboards.retry();
+            }
+        };
+        view?.addEventListener('online', onOnline);
         // An actionable notice belongs to an explicit, scrollable screen.
         // It must never be a body-level overlay or a competing grid child.
         const host = documentRef.querySelector('[data-pwa-update-host]');
@@ -55,7 +58,7 @@ export default function registerDemianPwa({
             button.type = 'button';
             button.textContent = 'به‌روزرسانی';
             button.addEventListener('click', () => {
-                if (!safeToReload() || !registration.waiting || offline.busy || accepted
+                if (!safeToReload() || !registration.waiting || accepted
                     || toast?.closest('[hidden], [inert], [aria-hidden="true"]')) return;
                 accepted = true;
                 button.disabled = true;
@@ -93,7 +96,7 @@ export default function registerDemianPwa({
             registration,
             dispose() {
                 disposed = true;
-                offline.dispose();
+                view?.removeEventListener('online', onOnline);
                 unsubscribe?.();
                 registration.removeEventListener('updatefound', onInstalling);
                 navigatorRef.serviceWorker.removeEventListener('controllerchange', onController);
@@ -101,8 +104,6 @@ export default function registerDemianPwa({
             },
         };
     }).catch(error => {
-        // PWA support is progressive enhancement; a denied worker never blocks
-        // the main game, score verification, or offline practice selection.
         console.warn('Demian PWA registration unavailable:', error);
         return null;
     });

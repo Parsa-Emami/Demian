@@ -9,7 +9,7 @@ import { BUILTIN_CHARACTER_SLUGS, characterPackVersion } from '../../resources/j
 import TouchQaTracker from '../../resources/js/game/performance/TouchQaTracker.js';
 import { evaluateDeviceQaTargets } from '../../resources/js/game/performance/DeviceQaTargets.js';
 import RuntimeSoakProfiler from '../../resources/js/game/performance/RuntimeSoakProfiler.js';
-import { sendPwaMessage } from '../../resources/js/game/performance/PwaOfflineManager.js';
+import { sendPwaMessage } from './helpers/PwaWorkerClient.js';
 const read = path=>readFileSync(new URL(path,import.meta.url),'utf8');
 const sha = text=>createHash('sha256').update(text).digest('hex');
 function fixture(t) {
@@ -27,6 +27,7 @@ function fixture(t) {
         'assets/characters/character-manifest-v4.json','assets/characters/master-motion-v1.json',
         'assets/environments/cafe-runner-v1/wordmark.png','assets/environments/cafe-runner-v1/interior.webp',
         'assets/environments/demian-fbx/polished-v1/preview.webp',
+        'assets/lobby/demian-at-dusk.webp', ...OFFLINE_GAME_IDS.map(id=>'assets/lobby/'+id+'.webp'),
         'assets/environments/demian-fbx/floorplan.webp',
         'assets/environments/demian-fbx/floorplan-detail.webp'])write(path);
     for (const slug of BUILTIN_CHARACTER_SLUGS) {

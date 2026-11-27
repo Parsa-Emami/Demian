@@ -124,108 +124,10 @@
         'resources/js/app.js',
     ])
 @verbatim
-    <style id="demian-cafe-fit" data-welcome-layout="viewport-v6" data-welcome-design="living-cafe-v1">
-@media (orientation:portrait) and (max-width:1000px) {
- .manager-shell[data-shell-screen="cafe-menu"], .manager-shell[data-shell-screen="cafe-menu"] .manager-stage { min-height:0; height:100vh; height:100svh; height:100dvh; max-height:100dvh; }
-}
-.manager-shell [data-game-shell] [data-screen="cafe-menu"]:not([hidden]) { --home-gap:clamp(5px,1.05dvh,10px); --home-ink:#fff4e1; display:block; box-sizing:border-box; min-height:0; max-height:100%; max-height:100dvh; padding:max(8px,env(safe-area-inset-top,0px)) max(12px,env(safe-area-inset-right,0px)) max(8px,env(safe-area-inset-bottom,0px)) max(12px,env(safe-area-inset-left,0px)); overflow-x:hidden; overflow-y:auto; overscroll-behavior:contain; touch-action:pan-y; background:#111b16; }
-.manager-shell [data-game-shell] [data-screen="cafe-menu"]::before { content:""; position:absolute; inset:0; pointer-events:none; background:linear-gradient(180deg,#120d08c4 0%,#1d1b1070 24%,#15231b22 40%,#111b16 76%),url("assets/environments/cafe-runner-v1/interior.webp") center 42%/cover no-repeat; opacity:1; }
-.manager-shell [data-game-shell] [data-screen="cafe-menu"] :is(.cafe-menu__ambient,.cafe-menu__cabinet) { display:none; pointer-events:none; }
-.manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__content { position:relative; box-sizing:border-box; isolation:isolate; display:grid; grid-template-columns:minmax(0,1fr); grid-template-rows:auto minmax(86px,1fr) auto auto auto; grid-auto-rows:auto; align-content:stretch; align-items:stretch; justify-items:stretch; width:min(100%,560px); max-width:100%; min-width:0; height:auto; min-height:100%; padding:0; margin:0 auto; gap:var(--home-gap); background:none; text-align:right; }
-.manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__content > :first-child { position:relative; margin:0; padding:0 46px; text-align:center; grid-area:auto; align-self:center; }
-.manager-shell [data-game-shell] [data-screen="cafe-menu"] .shell-kicker { margin:0 0 3px; color:#f0d4a0; font-size:clamp(10px,1.5dvh,13px); line-height:1.25; font-weight:700; }
-.manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__title { width:auto; margin:0; color:var(--home-ink); font:900 clamp(32px,min(13vw,8.5dvh),79px)/1 Georgia,"Times New Roman",serif; letter-spacing:-.06em; background:none; filter:none; }
-.manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__title b { color:var(--home-ink); background:none; -webkit-text-fill-color:currentColor; -webkit-text-stroke:0; text-shadow:0 3px 4px #0c0906,0 0 24px #ffcb8055; }
-.manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__showcase { position:relative; isolation:isolate; box-sizing:border-box; display:flex; align-items:flex-end; justify-content:center; grid-area:auto; width:100%; min-width:0; min-height:clamp(132px,36dvh,310px); height:auto; margin:0; padding:0; gap:0; overflow:hidden; border:1px solid #e5c48966; border-radius:24px; color:var(--home-ink); text-align:center; touch-action:manipulation; background:linear-gradient(180deg,#24190e12,#1a1b0d08 40%,#101b15c9 83%,#111b16),url("assets/environments/cafe-runner-v1/interior.webp") center 54%/cover no-repeat,#34291d; box-shadow:0 12px 30px #0005; }
-.manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__showcase::before { content:""; position:absolute; inset:0; z-index:0; pointer-events:none; background:radial-gradient(ellipse at 50% 30%,#ffe2ab5c,transparent 64%),linear-gradient(90deg,#14170e61,transparent 25%,transparent 75%,#14170e61); }
-.manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__showcase-copy { display:flex; flex:0 0 100%; flex-direction:column; justify-content:center; align-items:center; gap:2px; align-self:flex-end; width:100%; min-width:0; position:relative; z-index:2; padding:4px 8px 8px; text-align:center; pointer-events:none; background:linear-gradient(0deg,#101b16 0%,#101b16e8 65%,transparent 100%); }
-.manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__showcase-kicker { color:#f5d695; font-family:inherit; font-weight:700; font-size:clamp(10px,1.5dvh,13px); line-height:1.2; letter-spacing:0; direction:rtl; text-align:center; }
-.manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__showcase-copy strong { color:#fff4df; font-size:clamp(13px,2.5dvh,22px); font-weight:900; line-height:1.25; text-shadow:0 2px 4px #000; }
-.manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__showcase-copy small { color:#e5d9c3; font-size:clamp(10px,1.6dvh,12px); line-height:1.25; }
-.manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__portraits { position:absolute; z-index:1; inset:4% 2% clamp(45px,7dvh,70px); display:flex; align-items:flex-end; justify-content:center; min-width:0; padding:0; gap:0; direction:ltr; pointer-events:none; }
-.manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__portrait { position:relative; display:block; flex:0 1 33%; width:33%; height:76%; min-width:0; max-width:220px; aspect-ratio:auto; overflow:visible; border:0; border-radius:0; background:none; box-shadow:none; z-index:1; transform:none; }
-.manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__portrait + .cafe-menu__portrait { margin-left:-4%; }
-.manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__portrait--negar { flex-basis:44%; width:44%; height:100%; z-index:2; background:none; transform:none; }
-.manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__portrait img { display:block; width:100%; height:100%; object-fit:contain; object-position:center bottom; filter:drop-shadow(0 5px 4px #100b07b3); }
-.manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__portrait--negar img { filter:drop-shadow(0 6px 5px #100b07b3) drop-shadow(0 0 12px #f9d78b40); }
-@keyframes demian-lobby-idle { 0%,100% { transform:translateY(0); } 50% { transform:translateY(-4px); } }
-@keyframes demian-lobby-light { 0%,100% { opacity:.42; transform:translate3d(-2%,0,0); } 50% { opacity:.7; transform:translate3d(2%,0,0); } }
-.manager-shell [data-game-shell] [data-screen="cafe-menu"] .demian-lobby-light { position:absolute; z-index:0; inset:0; pointer-events:none; background:radial-gradient(ellipse at 48% 12%,#ffda913b,transparent 65%); }
-@media (prefers-reduced-motion:no-preference) {
- .manager-shell [data-game-shell] [data-screen="cafe-menu"][data-screen-state="active"] .cafe-menu__portrait img { animation:demian-lobby-idle 4.8s ease-in-out infinite; }
- .manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__portrait--negar img { animation-delay:-1.4s; }
- .manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__portrait--tiam img { animation-delay:-2.7s; }
- .manager-shell [data-game-shell] [data-screen="cafe-menu"][data-screen-state="active"] .demian-lobby-light { animation:demian-lobby-light 9s ease-in-out infinite; }
-}
-.manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__actions { display:grid; grid-area:auto; grid-template-columns:repeat(2,minmax(0,1fr)); grid-auto-rows:auto; gap:var(--home-gap); width:100%; margin:0; min-width:0; align-self:center; }
-.manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__actions .shell-button { box-sizing:border-box; position:relative; display:flex; align-items:center; justify-content:space-between; grid-column:auto; grid-row:auto; width:100%; min-width:0; min-height:clamp(44px,6dvh,58px); height:auto; margin:0; padding:4px 10px; gap:5px; border:1px solid #e7c88b2e; border-radius:13px; background:#263a2f; color:#fff3dc; font-size:clamp(11px,1.8dvh,15px); font-weight:750; line-height:1.25; text-align:right; white-space:normal; overflow-wrap:anywhere; touch-action:manipulation; box-shadow:inset 0 1px #ffffff0c; transition:scale .12s,background-color .15s; }
-.manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__actions .shell-button > :is(b,span[aria-hidden="true"]) { flex:none; display:grid; place-items:center; width:24px; height:24px; border-radius:7px; background:#ffffff0c; }
-.manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__actions .shell-button svg { display:block; width:17px; height:17px; pointer-events:none; }
-.manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__actions .shell-button--primary { grid-column:1/-1; min-height:clamp(48px,7.6dvh,68px); padding-inline:15px; border-color:#ffe4a5; background:radial-gradient(ellipse at 28% 0%,#fff3c6,transparent 62%),linear-gradient(115deg,#dfae65,#f2d397 65%,#d8ab64); color:#19271c; font-size:clamp(15px,2.6dvh,22px); box-shadow:0 3px 0 #78592e,0 7px 18px #0006; }
-.manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__actions [data-shell-action="continue"] { grid-column:1/-1; background:linear-gradient(90deg,#16281bf0,#16281b94),url("assets/environments/demian-fbx/polished-v1/preview.webp") center 50%/cover no-repeat,#21382d; border-color:#d7ba765c; color:#fff4df; }
-.manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__actions .shell-button:is([data-shell-action="rewards"],.menu-character-button) { grid-column:auto; grid-row:auto; margin:0; }
-.manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__actions .shell-button:not(:active) { transform:none; }
-.manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__actions .shell-button:active { scale:.97; }
-.manager-shell [data-game-shell] [data-screen="cafe-menu"] .demian-legal-links { grid-area:auto; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:2px; margin:0; padding:0; text-align:center; font-size:clamp(9px,1.4dvh,11px); line-height:1.25; }
-.manager-shell [data-game-shell] [data-screen="cafe-menu"] .demian-legal-links a { box-sizing:border-box; display:flex; align-items:center; justify-content:center; min-height:44px; color:#ded1b8; padding:2px; text-underline-offset:3px; }
-.manager-shell [data-game-shell] [data-screen="cafe-menu"] .demian-credit { grid-area:auto; display:grid; justify-items:center; align-content:center; margin:0; padding:0; gap:0; border-top:1px solid #b39b6e39; color:#d2c4ac; opacity:1; font-size:10px; line-height:1.2; }
-.manager-shell [data-game-shell] [data-screen="cafe-menu"] .demian-credit p { margin:0; }
-.manager-shell [data-game-shell] [data-screen="cafe-menu"] .demian-credit a { box-sizing:border-box; display:inline-flex; align-items:center; justify-content:center; min-height:44px; color:#f0cc88; font-size:13px; font-weight:700; padding-inline:16px; line-height:1.25; }
-.manager-shell [data-game-shell] [data-screen="cafe-menu"] [data-instant-menu-status] { grid-column:1/-1; margin:0; font-size:10px; line-height:1.2; text-align:center; }
-.manager-shell [data-game-shell] [data-screen="cafe-menu"] :is(button,a):focus-visible { outline:2px solid #ffe1a0; outline-offset:2px; }
-.manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__content [data-menu-reveal] { transform:none !important; opacity:1 !important; }
-@media (orientation:portrait) and (min-height:720px) {
- .manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__actions { grid-template-columns:repeat(3,minmax(0,1fr)); }
- .manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__actions .shell-button { justify-content:center; text-align:center; }
- .manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__actions :is(.shell-button--primary,[data-shell-action="continue"]) { justify-content:space-between; text-align:right; }
- .manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__actions [data-shell-action="settings"] { position:absolute; inset-block-start:0; inset-inline-end:0; z-index:3; width:44px; height:44px; min-height:44px; border-radius:50%; padding:0; }
- .manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__actions [data-shell-action="settings"] > span { position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); white-space:nowrap; }
- .manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__actions [data-shell-action="settings"] > b { width:26px; height:26px; background:none; }
-}
-@media (orientation:portrait) and (max-height:719px) {
- .manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__content { grid-template-rows:repeat(5,auto); align-content:safe center; }
- .manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__content > :first-child { padding:0; }
- .manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__showcase { min-height:clamp(110px,28dvh,200px); }
- .manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__showcase-copy small { display:none; }
- .manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__portraits { inset-block-end:33px; }
-}
-@media (orientation:portrait) and (max-height:570px) {
- .manager-shell [data-game-shell] [data-screen="cafe-menu"]:not([hidden]) { --home-gap:5px; }
- .manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__title { font-size:clamp(31px,min(12vw,7dvh),49px); }
- .manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__showcase { min-height:clamp(88px,24dvh,132px); border-radius:16px; }
- .manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__showcase-kicker { display:none; }
- .manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__showcase-copy { padding-block:4px; }
- .manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__portraits { inset-block-end:24px; }
- .manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__actions .shell-button:is(.shell-button--primary,[data-shell-action="continue"]) { grid-column:auto; }
- .manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__actions .shell-button { min-height:44px; font-size:11px; padding:4px 7px; gap:4px; }
- .manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__actions .shell-button > :is(b,span[aria-hidden="true"]) { width:22px; height:22px; }
- .manager-shell [data-game-shell] [data-screen="cafe-menu"] .demian-credit { border:0; }
- .manager-shell [data-game-shell] [data-screen="cafe-menu"] .demian-credit p { position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); white-space:nowrap; }
-}
-@media (orientation:landscape) and (min-width:540px) {
- .manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__content { width:min(100%,1100px); grid-template-columns:minmax(0,1.15fr) minmax(0,1fr); grid-template-rows:auto minmax(86px,1fr) auto auto; gap:var(--home-gap) clamp(12px,3vw,30px); }
- .manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__content > :first-child { grid-column:1; grid-row:1; padding:0; }
- .manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__showcase { grid-column:1; grid-row:2/5; }
- .manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__actions { grid-column:2; grid-row:1/3; }
- .manager-shell [data-game-shell] [data-screen="cafe-menu"] .demian-legal-links { grid-column:2; grid-row:3; }
- .manager-shell [data-game-shell] [data-screen="cafe-menu"] .demian-credit { grid-column:2; grid-row:4; }
-}
-@media (orientation:landscape) and (max-height:480px) {
- .manager-shell [data-game-shell] [data-screen="cafe-menu"]:not([hidden]) { --home-gap:5px; }
- .manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__content { grid-template-rows:auto minmax(60px,1fr) auto auto; align-content:safe center; }
- .manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__showcase { min-height:100px; }
- .manager-shell [data-game-shell] [data-screen="cafe-menu"] .cafe-menu__actions .shell-button { min-height:44px; }
- .manager-shell [data-game-shell] [data-screen="cafe-menu"] .demian-credit p { position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); }
-}
-@media (prefers-reduced-motion:reduce) {
- .manager-shell [data-game-shell] [data-screen="cafe-menu"] :is(button,a,img,[data-menu-reveal],.demian-lobby-light) { animation:none !important; transition:none !important; }
-}
-</style>
-
     <style id="demian-shell-viewport" data-shell-layout="safe-navigation-v1">
         /* One bounded scroll owner per screen. The header remains in the
            viewport even when long content or focus moves the panel scroll. */
-        .manager-shell [data-game-shell] :is([data-screen="game-selection"],[data-screen="settings"],[data-screen="leaderboard"],[data-screen="coupon-wallet"]):not([hidden]) {
+        .manager-shell [data-game-shell] :is([data-screen="settings"],[data-screen="leaderboard"],[data-screen="coupon-wallet"]):not([hidden]) {
             box-sizing:border-box; display:grid; grid-template-columns:minmax(0,1fr);
             grid-template-rows:minmax(0,1fr); place-items:start center;
             min-width:0; min-height:0; overflow:hidden; overscroll-behavior:contain;
@@ -234,19 +136,16 @@
                 var(--demian-nav-safe-bottom,var(--mobile05-safe-bottom,max(16px,env(safe-area-inset-bottom,0px))))
                 var(--demian-nav-safe-left,var(--mobile05-safe-left,max(14px,env(safe-area-inset-left,0px))));
         }
-        .manager-shell [data-game-shell] :is([data-screen="game-selection"],[data-screen="settings"],[data-screen="leaderboard"],[data-screen="coupon-wallet"]) > :is(.shell-page,.shell-modal) {
+        .manager-shell [data-game-shell] :is([data-screen="settings"],[data-screen="leaderboard"],[data-screen="coupon-wallet"]) > :is(.shell-page,.shell-modal) {
             box-sizing:border-box; min-width:0; min-height:0; max-width:100%; max-height:100%;
             max-inline-size:100%; max-block-size:100%; overflow-x:hidden; overflow-y:auto;
             margin:0; padding:0 14px 14px; overscroll-behavior:contain;
             scroll-padding-block-start:96px; touch-action:pan-y;
         }
-        .manager-shell [data-game-shell] [data-screen="game-selection"] > .shell-page {
-            width:min(820px,100%); height:100%; align-self:stretch;
-        }
         .manager-shell [data-game-shell] [data-screen="settings"] > .shell-modal { width:min(650px,100%); }
         .manager-shell [data-game-shell] [data-screen="leaderboard"] > .shell-modal { width:min(520px,100%); }
         .manager-shell [data-game-shell] [data-screen="coupon-wallet"] > .shell-modal { width:min(700px,100%); }
-        .manager-shell [data-game-shell] :is([data-screen="game-selection"],[data-screen="settings"],[data-screen="leaderboard"],[data-screen="coupon-wallet"]) [data-shell-nav-header] {
+        .manager-shell [data-game-shell] :is([data-screen="settings"],[data-screen="leaderboard"],[data-screen="coupon-wallet"]) [data-shell-nav-header] {
             box-sizing:border-box; position:sticky; inset-block-start:0; z-index:var(--z-local-sticky);
             display:flex; align-items:center; justify-content:space-between; flex-wrap:nowrap;
             gap:10px; min-width:0; margin:0 -14px 12px; padding:10px 14px;
@@ -270,31 +169,6 @@
             .manager-shell [data-game-shell] [data-shell-nav-header] > div > p:last-child:not(.shell-kicker) { font-size:11px; }
         }
     
-        /* Offline tools are normal flow content, after the complete game grid.
-           Keep the legacy direct-child placement safe during cached rollovers. */
-        .manager-shell [data-game-shell] [data-screen="game-selection"] .demian-offline-manager {
-            box-sizing:border-box; position:static; z-index:auto; inset:auto;
-            width:100%; max-width:100%; min-width:0; min-height:0;
-            margin:16px 0 0; transform:none; pointer-events:auto; overflow-wrap:anywhere;
-        }
-        .manager-shell [data-game-shell] [data-screen="game-selection"] .shell-page > .demian-offline-manager {
-            display:block; overflow:visible; max-height:none; clear:both;
-        }
-        .manager-shell [data-game-shell] [data-screen="game-selection"] .game-grid {
-            position:relative; min-width:0; max-width:100%;
-        }
-        .manager-shell [data-game-shell] [data-screen="game-selection"] :is([data-game-launch],[data-offline-download],[data-offline-remove]) {
-            scroll-margin-block:10px;
-        }
-        .manager-shell [data-game-shell] [data-screen="game-selection"]:has(> .demian-offline-manager):not([hidden]) {
-            grid-template-rows:minmax(0,1fr) minmax(0,30%);
-            gap:8px;
-        }
-        .manager-shell [data-game-shell] [data-screen="game-selection"] > .demian-offline-manager {
-            grid-row:2; align-self:stretch; overflow:auto; margin:0; max-height:100%;
-            overscroll-behavior:contain; touch-action:pan-y;
-        }
-
         /* Keep old, cached PWA controller bundles safe during version rollover. */
         [data-pwa-update-host]:empty { display:none; }
         [data-pwa-update-host] .demian-pwa-update {
@@ -577,63 +451,70 @@
 
                 <section
                     data-screen="cafe-menu"
-                    class="shell-screen shell-screen--cafe"
-                    aria-label="منوی اصلی کافه دمیان"
+                    data-welcome-design="demian-game-room"
+                    class="shell-screen shell-screen--cafe lobby-screen"
+                    aria-label="لابی کافهٔ دمیان"
                     aria-hidden="true"
+                    dir="rtl"
                     hidden
                 >
-                    <div class="cafe-menu__ambient" aria-hidden="true">
-                        <span></span><span></span><span></span>
+                    <div class="lobby">
+                        <header class="lobby__header">
+                            <img class="lobby__wordmark" src="assets/environments/cafe-runner-v1/wordmark.png" width="1637" height="553" alt="دمیان">
+                            <button type="button" data-shell-action="settings" class="lobby-button lobby__settings">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 17h16"/><circle cx="9" cy="7" r="2.5" fill="var(--lobby-surface)"/><circle cx="15" cy="17" r="2.5" fill="var(--lobby-surface)"/></svg>
+                                تنظیمات
+                            </button>
+                        </header>
+                        <div class="lobby__hero">
+                            <img class="lobby__art" src="assets/lobby/demian-at-dusk.webp" width="1400" height="933" alt="" decoding="async">
+                            <div class="lobby__intro">
+                                <h1>شبِ بازی <span>در دمیان</span></h1>
+                                <p>از گشت‌وگذار در کافه تا رقابت برای رکورد هفتگی.</p>
+                                <div class="cafe-menu__actions lobby__actions">
+                                    <button type="button" data-shell-action="play" data-screen-autofocus class="lobby-button lobby-button--primary">
+                                        انتخاب بازی
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5m7-7-7 7 7 7"/></svg>
+                                    </button>
+                                    <button type="button" data-shell-action="continue" class="lobby-button">
+                                        ورود به کافه
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 12h12a5 5 0 0 1-5 5h-2a5 5 0 0 1-5-5ZM18 12h1a2 2 0 0 1 0 4h-2M5 20h15M10 9l1-2-1-2m5 4 1-2-1-2"/></svg>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="lobby__shortcuts">
+                            <button type="button" data-sidebar-toggle class="lobby-tile menu-character-button">
+                                <span class="lobby-tile__portraits" aria-hidden="true">
+                                    <span><img data-lobby-support-avatar src="assets/characters/negar/negar-preview-v14.png" alt="" width="128" height="128" decoding="async" fetchpriority="low"></span>
+                                    <span><img data-lobby-active-avatar src="assets/characters/darya/darya-preview-v14.png" alt="" width="128" height="128" decoding="async" fetchpriority="low"></span>
+                                    <span><img data-lobby-support-avatar src="assets/characters/tiam/tiam-preview-v14.png" alt="" width="128" height="128" decoding="async" fetchpriority="low"></span>
+                                </span>
+                                <span class="lobby-tile__label">
+                                    <strong>انتخاب کاراکتر</strong>
+                                    <small data-lobby-active-name>دریا</small>
+                                </span>
+                            </button>
+                            <button type="button" data-shell-action="leaderboard" class="lobby-tile">
+                                <span class="lobby-tile__icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4h8v6a4 4 0 0 1-8 0V4Zm0 2H4v2a4 4 0 0 0 4 4m8-6h4v2a4 4 0 0 1-4 4m-4 2v5m-4 1h8"/></svg></span>
+                                <span class="lobby-tile__label"><strong>رتبه‌بندی هفتگی</strong><small>رکوردهای بازیکنان</small></span>
+                            </button>
+                            <button type="button" data-shell-action="rewards" class="lobby-tile">
+                                <span class="lobby-tile__icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h18v3a2 2 0 0 0 0 4v3H3v-3a2 2 0 0 0 0-4V7Zm10 0v2m0 2v2m0 2v2"/></svg></span>
+                                <span class="lobby-tile__label"><strong>تخفیف‌های من</strong><small>جایزه‌های کافه</small></span>
+                            </button>
+                        </div>
+                        <footer class="lobby__footer">
+                            <nav class="demian-legal-links" aria-label="قوانین و حریم خصوصی">
+                                <a href="privacy/" target="_self">حریم خصوصی</a>
+                                <a href="terms/" target="_self">شرایط استفاده</a>
+                                <a href="competition-rules/" target="_self">قوانین رقابت</a>
+                            </nav>
+                            <div class="demian-credit" data-project-credit>
+                                <a href="https://parsaaemm.dev/" target="_blank" rel="noopener noreferrer" lang="en" dir="ltr" data-creator-link>parsaaemm</a>
+                            </div>
+                        </footer>
                     </div>
-                    <div class="cafe-menu__content">
-                        <div data-menu-reveal>
-                            <p class="shell-kicker">به دمیان خوش آمدی</p>
-                            <h1 class="cafe-menu__title"><b>DEMIAN</b></h1>
-                        </div>
-                        <button type="button" data-sidebar-toggle class="cafe-menu__showcase" aria-label="نمایش مجموعه و انتخاب کاراکتر">
-                            <span class="cafe-menu__showcase-copy">
-                                <span class="cafe-menu__showcase-kicker" data-lobby-active-name>به کافه خوش آمدی</span>
-                                <strong>شخصیتت را انتخاب کن</strong>
-                                <small>داستان امشب با تو شروع می‌شود</small>
-                            </span>
-                            <span class="demian-lobby-light" aria-hidden="true"></span>
-                            <span class="cafe-menu__portraits" aria-hidden="true">
-                                <span class="cafe-menu__portrait cafe-menu__portrait--darya"><img data-lobby-support-avatar src="assets/characters/negar/negar-preview-v14.png" alt="" width="128" height="128" loading="lazy" decoding="async" fetchpriority="low"></span>
-                                <span class="cafe-menu__portrait cafe-menu__portrait--negar"><img data-lobby-active-avatar src="assets/characters/darya/darya-preview-v14.png" alt="" width="128" height="128" loading="lazy" decoding="async" fetchpriority="low"></span>
-                                <span class="cafe-menu__portrait cafe-menu__portrait--tiam"><img data-lobby-support-avatar src="assets/characters/tiam/tiam-preview-v14.png" alt="" width="128" height="128" loading="lazy" decoding="async" fetchpriority="low"></span>
-                            </span>
-                        </button>
-                        <div data-menu-reveal class="cafe-menu__actions">
-                            <button type="button" data-shell-action="play" data-screen-autofocus class="shell-button shell-button--primary">
-                                <span>انتخاب بازی</span><b aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M19 12H5m7-7-7 7 7 7"/></svg></b>
-                            </button>
-                            <button type="button" data-shell-action="continue" class="shell-button">
-                                <span>ورود به دنیای باز</span><b aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m8 5 12 7-12 7z"/></svg></b>
-                            </button>
-                            <button type="button" data-shell-action="settings" class="shell-button shell-button--ghost">
-                                <span>تنظیمات</span><b aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="3"/><path d="M12 2v3m0 14v3M2 12h3m14 0h3M5 5l2 2m10 10 2 2M5 19l2-2M17 7l2-2"/></svg></b>
-                            </button>
-                            <button type="button" data-shell-action="leaderboard" class="shell-button shell-button--ghost">لیدربورد هفتگی <b aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 7l4 4 4-7 4 7 4-4-2 13H6zM6 16h12"/></svg></b></button>
-                            <button type="button" data-shell-action="rewards" class="shell-button shell-button--ghost">تخفیف‌های من <b aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m5 19 14-14"/><circle cx="7" cy="7" r="3"/><circle cx="17" cy="17" r="3"/></svg></b></button>
-                            <button type="button" data-sidebar-toggle class="shell-button shell-button--ghost menu-character-button">انتخاب کاراکتر <span aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="8" r="4"/><path d="M4 21v-2a8 8 0 0 1 16 0v2"/></svg></span></button>
-                        </div>
-                        <nav class="demian-legal-links" aria-label="قوانین و حریم خصوصی">
-                            <a href="privacy/" target="_self">حریم خصوصی</a>
-                            <a href="terms/" target="_self">شرایط استفاده</a>
-                            <a href="competition-rules/" target="_self">قوانین رقابت و جوایز</a>
-                        </nav>
-                        <div class="demian-credit" data-project-credit>
-                            <p>طراحی و توسعهٔ بازی</p>
-                            <a href="https://parsaaemm.dev/" target="_blank" rel="noopener noreferrer" lang="en" dir="ltr" data-creator-link>parsaaemm</a>
-                        </div>
-                    </div>
-                    <aside class="cafe-menu__cabinet" aria-hidden="true">
-                        <div class="cafe-cabinet__sign">NOW PLAYING</div>
-                        <div class="cafe-cabinet__screen">
-                            <span>GAME</span><b>LIBRARY</b><small>CHOOSE YOUR GAME</small>
-                        </div>
-                        <div class="cafe-cabinet__controls"><i></i><i></i><i></i></div>
-                    </aside>
                 </section>
 
                 <section data-screen="motion-comparison" class="shell-screen shell-screen--modal motion-lab" role="dialog" aria-modal="true" aria-labelledby="motion-lab-title" aria-hidden="true" hidden>
@@ -660,34 +541,25 @@
 
                 <section
                     data-screen="game-selection"
-                    class="shell-screen shell-screen--selection"
-                    aria-label="انتخاب بازی"
+                    class="shell-screen shell-screen--selection library-screen"
+                    aria-labelledby="demian-library-title"
                     aria-hidden="true"
+                    dir="rtl"
                     hidden
                 >
-                    <div class="shell-page">
-                        <header class="shell-page__header" data-shell-nav-header>
+                    <div class="shell-page demian-library">
+                        <header class="demian-library__header" data-shell-nav-header>
                             <div>
-                                <p class="shell-kicker">CAFÉ DEMIAN / GAME LIBRARY</p>
-                                <h2>یک بازی انتخاب کن</h2>
-                                <p>کاوش آرام یا یک ران سریع؟ انتخاب با توست.</p>
+                                <h2 id="demian-library-title">انتخاب بازی</h2>
+                                <span data-game-library-count></span>
                             </div>
-                            <button type="button" data-shell-action="back-cafe" class="shell-icon-button" aria-label="بازگشت به منوی کافه">×</button>
+                            <button type="button" data-shell-action="back-cafe" data-screen-autofocus class="lobby-button" aria-label="بازگشت به لابی">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14m-7-7 7 7-7 7"/></svg>
+                                لابی
+                            </button>
                         </header>
                         <div data-pwa-update-host></div>
-                        <div class="game-library-toolbar">
-                            <span class="game-library-toolbar__hint" data-game-library-count>۷ بازی برای انتخاب</span>
-                            <div class="scroll-rail-controls" aria-label="پیمایش کتابخانه بازی">
-                                <button type="button" data-game-scroll-previous class="scroll-rail-button" aria-label="بازی قبلی">›</button>
-                                <output data-game-scroll-status class="scroll-rail-status" aria-live="polite">0 / 0</output>
-                                <button type="button" data-game-scroll-next class="scroll-rail-button" aria-label="بازی بعدی">‹</button>
-                            </div>
-                        </div>
-                        <div data-game-grid class="game-grid" tabindex="0" role="list" aria-label="کتابخانه بازی‌های دمیان"></div>
-                        <footer class="shell-page__footer">
-                            <span>بازی‌های تازه، قدم‌به‌قدم اضافه می‌شوند.</span>
-                            <span>ESC · بازگشت</span>
-                        </footer>
+                        <div data-game-grid class="demian-library__grid" role="list" aria-label="بازی‌های دمیان"></div>
                     </div>
                 </section>
 

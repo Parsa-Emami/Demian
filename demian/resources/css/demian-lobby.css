@@ -1,0 +1,531 @@
+.manager-shell [data-game-shell] :is(.lobby-screen, .library-screen):not([hidden]) {
+    --lobby-ink: #fff0d7;
+    --lobby-muted: #c9c5b4;
+    --lobby-gold: #f2c68d;
+    --lobby-surface: #17251e;
+    --lobby-line: #b5a78949;
+    --lobby-width: 72rem;
+    --lobby-gutter: clamp(10px, 3vw, 40px);
+    box-sizing: border-box;
+    min-width: 0;
+    min-height: 0;
+    padding: max(8px, env(safe-area-inset-top)) max(var(--lobby-gutter), env(safe-area-inset-right))
+        max(8px, env(safe-area-inset-bottom)) max(var(--lobby-gutter), env(safe-area-inset-left));
+    background: radial-gradient(ellipse at 20% 0, #24352b, transparent 58%), #101914;
+    color: var(--lobby-ink);
+    font-family: Vazirmatn, system-ui, sans-serif;
+    overscroll-behavior: contain;
+}
+
+.manager-shell [data-game-shell] .lobby-screen:not([hidden]) {
+    display: block;
+    overflow: hidden auto;
+    touch-action: pan-y;
+}
+
+.lobby-screen .lobby {
+    display: grid;
+    align-content: center;
+    gap: clamp(8px, 1.7dvh, 18px);
+    min-height: 100%;
+    max-width: var(--lobby-width);
+    margin-inline: auto;
+}
+
+.lobby__header, .lobby__footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.lobby__wordmark {
+    width: clamp(92px, 11vw, 132px);
+    height: auto;
+    filter: brightness(0) invert(90%) sepia(18%) saturate(594%) hue-rotate(328deg);
+}
+
+.lobby-button {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    min-width: 44px;
+    min-height: 48px;
+    padding: 8px 15px;
+    border: 1px solid var(--lobby-line);
+    border-radius: 12px;
+    background: var(--lobby-surface);
+    color: var(--lobby-ink);
+    font-size: .87rem;
+    font-weight: 700;
+    line-height: 1.35;
+    text-align: center;
+    cursor: pointer;
+    touch-action: manipulation;
+}
+
+.lobby-button svg, .lobby-tile svg {
+    flex: none;
+    width: 20px;
+    height: 20px;
+}
+
+.lobby__settings, .demian-library__header .lobby-button { min-height: 44px; }
+
+.lobby .lobby-button--primary {
+    border-color: #f7d2a0;
+    background: #efb878;
+    color: #2b1b12;
+    box-shadow: 0 3px #845330;
+}
+
+.lobby__hero {
+    position: relative;
+    isolation: isolate;
+    display: grid;
+    align-items: center;
+    min-height: clamp(320px, 55dvh, 550px);
+    overflow: hidden;
+    border: 1px solid #bc95665c;
+    border-radius: clamp(16px, 2.4vw, 30px);
+    background: #29251b;
+    box-shadow: 0 14px 42px #0a100c8c;
+}
+
+.lobby__art, .lobby__hero::after {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.lobby__art {
+    object-fit: cover;
+    object-position: center 54%;
+}
+
+.lobby__hero::after {
+    content: "";
+    background: linear-gradient(268deg, #111914f7 5%, #111914e8 26%, #11191480 48%, #11191400 73%);
+    pointer-events: none;
+}
+
+.lobby__intro {
+    position: relative;
+    z-index: var(--z-local-raised);
+    width: min(100%, 520px);
+    padding: clamp(18px, 4vw, 54px);
+}
+
+.lobby__intro h1 {
+    margin: 0;
+    font-size: clamp(2.25rem, 6.6vw, 5.25rem);
+    font-weight: 900;
+    line-height: 1.18;
+}
+
+.lobby__intro h1 span {
+    display: block;
+    color: var(--lobby-gold);
+}
+
+.lobby__intro p {
+    margin: 14px 0 0;
+    color: var(--lobby-muted);
+    font-size: clamp(.83rem, 1.6vw, 1.05rem);
+    line-height: 1.65;
+}
+
+.lobby .lobby__actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    width: min(100%, 322px);
+    margin: clamp(12px, 3.1dvh, 28px) 0 0;
+}
+
+.lobby .lobby__actions [data-instant-menu-status] {
+    grid-column: 1 / -1;
+    margin: 0;
+    font-size: .75rem;
+}
+
+.lobby__shortcuts {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: clamp(6px, 1.25vw, 14px);
+}
+
+.manager-shell [data-game-shell] .lobby .lobby-tile {
+    display: flex;
+    grid-area: auto;
+    align-items: center;
+    gap: clamp(6px, 1.3vw, 16px);
+    min-width: 0;
+    min-height: 76px;
+    margin: 0;
+    padding: 9px clamp(8px, 1.5vw, 18px);
+    border: 1px solid var(--lobby-line);
+    border-radius: 16px;
+    background: var(--lobby-surface);
+    color: var(--lobby-ink);
+    text-align: start;
+    cursor: pointer;
+    touch-action: manipulation;
+}
+
+.lobby-tile__icon {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 46px;
+    height: 46px;
+    border: 1px solid #c6a77b54;
+    border-radius: 12px;
+    background: #b9925e1d;
+    color: var(--lobby-gold);
+}
+
+.lobby-tile__label {
+    display: grid;
+    gap: 2px;
+    min-width: 0;
+    line-height: 1.4;
+}
+
+.lobby-tile__label strong { font-size: clamp(.72rem, 1.65vw, 1rem); }
+.lobby-tile__label small { color: var(--lobby-muted); font-size: .74rem; }
+
+.lobby-tile__portraits {
+    display: flex;
+    align-items: center;
+    flex: none;
+    direction: ltr;
+}
+
+.lobby-tile__portraits > span {
+    display: block;
+    width: 31px;
+    height: 35px;
+    overflow: hidden;
+    border: 1px solid #ad9974;
+    border-radius: 9px;
+    background: #2e3e32;
+}
+
+.lobby-tile__portraits > span + span { margin-inline-start: -9px; }
+.lobby-tile__portraits > span:nth-child(2) {
+    position: relative;
+    width: 38px;
+    height: 43px;
+    background: #66513a;
+}
+
+.lobby-tile__portraits img { width: 100%; height: 100%; object-fit: contain; }
+
+.manager-shell [data-game-shell] .lobby :is(.demian-legal-links, .demian-credit) {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    column-gap: clamp(5px, 2vw, 24px);
+    margin: 0;
+    padding: 0;
+    border: 0;
+    opacity: 1;
+}
+
+.manager-shell [data-game-shell] .lobby__footer a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    min-width: 44px;
+    padding-inline: 5px;
+    color: var(--lobby-muted);
+    font-size: .74rem;
+    text-decoration: none;
+}
+
+.manager-shell [data-game-shell] .lobby__footer [data-creator-link] {
+    color: var(--lobby-gold);
+    font-weight: 700;
+}
+
+.manager-shell [data-game-shell] .library-screen:not([hidden]) {
+    display: grid;
+    grid-template: minmax(0, 1fr) / minmax(0, 1fr);
+    justify-items: center;
+    align-items: stretch;
+    overflow: hidden;
+    backdrop-filter: none;
+}
+
+.manager-shell [data-game-shell] .library-screen > .demian-library {
+    box-sizing: border-box;
+    display: block;
+    width: min(100%, var(--lobby-width));
+    min-height: 0;
+    max-height: 100%;
+    margin: 0;
+    padding: 0 4px 12px;
+    overflow: hidden auto;
+    scroll-padding-block-start: 70px;
+    border: 0;
+    border-radius: 0;
+    background: none;
+    box-shadow: none;
+    overscroll-behavior: contain;
+    touch-action: pan-y;
+}
+
+.demian-library__header {
+    position: sticky;
+    z-index: var(--z-local-sticky);
+    inset-block-start: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-block-end: clamp(9px, 2dvh, 18px);
+    padding: 6px 2px 9px;
+    border-block-end: 1px solid var(--lobby-line);
+    background: #15211a;
+}
+
+.manager-shell [data-game-shell] .library-screen .demian-library__header h2 {
+    margin: 0;
+    color: var(--lobby-ink);
+    font-size: clamp(1.3rem, 3.6vw, 2.45rem);
+    font-weight: 900;
+    line-height: 1.2;
+}
+
+.demian-library__header [data-game-library-count] {
+    display: block;
+    margin-block-start: 2px;
+    color: var(--lobby-muted);
+    font-size: .75rem;
+    line-height: 1.4;
+}
+
+.demian-library__grid {
+    --tile-art-height: clamp(66px, 19vw, 120px);
+    --tile-caption-height: 52px;
+    --tile-gap: clamp(7px, 1.15vw, 14px);
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+    gap: var(--tile-gap);
+}
+
+.demian-game {
+    --tile-art: var(--tile-art-height);
+    position: relative;
+    min-width: 0;
+    border: 1px solid var(--lobby-line);
+    border-radius: 14px;
+    background: var(--lobby-surface);
+}
+
+.demian-game--featured {
+    --tile-art: clamp(108px, 23dvh, 215px);
+    grid-column: 1 / -1;
+    border-color: #dcb77c86;
+}
+
+.demian-game__launch {
+    display: grid;
+    grid-template-rows: var(--tile-art) minmax(var(--tile-caption-height), auto);
+    width: 100%;
+    min-width: 0;
+    padding: 0;
+    overflow: hidden;
+    border-radius: inherit;
+    color: var(--lobby-ink);
+    text-align: start;
+    cursor: pointer;
+    touch-action: manipulation;
+}
+
+.demian-game__launch[aria-disabled="true"] { opacity: .65; cursor: default; }
+
+.manager-shell [data-game-shell] .demian-game .demian-game__art {
+    display: block;
+    position: relative;
+    min-width: 0;
+    block-size: 100%;
+    margin: 0;
+    border: 0;
+    border-radius: 0;
+    background: #2f3528;
+}
+
+.manager-shell [data-game-shell] .demian-game__art img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    opacity: 1;
+}
+
+.manager-shell [data-game-shell] .demian-game__art > :is(.demian-game__play, .demian-game__capture-label) {
+    display: grid;
+    place-items: center;
+    position: absolute;
+    inset: auto auto 8px 8px;
+    min-height: 29px;
+    min-width: 29px;
+    border: 1px solid #f9d5a277;
+    border-radius: 50px;
+    background: #17221de8;
+    color: #ffe0af;
+    font: 700 .7rem/1.3 Vazirmatn, system-ui, sans-serif;
+    text-shadow: none;
+}
+
+.manager-shell [data-game-shell] .demian-game__art > .demian-game__capture-label {
+    inset-inline: 9px auto;
+    padding-inline: 8px;
+    pointer-events: none;
+}
+
+.demian-game__play svg { width: 21px; height: 21px; }
+
+.demian-game__caption {
+    display: grid;
+    align-content: center;
+    gap: 1px;
+    padding: 5px 8px 5px 47px;
+    line-height: 1.25;
+}
+
+.demian-game__caption strong { font-size: clamp(.75rem, 1.38vw, 1rem); }
+.demian-game__caption > span {
+    justify-self: start;
+    color: var(--lobby-muted);
+    font-size: clamp(.63rem, 1.1vw, .78rem);
+    font-weight: 700;
+    letter-spacing: .025em;
+}
+
+.demian-game--featured .demian-game__caption strong {
+    justify-self: start;
+    font-size: clamp(.9rem, 1.45vw, 1.15rem);
+}
+
+.manager-shell [data-game-shell] .demian-game .game-card__guide { position: static; margin: 0; }
+.manager-shell [data-game-shell] .demian-game .game-card__guide-details > summary {
+    position: absolute;
+    inset-block-start: calc(var(--tile-art) + (var(--tile-caption-height) - 44px) / 2);
+    inset-inline-end: 2px;
+    z-index: var(--z-local-control);
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    min-height: 44px;
+    padding: 0;
+    border: 0;
+    border-radius: 10px;
+    color: var(--lobby-gold);
+    list-style: none;
+}
+
+.demian-game summary::-webkit-details-marker { display: none; }
+.demian-game summary svg { width: 21px; height: 21px; }
+.demian-game details[open] > summary { background: #bc956625; }
+.manager-shell [data-game-shell] .demian-game .game-card__guide-body {
+    margin: 0 7px 7px;
+    background: #121d17;
+}
+
+.manager-shell [data-game-shell] :is(.lobby-screen, .library-screen) :is(button, summary, a):focus-visible {
+    outline: 2px solid #ffe3a9;
+    outline-offset: 2px;
+}
+
+@media (hover: hover) {
+    .lobby-button:hover, .manager-shell [data-game-shell] .lobby .lobby-tile:hover {
+        border-color: var(--lobby-gold);
+        background: #27382d;
+        transform: none;
+    }
+
+    .lobby .lobby-button--primary:hover { background: #f5ca94; }
+    .demian-game:is(:hover, :focus-within) { border-color: var(--lobby-gold); }
+    .manager-shell [data-game-shell] .demian-game__launch:hover .demian-game__play {
+        background: #f6cc94;
+        color: #281d13;
+    }
+    .lobby__footer a:hover { text-decoration: underline; }
+}
+
+@media (min-width: 620px) {
+    .demian-library__grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+@media (min-width: 920px) {
+    .manager-shell [data-game-shell] .library-screen > .demian-library {
+        display: grid;
+        align-content: safe center;
+    }
+    .demian-library__grid {
+        --tile-art-height: clamp(86px, 23dvh, 204px);
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+    }
+    .demian-game--featured {
+        --tile-art: calc(2 * var(--tile-art-height) + var(--tile-caption-height) + var(--tile-gap) + 2px);
+        grid-column: span 2;
+        grid-row: span 2;
+    }
+}
+
+@media (orientation: portrait) and (max-width: 1000px) {
+    .manager-shell:is([data-shell-screen="cafe-menu"], [data-shell-screen="game-selection"]),
+    .manager-shell:is([data-shell-screen="cafe-menu"], [data-shell-screen="game-selection"]) .manager-stage {
+        min-height: 0;
+        height: 100vh;
+        height: 100dvh;
+        max-height: 100dvh;
+    }
+}
+
+@media (max-width: 620px) and (orientation: portrait) {
+    .lobby__hero { align-items: end; min-height: clamp(240px, 53dvh, 490px); }
+    .lobby__hero::after { background: linear-gradient(0deg, #111914 5%, #111914eb 26%, #11191430 66%, transparent); }
+    .lobby__art { object-position: 44% 48%; }
+    .lobby__intro { padding: 14px; }
+    .lobby__intro h1 { font-size: clamp(1.9rem, 8vw, 3.2rem); }
+    .lobby__intro h1 span { display: inline; }
+    .lobby__intro p { margin-block-start: 5px; font-size: .78rem; }
+    .lobby .lobby__actions { width: 100%; }
+    .manager-shell [data-game-shell] .lobby .lobby-tile {
+        flex-direction: column;
+        justify-content: center;
+        text-align: center;
+    }
+    .lobby-tile__icon { width: 38px; height: 38px; }
+    .lobby-tile__label small { font-size: .66rem; }
+    .lobby__footer { flex-direction: column; gap: 0; }
+}
+
+@media (max-height: 620px) and (orientation: portrait) {
+    .lobby__hero { min-height: clamp(166px, 42dvh, 246px); }
+    .lobby .lobby__actions { margin-block-start: 10px; }
+    .lobby__shortcuts .lobby-tile__label small:not([data-lobby-active-name]) { display: none; }
+    .demian-library__grid { --tile-art-height: 60px; }
+}
+
+@media (max-height: 510px) and (orientation: landscape) {
+    .lobby__hero { min-height: clamp(164px, 49dvh, 240px); }
+    .lobby__intro { padding: 12px 20px; }
+    .lobby__intro h1 { font-size: clamp(1.85rem, 5.4vw, 2.9rem); }
+    .lobby__intro h1 span { display: inline; }
+    .lobby__intro p { margin-block-start: 5px; }
+    .lobby .lobby__actions { margin-block-start: 10px; }
+    .manager-shell [data-game-shell] .lobby .lobby-tile { min-height: 55px; padding-block: 4px; }
+    .demian-library__grid { --tile-art-height: 66px; }
+}

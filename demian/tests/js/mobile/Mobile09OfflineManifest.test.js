@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os';
 import { join, dirname } from 'node:path';
 import { buildOfflinePackManifest, splitOfflineModules, OFFLINE_GAME_IDS, OFFLINE_MAX_PACK_BYTES } from '../../../tools/offline_pack_manifest.mjs';
 import { BUILTIN_CHARACTER_SLUGS, characterPackVersion } from '../../../resources/js/game/characters/CharacterVisualContract.js';
-import { sendPwaMessage } from '../../../resources/js/game/performance/PwaOfflineManager.js';
+import { sendPwaMessage } from '../helpers/PwaWorkerClient.js';
 
 const entry = { file: 'assets/app-test.js', css: ['assets/app-test.css'] };
 const version = '0123456789abcdef';
@@ -32,6 +32,8 @@ function fixture() {
         'assets/environments/demian-fbx/floorplan.webp',
         'assets/environments/demian-fbx/floorplan-detail.webp',
         'assets/environments/demian-fbx/polished-v1/lod-1024/0-0.webp',
+        'assets/lobby/demian-at-dusk.webp',
+        ...OFFLINE_GAME_IDS.map(id => 'assets/lobby/' + id + '.webp'),
     ]) write(path);
     for (const slug of BUILTIN_CHARACTER_SLUGS) {
         const v = characterPackVersion(slug), base = 'assets/characters/' + slug + '/' + slug;
@@ -151,15 +153,13 @@ test('offline game packs include versioned game chunks and their shared dependen
     assert.throws(() => splitOfflineModules(vite), /Missing offline game chunk/);
 });
 
-test('offline manager is mounted in the library scroll owner, never as an overlapping screen sibling', () => {
-    const manager = readFileSync(new URL('../../../resources/js/game/performance/PwaOfflineManager.js', import.meta.url), 'utf8');
-    assert.match(manager, /const host = screen\?\.querySelector\('\.shell-page'\)/);
-    assert.match(manager, /host\.append\(this\.panel\)/);
-    assert.doesNotMatch(manager, /screen\.append\(this\.panel\)/);
+test('the selection exposes release updates without an offline-download panel', () => {
+    const controller = readFileSync(new URL('../../../resources/js/game/performance/PwaUpdateController.js', import.meta.url), 'utf8');
+    assert.doesNotMatch(controller, /PwaOfflineManager|DEMIAN_PACK_DOWNLOAD/);
+    assert.match(controller, /querySelector\('\[data-pwa-update-host\]'\)/);
     for (const path of ['../../../resources/views/demian.blade.php', '../../../../playable/index.html']) {
         const html = readFileSync(new URL(path, import.meta.url), 'utf8');
-        assert.match(html, /\.shell-page > \.demian-offline-manager\s*\{/);
-        assert.match(html, /grid-template-rows:minmax\(0,1fr\) minmax\(0,30%\)/);
-        assert.match(html, /grid-row:2; align-self:stretch; overflow:auto/);
+        assert.match(html, /data-pwa-update-host/);
+        assert.doesNotMatch(html, /demian-offline-manager|بازی بدون اینترنت/);
     }
 });
