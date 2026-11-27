@@ -57,6 +57,9 @@ final class WeeklySettlementService
         }
 
         return DB::transaction(function () use ($startLocal, $utcNow, $window): array {
+            if (! DB::table('arcade_personal_progress_mutex')->where('id', 1)->lockForUpdate()->first()) {
+                throw new RuntimeException('Progress settlement mutex missing.');
+            }
             $key = $this->ensurePeriod($startLocal);
             $period = DB::table('arcade_weekly_periods')->where('period_key', $key)->lockForUpdate()->first();
             if (! $period || ! in_array($period->status, ['open', 'sealed'], true)) {
@@ -250,6 +253,9 @@ final class WeeklySettlementService
             app(WeeklyFairScoringService::class)
                 ->sealFromTrustedSnapshot($key, $snapshot, $digest, $utcNow);
             app(SkillLeagueService::class)->seal($key, $snapshot, $digest, $utcNow);
+            app(PersonalProgressService::class)->seal($key, $snapshot, $digest, $utcNow);
+            app(LoyaltyXpService::class)->seal($key, $digest, $utcNow);
+            app(MissionService::class)->seal($key, $digest, $utcNow);
             DB::table('arcade_weekly_periods')->where('period_key', $key)->update([
                 'status' => 'sealed', 'sealed_at' => $utcNow->toDateTimeString(),
                 'participants' => count($snapshot), 'winner_count' => count($awards),

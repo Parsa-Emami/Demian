@@ -79,12 +79,21 @@ final class WeeklyFairScoringTest extends TestCase
         $this->getJson($board)->assertOk()->assertJsonPath('status', 'not_finalized');
         $this->getJson($board.'&week=2026-11-10')->assertUnprocessable();
         $this->getJson($mine)->assertUnauthorized();
+        foreach (['progress', 'loyalty', 'missions'] as $route) {
+            $this->getJson('/api/v1/arcade/player/'.$route)->assertUnauthorized();
+        }
 
         $settler = app(WeeklySettlementService::class);
         $settler->seal('2026-11-07');
         $this->assertDatabaseHas('arcade_skill_seasons', ['period_key' => self::WEEK, 'participants' => 20, 'qualified' => 20]);
         $this->assertDatabaseMissing('arcade_skill_standings', ['player_id' => $players[20]]);
         $this->assertDatabaseMissing('arcade_skill_standings', ['player_id' => $players[21]]);
+        $progressTables = ['arcade_personal_progress', 'arcade_loyalty_xp', 'arcade_mission_weeks'];
+        foreach ($progressTables as $table) {
+            $this->assertDatabaseCount($table, 20);
+            $this->assertDatabaseMissing($table, ['player_id' => $players[20]]);
+            $this->assertDatabaseMissing($table, ['player_id' => $players[21]]);
+        }
         $this->getJson($board)->assertOk()
             ->assertJsonPath('data.0.points', 1000)->assertJsonPath('data.0.recognition', true)
             ->assertJsonPath('rules.financial_rewards', false)
@@ -93,11 +102,19 @@ final class WeeklyFairScoringTest extends TestCase
             ->assertJsonPath('verified', true)->assertJsonPath('last_result.league', 'legend');
         $this->getJson('/api/v1/arcade/player/data/records?type=skill_leagues')
             ->assertOk()->assertJsonPath('data.0.league', 'legend')->assertJsonCount(1, 'data');
+        foreach (['personal_progress', 'loyalty_xp', 'missions'] as $type) {
+            $this->getJson('/api/v1/arcade/player/data/records?type='.$type)
+                ->assertOk()->assertJsonCount(1, 'data')->assertJsonMissingPath('data.0.source_sha256');
+        }
+        $this->getJson('/api/v1/arcade/player/progress?game=unknown')->assertUnprocessable();
 
         $settler->seal('2026-11-07');
         $this->assertDatabaseCount('arcade_skill_standings', 20);
         $this->assertDatabaseCount('arcade_coupons', 0);
         DB::table('arcade_players')->where('id', $players[0])->delete();
+        foreach ($progressTables as $table) {
+            $this->assertDatabaseMissing($table, ['player_id' => $players[0]]);
+        }
         $this->assertDatabaseHas('arcade_skill_standings', ['player_id' => null, 'rank' => 1, 'league' => 'legend']);
         $this->getJson($board)->assertOk()->assertJsonPath('data.0.rank', 2);
     }
@@ -426,5 +443,86 @@ final class WeeklyFairScoringTest extends TestCase
         ]);
         $this->getJson('/api/v1/arcade/competition/fair?week=2026-11-07')
             ->assertOk()->assertJsonCount(0, 'data');
+    }
+
+    public function test_missions_count_distinct_tehran_days_not_runs_and_settle_once(): void
+    {
+        $this->travelTo(CarbonImmutable::parse('2026-11-12T12:00:00Z'));
+        $token = Str::random(64);
+        $player = $this->player($token);
+        DB::table('arcade_players')->where('id', $player)->update([
+            'contact_type' => 'phone', 'contact_hash' => hash('sha256', 'mission-fixture'),
+            'phone_verified_at' => '2026-11-09 12:00:00',
+        ]);
+        $run=$this->verified($player,1000);
+        $row=(array)DB::table('arcade_runs')->where('id',$run)->first();
+        foreach(['2026-11-10 12:00:00','2026-11-11 10:00:00','2026-11-12 10:00:00'] as $started) {
+            $id=(string)Str::uuid();
+            DB::table('arcade_runs')->insert([...$row,'id'=>$id,'request_id'=>(string)Str::uuid(),
+                'score'=>100,'replay_hash'=>hash('sha256',$id),'started_at'=>$started,
+                'expires_at'=>CarbonImmutable::parse($started,'UTC')->addHour()->toDateTimeString(),
+                'completed_at'=>CarbonImmutable::parse($started,'UTC')->addMinutes(2)->toDateTimeString()]);
+        }
+        $this->withToken($token)->getJson('/api/v1/arcade/player/missions')
+            ->assertOk()->assertJsonPath('status','provisional')->assertJsonPath('today_complete',true)
+            ->assertJsonPath('progress.active_days',3)->assertJsonPath('progress.distinct_games',1)
+            ->assertJsonPath('progress.total_xp',30)->assertJsonPath('last_finalized',null);
+        $this->assertDatabaseCount('arcade_mission_weeks',0);
+        $this->travelTo(CarbonImmutable::parse('2026-11-14T01:00:00Z'));
+        $settler=app(WeeklySettlementService::class);
+        $settler->seal('2026-11-07');
+        $settler->seal('2026-11-07');
+        $this->assertDatabaseCount('arcade_mission_weeks',1);
+        $this->assertDatabaseHas('arcade_mission_weeks',['player_id'=>$player,'day_mask'=>56,
+            'daily_xp'=>15,'consistency_xp'=>15,'total_xp'=>30]);
+        $this->getJson('/api/v1/arcade/player/missions')->assertOk()
+            ->assertJsonPath('progress.total_xp',0)->assertJsonPath('last_finalized.total_xp',30);
+        $this->getJson('/api/v1/arcade/player/loyalty')->assertOk()
+            ->assertJsonPath('total_xp',130)->assertJsonPath('mission_xp',30);
+        $this->getJson('/api/v1/arcade/player/data/records?type=missions')->assertOk()->assertJsonCount(1,'data');
+        $this->assertDatabaseCount('arcade_coupons',0);
+    }
+
+    public function test_progress_uses_highwater_across_weeks_and_never_issues_coupons(): void
+    {
+        $token = Str::random(64);
+        $player = $this->player($token);
+        DB::table('arcade_players')->where('id',$player)->update(['token_expires_at'=>now()->addDays(90)]);
+        DB::table('arcade_players')->where('id', $player)->update([
+            'contact_type' => 'phone', 'contact_hash' => hash('sha256', 'progress-fixture'),
+            'phone_verified_at' => '2026-11-08 12:00:00',
+        ]);
+        $weeks=[
+            ['2026-11-07','2026-11-10',100],
+            ['2026-11-14','2026-11-17',900],
+            ['2026-11-21','2026-11-24',1000],
+            ['2026-11-28','2026-12-01',1],
+            ['2026-12-05','2026-12-08',1050],
+            ['2026-12-12','2026-12-15',1050],
+        ];
+        $settler=app(WeeklySettlementService::class);
+        foreach($weeks as [$week,$day,$score]) {
+            $this->travelTo(CarbonImmutable::parse($day.'T10:01:00Z'));
+            $this->verified($player,$score,'dino-run','cafe-runner-v2',$day.'T10:00:00Z');
+            $this->travelTo(CarbonImmutable::parse($week.'T01:00:00Z')->addWeek());
+            $settler->seal($week);
+        }
+        $this->assertDatabaseCount('arcade_personal_progress',6);
+        $this->assertDatabaseHas('arcade_personal_progress',['period_key'=>'weekly:tehran:2026-11-28','previous_best'=>1000,'target_score'=>1050,'badge'=>null]);
+        $this->assertDatabaseHas('arcade_personal_progress',['period_key'=>'weekly:tehran:2026-12-05','badge'=>'personal-breakthrough','score'=>1050]);
+        $this->assertSame(1,DB::table('arcade_personal_progress')->whereNotNull('badge')->count());
+        $this->withToken($token)->getJson('/api/v1/arcade/player/progress?game=dino-run')
+            ->assertOk()->assertJsonPath('personal_best',1050)->assertJsonPath('next_goal',1103)
+            ->assertJsonPath('weeks',6)->assertJsonPath('badges',1)->assertJsonCount(6,'history');
+        $settler->seal('2026-12-12');
+        $this->assertDatabaseCount('arcade_personal_progress',6);
+        $this->assertDatabaseCount('arcade_loyalty_xp',6);
+        $this->assertDatabaseCount('arcade_mission_weeks',6);
+        $this->assertDatabaseHas('arcade_mission_weeks',['player_id'=>$player,'period_key'=>'weekly:tehran:2026-12-05','total_xp'=>20,'adaptive_xp'=>15,'adaptive_target'=>1050]);
+        $this->assertDatabaseHas('arcade_loyalty_xp',['player_id'=>$player,'period_key'=>'weekly:tehran:2026-12-05','total_xp'=>175,'progress_xp'=>50,'continuity_xp'=>25]);
+        $this->getJson('/api/v1/arcade/player/loyalty')->assertOk()->assertJsonPath('total_xp',820)->assertJsonPath('mission_xp',45)
+            ->assertJsonPath('level',4)->assertJsonPath('tier','regular')->assertJsonPath('rules.financial_rewards',false)
+            ->assertJsonCount(6,'history');
+        $this->assertDatabaseCount('arcade_coupons',0);
     }
 }

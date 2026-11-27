@@ -12,6 +12,9 @@ use App\Http\Controllers\Api\V1\ArcadeFraudAppealController;
 use App\Http\Controllers\Api\V1\ArcadeTurnRunController;
 use App\Http\Controllers\Api\V1\CouponController;
 use App\Http\Controllers\Api\V1\CouponDeliveryController;
+use App\Http\Controllers\Api\V1\LoyaltyXpController;
+use App\Http\Controllers\Api\V1\MissionController;
+use App\Http\Controllers\Api\V1\PersonalProgressController;
 use App\Http\Middleware\AuthenticateArcadePlayer;
 use App\Http\Middleware\LimitArcadePayload;
 use App\Http\Middleware\ObserveArcadeReplayFailures;
@@ -43,6 +46,9 @@ Route::prefix('v1/arcade')->middleware([ObserveArcadeRequest::class,
     // Online checkout routes intentionally retired. Only authenticated
     // in-cafe staff may redeem coupons through CSRF-protected web routes.
     Route::middleware(AuthenticateArcadePlayer::class)->group(function (): void {
+        Route::get('/player/progress', [PersonalProgressController::class, 'show'])->middleware('throttle:arcade-coupon-wallet');
+        Route::get('/player/loyalty', [LoyaltyXpController::class, 'show'])->middleware('throttle:arcade-coupon-wallet');
+        Route::get('/player/missions', [MissionController::class, 'show'])->middleware('throttle:arcade-coupon-wallet');
         Route::get('/player/competition/league', [\App\Http\Controllers\Api\V1\SkillLeagueController::class, 'profile'])
             ->middleware('throttle:arcade-coupon-wallet');
         Route::get('/player/coupons', [CouponController::class, 'wallet'])
