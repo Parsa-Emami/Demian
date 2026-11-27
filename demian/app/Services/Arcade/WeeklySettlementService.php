@@ -249,6 +249,7 @@ final class WeeklySettlementService
             // NO new coupon recipients, ranks or source digest are changed.
             app(WeeklyFairScoringService::class)
                 ->sealFromTrustedSnapshot($key, $snapshot, $digest, $utcNow);
+            app(SkillLeagueService::class)->seal($key, $snapshot, $digest, $utcNow);
             DB::table('arcade_weekly_periods')->where('period_key', $key)->update([
                 'status' => 'sealed', 'sealed_at' => $utcNow->toDateTimeString(),
                 'participants' => count($snapshot), 'winner_count' => count($awards),

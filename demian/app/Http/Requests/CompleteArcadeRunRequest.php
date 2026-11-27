@@ -11,7 +11,7 @@ final class CompleteArcadeRunRequest extends FormRequest
     public function rules(): array
     {
         return ['ticks' => ['required', 'integer', 'min:1', 'max:54000'],
-            'transitions' => ['required', 'array', 'min:1', 'max:12000'],
+            'transitions' => ['required', 'array', 'list', 'min:1', 'max:12000'],
             'transitions.*' => ['required', 'array:tick,mask'],
             'transitions.*.tick' => ['required', 'integer', 'min:0', 'max:53999'],
             'transitions.*.mask' => ['required', 'integer', 'min:0', 'max:7']];

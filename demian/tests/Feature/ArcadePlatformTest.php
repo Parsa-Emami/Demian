@@ -102,6 +102,22 @@ final class ArcadePlatformTest extends TestCase
         $this->withToken($player['token'])->postJson('/api/v1/arcade/runs/'.$run['run_id'].'/complete', $this->payload($fixture))->assertUnprocessable();
     }
 
+    public function test_runner_completion_is_bound_to_its_game_and_ordered_evidence(): void
+    {
+        $player = $this->identity();
+        $fixture = $this->fixtures()[0];
+        $run = $this->createRun($player, $fixture);
+        $endpoint = '/api/v1/arcade/runs/'.$run['run_id'].'/complete';
+        $this->withToken($player['token'])->postJson($endpoint, [
+            'ticks' => $fixture['ticks'],
+            'transitions' => ['first' => $fixture['transitions'][0]],
+        ])->assertUnprocessable()->assertJsonValidationErrors('transitions');
+
+        ArcadeRun::query()->whereKey($run['run_id'])->update(['game_id' => 'cafe-critters']);
+        $this->postJson($endpoint, $this->payload($fixture))->assertNotFound();
+        $this->assertDatabaseCount('arcade_replays', 0);
+    }
+
     public function test_truncated_and_unordered_replays_do_not_publish_scores(): void
     {
         $player = $this->identity(); $fixture = $this->fixtures()[0]; $run = $this->createRun($player, $fixture);

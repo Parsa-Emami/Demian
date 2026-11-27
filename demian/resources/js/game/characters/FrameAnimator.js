@@ -1,6 +1,7 @@
 import MasterMotionController from './motion/MasterMotionController.js';
 import { motionCharacter } from './motion/MasterMotionLibrary.js';
 import { sanitizeCharacterAnimation } from './CharacterVisualContract.js';
+import spriteMotion from '../../../game/character-animation-standard-v2.json' with { type: 'json' };
 
 const finite = (value, fallback = 0) => Number.isFinite(Number(value)) ? Number(value) : fallback;
 const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
@@ -47,7 +48,12 @@ export default class FrameAnimator {
             ? { ...atlas.animations, ...atlas.sideViewAnimations }
             : atlas.animations;
         const slug = atlas.meta?.slug ?? atlas.meta?.name?.split('/')[0]?.trim().toLowerCase();
-        this.masterMotion = motionCharacter(slug) ? new MasterMotionController(slug) : null;
+        const character = motionCharacter(slug);
+        const version = atlas.meta?.version;
+        const pack = Number.isInteger(version) ? spriteMotion.packs[version] : null;
+        this.sharedAliases = character && pack && pack.logicalFrames === atlas.meta?.generatedFrameCount
+            ? spriteMotion.aliases : null;
+        this.masterMotion = character ? new MasterMotionController(slug) : null;
         this.requestedAnimationName = null;
         this.animationName = null;
         this.animation = null;
@@ -66,7 +72,13 @@ export default class FrameAnimator {
 
     has(name) {
         const safeName = sanitizeCharacterAnimation(name);
-        return Boolean(this.animations?.[safeName]);
+        return Boolean(this.animations?.[safeName] || this.sharedAlias(safeName));
+    }
+
+    sharedAlias(name) {
+        if (!this.sharedAliases || !Object.hasOwn(this.sharedAliases, name)) return null;
+        const source = this.sharedAliases[name].source;
+        return this.animations?.[source]?.frames?.length ? source : null;
     }
 
     resolveName(name) {
@@ -74,6 +86,8 @@ export default class FrameAnimator {
         if (this.animations?.[safeName]) {
             return safeName;
         }
+        const shared = this.sharedAlias(safeName);
+        if (shared) return shared;
 
         const declaredFallback = this.atlas.fallbacks?.[safeName];
         const manifestFallback = typeof declaredFallback === 'string' && declaredFallback.trim()

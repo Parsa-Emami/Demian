@@ -103,8 +103,8 @@ try {
         const response = await request('/players', {
             body: {
                 display_name: 'CI Player ' + index,
-                contact_type: 'email',
-                contact_value: `ci-player-${index}@example.test`,
+                contact_type: 'phone',
+                contact_value: '+120255501' + String(index).padStart(2, '0'),
                 registration_key: randomUUID(),
                 policy_version: policy.version ?? policy.policy_version,
                 accept_terms: true,

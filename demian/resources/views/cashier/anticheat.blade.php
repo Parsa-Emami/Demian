@@ -67,6 +67,29 @@
     </tbody></table>
 </details>
 </section>
+<section class="panel" id="shared-registrations">
+<h2>ثبت چند حساب از شبکهٔ مشترک</h2>
+<p class="muted">در ۲۴ ساعت گذشته، ثبت شماره‌های متفاوت از یک شبکه در کنار هم نمایش داده می‌شود. برای محدودیت موقت حساب، پروندهٔ همان حساب را بررسی و شواهد تخلف را تأیید کنید.</p>
+@forelse($sharedRegistrations as $group)
+<details class="fraud-queue" @if($loop->first) open @endif>
+    <summary>{{ $group['count'] }} حساب · آخرین ثبت <bdi>{{ $time($group['last_seen']) }}</bdi></summary>
+    <table class="fraud-table"><thead><tr><th>حساب و پرونده‌ها</th><th>تأیید شماره</th><th>زمان ثبت تهران</th></tr></thead><tbody>
+    @foreach($group['accounts'] as $account)
+    <tr>
+        <td><a href="{{ route('cashier.anticheat', ['player' => $account['id']]) }}#cases"><bdi>{{ $account['name'] }}</bdi></a></td>
+        <td>{{ $account['verified'] ? 'تأیید شده' : 'در انتظار تأیید' }}</td>
+        <td><bdi>{{ $time($account['registered_at']) }}</bdi></td>
+    </tr>
+    @endforeach
+    </tbody></table>
+    @if($group['count'] > $group['accounts']->count())
+        <p class="muted">۱۰ حساب اخیر این شبکه نمایش داده می‌شود.</p>
+    @endif
+</details>
+@empty
+<p class="muted">ثبت مشترکی در این بازه پیدا نشد.</p>
+@endforelse
+</section>
 <section class="panel" id="cases">
 <h2>پرونده‌ها</h2>
 <form method="get" action="{{ route('cashier.anticheat') }}#cases">

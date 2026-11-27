@@ -44,6 +44,16 @@ jobs:
       - run: npm run validate:final
       - run: npm run validate:ui-layers
       - run: npm run validate:characters:v14
+      - name: Audit V2 portrait framing and raster proportions
+        run: python3 tools/audit_character_visual_v2.py --output "$RUNNER_TEMP/character-visual-v2"
+      - name: Audit all directional frames and quality variants
+        run: python3 tools/audit_sprite_animation_v2.py --output "$RUNNER_TEMP/character-visual-v2"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: character-visual-v2-${{ github.sha }}
+          path: ${{ runner.temp }}/character-visual-v2/
+          if-no-files-found: warn
       - run: npm run validate:characters:v15
       - name: Restore previous hashed modules before a main release
         if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
@@ -207,7 +217,7 @@ jobs:
             export DEMIAN_FIRST_FRAME_BASELINE="$baseline/site"
           fi
           timeout --signal=TERM --kill-after=10s 300s node tools/check_first_playable_matrix.mjs
-      - name: Phase 6 Step 31 mobile home and twelve character artwork QA
+      - name: Mobile and desktop artwork QA for the full roster
         run: timeout --signal=TERM --kill-after=10s 240s node tools/check_phase6_step31_mobile_home.mjs
       - name: Motion UI — authentic four-stage loader, interactive tips, mobile layouts and reduced motion
         run: timeout --signal=TERM --kill-after=10s 180s npm run test:experience:browser

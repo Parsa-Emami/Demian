@@ -50,6 +50,11 @@ final class ArcadePrizeIdentity
 
     public function verifiedRecipientIds(array $playerIds): array
     {
+        return array_keys($this->verifiedPhoneDates($playerIds));
+    }
+
+    public function verifiedPhoneDates(array $playerIds): array
+    {
         $verified = [];
         foreach (array_chunk($playerIds, 500) as $ids) {
             $matches = DB::table('arcade_players')
@@ -57,8 +62,8 @@ final class ArcadePrizeIdentity
                 ->where('contact_type', 'phone')
                 ->whereNotNull('contact_hash')
                 ->whereNotNull('phone_verified_at')
-                ->pluck('id')->all();
-            array_push($verified, ...$matches);
+                ->pluck('phone_verified_at', 'id')->all();
+            $verified += $matches;
         }
 
         return $verified;

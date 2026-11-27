@@ -124,6 +124,47 @@ final class ArcadeAntiCheat
             423, 'New ranked runs temporarily restricted by human-reviewed decision.');
     }
 
+    public function phoneRegistration(ArcadePlayer $player, ?string $ip): void
+    {
+        if ($this->enabled() && $ip !== null) {
+            $this->observe('phone_registration', $player->id, null, null, null, null, $ip);
+        }
+    }
+
+    public function sharedPhoneRegistrations(): array
+    {
+        $registrations = DB::table('arcade_anticheat_observations')
+            ->where('event_code', 'phone_registration')
+            ->where('arcade_anticheat_observations.created_at', '>=', now()->subDay())
+            ->whereNotNull('ip_digest')->whereNotNull('player_id');
+        $groups = (clone $registrations)->select('ip_digest')
+            ->selectRaw('COUNT(DISTINCT player_id) AS account_count, MAX(created_at) AS last_seen')
+            ->groupBy('ip_digest')->havingRaw('COUNT(DISTINCT player_id) > 1')
+            ->orderByDesc('last_seen')->orderBy('ip_digest')->limit(12)->get();
+        if ($groups->isEmpty()) {
+            return [];
+        }
+        $accounts = $registrations->whereIn('ip_digest', $groups->pluck('ip_digest'))
+            ->join('arcade_players as players', 'players.id', '=', 'arcade_anticheat_observations.player_id')
+            ->select('ip_digest', 'player_id', 'players.display_name', 'players.phone_verified_at')
+            ->selectRaw('MAX(arcade_anticheat_observations.created_at) AS registered_at')
+            ->groupBy('ip_digest', 'player_id', 'players.display_name', 'players.phone_verified_at')
+            ->orderByDesc('registered_at')->orderBy('player_id')->get()->groupBy('ip_digest');
+
+        return $groups->map(static fn (object $group): array => [
+            'count' => (int) $group->account_count,
+            'last_seen' => $group->last_seen,
+            'accounts' => $accounts->get($group->ip_digest, collect())->take(10)->map(
+                static fn (object $account): array => [
+                    'id' => $account->player_id,
+                    'name' => $account->display_name,
+                    'verified' => $account->phone_verified_at !== null,
+                    'registered_at' => $account->registered_at,
+                ],
+            ),
+        ])->all();
+    }
+
     /**
      * Must run only for a NEW server-generated run inside the existing
      * player-row-locked transaction. An idempotent start isn't a new event.

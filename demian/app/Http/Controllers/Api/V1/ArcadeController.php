@@ -7,6 +7,7 @@ use App\Http\Requests\CompleteArcadeRunRequest;
 use App\Http\Requests\StartArcadeRunRequest;
 use App\Models\ArcadePlayer;
 use App\Models\ArcadeRun;
+use App\Services\Arcade\ArcadeAntiCheat;
 use App\Services\Arcade\ArcadeRunService;
 use App\Services\Arcade\LeaderboardService;
 use App\Services\Arcade\CompetitionClock;
@@ -153,18 +154,31 @@ final class ArcadeController extends Controller
         ]);
         $accepted = ($legal['policy_version'] ?? null) === config('demian-legal.version')
             && $request->boolean('accept_terms') && $request->boolean('privacy_acknowledged');
-        $contact = $contacts->fields($request, config('demian-arcade.require_contact'), true);
+        $requiresPhone = (bool) config('demian-arcade.require_contact');
+        $contact = $contacts->fields($request, $requiresPhone, true);
+        if ($requiresPhone && $contact['contact_type'] !== 'phone') {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'contact_type' => ['برای ثبت حساب جدید شمارهٔ تلفن وارد کنید.'],
+            ]);
+        }
         $password = $request->validate([
             'password' => ['sometimes', 'required', 'string', 'min:12', 'max:128'],
         ]);
         $token = Str::random(64);
         $expires = now()->addDays((int) config('demian-arcade.player_session_days'));
         try {
-            $player = ArcadePlayer::query()->create(['display_name' => $name,
-                'token_hash' => hash('sha256', $token), 'token_expires_at' => $expires,
-                'legal_policy_version' => $accepted ? config('demian-legal.version') : null,
-                'legal_accepted_at' => $accepted ? now() : null, ...$contact,
-                ...(isset($password['password']) ? ['password_hash' => Hash::make($password['password'])] : [])]);
+            $player = DB::transaction(function () use ($name, $token, $expires, $accepted, $contact, $password, $request): ArcadePlayer {
+                $player = ArcadePlayer::query()->create(['display_name' => $name,
+                    'token_hash' => hash('sha256', $token), 'token_expires_at' => $expires,
+                    'legal_policy_version' => $accepted ? config('demian-legal.version') : null,
+                    'legal_accepted_at' => $accepted ? now() : null, ...$contact,
+                    ...(isset($password['password']) ? ['password_hash' => Hash::make($password['password'])] : [])]);
+                if ($player->contact_type === 'phone') {
+                    app(ArcadeAntiCheat::class)->phoneRegistration($player, $request->ip());
+                }
+
+                return $player;
+            }, 3);
         } catch (UniqueConstraintViolationException) {
             abort(409, 'برای این مشخصات حسابی وجود دارد. حساب قبلی را بازیابی کنید.');
         }

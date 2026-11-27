@@ -61,15 +61,14 @@ export default function () {
         const version = rules?.rules?.version;
         if (typeof version !== 'string') throw new Error('rules version unavailable');
 
-        // Real staging defaults require a unique contact and browser key.
-        // Test-only .invalid email is never proof of phone ownership and cannot
-        // qualify for a real financial prize.
         const registrationKey = nonce.toLowerCase() + '-0000-4000-8000-'
             + String(__VU).padStart(12, '0');
+        const fixtureNumber = '+999' + String(parseInt(nonce, 16)).padStart(10, '0')
+            + String(__VU).padStart(2, '0');
         const registration = post(api + '/players', {
             display_name: 'Load User ' + __VU,
-            contact_type: 'email',
-            contact_value: 'load-' + nonce.toLowerCase() + '-' + __VU + '@example.invalid',
+            contact_type: 'phone',
+            contact_value: fixtureNumber,
             registration_key: registrationKey,
         });
         if (!valid(registration, 201)) throw new Error('registration failed');

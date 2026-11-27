@@ -13,6 +13,8 @@
     background: rgba(39, 127, 111, .18); outline: 1px solid rgba(131, 223, 195, .36);
 }
 .ranking-panel__mode { font-size: .73rem; color: #b3dbd4; display: block; line-height: 1.65; }
+.ranking-panel__league summary { cursor: pointer; min-height: 44px; align-content: center; }
+.ranking-panel__league ul { list-style: none; padding: 0; overflow-wrap: anywhere; }
 .ranking-panel__mode[data-qualified="false"] { color: #f2cf91; }
 .ranking-panel__standings-note { color: #cfe4e0; font-size: .85rem; line-height: 1.75; margin-bottom: .75rem; }
 .coupon-wallet-panel {

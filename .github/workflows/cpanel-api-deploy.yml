@@ -126,6 +126,9 @@ jobs:
         with:
           name: cpanel-api-release
           path: .cpanel-release
+      - name: Verify current roster art acceptance
+        if: inputs.target == 'production'
+        run: python3 demian/tools/verify_character_art_acceptance.py
       - name: Require separate production approval and hosting configuration
         shell: bash
         env:

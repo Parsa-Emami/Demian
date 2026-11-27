@@ -32,12 +32,12 @@ final class WeeklyFairScoringTest extends TestCase
         config()->set('demian-arcade.anticheat.enabled', false);
     }
 
-    private function player(): string
+    private function player(?string $token = null): string
     {
         $id = (string) Str::uuid();
         DB::table('arcade_players')->insert([
             'id' => $id, 'display_name' => 'Fair scoring player',
-            'token_hash' => hash('sha256', $id),
+            'token_hash' => hash('sha256', $token ?? $id),
             'token_expires_at' => now()->addDays(30),
             'created_at' => now(), 'updated_at' => now(),
         ]);
@@ -56,6 +56,50 @@ final class WeeklyFairScoringTest extends TestCase
             'score' => $score,
             'achieved_at' => $at,
         ];
+    }
+
+    public function test_leagues_seal_only_scores_earned_after_phone_verification_and_keep_profiles_private(): void
+    {
+        $players = [];
+        $token = Str::random(64);
+        for ($i = 0; $i < 22; $i++) {
+            $id = $this->player($i === 0 ? $token : null);
+            $players[] = $id;
+            $this->verified($id, 1000 - $i);
+            if ($i !== 20) {
+                DB::table('arcade_players')->where('id', $id)->update([
+                    'contact_type' => 'phone',
+                    'contact_hash' => hash('sha256', 'league-fixture-'.$i),
+                    'phone_verified_at' => $i === 21 ? '2026-11-13 12:00:00' : '2026-11-09 12:00:00',
+                ]);
+            }
+        }
+        $board = '/api/v1/arcade/competition/leagues?league=legend';
+        $mine = '/api/v1/arcade/player/competition/league';
+        $this->getJson($board)->assertOk()->assertJsonPath('status', 'not_finalized');
+        $this->getJson($board.'&week=2026-11-10')->assertUnprocessable();
+        $this->getJson($mine)->assertUnauthorized();
+
+        $settler = app(WeeklySettlementService::class);
+        $settler->seal('2026-11-07');
+        $this->assertDatabaseHas('arcade_skill_seasons', ['period_key' => self::WEEK, 'participants' => 20, 'qualified' => 20]);
+        $this->assertDatabaseMissing('arcade_skill_standings', ['player_id' => $players[20]]);
+        $this->assertDatabaseMissing('arcade_skill_standings', ['player_id' => $players[21]]);
+        $this->getJson($board)->assertOk()
+            ->assertJsonPath('data.0.points', 1000)->assertJsonPath('data.0.recognition', true)
+            ->assertJsonPath('rules.financial_rewards', false)
+            ->assertJsonMissingPath('data.0.player_id')->assertJsonMissingPath('data.0.run_id');
+        $this->withToken($token)->getJson($mine)->assertOk()
+            ->assertJsonPath('verified', true)->assertJsonPath('last_result.league', 'legend');
+        $this->getJson('/api/v1/arcade/player/data/records?type=skill_leagues')
+            ->assertOk()->assertJsonPath('data.0.league', 'legend')->assertJsonCount(1, 'data');
+
+        $settler->seal('2026-11-07');
+        $this->assertDatabaseCount('arcade_skill_standings', 20);
+        $this->assertDatabaseCount('arcade_coupons', 0);
+        DB::table('arcade_players')->where('id', $players[0])->delete();
+        $this->assertDatabaseHas('arcade_skill_standings', ['player_id' => null, 'rank' => 1, 'league' => 'legend']);
+        $this->getJson($board)->assertOk()->assertJsonPath('data.0.rank', 2);
     }
 
     private function verified(string $player, int $score, string $game = 'dino-run',

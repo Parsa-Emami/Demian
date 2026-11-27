@@ -84,6 +84,7 @@ final class CafeAntiCheatController extends Controller
             'selectedRun' => $selectedRun,
             'relatedAccounts' => $selected ? $antiCheat->relatedReplayAccounts($selected) : collect(),
             'riskQueue' => $antiCheat->riskQueue(),
+            'sharedRegistrations' => $antiCheat->sharedPhoneRegistrations(),
             'reviews' => $reviewQuery->get(['id', 'report_id', 'actor_id', 'action',
                 'previous_status', 'next_status', 'created_at', 'note']),
             'appeals' => $appeals->adminQueue(),
