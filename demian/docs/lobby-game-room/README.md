@@ -17,3 +17,7 @@ The game-development router directed the UI and art to `game-ui-ux` and `create-
 The paired Chromium 390 × 844 measurement on a portable release with service workers blocked measured 4,632 px of overflow in the previous library. The new layout fits all seven cards with zero vertical overflow at that size. The browser checks exercise the game controls, guide toggle and explicit PWA update.
 
 The public catalogue no longer mounts the offline download panel. Worker integrity and cache recovery are checked separately through the worker protocol.
+
+## Cross-browser release check
+
+Step 31 uses the rendered launch buttons and Playwright’s pointer actionability checks. The launch event and playing state are asserted for every game. The 390 × 844 emulated run passed all seven launches, keyboard entry and connection recovery in Chromium, Firefox and WebKit. This follows the DOM navigation and focus flow in the `game-ui-ux` guidance.

@@ -36,29 +36,9 @@ const report = { schema: 1, step: 31, status: 'pending', emulatedDevices: true,
     ],
 };
 async function launchFromLibrary(page, engine, game) {
-    await page.evaluate(id => {
-        const rail = window.demianGameApplication.shell.selectionScreen.rail;
-        const index = rail.items.findIndex(card => card.dataset.gameCard === id);
-        if (index < 0 || !rail.scrollTo(index, { behavior: 'auto' })) {
-            throw Error('Cannot navigate RTL game library to ' + id);
-        }
-    }, game);
     const button = page.locator('[data-screen="game-selection"] [data-game-launch="' + game + '"]');
-    await page.waitForFunction(id => {
-        const node = document.querySelector('[data-screen="game-selection"] [data-game-launch="' + id + '"]');
-        if (!node) return false;
-        const bounds = node.getBoundingClientRect();
-        const x = bounds.left + bounds.width / 2;
-        const y = bounds.top + bounds.height / 2;
-        const hit = document.elementFromPoint(x, y);
-        return bounds.width > 25 && bounds.height > 25
-            && y >= 2 && y < innerHeight - 2
-            && x >= 2 && x < innerWidth - 2
-            && Boolean(hit) && (node === hit || node.contains(hit));
-    }, game, { timeout: 8000 });
-    await page.waitForTimeout(280);
     const previousClicks = await page.evaluate(() => window.__step31Clicks.length);
-    await button.click();
+    await button.click({ timeout: 8000 });
     const clickEvidence = await page.evaluate(({ id, previousClicks }) => {
         const button = document.querySelector('[data-screen="game-selection"] [data-game-launch="' + id + '"]');
         const rect = button?.getBoundingClientRect();
