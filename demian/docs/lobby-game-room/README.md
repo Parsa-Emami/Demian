@@ -21,3 +21,5 @@ The public catalogue no longer mounts the offline download panel. Worker integri
 ## Cross-browser release check
 
 Step 31 uses the rendered launch buttons and Playwright’s pointer actionability checks. The launch event and playing state are asserted for every game. The 390 × 844 emulated run passed all seven launches, keyboard entry and connection recovery in Chromium, Firefox and WebKit. This follows the DOM navigation and focus flow in the `game-ui-ux` guidance.
+
+The Coffee Crash check opens the card guide, verifies the description, and launches the game from that card. All four emulated viewports passed. The local Step 31 evidence collector accepted all 14 checks.

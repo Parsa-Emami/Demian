@@ -62,8 +62,13 @@ try {
             await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 60000 });
             await wait(page, () => window.demianGameApplication?.sessionState === 'menu', 30000);
             await page.getByRole('button', { name: 'انتخاب بازی', exact: true }).click();
-            await page.getByText('خوراکی‌ها را جابه‌جا کن، ترکیب ویژه بساز و سفارش‌های سه مرحلهٔ هر هفته را آماده کن.', { exact: true }).waitFor();
-            await page.getByRole('button', { name: /اجرای COFFEE CRASH/ }).click();
+            const card = page.locator('[data-game-card="coffee-crash"]');
+            const guide = card.locator('details');
+            const guideToggle = guide.locator('summary');
+            await guideToggle.click();
+            await guide.getByText('خوراکی‌ها را جابه‌جا کن، ترکیب ویژه بساز و سفارش‌های سه مرحلهٔ هر هفته را آماده کن.', { exact: true }).waitFor();
+            await guideToggle.click();
+            await card.getByRole('button', { name: /اجرای COFFEE CRASH/ }).click();
             await wait(page, () => {
                 const g = window.demianGameApplication?.activeGame;
                 return g?.ui?.view === 'entry' && g.ui.dialog.open;
