@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import CafeDriftRenderer from '../../../resources/js/game/games/cafe-drift/CafeDriftRenderer.js';
 import CafeDriftModel, { DRIFT, driftCourse, driftSeed } from '../../../resources/js/game/games/cafe-drift/CafeDriftModel.js';
 
 test('weekly drift courses rotate at the Tehran Saturday boundary and always offer safe lanes', () => {
@@ -64,4 +65,27 @@ test('a lost round freezes on the final spill and a completed shift earns a rema
     assert.equal(survived.tick, DRIFT.ticks);
     assert.equal(survived.cups, DRIFT.cups);
     assert.equal(survived.score, survived.passed * DRIFT.passPoints + survived.beans * DRIFT.beanPoints + DRIFT.cups * DRIFT.cupBonus);
+});
+
+test('identical projected steering targets produce identical replay physics across screen sizes', () => {
+    const dimensions=[[320,568],[390,844],[844,390],[768,1024],[1440,900],[2560,1440]];
+    const outputs=dimensions.map(([width,height])=>{
+        const renderer=new CafeDriftRenderer({resizeSmooth(){},logicalDimensions(){return {width,height};}});
+        renderer.resize();
+        for(let t=-DRIFT.targetMax;t<=DRIFT.targetMax;t++){
+            const projected=renderer.project(t*DRIFT.targetUnit,1);
+            assert.equal(renderer.target(projected.x/width),t);
+        }
+        const model=new CafeDriftModel(4096);
+        let target=0;
+        while(!model.done){
+            if(model.tick%DRIFT.sampleTicks===0){
+                const desired=Math.round(Math.sin(model.tick/43)*DRIFT.targetMax);
+                target=renderer.target(renderer.project(desired*DRIFT.targetUnit,1).x/width);
+            }
+            model.step(target);
+        }
+        return {tick:model.tick,score:model.score,passed:model.passed,cups:model.cups};
+    });
+    for(const output of outputs)assert.deepEqual(output,outputs[0]);
 });

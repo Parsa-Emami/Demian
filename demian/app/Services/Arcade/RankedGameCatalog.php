@@ -59,7 +59,8 @@ final class RankedGameCatalog
                 && config('demian-coupons.policy_approved') === true
                 && (config('app.env') !== 'production' || (
                     config('demian-legal.publication_approved') === true
-                    && config('demian-legal.require_acceptance') === true)),
+                    && config('demian-legal.require_acceptance') === true))
+                && app(DriftPrizeReadiness::class)->approved(),
             'cafe-critters' => config('demian-arcade.critters_prizes_enabled') === true,
             'coffee-crash' => config('demian-arcade.coffee_prizes_enabled') === true,
             // A separate route challenge cannot authorize coupons for the original game.

@@ -14,6 +14,10 @@ const release = 'c'.repeat(40);
 const runtimeFiles = [
   'artisan', 'public/index.php', 'public/.htaccess',
   'vendor/autoload.php', 'resources/legal/policy.json',
+  'resources/js/game/games/cafe-drift/CafeDriftModel.js',
+  'resources/js/game/games/cafe-drift/CafeDriftGame.js',
+  'resources/js/game/games/cafe-drift/CafeDriftRenderer.js',
+  'resources/css/cafe-drift.css',
   'ops/cpanel/host_preflight.php', 'ops/cpanel/cron.sh',
   'ops/cpanel/rollback.sh', 'ops/cpanel/backup_offsite.sh',
   'ops/cpanel/restore_drill.sh', 'ops/cpanel/staging_acceptance.sh', 'ops/cpanel/install_webroot_bridge.php',

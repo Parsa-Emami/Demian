@@ -321,6 +321,17 @@ final class ArcadeAntiCheatTest extends TestCase
             $accounts->count() === 1 && (int) $accounts->first()->matching_runs === 2);
         $this->assertStringContainsString('no-store', $response->headers->get('Cache-Control'));
 
+        $this->post(route('cashier.anticheat.review'), [
+            'report_id' => $report->id, 'decision' => 'confirmed',
+            'note' => 'Confirmed the similarity in the reviewed evidence',
+            'password' => self::PASSWORD, 'confirmed' => '1',
+        ])->assertRedirect(route('cashier.anticheat'));
+        $this->post(route('cashier.anticheat.hold'), [
+            'report_id' => $report->id, 'operation' => 'apply', 'hours' => 24,
+            'note' => 'Review only signal cannot apply a hold',
+            'password' => self::PASSWORD, 'confirmed' => '1',
+        ])->assertConflict();
+
         $related->delete();
         $this->get($url)->assertOk()->assertDontSee($related->id);
         $this->getJson(route('cashier.anticheat', ['signal' => 'unknown']))->assertUnprocessable();
