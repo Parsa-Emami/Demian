@@ -57,8 +57,8 @@ final class WeeklySettlementService
         }
 
         return DB::transaction(function () use ($startLocal, $utcNow, $window): array {
-            if (! DB::table('arcade_personal_progress_mutex')->where('id', 1)->lockForUpdate()->first()) {
-                throw new RuntimeException('Progress settlement mutex missing.');
+            if (! DB::table('arcade_weekly_award_coordinator')->where('id', 1)->lockForUpdate()->first()) {
+                throw new RuntimeException('Weekly settlement coordinator is not provisioned.');
             }
             $key = $this->ensurePeriod($startLocal);
             $period = DB::table('arcade_weekly_periods')->where('period_key', $key)->lockForUpdate()->first();

@@ -2,17 +2,12 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('arcade_personal_progress_mutex', function (Blueprint $t): void {
-            $t->unsignedTinyInteger('id')->primary();
-        });
-        DB::table('arcade_personal_progress_mutex')->insert(['id' => 1]);
         Schema::create('arcade_personal_progress', function (Blueprint $t): void {
             $t->id();
             $t->string('period_key', 24);
@@ -40,6 +35,5 @@ return new class extends Migration
     public function down(): void
     {
         Schema::dropIfExists('arcade_personal_progress');
-        Schema::dropIfExists('arcade_personal_progress_mutex');
     }
 };
