@@ -1,34 +1,205 @@
 {
   "character_key": "darya",
   "pack_version": 15,
+  "motion_revision": "15.1",
   "status": "validated_in_emulated_browser",
   "checks": {
-    "source_key_poses": 112,
-    "direction_count": 8,
     "all_variants": true,
-    "asset_geometry": "passed",
-    "directional_motion": "passed",
-    "ground_anchor": "passed",
-    "standing_height_parity": "passed",
-    "runner_jump_and_slide": "passed",
-    "games_started_per_viewport": 7
+    "open_world_walk_poses_per_direction": 12,
+    "open_world_run_poses_per_direction": 16,
+    "direction_count": 8,
+    "companion_standalone": true,
+    "side_view_art": "dedicated",
+    "js_regressions_passed": 944,
+    "retained_chunk_generations_validated": 6
   },
-  "browser": {
-    "name": "Chromium",
-    "version": "158.0.8127.0",
-    "viewports": [
-      [
+  "browser": [
+    {
+      "engine": "chromium",
+      "version": "151.0.7922.34",
+      "viewport": [
         390,
         844
       ],
-      [
+      "device_emulation": "Pixel 7",
+      "variant": "lite",
+      "games": [
+        "open-world",
+        "dino-run",
+        "after-hours",
+        "cafe-rush",
+        "cafe-critters",
+        "coffee-crash",
+        "cafe-drift"
+      ],
+      "frame_counts": {
+        "walk": {
+          "e": 12,
+          "se": 12,
+          "s": 12,
+          "sw": 12,
+          "w": 12,
+          "nw": 12,
+          "n": 12,
+          "ne": 12
+        },
+        "run": {
+          "e": 16,
+          "se": 16,
+          "s": 16,
+          "sw": 16,
+          "w": 16,
+          "nw": 16,
+          "n": 16,
+          "ne": 16
+        },
+        "sprint": {
+          "e": 16,
+          "se": 16,
+          "s": 16,
+          "sw": 16,
+          "w": 16,
+          "nw": 16,
+          "n": 16,
+          "ne": 16
+        }
+      },
+      "turn": [
+        "e",
+        "se",
+        "s",
+        "sw",
+        "w"
+      ],
+      "pishi_max_world_step": 0.13183,
+      "pishi_runner_hop": "passed",
+      "runner_slide": "native-touch-passed"
+    },
+    {
+      "engine": "chromium",
+      "version": "151.0.7922.34",
+      "viewport": [
         1440,
         900
-      ]
-    ]
-  },
+      ],
+      "device_emulation": null,
+      "variant": "detail",
+      "games": [
+        "open-world",
+        "dino-run",
+        "after-hours",
+        "cafe-rush",
+        "cafe-critters",
+        "coffee-crash",
+        "cafe-drift"
+      ],
+      "frame_counts": {
+        "walk": {
+          "e": 12,
+          "se": 12,
+          "s": 12,
+          "sw": 12,
+          "w": 12,
+          "nw": 12,
+          "n": 12,
+          "ne": 12
+        },
+        "run": {
+          "e": 16,
+          "se": 16,
+          "s": 16,
+          "sw": 16,
+          "w": 16,
+          "nw": 16,
+          "n": 16,
+          "ne": 16
+        },
+        "sprint": {
+          "e": 16,
+          "se": 16,
+          "s": 16,
+          "sw": 16,
+          "w": 16,
+          "nw": 16,
+          "n": 16,
+          "ne": 16
+        }
+      },
+      "turn": [
+        "e",
+        "se",
+        "s",
+        "sw",
+        "w"
+      ],
+      "pishi_max_world_step": 0.1314,
+      "pishi_runner_hop": "passed",
+      "runner_slide": "keyboard-passed"
+    },
+    {
+      "engine": "webkit",
+      "version": "26.5",
+      "viewport": [
+        390,
+        844
+      ],
+      "device_emulation": "iPhone 13",
+      "variant": "lite",
+      "games": [
+        "open-world",
+        "dino-run",
+        "after-hours",
+        "cafe-rush",
+        "cafe-critters",
+        "coffee-crash",
+        "cafe-drift"
+      ],
+      "frame_counts": {
+        "walk": {
+          "e": 12,
+          "se": 12,
+          "s": 12,
+          "sw": 12,
+          "w": 12,
+          "nw": 12,
+          "n": 12,
+          "ne": 12
+        },
+        "run": {
+          "e": 16,
+          "se": 16,
+          "s": 16,
+          "sw": 16,
+          "w": 16,
+          "nw": 16,
+          "n": 16,
+          "ne": 16
+        },
+        "sprint": {
+          "e": 16,
+          "se": 16,
+          "s": 16,
+          "sw": 16,
+          "w": 16,
+          "nw": 16,
+          "n": 16,
+          "ne": 16
+        }
+      },
+      "turn": [
+        "e",
+        "se",
+        "s",
+        "sw",
+        "w"
+      ],
+      "pishi_max_world_step": 0.13183,
+      "pishi_runner_hop": "passed",
+      "runner_slide": "keyboard-passed"
+    }
+  ],
   "evidence": "../../../../../docs/dcs-v15/darya-v15.fa.md",
   "limitations": [
-    "Mobile viewport and touch were emulated. Physical-device GPU, FPS and battery were not measured."
+    "Physical Android and iOS devices, hardware FPS and thermal behavior were not measured."
   ]
 }

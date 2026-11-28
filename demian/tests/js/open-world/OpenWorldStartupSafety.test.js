@@ -31,6 +31,6 @@ test('selected compact NPCs are upgraded without leaking timed-out textures', as
     // Optional NPC requests now carry background priority through the
     // shared entity upgrade path; foreground requests still upgrade safely.
     assert.match(source, /ensureEntityVariant\(record, existing, variant, \{ background \}\)/);
-    assert.match(source, /entity\.replaceVisualAssets\(assets\.texture, assets\.atlas\)/);
+    assert.match(source, /entity\.replaceVisualAssets\(assets\.texture, assets\.atlas, assets\.companionImage\)/);
     assert.match(await readFile(loaderUrl, 'utf8'), /if \(settled\) \{\s*texture\.dispose\(\)/);
 });

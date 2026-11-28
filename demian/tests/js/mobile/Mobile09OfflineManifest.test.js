@@ -26,6 +26,7 @@ function fixture() {
         'build/assets/font.woff2',
         'assets/characters/character-manifest-v4.json',
         'assets/characters/master-motion-v1.json',
+        'assets/characters/darya/pishi-spritesheet-v15-1.png', 'assets/characters/darya/pishi-preview-v15-1.png',
         'assets/environments/cafe-runner-v1/wordmark.png',
         'assets/environments/cafe-runner-v1/interior.webp',
         'assets/environments/demian-fbx/polished-v1/preview.webp',

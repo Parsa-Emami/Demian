@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { CHARACTER_ASSET_TIMEOUT_MS, orderedSpriteVariants } from './CharacterRuntimePolicy.js';
-import { BUILTIN_CHARACTER_SLUGS, builtinCharacterAssetPair, characterSpriteRevisionUrl } from '../CharacterVisualContract.js';
+import { BUILTIN_CHARACTER_SLUGS, builtinCharacterAssetPair, characterSpriteRevisionUrl, pishiSpriteUrl } from '../CharacterVisualContract.js';
 
 const BUILTIN_SLUGS = new Set(BUILTIN_CHARACTER_SLUGS);
 
@@ -148,7 +148,7 @@ export default class CharacterAssetLoader {
             texture.minFilter = THREE.NearestFilter;
             texture.generateMipmaps = false;
             texture.needsUpdate = true;
-            return { texture, atlas: pack.atlas, spriteUrl: pack.spriteUrl,
+            return { texture, atlas: pack.atlas, spriteUrl: pack.spriteUrl, companionImage: pack.companionImage,
                 atlasUrl: pack.atlasUrl, variant: pack.variant };
         }
         const failures = [];
@@ -193,8 +193,15 @@ export default class CharacterAssetLoader {
             ? new URL(atlasImage, pair.atlasUrl).toString()
             : pair.spriteUrl;
         const spriteUrl = characterSpriteRevisionUrl(imageUrl, atlas);
+        const companionUrl = pishiSpriteUrl(atlas, pair.atlasUrl);
+        let companionImage;
+        if (companionUrl) {
+            const companion = await this.loadTexture(companionUrl);
+            companionImage = companion.image;
+            companion.dispose();
+        }
         const texture = await this.loadTexture(spriteUrl);
-        return { texture, atlas, spriteUrl, atlasUrl: pair.atlasUrl, variant: pair.variant };
+        return { texture, atlas, companionImage, spriteUrl, atlasUrl: pair.atlasUrl, variant: pair.variant };
     }
 
     async loadJson(url) {

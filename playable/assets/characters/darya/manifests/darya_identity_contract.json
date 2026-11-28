@@ -7,7 +7,10 @@
     "navy tee",
     "charcoal trousers",
     "black-and-white shoes",
-    "Pishi kitten in every frame"
+    "Pishi is Darya's brown-gray tabby companion with olive eyes and a white chest and paws"
   ],
-  "pack_version": 14
+  "pack_version": 15,
+  "motion_revision": "15.1",
+  "turnaround": "../source-v15/solo-turnaround.webp",
+  "companion_turnaround": "../source-v15/pishi-turnaround.webp"
 }

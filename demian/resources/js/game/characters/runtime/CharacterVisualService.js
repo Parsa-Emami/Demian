@@ -6,6 +6,7 @@ import {
     builtinCharacterAssetPair,
     normalizeSpriteVariant,
     characterSpriteRevisionUrl,
+    pishiSpriteUrl,
 } from '../CharacterVisualContract.js';
 import { orderedSpriteVariants, characterRuntimeVariants, CHARACTER_ASSET_TIMEOUT_MS } from './CharacterRuntimePolicy.js';
 import {
@@ -292,9 +293,13 @@ export default class CharacterVisualService {
             const spriteSource = format === 'webp'
                 ? pair.spriteUrl.replace(/\.png(?=[?#]|$)/, '.webp') : pair.spriteUrl;
             const spriteUrl = characterSpriteRevisionUrl(spriteSource, atlas);
-            const image = await this.loadImage(spriteUrl, controller.signal, { background, variant });
+            const companionUrl = pishiSpriteUrl(atlas, pair.atlasUrl);
+            const [image, companionImage] = await Promise.all([
+                this.loadImage(spriteUrl, controller.signal, { background, variant }),
+                companionUrl ? this.loadPishiImage(companionUrl, controller.signal, background) : null,
+            ]);
             if (controller.signal.aborted || this.disposed) throw abortedError();
-            return Object.freeze({ slug, variant, atlas, image, ...pair, spriteUrl });
+            return Object.freeze({ slug, variant, atlas, image, companionImage, ...pair, spriteUrl });
         } catch (error) {
             if (signal?.aborted || this.disposed) throw abortedError();
             if (timedOut) {
@@ -308,6 +313,14 @@ export default class CharacterVisualService {
             signal?.removeEventListener('abort', onAbort);
             this.controllers.delete(controller);
         }
+    }
+
+    async loadPishiImage(url, signal, background) {
+        if (this.pishiAsset?.url === url) return this.pishiAsset.image;
+        const image = await this.loadImage(url, signal, { background });
+        if (signal.aborted || this.disposed) throw abortedError();
+        this.pishiAsset = { url, image };
+        return image;
     }
 
     loadImage(url, signal, { background = false, variant = null } = {}) {
@@ -374,6 +387,7 @@ export default class CharacterVisualService {
             slug,
             image: pack.image,
             atlas: pack.atlas,
+            companionImage: pack.companionImage,
             player,
             sideView,
         });
@@ -396,5 +410,6 @@ export default class CharacterVisualService {
         this.packPromises.clear();
         this.packCache.clear();
         this.failedPairs.clear();
+        this.pishiAsset = null;
     }
 }

@@ -9,7 +9,9 @@ import {
     cameraRelativeDirection,
     directionFromVector,
     directionProfile,
+    DirectionTransition,
 } from './DirectionResolver';
+import { syncCompanion } from './CompanionController.js';
 import { WORLD_CONFIG } from '../world/WorldConfig';
 import { characterFrameWorldSize } from './CharacterVisualContract.js';
 import { captureCharacterStep } from './CharacterRenderState.js';
@@ -68,10 +70,13 @@ function damp(current, target, smoothing, deltaTime) {
 }
 
 export default class SpriteCharacter {
-    constructor({ scene, character, texture, atlas, controlled = false }) {
+    constructor({ scene, character, texture, atlas, companionImage = null, companionCanMove = null, controlled = false }) {
         this.scene = scene;
         this.character = character;
         this.atlas = atlas;
+        this.directionTransition = new DirectionTransition(atlas.render?.directionStepSeconds);
+        this.companionCanMove = companionCanMove;
+        this.setCompanion(atlas, companionImage);
         this.abilityController = new CharacterAbilityController(atlas);
         this.group = new THREE.Group();
         this.group.name = `Character:${character.slug}`;
@@ -269,7 +274,12 @@ export default class SpriteCharacter {
         return metrics;
     }
 
-    replaceVisualAssets(texture, atlas) {
+    setCompanion(atlas, image) {
+        this.companion = syncCompanion(this.companion, atlas, image);
+        if (this.companion) this.companion.canMove = this.companionCanMove;
+    }
+
+    replaceVisualAssets(texture, atlas, companionImage) {
         if (!texture || !atlas) {
             throw new TypeError('Character visual assets require a texture and atlas.');
         }
@@ -281,6 +291,8 @@ export default class SpriteCharacter {
         this.texture = texture;
         this.texture.needsUpdate = true;
         this.atlas = atlas;
+        this.directionTransition.seconds = atlas.render?.directionStepSeconds;
+        this.setCompanion(atlas, companionImage);
         this.material.map = this.texture;
         this.material.needsUpdate = true;
 
@@ -510,7 +522,7 @@ export default class SpriteCharacter {
             this.actionDirection.copy(this.lastMoveDirection);
 
             const nextDirection = directionFromVector(this.moveDirection, this.direction);
-            this.setDirection(nextDirection);
+            this.setDirection(this.directionTransition.toward(this.direction, nextDirection, deltaTime));
  
             if (Math.abs(this.moveDirection.x) > 0.12) {
                 this.setFacing(this.moveDirection.x > 0 ? 1 : -1);
@@ -589,6 +601,7 @@ export default class SpriteCharacter {
         this.feedback.update(deltaTime, this);
         this.speech.update(deltaTime);
         this.updatePresentation(deltaTime);
+        this.companion?.updateWorld(this.group.position, this.direction, deltaTime, !this.grounded);
     }
 
     constrainToWorld() {

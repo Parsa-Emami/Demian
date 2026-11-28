@@ -12,8 +12,9 @@ const project = resolve(import.meta.dirname, '..');
 const playable = resolve(process.env.DEMIAN_QA_SITE ?? resolve(project, '../playable'));
 const out = resolve(process.env.DEMIAN_QA_REPORT_DIR ?? resolve(project, 'docs/dcs-v15'));
 const screenshots = resolve(process.env.DEMIAN_QA_SCREENSHOT_DIR ?? resolve(tmpdir(), 'demian-' + character + '-v15'));
-const { chromium } = await import(process.env.DEMIAN_PLAYWRIGHT_MODULE
+const { chromium, webkit, devices } = await import(process.env.DEMIAN_PLAYWRIGHT_MODULE
     ? pathToFileURL(process.env.DEMIAN_PLAYWRIGHT_MODULE).href : 'playwright');
+const engine = process.env.DEMIAN_QA_ENGINE === 'webkit' ? 'webkit' : 'chromium';
 const types = { '.html':'text/html', '.js':'text/javascript', '.css':'text/css', '.json':'application/json',
     '.png':'image/png', '.webp':'image/webp', '.jpg':'image/jpeg', '.woff2':'font/woff2', '.webmanifest':'application/manifest+json' };
 await mkdir(out, { recursive:true });
@@ -30,10 +31,11 @@ const server = createServer(async (request, response) => {
     } catch { response.writeHead(404); response.end(); }
 });
 await new Promise(done => server.listen(0, '127.0.0.1', done));
-const browser = await chromium.launch({ headless:true,
+const browser = await (engine === 'webkit' ? webkit : chromium).launch({ headless:true,
     ...(process.env.DEMIAN_BROWSER_EXECUTABLE ? { executablePath:process.env.DEMIAN_BROWSER_EXECUTABLE } : {}),
-    args:process.env.DEMIAN_BROWSER_ARGS ? JSON.parse(process.env.DEMIAN_BROWSER_ARGS) : ['--no-sandbox','--disable-gpu'] });
-const report = { character, browser:browser.version(), physicalPhoneMeasured:false, viewports:[], status:'running' };
+    args:process.env.DEMIAN_BROWSER_ARGS ? JSON.parse(process.env.DEMIAN_BROWSER_ARGS)
+        : engine === 'chromium' ? ['--no-sandbox','--disable-gpu'] : [] });
+const report = { character, engine, browser:browser.version(), physicalPhoneMeasured:false, viewports:[], status:'running' };
 async function visibleBodyScale(page, mode) {
     const meta = await page.evaluate(mode => {
         const app = window.demianGameApplication;
@@ -70,10 +72,111 @@ async function visibleBodyScale(page, mode) {
             bodyScale:entity.bodyRoot?.scale?.y??1,variant:atlas.meta.variant};
     }, { mode, runnerRatio });
 }
+
+async function inspectDaryaMotion(page) {
+    const result = await page.evaluate(() => {
+        const game = window.demianGameApplication.activeGame;
+        const manager = game.characterManager;
+        const actor = manager.activeEntity;
+        const grid = game.navigationGrid;
+        const origin = { x: actor.group.position.x, z: actor.group.position.z };
+        const basis = game.cameraController.movementBasis();
+        const dt = 1 / 60;
+        const at = (point, x, z, distance) => ({ x: point.x + x * distance, z: point.z + z * distance });
+        function line(start, end) {
+            const cell = grid.worldToCell(end, { clamp: false });
+            return grid.inBounds(cell.x, cell.z) && grid.lineWalkable(start, end);
+        }
+        function lane(x, z, length, reverse = false) {
+            for (let row = 2; row < grid.height - 2; row += 2) {
+                for (let col = 2; col < grid.width - 2; col += 2) {
+                    const point = grid.cellToWorld({ x: col, z: row });
+                    if (line(point, at(point, x, z, length)) && (!reverse || line(point, at(point, x, z, -3)))) return point;
+                }
+            }
+            throw new Error('Cafe test lane is unavailable');
+        }
+        function startAt(point) {
+            manager.setPosition(point);
+            actor.velocity.set(0, 0, 0);
+            actor.introActive = false;
+            actor.stateLock = 0;
+        }
+        function command(x, z, magnitude, run) {
+            return { x: (basis.right.x * x + basis.right.z * z) * magnitude,
+                z: -(basis.forward.x * x + basis.forward.z * z) * magnitude, run };
+        }
+        const directions = ['e', 'se', 's', 'sw', 'w', 'nw', 'n', 'ne'];
+        const modes = { walk: [.8, false, 12, 4.5], run: [.84, true, 16, 6.5], sprint: [1, true, 16, 7.5] };
+        const clips = {};
+        const observedGaits = {};
+        let companionStep = 0;
+        let usefulFrames = 0;
+        for (const [state, [strength, run, count, length]] of Object.entries(modes)) {
+            clips[state] = {};
+            for (const [index, direction] of directions.entries()) {
+                const x = Math.cos(index * Math.PI / 4), z = Math.sin(index * Math.PI / 4);
+                startAt(lane(x, z, length));
+                const input = command(x, z, strength, run);
+                const seen = new Set();
+                const observed = new Set();
+                for (let tick = 0; tick < 100 && seen.size < count; tick++) {
+                    const previous = actor.companion.sample().world;
+                    game.fixedUpdate(dt, input);
+                    const current = actor.companion.sample();
+                    observed.add(`${actor.state}/${actor.direction}`);
+                    companionStep = Math.max(companionStep, Math.hypot(current.world.x - previous.x, current.world.z - previous.z));
+                    if (actor.state === state && actor.direction === direction) seen.add(actor.animator.currentFrameName());
+                    if (actor.state === state && ['walk', 'run'].includes(actor.companion.state)) usefulFrames++;
+                }
+                clips[state][direction] = [...seen];
+                observedGaits[`${state}/${direction}`] = [...observed];
+            }
+        }
+        startAt(lane(1, 0, 5, true));
+        for (let tick = 0; tick < 25; tick++) game.fixedUpdate(dt, command(1, 0, .84, true));
+        const turn = [actor.direction];
+        let discontinuity = 0;
+        let lastPhase = actor.animator.locomotionPhase;
+        for (let tick = 0; tick < 24; tick++) {
+            game.fixedUpdate(dt, command(-1, 0, .84, true));
+            if (actor.direction !== turn.at(-1)) turn.push(actor.direction);
+            const phase = actor.animator.locomotionPhase;
+            discontinuity = Math.max(discontinuity, (phase - lastPhase + 8) % 8);
+            lastPhase = phase;
+        }
+        startAt(origin);
+        return { clips, turn, discontinuity, companionStep, usefulFrames, observedGaits };
+    });
+    for (const [state, directions] of Object.entries(result.clips)) {
+        for (const [direction, names] of Object.entries(directions)) {
+            assert.equal(names.length, state === 'walk' ? 12 : 16,
+                `${state}/${direction} observed ${result.observedGaits[`${state}/${direction}`].join(', ')}`);
+            assert.ok(names.every(name => name.startsWith(`world_${direction}_${state === 'sprint' ? 'run' : state}-`)));
+            directions[direction] = names.length;
+        }
+    }
+    const circular = ['e', 'se', 's', 'sw', 'w', 'nw', 'n', 'ne'];
+    assert.equal(result.turn[0], 'e');
+    assert.equal(result.turn.at(-1), 'w');
+    assert.equal(result.turn.length, 5);
+    for (let i = 1; i < result.turn.length; i++) {
+        const angle = Math.abs(circular.indexOf(result.turn[i]) - circular.indexOf(result.turn[i - 1]));
+        assert.ok(angle === 1 || angle === 7);
+    }
+    assert.ok(result.discontinuity <= .05, `Stride phase jumped by ${result.discontinuity}`);
+    assert.ok(result.companionStep <= 13 / 60 + .0001);
+    assert.ok(result.usefulFrames > 200);
+    delete result.observedGaits;
+    return result;
+}
+
 try {
-    for (const [width, height] of [[390,844], [1440,900]]) {
+    for (const [width, height] of (engine === 'webkit' ? [[390,844]] : [[390,844], [1440,900]])) {
         const mobile = width < 1024;
-        const context = await browser.newContext({ viewport:{width,height}, isMobile:mobile, hasTouch:mobile });
+        const device = mobile ? devices[engine === 'webkit' ? 'iPhone 13' : 'Pixel 7'] : null;
+        const context = await browser.newContext({ viewport:{width,height}, isMobile:mobile, hasTouch:mobile,
+            ...(device ? { userAgent: device.userAgent } : {}) });
         const page = await context.newPage();
         const press = locator => mobile ? locator.tap() : locator.click();
         const errors = [], failures = [];
@@ -92,6 +195,7 @@ try {
         await page.evaluate(() => window.demianGameApplication.launchGame('dino-run', {seed:127}));
         await page.waitForFunction(() => window.demianGameApplication.activeGame?.model?.status === 'ready');
         assert.equal(await page.evaluate(() => window.demianGameApplication.activeGame.avatar.slug), character);
+        if (character === 'darya') await page.waitForFunction(() => window.demianGameApplication.activeGame.avatar.companion?.image.complete);
         const runnerBodyScale = await visibleBodyScale(page, 'runner');
         assert.ok(runnerBodyScale.jumpRecoveryRatio >= .96 && runnerBodyScale.jumpRecoveryRatio <= 1.05);
         assert.ok(runnerBodyScale.airborneRatio >= .75 && runnerBodyScale.airborneRatio <= 1.05);
@@ -106,9 +210,11 @@ try {
         else await page.keyboard.down('Space');
         await page.waitForFunction(() => window.demianGameApplication.activeGame.model.y > 8);
         if (!mobile) await page.keyboard.up('Space');
+        if (character === 'darya') await page.waitForFunction(() => window.demianGameApplication.activeGame.avatar.companion.elevation > 0);
         await page.waitForFunction(() => window.demianGameApplication.activeGame.model.y === 0);
+        if (character === 'darya') await page.waitForFunction(() => window.demianGameApplication.activeGame.avatar.companion.hopTime === null);
         let touch;
-        if (mobile) {
+        if (mobile && engine === 'chromium') {
             touch = await context.newCDPSession(page);
             const duck = page.locator('.runner-controls__duck');
             await duck.waitFor({state:'visible'});
@@ -164,10 +270,11 @@ try {
         }
         assert.equal(walkScale.frameWorldHeight,runScale.frameWorldHeight);
         await page.waitForFunction(() => { const e=window.demianGameApplication.characterManager.activeEntity; return e.grounded && e.stateLock<=0; });
+        const directionalMotion = character === 'darya' ? await inspectDaryaMotion(page) : null;
         const observed = new Set();
         for (const keys of [['d'], ['d','s'], ['s'], ['a','s'], ['a'], ['a','w'], ['w'], ['d','w']]) {
             for (const key of keys) await page.keyboard.down(key);
-            await page.waitForTimeout(100);
+            await page.waitForTimeout(character === 'darya' ? 240 : 100);
             await page.waitForFunction(() => {
                 const actor = window.demianGameApplication.characterManager.activeEntity;
                 return actor.state === 'walk' && actor.animator.currentFrameName()?.startsWith('world_');
@@ -210,7 +317,9 @@ try {
         assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth+1), false);
         assert.deepEqual(errors, []); assert.deepEqual(failures, []);
         report.viewports.push({width,height,selectedViaUi:true,previewLoaded:true,runnerJump:'passed',
-            slide:mobile?'native-touch-passed':'keyboard-passed',birdCleared:true,pack,
+            mobileProfile: device ? (engine === 'webkit' ? 'iPhone 13' : 'Pixel 7') : null,
+            slide:touch?'native-touch-passed':'keyboard-passed',birdCleared:true,pack,directionalMotion,
+            ...(character === 'darya' ? { pishiRunnerHop: 'passed' } : {}),
             cafeMovement:'passed',cafeJump:'passed',cafeCelebrate:'passed',selectionSurvivesReload:true,
             runnerBodyScale,walkScale,runScale,directions:[...observed],games,errors,failures});
         await context.close();
@@ -224,6 +333,6 @@ try {
     }
     throw error;
 } finally {
-    await writeFile(resolve(out,character + '-browser-checks.json'), JSON.stringify(report,null,2)+'\n');
+    await writeFile(resolve(out,character + (engine === 'webkit' ? '-webkit' : '') + '-browser-checks.json'), JSON.stringify(report,null,2)+'\n');
     await browser.close(); await new Promise(done=>server.close(done));
 }

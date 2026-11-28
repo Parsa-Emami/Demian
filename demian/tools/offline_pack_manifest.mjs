@@ -2,7 +2,7 @@
 import { existsSync, readdirSync, statSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { createHash } from 'node:crypto';
-import { BUILTIN_CHARACTER_SLUGS, characterPackVersion } from '../resources/js/game/characters/CharacterVisualContract.js';
+import { BUILTIN_CHARACTER_SLUGS, characterPackVersion, PISHI_SPRITESHEET, PISHI_PREVIEW } from '../resources/js/game/characters/CharacterVisualContract.js';
 import { GAME_CATALOG } from '../resources/js/game/catalog/GameCatalog.js';
 
 export const OFFLINE_GAME_IDS = Object.freeze([
@@ -121,6 +121,7 @@ export function buildOfflinePackManifest({ release, entry, releaseId, viteManife
         ...buildFonts,
         'assets/characters/character-manifest-v4.json',
         'assets/characters/master-motion-v1.json',
+        PISHI_SPRITESHEET, PISHI_PREVIEW,
         'assets/environments/cafe-runner-v1/wordmark.png',
         'assets/environments/cafe-runner-v1/interior.webp',
         'assets/environments/demian-fbx/polished-v1/preview.webp',

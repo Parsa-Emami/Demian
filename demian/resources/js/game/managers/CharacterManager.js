@@ -9,6 +9,7 @@ import {
 } from '../characters/runtime/CharacterRuntimePolicy.js';
 import { optionalAssetPolicy } from '../characters/runtime/MobileNetworkPolicy.js';
 import { preloadCharacterRoster } from '../performance/CharacterRosterStartup.js';
+import { COLLISION_LAYERS } from '../shared/collision/CollisionLayers.js';
 import {
     BUILTIN_CHARACTER_SLUGS,
     builtinCharacterAssetPair,
@@ -334,7 +335,7 @@ export default class CharacterManager {
             return entity;
         }
 
-        entity.replaceVisualAssets(assets.texture, assets.atlas);
+        entity.replaceVisualAssets(assets.texture, assets.atlas, assets.companionImage);
         entity.runtimeSpriteVariant = assets.fallback ? 'fallback' : (assets.variant ?? variant);
         return entity;
     }
@@ -370,6 +371,8 @@ export default class CharacterManager {
             character: record,
             texture,
             atlas,
+            companionImage: assets.companionImage,
+            companionCanMove: record.slug === 'darya' ? (from, to) => this.companionCanMove(from, to) : null,
             controlled: false,
         });
         entity.runtimeSpriteVariant = assets.fallback ? 'fallback' : (assets.variant ?? variant);
@@ -377,6 +380,7 @@ export default class CharacterManager {
 
         const spawn = this.spawnPoints[spawnIndex % this.spawnPoints.length];
         entity.group.position.set(spawn.x, 0, spawn.z);
+        entity.companion?.resetWorld(entity.group.position, entity.direction);
         this.scene.add(entity.group);
 
         this.entities.set(key, entity);
@@ -421,6 +425,19 @@ export default class CharacterManager {
         if (localId && this.collisionScope) {
             this.collisionScope.sync(localId, entity.group.position);
         }
+    }
+
+    companionCanMove(from, to) {
+        const { minX, maxX, minZ, maxZ } = this.worldBounds;
+        if (to.x < minX || to.x > maxX || to.z < minZ || to.z > maxZ) return false;
+        if (!this.collisionScope) return true;
+        const steps = Math.max(1, Math.ceil(Math.hypot(to.x - from.x, to.z - from.z) / .20));
+        for (let step = 1; step <= steps; step++) {
+            const t = step / steps;
+            const at = { x: from.x + (to.x - from.x) * t, z: from.z + (to.z - from.z) * t };
+            if (this.collisionScope.queryCircle(at, .24, { mask: COLLISION_LAYERS.WORLD }).length) return false;
+        }
+        return true;
     }
 
     async select(id, { preservePosition = true, hydrateRoster = true,
@@ -642,6 +659,7 @@ export default class CharacterManager {
         const x = Math.max(this.worldBounds.minX, Math.min(this.worldBounds.maxX, Number(position?.x) || 0));
         const z = Math.max(this.worldBounds.minZ, Math.min(this.worldBounds.maxZ, Number(position?.z) || 0));
         this.activeEntity.group.position.set(x, Number(position?.y) || 0, z);
+        this.activeEntity.companion?.resetWorld(this.activeEntity.group.position, this.activeEntity.direction);
         if (sync) this.syncCollision(String(this.activeRecord?.id), this.activeEntity);
         return true;
     }

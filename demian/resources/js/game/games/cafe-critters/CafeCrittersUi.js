@@ -1,4 +1,4 @@
-import { builtinCharacterPreviewUrl } from '../../characters/CharacterVisualContract.js';
+import { builtinCharacterPreviewUrl, PISHI_PREVIEW, resolveCharacterAssetUrl } from '../../characters/CharacterVisualContract.js';
 import { UI_LAYER, assignUiLayer } from '../../ui/UiLayer.js';
 import { CRITTERS, CRITTER_RULES, TABLE_FIELDS, cluesFor, tableLabel } from './CafeCrittersData.js';
 import { TABLE_SCENE, guestDrawing, guestIcon, shelfStamps, tableIcon, tableObject } from './CafeCrittersArt.js';
@@ -17,10 +17,7 @@ const BRIEFING = `
 `;
 
 function pishiArt() {
-    return `<svg class="critters-pishi" viewBox="36 141 49 71" aria-hidden="true" focusable="false">
-        <defs><clipPath id="critters-pishi-crop"><path d="M36 213V143H67L73 149L79 145L82 151V156L85 164L84 173L81 179L80 191L78 198L80 204L78 213Z"/></clipPath></defs>
-        <image href="${builtinCharacterPreviewUrl('darya')}" width="224" height="224" clip-path="url(#critters-pishi-crop)"/>
-    </svg>`;
+    return `<img class="critters-pishi" src="${resolveCharacterAssetUrl(PISHI_PREVIEW)}" alt="" width="112" height="112" decoding="async">`;
 }
 
 function choicesMarkup() {

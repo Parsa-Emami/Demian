@@ -128,5 +128,18 @@
       "air-diagonal": []
     },
     "normalization": "Uniform art scale taken from upright or contact poses per source strip, with one torso anchor and grounded foot line. The companion stays on its screen side for each facing and follows the shared feet pivot in the air."
+  },
+  "motion_art": {
+    "darya": "solo-turnaround.webp",
+    "pishi": "pishi-turnaround.webp"
+  },
+  "motion_art_sha256": {
+    "darya": "f2086a8e2c591fb6a7d9fa9e51f63c39d3e4e7a22880aadb1817b056860c9a49",
+    "pishi": "8e24fbc6025b92a0890ffe8856eee6eeb764cb59d0f0878535bd138117fa5641"
+  },
+  "motion_art_provenance": {
+    "revision": "15.1",
+    "generated_with": "OpenAI ImageGen using the shipped V15 silhouettes as reference",
+    "motion": "Eight individually drawn directions per character. Walk and run poses are independently rasterized from articulated rig key poses, with separate front and back limbs. Dino Run uses its own side projection and action clips."
   }
 }

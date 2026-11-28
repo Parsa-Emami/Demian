@@ -145,6 +145,17 @@ export function builtinCharacterPreviewUrl(slug, baseUrl = globalThis.document?.
     return resolveCharacterAssetUrl(`assets/characters/${slug}/${slug}-preview-v${characterPackVersion(slug)}.png`, baseUrl);
 }
 
+export const PISHI_SPRITESHEET = 'assets/characters/darya/pishi-spritesheet-v15-1.png';
+export const PISHI_PREVIEW = 'assets/characters/darya/pishi-preview-v15-1.png';
+
+export function pishiSpriteUrl(atlas, atlasUrl) {
+    const companion = atlas?.companion;
+    if (atlas?.meta?.slug !== 'darya' || companion?.id !== 'pishi' || !companion.animations) return null;
+    const filename = PISHI_SPRITESHEET.split('/').at(-1);
+    if (companion.meta?.image !== filename) throw new Error('Pishi sprite path mismatch');
+    return characterSpriteRevisionUrl(new URL(filename, atlasUrl).href, companion);
+}
+
 /** Match a newly packed atlas to its exact image even when the PNG URL is cached. */
 export function characterSpriteRevisionUrl(url, atlas) {
     const revision = atlas?.meta?.imageRevision;

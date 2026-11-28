@@ -62,13 +62,15 @@ def audit(output):
     for character in roster:
         slug, version = character['slug'], character['pack_version']
         definition = VISUAL['characters'][slug]
-        pack = STANDARD['packs'][str(version)]
         directory = ASSETS/slug
         base = read(directory/f'{slug}-atlas-v{version}-mobile.json')
+        revision = base['meta'].get('motionRevision', str(version))
+        pack = STANDARD['packs'][revision]
         row = {'slug':slug,'pack_version':version,'reference':VISUAL['families'][definition['family']]['reference'],
                'variants':[]}
         for variant in STANDARD['variants']:
             atlas = read(directory/f'{slug}-atlas-v{version}-{variant}.json')
+            assert atlas['meta'].get('motionRevision', str(version)) == revision
             assert atlas['animations'] == base['animations'], f'{slug}/{variant}: animation variants diverge'
             assert atlas.get('sideViewAnimations') == base.get('sideViewAnimations')
             assert len(atlas['frames']) == atlas['meta']['generatedFrameCount'] == pack['logicalFrames']

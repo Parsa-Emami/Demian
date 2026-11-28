@@ -8,6 +8,7 @@ import { UI_LAYER, assignUiLayer } from '../../ui/UiLayer.js';
 import RunnerReplay from './RunnerReplay.js';
 import { beginnerProfileForWeek, PRACTICE_BEST_KEY, isBeginnerProfile } from './RunnerPracticeProfile.js';
 import CanvasCharacterAvatar from '../../characters/CanvasCharacterAvatar.js';
+import { drawRunnerCompanion } from '../../rendering2d/CompanionRenderer.js';
 
 const BEST_KEY = `demian.dino-run.best.${RUNNER_CONFIG.version}`;
 const LESSON_KEY = 'demian.dino-run.tutorial.v1';
@@ -52,6 +53,7 @@ export default class DinoRunGame extends BaseGame {
                     for (const response of ['jump', 'duck']) {
                         this.attackAvatars.set(`${slug}:${response}`, new CanvasCharacterAvatar({
                             slug, image: base.texture.image, atlas: base.atlas, sideView: true,
+                            companionImage: base.companion?.image,
                         }));
                     }
                 }).catch(() => {
@@ -214,6 +216,7 @@ export default class DinoRunGame extends BaseGame {
         this.model.reset({ seed: this.run.seed, width: this.run.track_width, profile });
         this.hydrateAttackers(this.context, profile.attackers);
         this.actor.speed = 0; this.actor.airborne = false; this.actor.grounded = true; this.actor.motionState = 'idle';
+        this.avatar.companion?.resetRunner(this.avatar.direction);
         this.avatar.sync(this.actor, 0);
         const status = this.ready.querySelector('[data-run-ranking-mode]');
         if (status) status.textContent = this.run.mode === 'ranked'
@@ -315,6 +318,7 @@ export default class DinoRunGame extends BaseGame {
             sliding: this.model.duck, running: this.model.status === 'running' && this.model.y === 0 });
         const avatar = this.avatar, sample = avatar.animator.sample(alpha);
         const sprite = avatar.atlas.frames[sample.frameName];
+        drawRunnerCompanion(ctx, avatar.companion, alpha, RUNNER_CONFIG.playerX * s, ground, s);
         if (sprite) {
             const ratio = characterReferenceBodyHeightRatio(avatar.atlas, { sideView: true, fallback: .9 });
             const spriteSize = RUNNER_CONFIG.bodyHeight / ratio * s;
@@ -357,6 +361,7 @@ export default class DinoRunGame extends BaseGame {
             const ratio = characterReferenceBodyHeightRatio(avatar.atlas, { sideView: true, fallback: .9 });
             const size = RUNNER_CONFIG.bodyHeight / ratio * s;
             const x = (obstacle.x + obstacle.w / 2) * s, y = this.ground - obstacle.y * s;
+            drawRunnerCompanion(ctx, avatar.companion, alpha, x, this.ground, s);
             ctx.save();
             ctx.fillStyle = 'rgba(55,20,15,.25)'; ctx.beginPath();
             ctx.ellipse(x, this.ground, 25 * s, 3 * s, 0, 0, Math.PI * 2); ctx.fill();

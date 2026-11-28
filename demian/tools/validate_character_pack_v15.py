@@ -8,6 +8,7 @@ from PIL import Image
 
 from audit_dcs_v15_scale_directions import measure_frame
 from character_art_registry import ACTIVE_CHARACTER_DEFINITIONS
+from darya_v15_motion_art import CONTACTS, MOTION_REVISION, VARIANTS as DARYA_VARIANTS
 from validate_character_pack_v14 import VARIANTS
 
 ROOT = Path(__file__).resolve().parents[1] / 'public/assets/characters'
@@ -27,6 +28,38 @@ def names(clip):
     return [*clip['frames'], *(name for direction in clip.get('framesByDirection', {}).values() for name in direction)]
 
 
+def validate_pishi(directory, companion):
+    assert companion['id'] == 'pishi' and companion['alwaysVisible'] and companion['collisionIndependent']
+    assert companion['bakedIntoEveryFrame'] is False
+    assert companion['pivot'] == {'x': .5, 'y': 49 / 56}
+    assert companion['worldSize'] == 1.74 and companion['runnerSize'] == 29
+    path = directory / companion['meta']['image']
+    assert path.name == 'pishi-spritesheet-v15-1.png'
+    assert hashlib.sha256(path.read_bytes()).hexdigest() == companion['meta']['imageRevision']
+    with Image.open(path) as art:
+        image = art.convert('RGBA')
+    assert image.size == (companion['meta']['size']['w'], companion['meta']['size']['h'])
+    assert image.width * image.height * 4 <= 3 * 1024 ** 2
+    expected = {'idle': 4, 'walk': 8, 'run': 10, 'takeoff': 2, 'jump': 3, 'fall': 2, 'land': 3, 'crouch': 2}
+    assert expected.keys() == companion['animations'].keys()
+    digests = {}
+    for name, frame in companion['frames'].items():
+        x, y, w, h = (frame[key] for key in ('x', 'y', 'w', 'h'))
+        cropped = image.crop((x, y, x + w, y + h))
+        bounds = measure_frame(image, frame, companion['pivot']['y'], 1, 1)
+        assert not bounds['touches_edge'], name
+        assert .58 <= bounds['height_cell_ratio'] <= .78, name
+        digests[name] = hashlib.sha256(cropped.tobytes()).digest()
+    for state, count in expected.items():
+        clip = companion['animations'][state]
+        assert tuple(clip['framesByDirection']) == DIRECTIONS
+        for seq in clip['framesByDirection'].values():
+            assert len(seq) == count
+            assert len({digests[name] for name in seq}) >= min(count, 3), (state, seq)
+        first_names = [clip['framesByDirection'][direction][0] for direction in DIRECTIONS]
+        assert len({digests[name] for name in first_names}) == len(DIRECTIONS), state
+
+
 def validate(slug, variant, cell, target):
     directory = ROOT / slug
     atlas_path = directory / f'{slug}-atlas-v15-{variant}.json'
@@ -42,9 +75,9 @@ def validate(slug, variant, cell, target):
     assert atlas['render']['lockBodyScale'] and not atlas['render']['frameBlend']
     assert atlas['render']['physicsOwnsJumpHeight']
     if slug == 'darya':
-        assert atlas['companion'] == {
-            'id': 'pishi', 'alwaysVisible': True, 'bakedIntoEveryFrame': True, 'collisionIndependent': True,
-        }
+        assert meta['motionRevision'] == MOTION_REVISION
+        assert atlas['render']['directionStepSeconds'] > 0
+        assert atlas['motion']['locomotionProfile']['strideLengths'] == {'walk': 2.45, 'run': 3.85, 'sprint': 3.85}
     ratio = atlas['render']['referenceBodyHeightRatio']
     world_height = atlas['display']['worldHeight']
     with Image.open(image_path) as packed:
@@ -81,12 +114,21 @@ def validate(slug, variant, cell, target):
             if state in GAITS:
                 height = median(frame['height_cell_ratio'] for frame in measured) / ratio
                 low, high = GAITS[state]
+                if slug == 'darya' and state != 'idle':
+                    high = 1.15
                 assert low <= height <= high, (variant, state, height)
                 assert max(abs(frame['ground_offset_cell']) for frame in measured) <= .055
             if state in ('walk', 'run', 'sprint'):
-                assert len({pixels[rect(name)] for name in chain}) >= (6 if variant == 'lite' else 8)
-                for index in clip['contactFrames']:
-                    assert abs(measured[index]['ground_offset_cell']) <= .025, (variant, state, index)
+                distinct = len({pixels[rect(name)] for name in chain})
+                if slug == 'darya':
+                    spec = CONTACTS['walk' if state == 'walk' else 'run']
+                    assert distinct == len(chain) == spec['count'], (variant, state, distinct)
+                    assert clip['groundContact'] == spec and clip['contactFrames'] == [0, distinct // 2]
+                    assert set(chain) <= atlas['render']['frameOffsetsY'].keys(), (variant, state)
+                else:
+                    assert distinct >= (6 if variant == 'lite' else 8)
+                    for index in clip['contactFrames']:
+                        assert abs(measured[index]['ground_offset_cell']) <= .025, (variant, state, index)
             if state == 'land':
                 assert len(chain) / clip['fps'] == atlas['motion']['locomotionProfile']['landingSeconds']
                 heights = [frame['height_cell_ratio'] / ratio for frame in measured]
@@ -101,7 +143,12 @@ def validate(slug, variant, cell, target):
     assert set(names(slide)).isdisjoint(names(side['run']))
     assert max(measures[rect(name)]['height_cell_ratio'] / ratio * 58 for name in names(slide)) < 46
     assert world['stop']['loop'] is False and world['skid']['loop'] is False
-    return world, side
+    if slug == 'darya':
+        for state, expected in [('walk', 12), ('run', 16), ('jump', 4), ('land', 4), ('slide', 6)]:
+            for direction, frames in side[state]['framesByDirection'].items():
+                assert len(frames) == expected
+                assert len({pixels[rect(name)] for name in frames}) == expected, (variant, direction, state)
+    return world, side, atlas.get('companion')
 
 
 def validate_character(slug, entry):
@@ -113,15 +160,20 @@ def validate_character(slug, entry):
     assert layout['character'] == slug and layout['version'] == 15
     assert hashlib.sha256((source / layout['source']).read_bytes()).hexdigest() == layout['source_sha256']
     assert len(layout['poses']) * len(layout['directions']) == 112
+    if slug == 'darya':
+        for key, filename in layout['motion_art'].items():
+            assert hashlib.sha256((source / filename).read_bytes()).hexdigest() == layout['motion_art_sha256'][key]
     targets = manifest['runtime']['atlas_targets']
     assert targets.keys() == VARIANTS.keys()
-    expected_world, expected_side = None, None
-    for variant, cell in VARIANTS.items():
-        world, side = validate(slug, variant, cell, targets[variant])
-        if expected_world is None:
-            expected_world, expected_side = world, side
-        assert world == expected_world and side == expected_side, variant
-    assert set(manifest['animations']) == expected_world.keys()
+    expected = None
+    for variant, cell in (DARYA_VARIANTS if slug == 'darya' else VARIANTS).items():
+        clips = validate(slug, variant, cell, targets[variant])
+        if expected is None:
+            expected = clips
+        assert clips == expected, variant
+    assert set(manifest['animations']) == expected[0].keys()
+    if slug == 'darya':
+        validate_pishi(ROOT / slug, expected[2])
     print(f'{slug} V15: six variants, eight distinct directional views, stable pivots, runner slide and decoded budgets verified.')
 
 

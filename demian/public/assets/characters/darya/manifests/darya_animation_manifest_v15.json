@@ -12,55 +12,37 @@
     "e",
     "se"
   ],
-  "side_view_previous_art": "V14",
+  "motion_revision": "15.1",
+  "companion": "pishi",
+  "side_view_art": "dedicated",
   "states": {
     "idle": {
-      "fps": 4,
+      "fps": 3,
       "loop": true,
-      "frames": 4
-    },
-    "walk": {
-      "fps": 9,
-      "loop": true,
-      "frames": 8
-    },
-    "run": {
-      "fps": 13,
-      "loop": true,
-      "frames": 8
-    },
-    "sprint": {
-      "fps": 15,
-      "loop": true,
-      "frames": 8
+      "frames": 2
     },
     "start": {
       "fps": 15,
       "loop": false,
-      "frames": 3
+      "frames": 2
     },
     "stop": {
       "fps": 16,
       "loop": false,
-      "frames": 4
-    },
-    "turn": {
-      "fps": 12,
-      "loop": false,
-      "frames": 2
+      "frames": 3
     },
     "takeoff": {
-      "fps": 12,
+      "fps": 16,
       "loop": false,
       "frames": 2
     },
     "jump": {
-      "fps": 12,
+      "fps": 16,
       "loop": false,
       "frames": 3
     },
     "fall": {
-      "fps": 12,
+      "fps": 16,
       "loop": false,
       "frames": 3
     },
@@ -69,85 +51,100 @@
       "loop": false,
       "frames": 4
     },
+    "slide": {
+      "fps": 14,
+      "loop": false,
+      "frames": 4
+    },
+    "wave": {
+      "fps": 10,
+      "loop": false,
+      "frames": 5
+    },
+    "walk": {
+      "fps": 14,
+      "loop": true,
+      "frames": 12
+    },
+    "run": {
+      "fps": 24,
+      "loop": true,
+      "frames": 16
+    },
+    "sprint": {
+      "fps": 30,
+      "loop": true,
+      "frames": 16
+    },
+    "dash": {
+      "fps": 33,
+      "loop": true,
+      "frames": 16
+    },
     "crouch": {
       "fps": 1,
       "loop": false,
       "frames": 1
     },
-    "slide": {
-      "fps": 9,
-      "loop": false,
-      "frames": 4
-    },
-    "wave": {
-      "fps": 6,
-      "loop": false,
-      "frames": 5
-    },
-    "celebrate": {
-      "fps": 6,
-      "loop": false,
-      "frames": 5
-    },
-    "win": {
-      "fps": 6,
-      "loop": false,
-      "frames": 5
-    },
-    "skid": {
-      "fps": 16,
-      "loop": false,
-      "frames": 4
-    },
-    "dash": {
-      "fps": 19,
-      "loop": true,
-      "frames": 8
-    },
     "breathe": {
-      "fps": 4,
+      "fps": 3,
       "loop": true,
-      "frames": 4
+      "frames": 2
     },
     "blink": {
-      "fps": 4,
+      "fps": 3,
       "loop": true,
-      "frames": 4
+      "frames": 2
     },
     "ready": {
-      "fps": 4,
+      "fps": 3,
       "loop": true,
-      "frames": 4
+      "frames": 2
     },
     "tiptoe": {
-      "fps": 9,
+      "fps": 14,
       "loop": true,
-      "frames": 8
+      "frames": 12
     },
     "hop": {
-      "fps": 12,
+      "fps": 16,
       "loop": false,
       "frames": 3
     },
     "hover": {
-      "fps": 12,
+      "fps": 16,
       "loop": false,
       "frames": 3
     },
     "dodge": {
-      "fps": 9,
+      "fps": 14,
       "loop": false,
       "frames": 4
     },
     "salute": {
-      "fps": 6,
+      "fps": 10,
       "loop": false,
       "frames": 5
     },
-    "companion": {
-      "fps": 4,
-      "loop": true,
-      "frames": 4
+    "turn": {
+      "fps": 16,
+      "loop": false,
+      "frames": 2
+    },
+    "skid": {
+      "fps": 16,
+      "loop": false,
+      "frames": 3
+    },
+    "celebrate": {
+      "fps": 10,
+      "loop": false,
+      "frames": 5
+    },
+    "win": {
+      "fps": 10,
+      "loop": false,
+      "frames": 5
     }
   }
 }

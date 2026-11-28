@@ -74,5 +74,5 @@ test('asynchronous enhancement cannot mutate a disposed actor or leak its textur
         manager.indexOf('    async createEntity('));
     assert.match(variant, /if \(this\.disposed \|\| this\.entities\.get\(String\(record\.id\)\) !== entity/);
     assert.match(variant, /assets\.texture\?\.dispose\?\.\(\)/);
-    assert.match(variant, /entity\.replaceVisualAssets\(assets\.texture, assets\.atlas\)/);
+    assert.match(variant, /entity\.replaceVisualAssets\(assets\.texture, assets\.atlas, assets\.companionImage\)/);
 });

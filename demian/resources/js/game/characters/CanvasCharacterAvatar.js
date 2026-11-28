@@ -8,17 +8,8 @@ import {
 import { CHARACTER_CANONICAL_BODY } from './CharacterVisualContract.js';
 import { groundLocomotionState } from './CharacterLocomotionModel.js';
 import { captureCharacterStep } from './CharacterRenderState.js';
-
-const DIRECTIONS = Object.freeze(['e', 'se', 's', 'sw', 'w', 'nw', 'n', 'ne']);
-
-function directionFromForward(forward, fallback = 'e') {
-    const x = Number(forward?.x) || 0;
-    const z = Number(forward?.z) || 0;
-    if (x * x + z * z < 0.0004) return fallback;
-    const angle = Math.atan2(z, x);
-    const sector = Math.round(angle / (Math.PI / 4));
-    return DIRECTIONS[((sector % 8) + 8) % 8];
-}
+import { DirectionTransition, directionFromHeading } from './DirectionResolver.js';
+import { syncCompanion } from './CompanionController.js';
 
 function damp(current, target, smoothing, deltaTime) {
     const alpha = 1 - Math.exp(-Math.max(0, smoothing) * Math.max(0, deltaTime));
@@ -26,7 +17,7 @@ function damp(current, target, smoothing, deltaTime) {
 }
  
 export default class CanvasCharacterAvatar {
-    constructor({ slug, image, atlas, player = false, sideView = false }) {
+    constructor({ slug, image, atlas, companionImage = null, player = false, sideView = false }) {
         this.slug = slug;
         this.texture = { image };
         this.atlas = atlas;
@@ -35,6 +26,8 @@ export default class CanvasCharacterAvatar {
         this.character = { slug, name: slug, settings: {} };
         this.isPlayerControlled = Boolean(player);
         this.sideView = sideView;
+        this.directionTransition = new DirectionTransition(sideView ? 0 : atlas.render?.directionStepSeconds);
+        this.companion = syncCompanion(null, atlas, companionImage, sideView);
         this.animator = new FrameAnimator(atlas, { sideView });
         this.animator.play('idle');
         this.state = 'idle';
@@ -85,10 +78,12 @@ export default class CanvasCharacterAvatar {
         this.lastPosition = { x, z };
 
         const forward = actor.forward ?? actor.lastMoveDirection ?? actor.velocity ?? { x: this.facing, z: 0 };
-        const direction = directionFromForward(forward, this.direction);
+        const fx = Number(forward?.x) || 0;
+        const fz = Number(forward?.z) || 0;
+        const requestedDirection = directionFromHeading(fx, fz, this.direction);
+        const direction = this.directionTransition.toward(this.direction, requestedDirection, dt);
         this.direction = direction;
         this.animator.setDirection(direction);
-        const fx = Number(forward?.x) || 0;
         if (Math.abs(fx) > 0.08) {
             this.facing = fx >= 0 ? 1 : -1;
             this.animator.setFacing(this.facing);
@@ -138,16 +133,21 @@ export default class CanvasCharacterAvatar {
         this.visual.tilt = damp(this.visual.tilt, target.tilt, 18, dt);
         this.visual.x = damp(this.visual.x, target.x, 20, dt);
         this.visual.y = damp(this.visual.y, target.y, 20, dt);
+        const airborne = actor.airborne === true || actor.grounded === false;
+        if (this.sideView) this.companion?.updateRunner(direction, dt, this.speedValue, airborne, nextState === 'slide');
+        else this.companion?.updateWorld(this.position, direction, dt, airborne);
         return this;
     }
 
-    replaceVisualAssets(image, atlas) {
+    replaceVisualAssets(image, atlas, companionImage) {
         const previous = this.animator;
         const next = new FrameAnimator(atlas, { sideView: this.sideView });
         next.adoptPlaybackFrom(previous);
         this.texture = { image };
         this.atlas = atlas;
         this.animator = next;
+        this.directionTransition.seconds = this.sideView ? 0 : atlas.render?.directionStepSeconds;
+        this.companion = syncCompanion(this.companion, atlas, companionImage, this.sideView);
     }
 
     visualHeight() {

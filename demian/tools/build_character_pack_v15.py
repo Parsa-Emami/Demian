@@ -9,6 +9,8 @@ import numpy as np
 from PIL import Image
 
 from build_character_pack_v14 import grey, read_json, write_json
+from darya_v15_motion_art import (build_darya_art, build_pishi_art, WALK as DARYA_WALK, RUN as DARYA_RUN,
+                                 VARIANTS as DARYA_VARIANTS, MOTION_REVISION as DARYA_MOTION_REVISION)
 from validate_character_pack_v14 import VARIANTS
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -136,25 +138,7 @@ def side_animations(legacy):
     return animations
 
 
-def build_variant(directory, slug, variant, cell, layout, art, sparse, animations, side):
-    legacy = read_json(directory / f'{slug}-atlas-v14-{variant}.json')
-    side_names = dict.fromkeys(name for clip in side.values()
-                              for frames in [clip['frames'], *clip.get('framesByDirection', {}).values()]
-                              for name in frames)
-    images = {name: frame.resize((cell, cell), Image.Resampling.LANCZOS)
-              for name, frame in art.items() if variant != 'lite' or name not in sparse}
-    aliases = dict(sparse) if variant == 'lite' else {}
-    with Image.open(directory / legacy['meta']['image']) as atlas:
-        seen = {}
-        for name in side_names:
-            rect = legacy['frames'][name.removeprefix('side_')]
-            box = (rect['x'], rect['y'], rect['x'] + rect['w'], rect['y'] + rect['h'])
-            if box in seen:
-                aliases[name] = seen[box]
-            else:
-                seen[box] = name
-                images[name] = atlas.crop(box).convert('RGBA')
-
+def pack_images(images, cell, aliases=None):
     columns = math.ceil(math.sqrt(len(images)))
     rows = math.ceil(len(images) / columns)
     packed = Image.new('RGBA', (columns * cell, rows * cell))
@@ -163,12 +147,85 @@ def build_variant(directory, slug, variant, cell, layout, art, sparse, animation
         x, y = i % columns * cell, i // columns * cell
         packed.paste(frame, (x, y))
         frames[name] = {'x': x, 'y': y, 'w': cell, 'h': cell}
-    frames.update({name: frames[target] for name, target in aliases.items()})
+    frames.update({name: frames[target] for name, target in (aliases or {}).items()})
+    return packed, frames, columns, rows
+
+
+def save_art(path, packed, *, use_palette=False):
+    if use_palette:
+        alpha = packed.getchannel('A')
+        clear = alpha.point(lambda value: 255 if value < 60 else 0)
+        opaque = Image.new('RGB', packed.size)
+        opaque.paste(packed, mask=alpha.point(lambda value: 255 if value >= 60 else 0))
+        indexed = opaque.quantize(colors=255, method=Image.Quantize.MEDIANCUT, dither=Image.Dither.NONE)
+        palette = indexed.getpalette()
+        indexed.putpalette(palette + [0] * (768 - len(palette)))
+        indexed.paste(255, mask=clear)
+        indexed.save(path, transparency=255, bits=8, optimize=True)
+    else:
+        packed.save(path, optimize=True)
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def unique_images(images):
+    physical, aliases, seen = {}, {}, {}
+    for name, image in images.items():
+        key = hashlib.sha256(image.tobytes()).digest()
+        if key in seen:
+            aliases[name] = seen[key]
+        else:
+            seen[key] = name
+            physical[name] = image
+    return physical, aliases
+
+
+def build_companion(directory, source, layout):
+    art, animations = build_pishi_art(source, layout)
+    cell = 48
+    images, aliases = unique_images({name: image.resize((cell, cell), Image.Resampling.LANCZOS)
+                                     for name, image in art.items()})
+    sheet, frames, _, _ = pack_images(images, cell, aliases)
+    path = directory / 'pishi-spritesheet-v15-1.png'
+    revision = save_art(path, sheet, use_palette=True)
+    art['s_idle-00'].resize((112, 112), Image.Resampling.LANCZOS).save(
+        directory / 'pishi-preview-v15-1.png', optimize=True,
+    )
+    return {'id': 'pishi', 'alwaysVisible': True, 'collisionIndependent': True,
+            'bakedIntoEveryFrame': False, 'pivot': {'x': .5, 'y': 49 / 56}, 'worldSize': 1.74,
+            'runnerSize': 29, 'frames': frames, 'animations': animations,
+            'meta': {'image': path.name, 'imageRevision': revision,
+                     'size': {'w': sheet.width, 'h': sheet.height}}}
+
+
+def build_variant(directory, slug, variant, cell, layout, art, sparse, animations, side, *,
+                  animation_offsets=None, companion=None):
+    legacy = read_json(directory / f'{slug}-atlas-v14-{variant}.json')
+    images = {name: frame.resize((cell, cell), Image.Resampling.LANCZOS)
+              for name, frame in art.items() if variant != 'lite' or name not in sparse}
+    aliases = dict(sparse) if variant == 'lite' else {}
+    if companion:
+        images, aliases = unique_images(images)
+    else:
+        side_names = dict.fromkeys(name for clip in side.values()
+                                  for frames in [clip['frames'], *clip.get('framesByDirection', {}).values()]
+                                  for name in frames)
+        with Image.open(directory / legacy['meta']['image']) as atlas:
+            seen = {}
+            for name in side_names:
+                rect = legacy['frames'][name.removeprefix('side_')]
+                box = (rect['x'], rect['y'], rect['x'] + rect['w'], rect['y'] + rect['h'])
+                if box in seen:
+                    aliases[name] = seen[box]
+                else:
+                    seen[box] = name
+                    images[name] = atlas.crop(box).convert('RGBA')
+
+    packed, frames, columns, rows = pack_images(images, cell, aliases)
     path = directory / f'{slug}-spritesheet-v15-{variant}.png'
-    packed.save(path, optimize=True)
+    revision = save_art(path, packed, use_palette=bool(companion))
     meta = {
         'slug': slug, 'name': legacy['meta']['name'], 'version': 15,
-        'variant': variant, 'image': path.name, 'imageRevision': hashlib.sha256(path.read_bytes()).hexdigest(),
+        'variant': variant, 'image': path.name, 'imageRevision': revision,
         'size': {'w': packed.width, 'h': packed.height}, 'frameSize': {'w': cell, 'h': cell},
         'grid': {'columns': columns, 'rows': rows}, 'decodedBytes': packed.width * packed.height * 4,
         'directions': layout['directions'], 'sourceKeyPoseCount': len(layout['directions']) * len(layout['poses']),
@@ -177,14 +234,24 @@ def build_variant(directory, slug, variant, cell, layout, art, sparse, animation
     }
     render = dict(legacy['render'])
     render.pop('bodyScaleCalibration', None)
+    motion = legacy['motion']
+    if companion:
+        meta['motionRevision'] = DARYA_MOTION_REVISION
+        meta['sourceKeyPoseCount'] = len(layout['directions'])
+        render.update(referenceBodyWidthRatio=.46, frameOffsetsY=animation_offsets, directionStepSeconds=.046)
+        motion['locomotionProfile'].update(strideLengths={
+            'walk': DARYA_WALK[1], 'run': DARYA_RUN[1], 'sprint': DARYA_RUN[1],
+        }, maxStrideHz=2.8, preserveStridePhaseOnResume=True)
     result = {
         'meta': meta, 'frames': frames, 'animations': animations, 'sideViewAnimations': side,
         'pivot': layout['pivot'], 'display': legacy['display'], 'render': render,
-        'motion': legacy['motion'], 'movement': legacy['movement'],
+        'motion': motion, 'movement': legacy['movement'],
         **({'speech': legacy['speech']} if 'speech' in legacy else {}),
         'fallbacks': legacy['fallbacks'],
     }
-    if 'companion' in legacy:
+    if companion:
+        result['companion'] = companion
+    elif 'companion' in legacy:
         result['companion'] = legacy['companion']
     target = directory / f'{slug}-atlas-v15-{variant}.json'
     target.write_text(json.dumps(result, ensure_ascii=False, separators=(',', ':')) + '\n')
@@ -198,15 +265,24 @@ def build(slug):
     layout = read_json(source / 'layout.json')
     if layout['character'] != slug or layout['version'] != 15:
         raise ValueError(f'{source}: incorrect character or pack version')
-    art, sparse = load_world_art(source, layout)
-    animations = world_animations(layout['directions'])
-    side = side_animations(read_json(directory / f'{slug}-atlas-v14-mobile.json')['animations'])
+    options = {}
     if slug == 'darya':
-        animations['companion'] = {**animations['idle'], 'sharedFrameSource': 'idle'}
-        side['companion'] = {**side['idle'], 'sharedFrameSource': 'idle'}
-    targets = {variant: build_variant(directory, slug, variant, cell, layout, art, sparse, animations, side)
-               for variant, cell in VARIANTS.items()}
-    art['world_s_idle'].resize((224, 224), Image.Resampling.LANCZOS).save(
+        for key, expected in layout['motion_art_sha256'].items():
+            if hashlib.sha256((source / layout['motion_art'][key]).read_bytes()).hexdigest() != expected:
+                raise ValueError(f'{source}: invalid {key} turnaround revision')
+        art, offsets, animations, side = build_darya_art(source, layout)
+        options.update(animation_offsets=offsets, companion=build_companion(directory, source, layout))
+        sparse = {}
+        preview = art['world_s_idle-00']
+    else:
+        art, sparse = load_world_art(source, layout)
+        animations = world_animations(layout['directions'])
+        side = side_animations(read_json(directory / f'{slug}-atlas-v14-mobile.json')['animations'])
+        preview = art['world_s_idle']
+    variants = DARYA_VARIANTS if slug == 'darya' else VARIANTS
+    targets = {variant: build_variant(directory, slug, variant, cell, layout, art, sparse, animations, side, **options)
+               for variant, cell in variants.items()}
+    preview.resize((224, 224), Image.Resampling.LANCZOS).save(
         directory / f'{slug}-preview-v15.png', optimize=True,
     )
     manifests = directory / 'manifests'
@@ -218,7 +294,9 @@ def build(slug):
     write_json(manifest_path, manifest)
     write_json(manifests / animation_filename, {
         'character_key': slug, 'pack_version': 15, 'source': '../source-v15/layout.json',
-        'directions': layout['directions'], 'side_view_previous_art': 'V14',
+        'directions': layout['directions'],
+        **({'motion_revision': DARYA_MOTION_REVISION, 'companion': 'pishi', 'side_view_art': 'dedicated'}
+           if slug == 'darya' else {'side_view_previous_art': 'V14'}),
         'states': {name: {key: clip[key] for key in ('fps', 'loop') } |
                    {'frames': len(clip['frames'])} for name, clip in animations.items()},
     })

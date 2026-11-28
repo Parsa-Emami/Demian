@@ -1,6 +1,7 @@
 {
   "character_key": "darya",
-  "pack_version": 14,
+  "pack_version": 15,
+  "motion_revision": "15.1",
   "physics_owns_jump_height": true,
   "dedicated_slide": true,
   "uniform_body_scale": true,
@@ -11,11 +12,12 @@
     "referenceCharacter": null,
     "phaseDriver": "travelled-distance",
     "strideLengths": {
-      "walk": 3.4,
-      "run": 6,
-      "sprint": 6.4
+      "walk": 2.45,
+      "run": 3.85,
+      "sprint": 3.85
     },
-    "maxStrideHz": 1.55,
+    "maxStrideHz": 2.8,
+    "preserveStridePhaseOnResume": true,
     "landingSeconds": 0.16,
     "jumpBufferSeconds": 0.14,
     "coyoteSeconds": 0.11,

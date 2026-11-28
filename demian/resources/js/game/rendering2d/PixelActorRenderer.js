@@ -3,6 +3,8 @@ import { cssColor, PIXEL_PALETTE as P } from './PixelPalette.js';
 import { drawCharacterAbility } from '../characters/abilities/CharacterAbilityRenderer.js';
 import { drawCafeGroundShadow } from './CafeAtmosphere2D.js';
 import { characterRenderPose } from '../characters/CharacterRenderState.js';
+import { DIRECTION_VECTORS } from '../characters/DirectionResolver.js';
+import { drawWorldCompanion } from './CompanionRenderer.js';
 
 function actorPosition(actor) {
     const position = actor?.position ?? actor?.group?.position ?? actor;
@@ -121,6 +123,14 @@ export function drawCharacterSpeech(ctx, camera, entity, { alpha = 1, cssScale =
     return true;
 }
 
+export function groundContactCorrection(animator, sample) {
+    const contact = animator?.animation?.groundContact;
+    if (!contact || !sample || !['walk', 'tiptoe', 'run', 'sprint'].includes(animator.animationName)) return 0;
+    const index = animator.currentFrames().indexOf(sample.frameName);
+    if (index < 0 || (index / contact.count) % .5 >= contact.stance) return 0;
+    return sample.progress * contact.stride / contact.count;
+}
+
 export function drawSpriteCharacter(ctx, camera, entity, {
     label = '',
     player = entity?.isPlayerControlled,
@@ -128,6 +138,7 @@ export function drawSpriteCharacter(ctx, camera, entity, {
     eliminated = false,
     alpha = 1,
     reducedMotion = false,
+    drawCompanion = true,
 } = {}) {
     const image = entity?.texture?.image ?? entity?.texture?.source?.data;
     const sample = entity?.animator?.sample?.(alpha);
@@ -145,7 +156,12 @@ export function drawSpriteCharacter(ctx, camera, entity, {
         return false;
     }
 
-    const metrics = spriteDrawMetrics(camera, entity, frame, characterRenderPose(entity, alpha));
+    const pose = characterRenderPose(entity, alpha);
+    const metrics = spriteDrawMetrics(camera, entity, frame, pose);
+    const companion = drawCompanion ? entity?.companion : null;
+    const companionPose = companion?.sample(alpha);
+    const companionBehind = companionPose?.world?.z <= pose.z;
+    if (companionBehind) drawWorldCompanion(ctx, camera, companion, companionPose, opacity * (eliminated ? .48 : 1));
     const elevation = Math.min(1, metrics.jumpHeight / 3.2);
     const shadowWidth = Math.max(12, metrics.bodyWidth * 0.68) * (1 - elevation * 0.28);
     const shadowHeight = Math.max(2, metrics.frameHeight * 0.055);
@@ -167,7 +183,11 @@ export function drawSpriteCharacter(ctx, camera, entity, {
         ctx.stroke();
     }
 
-    ctx.translate(metrics.anchorX, metrics.anchorY);
+    const offsetY = (entity?.atlas?.render?.frameOffsetsY?.[frameName] ?? 0) * metrics.frameHeight;
+    const correction = groundContactCorrection(entity?.animator, sample) * camera.pixelsPerUnit;
+    const facing = DIRECTION_VECTORS[entity?.animator?.direction];
+    ctx.translate(metrics.anchorX - correction * (facing?.x ?? 0),
+        metrics.anchorY + offsetY - correction * (facing?.z ?? 0));
     ctx.rotate(metrics.rotation);
     const destX = -metrics.pivotX * metrics.frameWidth;
     const destY = -metrics.pivotY * metrics.frameHeight;
@@ -194,6 +214,9 @@ export function drawSpriteCharacter(ctx, camera, entity, {
         }
     }
     ctx.restore();
+    if (companionPose && !companionBehind) {
+        drawWorldCompanion(ctx, camera, companion, companionPose, opacity * (eliminated ? .48 : 1));
+    }
 
     drawCharacterAbility(ctx, metrics, entity?.abilityController?.visualState?.(), reducedMotion);
 

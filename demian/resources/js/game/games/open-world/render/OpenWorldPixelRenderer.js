@@ -10,6 +10,7 @@ import { drawCafeAmbientMotes } from '../../../rendering2d/CafeAtmosphere2D.js';
 import { CAFE_STATIC_COLLIDERS } from '../../../shared/cafe/CafeReferenceLayout.js';
 import { CAFE_RENDER_BOUNDS } from '../../../shared/cafe/CafeWalkthroughScene.js';
 import { characterRenderPose } from '../../../characters/CharacterRenderState.js';
+import { drawWorldCompanion } from '../../../rendering2d/CompanionRenderer.js';
 
 export default class OpenWorldPixelRenderer {
     constructor(context, manifest) {
@@ -162,6 +163,12 @@ export default class OpenWorldPixelRenderer {
         for (const [id, entity] of characterManager?.entities ?? []) {
             if (entity?.group?.visible === false) continue;
             const position = characterRenderPose(entity, alpha);
+            const companion = entity.companion;
+            const companionPose = companion?.sample(alpha);
+            if (companionPose?.world) {
+                this.queue.add({ layer: 20, y: companionPose.world.z,
+                    draw: () => drawWorldCompanion(ctx, this.camera, companion, companionPose) });
+            }
             this.queue.add({
                 layer: 20,
                 y: position?.z ?? 0,
@@ -169,6 +176,7 @@ export default class OpenWorldPixelRenderer {
                     player: entity === characterManager.activeEntity,
                     alpha,
                     reducedMotion,
+                    drawCompanion: false,
                     label: entity === characterManager.activeEntity ? '' : (entity.character?.name ?? entity.character?.slug ?? id),
                 }),
             });

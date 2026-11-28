@@ -155,6 +155,21 @@
           "loop": false
         }
       }
+    },
+    "15.1": {
+      "logicalFrames": 566,
+      "clips": {
+        "idle": { "frames": 2, "fps": 3, "loop": true },
+        "walk": { "frames": 12, "fps": 14, "loop": true },
+        "run": { "frames": 16, "fps": 24, "loop": true },
+        "sprint": { "frames": 16, "fps": 30, "loop": true },
+        "takeoff": { "frames": 2, "fps": 16, "loop": false },
+        "jump": { "frames": 3, "fps": 16, "loop": false },
+        "fall": { "frames": 3, "fps": 16, "loop": false },
+        "land": { "frames": 4, "fps": 25, "loop": false },
+        "slide": { "frames": 4, "fps": 14, "loop": false },
+        "crouch": { "frames": 1, "fps": 1, "loop": false }
+      }
     }
   }
 }

@@ -32,7 +32,7 @@ export default class CanvasAvatarHydrator {
             try {
                 const pack = await this.service.loadPack(current.avatar.slug, current.variant,
                     { background: true, speculative: true });
-                if (this.current === current && this.ready) current.avatar.replaceVisualAssets(pack.image, pack.atlas);
+                if (this.current === current && this.ready) current.avatar.replaceVisualAssets(pack.image, pack.atlas, pack.companionImage);
             } catch {}
         });
     }
