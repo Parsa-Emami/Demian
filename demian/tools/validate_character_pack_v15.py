@@ -1,14 +1,16 @@
 import argparse
 import hashlib
 import json
+from functools import cache
+from itertools import product
 from pathlib import Path
 from statistics import median
 
-from PIL import Image
+from PIL import Image, ImageChops, ImageStat
 
 from audit_dcs_v15_scale_directions import measure_frame
 from character_art_registry import ACTIVE_CHARACTER_DEFINITIONS
-from darya_v15_motion_art import CONTACTS, MOTION_REVISION, VARIANTS as DARYA_VARIANTS
+from darya_v15_motion_art import CELL, CONTACTS, MOTION_REVISION, VARIANTS as DARYA_VARIANTS
 from validate_character_pack_v14 import VARIANTS
 
 ROOT = Path(__file__).resolve().parents[1] / 'public/assets/characters'
@@ -26,6 +28,50 @@ def load(path):
 
 def names(clip):
     return [*clip['frames'], *(name for direction in clip.get('framesByDirection', {}).values() for name in direction)]
+
+
+def darya_head_references(source, layout):
+    row = layout['poses'].index('idle') * CELL
+    with Image.open(source / layout['source']) as image:
+        return {direction: image.crop((i * CELL, row, (i + 1) * CELL, row + CELL)).convert('RGBA')
+                for i, direction in enumerate(DIRECTIONS)}
+
+
+def validate_darya_faces(atlas, image, references, cell):
+    scale = cell / CELL
+    horizontal = [0, *(offset for step in range(1, 8) for offset in (-step, step))]
+    for direction, original in references.items():
+        source_top = original.getchannel('A').point(lambda a: 255 if a > 64 else 0).getbbox()[1]
+
+        @cache
+        def reference_patch(dx, dy):
+            translated = original.transform(original.size, Image.Transform.AFFINE, (1, 0, -dx, 0, 1, -dy))
+            reference = translated.resize((cell, cell), Image.Resampling.LANCZOS)
+            alpha = reference.getchannel('A').crop((0, 0, cell, round((90 + dy) * scale)))
+            opaque = alpha.point(lambda a: 255 if a >= 245 else 0)
+            bounds = opaque.getbbox()
+            return bounds, reference.crop(bounds).convert('RGB'), opaque.crop(bounds)
+
+        frames = set()
+        for view in ('animations', 'sideViewAnimations'):
+            for clip in atlas[view].values():
+                frames.update(clip['framesByDirection'].get(direction, ()))
+        for name in sorted(frames):
+            rect = atlas['frames'][name]
+            x, y = rect['x'], rect['y']
+            frame = image.crop((x, y, x + cell, y + cell))
+            actual_top = frame.getchannel('A').getbbox()[1]
+            observed = frame.convert('RGB')
+            estimated_dy = round(actual_top / scale - source_top)
+            offsets = (estimated_dy + offset for offset in (0, -1, 1, -2, 2, -3, 3))
+            best_error = float('inf')
+            for dx, dy in product(horizontal, offsets):
+                bounds, expected, opaque = reference_patch(dx, dy)
+                difference = ImageChops.difference(expected, observed.crop(bounds))
+                best_error = min(best_error, sum(ImageStat.Stat(difference, mask=opaque).mean) / 3)
+                if best_error <= 7:
+                    break
+            assert best_error <= 7, (atlas['meta']['variant'], name, 'canonical head color error', round(best_error, 2))
 
 
 def validate_pishi(directory, companion):
@@ -60,7 +106,7 @@ def validate_pishi(directory, companion):
         assert len({digests[name] for name in first_names}) == len(DIRECTIONS), state
 
 
-def validate(slug, variant, cell, target):
+def validate(slug, variant, cell, target, references=None):
     directory = ROOT / slug
     atlas_path = directory / f'{slug}-atlas-v15-{variant}.json'
     image_path = directory / f'{slug}-spritesheet-v15-{variant}.png'
@@ -78,6 +124,7 @@ def validate(slug, variant, cell, target):
         assert meta['motionRevision'] == MOTION_REVISION
         assert atlas['render']['directionStepSeconds'] > 0
         assert atlas['motion']['locomotionProfile']['strideLengths'] == {'walk': 2.45, 'run': 3.85, 'sprint': 3.85}
+        assert meta['identitySource'] == '911f54461c9f95bc41222c1a43cfeef8c3212690'
     ratio = atlas['render']['referenceBodyHeightRatio']
     world_height = atlas['display']['worldHeight']
     with Image.open(image_path) as packed:
@@ -148,6 +195,7 @@ def validate(slug, variant, cell, target):
             for direction, frames in side[state]['framesByDirection'].items():
                 assert len(frames) == expected
                 assert len({pixels[rect(name)] for name in frames}) == expected, (variant, direction, state)
+        validate_darya_faces(atlas, image, references, cell)
     return world, side, atlas.get('companion')
 
 
@@ -160,14 +208,19 @@ def validate_character(slug, entry):
     assert layout['character'] == slug and layout['version'] == 15
     assert hashlib.sha256((source / layout['source']).read_bytes()).hexdigest() == layout['source_sha256']
     assert len(layout['poses']) * len(layout['directions']) == 112
+    references = None
     if slug == 'darya':
         for key, filename in layout['motion_art'].items():
             assert hashlib.sha256((source / filename).read_bytes()).hexdigest() == layout['motion_art_sha256'][key]
+        references = darya_head_references(source, layout)
+        expected_preview = references['s'].resize((224, 224), Image.Resampling.LANCZOS).crop((0, 0, 224, 132))
+        with Image.open(ROOT / slug / 'darya-preview-v15.png') as preview:
+            assert preview.convert('RGBA').crop((0, 0, 224, 132)).tobytes() == expected_preview.tobytes()
     targets = manifest['runtime']['atlas_targets']
     assert targets.keys() == VARIANTS.keys()
     expected = None
     for variant, cell in (DARYA_VARIANTS if slug == 'darya' else VARIANTS).items():
-        clips = validate(slug, variant, cell, targets[variant])
+        clips = validate(slug, variant, cell, targets[variant], references)
         if expected is None:
             expected = clips
         assert clips == expected, variant

@@ -8,31 +8,31 @@
   ],
   "candidates": 78,
   "converted": 71,
-  "inputBytes": 120393004,
-  "outputBytes": 98257768,
-  "savedBytes": 22135236,
+  "inputBytes": 120297586,
+  "outputBytes": 98106306,
+  "savedBytes": 22191280,
   "skippedBytes": 2144878,
   "entries": [
     {
       "slug": "darya",
       "variant": "lite",
       "format": "webp",
-      "inputBytes": 165272,
-      "outputBytes": 140180
+      "inputBytes": 155609,
+      "outputBytes": 127666
     },
     {
       "slug": "darya",
       "variant": "runtime",
       "format": "webp",
-      "inputBytes": 432933,
-      "outputBytes": 366910
+      "inputBytes": 409067,
+      "outputBytes": 337308
     },
     {
       "slug": "darya",
       "variant": "detail",
       "format": "webp",
-      "inputBytes": 1066201,
-      "outputBytes": 847632
+      "inputBytes": 1004312,
+      "outputBytes": 738286
     },
     {
       "slug": "setayesh",
@@ -560,5 +560,5 @@
       "outputBytes": 668300
     }
   ],
-  "savingsFraction": 0.18386
+  "savingsFraction": 0.18447
 }

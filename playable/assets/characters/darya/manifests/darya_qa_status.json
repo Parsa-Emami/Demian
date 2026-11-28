@@ -11,7 +11,10 @@
     "companion_standalone": true,
     "side_view_art": "dedicated",
     "js_regressions_passed": 944,
-    "retained_chunk_generations_validated": 6
+    "retained_chunk_generations_validated": 6,
+    "identity_source_commit": "911f54461c9f95bc41222c1a43cfeef8c3212690",
+    "canonical_portrait_head_pixels": true,
+    "canonical_face_in_runtime_atlases": true
   },
   "browser": [
     {
@@ -71,7 +74,7 @@
         "sw",
         "w"
       ],
-      "pishi_max_world_step": 0.13183,
+      "pishi_max_world_step": 0.1315,
       "pishi_runner_hop": "passed",
       "runner_slide": "native-touch-passed"
     },
@@ -193,7 +196,7 @@
         "sw",
         "w"
       ],
-      "pishi_max_world_step": 0.13183,
+      "pishi_max_world_step": 0.1315,
       "pishi_runner_hop": "passed",
       "runner_slide": "keyboard-passed"
     }

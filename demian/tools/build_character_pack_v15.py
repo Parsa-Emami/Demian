@@ -237,6 +237,7 @@ def build_variant(directory, slug, variant, cell, layout, art, sparse, animation
     motion = legacy['motion']
     if companion:
         meta['motionRevision'] = DARYA_MOTION_REVISION
+        meta['identitySource'] = layout['darya_identity']['reference_commit']
         meta['sourceKeyPoseCount'] = len(layout['directions'])
         render.update(referenceBodyWidthRatio=.46, frameOffsetsY=animation_offsets, directionStepSeconds=.046)
         motion['locomotionProfile'].update(strideLengths={
@@ -267,6 +268,8 @@ def build(slug):
         raise ValueError(f'{source}: incorrect character or pack version')
     options = {}
     if slug == 'darya':
+        if hashlib.sha256((source / layout['source']).read_bytes()).hexdigest() != layout['source_sha256']:
+            raise ValueError(f'{source}: canonical Darya sprite revision differs from layout')
         for key, expected in layout['motion_art_sha256'].items():
             if hashlib.sha256((source / layout['motion_art'][key]).read_bytes()).hexdigest() != expected:
                 raise ValueError(f'{source}: invalid {key} turnaround revision')

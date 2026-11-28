@@ -11,6 +11,7 @@
   ],
   "pack_version": 15,
   "motion_revision": "15.1",
-  "turnaround": "../source-v15/solo-turnaround.webp",
-  "companion_turnaround": "../source-v15/pishi-turnaround.webp"
+  "turnaround": "../source-v15/poses.webp",
+  "companion_turnaround": "../source-v15/pishi-turnaround.webp",
+  "identity_source_commit": "911f54461c9f95bc41222c1a43cfeef8c3212690"
 }

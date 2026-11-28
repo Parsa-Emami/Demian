@@ -130,16 +130,267 @@
     "normalization": "Uniform art scale taken from upright or contact poses per source strip, with one torso anchor and grounded foot line. The companion stays on its screen side for each facing and follows the shared feet pivot in the air."
   },
   "motion_art": {
-    "darya": "solo-turnaround.webp",
     "pishi": "pishi-turnaround.webp"
   },
   "motion_art_sha256": {
-    "darya": "f2086a8e2c591fb6a7d9fa9e51f63c39d3e4e7a22880aadb1817b056860c9a49",
     "pishi": "8e24fbc6025b92a0890ffe8856eee6eeb764cb59d0f0878535bd138117fa5641"
   },
   "motion_art_provenance": {
     "revision": "15.1",
-    "generated_with": "OpenAI ImageGen using the shipped V15 silhouettes as reference",
-    "motion": "Eight individually drawn directions per character. Walk and run poses are independently rasterized from articulated rig key poses, with separate front and back limbs. Dino Run uses its own side projection and action clips."
+    "darya": "Canonical V15 idle portraits used as original pixels; directed masks remove the old companion silhouette below the face and hair. Articulated poses carry the original upper-body layer with integer translation.",
+    "pishi": "OpenAI ImageGen using the shipped V15 Pishi silhouettes as reference; separate spritesheet and motion rig."
+  },
+  "darya_identity": {
+    "reference_commit": "911f54461c9f95bc41222c1a43cfeef8c3212690",
+    "companion_edge": {
+      "s": {
+        "keep": "right",
+        "points": [
+          [
+            61,
+            106
+          ],
+          [
+            62,
+            112
+          ],
+          [
+            63,
+            120
+          ],
+          [
+            64,
+            126
+          ],
+          [
+            63,
+            132
+          ],
+          [
+            61,
+            141
+          ],
+          [
+            61,
+            150
+          ]
+        ]
+      },
+      "sw": {
+        "keep": "right",
+        "points": [
+          [
+            63,
+            105
+          ],
+          [
+            63,
+            116
+          ],
+          [
+            64,
+            125
+          ],
+          [
+            64,
+            134
+          ],
+          [
+            60,
+            139
+          ],
+          [
+            60,
+            151
+          ]
+        ]
+      },
+      "w": {
+        "keep": "left",
+        "points": [
+          [
+            93,
+            105
+          ],
+          [
+            86,
+            109
+          ],
+          [
+            83,
+            115
+          ],
+          [
+            82,
+            119
+          ],
+          [
+            82,
+            133
+          ],
+          [
+            82,
+            151
+          ]
+        ]
+      },
+      "nw": {
+        "keep": "left",
+        "points": [
+          [
+            100,
+            106
+          ],
+          [
+            86,
+            109
+          ],
+          [
+            86,
+            117
+          ],
+          [
+            86,
+            136
+          ],
+          [
+            87,
+            148
+          ],
+          [
+            86,
+            151
+          ]
+        ]
+      },
+      "n": {
+        "keep": "left",
+        "points": [
+          [
+            112,
+            105
+          ],
+          [
+            101,
+            110
+          ],
+          [
+            99,
+            115
+          ],
+          [
+            98,
+            125
+          ],
+          [
+            98,
+            152
+          ]
+        ]
+      },
+      "ne": {
+        "keep": "left",
+        "points": [
+          [
+            113,
+            106
+          ],
+          [
+            106,
+            112
+          ],
+          [
+            106,
+            120
+          ],
+          [
+            103,
+            126
+          ],
+          [
+            103,
+            139
+          ],
+          [
+            105,
+            151
+          ]
+        ]
+      },
+      "e": {
+        "keep": "right",
+        "points": [
+          [
+            67,
+            107
+          ],
+          [
+            77,
+            112
+          ],
+          [
+            84,
+            119
+          ],
+          [
+            84,
+            129
+          ],
+          [
+            81,
+            139
+          ],
+          [
+            80,
+            151
+          ]
+        ]
+      },
+      "se": {
+        "keep": "right",
+        "points": [
+          [
+            68,
+            105
+          ],
+          [
+            73,
+            109
+          ],
+          [
+            74,
+            113
+          ],
+          [
+            75,
+            119
+          ],
+          [
+            76,
+            124
+          ],
+          [
+            74,
+            128
+          ],
+          [
+            72,
+            135
+          ],
+          [
+            72,
+            140
+          ],
+          [
+            69,
+            146
+          ],
+          [
+            69,
+            152
+          ]
+        ]
+      }
+    }
   }
 }

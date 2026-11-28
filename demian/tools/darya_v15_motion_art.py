@@ -1,6 +1,6 @@
 import math
 
-from PIL import Image, ImageDraw
+from PIL import Image, ImageChops, ImageDraw, ImageFilter
 
 
 DIRECTIONS = ('s', 'sw', 'w', 'nw', 'n', 'ne', 'e', 'se')
@@ -33,6 +33,34 @@ def crop_views(path, cell):
             raise ValueError(f'Sprite turnaround has invalid dimensions: {path}')
         return {direction: sheet.crop((i * cell, 0, (i + 1) * cell, cell)).convert('RGBA')
                 for i, direction in enumerate(DIRECTIONS)}
+
+
+def canonical_darya_views(source, layout):
+    row = layout['poses'].index('idle') * CELL
+    views = {}
+    with Image.open(source / layout['source']) as sheet:
+        if sheet.size != (CELL * len(DIRECTIONS), CELL * len(layout['poses'])):
+            raise ValueError('The canonical Darya sheet does not match its frame layout')
+        for i, direction in enumerate(DIRECTIONS):
+            frame = sheet.crop((i * CELL, row, (i + 1) * CELL, row + CELL)).convert('RGBA')
+            mask = Image.new('L', (CELL, CELL))
+            edge = layout['darya_identity']['companion_edge'][direction]
+            outer_x = CELL - 1 if edge['keep'] == 'right' else 0
+            inner_x = CELL - 1 - outer_x
+            boundary = [tuple(point) for point in edge['points']]
+            points = [*boundary, (boundary[-1][0], CELL - 1), (outer_x, CELL - 1),
+                      (outer_x, 0), (inner_x, 0), (inner_x, boundary[0][1] - 1)]
+            ImageDraw.Draw(mask).polygon(points, fill=255)
+            alpha = ImageChops.multiply(frame.getchannel('A'), mask)
+            connected = alpha.point(lambda value: 255 if value >= 48 else 0)
+            if connected.getpixel((80, 66)) == 0:
+                raise ValueError(f'Darya identity mask does not contain the head for {direction}')
+            ImageDraw.floodfill(connected, (80, 66), 128)
+            outline = connected.point(lambda value: 255 if value == 128 else 0).filter(ImageFilter.MaxFilter(3))
+            outline.paste(255, (0, 0, CELL, 100))
+            frame.putalpha(ImageChops.multiply(alpha, outline))
+            views[direction] = frame
+    return views
 
 
 def ease(value):
@@ -68,14 +96,14 @@ def capsule(draw, a, b, start, end, fill, outline):
 
 
 def prepare_upper_body(frame, direction):
-    cut = {'s': 112, 'sw': 112, 'w': 113, 'nw': 112, 'n': 113, 'ne': 112, 'e': 113, 'se': 113}[direction]
+    cut = {'s': 114, 'sw': 114, 'w': 112, 'nw': 115, 'n': 116, 'ne': 115, 'e': 113, 'se': 116}[direction]
     top = frame.crop((0, 0, CELL, cut))
     alpha = top.getchannel('A')
     draw = ImageDraw.Draw(alpha)
     sleeves = {
-        's': [(61, 105, 68), (93, 105, 99)], 'sw': [(64, 104, 69), (86, 105, 94)],
-        'w': [(74, 106, 84)], 'nw': [(61, 105, 71)], 'n': [(61, 110, 69), (92, 110, 99)],
-        'ne': [(87, 107, 97)], 'e': [(74, 106, 83)], 'se': [(63, 105, 74), (90, 105, 98)],
+        's': [(61, 105, 69), (94, 105, 104)], 'sw': [(60, 105, 69), (92, 105, 103)],
+        'w': [(59, 104, 75)], 'nw': [(52, 104, 64)], 'n': [(58, 109, 66), (92, 109, 100)],
+        'ne': [(67, 109, 73), (94, 106, 107)], 'e': [(88, 104, 106)], 'se': [(72, 105, 81), (101, 105, 109)],
     }
     for left, y, right in sleeves[direction]:
         draw.rectangle((left, y, right, cut), fill=0)
@@ -83,6 +111,12 @@ def prepare_upper_body(frame, direction):
     upper = Image.new('RGBA', (CELL, CELL))
     upper.paste(top)
     return upper
+
+
+def standing_heel_x(frame):
+    left, _, right, _ = frame.getchannel('A').crop((0, 140, CELL, GROUND)).point(
+        lambda alpha: 255 if alpha > 64 else 0).getbbox()
+    return (left + right - 1) / 2
 
 
 def pose_parameters(state, phase):
@@ -99,7 +133,7 @@ def pose_parameters(state, phase):
     t = ease(phase)
     if state == 'slide':
         tuck = math.sin(phase * math.pi / 2)
-        return [(16 + 9 * tuck, 0), (6 + 12 * tuck, 0)], 10.5 - 3 * tuck, -4, -.5 - .3 * t, -.8
+        return [(16 + 9 * tuck, 0), (6 + 12 * tuck, 0)], 8.5 - 3 * tuck, -4, -.5 - .3 * t, -.8
     if state == 'takeoff':
         return [(3 + 7 * t, 4 * t), (-4, 7 * t)], 28 + 8 * t, 3 + 3 * t, .7, .35
     if state == 'jump':
@@ -107,7 +141,7 @@ def pose_parameters(state, phase):
     if state == 'fall':
         return [(10 - 5 * t, 14 - 11 * t), (-5 + 2 * t, 17 - 14 * t)], 33 + 2 * t, 0, -.45, .28
     if state == 'land':
-        return [(4 * (1 - t), 0), (-3 * (1 - t), 0)], 11.5 + 24.5 * phase ** .78, 5 * (1 - t), -.7 * (1 - t), -.35 * (1 - t)
+        return [(4 * (1 - t), 0), (-3 * (1 - t), 0)], 9.5 + 26.5 * phase ** .78, 5 * (1 - t), -.7 * (1 - t), -.35 * (1 - t)
     if state == 'start':
         return [(12 * t, 7 * t), (-6 * t, 0)], 36 - 3 * t, 4 * t, .8 * t, 0
     if state == 'stop':
@@ -130,16 +164,17 @@ def support_depth(feet, phase, stance, forward_z):
     return (1 - GROUND_DEPTH) * forward_z * primary
 
 
-def paint_darya(seed, upper, direction, state, phase, *, side=False):
+def paint_darya(seed, upper, heel_x, direction, state, phase, *, side=False):
     if (phase == 0 and state in ('idle', 'start', 'wave')) or (phase == 1 and state in ('land', 'stop', 'wave')):
         return seed, 0
     if state == 'idle':
-        return seed.transform(seed.size, Image.Transform.AFFINE, (1, 0, 0, 0, 1.012, -.012 * GROUND),
-                              Image.Resampling.BICUBIC), 0
+        breathing = seed.copy()
+        breathing.paste(seed.crop((0, 0, CELL, 117)), (0, -1))
+        return breathing, 0
 
     feet, hip, lean, pump, gesture = pose_parameters(state, phase)
     fx, fz = direction_vector(direction)
-    origin = (80, GROUND if side else GROUND - 23)
+    origin = (heel_x, GROUND if side else GROUND - 23)
     scale = 2
     frame = Image.new('RGBA', (CELL * scale, CELL * scale))
     draw = ImageDraw.Draw(frame)
@@ -171,7 +206,7 @@ def paint_darya(seed, upper, direction, state, phase, *, side=False):
 
     arms = sorted((-1, 1), key=lambda sign: -sign * fx)
 
-    def arm(sign):
+    def arm(draw, sign):
         shoulder = (sign * 13.7, hip + 13.5, lean + 1)
         counter = sign * pump
         bend = state in ('run', 'takeoff', 'jump', 'fall')
@@ -184,16 +219,19 @@ def paint_darya(seed, upper, direction, state, phase, *, side=False):
         capsule(draw, b, c, 5.5, 6.5, '#d99771', '#512e23')
         draw.ellipse((c[0] - 3, c[1] - 3, c[0] + 3, c[1] + 2), fill='#efb38e')
 
-    arm(arms[0])
-    tilt = fx * (-27 if state == 'slide' else -lean * 1.06)
-    torso = upper.rotate(tilt, Image.Resampling.BICUBIC, center=(80, 111), translate=(
-        round(fx * lean), round(36 - hip + (origin[1] - GROUND) + fz * lean * .45)))
-    frame.alpha_composite(torso.resize(frame.size, Image.Resampling.LANCZOS))
+    arm(draw, arms[0])
+    composite = frame.resize((CELL, CELL), Image.Resampling.LANCZOS)
+    upper_x = round(fx * lean)
+    upper_y = round(36 - hip + origin[1] - GROUND + fz * lean * .45)
+    composite.alpha_composite(upper, (upper_x, upper_y))
     if fz > -.9 or state == 'wave':
-        arm(arms[1])
-    if state == 'wave' and fz <= -.9:
-        arm(arms[0])
-    frame = frame.resize((CELL, CELL), Image.Resampling.LANCZOS)
+        foreground = Image.new('RGBA', frame.size)
+        draw = ImageDraw.Draw(foreground)
+        arm(draw, arms[1])
+        if fz <= -.9:
+            arm(draw, arms[0])
+        composite.alpha_composite(foreground.resize((CELL, CELL), Image.Resampling.LANCZOS))
+    frame = composite
     bounds = frame.getchannel('A').point(lambda alpha: 255 if alpha > 32 else 0).getbbox()
     if not bounds:
         raise ValueError(f'Empty Darya pose: {direction}/{state}/{phase}')
@@ -208,8 +246,9 @@ def paint_darya(seed, upper, direction, state, phase, *, side=False):
 
 
 def build_darya_art(source, layout):
-    views = crop_views(source / layout['motion_art']['darya'], CELL)
+    views = canonical_darya_views(source, layout)
     uppers = {direction: prepare_upper_body(view, direction) for direction, view in views.items()}
+    heel_x = {direction: standing_heel_x(view) for direction, view in views.items()}
     art, offsets, animations, side_animations = {}, {}, {}, {}
     for side, facing, motions, clips in [
         (False, DIRECTIONS, MOTION_COUNTS, animations),
@@ -225,7 +264,8 @@ def build_darya_art(source, layout):
                 for i in range(count):
                     phase = i / (count if loop else max(1, count - 1))
                     name = f'{space}_{direction}_{state}-{i:02}' if not side else f'side_{state}_{direction}_{i:02}'
-                    art[name], y = paint_darya(views[direction], uppers[direction], direction, state, phase, side=side)
+                    art[name], y = paint_darya(views[direction], uppers[direction], heel_x[direction],
+                                               direction, state, phase, side=side)
                     if y:
                         offsets[name] = round(y / CELL, 6)
                     sequence.append(name)

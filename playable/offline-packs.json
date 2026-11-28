@@ -1,8 +1,8 @@
 {
   "schema": 1,
-  "release": "b9f91836e0fec816",
+  "release": "64f11148827b03f8",
   "maxPackBytes": 100663296,
-  "coreBytes": 15802251,
+  "coreBytes": 15790946,
   "core": [
     {
       "path": "assets/characters/ainaz/ainaz-atlas-v14-lite.json",
@@ -76,16 +76,16 @@
     },
     {
       "path": "assets/characters/darya/darya-atlas-v15-lite.json",
-      "bytes": 89089,
-      "sha256": "f5780e18b74e9e593513faafbb970f99257222604d2ebce44b9bafd0a86ee265"
+      "bytes": 89149,
+      "sha256": "17ba76c53e19654318a61439d6698711ed574ef39b8c089ced7f5b0efcdca77a"
     },
     {
       "path": "assets/characters/darya/darya-preview-v15.png",
-      "bytes": 29976
+      "bytes": 31125
     },
     {
       "path": "assets/characters/darya/darya-spritesheet-v15-lite.webp",
-      "bytes": 140180
+      "bytes": 127666
     },
     {
       "path": "assets/characters/darya/pishi-preview-v15-1.png",
@@ -513,7 +513,7 @@
     {
       "id": "open-world",
       "bytes": 454026,
-      "totalBytes": 16256277,
+      "totalBytes": 16244972,
       "files": [
         {
           "path": "assets/environments/demian-fbx/polished-v1/lod-1024/0-0.webp",
@@ -630,7 +630,7 @@
     {
       "id": "dino-run",
       "bytes": 152062,
-      "totalBytes": 15954313,
+      "totalBytes": 15943008,
       "files": [
         {
           "path": "assets/environments/demian-fbx/floorplan.webp",
@@ -666,7 +666,7 @@
     {
       "id": "after-hours",
       "bytes": 498229,
-      "totalBytes": 16300480,
+      "totalBytes": 16289175,
       "files": [
         {
           "path": "assets/environments/demian-fbx/floorplan-detail.webp",
@@ -727,7 +727,7 @@
     {
       "id": "cafe-rush",
       "bytes": 503841,
-      "totalBytes": 16306092,
+      "totalBytes": 16294787,
       "files": [
         {
           "path": "assets/environments/demian-fbx/floorplan-detail.webp",
@@ -793,7 +793,7 @@
     {
       "id": "cafe-critters",
       "bytes": 283616,
-      "totalBytes": 16085867,
+      "totalBytes": 16074562,
       "files": [
         {
           "path": "assets/environments/demian-fbx/polished-v1/lod-1024/0-0.webp",
@@ -920,7 +920,7 @@
     {
       "id": "coffee-crash",
       "bytes": 168414,
-      "totalBytes": 15970665,
+      "totalBytes": 15959360,
       "files": [
         {
           "path": "assets/environments/demian-fbx/floorplan.webp",
@@ -966,7 +966,7 @@
     {
       "id": "cafe-drift",
       "bytes": 22138,
-      "totalBytes": 15824389,
+      "totalBytes": 15813084,
       "files": [
         {
           "path": "build/assets/CafeCueAudio-CnkMuVoO.js",

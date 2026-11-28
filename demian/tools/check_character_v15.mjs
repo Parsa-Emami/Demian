@@ -231,11 +231,13 @@ try {
         const pack = await page.evaluate(() => {
             const avatar = window.demianGameApplication.activeGame.avatar;
             return {variant:avatar.atlas.meta.variant, version:avatar.atlas.meta.version,
+                identitySource:avatar.atlas.meta.identitySource,
                 actualRevision:new URL(avatar.texture.image.src).searchParams.get('sprite_rev'),
                 expectedRevision:avatar.atlas.meta.imageRevision};
         });
         assert.equal(pack.actualRevision, pack.expectedRevision);
         assert.equal(pack.version, 15);
+        if (character === 'darya') assert.equal(pack.identitySource, '911f54461c9f95bc41222c1a43cfeef8c3212690');
         assert.match(await page.evaluate(() => window.demianGameApplication.activeGame.avatar.animator.currentFrameName()), /^side_slide_e_/);
         await page.screenshot({path:resolve(screenshots, `${character}-slide-${width}.png`)});
         if (touch) await touch.send('Input.dispatchTouchEvent', {type:'touchEnd',touchPoints:[]});
@@ -272,13 +274,16 @@ try {
         await page.waitForFunction(() => { const e=window.demianGameApplication.characterManager.activeEntity; return e.grounded && e.stateLock<=0; });
         const directionalMotion = character === 'darya' ? await inspectDaryaMotion(page) : null;
         const observed = new Set();
-        for (const keys of [['d'], ['d','s'], ['s'], ['a','s'], ['a'], ['a','w'], ['w'], ['d','w']]) {
+        for (const [expectedDirection, keys] of [
+            ['e', ['d']], ['se', ['d','s']], ['s', ['s']], ['sw', ['a','s']],
+            ['w', ['a']], ['nw', ['a','w']], ['n', ['w']], ['ne', ['d','w']],
+        ]) {
             for (const key of keys) await page.keyboard.down(key);
-            await page.waitForTimeout(character === 'darya' ? 240 : 100);
-            await page.waitForFunction(() => {
+            await page.waitForFunction(expected => {
                 const actor = window.demianGameApplication.characterManager.activeEntity;
-                return actor.state === 'walk' && actor.animator.currentFrameName()?.startsWith('world_');
-            });
+                return actor.state === 'walk' && actor.direction === expected
+                    && actor.animator.currentFrameName()?.startsWith(`world_${expected}_walk-`);
+            }, expectedDirection);
             const { direction, frame, version } = await page.evaluate(() => {
                 const actor = window.demianGameApplication.characterManager.activeEntity;
                 return { direction: actor.direction, frame: actor.animator.currentFrameName(), version: actor.atlas.meta.version };
