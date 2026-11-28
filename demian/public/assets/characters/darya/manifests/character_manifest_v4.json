@@ -33,8 +33,7 @@
     "hop",
     "hover",
     "dodge",
-    "salute",
-    "companion"
+    "salute"
   ],
   "runtime": {
     "identity_manifest": "darya_identity_contract.json",

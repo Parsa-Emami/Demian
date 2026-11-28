@@ -103,6 +103,7 @@
     },
     "15": {
       "logicalFrames": 286,
+      "logicalFramesByCharacter": { "darya": 294 },
       "clips": {
         "idle": {
           "frames": 4,

@@ -25,6 +25,7 @@ function fixture(t) {
         'privacy/index.html','terms/index.html','competition-rules/index.html',
         'build/assets/app-test.js','build/assets/app-test.css','build/assets/font-a.woff2',
         'assets/characters/character-manifest-v4.json','assets/characters/master-motion-v1.json',
+        'assets/companions/pishi/atlas.json', 'assets/companions/pishi/pishi.webp', 'assets/companions/pishi/portrait.webp',
         'assets/environments/cafe-runner-v1/wordmark.png','assets/environments/cafe-runner-v1/interior.webp',
         'assets/environments/demian-fbx/polished-v1/preview.webp',
         'assets/lobby/demian-at-dusk.webp', ...OFFLINE_GAME_IDS.map(id=>'assets/lobby/'+id+'.webp'),

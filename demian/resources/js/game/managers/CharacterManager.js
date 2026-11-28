@@ -22,7 +22,6 @@ const BUILTIN_DEFINITIONS = Object.freeze(BUILTIN_CHARACTER_SLUGS.map((slug) => 
     settings: { ...CHARACTER_MOVEMENT_SETTINGS, asset_pack_version: characterManifestEntry(slug).packVersion,
         production_status: characterManifestEntry(slug).productionStatus,
         locomotion_style: characterManifestEntry(slug).locomotionStyle ?? 'ground-runner',
-        ...(slug === 'darya' ? { companion: 'pishi', companion_always_visible: true } : {}),
         ...(slug === 'tiam' ? { companion: 'homayoun', companion_always_visible: true } : {}),
         ...(characterManifestEntry(slug).locomotionStyle === 'wing-assisted' ? { signature_action: 'slide' } : {}),
     },

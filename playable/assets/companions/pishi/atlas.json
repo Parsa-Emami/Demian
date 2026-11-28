@@ -1,0 +1,675 @@
+{
+  "meta": {
+    "slug": "pishi",
+    "image": "pishi.webp",
+    "imageRevision": "a3c1f4c4db15c42c077ed523d80702ae1d966f385dcb212d6005a50e33d42afb"
+  },
+  "pivot": {
+    "x": 0.5,
+    "y": 0.9423076923076923
+  },
+  "display": {
+    "worldWidth": 1.3,
+    "worldHeight": 1.3
+  },
+  "render": {
+    "lockBodyScale": true,
+    "smoothSampling": true,
+    "referenceBodyHeightRatio": 0.8
+  },
+  "motion": {
+    "locomotionProfile": {
+      "strideLengths": {
+        "walk": 1.35,
+        "run": 2.4
+      },
+      "maxStrideHz": 3.5
+    }
+  },
+  "frames": {
+    "s_idle": {
+      "x": 0,
+      "y": 0,
+      "w": 64,
+      "h": 64
+    },
+    "s_idle-breathe": {
+      "x": 64,
+      "y": 0,
+      "w": 64,
+      "h": 64
+    },
+    "sw_idle": {
+      "x": 128,
+      "y": 0,
+      "w": 64,
+      "h": 64
+    },
+    "sw_idle-breathe": {
+      "x": 192,
+      "y": 0,
+      "w": 64,
+      "h": 64
+    },
+    "w_idle": {
+      "x": 256,
+      "y": 0,
+      "w": 64,
+      "h": 64
+    },
+    "w_idle-breathe": {
+      "x": 320,
+      "y": 0,
+      "w": 64,
+      "h": 64
+    },
+    "nw_idle": {
+      "x": 384,
+      "y": 0,
+      "w": 64,
+      "h": 64
+    },
+    "nw_idle-breathe": {
+      "x": 448,
+      "y": 0,
+      "w": 64,
+      "h": 64
+    },
+    "n_idle": {
+      "x": 0,
+      "y": 64,
+      "w": 64,
+      "h": 64
+    },
+    "n_idle-breathe": {
+      "x": 64,
+      "y": 64,
+      "w": 64,
+      "h": 64
+    },
+    "ne_idle": {
+      "x": 128,
+      "y": 64,
+      "w": 64,
+      "h": 64
+    },
+    "ne_idle-breathe": {
+      "x": 192,
+      "y": 64,
+      "w": 64,
+      "h": 64
+    },
+    "e_idle": {
+      "x": 256,
+      "y": 64,
+      "w": 64,
+      "h": 64
+    },
+    "e_idle-breathe": {
+      "x": 320,
+      "y": 64,
+      "w": 64,
+      "h": 64
+    },
+    "se_idle": {
+      "x": 384,
+      "y": 64,
+      "w": 64,
+      "h": 64
+    },
+    "se_idle-breathe": {
+      "x": 448,
+      "y": 64,
+      "w": 64,
+      "h": 64
+    },
+    "s_walk-a": {
+      "x": 0,
+      "y": 128,
+      "w": 64,
+      "h": 64
+    },
+    "s_walk-pass-a": {
+      "x": 64,
+      "y": 128,
+      "w": 64,
+      "h": 64
+    },
+    "s_walk-b": {
+      "x": 128,
+      "y": 128,
+      "w": 64,
+      "h": 64
+    },
+    "s_walk-pass-b": {
+      "x": 192,
+      "y": 128,
+      "w": 64,
+      "h": 64
+    },
+    "sw_walk-a": {
+      "x": 256,
+      "y": 128,
+      "w": 64,
+      "h": 64
+    },
+    "sw_walk-pass-a": {
+      "x": 320,
+      "y": 128,
+      "w": 64,
+      "h": 64
+    },
+    "sw_walk-b": {
+      "x": 384,
+      "y": 128,
+      "w": 64,
+      "h": 64
+    },
+    "sw_walk-pass-b": {
+      "x": 448,
+      "y": 128,
+      "w": 64,
+      "h": 64
+    },
+    "w_walk-a": {
+      "x": 0,
+      "y": 192,
+      "w": 64,
+      "h": 64
+    },
+    "w_walk-pass-a": {
+      "x": 64,
+      "y": 192,
+      "w": 64,
+      "h": 64
+    },
+    "w_walk-b": {
+      "x": 128,
+      "y": 192,
+      "w": 64,
+      "h": 64
+    },
+    "w_walk-pass-b": {
+      "x": 192,
+      "y": 192,
+      "w": 64,
+      "h": 64
+    },
+    "nw_walk-a": {
+      "x": 256,
+      "y": 192,
+      "w": 64,
+      "h": 64
+    },
+    "nw_walk-pass-a": {
+      "x": 320,
+      "y": 192,
+      "w": 64,
+      "h": 64
+    },
+    "nw_walk-b": {
+      "x": 384,
+      "y": 192,
+      "w": 64,
+      "h": 64
+    },
+    "nw_walk-pass-b": {
+      "x": 448,
+      "y": 192,
+      "w": 64,
+      "h": 64
+    },
+    "n_walk-a": {
+      "x": 0,
+      "y": 256,
+      "w": 64,
+      "h": 64
+    },
+    "n_walk-pass-a": {
+      "x": 64,
+      "y": 256,
+      "w": 64,
+      "h": 64
+    },
+    "n_walk-b": {
+      "x": 128,
+      "y": 256,
+      "w": 64,
+      "h": 64
+    },
+    "n_walk-pass-b": {
+      "x": 192,
+      "y": 256,
+      "w": 64,
+      "h": 64
+    },
+    "ne_walk-a": {
+      "x": 256,
+      "y": 256,
+      "w": 64,
+      "h": 64
+    },
+    "ne_walk-pass-a": {
+      "x": 320,
+      "y": 256,
+      "w": 64,
+      "h": 64
+    },
+    "ne_walk-b": {
+      "x": 384,
+      "y": 256,
+      "w": 64,
+      "h": 64
+    },
+    "ne_walk-pass-b": {
+      "x": 448,
+      "y": 256,
+      "w": 64,
+      "h": 64
+    },
+    "e_walk-a": {
+      "x": 0,
+      "y": 320,
+      "w": 64,
+      "h": 64
+    },
+    "e_walk-pass-a": {
+      "x": 64,
+      "y": 320,
+      "w": 64,
+      "h": 64
+    },
+    "e_walk-b": {
+      "x": 128,
+      "y": 320,
+      "w": 64,
+      "h": 64
+    },
+    "e_walk-pass-b": {
+      "x": 192,
+      "y": 320,
+      "w": 64,
+      "h": 64
+    },
+    "se_walk-a": {
+      "x": 256,
+      "y": 320,
+      "w": 64,
+      "h": 64
+    },
+    "se_walk-pass-a": {
+      "x": 320,
+      "y": 320,
+      "w": 64,
+      "h": 64
+    },
+    "se_walk-b": {
+      "x": 384,
+      "y": 320,
+      "w": 64,
+      "h": 64
+    },
+    "se_walk-pass-b": {
+      "x": 448,
+      "y": 320,
+      "w": 64,
+      "h": 64
+    },
+    "s_run-a": {
+      "x": 0,
+      "y": 384,
+      "w": 64,
+      "h": 64
+    },
+    "s_run-float-a": {
+      "x": 64,
+      "y": 384,
+      "w": 64,
+      "h": 64
+    },
+    "s_run-b": {
+      "x": 128,
+      "y": 384,
+      "w": 64,
+      "h": 64
+    },
+    "s_run-float-b": {
+      "x": 192,
+      "y": 384,
+      "w": 64,
+      "h": 64
+    },
+    "sw_run-a": {
+      "x": 256,
+      "y": 384,
+      "w": 64,
+      "h": 64
+    },
+    "sw_run-float-a": {
+      "x": 320,
+      "y": 384,
+      "w": 64,
+      "h": 64
+    },
+    "sw_run-b": {
+      "x": 384,
+      "y": 384,
+      "w": 64,
+      "h": 64
+    },
+    "sw_run-float-b": {
+      "x": 448,
+      "y": 384,
+      "w": 64,
+      "h": 64
+    },
+    "w_run-a": {
+      "x": 0,
+      "y": 448,
+      "w": 64,
+      "h": 64
+    },
+    "w_run-float-a": {
+      "x": 64,
+      "y": 448,
+      "w": 64,
+      "h": 64
+    },
+    "w_run-b": {
+      "x": 128,
+      "y": 448,
+      "w": 64,
+      "h": 64
+    },
+    "w_run-float-b": {
+      "x": 192,
+      "y": 448,
+      "w": 64,
+      "h": 64
+    },
+    "nw_run-a": {
+      "x": 256,
+      "y": 448,
+      "w": 64,
+      "h": 64
+    },
+    "nw_run-float-a": {
+      "x": 320,
+      "y": 448,
+      "w": 64,
+      "h": 64
+    },
+    "nw_run-b": {
+      "x": 384,
+      "y": 448,
+      "w": 64,
+      "h": 64
+    },
+    "nw_run-float-b": {
+      "x": 448,
+      "y": 448,
+      "w": 64,
+      "h": 64
+    },
+    "n_run-a": {
+      "x": 0,
+      "y": 512,
+      "w": 64,
+      "h": 64
+    },
+    "n_run-float-a": {
+      "x": 64,
+      "y": 512,
+      "w": 64,
+      "h": 64
+    },
+    "n_run-b": {
+      "x": 128,
+      "y": 512,
+      "w": 64,
+      "h": 64
+    },
+    "n_run-float-b": {
+      "x": 192,
+      "y": 512,
+      "w": 64,
+      "h": 64
+    },
+    "ne_run-a": {
+      "x": 256,
+      "y": 512,
+      "w": 64,
+      "h": 64
+    },
+    "ne_run-float-a": {
+      "x": 320,
+      "y": 512,
+      "w": 64,
+      "h": 64
+    },
+    "ne_run-b": {
+      "x": 384,
+      "y": 512,
+      "w": 64,
+      "h": 64
+    },
+    "ne_run-float-b": {
+      "x": 448,
+      "y": 512,
+      "w": 64,
+      "h": 64
+    },
+    "e_run-a": {
+      "x": 0,
+      "y": 576,
+      "w": 64,
+      "h": 64
+    },
+    "e_run-float-a": {
+      "x": 64,
+      "y": 576,
+      "w": 64,
+      "h": 64
+    },
+    "e_run-b": {
+      "x": 128,
+      "y": 576,
+      "w": 64,
+      "h": 64
+    },
+    "e_run-float-b": {
+      "x": 192,
+      "y": 576,
+      "w": 64,
+      "h": 64
+    },
+    "se_run-a": {
+      "x": 256,
+      "y": 576,
+      "w": 64,
+      "h": 64
+    },
+    "se_run-float-a": {
+      "x": 320,
+      "y": 576,
+      "w": 64,
+      "h": 64
+    },
+    "se_run-b": {
+      "x": 384,
+      "y": 576,
+      "w": 64,
+      "h": 64
+    },
+    "se_run-float-b": {
+      "x": 448,
+      "y": 576,
+      "w": 64,
+      "h": 64
+    }
+  },
+  "animations": {
+    "idle": {
+      "frames": [
+        "s_idle",
+        "s_idle-breathe"
+      ],
+      "framesByDirection": {
+        "s": [
+          "s_idle",
+          "s_idle-breathe"
+        ],
+        "sw": [
+          "sw_idle",
+          "sw_idle-breathe"
+        ],
+        "w": [
+          "w_idle",
+          "w_idle-breathe"
+        ],
+        "nw": [
+          "nw_idle",
+          "nw_idle-breathe"
+        ],
+        "n": [
+          "n_idle",
+          "n_idle-breathe"
+        ],
+        "ne": [
+          "ne_idle",
+          "ne_idle-breathe"
+        ],
+        "e": [
+          "e_idle",
+          "e_idle-breathe"
+        ],
+        "se": [
+          "se_idle",
+          "se_idle-breathe"
+        ]
+      },
+      "fps": 3,
+      "loop": true
+    },
+    "walk": {
+      "frames": [
+        "s_walk-a",
+        "s_walk-pass-a",
+        "s_walk-b",
+        "s_walk-pass-b"
+      ],
+      "framesByDirection": {
+        "s": [
+          "s_walk-a",
+          "s_walk-pass-a",
+          "s_walk-b",
+          "s_walk-pass-b"
+        ],
+        "sw": [
+          "sw_walk-a",
+          "sw_walk-pass-a",
+          "sw_walk-b",
+          "sw_walk-pass-b"
+        ],
+        "w": [
+          "w_walk-a",
+          "w_walk-pass-a",
+          "w_walk-b",
+          "w_walk-pass-b"
+        ],
+        "nw": [
+          "nw_walk-a",
+          "nw_walk-pass-a",
+          "nw_walk-b",
+          "nw_walk-pass-b"
+        ],
+        "n": [
+          "n_walk-a",
+          "n_walk-pass-a",
+          "n_walk-b",
+          "n_walk-pass-b"
+        ],
+        "ne": [
+          "ne_walk-a",
+          "ne_walk-pass-a",
+          "ne_walk-b",
+          "ne_walk-pass-b"
+        ],
+        "e": [
+          "e_walk-a",
+          "e_walk-pass-a",
+          "e_walk-b",
+          "e_walk-pass-b"
+        ],
+        "se": [
+          "se_walk-a",
+          "se_walk-pass-a",
+          "se_walk-b",
+          "se_walk-pass-b"
+        ]
+      },
+      "fps": 8,
+      "loop": true
+    },
+    "run": {
+      "frames": [
+        "s_run-a",
+        "s_run-float-a",
+        "s_run-b",
+        "s_run-float-b"
+      ],
+      "framesByDirection": {
+        "s": [
+          "s_run-a",
+          "s_run-float-a",
+          "s_run-b",
+          "s_run-float-b"
+        ],
+        "sw": [
+          "sw_run-a",
+          "sw_run-float-a",
+          "sw_run-b",
+          "sw_run-float-b"
+        ],
+        "w": [
+          "w_run-a",
+          "w_run-float-a",
+          "w_run-b",
+          "w_run-float-b"
+        ],
+        "nw": [
+          "nw_run-a",
+          "nw_run-float-a",
+          "nw_run-b",
+          "nw_run-float-b"
+        ],
+        "n": [
+          "n_run-a",
+          "n_run-float-a",
+          "n_run-b",
+          "n_run-float-b"
+        ],
+        "ne": [
+          "ne_run-a",
+          "ne_run-float-a",
+          "ne_run-b",
+          "ne_run-float-b"
+        ],
+        "e": [
+          "e_run-a",
+          "e_run-float-a",
+          "e_run-b",
+          "e_run-float-b"
+        ],
+        "se": [
+          "se_run-a",
+          "se_run-float-a",
+          "se_run-b",
+          "se_run-float-b"
+        ]
+      },
+      "fps": 12,
+      "loop": true
+    }
+  }
+}

@@ -63,6 +63,7 @@ def audit(output):
         slug, version = character['slug'], character['pack_version']
         definition = VISUAL['characters'][slug]
         pack = STANDARD['packs'][str(version)]
+        logical_frames = pack.get('logicalFramesByCharacter', {}).get(slug, pack['logicalFrames'])
         directory = ASSETS/slug
         base = read(directory/f'{slug}-atlas-v{version}-mobile.json')
         row = {'slug':slug,'pack_version':version,'reference':VISUAL['families'][definition['family']]['reference'],
@@ -71,7 +72,7 @@ def audit(output):
             atlas = read(directory/f'{slug}-atlas-v{version}-{variant}.json')
             assert atlas['animations'] == base['animations'], f'{slug}/{variant}: animation variants diverge'
             assert atlas.get('sideViewAnimations') == base.get('sideViewAnimations')
-            assert len(atlas['frames']) == atlas['meta']['generatedFrameCount'] == pack['logicalFrames']
+            assert len(atlas['frames']) == atlas['meta']['generatedFrameCount'] == logical_frames
             assert atlas['pivot'] == VISUAL['atlas']['pivot']
             assert atlas['render']['lockBodyScale'] and not atlas['render']['frameBlend']
             assert atlas['render']['physicsOwnsJumpHeight']
@@ -126,7 +127,7 @@ def audit(output):
             row['variants'].append({'variant':variant,'logical_frames':len(boxes),'physical_frames':physical,
                                     'standingHeightRatios': standing, 'states':states})
         report['characters'].append(row)
-        print(slug, f"{len(STANDARD['variants'])} variants / {len(STANDARD['variants'])*pack['logicalFrames']} logical frames audited",flush=True)
+        print(slug, f"{len(STANDARD['variants'])} variants / {len(STANDARD['variants'])*logical_frames} logical frames audited",flush=True)
     report['status']='passed'
     report['logical_frame_checks']=sum(v['logical_frames'] for r in report['characters'] for v in r['variants'])
     report['limits']=['Raster silhouettes include costumes and pets.',

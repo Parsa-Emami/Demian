@@ -156,11 +156,11 @@ export function buildOfflinePackManifest({ release, entry, releaseId, viteManife
     // Game-specific packages are small additions to a shared core. The cafe
     // preview remains playable when optional high-resolution tiles are absent.
     const extras = {
-        'open-world': smallTiles,
+        'open-world': [...smallTiles, 'assets/companions/pishi/atlas.json', 'assets/companions/pishi/pishi.webp'],
         'dino-run': ['assets/environments/demian-fbx/floorplan.webp'],
         'after-hours': ['assets/environments/demian-fbx/floorplan-detail.webp'],
         'cafe-rush': ['assets/environments/demian-fbx/floorplan-detail.webp'],
-        'cafe-critters': smallTiles,
+        'cafe-critters': [...smallTiles, 'assets/companions/pishi/portrait.webp'],
         'coffee-crash': ['assets/environments/demian-fbx/floorplan.webp'],
         'cafe-drift': [],
     };

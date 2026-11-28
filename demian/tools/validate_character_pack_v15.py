@@ -42,9 +42,7 @@ def validate(slug, variant, cell, target):
     assert atlas['render']['lockBodyScale'] and not atlas['render']['frameBlend']
     assert atlas['render']['physicsOwnsJumpHeight']
     if slug == 'darya':
-        assert atlas['companion'] == {
-            'id': 'pishi', 'alwaysVisible': True, 'bakedIntoEveryFrame': True, 'collisionIndependent': True,
-        }
+        assert 'companion' not in atlas and 'companion' not in atlas['animations']
     ratio = atlas['render']['referenceBodyHeightRatio']
     world_height = atlas['display']['worldHeight']
     with Image.open(image_path) as packed:
@@ -109,6 +107,20 @@ def validate(slug, variant, cell, target):
                 first = [rect(name) for name in sequence[:cycle]]
                 assert len(set(first)) == cycle
                 assert [rect(name) for name in sequence] == first * clip['cycleCount']
+        reference_atlas = load(ROOT / 'arsal' / f'arsal-atlas-v15-{variant}.json')
+        with Image.open(ROOT / 'arsal' / reference_atlas['meta']['image']) as reference_image:
+            reference_idle = reference_atlas['animations']['idle']['framesByDirection']
+            for direction, sequence in world['idle']['framesByDirection'].items():
+                theirs = measure_frame(reference_image, reference_atlas['frames'][reference_idle[direction][0]],
+                                       atlas['pivot']['y'], ratio, world_height)
+                ours = measures[rect(sequence[0])]
+                assert abs(ours['silhouette_height_px'] - theirs['silhouette_height_px']) <= 2, (variant, direction)
+            reference_side_heights = [
+                measure_frame(reference_image, reference_atlas['frames'][frame], atlas['pivot']['y'], ratio, world_height)
+                ['silhouette_height_px'] for frame in reference['idle']['frames']
+            ]
+        side_heights = [measures[rect(frame)]['silhouette_height_px'] for frame in side['idle']['frames']]
+        assert abs(median(side_heights) - median(reference_side_heights)) <= 2, variant
     slide = side['slide']
     assert set(names(slide)).isdisjoint(names(side['run']))
     assert max(measures[rect(name)]['height_cell_ratio'] / ratio * 58 for name in names(slide)) < 46
@@ -137,12 +149,30 @@ def validate_character(slug, entry):
     print(f'{slug} V15: six variants, eight distinct directional views, stable pivots, runner slide and decoded budgets verified.')
 
 
+def validate_pishi():
+    directory = ROOT.parent / 'companions/pishi'
+    atlas = load(directory / 'atlas.json')
+    image_path = directory / atlas['meta']['image']
+    assert atlas['meta']['imageRevision'] == hashlib.sha256(image_path.read_bytes()).hexdigest()
+    assert set(atlas['animations']) == {'idle', 'walk', 'run'}
+    assert all(tuple(clip['framesByDirection']) == DIRECTIONS for clip in atlas['animations'].values())
+    assert set(atlas['frames']) == {frame for clip in atlas['animations'].values() for frame in names(clip)}
+    with Image.open(image_path) as image:
+        assert image.width * image.height * 4 <= 2 * 1024 ** 2
+        for frame in atlas['frames'].values():
+            metrics = measure_frame(image, frame, atlas['pivot']['y'], .8, 1.3)
+            assert not metrics['touches_edge'] and abs(metrics['ground_offset_cell']) < .1
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--characters', nargs='+', choices=ACTIVE, default=ACTIVE)
     roster = {entry['slug']: entry for entry in load(ROOT / 'character-manifest-v4.json')['characters']}
-    for slug in parser.parse_args().characters:
+    args = parser.parse_args()
+    for slug in args.characters:
         validate_character(slug, roster[slug])
+    if 'darya' in args.characters:
+        validate_pishi()
 
 
 if __name__ == '__main__':

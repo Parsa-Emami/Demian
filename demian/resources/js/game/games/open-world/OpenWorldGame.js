@@ -20,6 +20,7 @@ import ChunkManager from './streaming/ChunkManager.js';
 import OpenWorldChunkRenderer from './render/OpenWorldChunkRenderer.js';
 import OpenWorldPixelRenderer from './render/OpenWorldPixelRenderer.js';
 import AiBudgetScheduler from './entities/AiBudgetScheduler.js';
+import PishiCompanion from './entities/PishiCompanion.js';
 import UiFrameBudget from '../../performance/UiFrameBudget.js';
 import WorldDiscovery from './world/WorldDiscovery.js';
 import WorldFindCollection from './world/WorldFindCollection.js';
@@ -508,6 +509,11 @@ export default class OpenWorldGame extends BaseGame {
         const basis = this.cameraController.movementBasis();
         const gameplayInput = this.context?.app?.sessionState === 'playing' && this.context.root.dataset.sidebarState !== 'expanded' && !this.mapOpen ? input : {};
         this.characterManager.update(deltaTime, gameplayInput, basis);
+        if (this.context.app.sessionState === 'playing' && !this.mapOpen) {
+            const darya = this.characterManager.activeRecord?.slug === 'darya';
+            this.pishi?.step(deltaTime, darya ? this.characterManager.position() : null,
+                this.characterManager.forward());
+        }
         if (gameplayInput !== input || this.mapOpen) {
             // Paused/map interactions do not accrue ranked movement time.
         } else {
@@ -567,6 +573,12 @@ export default class OpenWorldGame extends BaseGame {
         if (rendered && this.backgroundHydrationPending && this.context.app.sessionState === 'playing') {
             this.backgroundHydrationPending = false;
             this.characterManager.startBackgroundHydration();
+            this.pishiLoad = new AbortController();
+            const { signal } = this.pishiLoad;
+            this.pishi = new PishiCompanion(this.navigationGrid, this.manifest.spawn);
+            void this.pishi.load(signal).catch(error => {
+                if (!signal.aborted) console.warn('[Open World] Pishi art unavailable.', error);
+            });
         }
         return rendered;
     }
@@ -577,6 +589,7 @@ export default class OpenWorldGame extends BaseGame {
             const activeChunkIds = this.chunkManager?.activeChunkIds() ?? [];
             const rendered = this.pixelRenderer.render({
                 characterManager: this.characterManager,
+                pishi: this.pishi?.avatar,
                 loadedChunks: this.chunkManager?.loaded ?? new Map(),
                 activeChunkIds,
                 discovery: this.discovery,
@@ -634,6 +647,8 @@ export default class OpenWorldGame extends BaseGame {
 
     async exit() {
         this.uiFrameBudget.reset();
+        this.pishiLoad?.abort();
+        this.pishi = null;
         this.routeChallenge?.stop();
         this.setMapOpen(false);
         this.abilityHud?.dispose();

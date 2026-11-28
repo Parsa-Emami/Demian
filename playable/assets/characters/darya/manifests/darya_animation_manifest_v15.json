@@ -145,11 +145,6 @@
       "fps": 6,
       "loop": false,
       "frames": 5
-    },
-    "companion": {
-      "fps": 4,
-      "loop": true,
-      "frames": 4
     }
   }
 }

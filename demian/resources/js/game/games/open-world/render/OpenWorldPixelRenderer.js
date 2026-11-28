@@ -123,7 +123,7 @@ export default class OpenWorldPixelRenderer {
         }
     }
 
-    render({ characterManager, loadedChunks, activeChunkIds, discovery, finds, deltaTime = 0, alpha = 1 }) {
+    render({ characterManager, pishi, loadedChunks, activeChunkIds, discovery, finds, deltaTime = 0, alpha = 1 }) {
         const logical = this.context.renderer.logicalDimensions();
         const scale = this.camera.targetPixelsPerUnit;
         const padX = this.mode === 'FOLLOW' ? logical.width * .15 / scale : 0;
@@ -173,6 +173,11 @@ export default class OpenWorldPixelRenderer {
                 }),
             });
         }
+        if (pishi) this.queue.add({
+            layer: 20,
+            y: characterRenderPose(pishi, alpha).z,
+            draw: () => drawSpriteCharacter(ctx, this.camera, pishi, { alpha, reducedMotion }),
+        });
         this.queue.flush(ctx);
         const cssScale = logical.width / Math.max(1, this.context.renderer.dimensions().width);
         for (const entity of characterManager?.entities?.values?.() ?? []) {

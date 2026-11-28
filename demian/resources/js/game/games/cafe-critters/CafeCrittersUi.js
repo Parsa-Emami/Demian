@@ -17,10 +17,7 @@ const BRIEFING = `
 `;
 
 function pishiArt() {
-    return `<svg class="critters-pishi" viewBox="36 141 49 71" aria-hidden="true" focusable="false">
-        <defs><clipPath id="critters-pishi-crop"><path d="M36 213V143H67L73 149L79 145L82 151V156L85 164L84 173L81 179L80 191L78 198L80 204L78 213Z"/></clipPath></defs>
-        <image href="${builtinCharacterPreviewUrl('darya')}" width="224" height="224" clip-path="url(#critters-pishi-crop)"/>
-    </svg>`;
+    return '<img class="critters-pishi" src="assets/companions/pishi/portrait.webp" alt="">';
 }
 
 function choicesMarkup() {

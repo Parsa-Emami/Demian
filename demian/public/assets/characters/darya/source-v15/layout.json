@@ -8,32 +8,8 @@
     "x": 0.5,
     "y": 0.94
   },
-  "directions": [
-    "s",
-    "sw",
-    "w",
-    "nw",
-    "n",
-    "ne",
-    "e",
-    "se"
-  ],
-  "poses": [
-    "walk-a",
-    "walk-pass-a",
-    "walk-b",
-    "walk-pass-b",
-    "idle",
-    "run-a",
-    "run-float-a",
-    "impact",
-    "launch",
-    "tuck",
-    "descend",
-    "greet",
-    "run-b",
-    "run-float-b"
-  ],
+  "directions": ["s", "sw", "w", "nw", "n", "ne", "e", "se"],
+  "poses": ["walk-a", "walk-pass-a", "walk-b", "walk-pass-b", "idle", "run-a", "run-float-a", "impact", "launch", "tuck", "descend", "greet", "run-b", "run-float-b"],
   "provenance": {
     "generated_with": "OpenAI ImageGen",
     "reference_asset": "../source-v14/master.png",
@@ -41,59 +17,35 @@
     "inputs": {
       "ground-cardinal": {
         "sha256": "310dbe7bd9bf815df9cbf8724cca9482057c0ad4701fb478ada1f943dd02264a",
-        "size": [
-          1254,
-          1254
-        ]
+        "size": [1254, 1254]
       },
       "ground-diagonal": {
         "sha256": "7c6a24d09816b4142d484da6882be2085fe30ee09b5aca78404bcd81d089ae09",
-        "size": [
-          1254,
-          1254
-        ]
+        "size": [1254, 1254]
       },
       "walk-cardinal": {
         "sha256": "ff7bfbee9fef6fbdcdac3740959ff17fd0bbddfaf778d71275b062d2f6a9220f",
-        "size": [
-          1254,
-          1254
-        ]
+        "size": [1254, 1254]
       },
       "walk-diagonal": {
         "sha256": "ee192d7cde08e5c10d18aad8c19319db23db3ea0ccd112b49b8f0a2b03ea86c1",
-        "size": [
-          1254,
-          1254
-        ]
+        "size": [1254, 1254]
       },
       "run-cardinal": {
         "sha256": "1547f21b5ff57def0a4f7f1c3caff957983dddaecb8d7191e8697d12e4a021a7",
-        "size": [
-          1254,
-          1254
-        ]
+        "size": [1254, 1254]
       },
       "run-diagonal": {
         "sha256": "6fda451e3fffb2027dbb59a15d9b21a061886e2f577dbede00a046e792aa2303",
-        "size": [
-          1254,
-          1254
-        ]
+        "size": [1254, 1254]
       },
       "air-cardinal": {
         "sha256": "7854d4ef3af765f1202dbf2c505d20e9863d6a22c433c695ec4fa7c8a91bfbe9",
-        "size": [
-          1254,
-          1254
-        ]
+        "size": [1254, 1254]
       },
       "air-diagonal": {
         "sha256": "572fcfdbc7f1f6e8bdc8e6e910c66c2113876beb3e5a7b5cbefd457e360046b1",
-        "size": [
-          1254,
-          1254
-        ]
+        "size": [1254, 1254]
       }
     },
     "uniform_scale_by_input": {
@@ -107,180 +59,102 @@
       "air-diagonal": 0.432
     },
     "mirrored_source_directions": {
-      "ground-cardinal": [
-        "w"
-      ],
+      "ground-cardinal": ["w"],
       "ground-diagonal": [],
-      "walk-cardinal": [
-        "w"
-      ],
+      "walk-cardinal": ["w"],
       "walk-diagonal": [],
-      "run-cardinal": [
-        "w"
-      ],
-      "run-diagonal": [
-        "nw",
-        "sw"
-      ],
-      "air-cardinal": [
-        "w"
-      ],
+      "run-cardinal": ["w"],
+      "run-diagonal": ["nw", "sw"],
+      "air-cardinal": ["w"],
       "air-diagonal": []
     },
-    "normalization": "Uniform source scale, one torso anchor and a common foot line. Darya run contacts and flight share the Arsal V15 ground offsets. Pishi is composited with its own facing anchor and follow-through; the in-betweens are generated on separate layers."
+    "normalization": "Uniform body scale and one grounded foot line. Authored seams separate Darya and Pishi before interpolation. The world and runner keep Darya’s own takeoff, tuck, extension and recovery poses. Pishi uses the original cat artwork in a separate directional atlas."
   },
   "companion_motion": {
-    "anchors": {
-      "s": 37,
-      "sw": 31,
-      "w": 125,
-      "nw": 123,
-      "n": 122,
-      "ne": 122,
-      "e": 35,
-      "se": 36
-    },
     "joined_pose_seams": {
-      "s": {},
+      "s": {
+        "idle": [60, 62, 65, 62],
+        "impact": [61, 61, 61, 62],
+        "launch": [62, 62, 57, 58],
+        "tuck": [56, 59, 58, 56],
+        "descend": [66, 63, 64, 61],
+        "greet": [66, 65, 64, 63]
+      },
       "sw": {
-        "run-a": [
-          95,
-          91,
-          91,
-          93
-        ],
-        "run-float-a": [
-          62,
-          60,
-          65,
-          66
-        ],
-        "run-b": [
-          95,
-          92,
-          93,
-          95
-        ],
-        "run-float-b": [
-          60,
-          63,
-          62,
-          67
-        ]
+        "run-a": [95, 91, 91, 93],
+        "run-float-a": [62, 60, 65, 66],
+        "run-b": [95, 92, 93, 95],
+        "run-float-b": [60, 63, 62, 67],
+        "walk-pass-a": [61, 59, 58, 59],
+        "idle": [61, 64, 65, 64],
+        "impact": [56, 58, 60, 62],
+        "launch": [61, 59, 60, 59],
+        "tuck": [60, 57, 56, 58],
+        "descend": [61, 60, 61, 60],
+        "greet": [62, 69, 66, 65]
       },
       "w": {
-        "run-a": [
-          96,
-          93,
-          93,
-          91
-        ],
-        "run-b": [
-          96,
-          93,
-          93,
-          92
-        ],
-        "run-float-b": [
-          102,
-          101,
-          94,
-          90
-        ]
+        "run-a": [96, 93, 93, 91],
+        "run-b": [96, 93, 93, 92],
+        "run-float-b": [102, 101, 94, 90],
+        "walk-b": [91, 91, 91, 90],
+        "impact": [90, 92, 92, 89],
+        "tuck": [99, 103, 97, 98],
+        "descend": [101, 100, 96, 92]
       },
       "nw": {
-        "walk-pass-b": [
-          53,
-          57,
-          53,
-          57
-        ],
-        "impact": [
-          49,
-          49,
-          49,
-          49
-        ],
-        "launch": [
-          54,
-          56,
-          54,
-          54
-        ],
-        "greet": [
-          52,
-          49,
-          47,
-          50
-        ]
+        "walk-pass-b": [53, 57, 53, 57],
+        "impact": [49, 49, 49, 49],
+        "launch": [54, 56, 54, 54],
+        "greet": [57, 56, 56, 55],
+        "walk-a": [98, 96, 91, 93],
+        "walk-b": [103, 103, 96, 94],
+        "idle": [98, 93, 93, 95]
       },
       "n": {
-        "run-a": [
-          97,
-          96,
-          96,
-          95
-        ],
-        "run-float-b": [
-          96,
-          95,
-          92,
-          90
-        ]
+        "run-a": [97, 96, 96, 95],
+        "run-float-b": [96, 95, 92, 90],
+        "walk-a": [95, 96, 94, 94],
+        "idle": [98, 96, 95, 96],
+        "impact": [100, 99, 102, 103],
+        "tuck": [105, 105, 104, 100],
+        "descend": [106, 106, 100, 99]
       },
       "ne": {
-        "run-a": [
-          109,
-          103,
-          96,
-          96
-        ],
-        "run-float-a": [
-          104,
-          101,
-          91,
-          87
-        ],
-        "run-b": [
-          105,
-          100,
-          96,
-          95
-        ],
-        "run-float-b": [
-          97,
-          93,
-          88,
-          88
-        ]
+        "run-a": [109, 103, 96, 96],
+        "run-float-a": [104, 101, 91, 87],
+        "run-b": [105, 100, 96, 95],
+        "run-float-b": [97, 93, 88, 88],
+        "walk-a": [101, 101, 100, 97],
+        "walk-b": [100, 97, 91, 97],
+        "walk-pass-b": [99, 99, 98, 96],
+        "idle": [105, 105, 99, 101],
+        "impact": [101, 100, 97, 101],
+        "tuck": [105, 105, 103, 103],
+        "greet": [98, 100, 98, 98]
       },
       "e": {
-        "run-a": [
-          65,
-          66,
-          65,
-          62
-        ],
-        "run-float-a": [
-          57,
-          57,
-          62,
-          58
-        ]
+        "run-a": [65, 66, 65, 62],
+        "run-float-a": [57, 57, 62, 58],
+        "walk-a": [74, 76, 69, 66],
+        "walk-b": [73, 75, 71, 68],
+        "walk-pass-b": [70, 75, 73, 73],
+        "idle": [76, 78, 77, 73],
+        "impact": [72, 71, 73, 69],
+        "tuck": [71, 71, 73, 65]
       },
       "se": {
-        "run-a": [
-          65,
-          65,
-          68,
-          67
-        ],
-        "run-b": [
-          65,
-          63,
-          67,
-          66
-        ]
+        "run-a": [65, 65, 68, 67],
+        "run-b": [65, 63, 67, 66],
+        "walk-a": [63, 62, 66, 66],
+        "walk-b": [67, 70, 67, 65],
+        "walk-pass-b": [68, 70, 68, 63],
+        "idle": [66, 69, 69, 67],
+        "impact": [66, 64, 68, 66],
+        "launch": [68, 68, 69, 67],
+        "tuck": [65, 68, 66, 65],
+        "descend": [65, 62, 64, 63],
+        "greet": [65, 72, 71, 66]
       }
     },
     "cat_screen_side_overrides": {
@@ -294,6 +168,77 @@
         "launch": "left",
         "greet": "left"
       }
+    },
+    "runner_seams": {
+      "idle": [
+        [57, 61, 55, 54],
+        [57, 61, 55, 54],
+        [57, 61, 55, 54],
+        [57, 61, 55, 54],
+        [57, 61, 55, 54]
+      ],
+      "walk": [
+        [59, 56, 53, 49],
+        [53, 56, 54, 50],
+        [54, 56, 55, 48],
+        [55, 53, 52, 49],
+        [57, 59, 53, 49],
+        [55, 55, 53, 49],
+        [58, 61, 54, 51],
+        [54, 51, 51, 47]
+      ],
+      "jump": [
+        [61, 61, 61, 63],
+        [62, 62, 62, 61],
+        [62, 61, 59, 58],
+        [62, 61, 61, 58],
+        [62, 61, 61, 58],
+        [61, 60, 57, 57],
+        [61, 60, 57, 57],
+        [65, 64, 62, 62],
+        [58, 62, 63, 61],
+        [54, 57, 54, 56]
+      ],
+      "land": [
+        [53, 57, 60, 59],
+        [59, 60, 58, 58],
+        [59, 58, 56, 56],
+        [55, 62, 58, 55]
+      ],
+      "slide": [
+        [55, 56, 65, 63],
+        [58, 61, 65, 65],
+        [59, 62, 68, 66],
+        [61, 64, 68, 66],
+        [63, 66, 68, 67],
+        [63, 66, 69, 67],
+        [58, 64, 67, 66],
+        [57, 61, 65, 65]
+      ],
+      "celebrate": [
+        [58, 63, 60, 55],
+        [54, 60, 58, 55],
+        [56, 60, 58, 57],
+        [56, 62, 58, 57],
+        [57, 62, 61, 58],
+        [59, 63, 60, 57],
+        [58, 62, 58, 58],
+        [59, 63, 59, 57],
+        [56, 62, 59, 58],
+        [56, 60, 58, 56],
+        [57, 60, 61, 56],
+        [57, 61, 58, 56]
+      ]
+    },
+    "pishi_poses": {
+      "s": ["s_launch", "s_walk-a", "s_run-a", "s_walk-b", "s_run-b", "s_run-a", "s_run-float-a", "s_run-b", "s_run-float-a"],
+      "sw": ["~se_walk-pass-a", "~se_walk-pass-a", "~se_run-b", "~se_walk-pass-a", "~se_run-b", "~se_run-b", "sw_run-float-a", "~se_run-b", "~se_run-float-b"],
+      "w": ["w_idle", "w_walk-a", "~e_walk-pass-a", "w_walk-pass-b", "~e_walk-pass-a", "~e_run-a", "w_run-float-a", "~e_run-b", "~e_run-float-b"],
+      "nw": ["~ne_launch", "~ne_walk-pass-a", "~ne_run-b", "~ne_walk-pass-a", "~ne_run-float-a", "nw_run-a", "nw_run-float-a", "nw_run-b", "nw_run-float-b"],
+      "n": ["n_launch", "n_walk-pass-a", "n_run-b", "n_walk-b", "n_run-float-a", "n_run-b", "n_run-float-a", "n_run-b", "n_run-float-a"],
+      "ne": ["ne_launch", "ne_walk-pass-a", "ne_run-b", "ne_walk-pass-a", "ne_run-float-a", "ne_run-a", "ne_run-float-a", "ne_run-b", "ne_run-float-b"],
+      "e": ["e_launch", "~w_walk-a", "e_walk-pass-a", "~w_walk-pass-b", "e_walk-pass-a", "e_run-a", "e_run-float-b", "e_run-b", "e_run-float-b"],
+      "se": ["se_walk-pass-a", "se_walk-pass-a", "se_run-b", "se_walk-pass-a", "se_run-b", "se_run-b", "se_run-float-a", "se_run-b", "se_run-float-b"]
     }
   }
 }

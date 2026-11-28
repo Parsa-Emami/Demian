@@ -55,7 +55,7 @@ def largest_component(mask):
     return cv2.dilate(component.astype(np.uint8), np.ones((3, 3), np.uint8)).astype(bool)
 
 
-def split_companion(frame, side, seam):
+def split_companion(frame, side, seam, overlap_start=106):
     pixels = np.array(frame)
     alpha = pixels[:, :, 3]
     if seam is None:
@@ -68,7 +68,7 @@ def split_companion(frame, side, seam):
     else:
         y, x = np.ogrid[:frame.height, :frame.width]
         boundary = np.interp(y, [106, 120, 135, 150], seam)
-        cat = (y >= 106) & ((x < boundary) if side == 'left' else (x >= boundary))
+        cat = (y >= overlap_start) & ((x < boundary) if side == 'left' else (x >= boundary))
     main_cat = largest_component(cat & (alpha > 32))
     main_body = largest_component(~cat & (alpha > 32))
     cat_mask = main_cat & (~main_body | cat)
@@ -88,26 +88,72 @@ def place_companion(companion, center, baseline):
     return offset(companion, round(center - (left + right) / 2), baseline - bottom)
 
 
-def darya_world_layers(keyframes, layout):
+def separate_darya_world_art(keyframes, layout):
     motion = layout['companion_motion']
     ground = round(layout['pivot']['y'] * layout['cell'])
-    result = {}
-    for direction, anchor in motion['anchors'].items():
-        default_side = 'left' if anchor < layout['cell'] / 2 else 'right'
+    cats = {}
+    for direction in layout['directions']:
+        default_side = 'left' if direction in ('s', 'sw', 'e', 'se') else 'right'
         overrides = motion['cat_screen_side_overrides'].get(direction, {})
         seams = motion['joined_pose_seams'][direction]
-        for pose in dict.fromkeys((*RUN, *overrides)):
+        for pose in layout['poses']:
             name = world_name(pose, direction)
             body, cat = split_companion(keyframes[name], overrides.get(pose, default_side), seams.get(pose))
-            airborne = pose.startswith('run-float')
-            baseline = ground - 2 if airborne else ground
-            if pose in RUN:
+            if pose not in ('tuck', 'descend'):
+                baseline = ground - 2 if pose.startswith('run-float') else ground
                 body = offset(body, 0, baseline - alpha_box(body)[3])
-            follow_through = (2 if default_side == 'left' else -2) if airborne else 0
-            cat = place_companion(cat, anchor + follow_through, baseline - 1)
-            result[name] = body, cat
-            keyframes[name] = Image.alpha_composite(cat, body)
-    return result
+            keyframes[name] = body
+            cats[name] = cat
+    for pose in WALK:
+        keyframes[world_name(pose, 'e')] = keyframes[world_name(pose, 'w')].transpose(Image.Transpose.FLIP_LEFT_RIGHT)
+    return cats
+
+
+def build_pishi(cats, layout):
+    directory = CHARACTERS.parent / 'companions/pishi'
+    directory.mkdir(parents=True, exist_ok=True)
+    directions = layout['directions']
+    states = {'idle': (('idle', 'idle-breathe'), 3), 'walk': (WALK, 8), 'run': (RUN, 12)}
+    images, animations = {}, {}
+    source_poses = ('idle', *WALK, *RUN)
+    sources = {direction: dict(zip(source_poses, sequence, strict=True))
+               for direction, sequence in layout['companion_motion']['pishi_poses'].items()}
+    for state, (poses, fps) in states.items():
+        clips = {}
+        for direction in directions:
+            clips[direction] = []
+            for pose in poses:
+                spec = sources[direction]['idle' if pose == 'idle-breathe' else pose]
+                source = cats['world_' + spec.removeprefix('~')]
+                if spec.startswith('~'):
+                    source = source.transpose(Image.Transpose.FLIP_LEFT_RIGHT)
+                bounce = 3 if pose.startswith('run-float') else 2 if 'walk-pass' in pose else 0
+                art = place_companion(source, 80, 149 - bounce)
+                if pose == 'idle-breathe':
+                    art = art.transform(art.size, Image.Transform.AFFINE, (1, 0, 0, 0, 1.028, -4.2),
+                                        Image.Resampling.BICUBIC)
+                name = f'{direction}_{pose}'
+                images[name] = art.crop((54, 100, 106, 152)).resize((64, 64), Image.Resampling.LANCZOS)
+                clips[direction].append(name)
+        animations[state] = {'frames': clips['s'], 'framesByDirection': clips, 'fps': fps, 'loop': True}
+    packed = Image.new('RGBA', (8 * 64, math.ceil(len(images) / 8) * 64))
+    frames = {}
+    for index, (name, frame) in enumerate(images.items()):
+        x, y = index % 8 * 64, index // 8 * 64
+        packed.paste(frame, (x, y))
+        frames[name] = {'x': x, 'y': y, 'w': 64, 'h': 64}
+    image_path = directory / 'pishi.webp'
+    packed.save(image_path, lossless=True, exact=True, method=6)
+    portrait = images['s_idle']
+    portrait.crop(alpha_box(portrait)).save(directory / 'portrait.webp', lossless=True, exact=True)
+    write_json(directory / 'atlas.json', {
+        'meta': {'slug': 'pishi', 'image': image_path.name,
+                 'imageRevision': hashlib.sha256(image_path.read_bytes()).hexdigest()},
+        'pivot': {'x': .5, 'y': 49 / 52}, 'display': {'worldWidth': 1.3, 'worldHeight': 1.3},
+        'render': {'lockBodyScale': True, 'smoothSampling': True, 'referenceBodyHeightRatio': .8},
+        'motion': {'locomotionProfile': {'strideLengths': {'walk': 1.35, 'run': 2.4}, 'maxStrideHz': 3.5}},
+        'frames': frames, 'animations': animations,
+    })
 
 
 def load_world_art(source, layout):
@@ -124,8 +170,12 @@ def load_world_art(source, layout):
                 rect = (col * cell, row * cell, (col + 1) * cell, (row + 1) * cell)
                 keyframes[world_name(pose, direction)] = image.crop(rect).convert('RGBA')
 
-    layers = darya_world_layers(keyframes, layout) if 'companion_motion' in layout else {}
+    cats = separate_darya_world_art(keyframes, layout) if 'companion_motion' in layout else {}
     for direction in directions:
+        if cats:
+            tuck = keyframes[world_name('tuck', direction)]
+            descend = keyframes[world_name('descend', direction)]
+            keyframes[world_name('apex-release', direction)] = midpoint(tuck, descend)
         idle = keyframes[world_name('idle', direction)]
         keyframes[world_name('breath', direction)] = idle.transform(
             idle.size, Image.Transform.AFFINE, (1, 0, 0, 0, 1.012, -1.012 * cell * .012 * .94),
@@ -136,18 +186,17 @@ def load_world_art(source, layout):
                 first = world_name(pose, direction)
                 second = world_name(group[(i + 1) % len(group)], direction)
                 between = world_name(pose + '-mid', direction)
-                if first in layers and second in layers:
-                    body_a, cat_a = layers[first]
-                    body_b, cat_b = layers[second]
-                    keyframes[between] = Image.alpha_composite(midpoint(cat_a, cat_b), midpoint(body_a, body_b))
-                else:
-                    keyframes[between] = midpoint(keyframes[first], keyframes[second])
+                frame = midpoint(keyframes[first], keyframes[second])
+                if cats and group == RUN:
+                    min_foot_line = round(cell * layout['pivot']['y']) - 3
+                    frame = offset(frame, 0, max(0, min_foot_line - alpha_box(frame)[3]))
+                keyframes[between] = frame
                 if i % 2 == 0:
                     sparse[between] = first
-    return keyframes, sparse
+    return keyframes, sparse, cats
 
 
-def world_animations(directions):
+def world_animations(directions, darya=False):
     def clip(poses, fps, loop=False, **metadata):
         by_direction = {
             direction: [world_name(pose, direction) for pose in poses]
@@ -180,6 +229,9 @@ def world_animations(directions):
         'skid': {**stop, 'sharedFrameSource': 'stop'},
         'dash': clip(run, 19, True, cycleCount=1, contactFrames=[0, 4]),
     }
+    if darya:
+        animations.update(jump=clip(('tuck', 'tuck', 'apex-release'), 12),
+                          fall=clip(('apex-release', 'descend', 'descend'), 12))
     animations.update({alias: {**animations[target], 'sharedFrameSource': target}
                        for alias, target in ALIASES.items()})
     return animations
@@ -244,6 +296,40 @@ def use_darya_runner_gait(side, art, reference, layout):
     return aliases
 
 
+def separate_darya_runner_art(directory, layout, art, side):
+    legacy = read_json(directory / 'darya-atlas-v14-desktop.json')
+    cuts = layout['companion_motion']['runner_seams']
+    groups = {
+        'idle': side['idle']['frames'],
+        'walk': side['walk']['frames'],
+        'jump': [frame for state in ('takeoff', 'jump', 'fall') for frame in side[state]['frames']],
+        'land': side['land']['frames'],
+        'slide': side['slide']['frames'],
+        'celebrate': list(dict.fromkeys(frame for state in ('wave', 'celebrate', 'win') for frame in side[state]['frames'])),
+    }
+    cell = layout['cell']
+    ground = round(layout['pivot']['y'] * cell)
+    walk_scale = 1 / 1.022
+    walk_transform = (walk_scale, 0, cell * .5 * (1 - walk_scale),
+                      0, walk_scale, ground * (1 - walk_scale))
+    with Image.open(directory / legacy['meta']['image']) as image:
+        for state, names in groups.items():
+            for name, seam in zip(names, cuts[state], strict=True):
+                x, y, w, h = (legacy['frames'][name.removeprefix('side_')][key] for key in ('x', 'y', 'w', 'h'))
+                frame = image.crop((x, y, x + w, y + h)).convert('RGBA').resize((cell, cell), Image.Resampling.LANCZOS)
+                body, _ = split_companion(frame, 'left', seam, overlap_start=118 if state == 'slide' else 106)
+                if state != 'jump':
+                    body = offset(body, 0, ground - alpha_box(body)[3])
+                if state == 'walk':
+                    body = body.transform(body.size, Image.Transform.AFFINE, walk_transform, Image.Resampling.BICUBIC)
+                if name == side['land']['frames'][-1]:
+                    body = art[side['idle']['frames'][0]]
+                art[name] = body
+                if '_e_' in name:
+                    art[name.replace('_e_', '_w_')] = body.transpose(Image.Transpose.FLIP_LEFT_RIGHT)
+    art['side_turn_002'] = art[world_name('idle', 'w')]
+
+
 def build_variant(directory, slug, variant, cell, layout, art, sparse, animations, side, runner_aliases):
     legacy = read_json(directory / f'{slug}-atlas-v14-{variant}.json')
     side_names = dict.fromkeys(name for clip in side.values()
@@ -292,7 +378,7 @@ def build_variant(directory, slug, variant, cell, layout, art, sparse, animation
         **({'speech': legacy['speech']} if 'speech' in legacy else {}),
         'fallbacks': legacy['fallbacks'],
     }
-    if 'companion' in legacy:
+    if slug != 'darya' and 'companion' in legacy:
         result['companion'] = legacy['companion']
     target = directory / f'{slug}-atlas-v15-{variant}.json'
     target.write_text(json.dumps(result, ensure_ascii=False, separators=(',', ':')) + '\n')
@@ -306,15 +392,15 @@ def build(slug):
     layout = read_json(source / 'layout.json')
     if layout['character'] != slug or layout['version'] != 15:
         raise ValueError(f'{source}: incorrect character or pack version')
-    art, sparse = load_world_art(source, layout)
-    animations = world_animations(layout['directions'])
+    art, sparse, cats = load_world_art(source, layout)
+    animations = world_animations(layout['directions'], darya=slug == 'darya')
     side = side_animations(read_json(directory / f'{slug}-atlas-v14-mobile.json')['animations'])
     runner_aliases = {}
     if slug == 'darya':
         reference = read_json(CHARACTERS / 'arsal/arsal-atlas-v15-mobile.json')['sideViewAnimations']
         runner_aliases = use_darya_runner_gait(side, art, reference, layout)
-        animations['companion'] = {**animations['idle'], 'sharedFrameSource': 'idle'}
-        side['companion'] = {**side['idle'], 'sharedFrameSource': 'idle'}
+        separate_darya_runner_art(directory, layout, art, side)
+        build_pishi(cats, layout)
     targets = {variant: build_variant(directory, slug, variant, cell, layout, art, sparse, animations, side, runner_aliases)
                for variant, cell in VARIANTS.items()}
     art['world_s_idle'].resize((224, 224), Image.Resampling.LANCZOS).save(

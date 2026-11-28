@@ -51,8 +51,9 @@ export default class FrameAnimator {
         const character = motionCharacter(slug);
         const version = atlas.meta?.version;
         const pack = Number.isInteger(version) ? spriteMotion.packs[version] : null;
-        this.sharedAliases = character && pack && pack.logicalFrames === atlas.meta?.generatedFrameCount
-            ? spriteMotion.aliases : null;
+        const frameCount = atlas.meta?.generatedFrameCount;
+        const standardPack = pack && (frameCount === pack.logicalFrames || (frameCount != null && frameCount === pack.logicalFramesByCharacter?.[slug]));
+        this.sharedAliases = character && standardPack ? spriteMotion.aliases : null;
         this.masterMotion = character ? new MasterMotionController(slug) : null;
         this.requestedAnimationName = null;
         this.animationName = null;

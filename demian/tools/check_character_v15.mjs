@@ -149,6 +149,24 @@ try {
         else await page.keyboard.up('ArrowDown');
         await page.evaluate(() => window.demianGameApplication.launchGame('open-world'));
         await page.waitForFunction(() => window.demianGameApplication.activeGameId === 'open-world' && window.demianGameApplication.sessionState === 'playing');
+        await page.waitForFunction(() => window.demianGameApplication.activeGame?.pishi?.avatar?.texture.image.complete);
+        const companion = await page.evaluate(() => {
+            const game = window.demianGameApplication.activeGame;
+            return {
+                atlas: game.pishi.avatar.atlas.meta.slug,
+                separate: game.pishi.avatar.texture.image !== game.characterManager.activeEntity.texture.image,
+                selectable: game.characterManager.characters.some(character => character.slug === 'pishi'),
+                inCharacterEntities: [...game.characterManager.entities.values()].includes(game.pishi.avatar),
+                walkable: game.navigationGrid.lineWalkable(game.pishi.position, game.pishi.position),
+            };
+        });
+        assert.deepEqual(companion,
+            { atlas: 'pishi', separate: true, selectable: false, inCharacterEntities: false, walkable: true });
+        const initialCompanionPosition = await page.evaluate(() => window.demianGameApplication.activeGame.pishi.position);
+        await page.waitForFunction(origin => {
+            const { x, z } = window.demianGameApplication.activeGame.pishi.position;
+            return Math.hypot(x - origin.x, z - origin.z) >= .35;
+        }, initialCompanionPosition);
         await page.evaluate(() => window.demianGameApplication.activeGame.focusCharacter({close:true}));
         await page.waitForFunction(slug => { const e=window.demianGameApplication.characterManager.activeEntity; return e.character.slug === slug && e.grounded && e.stateLock<=0; }, character);
         let distance = 0;
@@ -225,7 +243,7 @@ try {
         report.viewports.push({width,height,selectedViaUi:true,previewLoaded:true,runnerJump:'passed',
             slide:mobile?'native-touch-passed':'keyboard-passed',birdCleared:true,pack,
             cafeMovement:'passed',cafeJump:'passed',cafeCelebrate:'passed',selectionSurvivesReload:true,
-            runnerGaits,runnerBodyScale,walkScale,runScale,directions:[...observed],games,errors,failures});
+            companion,runnerGaits,runnerBodyScale,walkScale,runScale,directions:[...observed],games,errors,failures});
         await context.close();
         console.log(`${character} browser QA passed: ${width}x${height}`);
     }

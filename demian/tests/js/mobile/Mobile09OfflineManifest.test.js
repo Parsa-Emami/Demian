@@ -26,6 +26,7 @@ function fixture() {
         'build/assets/font.woff2',
         'assets/characters/character-manifest-v4.json',
         'assets/characters/master-motion-v1.json',
+        'assets/companions/pishi/atlas.json', 'assets/companions/pishi/pishi.webp', 'assets/companions/pishi/portrait.webp',
         'assets/environments/cafe-runner-v1/wordmark.png',
         'assets/environments/cafe-runner-v1/interior.webp',
         'assets/environments/demian-fbx/polished-v1/preview.webp',
@@ -58,6 +59,8 @@ test('six portable offline bundles share one complete core and contain no creden
         assert.ok(pack.totalBytes <= OFFLINE_MAX_PACK_BYTES);
         assert.ok(pack.files.every(f => !f.path.includes('api/') && !f.path.startsWith('/')));
     }
+    assert.ok(manifest.games.find(g => g.id === 'open-world').files.some(f => f.path === 'assets/companions/pishi/pishi.webp'));
+    assert.ok(manifest.games.find(g => g.id === 'cafe-critters').files.some(f => f.path === 'assets/companions/pishi/portrait.webp'));
     assert.ok(manifest.games.find(g => g.id === 'open-world').files.some(f => f.path.includes('lod-1024/')));
 });
 
