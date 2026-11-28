@@ -3,6 +3,7 @@ import hashlib
 import json
 import math
 from pathlib import Path
+from statistics import median
 
 import cv2
 import numpy as np
@@ -42,6 +43,73 @@ def midpoint(first, second):
     return Image.fromarray(frame)
 
 
+def alpha_box(frame):
+    return frame.getchannel('A').point(lambda alpha: 255 if alpha > 32 else 0).getbbox()
+
+
+def largest_component(mask):
+    _, labels, stats, _ = cv2.connectedComponentsWithStats(mask.astype(np.uint8))
+    if len(stats) < 2:
+        raise ValueError('Darya and Pishi both need visible pixels')
+    component = labels == (1 + stats[1:, cv2.CC_STAT_AREA].argmax())
+    return cv2.dilate(component.astype(np.uint8), np.ones((3, 3), np.uint8)).astype(bool)
+
+
+def split_companion(frame, side, seam):
+    pixels = np.array(frame)
+    alpha = pixels[:, :, 3]
+    if seam is None:
+        count, labels, stats, _ = cv2.connectedComponentsWithStats((alpha > 32).astype(np.uint8))
+        components = sorted(range(1, count), key=lambda label: stats[label, cv2.CC_STAT_AREA], reverse=True)
+        if len(components) < 2 or stats[components[1], cv2.CC_STAT_AREA] < 500:
+            raise ValueError('Pishi overlaps Darya and needs an authored seam')
+        cat = cv2.dilate((labels == components[1]).astype(np.uint8), np.ones((3, 3), np.uint8)).astype(bool)
+        cat &= labels != components[0]
+    else:
+        y, x = np.ogrid[:frame.height, :frame.width]
+        boundary = np.interp(y, [106, 120, 135, 150], seam)
+        cat = (y >= 106) & ((x < boundary) if side == 'left' else (x >= boundary))
+    main_cat = largest_component(cat & (alpha > 32))
+    main_body = largest_component(~cat & (alpha > 32))
+    cat_mask = main_cat & (~main_body | cat)
+    body_mask = main_body & (~main_cat | ~cat)
+    return tuple(Image.fromarray(np.where(mask[:, :, None], pixels, 0))
+                 for mask in (body_mask, cat_mask))
+
+
+def offset(frame, x, y):
+    translated = Image.new('RGBA', frame.size)
+    translated.paste(frame, (x, y))
+    return translated
+
+
+def place_companion(companion, center, baseline):
+    left, _, right, bottom = alpha_box(companion)
+    return offset(companion, round(center - (left + right) / 2), baseline - bottom)
+
+
+def darya_world_layers(keyframes, layout):
+    motion = layout['companion_motion']
+    ground = round(layout['pivot']['y'] * layout['cell'])
+    result = {}
+    for direction, anchor in motion['anchors'].items():
+        default_side = 'left' if anchor < layout['cell'] / 2 else 'right'
+        overrides = motion['cat_screen_side_overrides'].get(direction, {})
+        seams = motion['joined_pose_seams'][direction]
+        for pose in dict.fromkeys((*RUN, *overrides)):
+            name = world_name(pose, direction)
+            body, cat = split_companion(keyframes[name], overrides.get(pose, default_side), seams.get(pose))
+            airborne = pose.startswith('run-float')
+            baseline = ground - 2 if airborne else ground
+            if pose in RUN:
+                body = offset(body, 0, baseline - alpha_box(body)[3])
+            follow_through = (2 if default_side == 'left' else -2) if airborne else 0
+            cat = place_companion(cat, anchor + follow_through, baseline - 1)
+            result[name] = body, cat
+            keyframes[name] = Image.alpha_composite(cat, body)
+    return result
+
+
 def load_world_art(source, layout):
     path = source / layout['source']
     if hashlib.sha256(path.read_bytes()).hexdigest() != layout['source_sha256']:
@@ -56,6 +124,7 @@ def load_world_art(source, layout):
                 rect = (col * cell, row * cell, (col + 1) * cell, (row + 1) * cell)
                 keyframes[world_name(pose, direction)] = image.crop(rect).convert('RGBA')
 
+    layers = darya_world_layers(keyframes, layout) if 'companion_motion' in layout else {}
     for direction in directions:
         idle = keyframes[world_name('idle', direction)]
         keyframes[world_name('breath', direction)] = idle.transform(
@@ -67,7 +136,12 @@ def load_world_art(source, layout):
                 first = world_name(pose, direction)
                 second = world_name(group[(i + 1) % len(group)], direction)
                 between = world_name(pose + '-mid', direction)
-                keyframes[between] = midpoint(keyframes[first], keyframes[second])
+                if first in layers and second in layers:
+                    body_a, cat_a = layers[first]
+                    body_b, cat_b = layers[second]
+                    keyframes[between] = Image.alpha_composite(midpoint(cat_a, cat_b), midpoint(body_a, body_b))
+                else:
+                    keyframes[between] = midpoint(keyframes[first], keyframes[second])
                 if i % 2 == 0:
                     sparse[between] = first
     return keyframes, sparse
@@ -136,14 +210,48 @@ def side_animations(legacy):
     return animations
 
 
-def build_variant(directory, slug, variant, cell, layout, art, sparse, animations, side):
+def use_darya_runner_gait(side, art, reference, layout):
+    phases = ('run-a', 'run-a-mid', 'run-float-a', 'run-b', 'run-b-mid', 'run-float-b')
+    cycles = reference['run']['cycleCount']
+    cell = layout['cell']
+    pivot_x, pivot_y = (layout['pivot'][axis] * cell for axis in ('x', 'y'))
+    silhouettes = [alpha_box(art[world_name(phase, direction)])
+                   for direction in ('e', 'w') for phase in phases]
+    calibration = read_json(ROOT / 'resources/game/character-visual-standard-v2.json')
+    target_height = calibration['characters']['darya']['standingHeightRatios']['sideView'] * cell
+    inverse_scale = median(bottom - top for _, top, _, bottom in silhouettes) / target_height
+    transform = (inverse_scale, 0, pivot_x * (1 - inverse_scale),
+                 0, inverse_scale, pivot_y * (1 - inverse_scale))
+    by_direction, aliases = {}, {}
+    for direction in ('e', 'w'):
+        sequence = [f'side_run_{direction}_{phase}' for phase in phases]
+        for name, phase in zip(sequence, phases):
+            frame = art[world_name(phase, direction)]
+            art[name] = frame.transform(frame.size, Image.Transform.AFFINE, transform, Image.Resampling.BICUBIC)
+        by_direction[direction] = list(sequence)
+        for cycle in range(1, cycles):
+            repeat = [f'{name}_{cycle + 1}' for name in sequence]
+            aliases.update(zip(repeat, sequence))
+            by_direction[direction].extend(repeat)
+    for state in ('run', 'sprint'):
+        timing = reference[state]
+        if len(timing['frames']) != len(phases) * cycles or timing['cycleCount'] != cycles:
+            raise ValueError(f'{state}: Arsal runner timing no longer matches the authored Darya gait')
+        side[state] = {'frames': by_direction['e'], 'framesByDirection': by_direction,
+                       'fps': timing['fps'], 'loop': timing['loop'], 'cycleCount': cycles}
+    for state in ('skid', 'dash'):
+        side[state] = {**side['run'], 'sharedFrameSource': 'run'}
+    return aliases
+
+
+def build_variant(directory, slug, variant, cell, layout, art, sparse, animations, side, runner_aliases):
     legacy = read_json(directory / f'{slug}-atlas-v14-{variant}.json')
     side_names = dict.fromkeys(name for clip in side.values()
                               for frames in [clip['frames'], *clip.get('framesByDirection', {}).values()]
-                              for name in frames)
+                              for name in frames if name not in art and name not in runner_aliases)
     images = {name: frame.resize((cell, cell), Image.Resampling.LANCZOS)
               for name, frame in art.items() if variant != 'lite' or name not in sparse}
-    aliases = dict(sparse) if variant == 'lite' else {}
+    aliases = {**runner_aliases, **(sparse if variant == 'lite' else {})}
     with Image.open(directory / legacy['meta']['image']) as atlas:
         seen = {}
         for name in side_names:
@@ -201,10 +309,13 @@ def build(slug):
     art, sparse = load_world_art(source, layout)
     animations = world_animations(layout['directions'])
     side = side_animations(read_json(directory / f'{slug}-atlas-v14-mobile.json')['animations'])
+    runner_aliases = {}
     if slug == 'darya':
+        reference = read_json(CHARACTERS / 'arsal/arsal-atlas-v15-mobile.json')['sideViewAnimations']
+        runner_aliases = use_darya_runner_gait(side, art, reference, layout)
         animations['companion'] = {**animations['idle'], 'sharedFrameSource': 'idle'}
         side['companion'] = {**side['idle'], 'sharedFrameSource': 'idle'}
-    targets = {variant: build_variant(directory, slug, variant, cell, layout, art, sparse, animations, side)
+    targets = {variant: build_variant(directory, slug, variant, cell, layout, art, sparse, animations, side, runner_aliases)
                for variant, cell in VARIANTS.items()}
     art['world_s_idle'].resize((224, 224), Image.Resampling.LANCZOS).save(
         directory / f'{slug}-preview-v15.png', optimize=True,
@@ -219,6 +330,7 @@ def build(slug):
     write_json(manifests / animation_filename, {
         'character_key': slug, 'pack_version': 15, 'source': '../source-v15/layout.json',
         'directions': layout['directions'], 'side_view_previous_art': 'V14',
+        **({'side_view_run_art': 'V15', 'side_view_run_timing_reference': 'arsal'} if slug == 'darya' else {}),
         'states': {name: {key: clip[key] for key in ('fps', 'loop') } |
                    {'frames': len(clip['frames'])} for name, clip in animations.items()},
     })

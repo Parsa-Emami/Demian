@@ -13,6 +13,8 @@
     "se"
   ],
   "side_view_previous_art": "V14",
+  "side_view_run_art": "V15",
+  "side_view_run_timing_reference": "arsal",
   "states": {
     "idle": {
       "fps": 4,

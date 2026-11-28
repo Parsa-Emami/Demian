@@ -14,6 +14,8 @@ const out = resolve(process.env.DEMIAN_QA_REPORT_DIR ?? resolve(project, 'docs/d
 const screenshots = resolve(process.env.DEMIAN_QA_SCREENSHOT_DIR ?? resolve(tmpdir(), 'demian-' + character + '-v15'));
 const { chromium } = await import(process.env.DEMIAN_PLAYWRIGHT_MODULE
     ? pathToFileURL(process.env.DEMIAN_PLAYWRIGHT_MODULE).href : 'playwright');
+const referenceFile = resolve(project, 'public/assets/characters/arsal/arsal-atlas-v15-mobile.json');
+const referenceRunner = JSON.parse(await readFile(referenceFile, 'utf8')).sideViewAnimations;
 const types = { '.html':'text/html', '.js':'text/javascript', '.css':'text/css', '.json':'application/json',
     '.png':'image/png', '.webp':'image/webp', '.jpg':'image/jpeg', '.woff2':'font/woff2', '.webmanifest':'application/manifest+json' };
 await mkdir(out, { recursive:true });
@@ -92,6 +94,17 @@ try {
         await page.evaluate(() => window.demianGameApplication.launchGame('dino-run', {seed:127}));
         await page.waitForFunction(() => window.demianGameApplication.activeGame?.model?.status === 'ready');
         assert.equal(await page.evaluate(() => window.demianGameApplication.activeGame.avatar.slug), character);
+        const runnerGaits = await page.evaluate(() => {
+            const { animations } = window.demianGameApplication.activeGame.avatar.animator;
+            return Object.fromEntries(['run', 'sprint'].map(state => {
+                const { frames, fps, cycleCount } = animations[state];
+                return [state, { frames: frames.length, fps, cycleCount }];
+            }));
+        });
+        for (const state of ['run', 'sprint']) {
+            const { frames, fps, cycleCount } = referenceRunner[state];
+            assert.deepEqual(runnerGaits[state], { frames: frames.length, fps, cycleCount });
+        }
         const runnerBodyScale = await visibleBodyScale(page, 'runner');
         assert.ok(runnerBodyScale.jumpRecoveryRatio >= .96 && runnerBodyScale.jumpRecoveryRatio <= 1.05);
         assert.ok(runnerBodyScale.airborneRatio >= .75 && runnerBodyScale.airborneRatio <= 1.05);
@@ -212,7 +225,7 @@ try {
         report.viewports.push({width,height,selectedViaUi:true,previewLoaded:true,runnerJump:'passed',
             slide:mobile?'native-touch-passed':'keyboard-passed',birdCleared:true,pack,
             cafeMovement:'passed',cafeJump:'passed',cafeCelebrate:'passed',selectionSurvivesReload:true,
-            runnerBodyScale,walkScale,runScale,directions:[...observed],games,errors,failures});
+            runnerGaits,runnerBodyScale,walkScale,runScale,directions:[...observed],games,errors,failures});
         await context.close();
         console.log(`${character} browser QA passed: ${width}x${height}`);
     }

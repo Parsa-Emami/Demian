@@ -97,6 +97,18 @@ def validate(slug, variant, cell, target):
         assert set(side[state]['framesByDirection']) == {'e', 'w'}
         assert all(name.startswith('side_') for name in names(side[state]))
         assert side[state]['framesByDirection']['e'] != side[state]['framesByDirection']['w']
+    if slug == 'darya':
+        reference = load(ROOT / 'arsal' / f'arsal-atlas-v15-{variant}.json')['sideViewAnimations']
+        for state in ('run', 'sprint'):
+            clip = side[state]
+            for key in ('fps', 'loop', 'cycleCount'):
+                assert clip[key] == reference[state][key], (variant, state, key)
+            for direction, sequence in clip['framesByDirection'].items():
+                assert len(sequence) == len(reference[state]['framesByDirection'][direction])
+                cycle = len(sequence) // clip['cycleCount']
+                first = [rect(name) for name in sequence[:cycle]]
+                assert len(set(first)) == cycle
+                assert [rect(name) for name in sequence] == first * clip['cycleCount']
     slide = side['slide']
     assert set(names(slide)).isdisjoint(names(side['run']))
     assert max(measures[rect(name)]['height_cell_ratio'] / ratio * 58 for name in names(slide)) < 46

@@ -127,6 +127,173 @@
       ],
       "air-diagonal": []
     },
-    "normalization": "Uniform art scale taken from upright or contact poses per source strip, with one torso anchor and grounded foot line. The companion stays on its screen side for each facing and follows the shared feet pivot in the air."
+    "normalization": "Uniform source scale, one torso anchor and a common foot line. Darya run contacts and flight share the Arsal V15 ground offsets. Pishi is composited with its own facing anchor and follow-through; the in-betweens are generated on separate layers."
+  },
+  "companion_motion": {
+    "anchors": {
+      "s": 37,
+      "sw": 31,
+      "w": 125,
+      "nw": 123,
+      "n": 122,
+      "ne": 122,
+      "e": 35,
+      "se": 36
+    },
+    "joined_pose_seams": {
+      "s": {},
+      "sw": {
+        "run-a": [
+          95,
+          91,
+          91,
+          93
+        ],
+        "run-float-a": [
+          62,
+          60,
+          65,
+          66
+        ],
+        "run-b": [
+          95,
+          92,
+          93,
+          95
+        ],
+        "run-float-b": [
+          60,
+          63,
+          62,
+          67
+        ]
+      },
+      "w": {
+        "run-a": [
+          96,
+          93,
+          93,
+          91
+        ],
+        "run-b": [
+          96,
+          93,
+          93,
+          92
+        ],
+        "run-float-b": [
+          102,
+          101,
+          94,
+          90
+        ]
+      },
+      "nw": {
+        "walk-pass-b": [
+          53,
+          57,
+          53,
+          57
+        ],
+        "impact": [
+          49,
+          49,
+          49,
+          49
+        ],
+        "launch": [
+          54,
+          56,
+          54,
+          54
+        ],
+        "greet": [
+          52,
+          49,
+          47,
+          50
+        ]
+      },
+      "n": {
+        "run-a": [
+          97,
+          96,
+          96,
+          95
+        ],
+        "run-float-b": [
+          96,
+          95,
+          92,
+          90
+        ]
+      },
+      "ne": {
+        "run-a": [
+          109,
+          103,
+          96,
+          96
+        ],
+        "run-float-a": [
+          104,
+          101,
+          91,
+          87
+        ],
+        "run-b": [
+          105,
+          100,
+          96,
+          95
+        ],
+        "run-float-b": [
+          97,
+          93,
+          88,
+          88
+        ]
+      },
+      "e": {
+        "run-a": [
+          65,
+          66,
+          65,
+          62
+        ],
+        "run-float-a": [
+          57,
+          57,
+          62,
+          58
+        ]
+      },
+      "se": {
+        "run-a": [
+          65,
+          65,
+          68,
+          67
+        ],
+        "run-b": [
+          65,
+          63,
+          67,
+          66
+        ]
+      }
+    },
+    "cat_screen_side_overrides": {
+      "sw": {
+        "run-a": "right",
+        "run-b": "right"
+      },
+      "nw": {
+        "walk-pass-b": "left",
+        "impact": "left",
+        "launch": "left",
+        "greet": "left"
+      }
+    }
   }
 }
