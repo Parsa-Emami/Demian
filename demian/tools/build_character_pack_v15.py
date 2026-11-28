@@ -7,9 +7,9 @@ from statistics import median
 
 import cv2
 import numpy as np
-from PIL import Image
+from PIL import Image, ImageChops, ImageDraw
 
-from build_character_pack_v14 import grey, read_json, write_json
+from build_character_pack_v14 import WORK, extract, grey, normalized, read_json, write_json
 from validate_character_pack_v14 import VARIANTS
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -55,7 +55,7 @@ def largest_component(mask):
     return cv2.dilate(component.astype(np.uint8), np.ones((3, 3), np.uint8)).astype(bool)
 
 
-def split_companion(frame, side, seam, overlap_start=106):
+def split_companion(frame, side, seam):
     pixels = np.array(frame)
     alpha = pixels[:, :, 3]
     if seam is None:
@@ -68,7 +68,7 @@ def split_companion(frame, side, seam, overlap_start=106):
     else:
         y, x = np.ogrid[:frame.height, :frame.width]
         boundary = np.interp(y, [106, 120, 135, 150], seam)
-        cat = (y >= overlap_start) & ((x < boundary) if side == 'left' else (x >= boundary))
+        cat = (y >= 106) & ((x < boundary) if side == 'left' else (x >= boundary))
     main_cat = largest_component(cat & (alpha > 32))
     main_body = largest_component(~cat & (alpha > 32))
     cat_mask = main_cat & (~main_body | cat)
@@ -304,7 +304,6 @@ def separate_darya_runner_art(directory, layout, art, side):
         'walk': side['walk']['frames'],
         'jump': [frame for state in ('takeoff', 'jump', 'fall') for frame in side[state]['frames']],
         'land': side['land']['frames'],
-        'slide': side['slide']['frames'],
         'celebrate': list(dict.fromkeys(frame for state in ('wave', 'celebrate', 'win') for frame in side[state]['frames'])),
     }
     cell = layout['cell']
@@ -317,7 +316,7 @@ def separate_darya_runner_art(directory, layout, art, side):
             for name, seam in zip(names, cuts[state], strict=True):
                 x, y, w, h = (legacy['frames'][name.removeprefix('side_')][key] for key in ('x', 'y', 'w', 'h'))
                 frame = image.crop((x, y, x + w, y + h)).convert('RGBA').resize((cell, cell), Image.Resampling.LANCZOS)
-                body, _ = split_companion(frame, 'left', seam, overlap_start=118 if state == 'slide' else 106)
+                body, _ = split_companion(frame, 'left', seam)
                 if state != 'jump':
                     body = offset(body, 0, ground - alpha_box(body)[3])
                 if state == 'walk':
@@ -328,6 +327,45 @@ def separate_darya_runner_art(directory, layout, art, side):
                 if '_e_' in name:
                     art[name.replace('_e_', '_w_')] = body.transpose(Image.Transpose.FLIP_LEFT_RIGHT)
     art['side_turn_002'] = art[world_name('idle', 'w')]
+
+
+def build_darya_runner_slide(source, layout, art, side):
+    spec = layout['runner_slide']
+    path = source / spec['source']
+    if hashlib.sha256(path.read_bytes()).hexdigest() != spec['sha256']:
+        raise ValueError(f'{path}: slide source revision differs from layout')
+    with Image.open(path) as image:
+        poses = extract(image.convert('RGBA'), [0, image.height // 2, image.height], columns=4)[1]
+
+    keyframes = []
+    for pose, contour in zip(poses, spec['companion_masks'], strict=True):
+        frame = Image.fromarray(normalized(pose, spec['scale']))
+        top_line = [(0, contour[0][1]), *contour, (contour[-1][0], WORK), (0, WORK)]
+        mask = Image.new('L', (WORK * 4, WORK * 4), 255)
+        ImageDraw.Draw(mask).polygon([(x * 4, y * 4) for x, y in top_line], fill=0)
+        alpha = ImageChops.multiply(frame.getchannel('A'), mask.resize(frame.size, Image.Resampling.LANCZOS))
+        frame.putalpha(alpha)
+        clean = Image.new('RGBA', frame.size)
+        clean.alpha_composite(frame)
+        keyframes.append(clean)
+
+    sequence = [frame for i, pose in enumerate(keyframes)
+                for frame in (pose, midpoint(pose, keyframes[(i + 1) % len(keyframes)]))]
+    standard = read_json(ROOT / 'resources/game/character-visual-standard-v2.json')
+    height_ratio = standard['characters']['darya']['standingHeightRatios']['sideView']
+    runner = read_json(ROOT / 'resources/game/runner-rules.json')
+    pivot_x, pivot_y = (layout['pivot'][axis] * WORK for axis in ('x', 'y'))
+    max_height = (pivot_y - min(alpha_box(frame)[1] for frame in sequence)) / WORK
+    inverse_scale = max(1, max_height * runner['bodyHeight'] / (height_ratio * spec['runner_height']))
+    transform = (inverse_scale, 0, pivot_x * (1 - inverse_scale),
+                 0, inverse_scale, pivot_y * (1 - inverse_scale))
+    cell = layout['cell']
+    east, west = (side['slide']['framesByDirection'][direction] for direction in ('e', 'w'))
+    for east_name, west_name, frame in zip(east, west, sequence, strict=True):
+        frame = frame.transform(frame.size, Image.Transform.AFFINE, transform, Image.Resampling.BICUBIC)
+        frame = frame.resize((cell, cell), Image.Resampling.LANCZOS)
+        art[east_name] = frame
+        art[west_name] = frame.transpose(Image.Transpose.FLIP_LEFT_RIGHT)
 
 
 def build_variant(directory, slug, variant, cell, layout, art, sparse, animations, side, runner_aliases):
@@ -400,6 +438,7 @@ def build(slug):
         reference = read_json(CHARACTERS / 'arsal/arsal-atlas-v15-mobile.json')['sideViewAnimations']
         runner_aliases = use_darya_runner_gait(side, art, reference, layout)
         separate_darya_runner_art(directory, layout, art, side)
+        build_darya_runner_slide(source, layout, art, side)
         build_pishi(cats, layout)
     targets = {variant: build_variant(directory, slug, variant, cell, layout, art, sparse, animations, side, runner_aliases)
                for variant, cell in VARIANTS.items()}
@@ -416,7 +455,8 @@ def build(slug):
     write_json(manifests / animation_filename, {
         'character_key': slug, 'pack_version': 15, 'source': '../source-v15/layout.json',
         'directions': layout['directions'], 'side_view_previous_art': 'V14',
-        **({'side_view_run_art': 'V15', 'side_view_run_timing_reference': 'arsal'} if slug == 'darya' else {}),
+        **({'side_view_run_art': 'V15', 'side_view_run_timing_reference': 'arsal',
+            'side_view_slide_art': 'V15 contour reconstruction'} if slug == 'darya' else {}),
         'states': {name: {key: clip[key] for key in ('fps', 'loop') } |
                    {'frames': len(clip['frames'])} for name, clip in animations.items()},
     })

@@ -122,6 +122,24 @@ def validate(slug, variant, cell, target):
         side_heights = [measures[rect(frame)]['silhouette_height_px'] for frame in side['idle']['frames']]
         assert abs(median(side_heights) - median(reference_side_heights)) <= 2, variant
     slide = side['slide']
+    if slug == 'darya':
+        visual_standard = load(ROOT.parents[2] / 'resources/game/character-visual-standard-v2.json')
+        side_ratio = visual_standard['characters'][slug]['standingHeightRatios']['sideView']
+        runner = load(ROOT.parents[2] / 'resources/game/runner-rules.json')
+        ceiling = min(row['y'] for row in runner['obstacleCatalog'] if row['y'] > 0)
+        for direction, sequence in slide['framesByDirection'].items():
+            assert len({pixels[rect(name)] for name in sequence}) == len(sequence)
+            for name in sequence:
+                alpha = image.crop(rect(name)).getchannel('A')
+                left, top, right, bottom = alpha.point(lambda value: 255 if value > 32 else 0).getbbox()
+                visible_height = (atlas['pivot']['y'] - top / cell) * runner['bodyHeight'] / side_ratio
+                assert visible_height <= ceiling - 1, (variant, name, visible_height)
+                assert abs(bottom / cell - atlas['pivot']['y']) <= .02, (variant, name, bottom)
+                assert right - left >= cell * .63, (variant, name, left, right)
+                edge = round(cell / 4)
+                hair_x = (0, edge) if direction == 'e' else (cell - edge, cell)
+                hair = alpha.crop((hair_x[0], round(cell * .755), hair_x[1], round(cell * .82)))
+                assert sum(hair.histogram()[33:]) >= cell * cell * .0009, (variant, name, 'hair contour')
     assert set(names(slide)).isdisjoint(names(side['run']))
     assert max(measures[rect(name)]['height_cell_ratio'] / ratio * 58 for name in names(slide)) < 46
     assert world['stop']['loop'] is False and world['skid']['loop'] is False

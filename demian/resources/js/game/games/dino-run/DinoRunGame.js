@@ -243,7 +243,9 @@ export default class DinoRunGame extends BaseGame {
         this.actor.travelledDistance = this.actor.speed * dt;
         this.actor.airborne = model.y > 0 || model.vy > 0; this.actor.grounded = !this.actor.airborne;
         this.actor.jumpVelocity = model.vy / 100;
-        this.actor.motionState = model.duck ? 'slide' : model.landingTime > 0 ? 'land' : null;
+        const sprintThreshold = this.avatar.state === 'sprint' ? 6 : 6.6;
+        const gait = this.actor.speed === 0 ? 'idle' : this.actor.speed > sprintThreshold ? 'sprint' : 'run';
+        this.actor.motionState = model.duck ? 'slide' : model.landingTime > 0 ? 'land' : gait;
         this.avatar.sync(this.actor, dt);
         for (const [key, avatar] of this.attackAvatars ?? []) {
             const airborne = key.endsWith(':duck');

@@ -4,6 +4,7 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import DinoRunModel, { RUNNER_CONFIG } from '../../../resources/js/game/games/dino-run/DinoRunModel.js';
 import DinoRunGame from '../../../resources/js/game/games/dino-run/DinoRunGame.js';
+import { BEGINNER_PROFILE } from '../../../resources/js/game/games/dino-run/RunnerPracticeProfile.js';
 import { runnerLighting } from '../../../resources/js/game/games/dino-run/DinoRunEnvironment.js';
 import { BUILTIN_CHARACTER_SLUGS } from '../../../resources/js/game/characters/CharacterVisualContract.js';
 import { characterManifestEntry } from '../../../resources/js/game/characters/manifests/CharacterManifestRegistry.js';
@@ -24,9 +25,10 @@ test('runner sends a real slide state to the shared avatar, then releases it wit
     const game = new DinoRunGame(); let lastActor;
     game.context = { app: { sessionState: 'playing' }, root: { dataset: { sidebarState: 'collapsed' } } };
     game.actor = {}; game.avatar = { sync: (actor) => { lastActor = { ...actor }; } };
+    game.model.reset({ profile: BEGINNER_PROFILE });
     game.model.status = 'running';
     game.fixedUpdate(1 / 60, { duck: true }); assert.equal(lastActor.motionState, 'slide');
-    game.fixedUpdate(1 / 60, {}); assert.equal(lastActor.motionState, null);
+    game.fixedUpdate(1 / 60, {}); assert.equal(lastActor.motionState, 'run');
     game.fixedUpdate(1 / 60, { jump: true, jumpHeld: true }); assert.equal(lastActor.airborne, true);
 });
 

@@ -72,6 +72,54 @@ async function visibleBodyScale(page, mode) {
             bodyScale:entity.bodyRoot?.scale?.y??1,variant:atlas.meta.variant};
     }, { mode, runnerRatio });
 }
+async function watchAtlasDraws(page, gameId, states) {
+    await page.evaluate(({ gameId, states }) => {
+        const app = window.demianGameApplication;
+        const game = app.activeGame;
+        const avatar = gameId === 'open-world' ? game.characterManager.activeEntity : game.avatar ?? game.avatars.player;
+        const ctx = game.context.renderer.bufferContext;
+        const draw = ctx.drawImage;
+        const key = ({ x, y, w, h }) => [x, y, w, h].join(',');
+        const seen = new Set();
+        const frames = new Map();
+        let observedAtlas;
+        ctx.drawImage = function (image, ...args) {
+            draw.call(this, image, ...args);
+            if (image !== avatar.texture.image || args.length !== 8) return;
+            if (observedAtlas !== avatar.atlas) {
+                observedAtlas = avatar.atlas;
+                frames.clear();
+                for (const state of states) {
+                    const clip = avatar.animator.animations[state];
+                    for (const name of [...clip.frames, ...Object.values(clip.framesByDirection ?? {}).flat()]) {
+                        frames.set(key(observedAtlas.frames[name]), name);
+                    }
+                }
+            }
+            const frame = frames.get(args.slice(0, 4).join(','));
+            if (frame) seen.add(frame);
+        };
+        window.atlasDraws = {
+            seen,
+            stop() {
+                ctx.drawImage = draw;
+                return { slug: avatar.character.slug, version: avatar.atlas.meta.version,
+                    revision: avatar.atlas.meta.imageRevision,
+                    textureRevision: new URL(avatar.texture.image.src).searchParams.get('sprite_rev'),
+                    frames: [...seen] };
+            },
+        };
+    }, { gameId, states });
+}
+
+function assertDrawnAtlas(capture) {
+    assert.equal(capture.slug, character);
+    assert.equal(capture.version, 15);
+    assert.ok(capture.revision);
+    assert.equal(capture.textureRevision, capture.revision);
+    assert.ok(capture.frames.length > 0);
+}
+
 try {
     for (const [width, height] of [[390,844], [1440,900]]) {
         const mobile = width < 1024;
@@ -130,10 +178,22 @@ try {
             await touch.send('Input.dispatchTouchEvent', {type:'touchStart', touchPoints:[{x:box.x+box.width/2,y:box.y+box.height/2}]});
         } else await page.keyboard.down('ArrowDown');
         await page.waitForFunction(() => window.demianGameApplication.activeGame.avatar.state === 'slide');
-        await page.evaluate(() => {
-            window.demianGameApplication.activeGame.model.obstacles = [{id:1,type:'bird',x:104,previousX:104,y:46,w:40,h:22,scored:false}];
+        await watchAtlasDraws(page, 'dino-run', ['slide']);
+        if (character === 'darya') await page.waitForFunction(() => window.atlasDraws.seen.size === 8);
+        await page.waitForFunction(() => window.atlasDraws.seen.size > 0);
+        const slideDraw = await page.evaluate(() => window.atlasDraws.stop());
+        assertDrawnAtlas(slideDraw);
+        await page.evaluate(character => {
+            const low = character === 'darya';
+            window.demianGameApplication.activeGame.model.obstacles = [
+                { id: 1, type: 'bird', appearance: low ? 'serving-tray' : 'pendant',
+                    x: 116, previousX: 116, y: low ? 42 : 46, w: 58, h: 22, scored: false },
+            ];
+        }, character);
+        await page.waitForFunction(() => {
+            const { model } = window.demianGameApplication.activeGame;
+            return model.status === 'over' || model.passed > 0;
         });
-        await page.waitForTimeout(180);
         assert.equal(await page.evaluate(() => window.demianGameApplication.activeGame.model.status), 'running');
         const pack = await page.evaluate(() => {
             const avatar = window.demianGameApplication.activeGame.avatar;
@@ -147,6 +207,10 @@ try {
         await page.screenshot({path:resolve(screenshots, `${character}-slide-${width}.png`)});
         if (touch) await touch.send('Input.dispatchTouchEvent', {type:'touchEnd',touchPoints:[]});
         else await page.keyboard.up('ArrowDown');
+        await page.waitForFunction(() => {
+            const { model, avatar } = window.demianGameApplication.activeGame;
+            return !model.duck && ['run', 'sprint'].includes(avatar.state);
+        });
         await page.evaluate(() => window.demianGameApplication.launchGame('open-world'));
         await page.waitForFunction(() => window.demianGameApplication.activeGameId === 'open-world' && window.demianGameApplication.sessionState === 'playing');
         await page.waitForFunction(() => window.demianGameApplication.activeGame?.pishi?.avatar?.texture.image.complete);
@@ -195,6 +259,7 @@ try {
         }
         assert.equal(walkScale.frameWorldHeight,runScale.frameWorldHeight);
         await page.waitForFunction(() => { const e=window.demianGameApplication.characterManager.activeEntity; return e.grounded && e.stateLock<=0; });
+        await watchAtlasDraws(page, 'open-world', ['walk']);
         const observed = new Set();
         for (const keys of [['d'], ['d','s'], ['s'], ['a','s'], ['a'], ['a','w'], ['w'], ['d','w']]) {
             for (const key of keys) await page.keyboard.down(key);
@@ -213,6 +278,9 @@ try {
             for (const key of keys) await page.keyboard.up(key);
         }
         assert.deepEqual([...observed].sort(), ['e', 'n', 'ne', 'nw', 's', 'se', 'sw', 'w']);
+        const worldDraw = await page.evaluate(() => window.atlasDraws.stop());
+        assertDrawnAtlas(worldDraw);
+
         await page.keyboard.down('Space');
         await page.waitForFunction(() => !window.demianGameApplication.characterManager.activeEntity.grounded);
         await page.keyboard.up('Space');
@@ -221,18 +289,28 @@ try {
         await page.waitForFunction(() => window.demianGameApplication.characterManager.activeEntity.state === 'celebrate');
         await page.screenshot({path:resolve(screenshots, `${character}-world-${width}.png`)});
         const games = ['open-world', 'dino-run'];
+        const renderedAtlases = { 'open-world': worldDraw, 'dino-run': slideDraw };
         for (const gameId of ['after-hours','cafe-rush','cafe-critters','coffee-crash','cafe-drift']) {
             await page.evaluate(gameId => window.demianGameApplication.launchGame(gameId), gameId);
             await page.waitForFunction(gameId => window.demianGameApplication.activeGameId === gameId
                 && window.demianGameApplication.sessionState === 'playing', gameId, {timeout: 45000});
             if (gameId === 'after-hours' || gameId === 'cafe-rush') {
-                const avatar = await page.evaluate(() => {
-                    const game = window.demianGameApplication.activeGame;
-                    const avatar = game.avatar ?? game.avatars?.player;
-                    return { slug: avatar?.slug, version: avatar?.atlas.meta.version };
-                });
-                assert.deepEqual(avatar, { slug: character, version: 15 });
+                await watchAtlasDraws(page, gameId, ['idle', 'walk', 'sprint']);
+                await page.waitForFunction(() => window.atlasDraws.seen.size > 0);
+                await press(page.locator('[data-shift-action="confirm"]:visible'));
+                for (const key of ['d', 'a', 'w', 's']) {
+                    await page.keyboard.down(key);
+                    await page.waitForTimeout(260);
+                    await page.keyboard.up(key);
+                    if (await page.evaluate(() => [...window.atlasDraws.seen].some(frame => frame.includes('_walk-')))) break;
+                }
+                const drawing = await page.evaluate(() => window.atlasDraws.stop());
+                assertDrawnAtlas(drawing);
+                assert.ok(drawing.frames.every(frame => frame.startsWith('world_')));
+                assert.ok(drawing.frames.some(frame => frame.includes('_walk-')), gameId + ' should draw walking art');
+                renderedAtlases[gameId] = drawing;
             }
+            assert.equal(await page.evaluate(() => window.demianGameApplication.characterVisuals.activeSlug), character);
             games.push(gameId);
         }
         await page.reload();
@@ -243,7 +321,7 @@ try {
         report.viewports.push({width,height,selectedViaUi:true,previewLoaded:true,runnerJump:'passed',
             slide:mobile?'native-touch-passed':'keyboard-passed',birdCleared:true,pack,
             cafeMovement:'passed',cafeJump:'passed',cafeCelebrate:'passed',selectionSurvivesReload:true,
-            companion,runnerGaits,runnerBodyScale,walkScale,runScale,directions:[...observed],games,errors,failures});
+            companion,runnerGaits,runnerBodyScale,walkScale,runScale,directions:[...observed],games,renderedAtlases,errors,failures});
         await context.close();
         console.log(`${character} browser QA passed: ${width}x${height}`);
     }
